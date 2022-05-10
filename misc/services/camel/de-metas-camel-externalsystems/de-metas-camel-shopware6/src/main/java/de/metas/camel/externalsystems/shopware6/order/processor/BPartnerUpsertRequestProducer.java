@@ -159,9 +159,9 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		resultBuilder.jsonRequestBPartnerUpsert(JsonRequestBPartnerUpsert.builder()
-				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-				.requestItem(bPartnerUpsertItem)
-				.build());
+														.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+														.requestItem(bPartnerUpsertItem)
+														.build());
 
 		return resultBuilder.build();
 	}
@@ -250,13 +250,19 @@ public class BPartnerUpsertRequestProducer
 	private JsonRequestContactUpsert getUpsertContactRequest()
 	{
 		final JsonRequestContactUpsertBuilder upsertContactRequestBuilder = JsonRequestContactUpsert.builder();
-		upsertContactRequestBuilder.requestItem(getUpsertContactItemRequest());
-
-		if (matchingShopware6Mapping != null)
+		
+		// Only add the contact if there is no mapping OR if the mapping doesn't forbid to change the contact
+		// Note that we use the bpartner's sync-advice because logically the contact and bpartner are one in the show, whereas there can be many addresses per bpartner 
+		final boolean addContactItem = matchingShopware6Mapping == null || !matchingShopware6Mapping.getBPartnerSyncAdvice().isLoadReadOnly();
+		if (addContactItem)
 		{
-			upsertContactRequestBuilder.syncAdvise(matchingShopware6Mapping.getBPartnerLocationSyncAdvice());
+			upsertContactRequestBuilder.requestItem(getUpsertContactItemRequest());
+			
+			if (matchingShopware6Mapping != null)
+			{
+				upsertContactRequestBuilder.syncAdvise(matchingShopware6Mapping.getBPartnerSyncAdvice());
+			}
 		}
-
 		return upsertContactRequestBuilder.build();
 	}
 
@@ -338,9 +344,9 @@ public class BPartnerUpsertRequestProducer
 		return Objects.equals(shippingAddress.getJsonOrderAddress().getId(), billingAddressId)
 				? shippingAddress
 				: shopwareClient.getOrderAddressDetails(billingAddressId,
-						bPartnerLocationIdentifierCustomShopwarePath,
-						bPartnerLocationIdentifierCustomMetasfreshPath,
-						emailCustomPath)
+														bPartnerLocationIdentifierCustomShopwarePath,
+														bPartnerLocationIdentifierCustomMetasfreshPath,
+														emailCustomPath)
 				.orElseThrow(() -> new RuntimeException("Missing address details for addressId: " + billingAddressId));
 	}
 

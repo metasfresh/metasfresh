@@ -71,7 +71,7 @@
               }
             ],
             "syncAdvise": {
-              "ifNotExists": "FAIL",
+              "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
             }
           }

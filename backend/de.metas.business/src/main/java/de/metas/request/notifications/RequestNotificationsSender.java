@@ -54,7 +54,7 @@ public class RequestNotificationsSender
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IUserDAO usersRepo = Services.get(IUserDAO.class);
 
-	private static final Topic TOPIC_Requests = Topic.remote("de.metas.requests");
+	private static final Topic TOPIC_Requests = Topic.distributed("de.metas.requests");
 	private static final AdMessageKey MSG_RequestActionTransfer = AdMessageKey.of("RequestActionTransfer");
 
 	public void notifySalesRepChanged(@NonNull final RequestSalesRepChanged event)
