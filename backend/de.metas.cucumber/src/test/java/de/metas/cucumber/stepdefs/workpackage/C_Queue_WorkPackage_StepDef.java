@@ -29,7 +29,7 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.olcand.C_OLCand_StepDefData;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -51,14 +51,14 @@ public class C_Queue_WorkPackage_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	private final StepDefData<I_C_Queue_WorkPackage> workPackageTable;
-	private final StepDefData<I_C_Queue_Element> queueElementTable;
-	private final StepDefData<I_C_OLCand> candidateTable;
+	private final C_Queue_WorkPackage_StepDefData workPackageTable;
+	private final C_Queue_Element_StepDefData queueElementTable;
+	private final C_OLCand_StepDefData candidateTable;
 
 	public C_Queue_WorkPackage_StepDef(
-			@NonNull final StepDefData<I_C_Queue_WorkPackage> workPackageTable,
-			@NonNull final StepDefData<I_C_Queue_Element> queueElementTable,
-			@NonNull final StepDefData<I_C_OLCand> candidateTable)
+			@NonNull final C_Queue_WorkPackage_StepDefData workPackageTable,
+			@NonNull final C_Queue_Element_StepDefData queueElementTable,
+			@NonNull final C_OLCand_StepDefData candidateTable)
 	{
 		this.workPackageTable = workPackageTable;
 		this.queueElementTable = queueElementTable;

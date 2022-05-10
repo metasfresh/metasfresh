@@ -33,10 +33,16 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.issue.AD_Issue_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
@@ -75,14 +81,14 @@ public class C_OLCand_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_M_InOut> shipmentTable;
-	private final StepDefData<I_C_Invoice> invoiceTable;
-	private final StepDefData<I_C_OLCand> olCandTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_AD_Issue> issueTable;
+	private final C_Order_StepDefData orderTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_OLCand_StepDefData olCandTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final M_Product_StepDefData productTable;
+	private final AD_Issue_StepDefData issueTable;
 	private final TestContext testContext;
 
 	final ObjectMapper mapper = new ObjectMapper()
@@ -92,14 +98,14 @@ public class C_OLCand_StepDef
 			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	public C_OLCand_StepDef(
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_M_InOut> shipmentTable,
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
-			@NonNull final StepDefData<I_C_OLCand> olCandTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_AD_Issue> issueTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_OLCand_StepDefData olCandTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final AD_Issue_StepDefData issueTable,
 			@NonNull final TestContext testContext)
 	{
 		this.orderTable = orderTable;

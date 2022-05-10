@@ -62,20 +62,20 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | orderLine_1               | order_1          | 2021-07-20  | 2005577                 | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
 
     And validate created shipments
-      | Shipment.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
-      | shipment_1          | 2156425       | 2205175                | 2021-07-20  | po_ref_mock | true      | CO        |
+      | Shipment.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus |
+      | shipment_1          | 2156425                  | 2205175                           | 2021-07-20  | po_ref_mock     | true      | CO        |
 
     And validate the created shipment lines
-      | Shipment.Identifier | productIdentifier.m_product_id | movementqty | processed |
-      | shipment_1          | 2005577                        | 10          | true      |
+      | Shipment.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_1          | 2005577                 | 10          | true      |
 
     And validate created invoices
-      | Invoice.Identifier | c_bpartner_id | c_bpartner_location_id | poReference | paymentTerm | processed | docStatus |
-      | invoice_1          | 2156425       | 2205175                | po_ref_mock | 1000002     | true      | CO        |
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
+      | invoice_1          | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | Invoice.Identifier | productIdentifier.m_product_id | qtyinvoiced | processed |
-      | invoice_1          | 2005577                        | 10          | true      |
+      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_1          | 2005577                 | 10          | true      |
 
 
   @from:cucumber
@@ -132,12 +132,12 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | orderLine_1               | order_1          | 2021-07-20  | 2005577                 | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
 
     And validate created shipments
-      | Shipment.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
-      | shipment_1          | 2156425       | 2205175                | 2021-07-20  | po_ref_mock | true      | CO        |
+      | Shipment.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus |
+      | shipment_1          | 2156425                  | 2205175                           | 2021-07-20  | po_ref_mock     | true      | CO        |
 
     And validate the created shipment lines
-      | Shipment.Identifier | productIdentifier.m_product_id | movementqty | processed |
-      | shipment_1          | 2005577                        | 8           | true      |
+      | Shipment.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_1          | 2005577                 | 8           | true      |
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
@@ -162,12 +162,12 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | orderLine_1               | order_1          | 2021-07-20  | 2005577                 | 8            | 8          | 8           | 5     | 0        | EUR          | true      |
 
     And validate created invoices
-      | Invoice.Identifier | c_bpartner_id | c_bpartner_location_id | poReference | paymentTerm | processed | docStatus |
-      | invoice_1          | 2156425       | 2205175                | po_ref_mock | 1000002     | true      | CO        |
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
+      | invoice_1          | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | Invoice.Identifier | productIdentifier.m_product_id | qtyinvoiced | processed |
-      | invoice_1          | 2005577                        | 8           | true      |
+      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_1          | 2005577                 | 8           | true      |
 
 
   @from:cucumber
@@ -264,20 +264,20 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | null             | shipment_1          | invoice_1          |
 
     And validate created shipments
-      | Shipment.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
-      | shipment_1          | 2156425       | 2205175                | 2021-07-20  | po_ref_mock | true      | CO        |
+      | Shipment.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus |
+      | shipment_1          | 2156425                  | 2205175                           | 2021-07-20  | po_ref_mock     | true      | CO        |
 
     And validate the created shipment lines
-      | Shipment.Identifier | productIdentifier.m_product_id | movementqty | processed |
-      | shipment_1          | 2005577                        | 8           | true      |
+      | Shipment.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_1          | 2005577                 | 8           | true      |
 
     And validate created invoices
-      | Invoice.Identifier | c_bpartner_id | c_bpartner_location_id | poReference | paymentTerm | processed | docStatus |
-      | invoice_1          | 2156425       | 2205175                | po_ref_mock | 1000002     | true      | CO        |
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
+      | invoice_1          | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | Invoice.Identifier | productIdentifier.m_product_id | qtyinvoiced | processed |
-      | invoice_1          | 2005577                        | 8           | true      |
+      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_1          | 2005577                 | 8           | true      |
 
 
   @from:cucumber
@@ -334,12 +334,12 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | orderLine_1               | order_1          | 2021-07-20  | 2005577                 | 8            | 10         | 0           | 5     | 0        | EUR          | true      |
 
     And validate created shipments
-      | Shipment.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
-      | shipment_1          | 2156425       | 2205175                | 2021-07-20  | po_ref_mock | true      | CO        |
+      | Shipment.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus |
+      | shipment_1          | 2156425                  | 2205175                           | 2021-07-20  | po_ref_mock     | true      | CO        |
 
     And validate the created shipment lines
-      | Shipment.Identifier | productIdentifier.m_product_id | movementqty | processed |
-      | shipment_1          | 2005577                        | 8           | true      |
+      | Shipment.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_1          | 2005577                 | 8           | true      |
 
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/shipments/process' and fulfills with '200' status code
 """
@@ -383,26 +383,26 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | null             | shipment_1,shipment_2 | invoice_1          |
 
     And validate created shipments
-      | Shipment.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
-      | shipment_1          | 2156425       | 2205175                | 2021-07-20  | po_ref_mock | true      | CO        |
+      | Shipment.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus |
+      | shipment_1          | 2156425                  | 2205175                           | 2021-07-20  | po_ref_mock     | true      | CO        |
 
     And validate the created shipment lines
-      | Shipment.Identifier | productIdentifier.m_product_id | movementqty | processed |
-      | shipment_1          | 2005577                        | 8           | true      |
+      | Shipment.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_1          | 2005577                 | 8           | true      |
 
     And validate created shipments
-      | Shipment.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
-      | shipment_2          | 2156425       | 2205175                | 2021-07-20  | po_ref_mock | true      | CO        |
+      | Shipment.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference | processed | docStatus |
+      | shipment_2          | 2156425                  | 2205175                           | 2021-07-20  | po_ref_mock     | true      | CO        |
 
     And validate the created shipment lines
-      | Shipment.Identifier | productIdentifier.m_product_id | movementqty | processed |
-      | shipment_2          | 2005577                        | 2           | true      |
+      | Shipment.Identifier | M_Product_ID.Identifier | movementqty | processed |
+      | shipment_2          | 2005577                 | 2           | true      |
 
     And validate created invoices
-      | Invoice.Identifier | c_bpartner_id | c_bpartner_location_id | poReference | paymentTerm | processed | docStatus |
-      | invoice_1          | 2156425       | 2205175                | po_ref_mock | 1000002     | true      | CO        |
+      | Invoice.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
+      | invoice_1          | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | Invoice.Identifier | productIdentifier.m_product_id | qtyinvoiced | processed |
-      | invoice_1          | 2005577                        | 8           | true      |
-      | invoice_1          | 2005577                        | 2           | true      |
+      | Invoice.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoice_1          | 2005577                 | 8           | true      |
+      | invoice_1          | 2005577                 | 2           | true      |
