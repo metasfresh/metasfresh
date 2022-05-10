@@ -379,7 +379,9 @@ public final class AggregationEngine
 			{
 				final I_C_Order order = orderDAO.getById(orderId);
 				invoiceHeader.setExternalId(order.getExternalId());
-				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
+
+				// task 12953 : prevent SalesRep_ID from being an aggr criteria
+				// invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
 
 			}
 
