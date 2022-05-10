@@ -261,7 +261,7 @@ public class ESRImportDAO implements IESRImportDAO
 		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
 
 		// Use wild cards because we won't match after the bank account no (first digits) and the check digit (the last one)
-		final String esrReferenceNoToMatch = "%" + esrReferenceNumber + "_";
+		final String esrReferenceNoToMatch = "%" + esrReferenceNumber + "%";
 
 		final I_C_ReferenceNo referenceNoRecord = queryBL.createQueryBuilder(I_C_ReferenceNo.class)
 				.addOnlyActiveRecordsFilter()
