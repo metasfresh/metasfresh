@@ -24,5 +24,4 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 
 public interface Shopware6QueryRequest
 {
-	Boolean getIsQueryByDate();
 }
