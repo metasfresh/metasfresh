@@ -25,6 +25,9 @@ package de.metas.cucumber.stepdefs.workpackage;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.cucumber.stepdefs.StepDefData;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class C_Queue_Element_StepDefData extends StepDefData<I_C_Queue_Element>
 {
 	public C_Queue_Element_StepDefData()

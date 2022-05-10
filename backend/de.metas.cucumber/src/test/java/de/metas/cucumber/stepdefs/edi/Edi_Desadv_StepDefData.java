@@ -20,18 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.hu;
+package de.metas.cucumber.stepdefs.edi;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class M_HU_PI_StepDefData extends StepDefData<I_M_HU_PI>
+public class Edi_Desadv_StepDefData extends StepDefData<I_EDI_Desadv>
 {
-	public M_HU_PI_StepDefData()
+	public Edi_Desadv_StepDefData()
 	{
-		super(I_M_HU_PI.class);
+		super(I_EDI_Desadv.class);
 	}
 }
