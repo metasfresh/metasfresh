@@ -1,76 +1,20 @@
-DROP FUNCTION IF EXISTS report.fresh_qty_statistics_report_kg_week
-	(
-		IN C_Year_ID numeric, IN week integer,IN issotrx character varying,	IN C_Activity_ID numeric,IN M_Product_ID numeric,IN M_Product_Category_ID numeric,IN M_AttributeSetInstance_ID numeric,	IN convert_to_kg character varying,	IN ad_org_id numeric
-	);
-DROP FUNCTION IF EXISTS report.fresh_qty_statistics_report_kg_week
-	(
-		IN C_Year_ID numeric, IN week integer,IN issotrx character varying,	IN C_Activity_ID numeric,IN M_Product_ID numeric,IN M_Product_Category_ID numeric,IN M_AttributeSetInstance_ID numeric,	IN convert_to_kg character varying,	IN ad_org_id numeric, IN AD_Language Character Varying (6)
-	);
-	
-DROP TABLE IF EXISTS report.fresh_qty_statistics_report_kg_week;
 
-CREATE TABLE report.fresh_qty_statistics_report_kg_week
+CREATE OR REPLACE FUNCTION report.fresh_qty_statistics_report_kg_week
 (
-	pc_name character varying(60),
-	p_name character varying(255),
-	p_value character varying(40),
-	UOMSymbol character varying(10), 
-	col1 integer,
-	col2 integer,
-	col3 integer,
-	col4 integer,
-	col5 integer,
-	col6 integer,
-	col7 integer,
-	col8 integer,
-	col9 integer,
-	col10 integer,
-	col11 integer,
-	col12 integer,
-	Week1Sum numeric,
-	Week2Sum numeric,
-	Week3Sum numeric,
-	Week4Sum numeric,
-	Week5Sum numeric,
-	Week6Sum numeric,
-	Week7Sum numeric,
-	Week8Sum numeric,
-	Week9Sum numeric,
-	Week10Sum numeric,
-	Week11Sum numeric,
-	Week12Sum numeric,
-	TotalSum numeric,
-	TotalAmt numeric,
-	StartDate Text,
-	EndDate Text,
-	param_Activity character varying(60),
-	param_product character varying(255),
-	param_Product_Category character varying(60),
-	Param_Attributes character varying(255),
-	ad_org_id numeric,
-	iso_code char(3),
-	unionorder integer
+    IN C_Year_ID numeric,
+    IN week integer,
+    IN issotrx character varying,
+    IN C_Activity_ID numeric,
+    IN M_Product_ID numeric,
+    IN M_Product_Category_ID numeric,
+    IN M_AttributeSetInstance_ID numeric,
+    IN convert_to_kg character varying,
+    IN ad_org_id numeric,
+    IN AD_Language Character Varying (6)
 )
-WITH (
-	OIDS=FALSE
-);
-
-
-CREATE FUNCTION report.fresh_qty_statistics_report_kg_week 
-	(
-		IN C_Year_ID numeric, 
-		IN week integer,
-		IN issotrx character varying,
-		IN C_Activity_ID numeric,
-		IN M_Product_ID numeric,
-		IN M_Product_Category_ID numeric,
-		IN M_AttributeSetInstance_ID numeric,
-		IN convert_to_kg character varying,
-		IN ad_org_id numeric, 
-		IN AD_Language Character Varying (6)
-	) 
-	RETURNS SETOF report.fresh_qty_statistics_report_kg_week AS
+    RETURNS SETOF report.fresh_qty_statistics_report_kg_week AS
 $$
+
 with statistics AS
     (select * from report.fresh_statistics_kg_week ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10))
 
@@ -137,4 +81,3 @@ ORDER BY
     pc_name NULLS LAST, UnionOrder, p_name
 $$
     LANGUAGE sql STABLE;
-
