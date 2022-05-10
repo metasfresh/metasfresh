@@ -81,8 +81,10 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor
 		
 		//determine customer group and get mapping.
 		JsonExternalSystemEbayConfigMapping mapping = null;
+		boolean isBusiness = false;
 		if (order.getBuyer().getTaxIdentifier() != null) {
 			mapping = getMatchingEbayMapping(importOrdersRouteContext.getEbayConfigMappings(), "business"); //business
+			isBusiness = true;
 		} else {
 			mapping = getMatchingEbayMapping(importOrdersRouteContext.getEbayConfigMappings(), ""); //consumer
 		}
@@ -107,39 +109,57 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor
 		final JsonRequestLocation bpartnerLocation = new JsonRequestLocation();
 		final JsonRequestLocation billBPartnerLocation = new JsonRequestLocation();
 
-		// bparnter
-		if (order.getBuyer().getTaxIdentifier() != null)
-		{
-			bpartner.setVatId(order.getBuyer().getTaxIdentifier().getTaxpayerId());
-		}
 
-		// shipping location and contact
-		if (order.getFulfillmentStartInstructions() != null && order.getFulfillmentStartInstructions().size() >= 1
+
+		// get names / address for bpartner, contact and location
+		if (order.getBuyer() != null
+				&& order.getFulfillmentStartInstructions() != null
+				&& order.getFulfillmentStartInstructions().size() >= 1
 				&& order.getFulfillmentStartInstructions().get(0).getShippingStep() != null)
 		{
-
+			//get customer details
 			ShippingStep shipTo = order.getFulfillmentStartInstructions().get(0).getShippingStep();
 
+			//bpartner
+			bpartner.setName(shipTo.getShipTo().getFullName());
+			bpartner.setCompanyName(shipTo.getShipTo().getCompanyName());
+			bpartner.setUrl("https://www.ebay.de/usr/"+ order.getBuyer().getUsername());
+			bpartner.setCustomer(true);
+
+			//contact
 			bpartnerContact.setEmail(shipTo.getShipTo().getEmail());
 			bpartnerContact.setName(shipTo.getShipTo().getFullName());
 			bpartnerContact.setPhone(shipTo.getShipTo().getPrimaryPhone().getPhoneNumber());
 
+			//shipping
+			bpartnerLocation.setBpartnerName(shipTo.getShipTo().getFullName());
 			bpartnerLocation.setAddress1(shipTo.getShipTo().getContactAddress().getAddressLine1());
 			bpartnerLocation.setAddress2(shipTo.getShipTo().getContactAddress().getAddressLine2());
 			bpartnerLocation.setCity(shipTo.getShipTo().getContactAddress().getCity());
-			bpartnerLocation.setCountryCode(shipTo.getShipTo().getContactAddress().getCountry());
+			bpartnerLocation.setCountryCode(shipTo.getShipTo().getContactAddress().getCountryCode());
 			bpartnerLocation.setPostal(shipTo.getShipTo().getContactAddress().getPostalCode());
+			bpartnerLocation.setShipToDefault(true);
+
+			// billing
+			if (isBusiness) {
+				bpartner.setVatId(order.getBuyer().getTaxIdentifier().getTaxpayerId());
+
+				billBPartnerLocation.setCity(order.getBuyer().getTaxAddress().getCity());
+				billBPartnerLocation.setCountryCode(order.getBuyer().getTaxAddress().getCountryCode());
+				billBPartnerLocation.setPostal(order.getBuyer().getTaxAddress().getPostalCode());
+				billBPartnerLocation.setDistrict(order.getBuyer().getTaxAddress().getStateOrProvince());
+				billBPartnerLocation.setBillTo(true);
+			} else {
+				bpartnerLocation.setBillTo(true);
+			}
+
 		}
 		else
 		{
 			log.error("No address to ship to for ebay order {}", order.getOrderId());
 		}
 
-		// billing location
-		billBPartnerLocation.setCity(order.getBuyer().getTaxAddress().getCity());
-		billBPartnerLocation.setCountryCode(order.getBuyer().getTaxAddress().getCountryCode());
-		billBPartnerLocation.setPostal(order.getBuyer().getTaxAddress().getPostalCode());
-		billBPartnerLocation.setDistrict(order.getBuyer().getTaxAddress().getStateOrProvince());
+
 		
 
 		// Second, create upsert request for location and contact.
@@ -149,10 +169,13 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor
 				.location(bpartnerLocation)
 				.build());
 
-		locationUpsertItems.add(JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(bParnterBillLocationIdentifier)
-				.location(billBPartnerLocation)
-				.build());
+		if(isBusiness) {
+			locationUpsertItems.add(JsonRequestLocationUpsertItem.builder()
+											.locationIdentifier(bParnterBillLocationIdentifier)
+											.location(billBPartnerLocation)
+											.build());
+		}
+
 		
 		final JsonRequestLocationUpsert locations = JsonRequestLocationUpsert.builder()
 				.requestItems(locationUpsertItems)
@@ -178,9 +201,10 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor
 				.syncAdvise( mapping != null ? mapping.getBPartnerSyncAdvice() : SyncAdvise.CREATE_OR_MERGE)
 				.build();
 
-		JsonRequestBPartnerUpsertItem bpartnerUpsertItem = JsonRequestBPartnerUpsertItem.builder()
+		final JsonRequestBPartnerUpsertItem bpartnerUpsertItem = JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier(bPartnerIdentifier)
-				.bpartnerComposite(upsertComposite).build();
+				.bpartnerComposite(upsertComposite)
+				.build();
 
 		final JsonRequestBPartnerUpsert upsertBPartner = JsonRequestBPartnerUpsert.builder().requestItem(bpartnerUpsertItem).build();
 
