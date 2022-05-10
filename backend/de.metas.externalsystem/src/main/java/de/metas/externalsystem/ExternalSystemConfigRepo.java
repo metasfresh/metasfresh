@@ -240,6 +240,8 @@ public class ExternalSystemConfigRepo
 					return getAlbertaConfigByQuery(query);
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
+			case Ebay:
+				return getEbayConfigByQuery(query);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -577,6 +579,25 @@ public class ExternalSystemConfigRepo
 				.build();
 	}
 
+	private Optional<ExternalSystemParentConfig> getEbayConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
+	{
+		final IQueryBuilder<I_ExternalSystem_Config_Ebay> queryBuilder = queryBL.createQueryBuilder(I_ExternalSystem_Config_Ebay.class);
+
+		queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Ebay.COLUMNNAME_ExternalSystem_Config_ID, query.getParentConfigId().getRepoId());
+
+		if (query.getIsActive() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Ebay.COLUMNNAME_IsActive, query.getIsActive());
+		}
+
+		return queryBuilder
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Ebay.class)
+				.map(ex -> buildExternalSystemEbayConfig(ex))
+				.map(shopwareConfig -> getById(query.getParentConfigId())
+						.childConfig(shopwareConfig).build());
+	}
+
 	private List<ExternalSystemEbayConfigMapping> getExternalSystemEbayConfigMappingList(@NonNull final ExternalSystemEbayConfigId externalSystemEbayConfigId)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Ebay_Mapping.class)
@@ -608,6 +629,8 @@ public class ExternalSystemConfigRepo
 				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
 				.build();
 	}
+
+
 
 	@NonNull
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemWooCommerceConfigId id)
