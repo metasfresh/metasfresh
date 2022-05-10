@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#12928](https://github.com/metasfresh/metasfresh/issues/12928) shopware - use pagination when polling for orders
   * [#12849](https://github.com/metasfresh/metasfresh/issues/12849) Handle multiple contacts and negative amounts in invoices
   * [#12919](https://github.com/metasfresh/metasfresh/pull/12919) Annotate cucumber scenarios with unique test case Ids
   * [#12826](https://github.com/metasfresh/metasfresh/issues/12826) MetasfreshEventBusService - always post events to rabbitMQ
