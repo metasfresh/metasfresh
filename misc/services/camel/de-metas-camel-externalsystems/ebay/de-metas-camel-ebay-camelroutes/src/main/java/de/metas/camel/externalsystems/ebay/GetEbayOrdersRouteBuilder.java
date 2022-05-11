@@ -142,9 +142,9 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 						.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
 			
 						// and their prices.
-						.process(new CreateProductPriceUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID)
-						.split(body())
-							.to(direct(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
+						//.process(new CreateProductPriceUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID)
+						//.split(body())
+						//	.to(direct(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
 				.endChoice()
 		.end();
 		
