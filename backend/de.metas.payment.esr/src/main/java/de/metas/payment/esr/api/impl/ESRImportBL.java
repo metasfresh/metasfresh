@@ -1114,7 +1114,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@Override
-	public void setInvoice(final I_ESR_ImportLine importLine, final I_C_Invoice invoice)
+	public void setInvoice(@NonNull final I_ESR_ImportLine importLine, @NonNull final I_C_Invoice invoice)
 	{
 
 		// we always update the open amount, even if the invoice reference hasn't changed
@@ -1207,7 +1207,7 @@ public class ESRImportBL implements IESRImportBL
 	 * <b>IMPORTANT:</b> as written this method might update the given {@code esrImportLine}, but does <b>not</b> save it. The decision to save or not is left to the caller.
 	 */
 	/* package */
-	void updateLinesOpenAmt(final I_ESR_ImportLine esrImportLine, final I_C_Invoice invoice)
+	void updateLinesOpenAmt(@NonNull final I_ESR_ImportLine esrImportLine, @NonNull final I_C_Invoice invoice)
 	{
 		final List<I_ESR_ImportLine> linesWithSameInvoice = esrImportDAO.retrieveLinesForInvoice(esrImportLine, invoice);
 
@@ -1224,7 +1224,7 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	// note: package level for testing purpose
-	/* package */void updateOpenAmtAndStatusDontSave(final I_C_Invoice invoice, final List<I_ESR_ImportLine> linesWithSameInvoice)
+	/* package */void updateOpenAmtAndStatusDontSave(@NonNull final I_C_Invoice invoice, final List<I_ESR_ImportLine> linesWithSameInvoice)
 	{
 		/*
 			Can't use the DAO from above because of mocked tests
