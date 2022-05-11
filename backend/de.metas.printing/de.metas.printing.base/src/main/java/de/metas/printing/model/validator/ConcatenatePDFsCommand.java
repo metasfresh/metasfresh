@@ -141,10 +141,12 @@ class ConcatenatePDFsCommand
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, PrintingQueuePDFConcatenateWorkpackageProcessor.class)
-				.newWorkPackage()
+				.newBlock()
+				.setContext(ctx)
+				.newWorkpackage()
 				.setC_Async_Batch(asyncBatch)
 				.addElements(printingQueues)
-				.buildAndEnqueue();
+				.build();
 	}
 
 	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()
