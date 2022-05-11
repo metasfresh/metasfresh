@@ -99,8 +99,6 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 				.isManualPrice(true)
 				.isImportedWithIssues(true)
 				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
-				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
-				.deliveryRule(DEFAULT_DELIVERY_RULE)
 				.importWarningMessage("PRE ALPHA TEST IMPORT"); // FIXME ;)
 
 		final List<LineItem> orderLines = ebayOrder.getLineItems();
@@ -147,7 +145,14 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
 
-		final String billingBPLocationExternalIdentifier = context.getBillingBPLocationExternalIdNotNull();
+		//use billing bparnter for business otherwise bpartner used for shipping.
+		final String billingBPLocationExternalIdentifier;
+		if (orderAndCustomId.getBuyer().getTaxIdentifier() != null) {
+			billingBPLocationExternalIdentifier = context.getBillingBPLocationExternalIdNotNull();
+		} else {
+			billingBPLocationExternalIdentifier = context.getShippingBPLocationExternalIdNotNull();
+		}
+
 		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(bPartnerUpsertResponse.getResponseLocationItems(), billingBPLocationExternalIdentifier);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
@@ -163,13 +168,15 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 	{
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getLineItemId())
-				.productIdentifier(orderLine.getSku())
+				.productIdentifier("val-" + orderLine.getSku())  //TODO review - val makes it use the value identifier.
 				//TODO: better currency handling.
-				.price(new BigDecimal(orderLine.getTotal().getConvertedFromValue()))
-				.currencyCode(orderLine.getTotal().getConvertedFromCurrency())
+				.price(new BigDecimal(orderLine.getTotal().getValue()))
+				.currencyCode(orderLine.getTotal().getCurrency())
 				.qty(BigDecimal.valueOf(orderLine.getQuantity()))
 				.description(orderLine.getTitle())
 				.dateCandidate(getDateCandidate(order))
+				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
+				.deliveryRule(DEFAULT_DELIVERY_RULE)
 				.build();
 	}
 
