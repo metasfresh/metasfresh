@@ -22,6 +22,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lock.api.ILockManager;
@@ -1288,8 +1289,10 @@ public class ESRImportBL implements IESRImportBL
 				{
 					final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(fullyMatchedImportLine.getC_Payment_ID()));
 
-					final I_C_Invoice invoiceESR = fullyMatchedImportLine.getC_Invoice();
-					if (paymentBL.isMatchInvoice(payment, invoiceESR))
+					final int invoiceId = fullyMatchedImportLine.getC_Invoice_ID();
+					final I_C_Invoice invoiceESR = invoiceId <= 0 ? null : invoiceBL.getById(InvoiceId.ofRepoId(invoiceId));
+
+					if (invoiceESR != null && paymentBL.isMatchInvoice(payment, invoiceESR))
 					{
 						fullyMatchedImportLine.setProcessed(true);
 						fullyMatchedImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
