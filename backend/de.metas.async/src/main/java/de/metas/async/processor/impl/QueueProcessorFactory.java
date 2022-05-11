@@ -17,8 +17,6 @@ public class QueueProcessorFactory implements IQueueProcessorFactory
 {
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
-	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
-
 	private IWorkpackageLogsRepository getLogsRepository()
 	{
 		return SpringContextHolder.instance.getBean(IWorkpackageLogsRepository.class);
@@ -42,7 +40,7 @@ public class QueueProcessorFactory implements IQueueProcessorFactory
 	@Override
 	public IQueueProcessor createAsynchronousQueueProcessor(@NonNull final QueuePackageProcessorId packageProcessorId)
 	{
-		final QueueProcessorDescriptor queueProcessorConfig = queueProcessorDescriptorRepository.getQueueProcessor(packageProcessorId);
+		final QueueProcessorDescriptor queueProcessorConfig = QueueProcessorDescriptorRepository.getInstance().getQueueProcessor(packageProcessorId);
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorConfig);
 
