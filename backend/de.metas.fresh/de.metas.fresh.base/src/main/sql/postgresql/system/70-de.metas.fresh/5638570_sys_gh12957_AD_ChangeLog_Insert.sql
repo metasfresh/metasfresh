@@ -20,13 +20,15 @@
  * #L%
  */
 
-CREATE FUNCTION AD_ChangeLog_Insert(p_tablename   varchar,
-                                    p_columnname  varchar,
-                                    p_record_id   numeric,
-                                    p_oldvalue    varchar,
-                                    p_newvalue    varchar,
-                                    p_trxname     varchar,
-                                    p_description varchar) RETURNS void
+CREATE FUNCTION public.AD_ChangeLog_Insert(p_tablename       varchar,
+                                           p_columnname      varchar,
+                                           p_record_id       numeric,
+                                           p_oldvalue        varchar,
+                                           p_newvalue        varchar,
+                                           p_AD_PInstance_ID numeric DEFAULT NULL,
+                                           p_AD_Session_ID   numeric DEFAULT NULL,
+                                           p_trxname         varchar DEFAULT NULL,
+                                           p_description     varchar DEFAULT NULL) RETURNS void
     VOLATILE
     LANGUAGE plpgsql
 AS
@@ -34,7 +36,6 @@ $$
 DECLARE
 
     v_Table_ID       numeric;
-    v_Table_Name     varchar;
     v_Table_Key_Name varchar;
     v_Column_ID      numeric;
     rec              record;
@@ -42,11 +43,10 @@ DECLARE
 BEGIN
 
     v_Table_ID := get_table_id(p_tablename);
-    v_Table_Name := (SELECT tablename FROM ad_table WHERE ad_table_id = v_Table_ID);
     v_Table_Key_Name := (SELECT columnname FROM ad_column WHERE iskey = 'Y' AND ad_table_id = v_Table_ID);
     v_Column_ID := (SELECT ad_column_id FROM ad_column WHERE ad_table_id = v_Table_ID AND columnname ILIKE p_columnname);
 
-    EXECUTE FORMAT('SELECT ad_client_id, ad_org_id, created, createdby, updated, updatedby FROM %s where %s = %s', v_Table_Name, v_Table_Key_Name, p_record_id)
+    EXECUTE FORMAT('SELECT ad_client_id, ad_org_id, created, createdby, updated, updatedby FROM %s where %s = %s', p_tablename, v_Table_Key_Name, p_record_id)
         INTO rec;
 
     INSERT INTO public.ad_changelog (ad_changelog_id,
@@ -72,7 +72,7 @@ BEGIN
                                      ad_pinstance_id)
 
     VALUES (NEXTVAL('ad_changelog_seq'),
-            1000000,
+            p_AD_PInstance_ID,
             v_Table_ID,
             v_Column_ID,
             rec.ad_client_id,
@@ -91,12 +91,14 @@ BEGIN
             p_trxname,
             p_description,
             'U',
-            NULL);
+            p_AD_Session_ID);
 
 END;
 $$
 ;
 
-ALTER FUNCTION AD_ChangeLog_Insert(varchar, varchar, numeric,varchar,varchar,varchar,varchar) OWNER TO metasfresh
+COMMENT ON FUNCTION public.AD_ChangeLog_Insert(varchar, varchar, numeric, varchar, varchar, numeric, numeric, varchar, varchar) IS 'This function is used to insert records into AD_ChangeLog table, it will fail if the table defined as parameter has more than one ID column.'
 ;
 
+ALTER FUNCTION public.AD_ChangeLog_Insert(varchar, varchar, numeric, varchar, varchar, numeric, numeric, varchar, varchar) OWNER TO metasfresh
+;
