@@ -99,9 +99,11 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor
 		final String bParnterBillLocationIdentifier = bPartnerIdentifier + "-billTo";
 		final String bPartnerContactIdentifier = bPartnerIdentifier + "-contact";
 
-		// add identifiers to contect for reuse.
-		importOrdersRouteContext.setBillingBPLocationExternalId(bParnterBillLocationIdentifier);
+		// add identifiers to context for reuse.
 		importOrdersRouteContext.setShippingBPLocationExternalId(bPartnerShipToLocationIdentifier);
+		if(isBusiness) {
+			importOrdersRouteContext.setBillingBPLocationExternalId(bParnterBillLocationIdentifier);
+		}
 
 		// First, create bPartner, contact and location and map ebay values
 		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
