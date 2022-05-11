@@ -27,6 +27,8 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -65,6 +67,10 @@ class ConcatenatePDFsCommand
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private final AdMessageKey asyncBatchTypeDisplayName = AdMessageKey.of("de.metas.async.BatchTypeDisplayName");
 
 	//
 	// Params
@@ -122,10 +128,12 @@ class ConcatenatePDFsCommand
 
 		final I_C_Async_Batch parentAsyncBatchRecord = asyncBatchBL.getAsyncBatchById(printingQueueItemsGeneratedAsyncBatchId);
 
+		final String name = msgBL.getMsg(Env.getCtx(), asyncBatchTypeDisplayName);
+
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
 				.setContext(ctx)
 				.setC_Async_Batch_Type(queryRequest.getAsyncBatchType())
-				.setName(queryRequest.getAsyncBatchType())
+				.setName(name)
 				.setDescription(queryRequest.getQueryName())
 				.setParentAsyncBatchId(printingQueueItemsGeneratedAsyncBatchId)
 				.setOrgId(OrgId.ofRepoId(parentAsyncBatchRecord.getAD_Org_ID()))
@@ -133,12 +141,10 @@ class ConcatenatePDFsCommand
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, PrintingQueuePDFConcatenateWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
+				.newWorkPackage()
 				.setC_Async_Batch(asyncBatch)
 				.addElements(printingQueues)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()
