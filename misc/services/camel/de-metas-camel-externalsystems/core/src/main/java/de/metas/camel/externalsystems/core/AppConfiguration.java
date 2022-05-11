@@ -39,7 +39,9 @@ public class AppConfiguration
 	private final ApplicationContext context;
 	private final CamelContext camelContext;
 
-	public AppConfiguration(final ApplicationContext context, final CamelContext camelContext)
+	public AppConfiguration(
+			final ApplicationContext context,
+			final CamelContext camelContext)
 	{
 		this.context = context;
 		this.camelContext = camelContext;
@@ -55,7 +57,7 @@ public class AppConfiguration
 	public void auditEventNotifier()
 	{
 		camelContext.getManagementStrategy()
-				.addEventNotifier(new AuditEventNotifier(context.getBean(ProducerTemplate.class)));
+				.addEventNotifier(new AuditEventNotifier(producerTemplate()));
 	}
 
 	@Bean
