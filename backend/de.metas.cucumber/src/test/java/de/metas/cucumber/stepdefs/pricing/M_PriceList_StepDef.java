@@ -53,6 +53,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 
@@ -255,6 +256,30 @@ public class M_PriceList_StepDef
 		}
 	}
 
+	@And("update metasfresh masterdata M_ProductPrice")
+	public void update_masterdata_M_ProductPrice(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateMasterDataM_ProductPrice(tableRow);
+		}
+	}
+
+	private void updateMasterDataM_ProductPrice(@NonNull final Map<String, String> tableRow)
+	{
+		final int productPriceId = DataTableUtil.extractIntForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final I_M_ProductPrice productPriceRecord = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class);
+
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		productPriceRecord.setC_UOM_ID(productPriceUomId.getRepoId());
+
+		saveRecord(productPriceRecord);
+	}
+
 	@And("update M_ProductPrice:")
 	public void update_M_ProductPrice(@NonNull final DataTable dataTable)
 	{
@@ -289,9 +314,12 @@ public class M_PriceList_StepDef
 	private void createM_ProductPrice(@NonNull final Map<String, String> tableRow)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final int productId = productTable.get(productIdentifier).getM_Product_ID();
+		final int productId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
+
 		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
 		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
@@ -300,7 +328,9 @@ public class M_PriceList_StepDef
 		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 
 		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_PriceList_Version priceListVersion = priceListVersionTable.get(plvIdentifier);
+		final Optional<I_M_PriceList_Version> priceListVersionOptional = priceListVersionTable.getOptional(plvIdentifier);
+
+		final I_M_PriceList_Version priceListVersion = priceListVersionOptional.orElseGet(() -> InterfaceWrapperHelper.load(Integer.parseInt(plvIdentifier), I_M_PriceList_Version.class));
 
 		final I_M_ProductPrice existingProductPrice = ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, ProductId.ofRepoId(productId));
 

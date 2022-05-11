@@ -22,9 +22,10 @@ Feature: create multiple production candidates
       | 540075         | 0        |
 
   @from:cucumber
+  @Id:S0129.1_140
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
-  resulting in a second manufacturing candidate to supply the additional demand (S0129.1_140)
+  resulting in a second manufacturing candidate to supply the additional demand
 
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |

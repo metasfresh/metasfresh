@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.shopware6;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
@@ -31,19 +30,18 @@ import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
-import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
-import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
-import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
-import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
+import de.metas.camel.externalsystems.shopware6.order.processor.BuildOrdersContextProcessor;
+import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
+import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
@@ -78,15 +76,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_ADDRESS_HTTP_URL;
@@ -98,6 +93,7 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_JSON_EMAIL_PATH;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_JSON_METASFRESH_ID_PATH;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_JSON_PATH_SALES_REP_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_JSON_SHOPWARE_ID_PATH;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_NORMAL_VAT_PRODUCT_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_NORMAL_VAT_RATES;
@@ -110,11 +106,13 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_SALUTATION_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_TRACE_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PAGE_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_OLCAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDERS_PAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
@@ -123,6 +121,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_METASFRESH_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_EMAIL;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
@@ -136,9 +135,13 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 {
 
 	private static final String SALES_REP_IDENTIFIER = "mockSalesRepIdentifier";
+
+	private static final String ORDER_PAGE_INDEX_TOKEN = "$pageIndex$";
 	private static final String JSON_SHOPWARE_MAPPINGS = "01_JsonExternalSystemShopware6ConfigMappings.json";
 	private static final String HAPPY_FLOW = "happyFlow/";
-	private static final String JSON_ORDERS_RESOURCE_PATH = HAPPY_FLOW + "10_JsonOrders.json";
+
+	private static final String JSON_ORDERS_PAGE_RESOURCE_PATH = HAPPY_FLOW + "10_JsonOrders_Page_" + ORDER_PAGE_INDEX_TOKEN + ".json";
+	protected static final String JSON_ORDERS_RESOURCE_PATH = HAPPY_FLOW + "10_JsonOrders.json";
 	private static final String JSON_ORDER_TRANSACTIONS_PATH = HAPPY_FLOW + "12_JsonOrderTransactions.json";
 	private static final String JSON_ORDER_PAYMENT_METHOD_PATH = HAPPY_FLOW + "14_JsonPaymentMethod.json";
 	private static final String JSON_ORDER_GROUPS_PATH = HAPPY_FLOW + "16_JsonCustomerGroups.json";
@@ -195,17 +198,21 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		final MockSuccessfullyProcessOLCandProcessor successfullyProcessOLCandProcessor = new MockSuccessfullyProcessOLCandProcessor();
 		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
 		final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final MockSuccessfullyCalledGetOrderPage mockSuccessfullyCalledGetOrderPage = new MockSuccessfullyCalledGetOrderPage();
 
 		final JsonExternalSystemRequest request = createJsonExternalSystemRequestBuilder()
 				.productLookup(JsonProductLookup.ProductId)
 				.build();
+
+		final MockBuildOrdersContextProcessor buildOrdersContextProcessor = new MockBuildOrdersContextProcessor(request, 2, JSON_ORDERS_PAGE_RESOURCE_PATH, 2);
 
 		prepareRouteForTesting(createdBPartnerProcessor,
 							   successfullyCreatedOLCandProcessor,
 							   successfullyProcessOLCandProcessor,
 							   runtimeParamsProcessor,
 							   createPaymentProcessor,
-							   request);
+							   buildOrdersContextProcessor,
+							   mockSuccessfullyCalledGetOrderPage);
 
 		context.start();
 
@@ -249,6 +256,8 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		assertThat(successfullyProcessOLCandProcessor.called).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
+		assertThat(buildOrdersContextProcessor.called).isEqualTo(1);
+		assertThat(mockSuccessfullyCalledGetOrderPage.called).isEqualTo(2);
 		assertMockEndpointsSatisfied();
 	}
 
@@ -258,12 +267,18 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 			final MockSuccessfullyProcessOLCandProcessor processOLCandProcessor,
 			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
 			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor,
-			final JsonExternalSystemRequest request) throws Exception
+			final MockBuildOrdersContextProcessor buildOrdersContextProcessor,
+			final MockSuccessfullyCalledGetOrderPage mockSuccessfullyCalledGetOrderPage) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
-				advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
-						.replace()
-						.process(new MockGetOrdersProcessor(request)));
+							  advice -> advice.weaveById(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
+									  .replace()
+									  .process(buildOrdersContextProcessor));
+
+		AdviceWith.adviceWith(context, PROCESS_ORDERS_PAGE_ROUTE_ID,
+							  advice -> advice.weaveById(GET_ORDERS_PAGE_PROCESSOR_ID)
+									  .after()
+									  .process(mockSuccessfullyCalledGetOrderPage));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 				advice -> {
@@ -271,23 +286,23 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 							.after()
 							.to(MOCK_BPARTNER_UPSERT);
 
-					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-							.skipSendToOriginalEndpoint()
-							.process(upsertBPartnerProcessor);
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(upsertBPartnerProcessor);
 
-					advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
-							.after()
-							.to(MOCK_OL_CAND_CREATE);
+								  advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_OL_CAND_CREATE);
 
-					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
-							.skipSendToOriginalEndpoint()
-							.process(olCandProcessor);
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .process(olCandProcessor);
 
-					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
-							.skipSendToOriginalEndpoint()
-							.to(MOCK_CREATE_PAYMENT)
-							.process(createPaymentProcessor);
-				});
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_CREATE_PAYMENT)
+										  .process(createPaymentProcessor);
+							  });
 
 		AdviceWith.adviceWith(context, PROCESS_OLCAND_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
@@ -296,10 +311,10 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 									  .process(processOLCandProcessor));
 
 		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
-				advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
-						.skipSendToOriginalEndpoint()
-						.to(MOCK_UPSERT_RUNTIME_PARAMETERS)
-						.process(runtimeParamsProcessor));
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_UPSERT_RUNTIME_PARAMETERS)
+									  .process(runtimeParamsProcessor));
 	}
 
 	protected static String loadAsString(@NonNull final String name)
@@ -322,52 +337,48 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		}
 	}
 
-	public static class MockGetOrdersProcessor implements Processor
+	public static class MockBuildOrdersContextProcessor implements Processor
 	{
 		private final JsonExternalSystemRequest externalSystemRequest;
 		private final String jsonOrderLinesPath;
+		private final String jsonOrderPath;
 
-		public MockGetOrdersProcessor(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+		private final int numberOfPages;
+		private final int pageSize;
+
+		protected int called = 0;
+
+		public MockBuildOrdersContextProcessor(@NonNull final JsonExternalSystemRequest externalSystemRequest, final int numberOfPages, final String jsonOrderPath, final int pageSize)
 		{
-			this(externalSystemRequest, null);
+			this(externalSystemRequest, null, numberOfPages, jsonOrderPath, pageSize);
 		}
 
-		public MockGetOrdersProcessor(
+		public MockBuildOrdersContextProcessor(
 				@NonNull final JsonExternalSystemRequest externalSystemRequest,
-				@Nullable final String jsonOrderLinesPath)
+				@Nullable final String jsonOrderLinesPath,
+				final int numberOfPages,
+				final String jsonOrderPath,
+				final int pageSize)
 		{
 			this.externalSystemRequest = externalSystemRequest;
+			this.numberOfPages = numberOfPages;
 
 			this.jsonOrderLinesPath = (Check.isNotBlank(jsonOrderLinesPath))
 					? jsonOrderLinesPath
 					: JSON_ORDER_LINES;
+
+			this.jsonOrderPath = jsonOrderPath;
+			this.pageSize = pageSize;
 		}
 
 		@Override
 		public void process(final Exchange exchange) throws IOException
 		{
+			called++;
+
 			// mock getOrders
 			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new JavaTimeModule());
-
-			final InputStream root = GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
-			final JsonNode rootNode = mapper.readValue(root, JsonNode.class);
-			final JsonNode arrayJsonNode = rootNode.get(JSON_NODE_DATA);
-
-			final List<OrderCandidate> orderCandidates = new ArrayList<>();
-
-			for (final JsonNode orderNode : arrayJsonNode)
-			{
-				final JsonOrder order = mapper.treeToValue(orderNode, JsonOrder.class);
-
-				final OrderCandidate orderCandidate = OrderCandidate.builder()
-						.jsonOrder(order)
-						.orderNode(orderNode)
-						.salesRepId(SALES_REP_IDENTIFIER)
-						.build();
-
-				orderCandidates.add(orderCandidate);
-			}
 
 			// mock shopware client
 			final ShopwareClient shopwareClient = prepareShopwareClientMock(mapper);
@@ -379,14 +390,16 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 
 			final SalutationInfoProvider salutationInfoProvider = SalutationInfoProvider.builder()
 					.salutationId2DisplayName(ImmutableMap.of(MOCK_SALUTATION_ID, MOCK_SALUTATION_DISPLAY_NAME,
-							MOCK_BILLING_SALUTATION_ID, MOCK_BILLING_SALUTATION_DISPLAY_NAME))
+															  MOCK_BILLING_SALUTATION_ID, MOCK_BILLING_SALUTATION_DISPLAY_NAME))
 					.build();
 
-			final ImportOrdersRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest);
+			final ImportOrdersRouteContext ordersContext = BuildOrdersContextProcessor.buildContext(
+					externalSystemRequest,
+					shopwareClient,
+					currencyInfoProvider,
+					salutationInfoProvider,
+					pageSize);
 
-			final ImportOrdersRouteContext ordersContext = GetOrdersProcessor.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider, salutationInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
-
-			exchange.getIn().setBody(orderCandidates);
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 		}
 
@@ -455,6 +468,22 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.when(shopwareClientSpy)
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonCustomerGroups.class), any());
 
+			//8. mock get orders
+			for (int pageIndex = 1; pageIndex <= numberOfPages; pageIndex++)
+			{
+				final String actualFileName = jsonOrderPath.contains(ORDER_PAGE_INDEX_TOKEN)
+						? jsonOrderPath.replace(ORDER_PAGE_INDEX_TOKEN, String.valueOf(pageIndex))
+						: jsonOrderPath;
+
+				final String orders = loadAsString(actualFileName);
+
+				final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(pageIndex, pageSize));
+
+				Mockito.doReturn(ResponseEntity.ok(orders))
+						.when(shopwareClientSpy)
+						.performWithRetry(any(), eq(HttpMethod.POST), eq(String.class), eq(shopware6QueryRequest));
+			}
+
 			return shopwareClientSpy;
 		}
 	}
@@ -514,6 +543,17 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		}
 	}
 
+	protected static class MockSuccessfullyCalledGetOrderPage implements Processor
+	{
+		protected int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
 	@NonNull
 	@Builder(builderMethodName = "createJsonExternalSystemRequestBuilder", builderClassName = "JsonExternalSystemRequestBuilder")
 	protected static JsonExternalSystemRequest creatJsonExternalSystemRequest(
@@ -546,6 +586,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		parameters.put(PARAM_JSON_PATH_EMAIL, MOCK_JSON_EMAIL_PATH);
 		parameters.put(PARAM_JSON_PATH_CONSTANT_METASFRESH_ID, MOCK_JSON_METASFRESH_ID_PATH);
 		parameters.put(PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID, MOCK_JSON_SHOPWARE_ID_PATH);
+		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, MOCK_JSON_PATH_SALES_REP_ID);
 
 		if (overrideParams != null)
 		{
