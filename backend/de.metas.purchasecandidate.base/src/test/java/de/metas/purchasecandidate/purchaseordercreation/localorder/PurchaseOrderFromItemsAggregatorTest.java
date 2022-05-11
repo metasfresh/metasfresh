@@ -28,6 +28,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -165,7 +166,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
-				.orgId(OrgId.ofRepoId(10))
+				.orgId(OrgId.ofRepoId(Env.CTXVALUE_AD_Org_ID_Any))
 				.purchaseDatePromised(SystemTime.asZonedDateTime())
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
