@@ -67,6 +67,7 @@ public class CalendarRestController
 	@GetMapping("/available")
 	public JsonGetAvailableCalendarsResponse getAvailableCalendars()
 	{
+		userSession.assertLoggedIn();
 		final UserId loggedUserId = userSession.getLoggedUserId();
 		final String adLanguage = userSession.getAD_Language();
 
