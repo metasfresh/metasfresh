@@ -20,7 +20,7 @@ const Calendar = ({ className = 'container' }) => {
   const [addEventRequest, setAddEventRequest] = React.useState(null);
 
   useEffect(() => {
-    api.getAvailableCalendars().then(setCalendarResources);
+    api.getAvailableResources().then(setCalendarResources);
   }, []);
   useEffect(() => {
     api.getCalendarEvents({}).then(setCalendarEvents);

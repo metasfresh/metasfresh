@@ -24,14 +24,20 @@ import axios from 'axios';
 
 const extractAxiosResponseData = (axiosReponse) => axiosReponse.data;
 
-export const getAvailableCalendars = () => {
+/**
+ * @returns {Promise<*>} array of `{id, title}`.
+ */
+export const getAvailableResources = () => {
   return axios
     .get(`${config.API_URL}/calendars/available`)
     .then(extractAxiosResponseData)
-    .then(({ calendars }) =>
-      calendars.map((entry) => ({ id: entry.calendarId, title: entry.name }))
-    );
+    .then(({ calendars }) => calendars.map(convertCalendarToResource));
 };
+
+const convertCalendarToResource = (calendar) => ({
+  id: calendar.calendarId,
+  title: calendar.name,
+});
 
 const convertFromAPICalendarEntryToCalendarEvent = (entry) => ({
   title: entry.title,
