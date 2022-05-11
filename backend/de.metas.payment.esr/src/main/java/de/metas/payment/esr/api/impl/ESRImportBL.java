@@ -208,6 +208,12 @@ public class ESRImportBL implements IESRImportBL
 			@NonNull final I_ESR_ImportFile esrImportFile,
 			@NonNull final InputStream in)
 	{
+		int countLines = 0;
+		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_CHECK_DUPLICATED, false))
+		{
+			countLines = esrImportDAO.countLines(esrImportFile, null);
+		}
+
 		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImportFile, in);
 		final ESRStatement esrStatement = loader.importData();
 		try
@@ -235,15 +241,18 @@ public class ESRImportBL implements IESRImportBL
 		for (final ESRTransaction esrTransaction : transactions)
 		{
 			lineNo++;
+
 			//
 			// create line only if does not exist
 			I_ESR_ImportLine existentLine = null;
 			// if there are already lines before starting reading the file, means that we already tried to import once
-
-			existentLine = esrImportDAO.fetchLineForESRLineText(esrImportFile, esrTransaction.getTransactionKey());
-			if (existentLine != null)
+			if (countLines > 0)
 			{
-				continue;
+				existentLine = esrImportDAO.fetchLineForESRLineText(esrImportFile, esrTransaction.getTransactionKey());
+				if (existentLine != null)
+				{
+					continue;
+				}
 			}
 
 			createEsrImportLine(esrImportFile, lineNo, esrTransaction);
