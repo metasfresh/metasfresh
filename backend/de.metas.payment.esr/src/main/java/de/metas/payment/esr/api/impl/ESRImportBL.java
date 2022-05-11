@@ -240,11 +240,11 @@ public class ESRImportBL implements IESRImportBL
 			I_ESR_ImportLine existentLine = null;
 			// if there are already lines before starting reading the file, means that we already tried to import once
 
-				existentLine = esrImportDAO.fetchLineForESRLineText(esrImportFile, esrTransaction.getTransactionKey());
-				if (existentLine != null)
-				{
-					continue;
-				}
+			existentLine = esrImportDAO.fetchLineForESRLineText(esrImportFile, esrTransaction.getTransactionKey());
+			if (existentLine != null)
+			{
+				continue;
+			}
 
 			createEsrImportLine(esrImportFile, lineNo, esrTransaction);
 		}
