@@ -34,7 +34,7 @@ jobs:
 
       - name: push-images
         run: |
-          echo "cdcc4a12-e97d-479a-85d3-9cb006aa771c" | docker login --username mazorn --password-stdin
+          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
           docker push mazorn/metas-api:${{ steps.sanitize.outputs.sanitized-ref-name }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
           docker push mazorn/metas-api:${{ steps.sanitize.outputs.sanitized-ref-name }}
           docker push mazorn/metas-app:${{ steps.sanitize.outputs.sanitized-ref-name }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
