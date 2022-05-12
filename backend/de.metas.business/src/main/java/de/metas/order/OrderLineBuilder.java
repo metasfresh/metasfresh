@@ -250,9 +250,13 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
+	public boolean isProductAndUomMatching(
+			@Nullable final ProductId productId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			@Nullable final UomId uomId)
 	{
-		return ProductId.equals(getProductId(), productId)
+		return ProductId.equals(this.productId, productId)
+				&& AttributeSetInstanceId.equals(asiId, attributeSetInstanceId)
 				&& UomId.equals(getUomId(), uomId);
 	}
 
