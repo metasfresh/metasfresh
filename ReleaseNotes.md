@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#12964](https://github.com/metasfresh/metasfresh/issues/12964) Support purchase candidates with same product and diffente ASI in one PO
   * [#12928](https://github.com/metasfresh/metasfresh/issues/12928) shopware - use pagination when polling for orders
   * [#12849](https://github.com/metasfresh/metasfresh/issues/12849) Handle multiple contacts and negative amounts in invoices
   * [#12919](https://github.com/metasfresh/metasfresh/pull/12919) Annotate cucumber scenarios with unique test case Ids
