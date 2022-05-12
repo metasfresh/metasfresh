@@ -115,6 +115,8 @@ public class ImportOrdersRouteContext
 	@Getter(AccessLevel.NONE)
 	private final boolean skipNextImportStartingTimestamp;
 
+	private final int pageLimit;
+
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
@@ -149,6 +151,11 @@ public class ImportOrdersRouteContext
 
 	@Nullable
 	JsonOrderAddress orderShippingAddress;
+
+	@Setter(AccessLevel.NONE)
+	private int ordersResponsePageIndex;
+
+	private boolean moreOrdersAvailable;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -280,7 +287,7 @@ public class ImportOrdersRouteContext
 	public ExternalIdentifier getMetasfreshId()
 	{
 		final String id = getId(metasfreshIdJsonPath);
-		if (!Check.isBlank(id))
+		if (Check.isNotBlank(id))
 		{
 			return ExternalIdentifier.builder()
 					.identifier(id)
@@ -294,7 +301,7 @@ public class ImportOrdersRouteContext
 	public ExternalIdentifier getUserId()
 	{
 		final String id = getId(shopwareIdJsonPath);
-		if (!Check.isBlank(id))
+		if (Check.isNotBlank(id))
 		{
 			return ExternalIdentifier.builder()
 					.identifier(ExternalIdentifierFormat.formatExternalId(id))
@@ -318,7 +325,7 @@ public class ImportOrdersRouteContext
 		}
 		final OrderCandidate order = getOrderNotNull();
 		final String id = order.getCustomField(bpLocationCustomJsonPath);
-		if (!Check.isBlank(id))
+		if (Check.isNotBlank(id))
 		{
 			return id;
 		}
@@ -364,5 +371,10 @@ public class ImportOrdersRouteContext
 		}
 
 		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
+	}
+
+	public void incrementPageIndex()
+	{
+		this.ordersResponsePageIndex++;
 	}
 }

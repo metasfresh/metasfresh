@@ -130,7 +130,8 @@ public class ShopwareClient
 
 		if (response == null || Check.isBlank(response.getBody()))
 		{
-			return new GetOrdersResponse(ImmutableList.of(), null);
+			final int rawSize = 0;
+			return new GetOrdersResponse(ImmutableList.of(), null, rawSize);
 		}
 		else
 		{
@@ -155,8 +156,11 @@ public class ShopwareClient
 					orderCandidate.ifPresent(orderCandidates::add);
 				}
 			}
+
+			final int rawSize = Optional.ofNullable(arrayJsonNode).map(JsonNode::size).orElse(0);
+
+			return new GetOrdersResponse(orderCandidates.build(), response.getBody(), rawSize);
 		}
-		return new GetOrdersResponse(orderCandidates.build(), response.getBody());
 	}
 
 	@Value
@@ -164,6 +168,7 @@ public class ShopwareClient
 	{
 		ImmutableList<OrderCandidate> orderCandidates;
 		String rawData;
+		int rawSize;
 	}
 
 	@NonNull

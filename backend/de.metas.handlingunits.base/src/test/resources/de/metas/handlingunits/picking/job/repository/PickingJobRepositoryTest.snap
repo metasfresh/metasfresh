@@ -21,7 +21,6 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "steps" : [ {
       "id" : 1000000,
       "packToSpec" : {
-        "genericPackingInstructionsId" : null,
         "tuPackingInstructionsId" : 6789
       },
       "pickFroms" : {
@@ -48,8 +47,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
             "pickFromLocator" : {
               "caption" : "locatorName-22",
               "id" : "21_22"
-            },
-            "pickedTo" : null
+            }
           },
           "MAIN" : {
             "pickFromHU" : {
@@ -73,8 +71,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
             "pickFromLocator" : {
               "caption" : "locatorName-10",
               "id" : "9_10"
-            },
-            "pickedTo" : null
+            }
           }
         },
         "progress" : "NOT_STARTED",

@@ -29,9 +29,11 @@ BEGIN
 
 
     INSERT INTO c_validcombination(c_validcombination_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, alias, combination, description,
-                                   isfullyqualified, c_acctschema_id, account_id, m_product_id, c_bpartner_id, ad_orgtrx_id, c_locfrom_id, c_locto_id, c_salesregion_id,
-                                   c_project_id, c_campaign_id, c_activity_id, user1_id, user2_id, c_subacct_id, userelement1_id, userelement2_id, userelementstring1,
-                                   userelementstring2, userelementstring3, userelementstring4, userelementstring5, userelementstring6, userelementstring7)
+                                   isfullyqualified, c_acctschema_id, account_id
+--                                    , m_product_id, c_bpartner_id, ad_orgtrx_id, c_locfrom_id, c_locto_id, c_salesregion_id,
+--                                    c_project_id, c_campaign_id, c_activity_id, user1_id, user2_id, c_subacct_id, userelement1_id, userelement2_id, userelementstring1,
+--                                    userelementstring2, userelementstring3, userelementstring4, userelementstring5, userelementstring6, userelementstring7
+                                   )
     SELECT NEXTVAL('c_validcombination_seq'),
            ev.ad_client_id,
            ev.ad_org_id,
@@ -45,32 +47,33 @@ BEGIN
            ev.name              AS description,
            'Y'                  AS isfullyqualified,
            p_C_AcctSchema_ID    AS c_acctschema_id,
-           ev.c_elementvalue_id AS account_id,
-           NULL                 AS m_product_id,
-           NULL                 AS c_bpartner_id,
-           NULL                 AS ad_orgtrx_id,
-           NULL                 AS c_locfrom_id,
-           NULL                 AS c_locto_id,
-           NULL                 AS c_salesregion_id,
-           NULL                 AS c_project_id,
-           NULL                 AS c_campaign_id,
-           NULL                 AS c_activity_id,
-           NULL                 AS user1_id,
-           NULL                 AS user2_id,
-           NULL                 AS c_subacct_id,
-           NULL                 AS userelement1_id,
-           NULL                 AS userelement2_id,
-           NULL                 AS userelementstring1,
-           NULL                 AS userelementstring2,
-           NULL                 AS userelementstring3,
-           NULL                 AS userelementstring4,
-           NULL                 AS userelementstring5,
-           NULL                 AS userelementstring6,
-           NULL                 AS userelementstring7
+           ev.c_elementvalue_id AS account_id
+--            , NULL                 AS m_product_id,
+--            NULL                 AS c_bpartner_id,
+--            NULL                 AS ad_orgtrx_id,
+--            NULL                 AS c_locfrom_id,
+--            NULL                 AS c_locto_id,
+--            NULL                 AS c_salesregion_id,
+--            NULL                 AS c_project_id,
+--            NULL                 AS c_campaign_id,
+--            NULL                 AS c_activity_id,
+--            NULL                 AS user1_id,
+--            NULL                 AS user2_id,
+--            NULL                 AS c_subacct_id,
+--            NULL                 AS userelement1_id,
+--            NULL                 AS userelement2_id,
+--            NULL                 AS userelementstring1,
+--            NULL                 AS userelementstring2,
+--            NULL                 AS userelementstring3,
+--            NULL                 AS userelementstring4,
+--            NULL                 AS userelementstring5,
+--            NULL                 AS userelementstring6,
+--            NULL                 AS userelementstring7
     FROM c_elementvalue ev
     WHERE TRUE
       AND ev.c_element_id = v_C_Element_ID
       AND ev.isactive = 'Y'
+      AND ev.issummary = 'N'
       AND NOT EXISTS(SELECT 1
                      FROM c_validcombination z
                      WHERE TRUE

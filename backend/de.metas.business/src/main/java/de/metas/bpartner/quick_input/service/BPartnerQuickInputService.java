@@ -47,6 +47,7 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.NewRecordContext;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
@@ -127,7 +128,7 @@ public class BPartnerQuickInputService
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
 	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
-	private final IUserBL userBL = Services.get(IUserBL.class);
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -156,7 +157,8 @@ public class BPartnerQuickInputService
 			@NonNull final BPartnerAttributesRepository bpartnerAttributesRepository,
 			@NonNull final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository,
 			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository,
-			@NonNull final UserGroupRepository userGroupRepository)
+			@NonNull final UserGroupRepository userGroupRepository,
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
 		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
@@ -168,12 +170,13 @@ public class BPartnerQuickInputService
 		this.bpartnerRelatedRecordsRepository = bpartnerRelatedRecordsRepository;
 		this.bpartnerContactAttributesRepository = bpartnerContactAttributesRepository;
 		this.userGroupRepository = userGroupRepository;
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 
 	}
 
 	public Optional<AdWindowId> getNewBPartnerWindowId()
 	{
-		return RecordWindowFinder.newInstance(I_C_BPartner_QuickInput.Table_Name)
+		return RecordWindowFinder.newInstance(I_C_BPartner_QuickInput.Table_Name, customizedWindowInfoMapRepository)
 				.ignoreExcludeFromZoomTargetsFlag()
 				.findAdWindowId();
 	}
@@ -671,7 +674,7 @@ public class BPartnerQuickInputService
 								 .membershipContact(contactTemplate.isMembershipContact())
 								 .firstName(contactTemplate.getFirstname())
 								 .lastName(contactTemplate.getLastname())
-								 .name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
+								 .name(IUserBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
 								 .greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
 								 .phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
 								 .email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))

@@ -83,4 +83,6 @@ public class ExternalSystemConstants
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
+
+	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
 }

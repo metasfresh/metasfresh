@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import currentDevice from 'current-device';
 import { debounce, get } from 'lodash';
 
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
@@ -66,11 +65,7 @@ class DocumentListContainer extends Component {
   constructor(props) {
     super(props);
 
-    // TODO: Why it's not in the state?
-    this.pageLength =
-      currentDevice.type === 'mobile' || currentDevice.type === 'tablet'
-        ? 9999
-        : 20;
+    this.pageLength = 20;
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
