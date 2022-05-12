@@ -388,3 +388,13 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
 INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541456,'S',TO_TIMESTAMP('2022-05-12 12:10:36','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','de.metas.process.debouncer.delayInMillis',TO_TIMESTAMP('2022-05-12 12:10:36','YYYY-MM-DD HH24:MI:SS'),100,'1000')
 ;
 
+-- 2022-05-12T17:17:26.446Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2022-05-12 20:17:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=605414
+;
+
+-- 2022-05-12T17:17:26.450Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2022-05-12 20:17:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=605412
+;
+
