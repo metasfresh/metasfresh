@@ -46,21 +46,25 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Trx;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -96,6 +100,7 @@ public class CommissionInstanceRepository
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CommissionRecordStagingService commissionRecordStagingService;
 	private final CommissionConfigProvider commissionConfigProvider;
@@ -380,9 +385,22 @@ public class CommissionInstanceRepository
 			result.put(share, shareRecord);
 		}
 
-		shareRecordsToDelete.forEach(InterfaceWrapperHelper::delete);
+		deleteShareRecords(shareRecordsToDelete);
 
 		return result.build();
+	}
+
+	private void deleteShareRecords(@NonNull final Collection<I_C_Commission_Share> shareRecords)
+	{
+		if (shareRecords.isEmpty())
+		{
+			return;
+		}
+		final List<Integer> keys = shareRecords.stream().map(I_C_Commission_Share::getC_Commission_Share_ID).collect(Collectors.toList());
+		String sql = "DELETE FROM " + I_C_Commission_Fact.Table_Name + " WHERE C_Commission_Share_ID IN " + DB.buildSqlList(keys) + "";
+		DB.executeUpdateEx(sql, Trx.TRXNAME_ThreadInherited);
+		sql = "DELETE FROM " + I_C_Commission_Share.Table_Name + " WHERE C_Commission_Share_ID IN " + DB.buildSqlList(keys) + "";
+		DB.executeUpdateEx(sql, Trx.TRXNAME_ThreadInherited);
 	}
 
 	private I_C_Commission_Share createOrUpdateShareRecord(
