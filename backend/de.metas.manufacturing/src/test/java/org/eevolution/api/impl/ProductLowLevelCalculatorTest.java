@@ -22,8 +22,7 @@ package org.eevolution.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
+import de.metas.product.ProductId;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMComponentType;
@@ -31,10 +30,12 @@ import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import de.metas.product.ProductId;
+import java.math.BigDecimal;
 
+@Ignore
 public class ProductLowLevelCalculatorTest
 {
 	private MRPTestHelper helper;
