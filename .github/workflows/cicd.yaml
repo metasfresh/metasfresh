@@ -1,4 +1,4 @@
-name: experimenting-with-github-actions
+name: cicd
 on: [push]
 jobs:
   build:
