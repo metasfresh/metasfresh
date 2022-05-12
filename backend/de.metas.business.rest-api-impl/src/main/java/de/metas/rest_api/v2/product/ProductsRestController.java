@@ -25,8 +25,8 @@ package de.metas.rest_api.v2.product;
 import de.metas.Profiles;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
-import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;
@@ -34,6 +34,7 @@ import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.command.GetProductsCommand;
+import de.metas.util.Check;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import io.swagger.annotations.ApiOperation;
@@ -62,6 +63,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
+import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.product.v2.response.ProductsQueryParams.AD_PINSTANCE_ID;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CONFIG_TYPE;
@@ -165,12 +167,27 @@ public class ProductsRestController
 	@GetMapping("{orgCode}/{externalIdentifier}")
 	public ResponseEntity<?> getByExternalIdentifier(
 			@PathVariable("orgCode") @Nullable final String orgCode,
-			@PathVariable(value = "externalIdentifier") @NonNull final String externalIdentifier)
+			@ApiParam(PRODUCT_IDENTIFIER_DOC) @PathVariable(value = "externalIdentifier") @NonNull final String externalIdentifier)
 	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
 		try
 		{
-			final JsonProduct product = productRestService.retrieveProduct(orgCode, externalIdentifier);
-			return ResponseEntity.ok().body(product);
+			final ExternalIdentifier productIdentifier = ExternalIdentifier.of(externalIdentifier);
+
+			final JsonGetProductsResponse response = GetProductsCommand.builder()
+					.servicesFacade(productsServicesFacade)
+					.albertaProductService(albertaProductService)
+					.externalSystemService(externalSystemService)
+					.productRestService(productRestService)
+					.adLanguage(adLanguage)
+					.orgCode(orgCode)
+					.productIdentifier(productIdentifier)
+					.execute();
+
+			Check.assumeEquals(response.getProducts().size(), 1, "JsonGetProductsResponse should have only one JsonProduct!");
+
+			return ResponseEntity.ok().body(response.getProducts().get(0));
 		}
 		catch (final Exception ex)
 		{

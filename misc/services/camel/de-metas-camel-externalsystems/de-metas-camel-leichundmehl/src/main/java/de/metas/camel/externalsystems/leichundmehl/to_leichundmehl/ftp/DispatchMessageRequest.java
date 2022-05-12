@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-pricing
+ * de-metas-camel-leichundmehl
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,31 +20,22 @@
  * #L%
  */
 
-package de.metas.common.pricing.v2.productprice;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@UtilityClass
-public class JsonConverters
+@Builder
+@Value
+public class DispatchMessageRequest
 {
-	public JsonResponsePrice toJsonResponsePrice(
-			@NonNull final JsonProductPrice productPrice,
-			@NonNull final String productValue,
-			@NonNull final String currencyCode,
-			@Nullable final String countryCode,
-			final boolean soTrx)
-	{
-		return JsonResponsePrice.builder()
-				.productId(productPrice.getProductId())
-				.productCode(productValue)
-				.price(productPrice.getPriceStd())
-				.currencyCode(currencyCode)
-				.taxCategoryId(productPrice.getTaxCategoryId())
-				.isSOTrx(soTrx)
-				.countryCode(countryCode)
-				.build();
-	}
+	@NonNull
+	@JsonProperty("ftpPayload")
+	String ftpPayload;
+
+	@NonNull
+	@JsonProperty("ftpCredentials")
+	FTPCredentials ftpCredentials;
 }

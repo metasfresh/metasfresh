@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de.metas.externalreference
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,31 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
+package de.metas.externalreference;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_LeichUndMehl;
 
-@Value
-@Builder
-@JsonDeserialize(builder = JsonBPartner.JsonBPartnerBuilder.class)
-public class JsonBPartner
+@AllArgsConstructor
+@Getter
+public enum LeichUndMehlExternalSystem implements IExternalSystem
 {
-	@NonNull
-	@JsonProperty("bpartnerId")
-	Integer bpartnerId;
+	LEICHUNDMEHL(EXTERNALSYSTEM_LeichUndMehl);
 
-	@NonNull
-	@JsonProperty("name")
-	String name;
+	public String code;
 
-	@Nullable
-	@JsonProperty("glns")
-	List<String> glns;
+	public static LeichUndMehlExternalSystem ofCode(final String code)
+	{
+		if (LEICHUNDMEHL.getCode().equals(code))
+		{
+			return LEICHUNDMEHL;
+		}
+		throw new AdempiereException("Unsupported code " + code + " for LeichUndMehlExternalSystem. Hint: only 'LeichUndMehl' is allowed");
+	}
+
 }

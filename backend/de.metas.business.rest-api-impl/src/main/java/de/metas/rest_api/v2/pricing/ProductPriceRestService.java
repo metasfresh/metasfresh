@@ -52,7 +52,7 @@ import de.metas.product.ProductId;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.v2.pricing.command.GetPriceListCommand;
+import de.metas.rest_api.v2.pricing.command.SearchProductPricesCommand;
 import de.metas.rest_api.v2.product.ProductRestService;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -67,6 +67,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -123,15 +124,16 @@ public class ProductPriceRestService
 	}
 
 	@NonNull
-	public JsonResponsePriceList productPriceSearch(@NonNull final JsonRequestProductPriceSearch request)
+	public JsonResponsePriceList productPriceSearch(@NonNull final JsonRequestProductPriceSearch request, @Nullable final String orgCode)
 	{
-		return GetPriceListCommand.builder()
+		return SearchProductPricesCommand.builder()
 				.productRestService(productRestService)
 				.bpartnerPriceListServicesFacade(bpartnerPriceListServicesFacade)
 				.bpartnerIdentifier(ExternalIdentifier.of(request.getBpartnerIdentifier()))
 				.productIdentifier(ExternalIdentifier.of(request.getProductIdentifier()))
 				.targetDate(request.getTargetDate())
 				.jsonRetrieverService(jsonRetrieverService)
+				.orgCode(orgCode)
 				.build()
 				.execute();
 	}

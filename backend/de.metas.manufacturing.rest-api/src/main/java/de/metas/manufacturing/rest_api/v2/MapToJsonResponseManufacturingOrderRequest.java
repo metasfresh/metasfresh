@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-pricing
+ * de.metas.manufacturing.rest-api
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,35 +20,35 @@
  * #L%
  */
 
-package de.metas.common.pricing.v2.productprice;
+package de.metas.manufacturing.rest_api.v2;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrderBOMLine;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.product.ProductRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.eevolution.model.I_PP_Order;
 
-import java.math.BigDecimal;
+import java.util.List;
 
-@Value
 @Builder
-public class JsonProductPrice
+@Value
+public class MapToJsonResponseManufacturingOrderRequest
 {
 	@NonNull
-	JsonMetasfreshId productId;
+	I_PP_Order order;
 
 	@NonNull
-	JsonMetasfreshId taxCategoryId;
+	IPPOrderBOMBL ppOrderBOMBL;
 
 	@NonNull
-	BigDecimal priceStd;
+	IOrgDAO orgDAO;
 
 	@NonNull
-	public static JsonProductPrice of(@NonNull final Integer productId, @NonNull final Integer taxCategoryId, @NonNull final BigDecimal priceStd)
-	{
-		return JsonProductPrice.builder()
-				.productId(JsonMetasfreshId.of(productId))
-				.taxCategoryId(JsonMetasfreshId.of(taxCategoryId))
-				.priceStd(priceStd)
-				.build();
-	}
+	ProductRepository productRepository;
+
+	@NonNull
+	List<JsonResponseManufacturingOrderBOMLine> components;
 }

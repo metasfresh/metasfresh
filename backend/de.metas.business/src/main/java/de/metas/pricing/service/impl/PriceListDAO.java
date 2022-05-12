@@ -210,7 +210,8 @@ public class PriceListDAO implements IPriceListDAO
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId)
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
 				.create()
-				.stream().collect(ImmutableList.toImmutableList());
+				.stream()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override

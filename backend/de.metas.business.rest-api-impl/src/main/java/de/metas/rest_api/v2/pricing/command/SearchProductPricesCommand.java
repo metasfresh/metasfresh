@@ -24,24 +24,24 @@ package de.metas.rest_api.v2.pricing.command;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.pricing.v2.productprice.JsonConverters;
-import de.metas.common.pricing.v2.productprice.JsonProductPrice;
 import de.metas.common.pricing.v2.productprice.JsonResponsePrice;
 import de.metas.common.pricing.v2.productprice.JsonResponsePriceList;
-import de.metas.common.util.time.SystemTime;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonSOTrx;
 import de.metas.currency.CurrencyCode;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryCode;
 import de.metas.location.CountryId;
-import de.metas.location.ICountryCodeFactory;
 import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.ProductId;
@@ -53,22 +53,25 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.util.Env;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
-public class GetPriceListCommand
+public class SearchProductPricesCommand
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	// services
 	private final ProductRestService productRestService;
@@ -79,15 +82,17 @@ public class GetPriceListCommand
 	private final ExternalIdentifier bpartnerIdentifier;
 	private final ExternalIdentifier productIdentifier;
 	private final LocalDate targetDate;
+	private final OrgId orgId;
 
 	@Builder
-	public GetPriceListCommand(
+	public SearchProductPricesCommand(
 			@NonNull final ProductRestService productRestService,
 			@NonNull final JsonRetrieverService jsonRetrieverService,
 			@NonNull final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade,
 			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@NonNull final ExternalIdentifier productIdentifier,
-			@NonNull final LocalDate targetDate)
+			@NonNull final LocalDate targetDate,
+			@Nullable final String orgCode)
 	{
 		this.productRestService = productRestService;
 		this.jsonRetrieverService = jsonRetrieverService;
@@ -95,9 +100,10 @@ public class GetPriceListCommand
 		this.bpartnerIdentifier = bpartnerIdentifier;
 		this.productIdentifier = productIdentifier;
 		this.targetDate = targetDate;
+		this.orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 	}
 
-	public static class GetPriceListCommandBuilder
+	public static class SearchProductPricesCommandBuilder
 	{
 		public JsonResponsePriceList execute()
 		{
@@ -105,31 +111,21 @@ public class GetPriceListCommand
 		}
 	}
 
+	@NonNull
 	public JsonResponsePriceList execute()
 	{
-		final BPartnerId bpartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(bpartnerIdentifier, Env.getOrgId())
-				.orElseThrow(() -> new InvalidIdentifierException("No BPartner found for identifier")
-						.appendParametersToMessage()
-						.setParameter("ExternalIdentifier", bpartnerIdentifier));
+		final ProductId productId = getProductId();
 
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, Env.getOrgId())
-				.orElseThrow(() -> new InvalidIdentifierException("Fail to resolve product external identifier")
-						.appendParametersToMessage()
-						.setParameter("ExternalIdentifier", productIdentifier));
-
-		final Set<PricingSystemId> assignedBPPricingSystemIds = getBPartnerPricingSystemIds(bpartnerId);
+		final Set<PricingSystemId> assignedBPPricingSystemIds = getBPartnerPricingSystemIds();
 
 		if (assignedBPPricingSystemIds.isEmpty())
 		{
-			throw new AdempiereException("BPartner has no PricingSystemId assigned")
-					.appendParametersToMessage()
-					.setParameter("BPartnerId", bpartnerId);
+			return JsonResponsePriceList.builder().prices(ImmutableList.of()).build();
 		}
 
-		final ZonedDateTime zonedDateTime = TimeUtil.asZonedDateTime(targetDate, SystemTime.zoneId());
-		Check.assumeNotNull(zonedDateTime, "zonedDateTime should not be null at this stage");
-
 		final String productValue = bpartnerPriceListServicesFacade.getProductValue(productId);
+
+		final ZonedDateTime priceDate = getTargetDateAndTime();
 
 		final ImmutableList.Builder<JsonResponsePrice> jsonResponsePriceCollector = ImmutableList.builder();
 
@@ -141,21 +137,16 @@ public class GetPriceListCommand
 			{
 				final CurrencyCode priceListCurrencyCode = bpartnerPriceListServicesFacade.getCurrencyCodeById(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 
-				final SOTrx soTrx = SOTrx.ofBoolean(priceList.isSOPriceList());
-
-				final CountryId countryId = CountryId.ofRepoId(priceList.getC_Country_ID());
-
-				final PriceListVersionId priceListVersionId = bpartnerPriceListServicesFacade.getPriceListVersionId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()), zonedDateTime);
-
-				final CountryCode countryCode = getCountryCode(countryId);
-
-				bpartnerPriceListServicesFacade.getProductPricesByPLVAndProduct(priceListVersionId, productId)
-						.stream()
-						.map(productPrice -> JsonConverters.toJsonResponsePrice(JsonProductPrice.of(productId.getRepoId(), productPrice.getC_TaxCategory_ID(), productPrice.getPriceStd()),
-																				productValue,
-																				priceListCurrencyCode.toThreeLetterCode(),
-																				countryCode.toString(),
-																				soTrx.toBoolean()))
+				streamPrices(productId, PriceListId.ofRepoId(priceList.getM_PriceList_ID()), priceDate)
+						.map(productPrice -> JsonResponsePrice.builder()
+								.productId(JsonMetasfreshId.of(productId.getRepoId()))
+								.productCode(productValue)
+								.taxCategoryId(JsonMetasfreshId.of(productPrice.getC_TaxCategory_ID()))
+								.currencyCode(priceListCurrencyCode.toThreeLetterCode())
+								.countryCode(getCountryCode(priceList))
+								.price(productPrice.getPriceStd())
+								.isSOTrx(JsonSOTrx.ofBoolean(priceList.isSOPriceList()))
+								.build())
 						.forEach(jsonResponsePriceCollector::add);
 			}
 		}
@@ -166,9 +157,9 @@ public class GetPriceListCommand
 	}
 
 	@NonNull
-	private Set<PricingSystemId> getBPartnerPricingSystemIds(@NonNull final BPartnerId bpartnerId)
+	private Set<PricingSystemId> getBPartnerPricingSystemIds()
 	{
-		final I_C_BPartner bPartner = bpartnerDAO.getById(bpartnerId);
+		final I_C_BPartner bPartner = bpartnerDAO.getById(getBPartnerId());
 
 		final ImmutableSet.Builder<PricingSystemId> pricingSystemIds = ImmutableSet.builder();
 
@@ -181,13 +172,59 @@ public class GetPriceListCommand
 		return pricingSystemIds.build();
 	}
 
-	@NonNull
-	private CountryCode getCountryCode(@NonNull final CountryId countryId)
+	@Nullable
+	private String getCountryCode(@NonNull final I_M_PriceList priceList)
 	{
-		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-		final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
+		return Optional.ofNullable(CountryId.ofRepoIdOrNull(priceList.getC_Country_ID()))
+				.map(countryDAO::getById)
+				.map(I_C_Country::getCountryCode)
+				.orElse(null);
+	}
 
-		final I_C_Country country = countryDAO.getById(countryId);
-		return countryCodeFactory.getCountryCodeByAlpha2(country.getCountryCode());
+	@NonNull
+	private BPartnerId getBPartnerId()
+	{
+		return jsonRetrieverService.resolveBPartnerExternalIdentifier(bpartnerIdentifier, orgId)
+				.orElseThrow(() -> new InvalidIdentifierException("No BPartner found for identifier")
+						.appendParametersToMessage()
+						.setParameter("ExternalIdentifier", bpartnerIdentifier));
+	}
+
+	@NonNull
+	private ProductId getProductId()
+	{
+		return productRestService.resolveProductExternalIdentifier(productIdentifier, orgId)
+				.orElseThrow(() -> new InvalidIdentifierException("Fail to resolve product external identifier")
+						.appendParametersToMessage()
+						.setParameter("ExternalIdentifier", productIdentifier));
+	}
+
+	@NonNull
+	private ZonedDateTime getTargetDateAndTime()
+	{
+		final ZonedDateTime zonedDateTime = TimeUtil.asZonedDateTime(targetDate, orgDAO.getTimeZone(orgId));
+		Check.assumeNotNull(zonedDateTime, "zonedDateTime is not null!");
+
+		return zonedDateTime;
+	}
+
+	@NonNull
+	private Stream<I_M_ProductPrice> streamPrices(
+			@NonNull final ProductId productId,
+			@NonNull final PriceListId priceListId,
+			@NonNull final ZonedDateTime priceDate)
+	{
+		final PriceListVersionId priceListVersionId;
+		try
+		{
+			priceListVersionId = bpartnerPriceListServicesFacade.getPriceListVersionId(priceListId, priceDate);
+		}
+		catch (final PriceListVersionNotFoundException exception)
+		{
+			return Stream.empty();
+		}
+
+		return bpartnerPriceListServicesFacade.getProductPricesByPLVAndProduct(priceListVersionId, productId)
+				.stream();
 	}
 }

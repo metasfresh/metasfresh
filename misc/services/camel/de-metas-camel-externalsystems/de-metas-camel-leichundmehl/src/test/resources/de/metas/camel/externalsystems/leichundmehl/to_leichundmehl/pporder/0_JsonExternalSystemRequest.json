@@ -7,9 +7,11 @@
   "externalSystemConfigId": 1,
   "adPInstanceId": 2,
   "parameters": {
+    "FTP_Host": "hostname",
     "FTP_Port": "5555",
     "FTP_Username": "username",
     "FTP_Password": "password",
+    "FTP_Directory": "root",
     "PP_Order_ID": "11111"
   }
 }

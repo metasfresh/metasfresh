@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
@@ -59,15 +60,16 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class GetProductsCommand
 {
@@ -86,6 +88,9 @@ public class GetProductsCommand
 	private final String adLanguage;
 	@NonNull
 	private final Instant since;
+
+	@Nullable
+	private final String orgCode;
 
 	private final ExternalSystemType externalSystemType;
 	private final String externalSystemConfigValue;
@@ -106,6 +111,7 @@ public class GetProductsCommand
 			@NonNull final ProductRestService productRestService,
 			@NonNull final String adLanguage,
 			@Nullable final Instant since,
+			@Nullable final String orgCode,
 			@Nullable final ExternalSystemType externalSystemType,
 			@Nullable final String externalSystemConfigValue,
 			@Nullable final ExternalIdentifier productIdentifier)
@@ -116,6 +122,7 @@ public class GetProductsCommand
 		this.productRestService = productRestService;
 		this.adLanguage = adLanguage;
 		this.since = CoalesceUtil.coalesceNotNull(since, DEFAULT_SINCE);
+		this.orgCode = orgCode;
 		this.externalSystemType = externalSystemType;
 		this.externalSystemConfigValue = externalSystemConfigValue;
 		this.productIdentifier = productIdentifier;
@@ -126,11 +133,6 @@ public class GetProductsCommand
 		public JsonGetProductsResponse execute()
 		{
 			return _build().execute();
-		}
-
-		public JsonGetProductsResponse executeWithExternalIdentifier()
-		{
-			return _build().executeWithExternalIdentifier();
 		}
 	}
 
@@ -148,39 +150,7 @@ public class GetProductsCommand
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return getProductResponse(productsToExport, manufacturerIds);
-	}
-
-	@NonNull
-	public JsonGetProductsResponse executeWithExternalIdentifier()
-	{
-		Check.assumeNotNull(productIdentifier, "productIdentifier should be not null at this step");
-
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, Env.getOrgId())
-				.orElseThrow(() -> new AdempiereException("Fail to resolve product external identifier")
-						.appendParametersToMessage()
-						.setParameter("ExternalIdentifier", productIdentifier));
-
-		final I_M_Product product = servicesFacade.getProductById(productId);
-
-		productBPartners = retrieveJsonProductVendors(ImmutableSet.of(productId));
-
-		final ImmutableSet<BPartnerId> bPartnerIds = productBPartners.values()
-				.stream()
-				.map(JsonProductBPartner::getBpartnerId)
-				.map(JsonMetasfreshId::getValue)
-				.map(BPartnerId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return getProductResponse(ImmutableList.of(product), bPartnerIds);
-	}
-
-	@NonNull
-	private JsonGetProductsResponse getProductResponse(
-			@NonNull final ImmutableList<I_M_Product> productsToExport,
-			@NonNull final ImmutableSet<BPartnerId> bPartnerIds)
-	{
-		bpartnerId2Name = retrieveBPartnerNames(bPartnerIds);
+		bpartnerId2Name = retrieveBPartnerNames(manufacturerIds);
 
 		final ImmutableList<JsonProduct> products = productsToExport.stream()
 				.filter(product -> since.equals(DEFAULT_SINCE) || since.isAfter(DEFAULT_SINCE) || !wasAlreadyExported(product))
@@ -288,28 +258,12 @@ public class GetProductsCommand
 		final ImmutableList.Builder<I_M_Product> productRecordsBuilder = ImmutableList.builder();
 		final HashSet<ProductId> loadedProductIds = new HashSet<>();
 
-		servicesFacade.streamAllProducts(since).forEach(product -> {
+		streamProductsToExport().forEach(product -> {
 			productRecordsBuilder.add(product);
 			loadedProductIds.add(ProductId.ofRepoId(product.getM_Product_ID()));
 		});
 
-		if (ExternalSystemType.Alberta.equals(externalSystemType))
-		{
-			final GetAlbertaProductsInfoRequest getAlbertaProductsInfoRequest = GetAlbertaProductsInfoRequest.builder()
-					.since(since)
-					.productIdSet(loadedProductIds)
-					.pharmacyPriceListId(getPharmacyPriceListIdOrNull())
-					.build();
-
-			productId2AlbertaInfo = albertaProductService.getAlbertaInfoByProductId(getAlbertaProductsInfoRequest);
-			final ImmutableSet<ProductId> productIdsLeftToLoaded = productId2AlbertaInfo
-					.keySet()
-					.stream()
-					.filter(productId -> !loadedProductIds.contains(productId))
-					.collect(ImmutableSet.toImmutableSet());
-
-			servicesFacade.getProductsById(productIdsLeftToLoaded).forEach(productRecordsBuilder::add);
-		}
+		loadAndSetAlbertaRelatedInfo(productRecordsBuilder, loadedProductIds);
 
 		return productRecordsBuilder.build();
 	}
@@ -416,5 +370,59 @@ public class GetProductsCommand
 				.quantity(albertaPackagingUnit.getQuantity())
 				.unit(albertaPackagingUnit.getUnit())
 				.build();
+	}
+
+	private void loadAndSetAlbertaRelatedInfo(
+			@NonNull final ImmutableList.Builder<I_M_Product> productRecordsBuilder,
+			@NonNull final HashSet<ProductId> loadedProductIds)
+	{
+		if (!ExternalSystemType.Alberta.equals(externalSystemType))
+		{
+			return;
+		}
+
+		final Instant since = isSingleExport()
+				? Instant.now().plus(1, ChronoUnit.YEARS) //dev-note: lazy way of saying we are interested only in our product
+				: this.since;
+
+		final GetAlbertaProductsInfoRequest getAlbertaProductsInfoRequest = GetAlbertaProductsInfoRequest.builder()
+				.since(since)
+				.productIdSet(loadedProductIds)
+				.pharmacyPriceListId(getPharmacyPriceListIdOrNull())
+				.build();
+
+		productId2AlbertaInfo = albertaProductService.getAlbertaInfoByProductId(getAlbertaProductsInfoRequest);
+		final ImmutableSet<ProductId> productIdsLeftToLoaded = productId2AlbertaInfo
+				.keySet()
+				.stream()
+				.filter(productId -> !loadedProductIds.contains(productId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		servicesFacade.getProductsById(productIdsLeftToLoaded).forEach(productRecordsBuilder::add);
+	}
+
+	@NonNull
+	private Stream<I_M_Product> streamProductsToExport()
+	{
+		if (isSingleExport())
+		{
+			Check.assumeNotNull(productIdentifier, "ProductIdentifier must be set in case of single export!");
+
+			final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, RestUtils.retrieveOrgIdOrDefault(orgCode))
+					.orElseThrow(() -> new AdempiereException("Fail to resolve product external identifier")
+							.appendParametersToMessage()
+							.setParameter("ExternalIdentifier", productIdentifier));
+
+			return Stream.of(servicesFacade.getProductById(productId));
+		}
+		else
+		{
+			return servicesFacade.streamAllProducts(since);
+		}
+	}
+
+	private boolean isSingleExport()
+	{
+		return productIdentifier != null;
 	}
 }

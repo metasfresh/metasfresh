@@ -44,6 +44,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Nullable;
+
 import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRICE_LIST_IDENTIFIER;
 import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRICE_LIST_VERSION_IDENTIFIER;
 
@@ -123,12 +125,14 @@ public class PricesRestController
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
-	@PostMapping("/product/search")
-	public ResponseEntity<?> productPriceSearch(@RequestBody @NonNull final JsonRequestProductPriceSearch request)
+	@PostMapping("{orgCode}/product/search")
+	public ResponseEntity<?> productPriceSearch(
+			@PathVariable("orgCode") @Nullable final String orgCode,
+			@RequestBody @NonNull final JsonRequestProductPriceSearch request)
 	{
 		try
 		{
-			final JsonResponsePriceList result = productPriceRestService.productPriceSearch(request);
+			final JsonResponsePriceList result = productPriceRestService.productPriceSearch(request, orgCode);
 
 			return ResponseEntity.ok(result);
 		}

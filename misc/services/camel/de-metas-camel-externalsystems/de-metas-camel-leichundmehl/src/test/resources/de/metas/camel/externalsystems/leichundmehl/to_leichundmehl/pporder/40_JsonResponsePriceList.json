@@ -6,16 +6,16 @@
       "price": 2.0,
       "currencyCode": "EUR",
       "taxCategoryId": 1000010,
-      "isSOTrx": true,
+      "isSOTrx": "SALES",
       "countryCode": "DE"
     },
     {
-      "productId": 2005577,
+      "productId": 22222,
       "productCode": "P002737",
       "price": 1.42,
       "currencyCode": "CHF",
       "taxCategoryId": 1000002,
-      "isSOTrx": true,
+      "isSOTrx": "SALES",
       "countryCode": "CH"
     }
   ]

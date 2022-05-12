@@ -424,3 +424,99 @@ UPDATE AD_Element_Trl SET PrintName='FTP Port',Updated=TO_TIMESTAMP('2022-05-05 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580812,'en_US')
 ;
+
+-- 2022-05-10T09:20:24.751Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,543178,541117,TO_TIMESTAMP('2022-05-10 12:20:24','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','LeichUndMehl',TO_TIMESTAMP('2022-05-10 12:20:24','YYYY-MM-DD HH24:MI:SS'),100,'LeichUndMehl','LeichUndMehl')
+;
+
+-- 2022-05-10T09:20:24.767Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=543178 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2022-05-10T09:25:46.334Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='LeichUndMehl', PrintName='LeichUndMehl',Updated=TO_TIMESTAMP('2022-05-10 12:25:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580811 AND AD_Language='de_CH'
+;
+
+-- 2022-05-10T09:25:46.350Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580811,'de_CH')
+;
+
+-- 2022-05-10T09:26:07.969Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='LeichUndMehl', PrintName='LeichUndMehl',Updated=TO_TIMESTAMP('2022-05-10 12:26:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580811 AND AD_Language='de_DE'
+;
+
+-- 2022-05-10T09:26:07.969Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580811,'de_DE')
+;
+
+-- 2022-05-10T09:26:07.984Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580811,'de_DE')
+;
+
+-- 2022-05-10T09:26:08.007Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='ExternalSystem_Config_LeichMehl_ID', Name='LeichUndMehl', Description=NULL, Help=NULL WHERE AD_Element_ID=580811
+;
+
+-- 2022-05-10T09:26:08.007Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ExternalSystem_Config_LeichMehl_ID', Name='LeichUndMehl', Description=NULL, Help=NULL, AD_Element_ID=580811 WHERE UPPER(ColumnName)='EXTERNALSYSTEM_CONFIG_LEICHMEHL_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-05-10T09:26:08.007Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ExternalSystem_Config_LeichMehl_ID', Name='LeichUndMehl', Description=NULL, Help=NULL WHERE AD_Element_ID=580811 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-05-10T09:26:08.007Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='LeichUndMehl', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580811) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580811)
+;
+
+-- 2022-05-10T09:26:08.016Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='LeichUndMehl', Name='LeichUndMehl' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580811)
+;
+
+-- 2022-05-10T09:26:08.016Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='LeichUndMehl', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580811
+;
+
+-- 2022-05-10T09:26:08.016Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='LeichUndMehl', Description=NULL, Help=NULL WHERE AD_Element_ID = 580811
+;
+
+-- 2022-05-10T09:26:08.016Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'LeichUndMehl', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580811
+;
+
+-- 2022-05-10T09:26:09.431Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='LeichUndMehl', PrintName='LeichUndMehl',Updated=TO_TIMESTAMP('2022-05-10 12:26:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580811 AND AD_Language='en_US'
+;
+
+-- 2022-05-10T09:26:09.431Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580811,'en_US')
+;
+
+-- 2022-05-10T09:26:11.758Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='LeichUndMehl', PrintName='LeichUndMehl',Updated=TO_TIMESTAMP('2022-05-10 12:26:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580811 AND AD_Language='nl_NL'
+;
+
+-- 2022-05-10T09:26:11.760Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580811,'nl_NL')
+;
+

@@ -22,18 +22,23 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Builder(toBuilder = true)
 @Value
+@JsonDeserialize(builder = JsonProductInfo.JsonProductInfoBuilder.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonProductInfo
 {
 	@NonNull
@@ -67,8 +72,8 @@ public class JsonProductInfo
 	String externalId;
 
 	@Nullable
-	@JsonProperty("uom")
-	String uom;
+	@JsonProperty("uomCode")
+	String uomCode;
 
 	@Nullable
 	@JsonProperty("manufacturerId")
@@ -81,6 +86,25 @@ public class JsonProductInfo
 	@Nullable
 	@JsonProperty("manufacturerNumber")
 	String manufacturerNumber;
+
+	@Nullable
+	@JsonProperty("packageSize")
+	String packageSize;
+
+	@Nullable
+	@JsonProperty("weight")
+	BigDecimal weight;
+
+	@Nullable
+	@JsonProperty("documentNote")
+	String documentNote;
+
+	@Nullable
+	@JsonProperty("commodityNumberValue")
+	String commodityNumberValue;
+
+	@JsonProperty("stocked")
+	boolean stocked;
 
 	@Nullable
 	@JsonProperty("bpartnerProduct")

@@ -34,6 +34,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.util.Env;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -97,12 +98,14 @@ public class ManufacturingOrderRestController
 				: ResponseEntity.unprocessableEntity().body(response);
 	}
 
-	@GetMapping("/{metasfreshId}")
-	public ResponseEntity<?> getManufacturingOrderByMetasfreshId(@PathVariable("metasfreshId") final int metasfreshId)
+	@GetMapping("/{ppOrderMetasfreshId}")
+	public ResponseEntity<?> getManufacturingOrderByMetasfreshId(@PathVariable("ppOrderMetasfreshId") final int ppOrderMetasfreshId)
 	{
 		try
 		{
-			final JsonResponseManufacturingOrder response = manufacturingOrderAPIService.getManufacturingOrderByMetasfreshId(metasfreshId);
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrderMetasfreshId);
+
+			final JsonResponseManufacturingOrder response = manufacturingOrderAPIService.retrievePPOrder(ppOrderId);
 			return ResponseEntity.ok(response);
 		}
 		catch (final Exception ex)

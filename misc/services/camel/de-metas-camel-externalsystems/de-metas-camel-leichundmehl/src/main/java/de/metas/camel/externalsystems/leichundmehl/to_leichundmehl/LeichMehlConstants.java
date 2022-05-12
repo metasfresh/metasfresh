@@ -31,4 +31,5 @@ public interface LeichMehlConstants
 	String HEADER_FTP_USERNAME = "FTPUsername";
 	String HEADER_FTP_PASSWORD = "FTPPassword";
 	String HEADER_FTP_DIRECTORY = "FTPDirectory";
+	String HEADER_FTP_FILENAME = "FTPFilename";
 }

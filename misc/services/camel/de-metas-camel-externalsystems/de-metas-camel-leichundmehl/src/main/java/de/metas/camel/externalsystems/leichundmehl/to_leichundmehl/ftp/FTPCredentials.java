@@ -20,50 +20,38 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.v2.JsonSOTrx;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonPrice.JsonPriceBuilder.class)
-public class JsonPrice
+public class FTPCredentials
 {
 	@NonNull
-	@JsonProperty("productId")
-	Integer productId;
+	@JsonProperty("ftpHost")
+	String ftpHost;
 
 	@NonNull
-	@JsonProperty("productCode")
-	String productCode;
+	@JsonProperty("ftpPort")
+	String ftpPort;
 
 	@NonNull
-	@JsonProperty("price")
-	BigDecimal price;
+	@JsonProperty("ftpDirectory")
+	String ftpDirectory;
 
 	@NonNull
-	@JsonProperty("currencyCode")
-	String currencyCode;
+	@JsonProperty("ftpFilename")
+	String ftpFilename;
 
 	@NonNull
-	@JsonProperty("taxCategoryId")
-	Integer taxCategoryId;
+	@JsonProperty("ftpUsername")
+	String ftpUsername;
 
 	@NonNull
-	@JsonProperty("isSOTrx")
-	JsonSOTrx isSOTrx;
-
-	@Nullable
-	@JsonProperty("countryCode")
-	String countryCode;
+	@JsonProperty("ftpPassword")
+	String ftpPassword;
 }

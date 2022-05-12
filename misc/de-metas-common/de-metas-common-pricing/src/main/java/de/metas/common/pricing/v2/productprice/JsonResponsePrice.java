@@ -25,6 +25,7 @@ package de.metas.common.pricing.v2.productprice;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonSOTrx;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -59,7 +60,7 @@ public class JsonResponsePrice
 
 	@NonNull
 	@JsonProperty("isSOTrx")
-	Boolean isSOTrx;
+	JsonSOTrx isSOTrx;
 
 	@Nullable
 	@JsonProperty("countryCode")
