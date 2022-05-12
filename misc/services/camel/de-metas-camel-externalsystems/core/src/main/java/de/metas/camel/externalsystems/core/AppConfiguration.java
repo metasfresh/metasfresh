@@ -56,6 +56,7 @@ public class AppConfiguration
 	@PostConstruct
 	public void auditEventNotifier()
 	{
+		// note that calling producerTemplate() here does *not* mean wh create an additional instance. See https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans for details
 		camelContext.getManagementStrategy()
 				.addEventNotifier(new AuditEventNotifier(producerTemplate()));
 	}
