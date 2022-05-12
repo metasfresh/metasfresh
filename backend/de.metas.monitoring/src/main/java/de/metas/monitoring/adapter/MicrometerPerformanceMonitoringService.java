@@ -72,7 +72,8 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
 
-		if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationActive.get()){
+		if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationActive.get())
+		{
 			isCorrelationActive.set(true);
 			correlationId.set(correlationIdProvider.getAndIncrement());
 		}
@@ -112,8 +113,10 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		mkTagIfNotNull("SubType", metadata.getSubType()).ifPresent(tags::add);
 		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
 
-		if(isCorrelationTrigger(metadata.getType()) && !isCorrelationActive.get()){
+		if(isCorrelationTrigger(metadata.getType()) && !isCorrelationActive.get())
+		{
 			isCorrelationActive.set(true);
+			correlationId.set(correlationIdProvider.getAndIncrement());
 		}
 
 		addAdditionalTags(tags);
@@ -127,8 +130,10 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			callableToUse = callable;
 		}
-		try(final IAutoCloseable ignored = this.reduceDepth()){
-			if(isCorrelationTrigger(metadata.getType()) && !isCorrelationLocked.get()){
+		try(final IAutoCloseable ignored = this.reduceDepth())
+		{
+			if(isCorrelationTrigger(metadata.getType()) && !isCorrelationLocked.get())
+			{
 				try(final IAutoCloseable ignored2 = this.endCorrelation())
 				{
 					isCorrelationLocked.set(true);
@@ -176,13 +181,15 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		}
 	}
 
-	private void addAdditionalTags(ArrayList<Tag> tags){
+	private void addAdditionalTags(ArrayList<Tag> tags)
+	{
 		mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
 		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
 		step.set(step.get() + 1);
 		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
 		depth.set(depth.get() + 1);
-		if(isCorrelationActive.get()){
+		if(isCorrelationActive.get())
+		{
 			mkTagIfNotNull("CorrelationId", String.valueOf(correlationId.get())).ifPresent(tags::add);
 		}
 	}
@@ -194,16 +201,19 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		};
 	}
 
-	private Boolean isCorrelationTrigger(String type){
+	private Boolean isCorrelationTrigger(String type)
+	{
 		return Arrays.stream(correlationTriggers.get()).anyMatch(type::equals);
 	}
 
-	private String[] getCorrelationTriggers(){
+	private String[] getCorrelationTriggers()
+	{
 		String[] correlationTriggers = {"po"};
 		return correlationTriggers;
 	}
 
-	private IAutoCloseable endCorrelation(){
+	private IAutoCloseable endCorrelation()
+	{
 		return () -> {
 			isCorrelationActive.set(false);
 			isCorrelationLocked.set(false);
