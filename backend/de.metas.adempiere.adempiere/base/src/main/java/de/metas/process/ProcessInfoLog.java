@@ -40,15 +40,17 @@ public final class ProcessInfoLog implements Serializable
 		final BigDecimal number = null;
 		final ITableRecordReference recordReference = null;
 		final AdIssueId adIssueId = null;
-		return new ProcessInfoLog(date, number, message, recordReference, adIssueId);
+		final String trxName = null;
+
+		return new ProcessInfoLog(date, number, message, recordReference, adIssueId, trxName);
 	}
 
-	public static ProcessInfoLog ofMessageAndTableReference(final String message, @Nullable final ITableRecordReference tableRecordReference)
+	public static ProcessInfoLog ofMessageAndTableReference(final String message, @Nullable final ITableRecordReference tableRecordReference, @Nullable final String trxName)
 	{
 		final Timestamp date = null;
 		final BigDecimal number = null;
 		final AdIssueId adIssueId = null;
-		return new ProcessInfoLog(date, number, message, tableRecordReference, adIssueId);
+		return new ProcessInfoLog(date, number, message, tableRecordReference, adIssueId, trxName);
 	}
 
 	/**
@@ -65,9 +67,10 @@ public final class ProcessInfoLog implements Serializable
 			final BigDecimal P_Number,
 			final String P_Msg,
 			final ITableRecordReference tableRecordReference,
-			final AdIssueId issueId)
+			final AdIssueId issueId,
+			final String trxName)
 	{
-		this(nextLogId.getAndIncrement(), P_Date, P_Number, P_Msg, tableRecordReference, issueId);
+		this(nextLogId.getAndIncrement(), P_Date, P_Number, P_Msg, tableRecordReference, issueId, trxName);
 	}    // ProcessInfoLog
 
 	/**
@@ -86,7 +89,8 @@ public final class ProcessInfoLog implements Serializable
 			final BigDecimal P_Number,
 			final String P_Msg,
 			@Nullable final ITableRecordReference tableRecordReference,
-			@Nullable final AdIssueId ad_Issue_ID)
+			@Nullable final AdIssueId ad_Issue_ID,
+			@Nullable final String trxName)
 	{
 		m_Log_ID = Log_ID;
 		m_P_Date = P_Date;
@@ -94,6 +98,7 @@ public final class ProcessInfoLog implements Serializable
 		m_P_Msg = P_Msg;
 		m_Table_Record_Ref = tableRecordReference;
 		m_Ad_Issue_ID = ad_Issue_ID;
+		this.trxName = trxName;
 	}
 
 	private static final AtomicInteger nextLogId = new AtomicInteger(1);
@@ -109,6 +114,9 @@ public final class ProcessInfoLog implements Serializable
 
 	@Nullable
 	private final ITableRecordReference m_Table_Record_Ref;
+
+	@Nullable
+	private final String trxName;
 
 	public int getLog_ID()
 	{
@@ -145,6 +153,12 @@ public final class ProcessInfoLog implements Serializable
 	public AdIssueId getAdIssueId()
 	{
 		return m_Ad_Issue_ID;
+	}
+
+	@Nullable
+	public String getTrxName()
+	{
+		return trxName;
 	}
 
 	public boolean isSavedInDB()

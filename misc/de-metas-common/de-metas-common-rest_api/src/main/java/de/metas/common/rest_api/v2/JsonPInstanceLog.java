@@ -42,9 +42,11 @@ import javax.annotation.Nullable;
 public class JsonPInstanceLog
 {
 	@NonNull
+	@JsonProperty("message")
 	String message;
 
 	@Nullable
+	@JsonProperty("tableRecordRef")
 	JsonTableRecordReference tableRecordReference;
 
 	@JsonCreator

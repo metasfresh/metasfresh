@@ -1141,7 +1141,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	@Override
 	public ILoggable addTableRecordReferenceLog(@NonNull final ITableRecordReference recordRef, @NonNull final String type, @Nullable final String trxName)
 	{
-		final ProcessInfoLog processInfoLog = ProcessInfoLog.ofMessageAndTableReference(getMessageForRecordReferenceLog(type, trxName), recordRef);
+		final ProcessInfoLog processInfoLog = ProcessInfoLog.ofMessageAndTableReference(getMessageForRecordReferenceLog(type, trxName), recordRef, trxName);
 
 		getResult().addLog(processInfoLog);
 

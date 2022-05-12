@@ -742,8 +742,9 @@ public class ProcessExecutionResult
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, final AdIssueId adIssueId)
 	{
 		final ITableRecordReference recordReference = null;
+		final String trxName = null;
 
-		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg, recordReference, adIssueId));
+		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg, recordReference, adIssueId, trxName));
 	}
 
 	/**************************************************************************
@@ -758,16 +759,18 @@ public class ProcessExecutionResult
 	{
 		final AdIssueId adIssueId = null;
 		final ITableRecordReference tableRecordReference = null;
+		final String trxName = null;
 
-		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg, tableRecordReference, adIssueId));
+		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg, tableRecordReference, adIssueId, trxName));
 	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
 		final AdIssueId adIssueId = null;
 		final ITableRecordReference tableRecordReference = null;
+		final String trxName = null;
 
-		addLog(new ProcessInfoLog(Log_ID != null ? Log_ID.getRepoId() : -1, P_Date, P_Number, P_Msg, tableRecordReference, adIssueId));
+		addLog(new ProcessInfoLog(Log_ID != null ? Log_ID.getRepoId() : -1, P_Date, P_Number, P_Msg, tableRecordReference, adIssueId, trxName));
 	}    // addLog
 
 	/**
@@ -783,8 +786,9 @@ public class ProcessExecutionResult
 
 		final AdIssueId adIssueId = null;
 		final ITableRecordReference tableRecordReference = null;
+		final String trxName = null;
 
-		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg, tableRecordReference, adIssueId));
+		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg, tableRecordReference, adIssueId, trxName));
 	}    // addLog
 
 	/**

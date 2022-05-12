@@ -56,6 +56,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -242,6 +243,6 @@ public class ExternalSystemService
 				.map(jsonRecordRef -> TableRecordReference.of(jsonRecordRef.getTableName(), jsonRecordRef.getRecordId().getValue()))
 				.orElse(null);
 
-		return ProcessInfoLog.ofMessageAndTableReference(pInstanceLog.getMessage(), tableRecordReference);
+		return ProcessInfoLog.ofMessageAndTableReference(pInstanceLog.getMessage(), tableRecordReference, ITrx.TRXNAME_None);
 	}
 }

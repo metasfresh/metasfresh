@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
-import de.metas.common.rest_api.v1.JsonPInstanceLog;
+import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
+import de.metas.common.rest_api.v2.JsonPInstanceLog;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -34,7 +34,6 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -56,7 +55,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
+				.toD("{{metasfresh.externalsystem.v2.api.uri}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
 		//@formatter:on
 	}
 
@@ -74,6 +73,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 		final CreatePInstanceLogRequest createPInstanceLogRequest = CreatePInstanceLogRequest.builder()
 				.log(JsonPInstanceLog.builder()
 							 .message(logMessageRequest.getLogMessage())
+							 .tableRecordRef(logMessageRequest.getTableRecordReference())
 							 .build())
 				.build();
 
