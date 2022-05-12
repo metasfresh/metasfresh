@@ -117,6 +117,7 @@ public class ApiAuditFilter_StepDef
 		final String path = DataTableUtil.extractStringForColumnName(row, "Path");
 		final String name = DataTableUtil.extractStringForColumnName(row, "AD_User.Name");
 		final String status = DataTableUtil.extractStringForColumnName(row, "Status");
+		final Integer pInstanceId = DataTableUtil.extractIntegerOrNullForColumnName(row,"OPT." + I_API_Request_Audit.COLUMNNAME_AD_PInstance_ID);
 
 		final I_API_Request_Audit requestAuditRecord = queryBL
 				.createQueryBuilder(I_API_Request_Audit.class)
@@ -128,6 +129,11 @@ public class ApiAuditFilter_StepDef
 		assertThat(method).isEqualTo(requestAuditRecord.getMethod());
 		assertThat(requestAuditRecord.getPath()).contains(path);
 		assertThat(status).isEqualTo(requestAuditRecord.getStatus());
+
+		if (pInstanceId != null)
+		{
+			assertThat(requestAuditRecord.getAD_PInstance_ID()).isEqualTo(pInstanceId);
+		}
 
 		final I_AD_User adUserRecord = queryBL
 				.createQueryBuilder(I_AD_User.class)

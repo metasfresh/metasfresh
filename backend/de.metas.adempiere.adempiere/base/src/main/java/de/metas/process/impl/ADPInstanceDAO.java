@@ -3,6 +3,7 @@ package de.metas.process.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -25,6 +26,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance;
@@ -45,6 +47,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -277,7 +280,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			return ImmutableList.of();
 		}
 
-		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg "
+		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg, AD_Table_ID, Record_ID, AD_Issue_ID "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
 				// Order chronologically
@@ -300,7 +303,14 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				final Timestamp date = rs.getTimestamp(2);
 				final BigDecimal number = rs.getBigDecimal(3);
 				final String message = rs.getString(4);
-				final ProcessInfoLog log = new ProcessInfoLog(logId, date, number, message);
+				final int adTableId = rs.getInt(5);
+				final int recordId = rs.getInt(6);
+				final int issueId = rs.getInt(7);
+
+				final TableRecordReference tableRecordReference = TableRecordReference.ofOrNull(adTableId, recordId);
+
+				final ProcessInfoLog log = new ProcessInfoLog(logId, date, number, message, tableRecordReference, AdIssueId.ofRepoIdOrNull(issueId));
+
 				log.markAsSavedInDB();
 				logs.add(log);
 			}
@@ -344,20 +354,36 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 
 		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
-				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg)"
-				+ " VALUES (?, ?, ?, ?, ?)";
+				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg, AD_Table_ID, Record_ID, AD_Issue_ID)"
+				+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		PreparedStatement pstmt = null;
+
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			for (final ProcessInfoLog log : logsToSave)
 			{
+				final Integer tableId = Optional.ofNullable(log.getTableRecordReference())
+						.map(ITableRecordReference::getAD_Table_ID)
+						.orElse(null);
+
+				final Integer recordId = Optional.ofNullable(log.getTableRecordReference())
+						.map(ITableRecordReference::getRecord_ID)
+						.orElse(null);
+
+				final Integer adIssueId = Optional.ofNullable(log.getAdIssueId())
+						.map(AdIssueId::getRepoId)
+						.orElse(null);
+
 				final Object[] sqlParams = new Object[] {
 						pinstanceId,
 						log.getLog_ID(),
 						log.getP_Date(),
 						log.getP_Number(),
-						log.getP_Msg()
+						log.getP_Msg(),
+						tableId,
+						recordId,
+						adIssueId
 				};
 
 				DB.setParameters(pstmt, sqlParams);
@@ -480,7 +506,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setErrorMsg(result.getSummary());
 		saveRecord(adPInstance);
 
-		saveProcessInfoLogs(pinstanceId, result.getCurrentLogs());
+		result.syncLogsToDB();
 	}
 
 	@Override

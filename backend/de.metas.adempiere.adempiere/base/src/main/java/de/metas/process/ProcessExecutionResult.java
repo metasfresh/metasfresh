@@ -10,6 +10,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
@@ -17,6 +18,7 @@ import de.metas.report.ReportResultData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.async.Debouncer;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,6 +26,8 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
@@ -67,6 +71,9 @@ import java.util.Set;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ProcessExecutionResult
 {
+	private static String DEBOUNCER_BUFFER_MAX_SIZE_SYSCONFIG_NAME = "de.metas.process.debouncer.bufferMaxSize";
+	private static String DEBOUNCER_DELAY_IN_MILLIS_SYSCONFIG_NAME = "de.metas.process.debouncer.delayInMillis";
+
 	public static ProcessExecutionResult newInstanceForADPInstanceId(final PInstanceId pinstanceId)
 	{
 		return new ProcessExecutionResult(pinstanceId);
@@ -91,7 +98,7 @@ public class ProcessExecutionResult
 		Never
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
+	private static final Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
 	private PInstanceId pinstanceId;
 
@@ -110,12 +117,15 @@ public class ProcessExecutionResult
 	 */
 	private boolean timeout = false;
 
-	/**
-	 * Log Info
-	 */
-	@Nullable
-	private transient List<ProcessInfoLog> logs;
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final transient Debouncer<ProcessInfoLog> logsDebouncer = Debouncer.<ProcessInfoLog>builder()
+			.name("logsDebouncer")
+			.bufferMaxSize(sysConfigBL.getIntValue(DEBOUNCER_BUFFER_MAX_SIZE_SYSCONFIG_NAME, 100))
+			.delayInMillis(sysConfigBL.getIntValue(DEBOUNCER_DELAY_IN_MILLIS_SYSCONFIG_NAME, 1000))
+			.consumer(this::syncCollectedLogsToDB)
+			.build();
 
 	//
 	// Reporting
@@ -183,7 +193,6 @@ public class ProcessExecutionResult
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
-		this.logs = new ArrayList<>();
 	}
 
 	// note: my local ProcessExecutionResultTest failed without this constructor
@@ -234,7 +243,7 @@ public class ProcessExecutionResult
 				.add("summary", summary)
 				.add("error", error)
 				.add("printFormat", printFormat)
-				.add("logs.size", logs == null ? 0 : logs.size())
+				.add("logs.size", logsDebouncer.getCurrentBufferSize())
 				.add("AD_PInstance_ID", pinstanceId)
 				.add("recordToSelectAfterExecution", recordToSelectAfterExecution)
 				.add("recordsToOpen", recordsToOpen)
@@ -690,52 +699,51 @@ public class ProcessExecutionResult
 	}
 
 	/**
-	 * Gets current logs.
+	 * Gets current stored logs.
 	 * <p>
-	 * If needed, it will load the logs.
 	 *
 	 * @return logs inner list; never fails
 	 */
 	private List<ProcessInfoLog> getLogsInnerList()
 	{
-		if (logs == null)
+		try
 		{
-			try
-			{
-				logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getPinstanceId()));
-			}
-			catch (final Exception ex)
-			{
-				// Don't fail log lines failed loading because most of the APIs rely on this.
-				// In case we would propagate the exception we would face:
-				// * worst case would be that it will stop some important execution.
-				// * best case the exception would be lost somewhere without any notification
-				logs = new ArrayList<>();
-				logs.add(ProcessInfoLog.ofMessage("Ops, sorry we failed loading the log lines. (details in console)"));
-				logger.warn("Failed loading log lines for {}", this, ex);
-			}
+			return new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getPinstanceId()));
 		}
-		return logs;
-	}
+		catch (final Exception ex)
+		{
+			// Don't fail log lines failed loading because most of the APIs rely on this.
+			// In case we would propagate the exception we would face:
+			// * worst case would be that it will stop some important execution.
+			// * best case the exception would be lost somewhere without any notification
+			final ArrayList<ProcessInfoLog> tempLogs = new ArrayList<>();
+			tempLogs.add(ProcessInfoLog.ofMessage("Ops, sorry we failed loading the log lines. (details in console)"));
+			logger.warn("Failed loading log lines for {}", this, ex);
 
-	/**
-	 * Get current logs (i.e. logs which were recorded to this instance).
-	 * <p>
-	 * This method will not load the logs.
-	 *
-	 * @return current logs
-	 */
-	public List<ProcessInfoLog> getCurrentLogs()
-	{
-		// NOTE: don't load them!
-		final List<ProcessInfoLog> logs = this.logs;
-		return logs == null ? ImmutableList.of() : ImmutableList.copyOf(logs);
+			return tempLogs;
+		}
 	}
 
 	public void markLogsAsStale()
 	{
 		// TODO: shall we save existing ones ?!
-		logs = null;
+		logsDebouncer.purgeBuffer();
+	}
+
+	/**************************************************************************
+	 * Add to Log
+	 *
+	 * @param Log_ID Log ID
+	 * @param P_Date Process Date
+	 * @param P_Number Process Number
+	 * @param P_Msg Process Message
+	 * @param adIssueId AD_Issue reference of an issue created during process execution.
+	 */
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, final AdIssueId adIssueId)
+	{
+		final ITableRecordReference recordReference = null;
+
+		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg, recordReference, adIssueId));
 	}
 
 	/**************************************************************************
@@ -748,12 +756,18 @@ public class ProcessExecutionResult
 	 */
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
+		final AdIssueId adIssueId = null;
+		final ITableRecordReference tableRecordReference = null;
+
+		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg, tableRecordReference, adIssueId));
 	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID != null ? Log_ID.getRepoId() : -1, P_Date, P_Number, P_Msg));
+		final AdIssueId adIssueId = null;
+		final ITableRecordReference tableRecordReference = null;
+
+		addLog(new ProcessInfoLog(Log_ID != null ? Log_ID.getRepoId() : -1, P_Date, P_Number, P_Msg, tableRecordReference, adIssueId));
 	}    // addLog
 
 	/**
@@ -767,7 +781,10 @@ public class ProcessExecutionResult
 	{
 		final Timestamp timestampToUse = P_Date != null ? P_Date : SystemTime.asTimestamp();
 
-		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg));
+		final AdIssueId adIssueId = null;
+		final ITableRecordReference tableRecordReference = null;
+
+		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg, tableRecordReference, adIssueId));
 	}    // addLog
 
 	/**
@@ -782,17 +799,7 @@ public class ProcessExecutionResult
 			return;
 		}
 
-		final List<ProcessInfoLog> logs;
-		if (this.logs == null)
-		{
-			logs = this.logs = new ArrayList<>();
-		}
-		else
-		{
-			logs = this.logs;
-		}
-
-		logs.add(logEntry);
+		logsDebouncer.add(logEntry);
 	}
 
 	public void propagateErrorIfAny()
@@ -838,6 +845,21 @@ public class ProcessExecutionResult
 		recordsToOpen = otherResult.recordsToOpen;
 		webuiViewToOpen = otherResult.webuiViewToOpen;
 		displayQRCode = otherResult.displayQRCode;
+	}
+
+	public void syncLogsToDB()
+	{
+		logsDebouncer.processBufferSync();
+	}
+
+	private void syncCollectedLogsToDB(@NonNull final List<ProcessInfoLog> collectedProcessInfoLogs)
+	{
+		if (collectedProcessInfoLogs.isEmpty())
+		{
+			return;
+		}
+
+		Services.get(IADPInstanceDAO.class).saveProcessInfoLogs(getPinstanceId(), collectedProcessInfoLogs);
 	}
 
 	//

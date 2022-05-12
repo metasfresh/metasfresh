@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.common.JsonTestResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -36,6 +37,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -204,5 +207,21 @@ public class REST_API_StepDef
 		final JsonTestResponse mappedResponseBody = mapper.readValue(responseBody, JsonTestResponse.class);
 
 		assertThat(apiResponse.getMessageBody()).isEqualTo(mappedResponseBody.getMessageBody());
+	}
+
+	@And("following http headers are set on context")
+	public void add_http_headers(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> customHeaders = new HashMap<>();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String headerName = DataTableUtil.extractStringForColumnName(row, "Name");
+			final String headerValue = DataTableUtil.extractStringForColumnName(row, "Value");
+
+			customHeaders.put(headerName, headerValue);
+		}
+
+		testContext.setHttpHeaders(customHeaders);
 	}
 }
