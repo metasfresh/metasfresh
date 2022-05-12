@@ -1,18 +1,9 @@
 package de.metas.procurement.base.process;
 
-import java.sql.Timestamp;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.TrxCallable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Ini;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
@@ -25,6 +16,17 @@ import de.metas.procurement.base.PMMContractBuilder;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+import org.adempiere.ad.trx.api.TrxCallable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -115,6 +117,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 		final TrxCallable<I_C_Flatrate_Term> callable = () -> {
 			final I_C_Flatrate_Term term = PMMContractBuilder.newBuilder()
 					.setCtx(getCtx())
+					.setOrgId(OrgId.ofRepoId(CoalesceUtil.firstGreaterThanZero(p_C_BPartner.getAD_Org_ID(), Env.getAD_Org_ID(Env.getCtx()))))
 					.setFailIfNotCreated(true)
 					.setComplete(true)
 					.setC_Flatrate_Conditions(p_C_Flatrate_Conditions)
@@ -135,10 +138,6 @@ public class C_Flatrate_Term_Create_ProcurementContract
 		return trxManager.call(ITrx.TRXNAME_None, config, callable);
 	}
 
-	/**
-	 * If the given <code>parameterName</code> is {@value #PARAM_NAME_AD_USER_IN_CHARGE_ID},<br>
-	 * then the method returns the user set in <code>AD_SysConfig</code> {@value #SYSCONFIG_AD_USER_IN_CHARGE}.
-	 */
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{

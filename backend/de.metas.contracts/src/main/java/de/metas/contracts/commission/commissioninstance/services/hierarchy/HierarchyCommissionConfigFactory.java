@@ -60,6 +60,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.process.FlatrateTermCreator;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -147,7 +148,7 @@ public class HierarchyCommissionConfigFactory implements ICommissionConfigFactor
 				.forEach(commissionTermRecordsBuilder::add);
 
 		getConditionsForSalesRepWithoutContract()
-				.map(flatrateConditions -> createGenericContract(flatrateConditions, commissionTermRecordsBuilder.build(), allBPartnerIds, beneficiary))
+				.map(flatrateConditions -> createGenericContract(contractRequest.getOrgId(), flatrateConditions, commissionTermRecordsBuilder.build(), allBPartnerIds, beneficiary))
 				.ifPresent(contractTermList -> contractTermList.forEach(commissionTermRecordsBuilder::add));
 
 		final ImmutableMap<FlatrateTermId, CommissionConfig> contractId2Config = createCommissionConfigsFor(
@@ -202,6 +203,7 @@ public class HierarchyCommissionConfigFactory implements ICommissionConfigFactor
 	 */
 	@NonNull
 	private ImmutableList<I_C_Flatrate_Term> createGenericContract(
+			@NonNull final OrgId orgId,
 			@NonNull final I_C_Flatrate_Conditions flatrateCondition,
 			@NonNull final ImmutableList<I_C_Flatrate_Term> existingCommissionTermRecords,
 			@NonNull final ImmutableList<BPartnerId> hierarchyBPartnerIds,
@@ -229,6 +231,7 @@ public class HierarchyCommissionConfigFactory implements ICommissionConfigFactor
 
 		final FlatrateTermCreator termCreator = FlatrateTermCreator.builder()
 				.ctx(Env.getCtx())
+				.orgId(orgId)
 				.products(ImmutableList.of(commissionProductRecord))
 				.startDate(Timestamp.from(Instant.now()))
 				.endDate(Timestamp.from(Instant.now().plus(NO_COMMISSION_AGREEMENT_DEFAULT_CONTRACT_DURATION)))

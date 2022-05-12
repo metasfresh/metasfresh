@@ -1,16 +1,10 @@
 package de.metas.procurement.base.impl;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.PMMContractBuilder;
@@ -24,6 +18,12 @@ import de.metas.rfq.exceptions.RfQException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /*
  * #%L
@@ -167,6 +167,7 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 		// Create a new contract
 		final PMMContractBuilder contractBuilder = PMMContractBuilder.newBuilder()
 				.setCtx(InterfaceWrapperHelper.getCtx(rfqResponseLine))
+				.setOrgId(OrgId.ofRepoId(rfqResponseLine.getAD_Org_ID()))
 				.setFailIfNotCreated(true)
 				.setComplete(false)
 				.setC_Flatrate_Conditions(conditions)

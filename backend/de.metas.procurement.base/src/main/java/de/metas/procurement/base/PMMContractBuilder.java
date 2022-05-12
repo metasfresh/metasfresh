@@ -1,18 +1,27 @@
 package de.metas.procurement.base;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
+import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.IPeriodBL;
+import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -28,27 +37,18 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
-
-import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.IPeriodBL;
-import de.metas.contracts.CreateFlatrateTermRequest;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
-import de.metas.procurement.base.model.I_C_Flatrate_Term;
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /*
  * #%L
@@ -82,8 +82,6 @@ public class PMMContractBuilder
 {
 	/**
 	 * Create a new builder in order to create a new flatrate term and data entries.
-	 *
-	 * @return
 	 */
 	public static PMMContractBuilder newBuilder()
 	{
@@ -96,9 +94,6 @@ public class PMMContractBuilder
 	 *
 	 * If a builder is created this way, then the {@link #build()} method will only create the term's data entries and not change any property of the given <code>term</code>.
 	 * Depending on {@link #setComplete(boolean)}, it might however complete the given <code>term</code>.
-	 *
-	 * @param term
-	 * @return
 	 */
 	public static PMMContractBuilder newBuilder(final I_C_Flatrate_Term term)
 	{
@@ -116,6 +111,7 @@ public class PMMContractBuilder
 
 	//
 	// Parameters for the term
+	private OrgId _orgId;
 	private IContextAware _context;
 	private I_C_Flatrate_Conditions _flatrateConditions;
 	private I_C_BPartner _bpartner;
@@ -175,6 +171,7 @@ public class PMMContractBuilder
 		return _flatrateTermRef.get();
 	}
 
+	@Nullable
 	private I_C_Flatrate_Term buildInTrx()
 	{
 		// gh #489 only create a new term if none was given to this builder when it was created.
@@ -232,7 +229,7 @@ public class PMMContractBuilder
 		try
 		{
 			final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
-					.orgId(OrgId.ofRepoId(flatrateConditions.getAD_Org_ID()))
+					.orgId(_orgId)
 					.context(context)
 					.bPartner(bpartner)
 					.conditions(flatrateConditions)
@@ -329,7 +326,7 @@ public class PMMContractBuilder
 		return newDataEntry;
 	}
 
-	private final void assertNotProcessed()
+	private void assertNotProcessed()
 	{
 		Check.assume(!_processed.get(), "Not already processed");
 	}
@@ -338,9 +335,6 @@ public class PMMContractBuilder
 	 * Sets the context to be used within the {@link #build()} method. Giving a ctx to this builder is mandatory,
 	 * unless the builder was created with {@link #newBuilder(I_C_Flatrate_Term)}.
 	 * If that case, if this method was omitted, then the given <code>term</code>'s ctx is used instead.
-	 *
-	 * @param ctx
-	 * @return
 	 */
 	public PMMContractBuilder setCtx(final Properties ctx)
 	{
@@ -359,6 +353,12 @@ public class PMMContractBuilder
 
 		Check.assumeNotNull(_context, "context not null");
 		return _context;
+	}
+
+	public PMMContractBuilder setOrgId(@NonNull final OrgId orgId)
+	{
+		_orgId = orgId;
+		return this;
 	}
 
 	public PMMContractBuilder setC_Flatrate_Conditions(final I_C_Flatrate_Conditions flatrateConditions)
@@ -500,9 +500,6 @@ public class PMMContractBuilder
 
 	/**
 	 * Set one price that will be applied to all {@link I_C_Flatrate_DataEntry} that this builder shall create.
-	 *
-	 * @param flatrateAmtPerUOM
-	 * @return
 	 */
 	public final PMMContractBuilder setFlatrateAmtPerUOM(final BigDecimal flatrateAmtPerUOM)
 	{
@@ -515,10 +512,6 @@ public class PMMContractBuilder
 	 * Set a price for the given date. When the {@link I_C_Flatrate_DataEntry}s are created according to the term's calendar's {@link I_C_Period}s, then for each period,
 	 * the <code>flatrateAmtPerUOM</code> that was set for the earliest date (of course within the period's <code>StartDate</code> and <code>EndDate</code> will be used).
 	 * If no such date was added, then the value set via {@link #setFlatrateAmtPerUOM(BigDecimal)} will be used.
-	 *
-	 * @param date
-	 * @param flatrateAmtPerUOM
-	 * @return
 	 */
 	public PMMContractBuilder setFlatrateAmtPerUOM(final Date date, final BigDecimal flatrateAmtPerUOM)
 	{
