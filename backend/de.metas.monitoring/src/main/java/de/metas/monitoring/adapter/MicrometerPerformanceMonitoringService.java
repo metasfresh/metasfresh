@@ -33,10 +33,12 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @Primary
@@ -46,6 +48,12 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService;
 	private final ThreadLocal<Integer> step = ThreadLocal.withInitial(() -> 1);
 	private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
+	private final AtomicInteger correlationIdProvider = new AtomicInteger();
+	private final ThreadLocal<Integer> correlationId = ThreadLocal.withInitial(() -> 0);
+	private final ThreadLocal<Boolean> isCorrelationActive = ThreadLocal.withInitial(() -> false);
+	private final ThreadLocal<Boolean> isCorrelationLocked = ThreadLocal.withInitial(() -> false);
+	private final ThreadLocal<String[]> correlationTriggers = ThreadLocal.withInitial(() -> getCorrelationTriggers());
+
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService,
@@ -61,12 +69,15 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final TransactionMetadata metadata)
 	{
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
+
 		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
-		mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
-		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
-		step.set(step.get() + 1);
-		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
-		depth.set(depth.get() + 1);
+
+		if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationActive.get()){
+			isCorrelationActive.set(true);
+			correlationId.set(correlationIdProvider.getAndIncrement());
+		}
+
+		addAdditionalTags(tags);
 
 		final Callable<V> callableToUse;
 		if (apmPerformanceMonitoringService.isPresent())
@@ -79,6 +90,13 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		}
 		try(final IAutoCloseable ignored = this.reduceDepth())
 		{
+			if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationLocked.get()){
+				try(final IAutoCloseable ignored2 = this.endCorrelation())
+				{
+					isCorrelationLocked.set(true);
+					return recordCallable(callableToUse, tags, "mf." + metadata.getType().getCode());
+				}
+			}
 			return recordCallable(callableToUse, tags, "mf." + metadata.getType().getCode());
 		}
 	}
@@ -93,11 +111,12 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
 		mkTagIfNotNull("SubType", metadata.getSubType()).ifPresent(tags::add);
 		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
-		mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
-		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
-		step.set(step.get() + 1);
-		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
-		depth.set(depth.get() + 1);
+
+		if(isCorrelationTrigger(metadata.getType()) && !isCorrelationActive.get()){
+			isCorrelationActive.set(true);
+		}
+
+		addAdditionalTags(tags);
 
 		final Callable<V> callableToUse;
 		if (apmPerformanceMonitoringService.isPresent())
@@ -109,6 +128,13 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			callableToUse = callable;
 		}
 		try(final IAutoCloseable ignored = this.reduceDepth()){
+			if(isCorrelationTrigger(metadata.getType()) && !isCorrelationLocked.get()){
+				try(final IAutoCloseable ignored2 = this.endCorrelation())
+				{
+					isCorrelationLocked.set(true);
+					return recordCallable(callableToUse, tags, "mf." + metadata.getType());
+				}
+			}
 			return recordCallable(callableToUse, tags, "mf." + metadata.getType());
 		}
 	}
@@ -150,10 +176,38 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		}
 	}
 
+	private void addAdditionalTags(ArrayList<Tag> tags){
+		mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
+		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
+		step.set(step.get() + 1);
+		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
+		depth.set(depth.get() + 1);
+		if(isCorrelationActive.get()){
+			mkTagIfNotNull("CorrelationId", String.valueOf(correlationId.get())).ifPresent(tags::add);
+		}
+	}
+
 	private IAutoCloseable reduceDepth()
 	{
 		return () -> {
 			depth.set(depth.get() - 1);
+		};
+	}
+
+	private Boolean isCorrelationTrigger(String type){
+		return Arrays.stream(correlationTriggers.get()).anyMatch(type::equals);
+	}
+
+	private String[] getCorrelationTriggers(){
+		String[] correlationTriggers = {"po"};
+		return correlationTriggers;
+	}
+
+	private IAutoCloseable endCorrelation(){
+		return () -> {
+			isCorrelationActive.set(false);
+			isCorrelationLocked.set(false);
+			step.set(1);
 		};
 	}
 }
