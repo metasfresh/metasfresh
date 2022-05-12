@@ -39,7 +39,9 @@ public class AppConfiguration
 	private final ApplicationContext context;
 	private final CamelContext camelContext;
 
-	public AppConfiguration(final ApplicationContext context, final CamelContext camelContext)
+	public AppConfiguration(
+			final ApplicationContext context,
+			final CamelContext camelContext)
 	{
 		this.context = context;
 		this.camelContext = camelContext;
@@ -54,8 +56,9 @@ public class AppConfiguration
 	@PostConstruct
 	public void auditEventNotifier()
 	{
+		// note that calling producerTemplate() here does *not* mean wh create an additional instance. See https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans for details
 		camelContext.getManagementStrategy()
-				.addEventNotifier(new AuditEventNotifier(context.getBean(ProducerTemplate.class)));
+				.addEventNotifier(new AuditEventNotifier(producerTemplate()));
 	}
 
 	@Bean
