@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.v2.JsonPInstanceLog;
 import lombok.NonNull;
@@ -79,5 +80,6 @@ public class LogMessageRouteBuilder extends RouteBuilder
 
 		exchange.getIn().setBody(createPInstanceLogRequest);
 		exchange.getIn().setHeader(HEADER_PINSTANCE_ID, logMessageRequest.getPInstanceId().getValue());
+		exchange.getIn().setHeader(ExternalSystemConstants.HEADER_PINSTANCE_ID, logMessageRequest.getPInstanceId().getValue());
 	}
 }
