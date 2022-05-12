@@ -272,9 +272,17 @@ Feature:product get/create/update using metasfresh api
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
 
-    Given metasfresh contains M_Products:
+    And metasfresh contains M_Products:
       | Identifier | Value        | Name        | OPT.M_Product_Category_ID.Identifier |
       | product_1  | productValue | productName | standard_category                    |
+
+    And metasfresh contains C_BPartners:
+      | Identifier | Name         | OPT.IsVendor | OPT.IsCustomer |
+      | bpartner_1 | BPartnerName | N            | Y              |
+
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsExcludedFromSale | OPT.ExclusionFromSaleReason | OPT.IsExcludedFromPurchase | OPT.ExclusionFromPurchaseReason | OPT.ProductNo | OPT.UPC |
+      | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
 
     And metasfresh contains S_ExternalReferences:
       | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | RecordId.Identifier |
@@ -283,5 +291,5 @@ Feature:product get/create/update using metasfresh api
     When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
 
     Then validate retrieve product response
-      | M_Product_ID.Identifier | Name        | UomSymbol | M_Product_Category_ID.Identifier |
-      | product_1               | productName | Stk       | standard_category                |
+      | M_Product_ID.Identifier | Name        | UomSymbol | M_Product_Category_ID.Identifier | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason | bpartners.ean |
+      | product_1               | productName | Stk       | standard_category                | bpartner_1               | bpProductNo         | true                         | testForSale                       | true                             | testForPurchase                       | ean           |

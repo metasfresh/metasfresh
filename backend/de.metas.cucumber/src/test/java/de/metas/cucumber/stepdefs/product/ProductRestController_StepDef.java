@@ -129,6 +129,7 @@ public class ProductRestController_StepDef
 	private void verifyBPartnerProduct(@NonNull final JsonProductBPartner returnedProductBPartner, @NonNull final Map<String, String> row)
 	{
 		final String productNo = DataTableUtil.extractStringForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ProductNo);
+		final String ean = DataTableUtil.extractStringForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + "ean");
 		final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale);
 		final String exclusionFromSaleReason = DataTableUtil.extractStringOrNullForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason);
 		final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase);
@@ -143,6 +144,7 @@ public class ProductRestController_StepDef
 		assertThat(returnedProductBPartner.getExclusionFromSaleReason()).isEqualTo(exclusionFromSaleReason);
 		assertThat(returnedProductBPartner.isExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
 		assertThat(returnedProductBPartner.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
+		assertThat(returnedProductBPartner.getEan()).isEqualTo(ean);
 	}
 
 	private void validateJsonProduct(@NonNull final Map<String, String> row, @NonNull final JsonProduct jsonProduct)
@@ -162,5 +164,9 @@ public class ProductRestController_StepDef
 		assertThat(jsonProduct.getName()).isEqualTo(name);
 		assertThat(jsonProduct.getUom()).isEqualTo(uomSymbol);
 		assertThat(jsonProduct.getProductCategoryId().getValue()).isEqualTo(productCategory.getM_Product_Category_ID());
+
+		final JsonProductBPartner bpartnerProduct = Check.singleElement(jsonProduct.getBpartners());
+
+		verifyBPartnerProduct(bpartnerProduct, row);
 	}
 }

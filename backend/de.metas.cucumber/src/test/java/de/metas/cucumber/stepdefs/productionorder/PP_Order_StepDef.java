@@ -83,6 +83,8 @@ import java.util.regex.Pattern;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_ComponentType;
+import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_QtyBatch;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Order_StepDef
@@ -102,8 +104,6 @@ public class PP_Order_StepDef
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
 
-	private final TestContext testContext;
-
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
@@ -112,8 +112,7 @@ public class PP_Order_StepDef
 			@NonNull final PP_Order_StepDefData ppOrderTable,
 			@NonNull final S_Resource_StepDefData resourceTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable,
-			@NonNull final TestContext testContext)
+			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -123,7 +122,6 @@ public class PP_Order_StepDef
 		this.resourceTable = resourceTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ppOrderBomLineTable = ppOrderBomLineTable;
-		this.testContext = testContext;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -349,78 +347,5 @@ public class PP_Order_StepDef
 
 			assertThat(ppOrderAttributesKeys).isEqualTo(expectedAttributesKeys);
 		}
-	}
-
-	@And("^store PP_Order endpointPath (.*) in context$")
-	public void store_pp_order_endpointPath_in_context(@NonNull String endpointPath)
-	{
-		final String regex = ".*(:[a-zA-Z]+)/?.*";
-
-		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-		final Matcher matcher = pattern.matcher(endpointPath);
-
-		while (matcher.find())
-		{
-			final String ppOrderIdentifierGroup = matcher.group(1);
-			final String ppOrderIdentifier = ppOrderIdentifierGroup.replace(":", "");
-
-			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
-			assertThat(ppOrder).isNotNull();
-
-			endpointPath = endpointPath.replace(ppOrderIdentifierGroup, String.valueOf(ppOrder.getPP_Order_ID()));
-
-			testContext.setEndpointPath(endpointPath);
-		}
-	}
-
-	@And("validate retrieve pp_order response:")
-	public void validate_retrieve_pp_order_response(@NonNull final DataTable dataTable) throws JsonProcessingException
-	{
-		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
-
-		final JsonResponseManufacturingOrder ppOrderResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonResponseManufacturingOrder.class);
-		assertThat(ppOrderResponse).isNotNull();
-
-		final List<Map<String, String>> tableRows = dataTable.asMaps();
-		for (final Map<String, String> row : tableRows)
-		{
-			validatePPOrder(row, ppOrderResponse);
-		}
-	}
-
-	private void validatePPOrder(@NonNull final Map<String, String> row, @NonNull final JsonResponseManufacturingOrder ppOrderResponse)
-	{
-		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String orgCode = DataTableUtil.extractStringForColumnName(row, "OrgCode");
-		final ZonedDateTime dateOrdered = DataTableUtil.extractZonedDateTimeForColumnName(row, I_PP_Order.COLUMNNAME_DateOrdered);
-		final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeForColumnName(row, I_PP_Order.COLUMNNAME_DatePromised);
-		final ZonedDateTime dateStartSchedule = DataTableUtil.extractZonedDateTimeForColumnName(row, I_PP_Order.COLUMNNAME_DateStartSchedule);
-		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, I_PP_Order.COLUMNNAME_QtyEntered);
-		final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String componentIdentifier = DataTableUtil.extractStringForColumnName(row, "Component" + "." + TABLECOLUMN_IDENTIFIER);
-		final BigDecimal componentQty = DataTableUtil.extractBigDecimalForColumnName(row, "ComponentQty");
-		final String componentType = DataTableUtil.extractStringForColumnName(row, I_PP_Product_BOMLine.COLUMNNAME_ComponentType);
-
-		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
-		assertThat(ppOrder).isNotNull();
-
-		final I_M_Product product = productTable.get(productIdentifier);
-		assertThat(product).isNotNull();
-
-		assertThat(ppOrderResponse.getOrderId().getValue()).isEqualTo(ppOrder.getPP_Order_ID());
-		assertThat(ppOrderResponse.getOrgCode()).isEqualTo(orgCode);
-		assertThat(ppOrderResponse.getDateOrdered()).isEqualTo(dateOrdered);
-		assertThat(ppOrderResponse.getDatePromised()).isEqualTo(datePromised);
-		assertThat(ppOrderResponse.getDateStartSchedule()).isEqualTo(dateStartSchedule);
-		assertThat(ppOrderResponse.getQtyToProduce().getQty()).isEqualTo(qty);
-		assertThat(ppOrderResponse.getQtyToProduce().getUomCode()).isEqualTo(uomCode);
-		assertThat(ppOrderResponse.getProductId().getValue()).isEqualTo(product.getM_Product_ID());
-
-		final I_M_Product component = productTable.get(componentIdentifier);
-		assertThat(component).isNotNull();
-		assertThat(ppOrderResponse.getComponents().get(0).getProduct().getProductNo()).isEqualTo(component.getValue());
-		assertThat(ppOrderResponse.getComponents().get(0).getQty().getQty()).isEqualTo(componentQty);
-		assertThat(ppOrderResponse.getComponents().get(0).getComponentType()).isEqualTo(componentType);
 	}
 }

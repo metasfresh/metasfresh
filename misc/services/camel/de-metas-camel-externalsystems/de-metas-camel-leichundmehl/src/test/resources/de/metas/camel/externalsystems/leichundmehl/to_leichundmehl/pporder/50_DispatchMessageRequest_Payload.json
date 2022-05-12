@@ -96,7 +96,7 @@
   "bpartner": {
     "bpartnerId": 33333,
     "name": "Partner",
-    "glns": [
+    "glnList": [
       "Test GLN"
     ]
   }

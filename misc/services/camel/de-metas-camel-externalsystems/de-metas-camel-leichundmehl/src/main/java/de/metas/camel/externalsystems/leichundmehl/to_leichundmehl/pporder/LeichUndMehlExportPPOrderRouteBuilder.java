@@ -188,7 +188,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		final JsonBPartner jsonBPartner = JsonBPartner.builder()
 				.bpartnerId(jsonResponseComposite.getBpartner().getMetasfreshId().getValue())
 				.name(jsonResponseComposite.getBpartner().getName())
-				.glns(ExportPPOrderHelper.getBPartnerGLNList(jsonResponseComposite))
+				.glnList(ExportPPOrderHelper.getBPartnerGLNList(jsonResponseComposite))
 				.build();
 
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,

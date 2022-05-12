@@ -33,5 +33,5 @@ Feature: Manufacturing order rest controller
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
     Then validate retrieve pp_order response:
-      | PP_Order_ID.Identifier | OrgCode | DateOrdered             | DatePromised            | DateStartSchedule       | QtyEntered | UomCode | M_Product_ID.Identifier | Component.Identifier | ComponentQty | ComponentType | ComponentName | ComponentProductNo | ComponentStocked |
-      | ppOrder                | 001     | 2022-05-09T23:59:00.00Z | 2022-05-09T23:59:00.00Z | 2022-05-09T23:59:00.00Z | 10         | PCE     | finishedGood            | component_1          | 100.0        | CO            | component1    | productValue1      | true             |
+      | PP_Order_ID.Identifier | OrgCode | DateOrdered             | DatePromised            | DateStartSchedule       | QtyEntered | UomCode | M_Product_ID.Identifier | components.M_Product_ID.Identifier | components.QtyBatch | components.ComponentType | components.UomCode |
+      | ppOrder                | 001     | 2022-05-09T23:59:00.00Z | 2022-05-09T23:59:00.00Z | 2022-05-09T23:59:00.00Z | 10         | PCE     | finishedGood            | component_1                        | 100.0               | CO                       | PCE                |

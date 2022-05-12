@@ -45,6 +45,6 @@ public class JsonBPartner
 	String name;
 
 	@Nullable
-	@JsonProperty("glns")
-	List<String> glns;
+	@JsonProperty("glnList")
+	List<String> glnList;
 }
