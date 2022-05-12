@@ -494,6 +494,31 @@ public interface I_C_Invoice
 	String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Invoice.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -1012,6 +1037,27 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_DunningGrace = new ModelColumn<>(I_C_Invoice.class, "DunningGrace", null);
 	String COLUMNNAME_DunningGrace = "DunningGrace";
+
+	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_EMail = new ModelColumn<>(I_C_Invoice.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
 
 	/**
 	 * Set External ID.

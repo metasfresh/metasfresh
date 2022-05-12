@@ -379,6 +379,33 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms(final org.compiere.model.I_C_Incoterms C_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms);
+	}
+
+	@Override
+	public void setC_Incoterms_ID (final int C_Incoterms_ID)
+	{
+		if (C_Incoterms_ID < 1)
+			set_Value (COLUMNNAME_C_Incoterms_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
 	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
@@ -739,6 +766,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.sql.Timestamp getDunningGrace() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DunningGrace);
+	}
+
+	@Override
+	public void setEMail (final @Nullable java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public java.lang.String getEMail()
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
 	}
 
 	@Override
