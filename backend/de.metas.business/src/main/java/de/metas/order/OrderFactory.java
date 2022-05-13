@@ -13,6 +13,7 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -27,6 +28,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -34,6 +36,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +75,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public class OrderFactory
 {
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	public static OrderFactory newPurchaseOrder()
 	{
 		return new OrderFactory()
@@ -181,12 +187,15 @@ public class OrderFactory
 		}
 	}
 
-	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final UomId uomId)
+	public Optional<OrderLineBuilder> orderLineByProductAndUom(
+			@NonNull final ProductId productId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final UomId uomId)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			return orderLineBuilders.stream()
-					.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
+					.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, attributeSetInstanceId, uomId))
 					.findFirst();
 		}
 	}
@@ -296,7 +305,8 @@ public class OrderFactory
 
 	public ZonedDateTime getDatePromised()
 	{
-		return TimeUtil.asZonedDateTime(order.getDatePromised());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+		return TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
 	}
 
 	public OrderFactory shipBPartner(
@@ -335,7 +345,7 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory poReference(final String poReference)
+	public OrderFactory poReference(@Nullable final String poReference)
 	{
 		assertNotBuilt();
 		order.setPOReference(poReference);

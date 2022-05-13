@@ -22,24 +22,6 @@
 
 package de.metas.payment.esr;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.apache.commons.io.IOUtils;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.banking.payment.IPaymentStringDataProvider;
@@ -50,7 +32,26 @@ import de.metas.banking.process.paymentdocumentform.PaymentStringProcessService;
 import de.metas.payment.spi.impl.QRCodeStringParser;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.apache.commons.io.IOUtils;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+
+@Disabled
 class QRCodePaymentTest
 {
 	private static final String expectedIBAN = "CH1589144626811245431";

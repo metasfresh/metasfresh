@@ -38,6 +38,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -146,6 +147,7 @@ public class PPOrderCreatedHandlerTests
 	}
 
 	@Test
+	@Disabled
 	public void handle_CreatedEvent_with_groupId()
 	{
 		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30/* ppOrderId */, MaterialDispoGroupId.ofInt(40));
@@ -251,6 +253,7 @@ public class PPOrderCreatedHandlerTests
 	}
 
 	@Test
+	@Disabled
 	public void handle_CreatedEvent_without_groupId()
 	{
 		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30, (MaterialDispoGroupId)null);
