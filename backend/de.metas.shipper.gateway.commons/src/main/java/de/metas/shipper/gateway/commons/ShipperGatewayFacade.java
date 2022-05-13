@@ -126,6 +126,7 @@ public class ShipperGatewayFacade
 	 */
 	private static BigDecimal computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, @SuppressWarnings("SameParameterValue") final BigDecimal defaultValue)
 	{
+		// we don't yet have a weight-UOM in M_Package, that's why we just add up the values
 		final BigDecimal weightInKgRaw = mpackages.stream()
 				.map(I_M_Package::getPackageWeight) // TODO: we assume it's in Kg
 				.filter(weight -> weight != null && weight.signum() > 0)
