@@ -1,15 +1,14 @@
 package de.metas.shipper.gateway.spi.model;
 
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /*
@@ -56,7 +55,7 @@ public class DeliveryPosition
 	private DeliveryPosition(
 			final int repoId,
 			final int numberOfPackages,
-			final BigDecimal grossWeightKg,
+			@NonNull final BigDecimal grossWeightKg,
 			final String content,
 			@Nullable final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryData customDeliveryData,

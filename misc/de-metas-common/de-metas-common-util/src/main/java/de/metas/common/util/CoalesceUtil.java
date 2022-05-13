@@ -174,7 +174,8 @@ public class CoalesceUtil
 	 *
 	 * @return first greater than zero value or zero
 	 */
-	public BigDecimal firstGreaterThanZero(final BigDecimal... values)
+	@NonNull
+	public BigDecimal firstGreaterThanZero(@Nullable final BigDecimal... values)
 	{
 		if (values == null || values.length == 0)
 		{
@@ -182,7 +183,7 @@ public class CoalesceUtil
 		}
 		for (final BigDecimal value : values)
 		{
-			if (value.signum() > 0)
+			if (value != null && value.signum() > 0)
 			{
 				return value;
 			}

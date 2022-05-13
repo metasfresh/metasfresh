@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
@@ -62,7 +61,9 @@ import java.util.stream.Collectors;
 public class ShipperGatewayFacade
 {
 	private final ShipperGatewayServicesRegistry shipperRegistry;
-	private static UOMPrecision kgPrecision = null;
+
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
 
 	public ShipperGatewayFacade(@NonNull final ShipperGatewayServicesRegistry shipperRegistry)
 	{
@@ -124,14 +125,14 @@ public class ShipperGatewayFacade
 	/**
 	 * In case the weight is <= 0, return the default value.
 	 */
-	private static BigDecimal computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, @SuppressWarnings("SameParameterValue") final BigDecimal defaultValue)
+	private BigDecimal computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, @SuppressWarnings("SameParameterValue") final BigDecimal defaultValue)
 	{
 		// we don't yet have a weight-UOM in M_Package, that's why we just add up the values
 		final BigDecimal weightInKgRaw = mpackages.stream()
 				.map(I_M_Package::getPackageWeight) // TODO: we assume it's in Kg
 				.filter(weight -> weight != null && weight.signum() > 0)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		final BigDecimal weightInKg = getKgUOMPrecision().round(weightInKgRaw);
+		final BigDecimal weightInKg = kgPrecision.round(weightInKgRaw);
 
 		return CoalesceUtil.firstGreaterThanZero(weightInKg, defaultValue);
 	}
@@ -182,16 +183,6 @@ public class ShipperGatewayFacade
 	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
 	{
 		return shipperRegistry.hasServiceSupport(shipperGatewayId);
-	}
-
-	private static UOMPrecision getKgUOMPrecision()
-	{
-		if (kgPrecision == null)
-		{
-			final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-			kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
-		}
-		return kgPrecision;
 	}
 
 }
