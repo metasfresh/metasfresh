@@ -46,17 +46,49 @@ const mergeCalendarEventToArray = (eventsArray, newEvent) => {
 };
 
 const Calendar = ({ className = 'container' }) => {
-  const [calendarEvents, setCalendarEvents] = React.useState([]);
+  console.log('Calendar ctor------------------');
+  const [calendarEvents, setCalendarEvents] = React.useState({
+    startStr: null,
+    endStr: null,
+    events: [],
+  });
   const [availableCalendars, setAvailableCalendars] = React.useState([]);
   const [editingEvent, setEditingEvent] = React.useState(null);
 
   useEffect(() => {
+    console.log('fetching available calendars');
     api.getAvailableCalendars().then(setAvailableCalendars);
-    api.getCalendarEvents({}).then(setCalendarEvents);
   }, []);
 
+  const fetchCalendarEvents = (params) => {
+    console.log('fetchCalendarEvents', { params, calendarEvents });
+
+    if (
+      calendarEvents.startStr === params.startStr &&
+      calendarEvents.endStr === params.endStr
+    ) {
+      console.log('fetchCalendarEvents: already fetched', calendarEvents);
+      return Promise.resolve(calendarEvents.events);
+    } else {
+      console.log('fetchCalendarEvents: start fetching from backend');
+      return api
+        .getCalendarEvents({}) // TODO
+        .then((events) => {
+          console.log('fetchCalendarEvents: got result', { events });
+          setCalendarEvents({
+            startStr: params.startStr,
+            endStr: params.endStr,
+            events,
+          });
+        });
+    }
+  };
+
   const handleCreateNewEvent = (params) => {
+    const calendar = availableCalendars?.[0];
     setEditingEvent({
+      calendarId: calendar?.calendarId,
+      resourceId: calendar?.resources?.[0].id,
       start: params.date,
       end: params.date,
       allDay: true,
@@ -65,7 +97,7 @@ const Calendar = ({ className = 'container' }) => {
 
   const handleEditEvent = (params) => {
     const eventId = params.event.id;
-    const event = calendarEvents.find((event) => event.id === eventId);
+    const event = calendarEvents.events.find((event) => event.id === eventId);
     setEditingEvent(event);
   };
 
@@ -80,21 +112,21 @@ const Calendar = ({ className = 'container' }) => {
         title: event.title,
       })
       .then((eventFromBackend) => {
-        const newCalendarEvents = mergeCalendarEventToArray(
-          calendarEvents,
+        const events = mergeCalendarEventToArray(
+          calendarEvents.events,
           eventFromBackend
         );
-        setCalendarEvents(newCalendarEvents);
+        setCalendarEvents({ ...calendarEvents, events });
         setEditingEvent(null);
       });
   };
 
   const handleEventDelete = (eventId) => {
     api.deleteCalendarEventById(eventId).then(() => {
-      const newCalendarEvents = calendarEvents.filter(
+      const events = calendarEvents.events.filter(
         (event) => event.id !== eventId
       );
-      setCalendarEvents(newCalendarEvents);
+      setCalendarEvents({ ...calendarEvents, events });
       setEditingEvent(null);
     });
   };
@@ -129,7 +161,7 @@ const Calendar = ({ className = 'container' }) => {
         }}
         resourceAreaHeaderContent="Resources"
         resources={extractResourcesFromCalendarsArray(availableCalendars)}
-        events={calendarEvents}
+        events={fetchCalendarEvents}
         dateClick={handleCreateNewEvent}
         eventClick={handleEditEvent}
         eventDragStop={(event) => {

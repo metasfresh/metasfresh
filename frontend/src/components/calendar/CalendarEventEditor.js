@@ -13,20 +13,30 @@ const getCalendarById = (availableCalendars, calendarId) => {
   );
 };
 
-const computeSelectedResource = (availableResources, selectedResourceId) => {
+const computeSelectedResource = (
+  availableResources,
+  selectedResourceId,
+  fallbackToFirstAvailableResource
+) => {
   if (!availableResources || availableResources.length === 0) {
     return null;
   }
 
   if (!selectedResourceId) {
-    return availableResources[0];
+    return fallbackToFirstAvailableResource ? availableResources[0] : null;
   }
 
   const selectedResource = availableResources.find(
     (availableResource) => availableResource.id === selectedResourceId
   );
 
-  return selectedResource ? selectedResource : availableResources[0];
+  if (selectedResource != null) {
+    return selectedResource;
+  } else if (fallbackToFirstAvailableResource) {
+    return availableResources[0];
+  } else {
+    return null;
+  }
 };
 
 const CalendarEventEditor = ({
@@ -55,7 +65,8 @@ const CalendarEventEditor = ({
     const availableResources = calendar?.resources ?? [];
     const resource = computeSelectedResource(
       availableResources,
-      initialEvent.resourceId
+      initialEvent.resourceId,
+      false
     );
 
     setForm({
@@ -74,7 +85,8 @@ const CalendarEventEditor = ({
     const availableResources = calendar?.resources ?? [];
     const resource = computeSelectedResource(
       availableResources,
-      form.resourceId
+      form.resourceId,
+      true
     );
     setForm({ ...form, calendar, availableResources, resource });
   };
@@ -130,7 +142,7 @@ const CalendarEventEditor = ({
         <div>
           <input
             type="text"
-            value={form.title}
+            value={form.title ?? ''}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
           />
         </div>
