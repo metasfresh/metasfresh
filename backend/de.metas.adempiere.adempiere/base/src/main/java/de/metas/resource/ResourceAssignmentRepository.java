@@ -91,7 +91,7 @@ public class ResourceAssignmentRepository
 				.id(ResourceAssignmentId.ofRepoId(record.getS_ResourceAssignment_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom()))
-				.endDate(CoalesceUtil.coalesceSuppliers(
+				.endDate(CoalesceUtil.coalesceSuppliersNotNull(
 						() -> TimeUtil.asZonedDateTime(record.getAssignDateTo()),
 						() -> LocalDate.MAX.atTime(LocalTime.MAX).atZone(SystemTime.zoneId())))
 				.name(record.getName())
