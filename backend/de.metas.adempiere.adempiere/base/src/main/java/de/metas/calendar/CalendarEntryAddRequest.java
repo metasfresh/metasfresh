@@ -36,7 +36,7 @@ public class CalendarEntryAddRequest
 {
 	@NonNull UserId userId;
 
-	@Nullable CalendarGlobalId calendarId;
+	@NonNull CalendarGlobalId calendarId;
 	@Nullable CalendarResourceId resourceId;
 	@NonNull ZonedDateTime startDate;
 	@NonNull ZonedDateTime endDate;

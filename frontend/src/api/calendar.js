@@ -31,17 +31,6 @@ export const getAvailableCalendars = () => {
     .then(({ calendars }) => calendars.map(converters.fromAPICalendar));
 };
 
-export const extractResourcesFromCalendarsArray = (calendars) => {
-  const resourcesById = calendars
-    .flatMap((calendar) => calendar.resources)
-    .reduce((accum, resource) => {
-      accum[resource.id] = resource;
-      return accum;
-    }, {});
-
-  return Object.values(resourcesById);
-};
-
 export const getCalendarEvents = ({
   calendarIds = null,
   startDate = null,
@@ -65,17 +54,34 @@ export const addCalendarEvent = ({
   title,
   description = null,
 }) => {
-  console.log('api.addCalendarEvent', {
-    calendarId,
-    resourceId,
-    startDate,
-    endDate,
-    title,
-    description,
-  });
-
   return axios
     .post(`${config.API_URL}/calendars/entries/add`, {
+      calendarId,
+      resourceId,
+      startDate,
+      endDate,
+      title,
+      description,
+    })
+    .then(extractAxiosResponseData)
+    .then(converters.fromAPIEvent);
+};
+
+export const addOrUpdateCalendarEvent = ({
+  id,
+  calendarId,
+  resourceId,
+  startDate,
+  endDate,
+  title,
+  description = null,
+}) => {
+  const url = !id
+    ? `${config.API_URL}/calendars/entries/add`
+    : `${config.API_URL}/calendars/entries/${id}`;
+
+  return axios
+    .post(url, {
       calendarId,
       resourceId,
       startDate,

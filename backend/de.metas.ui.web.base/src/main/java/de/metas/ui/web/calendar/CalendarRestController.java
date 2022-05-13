@@ -25,12 +25,15 @@ package de.metas.ui.web.calendar;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryAddRequest;
+import de.metas.calendar.CalendarEntryId;
+import de.metas.calendar.CalendarEntryUpdateRequest;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.MultiCalendarService;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryAddRequest;
+import de.metas.ui.web.calendar.json.JsonCalendarEntryUpdateRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarRef;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
 import de.metas.ui.web.config.WebConfig;
@@ -40,6 +43,7 @@ import de.metas.user.UserId;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -128,6 +132,27 @@ public class CalendarRestController
 
 		final CalendarEntry calendarEntry = calendarService.addEntry(CalendarEntryAddRequest.builder()
 				.userId(userSession.getLoggedUserId())
+				.calendarId(request.getCalendarId())
+				.resourceId(request.getResourceId())
+				.startDate(request.getStartDate().toZonedDateTime())
+				.endDate(request.getEndDate().toZonedDateTime())
+				.title(request.getTitle())
+				.description(request.getDescription())
+				.build());
+
+		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone());
+	}
+
+	@PostMapping("/entries/{entryId}")
+	public JsonCalendarEntry updateCalendarEntry(
+			@PathVariable("entryId") @NonNull final String entryIdStr,
+			@RequestBody @NonNull final JsonCalendarEntryUpdateRequest request)
+	{
+		userSession.assertLoggedIn();
+
+		final CalendarEntry calendarEntry = calendarService.updateEntry(CalendarEntryUpdateRequest.builder()
+				.updatedByUserId(userSession.getLoggedUserId())
+				.entryId(CalendarEntryId.ofString(entryIdStr))
 				.calendarId(request.getCalendarId())
 				.resourceId(request.getResourceId())
 				.startDate(request.getStartDate().toZonedDateTime())

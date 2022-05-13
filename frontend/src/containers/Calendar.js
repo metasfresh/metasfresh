@@ -11,29 +11,68 @@ import '@fullcalendar/common/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 
-import * as api from '../api/calendar';
 import CalendarAddEvent from '../components/calendar/CalendarAddEvent';
+
+import * as api from '../api/calendar';
+
+const extractResourcesFromCalendarsArray = (calendars) => {
+  const resourcesById = calendars
+    .flatMap((calendar) => calendar.resources)
+    .reduce((accum, resource) => {
+      accum[resource.id] = resource;
+      return accum;
+    }, {});
+
+  return Object.values(resourcesById);
+};
+
+const mergeCalendarEventToArray = (eventsArray, newEvent) => {
+  let added = false;
+  const result = [];
+  for (const event of eventsArray) {
+    if (event.id === newEvent.id) {
+      result.push(newEvent);
+      added = true;
+    } else {
+      result.push(event);
+    }
+  }
+
+  if (!added) {
+    result.push(newEvent);
+  }
+
+  return result;
+};
 
 const Calendar = ({ className = 'container' }) => {
   const [calendarEvents, setCalendarEvents] = React.useState([]);
-  const [calendars, setCalendars] = React.useState([]);
-  const [addEventRequest, setAddEventRequest] = React.useState(null);
+  const [availableCalendars, setAvailableCalendars] = React.useState([]);
+  const [editingEvent, setEditingEvent] = React.useState(null);
 
   useEffect(() => {
-    api.getAvailableCalendars().then(setCalendars);
+    api.getAvailableCalendars().then(setAvailableCalendars);
     api.getCalendarEvents({}).then(setCalendarEvents);
   }, []);
 
-  const handleDateClick = (params) => {
-    setAddEventRequest({
-      date: params.date,
+  const handleCreateNewEvent = (params) => {
+    setEditingEvent({
+      start: params.date,
+      end: params.date,
       allDay: true,
     });
   };
 
-  const handleAddEventOK = (event) => {
+  const handleEditEvent = (params) => {
+    const eventId = params.event.id;
+    const event = calendarEvents.find((event) => event.id === eventId);
+    setEditingEvent(event);
+  };
+
+  const handleEventEditOK = (event) => {
     api
-      .addCalendarEvent({
+      .addOrUpdateCalendarEvent({
+        id: event.id,
         calendarId: event.calendarId,
         resourceId: event.resourceId,
         startDate: event.start,
@@ -41,25 +80,21 @@ const Calendar = ({ className = 'container' }) => {
         title: event.title,
       })
       .then((eventFromBackend) => {
-        setCalendarEvents([...calendarEvents, eventFromBackend]);
-        setAddEventRequest(null);
+        setCalendarEvents(
+          mergeCalendarEventToArray(calendarEvents, eventFromBackend)
+        );
+        setEditingEvent(null);
       });
   };
-  const handleAddEventCancel = () => {
-    setAddEventRequest(null);
-  };
-
-  const resources = api.extractResourcesFromCalendarsArray(calendars);
 
   return (
     <div className={className}>
-      {addEventRequest && (
+      {editingEvent && (
         <CalendarAddEvent
-          calendars={calendars}
-          date={addEventRequest.date}
-          allDay={addEventRequest.allDay}
-          onAddEvent={handleAddEventOK}
-          onCancel={handleAddEventCancel}
+          availableCalendars={availableCalendars}
+          initialEvent={editingEvent}
+          onOK={handleEventEditOK}
+          onCancel={() => setEditingEvent(null)}
         />
       )}
       <FullCalendar
@@ -80,9 +115,25 @@ const Calendar = ({ className = 'container' }) => {
             'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth',
         }}
         resourceAreaHeaderContent="Resources"
-        resources={resources}
+        resources={extractResourcesFromCalendarsArray(availableCalendars)}
         events={calendarEvents}
-        dateClick={handleDateClick}
+        dateClick={handleCreateNewEvent}
+        eventClick={handleEditEvent}
+        eventDragStop={(event) => {
+          console.log('eventDragStop', { event });
+        }}
+        eventDrop={(event) => {
+          console.log('eventDrop', { event });
+        }}
+        //   eventDragStart: Identity<(arg: EventDragStartArg) => void>;
+        // eventDragStop: Identity<(arg: EventDragStopArg) => void>;
+        // eventDrop: Identity<(arg: EventDropArg) => void>;
+        // eventResizeStart: Identity<(arg: EventResizeStartArg) => void>;
+        // eventResizeStop: Identity<(arg: EventResizeStopArg) => void>;
+        // eventResize: Identity<(arg: EventResizeDoneArg) => void>;
+        // drop: Identity<(arg: DropArg) => void>;
+        // eventReceive: Identity<(arg: EventReceiveArg) => void>;
+        // eventLeave: Identity<(arg: EventLeaveArg) => void>;
       />
     </div>
   );

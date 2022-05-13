@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryAddRequest;
 import de.metas.calendar.CalendarEntryId;
+import de.metas.calendar.CalendarEntryUpdateRequest;
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.CalendarRef;
@@ -38,10 +39,12 @@ import de.metas.product.ResourceId;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceAssignment;
 import de.metas.resource.ResourceAssignmentCreateRequest;
+import de.metas.resource.ResourceAssignmentId;
 import de.metas.resource.ResourceAssignmentQuery;
 import de.metas.resource.ResourceAssignmentRepository;
 import de.metas.resource.ResourceRepository;
 import de.metas.user.UserId;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
@@ -155,13 +158,18 @@ public class ResourceAssignmentCalendarService implements CalendarService
 				.build();
 	}
 
+	private static void assertValidCalendarId(@Nullable final CalendarGlobalId calendarId)
+	{
+		if (calendarId != null && !calendarId.equals(CALENDAR_ID))
+		{
+			throw new AdempiereException("Invalid calendar ID `" + calendarId + "`. Expected: " + CALENDAR_ID);
+		}
+	}
+
 	@Override
 	public CalendarEntry addEntry(@NonNull final CalendarEntryAddRequest request)
 	{
-		if (request.getCalendarId() != null && !request.getCalendarId().equals(CALENDAR_ID))
-		{
-			throw new AdempiereException("Invalid calendar ID: " + request.getCalendarId());
-		}
+		assertValidCalendarId(request.getCalendarId());
 
 		if (request.getResourceId() == null)
 		{
@@ -177,5 +185,55 @@ public class ResourceAssignmentCalendarService implements CalendarService
 				.build());
 
 		return toCalendarEntry(resourceAssignment);
+	}
+
+	@Override
+	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
+	{
+		assertValidCalendarId(request.getCalendarId());
+		final ResourceAssignment changedResourceAssignment = resourceAssignmentRepository.changeById(
+				request.getEntryId().toRepoId(ResourceAssignmentId.class),
+				resourceAssignment -> updateResourceAssignment(resourceAssignment, request)
+		);
+
+		return toCalendarEntry(changedResourceAssignment);
+	}
+
+	private static ResourceAssignment updateResourceAssignment(
+			@NonNull final ResourceAssignment resourceAssignment,
+			@NonNull final CalendarEntryUpdateRequest request)
+	{
+		final ResourceAssignment.ResourceAssignmentBuilder builder = resourceAssignment.toBuilder();
+
+		// @NonNull UserId updatedByUserId;
+		// @NonNull CalendarEntryId entryId;
+		// @Nullable CalendarGlobalId calendarId;
+
+		if (request.getResourceId() != null)
+		{
+			builder.resourceId(request.getResourceId().toRepoId(ResourceId.class));
+		}
+
+		if (request.getStartDate() != null)
+		{
+			builder.startDate(request.getStartDate());
+		}
+
+		if (request.getEndDate() != null)
+		{
+			builder.endDate(request.getEndDate());
+		}
+
+		if (request.getTitle() != null)
+		{
+			builder.name(request.getTitle());
+		}
+
+		if (request.getDescription() != null)
+		{
+			builder.description(StringUtils.trimBlankToNull(request.getDescription()));
+		}
+
+		return builder.build();
 	}
 }

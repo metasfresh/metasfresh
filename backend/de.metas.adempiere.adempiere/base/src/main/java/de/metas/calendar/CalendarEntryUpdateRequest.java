@@ -20,9 +20,9 @@
  * #L%
  */
 
-package de.metas.resource;
+package de.metas.calendar;
 
-import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,14 +31,18 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
 @Value
-@Builder(toBuilder = true)
-public class ResourceAssignment
+@Builder
+public class CalendarEntryUpdateRequest
 {
-	@NonNull ResourceAssignmentId id;
-	@NonNull ResourceId resourceId;
-	@NonNull ZonedDateTime startDate;
-	@NonNull ZonedDateTime endDate;
+	@NonNull UserId updatedByUserId;
 
-	@NonNull String name;
+	@NonNull CalendarEntryId entryId;
+
+	@Nullable CalendarGlobalId calendarId;
+	@Nullable CalendarResourceId resourceId;
+	@Nullable ZonedDateTime startDate;
+	@Nullable ZonedDateTime endDate;
+
+	@Nullable String title;
 	@Nullable String description;
 }

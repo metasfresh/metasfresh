@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.ui.web.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,25 +20,27 @@
  * #L%
  */
 
-package de.metas.resource;
+package de.metas.ui.web.calendar.json;
 
-import de.metas.product.ResourceId;
+import de.metas.calendar.CalendarGlobalId;
+import de.metas.calendar.CalendarResourceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 
 @Value
-@Builder(toBuilder = true)
-public class ResourceAssignment
+@Builder
+@Jacksonized
+public class JsonCalendarEntryUpdateRequest
 {
-	@NonNull ResourceAssignmentId id;
-	@NonNull ResourceId resourceId;
-	@NonNull ZonedDateTime startDate;
-	@NonNull ZonedDateTime endDate;
+	@NonNull CalendarGlobalId calendarId;
+	@NonNull CalendarResourceId resourceId;
+	@NonNull JsonDateTime startDate;
+	@NonNull JsonDateTime endDate;
 
-	@NonNull String name;
+	@NonNull String title;
 	@Nullable String description;
 }

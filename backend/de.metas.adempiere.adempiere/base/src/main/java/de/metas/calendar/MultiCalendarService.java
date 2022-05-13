@@ -73,4 +73,11 @@ public class MultiCalendarService
 		return getCalendarServiceById(request.getCalendarId().getCalendarServiceId())
 				.addEntry(request);
 	}
+
+	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
+	{
+		return getCalendarServiceById(request.getCalendarId().getCalendarServiceId())
+				.updateEntry(request);
+	}
+
 }

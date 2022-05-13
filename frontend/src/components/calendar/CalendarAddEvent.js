@@ -1,77 +1,107 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import CalendarsDropDown from './CalendarsDropDown';
 import ResourcesDropDown from './ResourcesDropDown';
 
-const computeSelectedResource = (availableResources, selectedResource) => {
+const getCalendarById = (availableCalendars, calendarId) => {
+  if (!availableCalendars || !calendarId) {
+    return null;
+  }
+
+  return availableCalendars.find(
+    (calendar) => calendar.calendarId === calendarId
+  );
+};
+
+const computeSelectedResource = (availableResources, selectedResourceId) => {
   if (!availableResources || availableResources.length === 0) {
     return null;
   }
 
-  if (selectedResource == null) {
+  if (!selectedResourceId) {
     return availableResources[0];
   }
 
-  return availableResources.find(
-    (availableResource) => availableResource.id === selectedResource.id
-  )
-    ? selectedResource
-    : availableResources[0];
+  const selectedResource = availableResources.find(
+    (availableResource) => availableResource.id === selectedResourceId
+  );
+
+  return selectedResource ? selectedResource : availableResources[0];
 };
 
 const CalendarAddEvent = ({
-  calendars,
-  date,
-  allDay = true,
-  onAddEvent,
+  availableCalendars,
+  initialEvent, // { calendarId, resourceId, title, start, end, allDay }
+  onOK,
   onCancel,
 }) => {
-  const [calendar, setCalendar] = React.useState(calendars?.[0] ?? null);
+  const [form, setForm] = React.useState({
+    calendar: null,
+    availableResources: [],
+    resource: null,
+    title: '',
+    start: null,
+    end: null,
+    allDay: true,
+  });
 
-  const [availableResources, setAvailableResources] = React.useState(
-    calendar?.resources ?? []
-  );
-  const [resource, setResource] = React.useState(
-    availableResources?.[0] ?? null
-  );
-
-  const [title, setTitle] = React.useState('');
-
-  const onCalendarChanged = (newCalendar) => {
-    setCalendar(newCalendar);
-
-    const newAvailableResources = newCalendar?.resources ?? [];
-    setAvailableResources(newAvailableResources);
-
-    let newSelectedResource = computeSelectedResource(
-      newAvailableResources,
-      resource
+  useEffect(() => {
+    const calendar = getCalendarById(
+      availableCalendars,
+      initialEvent.calendarId
     );
-    setResource(newSelectedResource);
+
+    const availableResources = calendar?.resources ?? [];
+    const resource = computeSelectedResource(
+      availableResources,
+      initialEvent.resourceId
+    );
+
+    setForm({
+      id: initialEvent.id,
+      calendar,
+      availableResources,
+      resource,
+      title: initialEvent.title,
+      start: initialEvent.start,
+      end: initialEvent?.end || initialEvent.start,
+      allDay: initialEvent.allDay,
+    });
+  }, [initialEvent]);
+
+  const onCalendarChanged = (calendar) => {
+    const availableResources = calendar?.resources ?? [];
+    const resource = computeSelectedResource(
+      availableResources,
+      form.resourceId
+    );
+    setForm({ ...form, calendar, availableResources, resource });
   };
 
   const handleClickOK = () => {
-    onAddEvent({
-      calendarId: calendar.calendarId,
-      resourceId: resource.id,
-      title: title,
-      start: date,
-      end: date,
-      allDay: allDay,
+    onOK({
+      id: form.id,
+      calendarId: form.calendar?.calendarId || null,
+      resourceId: form.resource?.id || null,
+      title: form.title,
+      start: form.start,
+      end: form.end,
+      allDay: form.allDay,
     });
-  };
-  const handleClickCancel = () => {
-    onCancel();
   };
 
   return (
     <div>
       <div>
+        <div>ID</div>
+        <div>{form.id}</div>
+      </div>
+      <div>
         <div>Calendar:</div>
         <div>
           <CalendarsDropDown
-            calendars={calendars}
-            selectedCalendar={calendar}
+            calendars={availableCalendars}
+            selectedCalendar={form.calendar}
             onSelect={onCalendarChanged}
           />
         </div>
@@ -80,39 +110,52 @@ const CalendarAddEvent = ({
         <div>Resource:</div>
         <div>
           <ResourcesDropDown
-            resources={calendar?.resources ?? []}
-            selectedResource={resource}
-            onSelect={setResource}
+            resources={form.availableResources}
+            selectedResource={form.resource}
+            onSelect={(resource) => setForm({ ...form, resource })}
           />
         </div>
       </div>
       <div>
-        <div>Date:</div>
-        <div>{`${date}`}</div>
+        <div>Start:</div>
+        <div>{`${form.start}`}</div>
+      </div>
+      <div>
+        <div>End:</div>
+        <div>{`${form.end}`}</div>
       </div>
       <div>
         <div>Title:</div>
         <div>
           <input
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
           />
         </div>
       </div>
       <div>
+        <div>All Day:</div>
+        <div>{form.allDay}</div>
+      </div>
+      <div>
         <button onClick={handleClickOK}>OK</button>
-        <button onClick={handleClickCancel}>Cancel</button>
+        <button
+          onClick={() => {
+            onCancel();
+          }}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
 };
 
 CalendarAddEvent.propTypes = {
-  calendars: PropTypes.array.isRequired,
-  date: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
-  allDay: PropTypes.bool,
-  onAddEvent: PropTypes.func.isRequired,
+  availableCalendars: PropTypes.array.isRequired,
+  initialEvent: PropTypes.object.isRequired,
+  onOK: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
 };
 

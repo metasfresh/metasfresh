@@ -35,4 +35,6 @@ public interface CalendarService
 	Stream<CalendarEntry> query(CalendarQuery query);
 
 	CalendarEntry addEntry(CalendarEntryAddRequest request);
+
+	CalendarEntry updateEntry(CalendarEntryUpdateRequest request);
 }

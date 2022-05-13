@@ -30,6 +30,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.TimeUtil;
@@ -37,12 +38,23 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
 public class ResourceAssignmentRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public ResourceAssignment getById(final ResourceAssignmentId id)
+	{
+		final I_S_ResourceAssignment record = InterfaceWrapperHelper.load(id, I_S_ResourceAssignment.class);
+		if (record == null)
+		{
+			throw new AdempiereException("No resouce assignment found for id: " + id);
+		}
+		return fromRecord(record);
+	}
 
 	public Stream<ResourceAssignment> query(@NonNull final ResourceAssignmentQuery query)
 	{
@@ -82,7 +94,7 @@ public class ResourceAssignmentRepository
 		return sqlQueryBuilder;
 	}
 
-	private static ResourceAssignment fromRecord(final I_S_ResourceAssignment record)
+	private static ResourceAssignment fromRecord(@NonNull final I_S_ResourceAssignment record)
 	{
 		return ResourceAssignment.builder()
 				.id(ResourceAssignmentId.ofRepoId(record.getS_ResourceAssignment_ID()))
@@ -106,5 +118,24 @@ public class ResourceAssignmentRepository
 		record.setDescription(request.getDescription());
 		InterfaceWrapperHelper.saveRecord(record);
 		return fromRecord(record);
+	}
+
+	public ResourceAssignment changeById(@NonNull final ResourceAssignmentId id, @NonNull final UnaryOperator<ResourceAssignment> mapper)
+	{
+		final I_S_ResourceAssignment record = InterfaceWrapperHelper.load(id, I_S_ResourceAssignment.class);
+		if (record == null)
+		{
+			throw new AdempiereException("No resource assignment found for id: " + id);
+		}
+
+		final ResourceAssignment changedResourceAssignment = mapper.apply(fromRecord(record));
+		record.setS_Resource_ID(changedResourceAssignment.getResourceId().getRepoId());
+		record.setAssignDateFrom(TimeUtil.asTimestampNotNull(changedResourceAssignment.getStartDate()));
+		record.setAssignDateTo(TimeUtil.asTimestamp(changedResourceAssignment.getEndDate()));
+		record.setName(changedResourceAssignment.getName());
+		record.setDescription(changedResourceAssignment.getDescription());
+		InterfaceWrapperHelper.saveRecord(record);
+
+		return changedResourceAssignment;
 	}
 }
