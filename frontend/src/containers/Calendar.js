@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-import * as api from '../api/calendar';
-
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -12,22 +10,21 @@ import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import '@fullcalendar/common/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
+
+import * as api from '../api/calendar';
 import CalendarAddEvent from '../components/calendar/CalendarAddEvent';
 
 const Calendar = ({ className = 'container' }) => {
   const [calendarEvents, setCalendarEvents] = React.useState([]);
-  const [calendarResources, setCalendarResources] = React.useState([]);
+  const [calendars, setCalendars] = React.useState([]);
   const [addEventRequest, setAddEventRequest] = React.useState(null);
 
   useEffect(() => {
-    api.getAvailableResources().then(setCalendarResources);
-  }, []);
-  useEffect(() => {
+    api.getAvailableCalendars().then(setCalendars);
     api.getCalendarEvents({}).then(setCalendarEvents);
   }, []);
 
   const handleDateClick = (params) => {
-    console.log('handleDateClick', { params });
     setAddEventRequest({
       date: params.date,
       allDay: true,
@@ -35,34 +32,30 @@ const Calendar = ({ className = 'container' }) => {
   };
 
   const handleAddEventOK = (event) => {
-    console.log('handleAddEventOK', { event });
     api
       .addCalendarEvent({
-        calendarId: event.resourceId,
+        calendarId: event.calendarId,
+        resourceId: event.resourceId,
         startDate: event.start,
         endDate: event.end,
         title: event.title,
       })
       .then((eventFromBackend) => {
-        console.log('handleAddEventOK: got from backend', { eventFromBackend });
         setCalendarEvents([...calendarEvents, eventFromBackend]);
         setAddEventRequest(null);
       });
   };
-  const handleAddEventCancel = (event) => {
-    console.log('handleAddEventCancel', { event });
+  const handleAddEventCancel = () => {
     setAddEventRequest(null);
   };
 
-  console.log('render:', { calendarResources, calendarEvents });
+  const resources = api.extractResourcesFromCalendarsArray(calendars);
+
   return (
     <div className={className}>
       {addEventRequest && (
         <CalendarAddEvent
-          calendars={calendarResources.map((resource) => ({
-            key: resource.id,
-            caption: resource.title,
-          }))}
+          calendars={calendars}
           date={addEventRequest.date}
           allDay={addEventRequest.allDay}
           onAddEvent={handleAddEventOK}
@@ -87,7 +80,7 @@ const Calendar = ({ className = 'container' }) => {
             'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth',
         }}
         resourceAreaHeaderContent="Resources"
-        resources={calendarResources}
+        resources={resources}
         events={calendarEvents}
         dateClick={handleDateClick}
       />

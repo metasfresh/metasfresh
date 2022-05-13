@@ -22,18 +22,13 @@
 
 package de.metas.calendar;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-@Value
-@Builder
-public class CalendarRef
+@Value(staticConstructor = "of")
+public class CalendarResourceRef
 {
-	@NonNull CalendarGlobalId calendarId;
+	@NonNull CalendarResourceId calendarResourceId;
 	@NonNull ITranslatableString name;
-	@NonNull @Singular ImmutableSet<CalendarResourceRef> resources;
 }

@@ -22,12 +22,15 @@
 
 package de.metas.ui.web.calendar.json;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarRef;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+
+import java.util.Set;
 
 @Value
 @Builder
@@ -36,6 +39,7 @@ public class JsonCalendarRef
 {
 	@NonNull CalendarGlobalId calendarId;
 	@NonNull String name;
+	@NonNull Set<JsonCalendarResourceRef> resources;
 
 	public static JsonCalendarRef of(
 			@NonNull final CalendarRef calendarRef,
@@ -44,6 +48,9 @@ public class JsonCalendarRef
 		return builder()
 				.calendarId(calendarRef.getCalendarId())
 				.name(calendarRef.getName().translate(adLanguage))
+				.resources(calendarRef.getResources().stream()
+						.map(resource -> JsonCalendarResourceRef.of(resource, adLanguage))
+						.collect(ImmutableSet.toImmutableSet()))
 				.build();
 	}
 }

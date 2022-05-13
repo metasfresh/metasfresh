@@ -71,12 +71,12 @@ public class CalendarRestController
 		final UserId loggedUserId = userSession.getLoggedUserId();
 		final String adLanguage = userSession.getAD_Language();
 
-		final ImmutableList<JsonCalendarRef> jsonCalendarRefs = calendarService.streamAvailableCalendars(loggedUserId)
+		final ImmutableList<JsonCalendarRef> jsonCalendars = calendarService.streamAvailableCalendars(loggedUserId)
 				.map(calendarRef -> JsonCalendarRef.of(calendarRef, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonGetAvailableCalendarsResponse.builder()
-				.calendars(jsonCalendarRefs)
+				.calendars(jsonCalendars)
 				.build();
 	}
 
@@ -129,8 +129,9 @@ public class CalendarRestController
 		final CalendarEntry calendarEntry = calendarService.addEntry(CalendarEntryAddRequest.builder()
 				.userId(userSession.getLoggedUserId())
 				.calendarId(request.getCalendarId())
-				.startDate(DateTimeConverters.fromObjectToZonedDateTime(request.getStartDate()))
-				.endDate(DateTimeConverters.fromObjectToZonedDateTime(request.getEndDate()))
+				.resourceId(request.getResourceId())
+				.startDate(request.getStartDate().toZonedDateTime())
+				.endDate(request.getEndDate().toZonedDateTime())
 				.title(request.getTitle())
 				.description(request.getDescription())
 				.build());

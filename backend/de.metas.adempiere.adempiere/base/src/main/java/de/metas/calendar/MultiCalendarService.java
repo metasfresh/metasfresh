@@ -59,7 +59,7 @@ public class MultiCalendarService
 	public Stream<CalendarRef> streamAvailableCalendars(@NonNull final UserId userId)
 	{
 		return calendarServices.stream()
-				.flatMap(calendarService -> calendarService.getAvailableCalendars(userId).stream());
+				.flatMap(calendarService -> calendarService.streamAvailableCalendars(userId));
 	}
 
 	public Stream<CalendarEntry> query(@NonNull final CalendarQuery query)

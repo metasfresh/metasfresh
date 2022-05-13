@@ -44,7 +44,7 @@ public class ResourceRepository
 			.tableName(I_S_Resource.Table_Name)
 			.build();
 
-	public List<Resource> getResources()
+	public ImmutableList<Resource> getResources()
 	{
 		return getResourcesMap().toList();
 	}
@@ -91,7 +91,7 @@ public class ResourceRepository
 			this.resources = ImmutableList.copyOf(resources);
 		}
 
-		public List<Resource> toList()
+		public ImmutableList<Resource> toList()
 		{
 			return resources;
 		}

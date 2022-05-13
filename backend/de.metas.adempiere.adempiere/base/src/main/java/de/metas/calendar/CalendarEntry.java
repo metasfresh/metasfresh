@@ -33,9 +33,10 @@ import java.time.ZonedDateTime;
 @Builder
 public class CalendarEntry
 {
-	@NonNull String entryId;
+	@NonNull CalendarEntryId entryId;
 
 	@NonNull CalendarGlobalId calendarId;
+	@NonNull CalendarResourceId resourceId;
 	@NonNull ZonedDateTime startDate;
 	@NonNull ZonedDateTime endDate;
 

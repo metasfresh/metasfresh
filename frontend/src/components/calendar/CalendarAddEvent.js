@@ -1,19 +1,23 @@
-import PropTypes from 'prop-types';
-import { RawList } from '../widget/List/RawList';
 import React from 'react';
+import PropTypes from 'prop-types';
+import CalendarsDropDown from './CalendarsDropDown';
+import ResourcesDropDown from './ResourcesDropDown';
 
-// const convertToMoment = (dateObj) => {
-//   if (!dateObj) {
-//     return null;
-//   } else if (Moment.isMoment(dateObj)) {
-//     return dateObj;
-//   } else {
-//     return Moment(dateObj);
-//   }
-// };
-//
-// const convertMovementToString = (movement) => {
-// };
+const computeSelectedResource = (availableResources, selectedResource) => {
+  if (!availableResources || availableResources.length === 0) {
+    return null;
+  }
+
+  if (selectedResource == null) {
+    return availableResources[0];
+  }
+
+  return availableResources.find(
+    (availableResource) => availableResource.id === selectedResource.id
+  )
+    ? selectedResource
+    : availableResources[0];
+};
 
 const CalendarAddEvent = ({
   calendars,
@@ -22,18 +26,38 @@ const CalendarAddEvent = ({
   onAddEvent,
   onCancel,
 }) => {
-  const [selectedCalendar, setSelectedCalendar] = React.useState(
-    calendars && calendars[0]
+  const [calendar, setCalendar] = React.useState(calendars?.[0] ?? null);
+
+  const [availableResources, setAvailableResources] = React.useState(
+    calendar?.resources ?? []
   );
+  const [resource, setResource] = React.useState(
+    availableResources?.[0] ?? null
+  );
+
   const [title, setTitle] = React.useState('');
+
+  const onCalendarChanged = (newCalendar) => {
+    setCalendar(newCalendar);
+
+    const newAvailableResources = newCalendar?.resources ?? [];
+    setAvailableResources(newAvailableResources);
+
+    let newSelectedResource = computeSelectedResource(
+      newAvailableResources,
+      resource
+    );
+    setResource(newSelectedResource);
+  };
 
   const handleClickOK = () => {
     onAddEvent({
+      calendarId: calendar.calendarId,
+      resourceId: resource.id,
       title: title,
       start: date,
       end: date,
       allDay: allDay,
-      resourceId: selectedCalendar.key,
     });
   };
   const handleClickCancel = () => {
@@ -45,10 +69,20 @@ const CalendarAddEvent = ({
       <div>
         <div>Calendar:</div>
         <div>
-          <CalendarsList
+          <CalendarsDropDown
             calendars={calendars}
-            selectedCalendar={selectedCalendar}
-            onSelect={setSelectedCalendar}
+            selectedCalendar={calendar}
+            onSelect={onCalendarChanged}
+          />
+        </div>
+      </div>
+      <div>
+        <div>Resource:</div>
+        <div>
+          <ResourcesDropDown
+            resources={calendar?.resources ?? []}
+            selectedResource={resource}
+            onSelect={setResource}
           />
         </div>
       </div>
@@ -80,34 +114,6 @@ CalendarAddEvent.propTypes = {
   allDay: PropTypes.bool,
   onAddEvent: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
-};
-
-const CalendarsList = ({ calendars, selectedCalendar, onSelect }) => {
-  const [isCalendarFieldFocused, setIsCalendarFieldFocused] =
-    React.useState(false);
-  const [isCalendarFieldToggled, setIsCalendarFieldToggled] =
-    React.useState(false);
-
-  return (
-    <RawList
-      rank="primary"
-      list={calendars || []}
-      onSelect={onSelect}
-      selected={selectedCalendar}
-      isFocused={isCalendarFieldFocused}
-      isToggled={isCalendarFieldToggled}
-      onOpenDropdown={() => setIsCalendarFieldToggled(true)}
-      onCloseDropdown={() => setIsCalendarFieldToggled(false)}
-      onFocus={() => setIsCalendarFieldFocused(true)}
-      onBlur={() => setIsCalendarFieldFocused(false)}
-    />
-  );
-};
-
-CalendarsList.propTypes = {
-  calendars: PropTypes.array.isRequired,
-  selectedCalendar: PropTypes.object,
-  onSelect: PropTypes.func.isRequired,
 };
 
 export default CalendarAddEvent;

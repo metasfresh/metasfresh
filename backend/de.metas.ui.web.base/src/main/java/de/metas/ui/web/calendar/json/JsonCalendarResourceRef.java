@@ -22,42 +22,28 @@
 
 package de.metas.ui.web.calendar.json;
 
-import de.metas.calendar.CalendarEntry;
-import de.metas.calendar.CalendarEntryId;
-import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarResourceId;
+import de.metas.calendar.CalendarResourceRef;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.time.ZoneId;
-
 @Value
 @Builder
 @Jacksonized
-public class JsonCalendarEntry
+public class JsonCalendarResourceRef
 {
-	@NonNull CalendarEntryId entryId;
-	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;
-	@NonNull JsonDateTime startDate;
-	@NonNull JsonDateTime endDate;
+	@NonNull String name;
 
-	@Nullable String title;
-	@Nullable String description;
-
-	public static JsonCalendarEntry of(@NonNull final CalendarEntry entry, @NonNull final ZoneId timeZone)
+	public static JsonCalendarResourceRef of(
+			@NonNull final CalendarResourceRef resourceRef,
+			@NonNull final String adLanguage)
 	{
 		return builder()
-				.entryId(entry.getEntryId())
-				.calendarId(entry.getCalendarId())
-				.resourceId(entry.getResourceId())
-				.startDate(JsonDateTime.ofZonedDateTime(entry.getStartDate(), timeZone))
-				.endDate(JsonDateTime.ofZonedDateTime(entry.getEndDate(), timeZone))
-				.title(entry.getTitle())
-				.description(entry.getDescription())
+				.resourceId(resourceRef.getCalendarResourceId())
+				.name(resourceRef.getName().translate(adLanguage))
 				.build();
 	}
 }

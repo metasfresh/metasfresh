@@ -24,14 +24,13 @@ package de.metas.calendar;
 
 import de.metas.user.UserId;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 public interface CalendarService
 {
 	CalendarServiceId getCalendarServiceId();
 
-	List<CalendarRef> getAvailableCalendars(UserId userId);
+	Stream<CalendarRef> streamAvailableCalendars(UserId userId);
 
 	Stream<CalendarEntry> query(CalendarQuery query);
 

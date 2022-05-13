@@ -24,27 +24,23 @@ import axios from 'axios';
 
 const extractAxiosResponseData = (axiosReponse) => axiosReponse.data;
 
-/**
- * @returns {Promise<*>} array of `{id, title}`.
- */
-export const getAvailableResources = () => {
+export const getAvailableCalendars = () => {
   return axios
     .get(`${config.API_URL}/calendars/available`)
     .then(extractAxiosResponseData)
-    .then(({ calendars }) => calendars.map(convertCalendarToResource));
+    .then(({ calendars }) => calendars.map(converters.fromAPICalendar));
 };
 
-const convertCalendarToResource = (calendar) => ({
-  id: calendar.calendarId,
-  title: calendar.name,
-});
+export const extractResourcesFromCalendarsArray = (calendars) => {
+  const resourcesById = calendars
+    .flatMap((calendar) => calendar.resources)
+    .reduce((accum, resource) => {
+      accum[resource.id] = resource;
+      return accum;
+    }, {});
 
-const convertFromAPICalendarEntryToCalendarEvent = (entry) => ({
-  title: entry.title,
-  start: entry.startDate,
-  end: entry.endDate,
-  resourceId: entry.calendarId,
-});
+  return Object.values(resourcesById);
+};
 
 export const getCalendarEvents = ({
   calendarIds = null,
@@ -58,13 +54,12 @@ export const getCalendarEvents = ({
       endDate,
     })
     .then(extractAxiosResponseData)
-    .then(({ entries }) =>
-      entries.map(convertFromAPICalendarEntryToCalendarEvent)
-    );
+    .then(({ entries }) => entries.map(converters.fromAPIEvent));
 };
 
 export const addCalendarEvent = ({
   calendarId,
+  resourceId,
   startDate,
   endDate,
   title,
@@ -72,6 +67,7 @@ export const addCalendarEvent = ({
 }) => {
   console.log('api.addCalendarEvent', {
     calendarId,
+    resourceId,
     startDate,
     endDate,
     title,
@@ -81,11 +77,51 @@ export const addCalendarEvent = ({
   return axios
     .post(`${config.API_URL}/calendars/entries/add`, {
       calendarId,
+      resourceId,
       startDate,
       endDate,
       title,
       description,
     })
     .then(extractAxiosResponseData)
-    .then(convertFromAPICalendarEntryToCalendarEvent);
+    .then(converters.fromAPIEvent);
+};
+
+//
+//
+// Converters
+//
+//
+
+const converters = {
+  fromAPICalendar: (calendar) => ({
+    calendarId: calendar.calendarId,
+    name: calendar.name,
+    resources: calendar.resources.map(converters.fromAPIResource),
+  }),
+
+  fromAPIResource: (resource) =>
+    converters.fullcalendar_io.fromAPIResource(resource),
+
+  fromAPIEvent: (entry) => ({
+    calendarId: entry.calendarId,
+    ...converters.fullcalendar_io.fromAPIEvent(entry),
+  }),
+
+  /**
+   * https://fullcalendar.io converters
+   */
+  fullcalendar_io: {
+    fromAPIResource: (resource) => ({
+      id: resource.resourceId,
+      title: resource.name,
+    }),
+
+    fromAPIEvent: (entry) => ({
+      title: entry.title,
+      start: entry.startDate,
+      end: entry.endDate,
+      resourceId: entry.resourceId,
+    }),
+  },
 };

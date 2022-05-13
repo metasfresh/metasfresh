@@ -23,6 +23,7 @@
 package de.metas.ui.web.calendar.json;
 
 import de.metas.calendar.CalendarGlobalId;
+import de.metas.calendar.CalendarResourceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,8 +37,9 @@ import javax.annotation.Nullable;
 public class JsonCalendarEntryAddRequest
 {
 	@NonNull CalendarGlobalId calendarId;
-	@NonNull String startDate;
-	@NonNull String endDate;
+	@NonNull CalendarResourceId resourceId;
+	@NonNull JsonDateTime startDate;
+	@NonNull JsonDateTime endDate;
 
 	@NonNull String title;
 	@Nullable String description;
