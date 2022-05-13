@@ -38,7 +38,7 @@ public class CalendarEntryUpdateRequest
 
 	@NonNull CalendarEntryId entryId;
 
-	@Nullable CalendarGlobalId calendarId;
+	@NonNull CalendarGlobalId calendarId;
 	@Nullable CalendarResourceId resourceId;
 	@Nullable ZonedDateTime startDate;
 	@Nullable ZonedDateTime endDate;

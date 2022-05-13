@@ -37,4 +37,6 @@ public interface CalendarService
 	CalendarEntry addEntry(CalendarEntryAddRequest request);
 
 	CalendarEntry updateEntry(CalendarEntryUpdateRequest request);
+
+	void deleteEntryById(CalendarEntryId entryId);
 }

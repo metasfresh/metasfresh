@@ -11,7 +11,7 @@ import '@fullcalendar/common/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 
-import CalendarAddEvent from '../components/calendar/CalendarAddEvent';
+import CalendarEventEditor from '../components/calendar/CalendarEventEditor';
 
 import * as api from '../api/calendar';
 
@@ -80,21 +80,34 @@ const Calendar = ({ className = 'container' }) => {
         title: event.title,
       })
       .then((eventFromBackend) => {
-        setCalendarEvents(
-          mergeCalendarEventToArray(calendarEvents, eventFromBackend)
+        const newCalendarEvents = mergeCalendarEventToArray(
+          calendarEvents,
+          eventFromBackend
         );
+        setCalendarEvents(newCalendarEvents);
         setEditingEvent(null);
       });
+  };
+
+  const handleEventDelete = (eventId) => {
+    api.deleteCalendarEventById(eventId).then(() => {
+      const newCalendarEvents = calendarEvents.filter(
+        (event) => event.id !== eventId
+      );
+      setCalendarEvents(newCalendarEvents);
+      setEditingEvent(null);
+    });
   };
 
   return (
     <div className={className}>
       {editingEvent && (
-        <CalendarAddEvent
+        <CalendarEventEditor
           availableCalendars={availableCalendars}
           initialEvent={editingEvent}
           onOK={handleEventEditOK}
           onCancel={() => setEditingEvent(null)}
+          onDelete={handleEventDelete}
         />
       )}
       <FullCalendar

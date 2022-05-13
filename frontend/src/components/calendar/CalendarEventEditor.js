@@ -29,11 +29,12 @@ const computeSelectedResource = (availableResources, selectedResourceId) => {
   return selectedResource ? selectedResource : availableResources[0];
 };
 
-const CalendarAddEvent = ({
+const CalendarEventEditor = ({
   availableCalendars,
   initialEvent, // { calendarId, resourceId, title, start, end, allDay }
   onOK,
   onCancel,
+  onDelete,
 }) => {
   const [form, setForm] = React.useState({
     calendar: null,
@@ -140,23 +141,19 @@ const CalendarAddEvent = ({
       </div>
       <div>
         <button onClick={handleClickOK}>OK</button>
-        <button
-          onClick={() => {
-            onCancel();
-          }}
-        >
-          Cancel
-        </button>
+        <button onClick={onCancel}>Cancel</button>
+        {form.id && <button onClick={() => onDelete(form.id)}>Delete</button>}
       </div>
     </div>
   );
 };
 
-CalendarAddEvent.propTypes = {
+CalendarEventEditor.propTypes = {
   availableCalendars: PropTypes.array.isRequired,
   initialEvent: PropTypes.object.isRequired,
   onOK: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
-export default CalendarAddEvent;
+export default CalendarEventEditor;

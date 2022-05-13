@@ -24,42 +24,62 @@ package de.metas.calendar;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
+import com.google.common.base.Splitter;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 
+@EqualsAndHashCode
 public class CalendarEntryId
 {
-	private final String string;
+	@Getter
+	private final CalendarGlobalId calendarId;
+	private final String entryLocalId;
 
-	private static final Interner<CalendarEntryId> interner = Interners.newStrongInterner();
-
-	private CalendarEntryId(@NonNull final String string)
+	private CalendarEntryId(
+			@NonNull final CalendarGlobalId calendarId,
+			@NonNull final String entryLocalId)
 	{
-		this.string = StringUtils.trimBlankToNull(string);
-		if (this.string == null)
+		this.calendarId = calendarId;
+		this.entryLocalId = StringUtils.trimBlankToNull(entryLocalId);
+		if (this.entryLocalId == null)
 		{
-			throw new AdempiereException("calendarEntryId shall not be blank");
+			throw new AdempiereException("entryLocalId shall not be blank");
 		}
 	}
 
 	@JsonCreator
 	public static CalendarEntryId ofString(@NonNull final String string)
 	{
-		return interner.intern(new CalendarEntryId(string));
+		try
+		{
+			final List<String> parts = Splitter.on("-").splitToList(string);
+			final CalendarGlobalId calendarId = CalendarGlobalId.of(
+					CalendarServiceId.ofString(parts.get(0)),
+					parts.get(1));
+			final String entryLocalId = parts.get(2);
+			return new CalendarEntryId(calendarId, entryLocalId);
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Invalid calendar entry ID: " + string, e);
+		}
 	}
 
 	@JsonValue
 	public String getAsString()
 	{
-		return string;
+		return calendarId.getCalendarServiceId().getAsString()
+				+ "-" + calendarId.getLocalId()
+				+ "-" + entryLocalId;
 	}
 
 	@Deprecated
@@ -71,13 +91,18 @@ public class CalendarEntryId
 
 	public static boolean equals(@Nullable final CalendarEntryId id1, @Nullable final CalendarEntryId id2) {return Objects.equals(id1, id2);}
 
-	public static CalendarEntryId ofRepoId(@NonNull final RepoIdAware id)
+	public static CalendarEntryId ofRepoId(@NonNull final CalendarGlobalId calendarId, @NonNull final RepoIdAware id)
 	{
-		return ofString(String.valueOf(id.getRepoId()));
+		return new CalendarEntryId(calendarId, String.valueOf(id.getRepoId()));
 	}
 
 	public <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> type)
 	{
-		return RepoIdAwares.ofObject(string, type);
+		return RepoIdAwares.ofObject(entryLocalId, type);
+	}
+
+	public CalendarServiceId getCalendarServiceId()
+	{
+		return getCalendarId().getCalendarServiceId();
 	}
 }

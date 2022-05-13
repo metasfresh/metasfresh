@@ -80,4 +80,9 @@ public class MultiCalendarService
 				.updateEntry(request);
 	}
 
+	public void deleteEntryById(@NonNull final CalendarEntryId entryId)
+	{
+		getCalendarServiceById(entryId.getCalendarServiceId())
+				.deleteEntryById(entryId);
+	}
 }

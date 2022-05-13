@@ -46,27 +46,6 @@ export const getCalendarEvents = ({
     .then(({ entries }) => entries.map(converters.fromAPIEvent));
 };
 
-export const addCalendarEvent = ({
-  calendarId,
-  resourceId,
-  startDate,
-  endDate,
-  title,
-  description = null,
-}) => {
-  return axios
-    .post(`${config.API_URL}/calendars/entries/add`, {
-      calendarId,
-      resourceId,
-      startDate,
-      endDate,
-      title,
-      description,
-    })
-    .then(extractAxiosResponseData)
-    .then(converters.fromAPIEvent);
-};
-
 export const addOrUpdateCalendarEvent = ({
   id,
   calendarId,
@@ -91,6 +70,12 @@ export const addOrUpdateCalendarEvent = ({
     })
     .then(extractAxiosResponseData)
     .then(converters.fromAPIEvent);
+};
+
+export const deleteCalendarEventById = (eventId) => {
+  return axios
+    .delete(`${config.API_URL}/calendars/entries/${eventId}`)
+    .then(extractAxiosResponseData);
 };
 
 //

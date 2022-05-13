@@ -46,16 +46,6 @@ public class ResourceAssignmentRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public ResourceAssignment getById(final ResourceAssignmentId id)
-	{
-		final I_S_ResourceAssignment record = InterfaceWrapperHelper.load(id, I_S_ResourceAssignment.class);
-		if (record == null)
-		{
-			throw new AdempiereException("No resouce assignment found for id: " + id);
-		}
-		return fromRecord(record);
-	}
-
 	public Stream<ResourceAssignment> query(@NonNull final ResourceAssignmentQuery query)
 	{
 		return toSqlQueryBuilder(query)
@@ -66,7 +56,8 @@ public class ResourceAssignmentRepository
 
 	private IQueryBuilder<I_S_ResourceAssignment> toSqlQueryBuilder(@NonNull final ResourceAssignmentQuery query)
 	{
-		final IQueryBuilder<I_S_ResourceAssignment> sqlQueryBuilder = queryBL.createQueryBuilder(I_S_ResourceAssignment.class);
+		final IQueryBuilder<I_S_ResourceAssignment> sqlQueryBuilder = queryBL.createQueryBuilder(I_S_ResourceAssignment.class)
+				.addOnlyActiveRecordsFilter();
 
 		//
 		// Filter by Resource IDs
@@ -122,11 +113,7 @@ public class ResourceAssignmentRepository
 
 	public ResourceAssignment changeById(@NonNull final ResourceAssignmentId id, @NonNull final UnaryOperator<ResourceAssignment> mapper)
 	{
-		final I_S_ResourceAssignment record = InterfaceWrapperHelper.load(id, I_S_ResourceAssignment.class);
-		if (record == null)
-		{
-			throw new AdempiereException("No resource assignment found for id: " + id);
-		}
+		final I_S_ResourceAssignment record = getRecordById(id);
 
 		final ResourceAssignment changedResourceAssignment = mapper.apply(fromRecord(record));
 		record.setS_Resource_ID(changedResourceAssignment.getResourceId().getRepoId());
@@ -137,5 +124,22 @@ public class ResourceAssignmentRepository
 		InterfaceWrapperHelper.saveRecord(record);
 
 		return changedResourceAssignment;
+	}
+
+	@NonNull
+	private I_S_ResourceAssignment getRecordById(final @NonNull ResourceAssignmentId id)
+	{
+		final I_S_ResourceAssignment record = InterfaceWrapperHelper.load(id, I_S_ResourceAssignment.class);
+		if (record == null)
+		{
+			throw new AdempiereException("No resource assignment found for id: " + id);
+		}
+		return record;
+	}
+
+	public void deleteById(@NonNull final ResourceAssignmentId id)
+	{
+		final I_S_ResourceAssignment record = getRecordById(id);
+		InterfaceWrapperHelper.delete(record);
 	}
 }

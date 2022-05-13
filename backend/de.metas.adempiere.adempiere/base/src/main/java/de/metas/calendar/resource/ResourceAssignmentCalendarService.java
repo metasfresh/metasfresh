@@ -148,7 +148,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	private static CalendarEntry toCalendarEntry(@NonNull final ResourceAssignment resourceAssignment)
 	{
 		return CalendarEntry.builder()
-				.entryId(CalendarEntryId.ofRepoId(resourceAssignment.getId()))
+				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resourceAssignment.getId()))
 				.calendarId(CALENDAR_ID)
 				.resourceId(CalendarResourceId.ofRepoId(resourceAssignment.getResourceId()))
 				.startDate(resourceAssignment.getStartDate())
@@ -192,11 +192,23 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	{
 		assertValidCalendarId(request.getCalendarId());
 		final ResourceAssignment changedResourceAssignment = resourceAssignmentRepository.changeById(
-				request.getEntryId().toRepoId(ResourceAssignmentId.class),
+				toResourceAssignmentId(request.getEntryId()),
 				resourceAssignment -> updateResourceAssignment(resourceAssignment, request)
 		);
 
 		return toCalendarEntry(changedResourceAssignment);
+	}
+
+	private ResourceAssignmentId toResourceAssignmentId(@NonNull final CalendarEntryId entryId)
+	{
+		assertValidCalendarId(entryId.getCalendarId());
+		return entryId.toRepoId(ResourceAssignmentId.class);
+	}
+
+	@Override
+	public void deleteEntryById(@NonNull final CalendarEntryId entryId)
+	{
+		resourceAssignmentRepository.deleteById(toResourceAssignmentId(entryId));
 	}
 
 	private static ResourceAssignment updateResourceAssignment(

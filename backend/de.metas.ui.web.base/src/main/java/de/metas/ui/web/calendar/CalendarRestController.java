@@ -42,6 +42,7 @@ import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.user.UserId;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -162,5 +163,14 @@ public class CalendarRestController
 				.build());
 
 		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone());
+	}
+
+	@DeleteMapping("/entries/{entryId}")
+	public void updateCalendarEntry(
+			@PathVariable("entryId") @NonNull final String entryIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		calendarService.deleteEntryById(CalendarEntryId.ofString(entryIdStr));
 	}
 }
