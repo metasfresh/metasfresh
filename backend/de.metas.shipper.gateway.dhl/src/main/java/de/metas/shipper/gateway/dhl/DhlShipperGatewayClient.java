@@ -309,7 +309,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					shipmentItemType.setHeightInCM(BigInteger.valueOf(packageDimensions.getHeightInCM()));
 					shipmentItemType.setLengthInCM(BigInteger.valueOf(packageDimensions.getLengthInCM()));
 					shipmentItemType.setWidthInCM(BigInteger.valueOf(packageDimensions.getWidthInCM()));
-					shipmentItemType.setWeightInKG(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
+					shipmentItemType.setWeightInKG(deliveryPosition.getGrossWeightKg());
 					shipmentDetailsTypeType.setShipmentItem(shipmentItemType);
 					// (2.2.1.10)
 					final ShipmentNotificationType shipmentNotificationType = objectFactory.createShipmentNotificationType();

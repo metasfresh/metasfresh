@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.shipper.gateway.api
@@ -39,7 +41,7 @@ public class DeliveryPosition
 	int repoId;
 
 	int numberOfPackages;
-	int grossWeightKg;
+	BigDecimal grossWeightKg;
 	String content;
 
 	@Nullable
@@ -54,14 +56,14 @@ public class DeliveryPosition
 	private DeliveryPosition(
 			final int repoId,
 			final int numberOfPackages,
-			final int grossWeightKg,
+			final BigDecimal grossWeightKg,
 			final String content,
 			@Nullable final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryData customDeliveryData,
 			@Singular final ImmutableSet<PackageId> packageIds)
 	{
 		Check.assume(numberOfPackages > 0, "numberOfPackages > 0");
-		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
+		Check.assume(grossWeightKg.signum() > 0, "grossWeightKg > 0");
 		//Check.assumeNotEmpty(content, "content is not empty");
 
 		this.repoId = repoId;
