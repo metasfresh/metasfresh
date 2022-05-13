@@ -1,14 +1,15 @@
 package de.metas.contracts.commission.commissioninstance.interceptor;
 
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
+import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -37,6 +38,7 @@ import lombok.NonNull;
 public class C_Commission_Share
 {
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@ModelChange(//
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
@@ -44,5 +46,14 @@ public class C_Commission_Share
 	public void invalidateIc(@NonNull final I_C_Commission_Share shareRecord)
 	{
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(shareRecord);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void onDelete(@NonNull final I_C_Commission_Share shareRecord)
+	{
+		queryBL.createQueryBuilder(I_C_Commission_Fact.class)
+				.addEqualsFilter(I_C_Commission_Fact.COLUMN_C_Commission_Share_ID, shareRecord.getC_Commission_Share_ID())
+				.create()
+				.delete();
 	}
 }

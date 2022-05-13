@@ -1,5 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -44,10 +45,12 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -100,7 +103,6 @@ public class CommissionInstanceRepository
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CommissionRecordStagingService commissionRecordStagingService;
 	private final CommissionConfigProvider commissionConfigProvider;
@@ -210,8 +212,7 @@ public class CommissionInstanceRepository
 				.beneficiary(Beneficiary.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
 				.level(HierarchyLevel.of(shareRecord.getLevelHierarchy()))
 				.soTrx(SOTrx.ofBoolean(shareRecord.isSOTrx()))
-				.payer(Payer.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_Payer_ID())))
-				;
+				.payer(Payer.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_Payer_ID())));
 
 		return share;
 	}
@@ -385,22 +386,19 @@ public class CommissionInstanceRepository
 			result.put(share, shareRecord);
 		}
 
-		deleteShareRecords(shareRecordsToDelete);
+		shareRecords.forEach(this::logAndDeleteComissionShare);
 
 		return result.build();
 	}
 
-	private void deleteShareRecords(@NonNull final Collection<I_C_Commission_Share> shareRecords)
+	private void logAndDeleteComissionShare(@NonNull final I_C_Commission_Share commissionShare)
 	{
-		if (shareRecords.isEmpty())
-		{
-			return;
-		}
-		final List<Integer> keys = shareRecords.stream().map(I_C_Commission_Share::getC_Commission_Share_ID).collect(Collectors.toList());
-		String sql = "DELETE FROM " + I_C_Commission_Fact.Table_Name + " WHERE C_Commission_Share_ID IN " + DB.buildSqlList(keys) + "";
-		DB.executeUpdateEx(sql, Trx.TRXNAME_ThreadInherited);
-		sql = "DELETE FROM " + I_C_Commission_Share.Table_Name + " WHERE C_Commission_Share_ID IN " + DB.buildSqlList(keys) + "";
-		DB.executeUpdateEx(sql, Trx.TRXNAME_ThreadInherited);
+		Loggables.withLogger(logger, Level.INFO).addLog("Deleting commission share having instance: {}, salesRep: {}, level: {}, contract{}",
+				commissionShare.getC_Commission_Instance_ID(),
+				commissionShare.getC_BPartner_SalesRep_ID(),
+				commissionShare.getLevelHierarchy(),
+				commissionShare.getC_Flatrate_Term_ID());
+		InterfaceWrapperHelper.delete(commissionShare);
 	}
 
 	private I_C_Commission_Share createOrUpdateShareRecord(
