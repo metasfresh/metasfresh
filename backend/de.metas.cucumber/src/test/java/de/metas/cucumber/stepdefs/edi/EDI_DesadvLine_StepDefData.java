@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,19 +20,18 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.order;
+package de.metas.cucumber.stepdefs.edi;
 
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
 
-@Value
-@Builder
-public class ImportOrdersRequest
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class EDI_DesadvLine_StepDefData extends StepDefData<I_EDI_DesadvLine>
 {
-	@NonNull
-	Shopware6QueryRequest shopware6QueryRequest;
-
-	boolean ignoreNextImportTimestamp;
+	public EDI_DesadvLine_StepDefData()
+	{
+		super(I_EDI_DesadvLine.class);
+	}
 }

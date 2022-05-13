@@ -25,6 +25,9 @@ package de.metas.cucumber.stepdefs.shipment;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -48,6 +51,7 @@ import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Product_ID;
 public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final M_InOut_StepDefData shipmentTable;
 	private final M_InOutLine_StepDefData shipmentLineTable;
@@ -113,6 +117,14 @@ public class M_InOut_Line_StepDef
 
 		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
+
+		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(x12de355Code))
+		{
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+			assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+		}
 
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);

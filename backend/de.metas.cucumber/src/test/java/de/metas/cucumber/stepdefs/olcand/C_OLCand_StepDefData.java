@@ -25,6 +25,9 @@ package de.metas.cucumber.stepdefs.olcand;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.ordercandidate.model.I_C_OLCand;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class C_OLCand_StepDefData extends StepDefData<I_C_OLCand>
 {
 	public C_OLCand_StepDefData()

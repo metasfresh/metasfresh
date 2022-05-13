@@ -12,7 +12,6 @@ import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
-import lombok.NonNull;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -34,18 +33,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.MediaType;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -108,6 +100,8 @@ public class ServerBoot implements InitializingBean
 		logger.info("Begin of {} main-method ", ServerBoot.class);
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		setDefaultSystemProperties();
 
 		logger.info("Parse command line arguments (if any!)");
 		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
@@ -196,6 +190,15 @@ public class ServerBoot implements InitializingBean
 					TimeUnit.SECONDS // timeUnit
 			);
 			logger.info("Clearing query selection tables each {} seconds", clearQuerySelectionsRateInSeconds);
+		}
+	}
+
+	private static void setDefaultSystemProperties()
+	{
+		if (System.getProperty("user.country") == null || System.getProperty("user.language") == null)
+		{
+			System.setProperty("user.country", Locale.US.getCountry());
+			System.setProperty("user.language", Locale.US.getLanguage());
 		}
 	}
 
