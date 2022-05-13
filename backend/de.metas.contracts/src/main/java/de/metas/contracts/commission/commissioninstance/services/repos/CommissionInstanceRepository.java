@@ -393,7 +393,7 @@ public class CommissionInstanceRepository
 
 	private void logAndDeleteComissionShare(@NonNull final I_C_Commission_Share commissionShare)
 	{
-		Loggables.withLogger(logger, Level.INFO).addLog("Deleting commission share having instance: {}, salesRep: {}, level: {}, contract{}",
+		Loggables.withLogger(logger, Level.INFO).addLog("Deleting commission share having C_Commission_Instance_ID={}, C_BPartner_SalesRep_ID={}, LevelHierarchy={}, C_Flatrate_Term_ID={}",
 				commissionShare.getC_Commission_Instance_ID(),
 				commissionShare.getC_BPartner_SalesRep_ID(),
 				commissionShare.getLevelHierarchy(),
