@@ -118,6 +118,7 @@ const converters = {
     }),
 
     fromAPIEvent: (entry) => ({
+      id: entry.entryId,
       title: entry.title,
       start: entry.startDate,
       end: entry.endDate,
