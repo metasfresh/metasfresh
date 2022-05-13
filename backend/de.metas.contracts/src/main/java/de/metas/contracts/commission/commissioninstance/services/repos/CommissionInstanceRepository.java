@@ -48,26 +48,21 @@ import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
