@@ -22,14 +22,11 @@
 
 package de.metas.ui.web.order.products_proposal.model;
 
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
-import de.metas.i18n.AdMessageKey;
+import de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.IProductPA;
-import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -45,21 +42,17 @@ import org.compiere.model.X_M_ProductPrice;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 @Builder
 @EqualsAndHashCode
 @ToString
 public final class ProductProposalScalePrice
 {
-	public static final String MSG_NO_SCALE_PRICE = "NoScalePrice";
-
 	@NonNull
 	private final ProductPriceId productPriceId;
 
-	public Optional<Money> withQty(@Nullable final BigDecimal qtyEntered)
+	public Money withQty(@Nullable final BigDecimal qtyEntered)
 	{
 		final BigDecimal qty = qtyEntered != null && qtyEntered.signum() > 0 ?
 				qtyEntered :
@@ -78,15 +71,15 @@ public final class ProductProposalScalePrice
 		{
 			if (Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice))
 			{
-				return Optional.of(Money.of(productPrice.getPriceStd(), currencyId));
+				return Money.of(productPrice.getPriceStd(), currencyId);
 			}
 			else
 			{
-				throw new AdempiereException(AdMessageKey.of(MSG_NO_SCALE_PRICE), qtyEntered);
+				throw new AdempiereException(ProductScalePrice.MSG_NO_SCALE_PRICE, qtyEntered);
 			}
 		}
 
-		return Optional.of(Money.of(scalePrice.getPriceStd(), currencyId));
+		return Money.of(scalePrice.getPriceStd(), currencyId);
 	}
 
 	public static boolean isProductPriceUseScalePrice(@NonNull final I_M_ProductPrice productPrice)
