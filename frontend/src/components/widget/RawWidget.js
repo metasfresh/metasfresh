@@ -419,7 +419,8 @@ export class RawWidget extends PureComponent {
     );
 
     // dev-note: avoid displaying value when hovering over password widget
-    const widgetTitle = widgetData[0].widgetType === 'Password' ? null : widgetValue;
+    const widgetTitle =
+      widgetData[0].widgetType === 'Password' ? null : widgetValue;
 
     const widgetProperties = {
       //autocomplete=new-password did not work in chrome for non password fields anymore,
