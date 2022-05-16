@@ -10,10 +10,12 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
@@ -76,6 +78,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		final BPartnerBL bpartnerBL = new BPartnerBL(userRepository);
 		dunningDocOutboundLogMailRecipientProvider = new DunningDocOutboundLogMailRecipientProvider(
 				new DocOutBoundRecipientRepository(bpartnerBL),
+				new OrderEmailPropagationSysConfigRepository(Services.get(ISysConfigBL.class)),
 				bpartnerBL,
 				new DunningService());
 

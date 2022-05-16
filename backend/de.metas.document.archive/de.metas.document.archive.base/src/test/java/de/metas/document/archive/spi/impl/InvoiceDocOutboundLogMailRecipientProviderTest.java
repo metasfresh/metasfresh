@@ -6,10 +6,12 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.mailrecipient.impl.InvoiceDocOutboundLogMailRecipientProvider;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
@@ -81,7 +83,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 
 		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(
 				new DocOutBoundRecipientRepository(bpartnerBL),
-				bpartnerBL);
+				new OrderEmailPropagationSysConfigRepository(Services.get(ISysConfigBL.class)), bpartnerBL);
 	}
 
 	@Test
