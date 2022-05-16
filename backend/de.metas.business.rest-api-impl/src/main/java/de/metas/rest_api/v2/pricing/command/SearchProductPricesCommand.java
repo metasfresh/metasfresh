@@ -62,6 +62,7 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -73,12 +74,10 @@ public class SearchProductPricesCommand
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	// services
 	private final ProductRestService productRestService;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade;
 
-	// parameters
 	private final ExternalIdentifier bpartnerIdentifier;
 	private final ExternalIdentifier productIdentifier;
 	private final LocalDate targetDate;
@@ -161,15 +160,10 @@ public class SearchProductPricesCommand
 	{
 		final I_C_BPartner bPartner = bpartnerDAO.getById(getBPartnerId());
 
-		final ImmutableSet.Builder<PricingSystemId> pricingSystemIds = ImmutableSet.builder();
-
-		Optional.ofNullable(PricingSystemId.ofRepoIdOrNull(bPartner.getM_PricingSystem_ID()))
-				.ifPresent(pricingSystemIds::add);
-
-		Optional.ofNullable(PricingSystemId.ofRepoIdOrNull(bPartner.getPO_PricingSystem_ID()))
-				.ifPresent(pricingSystemIds::add);
-
-		return pricingSystemIds.build();
+		return Stream.of(bPartner.getM_PricingSystem_ID(), bPartner.getPO_PricingSystem_ID())
+				.map(PricingSystemId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Nullable

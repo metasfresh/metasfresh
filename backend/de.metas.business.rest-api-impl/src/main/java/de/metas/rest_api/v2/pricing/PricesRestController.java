@@ -139,7 +139,7 @@ public class PricesRestController
 		catch (final Exception ex)
 		{
 			return ResponseEntity
-					.status(HttpStatus.NOT_FOUND)
+					.status(HttpStatus.UNPROCESSABLE_ENTITY)
 					.body(ex.getMessage());
 		}
 	}

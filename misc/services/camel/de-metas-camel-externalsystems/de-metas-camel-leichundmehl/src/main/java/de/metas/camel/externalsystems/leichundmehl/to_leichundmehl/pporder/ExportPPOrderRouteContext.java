@@ -58,9 +58,6 @@ public class ExportPPOrderRouteContext
 	private JsonProductInfo.JsonProductInfoBuilder jsonProductBuilder;
 
 	@Nullable
-	private JsonBPartnerProduct jsonBPartnerProduct;
-
-	@Nullable
 	private JsonBPartner jsonBPartner;
 
 	@Nullable

@@ -198,28 +198,6 @@ UPDATE AD_Process_Para SET ColumnName='FTP_Username', Name='FTP-Benutzername', D
 UPDATE AD_Process_Para SET ColumnName='FTP_Username', Name='FTP-Benutzername', Description=NULL, Help=NULL WHERE AD_Element_ID=580813 AND IsCentrallyMaintained='Y'
 ;
 
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- 2022-05-01T12:17:09.149Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET Name='FTP-Benutzername', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580813) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580813)

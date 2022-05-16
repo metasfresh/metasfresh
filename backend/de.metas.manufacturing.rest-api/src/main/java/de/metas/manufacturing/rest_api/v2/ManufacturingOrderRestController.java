@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 import org.eevolution.api.PPOrderId;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -110,7 +111,8 @@ public class ManufacturingOrderRestController
 		}
 		catch (final Exception ex)
 		{
-			return ResponseEntity.badRequest()
+			return ResponseEntity
+					.status(HttpStatus.UNPROCESSABLE_ENTITY)
 					.body(ex);
 		}
 	}

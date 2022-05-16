@@ -34,34 +34,12 @@ import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.apache.camel.RuntimeCamelException;
 
 import javax.annotation.Nullable;
 
 @UtilityClass
 public class JsonConverter
 {
-	@NonNull
-	public JsonBPartnerProduct mapToJsonProductBPartner(@NonNull final JsonProductBPartner json)
-	{
-		return JsonBPartnerProduct.builder()
-				.bpartnerId(String.valueOf(json.getBpartnerId().getValue()))
-				.currentVendor(json.isCurrentVendor())
-				.ean(json.getEan())
-				.productNo(json.getProductNo())
-				.customer(json.isCustomer())
-				.excludedFromPurchase(json.isExcludedFromPurchase())
-				.excludedFromSale(json.isExcludedFromSale())
-				.productCategory(json.getProductCategory())
-				.exclusionFromPurchaseReason(json.getExclusionFromPurchaseReason())
-				.productName(json.getProductName())
-				.productDescription(json.getProductDescription())
-				.exclusionFromSaleReason(json.getExclusionFromSaleReason())
-				.leadTimeInDays(json.getLeadTimeInDays())
-				.vendor(json.isVendor())
-				.build();
-	}
-
 	@NonNull
 	public JsonPrice mapToJsonPrice(@NonNull final JsonResponsePrice json)
 	{
@@ -85,14 +63,17 @@ public class JsonConverter
 		return JsonPPOrder.builder()
 				.orderId(String.valueOf(ppOrder.getOrderId().getValue()))
 				.dateOrdered(ppOrder.getDateOrdered().toInstant())
-				.components(ppOrder.getComponents())
 				.dateStartSchedule(ppOrder.getDateStartSchedule().toInstant())
-				.description(ppOrder.getDescription())
+
 				.documentNo(ppOrder.getDocumentNo())
-				.finishGoodProduct(jsonProductInfo)
 				.orgCode(ppOrder.getOrgCode())
+				.description(ppOrder.getDescription())
+
+				.finishGoodProduct(jsonProductInfo)
 				.qtyToProduce(ppOrder.getQtyToProduce())
 				.bPartner(jsonBPartner)
+
+				.components(ppOrder.getComponents())
 				.build();
 	}
 
@@ -126,12 +107,37 @@ public class JsonConverter
 		{
 			extendedProductInfo.getBpartners()
 					.stream()
-					.filter(bpartner -> bpartner.getBpartnerId().equals(bpartnerId))
+					.filter(bpartner -> bpartner.getBpartnerId().getValue() == bpartnerId)
 					.findFirst()
 					.map(JsonConverter::mapToJsonProductBPartner)
 					.ifPresent(builder::bPartnerProduct);
 		}
 
 		return builder;
+	}
+
+	@NonNull
+	private JsonBPartnerProduct mapToJsonProductBPartner(@NonNull final JsonProductBPartner json)
+	{
+		return JsonBPartnerProduct.builder()
+				.bpartnerId(String.valueOf(json.getBpartnerId().getValue()))
+
+				.currentVendor(json.isCurrentVendor())
+				.customer(json.isCustomer())
+
+				.ean(json.getEan())
+				.productNo(json.getProductNo())
+				.productCategory(json.getProductCategory())
+
+				.excludedFromPurchase(json.isExcludedFromPurchase())
+				.excludedFromSale(json.isExcludedFromSale())
+				.exclusionFromPurchaseReason(json.getExclusionFromPurchaseReason())
+				.exclusionFromSaleReason(json.getExclusionFromSaleReason())
+				.productName(json.getProductName())
+
+				.productDescription(json.getProductDescription())
+				.leadTimeInDays(json.getLeadTimeInDays())
+				.vendor(json.isVendor())
+				.build();
 	}
 }

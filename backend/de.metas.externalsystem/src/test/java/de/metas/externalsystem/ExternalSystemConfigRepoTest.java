@@ -726,8 +726,8 @@ class ExternalSystemConfigRepoTest
 				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("LeichMehl")
 				.ftpPort(1111)
-				.ftpUsername("notImportant")
-				.ftpPassword("notImportant")
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
 				.ftpHost("hostname")
 				.ftpDirectory("directory")
 				.build();
@@ -755,8 +755,8 @@ class ExternalSystemConfigRepoTest
 				.value(value)
 				.ftpHost("hostname")
 				.ftpPort(1111)
-				.ftpUsername("notImportant")
-				.ftpPassword("notImportant")
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
 				.ftpDirectory("directory")
 				.build();
 
@@ -783,8 +783,8 @@ class ExternalSystemConfigRepoTest
 				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
 				.ftpPort(1111)
-				.ftpUsername("notImportant")
-				.ftpPassword("notImportant")
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
 				.ftpHost("hostname")
 				.ftpDirectory("directory")
 				.build();
@@ -808,8 +808,8 @@ class ExternalSystemConfigRepoTest
 				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("testLeichMehlValue")
 				.ftpPort(1111)
-				.ftpUsername("notImportant")
-				.ftpPassword("notImportant")
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
 				.ftpHost("hostname")
 				.ftpDirectory("directory")
 				.build();
@@ -837,8 +837,8 @@ class ExternalSystemConfigRepoTest
 				.externalSystemParentConfigId(parentRecordActive.getExternalSystem_Config_ID())
 				.value("testLeichMehlValue")
 				.ftpPort(1111)
-				.ftpUsername("notImportant")
-				.ftpPassword("notImportant")
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
 				.ftpHost("hostname")
 				.ftpDirectory("directory")
 				.build();
@@ -853,8 +853,8 @@ class ExternalSystemConfigRepoTest
 				.externalSystemParentConfigId(parentRecordInactive.getExternalSystem_Config_ID())
 				.value("testLeichMehlValueInactive")
 				.ftpPort(1111)
-				.ftpUsername("notImportant")
-				.ftpPassword("notImportant")
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
 				.ftpHost("hostname")
 				.ftpDirectory("directory")
 				.build();

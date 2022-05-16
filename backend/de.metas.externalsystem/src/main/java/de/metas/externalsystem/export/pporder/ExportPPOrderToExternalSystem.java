@@ -55,7 +55,7 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 {
 	private static final Logger logger = LogManager.getLogger(ExportPPOrderToExternalSystem.class);
 
-	protected final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	private final ExternalSystemConfigService externalSystemConfigService;
 
@@ -95,7 +95,7 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 								   .orgCode(orgCode)
-								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))
+								   .adPInstanceId(JsonMetasfreshId.of(pInstanceId.getRepoId()))
 								   .command(getExternalCommand())
 								   .parameters(buildParameters(config.getChildConfig(), ppOrderId))
 								   .traceId(externalSystemConfigService.getTraceId())

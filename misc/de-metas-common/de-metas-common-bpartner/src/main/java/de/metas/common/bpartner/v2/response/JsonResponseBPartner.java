@@ -23,7 +23,6 @@
 package de.metas.common.bpartner.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -40,7 +39,6 @@ import javax.annotation.Nullable;
 
 @Value
 @ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonResponseBPartner
 {
 	public static final String GROUP_NAME = "group";

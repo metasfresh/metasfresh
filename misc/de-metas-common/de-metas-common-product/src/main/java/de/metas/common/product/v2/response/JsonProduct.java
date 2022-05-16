@@ -42,7 +42,6 @@ import java.util.List;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @JsonDeserialize(builder = JsonProduct.JsonProductBuilder.class)
 public class JsonProduct
@@ -86,7 +85,7 @@ public class JsonProduct
 	String externalId;
 
 	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
-	@Nullable
+	@NonNull
 	@JsonProperty("uom")
 	String uom;
 

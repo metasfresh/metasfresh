@@ -129,10 +129,10 @@ public class ProductPriceRestService
 		return SearchProductPricesCommand.builder()
 				.productRestService(productRestService)
 				.bpartnerPriceListServicesFacade(bpartnerPriceListServicesFacade)
+				.jsonRetrieverService(jsonRetrieverService)
 				.bpartnerIdentifier(ExternalIdentifier.of(request.getBpartnerIdentifier()))
 				.productIdentifier(ExternalIdentifier.of(request.getProductIdentifier()))
 				.targetDate(request.getTargetDate())
-				.jsonRetrieverService(jsonRetrieverService)
 				.orgCode(orgCode)
 				.build()
 				.execute();
