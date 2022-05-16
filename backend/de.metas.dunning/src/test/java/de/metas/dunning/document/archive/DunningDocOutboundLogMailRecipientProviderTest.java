@@ -5,6 +5,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
@@ -18,6 +19,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -61,6 +63,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	private DunningDocOutboundLogMailRecipientProvider dunningDocOutboundLogMailRecipientProvider;
 	private I_C_BPartner bPartnerRecord;
 	private I_C_BPartner_Location bPartnerLocationRecord;
+	private OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 
 	@BeforeEach
 	public void init()
@@ -76,9 +79,14 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 
 		final UserRepository userRepository = new UserRepository();
 		final BPartnerBL bpartnerBL = new BPartnerBL(userRepository);
+
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
+
 		dunningDocOutboundLogMailRecipientProvider = new DunningDocOutboundLogMailRecipientProvider(
 				new DocOutBoundRecipientRepository(bpartnerBL),
-				new OrderEmailPropagationSysConfigRepository(Services.get(ISysConfigBL.class)),
+				orderEmailPropagationSysConfigRepository,
 				bpartnerBL,
 				new DunningService());
 
@@ -118,7 +126,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	}
 
 	@Test
-	public void provideMailRecipient_dunned_invoices_with_common_email()
+	public void provideMailRecipient_dunned_invoices_with_common_email_SysConfigNoTable()
 	{
 		final org.compiere.model.I_AD_User userRecord = createUserRecord("userRecord.EMail");
 
@@ -135,6 +143,43 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 
 		createDocLineSourceRecord(candidateRecord1, docLineRecord1);
 		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
+
+		createSysConfigOrderEmailPropagation("N");
+
+		// invoke the method under test
+		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+				DocOutboundLogMailRecipientRequest.builder()
+						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
+						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(dunningDocRecord.getAD_Org_ID()))
+						.build());
+
+		assertThat(result).isPresent();
+		assertThat(result.get().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
+		assertThat(result.get().getEmailAddress()).isEqualTo("userRecord.EMail");
+	}
+
+
+	@Test
+	public void provideMailRecipient_dunned_invoices_with_common_email_SysConfigTable_C_DocOutboundLog()
+	{
+		final org.compiere.model.I_AD_User userRecord = createUserRecord("userRecord.EMail");
+
+		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(userRecord, "test@test.test");
+		final I_C_Invoice invoiceRecord2 = createInvoiceRecord(userRecord, "test@test.test");
+
+		final I_C_Dunning_Candidate candidateRecord1 = createCandidateRecord(invoiceRecord1);
+		final I_C_Dunning_Candidate candidateRecord2 = createCandidateRecord(invoiceRecord2);
+
+		final I_C_DunningDoc dunningDocRecord = createDunningDocRecord();
+
+		final I_C_DunningDoc_Line docLineRecord1 = createDocLineRecord(dunningDocRecord);
+		final I_C_DunningDoc_Line docLineRecord2 = createDocLineRecord(dunningDocRecord);
+
+		createDocLineSourceRecord(candidateRecord1, docLineRecord1);
+		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
+
+		createSysConfigOrderEmailPropagation(I_C_Doc_Outbound_Log.Table_Name);
 
 		// invoke the method under test
 		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
@@ -283,5 +328,15 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		docLineSourceRecord2.setC_Dunning_Candidate(candidateRecord);
 		docLineSourceRecord2.setC_DunningDoc_Line(docLineRecord);
 		saveRecord(docLineSourceRecord2);
+	}
+
+
+	private I_AD_SysConfig createSysConfigOrderEmailPropagation(final String value)
+	{
+		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
+		sysConfig.setName(orderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
+		sysConfig.setValue(value);
+		saveRecord(sysConfig);
+		return sysConfig;
 	}
 }

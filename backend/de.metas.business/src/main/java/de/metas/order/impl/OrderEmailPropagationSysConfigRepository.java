@@ -34,7 +34,7 @@ public class OrderEmailPropagationSysConfigRepository
 {
 	private final ISysConfigBL sysConfigBL;
 
-	private static final String SYS_CONFIG_C_Order_Email_Propagation = "de.metas.order.C_Order_Email_Propagation";
+	public static final String SYS_CONFIG_C_Order_Email_Propagation = "de.metas.order.C_Order_Email_Propagation";
 	private static final String SYS_CONFIG_C_Order_Email_Propagation_Default = "N";
 
 	public OrderEmailPropagationSysConfigRepository(@NonNull final ISysConfigBL sysConfigBL)
