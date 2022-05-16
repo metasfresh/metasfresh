@@ -198,6 +198,7 @@ public class AdempiereTestHelper
 			JavaAssistInterceptor.FAIL_ON_ERROR = true;
 
 			Services.registerService(IClientUI.class, new TestClientUI());
+
 		}
 
 		// Base Language
