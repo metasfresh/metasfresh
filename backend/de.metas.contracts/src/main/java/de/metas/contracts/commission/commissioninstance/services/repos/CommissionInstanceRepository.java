@@ -381,7 +381,7 @@ public class CommissionInstanceRepository
 			result.put(share, shareRecord);
 		}
 
-		shareRecords.forEach(this::logAndDeleteComissionShare);
+		shareRecordsToDelete.forEach(this::logAndDeleteComissionShare);
 
 		return result.build();
 	}
