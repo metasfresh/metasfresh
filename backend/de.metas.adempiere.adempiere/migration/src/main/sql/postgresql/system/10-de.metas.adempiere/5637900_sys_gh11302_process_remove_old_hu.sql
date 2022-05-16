@@ -2,8 +2,8 @@ INSERT INTO m_hu (ad_client_id, ad_org_id, created, createdby, isactive, m_hu_id
 VALUES (1000000,1000000,date('2022-05-05'),100,'Y',100,101,100.,date('2022-05-05'),100,'A');
 
 CREATE OR REPLACE FUNCTION remove_hu_entries_between_dates(
-    months NUMERIC,
-    placeholder NUMERIC
+    p_past_months NUMERIC,
+    p_m_hu_placeholder_id NUMERIC
 )
     RETURNS VOID
     LANGUAGE plpgsql
@@ -11,35 +11,32 @@ AS
 $$
 BEGIN
     CREATE TEMP TABLE temp_m_hu AS
-    SELECT m_hu_id FROM m_hu WHERE hustatus != 'A' AND updated <= now() - (months || ' month')::INTERVAL LIMIT 10;
+    SELECT m_hu_id FROM m_hu WHERE hustatus != 'A' AND updated <= now() - (p_past_months || ' month')::INTERVAL;
     CREATE TEMP TABLE temp_m_hu_item AS
     SELECT m_hu_item_id FROM m_hu_item WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     CREATE TEMP TABLE temp_m_inventoryline AS
     SELECT m_inventoryline_id FROM m_inventoryline WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
 
-    -- No FK-Constrains
     DELETE FROM m_hu_snapshot WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_attribute_snapshot WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_item_snapshot WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_item_storage_snapshot WHERE m_hu_item_id IN (SELECT m_hu_item_id FROM temp_m_hu_item);
     DELETE FROM m_hu_storage_snapshot WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
-    UPDATE m_receiptschedule_alloc SET m_lu_hu_id = placeholder, m_tu_hu_id = placeholder WHERE m_lu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_tu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_hu_item_id IN (SELECT m_hu_item_id FROM temp_m_hu_item);
+    UPDATE m_receiptschedule_alloc SET m_lu_hu_id = p_m_hu_placeholder_id, m_tu_hu_id = p_m_hu_placeholder_id WHERE m_lu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_tu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_hu_item_id IN (SELECT m_hu_item_id FROM temp_m_hu_item);
 
     DELETE FROM m_picking_candidate WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_pickingslot_trx WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
-    UPDATE m_shipmentschedule_qtypicked SET m_lu_hu_id = placeholder, m_tu_hu_id = placeholder WHERE m_lu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_tu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR vhu_id IN (SELECT m_hu_id FROM temp_m_hu);
+    UPDATE m_shipmentschedule_qtypicked SET m_lu_hu_id = p_m_hu_placeholder_id, m_tu_hu_id = p_m_hu_placeholder_id WHERE m_lu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_tu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR vhu_id IN (SELECT m_hu_id FROM temp_m_hu);
 
     DELETE FROM m_hu_trx_attribute WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_assignment WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_trace WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_source_hu WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
-    UPDATE m_package_hu SET m_hu_id = placeholder WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
-    UPDATE m_inventoryline_hu SET m_hu_id = placeholder WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
-    UPDATE pp_order_productattribute SET m_hu_id = placeholder  WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
-    UPDATE pp_order_qty SET m_hu_id = placeholder WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
+    UPDATE m_package_hu SET m_hu_id = p_m_hu_placeholder_id WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
+    UPDATE m_inventoryline_hu SET m_hu_id = p_m_hu_placeholder_id WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
+    UPDATE pp_order_productattribute SET m_hu_id = p_m_hu_placeholder_id  WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
+    UPDATE pp_order_qty SET m_hu_id = p_m_hu_placeholder_id WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
 
-
-    -- One FK-Constrains
     DELETE FROM m_hu_attribute WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_storage WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_item_storage WHERE m_hu_item_id IN (SELECT m_hu_item_id FROM temp_m_hu_item);
@@ -49,8 +46,7 @@ BEGIN
     UPDATE m_hu_trx_line SET parent_hu_trx_line_id = NULL WHERE parent_hu_trx_line_id IN (SELECT m_hu_trx_line_id FROM temp_m_hu_trx_line);
     DELETE FROM m_hu_trx_line WHERE m_hu_trx_line_id IN (SELECT m_hu_trx_line_id FROM temp_m_hu_trx_line);
 
-    -- Multiple FK-Constrains
-    UPDATE m_inventoryline SET m_hu_id = placeholder WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
+    UPDATE m_inventoryline SET m_hu_id = p_m_hu_placeholder_id WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_item WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
 
