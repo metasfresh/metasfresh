@@ -47,7 +47,7 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -302,11 +302,11 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
 		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
-		final SpanMetadata request = SpanMetadata.builder()
-				.type("createMissingInvoiceCandidates")
+		final Metadata request = Metadata.builder()
+				.action("createMissingInvoiceCandidates")
 				.name("createMissingInvoiceCandidatesForModel")
 				.build();
-		return performanceMonitoringService.monitorSpan(() -> createForModel0(model, lockOwner, invoiceCandiateHandler), request);
+		return performanceMonitoringService.monitor(() -> createForModel0(model, lockOwner, invoiceCandiateHandler), request);
 
 	}
 

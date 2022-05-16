@@ -20,7 +20,7 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
@@ -193,7 +193,7 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		perfMonService.monitorSpan(
+		perfMonService.monitor(
 				() -> bulkRequest.getRequests()
 						.stream()
 						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
@@ -207,16 +207,16 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 		try (final MDCCloseable extHeaderMDC = MDC.putCloseable("externalHeaderId", json.getExternalHeaderId());
 				final MDCCloseable extLineMDC = MDC.putCloseable("externalLineId", json.getExternalLineId()))
 		{
-			final SpanMetadata spanMetadata = SpanMetadata.builder()
+			final Metadata metadata = Metadata.builder()
 					.name("CreateOrUpdateMasterDataSingle")
-					.type(Type.REST_API_PROCESSING.getCode())
+					.type(Type.REST_API_PROCESSING)
 					.label(PerformanceMonitoringService.LABEL_EXTERNAL_HEADER_ID, json.getExternalHeaderId())
 					.label(PerformanceMonitoringService.LABEL_EXTERNAL_LINE_ID, json.getExternalLineId())
 					.build();
 
-			perfMonService.monitorSpan(
+			perfMonService.monitor(
 					() -> createOrUpdateMasterdata0(json, masterdataProvider),
-					spanMetadata);
+					metadata);
 		}
 	}
 
@@ -301,14 +301,14 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
+		final Metadata metadata = Metadata.builder()
 				.name("CreatOrderLineCandidatesBulk")
-				.type(Type.REST_API_PROCESSING.getCode())
+				.type(Type.REST_API_PROCESSING)
 				.build();
 
-		return perfMonService.monitorSpan(
+		return perfMonService.monitor(
 				() -> creatOrderLineCandidates0(bulkRequest, masterdataProvider),
-				spanMetadata);
+				metadata);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrderLineCandidates0(

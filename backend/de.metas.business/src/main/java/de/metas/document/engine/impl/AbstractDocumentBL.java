@@ -106,7 +106,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
-		return perfMonServicew.monitorSpan(
+		return perfMonServicew.monitor(
 				() -> processIt0(document, action, throwExIfNotSuccess),
 				DocactionAPMHelper.createMetadataFor(document, action));
 	}

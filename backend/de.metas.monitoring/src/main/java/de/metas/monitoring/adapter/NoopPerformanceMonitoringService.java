@@ -29,7 +29,7 @@ public class NoopPerformanceMonitoringService implements PerformanceMonitoringSe
 	public static final NoopPerformanceMonitoringService INSTANCE = new NoopPerformanceMonitoringService();
 
 	@Override
-	public <V> V monitorSpan(Callable<V> callable, SpanMetadata request)
+	public <V> V monitor(Callable<V> callable, Metadata request)
 	{
 		try
 		{
@@ -40,18 +40,4 @@ public class NoopPerformanceMonitoringService implements PerformanceMonitoringSe
 			throw PerformanceMonitoringServiceUtil.asRTE(e);
 		}
 	}
-
-	@Override
-	public <V> V monitorTransaction(Callable<V> callable, TransactionMetadata request)
-	{
-		try
-		{
-			return callable.call();
-		}
-		catch (Exception e)
-		{
-			throw PerformanceMonitoringServiceUtil.asRTE(e);
-		}
-	}
-
 }

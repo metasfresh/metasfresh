@@ -114,14 +114,14 @@ public class OrderCandidateRestControllerService
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final PerformanceMonitoringService.SpanMetadata spanMetadata = PerformanceMonitoringService.SpanMetadata.builder()
+		final PerformanceMonitoringService.Metadata metadata = PerformanceMonitoringService.Metadata.builder()
 				.name("CreatOrderLineCandidatesBulk")
-				.type(PerformanceMonitoringService.Type.REST_API_PROCESSING.getCode())
+				.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 				.build();
 
-		return perfMonService.monitorSpan(
+		return perfMonService.monitor(
 				() -> creatOrderLineCandidates0(bulkRequest, masterdataProvider),
-				spanMetadata);
+				metadata);
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrderLineCandidates0(

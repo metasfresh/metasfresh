@@ -53,7 +53,7 @@ import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.util.Check;
@@ -183,13 +183,13 @@ public final class CacheMgt
 			return 0;
 		}
 
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
+		final Metadata metadata = Metadata.builder()
 				.name("Full CacheReset")
-				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
+				.type(Type.CACHE_OPERATION).subType(SubType.CACHE_INVALIDATE)
 				.build();
-		return getPerfMonService().monitorSpan(
+		return getPerfMonService().monitor(
 				() -> reset0(),
-				spanMetadata);
+				metadata);
 	}
 
 	@Nullable
@@ -350,14 +350,14 @@ public final class CacheMgt
 	 */
 	long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
+		final Metadata metadata = Metadata.builder()
 				.name("CacheReset")
-				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
+				.type(Type.CACHE_OPERATION).subType(SubType.CACHE_INVALIDATE)
 				.label("resetMode", mode.toString())
 				.build();
-		return getPerfMonService().monitorSpan(
+		return getPerfMonService().monitor(
 				() -> reset0(multiRequest, mode),
-				spanMetadata);
+				metadata);
 	}
 
 	private Long reset0(final CacheInvalidateMultiRequest multiRequest, final ResetMode mode)

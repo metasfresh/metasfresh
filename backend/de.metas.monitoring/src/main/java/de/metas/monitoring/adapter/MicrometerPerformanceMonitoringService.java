@@ -45,28 +45,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
 {
 	private final MeterRegistry meterRegistry;
-	private final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService;
 	private final ThreadLocal<Integer> step = ThreadLocal.withInitial(() -> 1);
 	private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
 	private final AtomicInteger correlationIdProvider = new AtomicInteger();
 	private final ThreadLocal<Integer> correlationId = ThreadLocal.withInitial(() -> 0);
 	private final ThreadLocal<Boolean> isCorrelationActive = ThreadLocal.withInitial(() -> false);
 	private final ThreadLocal<Boolean> isCorrelationLocked = ThreadLocal.withInitial(() -> false);
-	private final ThreadLocal<String[]> correlationTriggers = ThreadLocal.withInitial(() -> getCorrelationTriggers());
+	private final ThreadLocal<String[]> correlationTriggers = ThreadLocal.withInitial(this::getCorrelationTriggers);
 
 
 	public MicrometerPerformanceMonitoringService(
-			@NonNull final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService,
 			@NonNull final MeterRegistry meterRegistry)
 	{
-		this.apmPerformanceMonitoringService = apmPerformanceMonitoringService;
 		this.meterRegistry = meterRegistry;
 	}
 
 	@Override
-	public <V> V monitorTransaction(
+	public <V> V monitor(
 			@NonNull final Callable<V> callable,
-			@NonNull final TransactionMetadata metadata)
+			@NonNull final PerformanceMonitoringService.Metadata metadata)
 	{
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
 
@@ -80,67 +77,16 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 		addAdditionalTags(tags);
 
-		final Callable<V> callableToUse;
-		if (apmPerformanceMonitoringService.isPresent())
-		{
-			callableToUse = () -> apmPerformanceMonitoringService.get().monitorTransaction(callable, metadata);
-		}
-		else
-		{
-			callableToUse = callable;
-		}
 		try(final IAutoCloseable ignored = this.reduceDepth())
 		{
 			if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationLocked.get()){
 				try(final IAutoCloseable ignored2 = this.endCorrelation())
 				{
 					isCorrelationLocked.set(true);
-					return recordCallable(callableToUse, tags, "mf." + metadata.getType().getCode());
+					return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
 				}
 			}
-			return recordCallable(callableToUse, tags, "mf." + metadata.getType().getCode());
-		}
-	}
-
-	@Override
-	public <V> V monitorSpan(
-			@NonNull final Callable<V> callable,
-			@NonNull final SpanMetadata metadata)
-	{
-		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
-
-		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
-		mkTagIfNotNull("SubType", metadata.getSubType()).ifPresent(tags::add);
-		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
-
-		if(isCorrelationTrigger(metadata.getType()) && !isCorrelationActive.get())
-		{
-			isCorrelationActive.set(true);
-			correlationId.set(correlationIdProvider.getAndIncrement());
-		}
-
-		addAdditionalTags(tags);
-
-		final Callable<V> callableToUse;
-		if (apmPerformanceMonitoringService.isPresent())
-		{
-			callableToUse = () -> apmPerformanceMonitoringService.get().monitorSpan(callable, metadata);
-		}
-		else
-		{
-			callableToUse = callable;
-		}
-		try(final IAutoCloseable ignored = this.reduceDepth())
-		{
-			if(isCorrelationTrigger(metadata.getType()) && !isCorrelationLocked.get())
-			{
-				try(final IAutoCloseable ignored2 = this.endCorrelation())
-				{
-					isCorrelationLocked.set(true);
-					return recordCallable(callableToUse, tags, "mf." + metadata.getType());
-				}
-			}
-			return recordCallable(callableToUse, tags, "mf." + metadata.getType());
+			return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
 		}
 	}
 
@@ -203,12 +149,12 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 	private Boolean isCorrelationTrigger(String type)
 	{
-		return Arrays.stream(correlationTriggers.get()).anyMatch(type::equals);
+		return Arrays.asList(correlationTriggers.get()).contains(type);
 	}
 
 	private String[] getCorrelationTriggers()
 	{
-		String[] correlationTriggers = {"po"};
+		final String[] correlationTriggers = new String[] { "po" };
 		return correlationTriggers;
 	}
 

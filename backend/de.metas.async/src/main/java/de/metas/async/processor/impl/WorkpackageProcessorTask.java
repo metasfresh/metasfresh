@@ -57,7 +57,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -169,9 +169,9 @@ class WorkpackageProcessorTask implements Runnable
 				PerformanceMonitoringService.class,
 				NoopPerformanceMonitoringService.INSTANCE);
 
-		service.monitorTransaction(
+		service.monitor(
 				this::run0,
-				TransactionMetadata.builder()
+				Metadata.builder()
 						.type(Type.ASYNC_WORKPACKAGE)
 						.name("Workpackage-Processor - " + queueProcessor.getName())
 						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())

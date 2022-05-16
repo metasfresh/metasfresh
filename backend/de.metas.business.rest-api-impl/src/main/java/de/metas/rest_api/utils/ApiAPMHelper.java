@@ -1,6 +1,6 @@
 package de.metas.rest_api.utils;
 
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -30,11 +30,11 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ApiAPMHelper
 {
-	public SpanMetadata createMetadataFor(@NonNull final String restEndpointName)
+	public Metadata createMetadataFor(@NonNull final String restEndpointName)
 	{
-		return SpanMetadata.builder()
+		return Metadata.builder()
 				.name("REST-API - " + restEndpointName)
-				.type(Type.REST_API_PROCESSING.getCode())
+				.type(Type.REST_API_PROCESSING)
 				.build();
 	}
 }

@@ -1757,13 +1757,13 @@ public abstract class PO
 					NoopPerformanceMonitoringService.INSTANCE);
 			final String tableName = get_TableName();
 
-			return service.monitorSpan(
+			return service.monitor(
 					() -> load0(trxName, false), // gh #986 isRetry=false because this is our first attempt to load the record
-					PerformanceMonitoringService.SpanMetadata
+					PerformanceMonitoringService.Metadata
 							.builder()
 							.name("load " + tableName)
-							.type(PerformanceMonitoringService.Type.PO.getCode())
-							.subType(PerformanceMonitoringService.SubType.LOAD.getCode())
+							.type(PerformanceMonitoringService.Type.PO)
+							.subType(PerformanceMonitoringService.SubType.LOAD)
 							.label("tableName", tableName)
 							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(get_ID()))
 							.build());
@@ -2887,13 +2887,13 @@ public abstract class PO
 				NoopPerformanceMonitoringService.INSTANCE);
 		final String tableName = get_TableName();
 
-		service.monitorSpan(
+		service.monitor(
 				() -> saveEx0(),
-				PerformanceMonitoringService.SpanMetadata
+				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("save " + tableName)
-						.type(PerformanceMonitoringService.Type.PO.getCode())
-						.subType(PerformanceMonitoringService.SubType.SAVE.getCode())
+						.type(PerformanceMonitoringService.Type.PO)
+						.subType(PerformanceMonitoringService.SubType.SAVE)
 						.label("tableName", tableName)
 						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(get_ID()))
 						.build());

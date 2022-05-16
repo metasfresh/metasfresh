@@ -25,7 +25,7 @@ import de.metas.impexp.processing.IImportProcess;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.script.IADRuleDAO;
@@ -63,14 +63,12 @@ import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -697,13 +695,13 @@ public class ModelValidationEngine implements IModelValidationEngine
 		final String tableName = po.get_TableName();
 		final String changeTypeStr = changeType.toString();
 
-		performanceMonitoringService.monitorSpan(
+		performanceMonitoringService.monitor(
 				() -> fireModelChange0(po, changeType),
-				SpanMetadata
+				Metadata
 						.builder()
 						.name(changeTypeStr + " " + tableName)
-						.type(Type.MODEL_INTERCEPTOR.getCode())
-						.subType(SubType.MODEL_CHANGE.getCode())
+						.type(Type.MODEL_INTERCEPTOR)
+						.subType(SubType.MODEL_CHANGE)
 						.action(changeTypeStr)
 						.label("tableName", tableName)
 						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
@@ -1068,13 +1066,13 @@ public class ModelValidationEngine implements IModelValidationEngine
 			final int recordId = InterfaceWrapperHelper.getId(model);
 			final String docTimingStr = docTiming.toString();
 
-			return perfMonService.monitorSpan(
+			return perfMonService.monitor(
 					() -> fireDocValidate0(model, docTiming),
-					SpanMetadata
+					Metadata
 							.builder()
 							.name(docTimingStr + " " + tableName)
-							.type(Type.MODEL_INTERCEPTOR.getCode())
-							.subType(SubType.DOC_VALIDATE.getCode())
+							.type(Type.MODEL_INTERCEPTOR)
+							.subType(SubType.DOC_VALIDATE)
 							.action(docTimingStr)
 							.label("tableName", tableName)
 							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))

@@ -44,11 +44,11 @@ public interface PerformanceMonitoringService
 	public static final Set<String> VOLATILE_LABELS = ImmutableSet.of(LABEL_RECORD_ID, LABEL_EXTERNAL_LINE_ID, LABEL_EXTERNAL_HEADER_ID, LABEL_WORKPACKAGE_ID);
 	
 	/** Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required. */
-	<V> V monitorSpan(Callable<V> callable, SpanMetadata metadata);
+	<V> V monitor(Callable<V> callable, Metadata metadata);
 
-	default void monitorSpan(final Runnable runnable, final SpanMetadata metadata)
+	default void monitor(final Runnable runnable, final Metadata metadata)
 	{
-		monitorSpan(
+		monitor(
 				() -> {
 					runnable.run();
 					return null;
@@ -58,16 +58,16 @@ public interface PerformanceMonitoringService
 	
 	@Value
 	@Builder
-	class SpanMetadata
+	class Metadata
 	{
 		@NonNull
 		String name;
 
 		@NonNull
-		String type;
+		Type type;
 
 		@Nullable
-		String subType;
+		SubType subType;
 
 		@Nullable
 		String action;
@@ -77,35 +77,6 @@ public interface PerformanceMonitoringService
 
 		@Nullable
 		BiConsumer<String, String> distributedHeadersInjector;
-	}
-
-	/** Invoke the given {@code callable} as a transaction. Capture exception and re-throw it, wrapped as RuntimeException if required. */
-	<V> V monitorTransaction(Callable<V> callable, TransactionMetadata request);
-
-	default void monitorTransaction(
-			@NonNull final Runnable runnable,
-			@NonNull final TransactionMetadata request)
-	{
-		monitorTransaction(
-				() -> {
-					runnable.run();
-					return null;
-				},
-				request);
-	}
-
-	@Value
-	@Builder
-	class TransactionMetadata
-	{
-		@NonNull
-		String name;
-
-		@Singular
-		Map<String, String> labels;
-
-		@NonNull
-		Type type;
 
 		@Singular
 		Map<String, String> distributedTransactionHeaders;

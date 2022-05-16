@@ -24,7 +24,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -201,9 +201,9 @@ public class Scheduler extends AdempiereServer
 				PerformanceMonitoringService.class,
 				NoopPerformanceMonitoringService.INSTANCE);
 
-		service.monitorTransaction(
+		service.monitor(
 				this::doWork0,
-				TransactionMetadata.builder()
+				Metadata.builder()
 						.name("Scheduler - " + m_model.getName())
 						.type(Type.SCHEDULER)
 						.label("scheduler.name", m_model.getName())

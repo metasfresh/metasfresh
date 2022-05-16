@@ -75,7 +75,7 @@ public class PlainEventBusFactory implements IEventBusFactory
 	private EventBus createEventBus(final Topic topic)
 	{
 		final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector = EventBusFactory.createMicrometerEventBusStatsCollector(topic, new SimpleMeterRegistry());
-		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(Optional.empty(), new SimpleMeterRegistry()));
+		final EventBusMonitoringService eventBusMonitoringService = new EventBusMonitoringService(new MicrometerPerformanceMonitoringService(new SimpleMeterRegistry()));
 
 		final ExecutorService executor = null;
 		return new EventBus(topic, executor, micrometerEventBusStatsCollector, new PlainEventEnqueuer(), eventBusMonitoringService, new EventLogService(new EventLogsRepository()));

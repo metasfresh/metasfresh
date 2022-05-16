@@ -49,9 +49,9 @@ public class EventBusMonitoringService
 			@NonNull final Consumer<Event> enqueueEvent)
 	{
 		final Event.Builder eventToSendBuilder = event.toBuilder();
-		final PerformanceMonitoringService.SpanMetadata request = PerformanceMonitoringService.SpanMetadata.builder()
-				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT.getCode())
-				.subType(PerformanceMonitoringService.SubType.EVENT_SEND.getCode())
+		final PerformanceMonitoringService.Metadata request = PerformanceMonitoringService.Metadata.builder()
+				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
+				.subType(PerformanceMonitoringService.SubType.EVENT_SEND)
 				.name("Enqueue distributed-event on topic " + topic.getName())
 				.label("de.metas.event.distributed-event.senderId", event.getSenderId())
 				.label("de.metas.event.distributed-event.topicName", topic.getName())
@@ -59,7 +59,7 @@ public class EventBusMonitoringService
 				.distributedHeadersInjector((name, value) -> eventToSendBuilder.putProperty(PROP_TRACE_INFO_PREFIX + name, value))
 				.build();
 
-		perfMonService.monitorSpan(
+		perfMonService.monitor(
 				() -> enqueueEvent.accept(eventToSendBuilder.build()),
 				request);
 	}
@@ -71,7 +71,7 @@ public class EventBusMonitoringService
 	{
 		// extract remote tracing infos from the event (if there are any) and create a (distributed) monitoring transaction.
 
-		final PerformanceMonitoringService.TransactionMetadata.TransactionMetadataBuilder transactionMetadata = PerformanceMonitoringService.TransactionMetadata.builder();
+		final PerformanceMonitoringService.Metadata.MetadataBuilder transactionMetadata = PerformanceMonitoringService.Metadata.builder();
 		for (final Map.Entry<String, Object> entry : event.getProperties().entrySet())
 		{
 			final String key = entry.getKey();
@@ -89,7 +89,7 @@ public class EventBusMonitoringService
 				.label("de.metas.event.remote-event.topicName", topic.getName())
 				.label("de.metas.event.remote-event.endpointImpl", this.getClass().getSimpleName());
 
-		perfMonService.monitorTransaction(
+		perfMonService.monitor(
 				processEvent,
 				transactionMetadata.build());
 	}
