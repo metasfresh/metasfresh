@@ -14,6 +14,10 @@ import '@fullcalendar/timegrid/main.css';
 import CalendarEventEditor from '../components/calendar/CalendarEventEditor';
 
 import * as api from '../api/calendar';
+import Moment from 'moment-timezone';
+import MomentTZ from 'moment-timezone';
+import { getCurrentActiveLocale } from '../utils/locale';
+import { DATE_TIMEZONE_FORMAT } from '../constants/Constants';
 
 const extractResourcesFromCalendarsArray = (calendars) => {
   const resourcesById = calendars
@@ -45,6 +49,26 @@ const mergeCalendarEventToArray = (eventsArray, newEvent) => {
   return result;
 };
 
+const normalizeDateTime = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const moment = convertToMoment(value);
+  return moment.format(DATE_TIMEZONE_FORMAT);
+};
+
+const convertToMoment = (value) => {
+  if (!value) {
+    return null;
+  } else if (Moment.isMoment(value)) {
+    return value;
+  } else {
+    MomentTZ.locale(getCurrentActiveLocale());
+    return MomentTZ(value, 'YYYY-MM-DDTHH:mm:ssZ', true);
+  }
+};
+
 const Calendar = ({ className = 'container' }) => {
   console.log('Calendar ctor------------------');
   const [calendarEvents, setCalendarEvents] = React.useState({
@@ -63,23 +87,27 @@ const Calendar = ({ className = 'container' }) => {
   const fetchCalendarEvents = (params) => {
     console.log('fetchCalendarEvents', { params, calendarEvents });
 
+    const startDate = normalizeDateTime(params.startStr);
+    const endDate = normalizeDateTime(params.endStr);
+
     if (
-      calendarEvents.startStr === params.startStr &&
-      calendarEvents.endStr === params.endStr
+      calendarEvents.startDate === startDate &&
+      calendarEvents.endDate === endDate
     ) {
       console.log('fetchCalendarEvents: already fetched', calendarEvents);
       return Promise.resolve(calendarEvents.events);
     } else {
       console.log('fetchCalendarEvents: start fetching from backend');
+
+      const calendarIds = availableCalendars.map(
+        (calendar) => calendar.calendarId
+      );
+
       return api
-        .getCalendarEvents({}) // TODO
+        .getCalendarEvents({ calendarIds, startDate, endDate })
         .then((events) => {
           console.log('fetchCalendarEvents: got result', { events });
-          setCalendarEvents({
-            startStr: params.startStr,
-            endStr: params.endStr,
-            events,
-          });
+          setCalendarEvents({ startDate, endDate, events });
         });
     }
   };

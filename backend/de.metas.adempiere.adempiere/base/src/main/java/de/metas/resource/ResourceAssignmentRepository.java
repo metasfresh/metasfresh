@@ -27,7 +27,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -71,15 +70,11 @@ public class ResourceAssignmentRepository
 		// the resource assignment shall overlap with our query interval
 		if (query.getStartDate() != null || query.getEndDate() != null)
 		{
-			final ICompositeQueryFilter<I_S_ResourceAssignment> rangeFilters = sqlQueryBuilder.addCompositeQueryFilter();
-			rangeFilters.setJoinOr();
-			rangeFilters.addBetweenFilter(I_S_ResourceAssignment.COLUMNNAME_AssignDateFrom, query.getStartDate(), query.getEndDate());
-			rangeFilters.addBetweenFilter(I_S_ResourceAssignment.COLUMNNAME_AssignDateTo, query.getStartDate(), query.getEndDate());
-
-			//                                 +-------- RA -----+
-			//                                         +------ Q -----+
-
-			// TODO .............
+			sqlQueryBuilder.addIntervalIntersection(
+					I_S_ResourceAssignment.COLUMNNAME_AssignDateFrom,
+					I_S_ResourceAssignment.COLUMNNAME_AssignDateTo,
+					query.getStartDate(),
+					query.getEndDate());
 		}
 
 		return sqlQueryBuilder;

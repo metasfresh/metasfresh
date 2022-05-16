@@ -38,7 +38,6 @@ import de.metas.ui.web.calendar.json.JsonCalendarRef;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.user.UserId;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
@@ -114,12 +113,12 @@ public class CalendarRestController
 
 			if (query.getStartDate() != null)
 			{
-				result.startDate(DateTimeConverters.fromObjectToZonedDateTime(query.getStartDate()));
+				result.startDate(query.getStartDate().toZonedDateTime());
 			}
 
 			if (query.getEndDate() != null)
 			{
-				result.endDate(DateTimeConverters.fromObjectToZonedDateTime(query.getEndDate()));
+				result.endDate(query.getEndDate().toZonedDateTime());
 			}
 		}
 

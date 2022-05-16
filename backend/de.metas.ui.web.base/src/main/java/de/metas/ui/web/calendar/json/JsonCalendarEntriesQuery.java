@@ -37,6 +37,6 @@ import java.util.Set;
 public class JsonCalendarEntriesQuery
 {
 	@Nullable @Singular Set<CalendarGlobalId> calendarIds;
-	@Nullable String startDate;
-	@Nullable String endDate;
+	@Nullable JsonDateTime startDate;
+	@Nullable JsonDateTime endDate;
 }
