@@ -1,0 +1,25 @@
+FROM node:14 as build
+
+RUN npm install -g webpack webpack-cli
+
+WORKDIR /app 
+COPY misc/services/mobile-webui/mobile-webui-frontend/package.json .
+# COPY yarn.lock .
+
+RUN yarn install
+
+COPY misc/services/mobile-webui/mobile-webui-frontend/ .
+
+RUN yarn lint
+# RUN yarn test --ci
+RUN yarn build
+
+
+FROM nginx as runtime
+
+# COPY docker-builds/mobile/default.conf /etc/nginx/conf.d
+COPY docker-builds/frontend/config.js /usr/share/nginx/html/mobile/
+
+COPY --from=build /app/build/* /usr/share/nginx/html/mobile/
+
+RUN cd /usr/share/nginx/html/mobile/ && mkdir static && mv js static/ && mv css static/

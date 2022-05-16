@@ -16,6 +16,7 @@ docker build -f Dockerfile.backend.api -t metas-api:latest . || @goto error
 docker build -f Dockerfile.backend.app -t metas-app:latest . || @goto error
 docker build -f Dockerfile.camel.externalsystems -t metas-externalsystems:latest . || @goto error
 docker build -f Dockerfile.frontend -t metas-frontend:latest . || @goto error
+docker build -f Dockerfile.mobile -t metas-mobile:latest . || @goto error
 docker build -f Dockerfile.db-standalone -t metas-db:latest . || @goto error
 docker build -f Dockerfile.db-preloaded -t metas-db:preloaded . || @goto error
 

@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: metas-db:latest
+    image: metas-db:preloaded
     ports:
       - "15432:5432"
     healthcheck:
@@ -42,8 +42,6 @@ services:
       mode: replicated
       replicas: 1
 
-# -------------------------------------------------------------------------------
-
   webapi:
     image: metas-api:latest
     ports:
@@ -78,6 +76,17 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    depends_on:
+      - webapi
+      - app
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  mobile:
+    image: metas-mobile:latest
+    ports:
+      - "8880:80"
     depends_on:
       - webapi
       - app
