@@ -25,14 +25,15 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_ORDER_NUMBER;
-import static de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper.buildEqualsJsonQuery;
-import static de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper.buildUpdatedAfterQueryRequest;
+import static de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper.buildEqualsJsonQuery;
+import static de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper.buildUpdatedAfterQueryRequest;
 
 class TestPOJOs
 {
@@ -43,7 +44,7 @@ class TestPOJOs
 	@Test
 	void jsonQuery_multi() throws IOException
 	{
-		final MultiQueryRequest queryRequest = buildUpdatedAfterQueryRequest("2020-10-26T06:32:45Z");
+		final MultiQueryRequest queryRequest = buildUpdatedAfterQueryRequest("2020-10-26T06:32:45Z", PageAndLimit.of(1,1));
 		final String json = objectMapper.writeValueAsString(queryRequest);
 
 		Assertions.assertThat(json).isEqualToIgnoringWhitespace("{\n"
@@ -68,7 +69,9 @@ class TestPOJOs
 																		+ "        }\n"
 																		+ "      ]\n"
 																		+ "    }\n"
-																		+ "  ]\n"
+																		+ "  ],\n"
+																		+ "  \"limit\": 1,\n"
+																		+ "  \"page\": 1\n"
 																		+ "}");
 	}
 

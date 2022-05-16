@@ -1,0 +1,14 @@
+{
+  "orgCode": "001",
+  "externalSystemName": "Shopware6",
+  "command": "getOrders",
+  "adPInstanceId": 2,
+  "externalSystemConfigId": 1,
+  "traceId": "traceId",
+  "externalSystemChildConfigValue": "ChildConfigValue",
+  "parameters": {
+    "OrderId": "testOrderId",
+    "UpdatedAfterOverride": "2000-08-09T13:35:17Z",
+    "UpdatedAfter": "1999-08-09T13:35:17Z"
+  }
+}

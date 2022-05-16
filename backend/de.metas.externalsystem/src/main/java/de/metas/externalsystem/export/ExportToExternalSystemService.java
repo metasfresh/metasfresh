@@ -150,4 +150,5 @@ public abstract class ExportToExternalSystemService
 
 	protected abstract void runPreExportHook(TableRecordReference recordReferenceToExport);
 
+	public abstract int getCurrentPendingItems();
 }
