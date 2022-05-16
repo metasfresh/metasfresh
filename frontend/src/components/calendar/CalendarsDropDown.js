@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import SimpleList from './SimpleList';
+import SimpleList from '../widget/List/SimpleList';
 
 const toKeyCaption = (calendar) => {
   return calendar ? { key: calendar.calendarId, caption: calendar.name } : null;
