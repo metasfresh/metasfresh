@@ -28,7 +28,7 @@ const CalendarPage = () => {
   //
   return (
     <div>
-      <Header entity="calendar" windowId="666" />
+      <Header />
       <div className="header-sticky-distance js-unselect panel-vertical-scroll dashboard">
         <Calendar />
       </div>
