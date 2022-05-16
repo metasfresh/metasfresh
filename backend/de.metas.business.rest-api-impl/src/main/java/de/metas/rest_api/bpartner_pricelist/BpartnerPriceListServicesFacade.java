@@ -99,14 +99,27 @@ public class BpartnerPriceListServicesFacade
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableMap<ProductId, String> getProductValues(ImmutableSet<ProductId> productIds)
+	@NonNull
+	public ImmutableList<I_M_ProductPrice> getProductPricesByPLVAndProduct(@NonNull final PriceListVersionId priceListVersionId, @NonNull final ProductId productId)
+	{
+		return priceListsRepo.retrieveProductPrices(priceListVersionId, productId);
+	}
+
+	@NonNull
+	public ImmutableMap<ProductId, String> getProductValues(final ImmutableSet<ProductId> productIds)
 	{
 		return productsService.getProductValues(productIds);
 	}
 
+	@NonNull
+	public String getProductValue(@NonNull final ProductId productId)
+	{
+		return productsService.getProductValue(productId);
+	}
+
 	// TODO move this method to de.metas.bpartner.service.IBPartnerDAO since it has nothing to do with price list
 	// 		TODO: IdentifierString must also be moved to the module containing IBPartnerDAO
-	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier, OrgId orgId)
+	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier, final OrgId orgId)
 	{
 		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier,orgId);
 		return bpartnersRepo.retrieveBPartnerIdBy(query);

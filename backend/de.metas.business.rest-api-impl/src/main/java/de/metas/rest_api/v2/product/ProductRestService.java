@@ -22,9 +22,13 @@
 
 package de.metas.rest_api.v2.product;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
@@ -35,6 +39,8 @@ import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
+import de.metas.common.product.v2.response.JsonProduct;
+import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
@@ -46,6 +52,7 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -66,8 +73,13 @@ import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -89,6 +101,7 @@ public class ProductRestService
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IBPartnerProductDAO partnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
@@ -134,6 +147,21 @@ public class ProductRestService
 			default:
 				throw new InvalidIdentifierException(productIdentifier.getRawValue());
 		}
+	}
+
+	@NonNull
+	public JsonProduct retrieveProduct(@Nullable final String orgCode, @NonNull final String externalIdentifier)
+	{
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(externalIdentifier);
+
+		final ProductId productId = resolveProductExternalIdentifier(productIdentifier, orgId)
+				.orElseThrow(() -> new InvalidIdentifierException(externalIdentifier));
+
+		final I_M_Product product = productDAO.getById(productId);
+
+		return toJsonProduct(product);
 	}
 
 	@NonNull
@@ -858,4 +886,67 @@ public class ProductRestService
 		return productType;
 	}
 
+	@NonNull
+	private JsonProduct toJsonProduct(final I_M_Product productRecord)
+	{
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(productRecord);
+
+		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
+
+		final JsonMetasfreshId manufacturerId = productRecord.getManufacturer_ID() > 0
+				? JsonMetasfreshId.of(productRecord.getManufacturer_ID())
+				: null;
+
+		final UomId uomId = UomId.ofRepoId(productRecord.getC_UOM_ID());
+		final I_C_UOM uom = uomDAO.getById(uomId);
+
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		final ImmutableList<JsonProductBPartner> bPartnerProductRecords = partnerProductsRepo.retrieveForProductIds(ImmutableSet.of(productId))
+				.stream()
+				.map(this::toJsonProductBPartner)
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonProduct.builder()
+				.id(JsonMetasfreshId.of(productId.getRepoId()))
+				.externalId(productRecord.getExternalId())
+				.productNo(productRecord.getValue())
+				.productCategoryId(JsonMetasfreshId.of(productRecord.getM_Product_Category_ID()))
+				.manufacturerId(manufacturerId)
+				.manufacturerNumber(productRecord.getManufacturerArticleNumber())
+				.name(trls.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()).translate(adLanguage))
+				.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()).translate(adLanguage))
+				.ean(productRecord.getUPC())
+				.uom(uom.getUOMSymbol())
+				.bpartners(bPartnerProductRecords)
+				.build();
+	}
+
+	@NonNull
+	private JsonProductBPartner toJsonProductBPartner(final I_C_BPartner_Product record)
+	{
+		return JsonProductBPartner.builder()
+				.bpartnerId(JsonMetasfreshId.of(record.getC_BPartner_ID()))
+				.productId(JsonMetasfreshId.of(record.getM_Product_ID()))
+				//
+				.productNo(record.getProductNo())
+				.productName(record.getProductName())
+				.productDescription(record.getProductDescription())
+				.productCategory(record.getProductCategory())
+				//
+				.ean(record.getUPC())
+				//
+				.vendor(record.isUsedForVendor())
+				.currentVendor(record.isUsedForVendor() && record.isCurrentVendor())
+				.customer(record.isUsedForCustomer())
+				//
+				.leadTimeInDays(record.getDeliveryTime_Promised())
+				//
+				.excludedFromSale(record.isExcludedFromSale())
+				.exclusionFromSaleReason(record.getExclusionFromSaleReason())
+				.excludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				//
+				.build();
+	}
 }
