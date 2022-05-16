@@ -18,7 +18,7 @@ RUN yarn build
 FROM nginx as runtime
 
 # COPY docker-builds/mobile/default.conf /etc/nginx/conf.d
-COPY docker-builds/frontend/config.js /usr/share/nginx/html/mobile/
+COPY docker-builds/mobile/config.js /usr/share/nginx/html/mobile/
 
 COPY --from=build /app/build/* /usr/share/nginx/html/mobile/
 
