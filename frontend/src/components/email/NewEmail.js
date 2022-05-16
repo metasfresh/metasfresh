@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 
 import { addNotification } from '../../actions/AppActions';
 import * as api from '../../actions/EmailActions';
-import RawList from '../widget/List/RawList';
+import SimpleList from '../widget/List/SimpleList';
 import Attachments from './Attachments';
 import AutocompleteField from './AutocompleteField';
 
@@ -15,10 +15,6 @@ const NewEmail = ({ windowId, docId, handleCloseEmail }) => {
   const [data, setData] = useState({});
   const [availableTemplates, setAvailableTemplates] = useState([]);
   const [appliedTemplate, setAppliedTemplate] = useState(null);
-
-  // Required for RawList. Else it does not work :(
-  const [listFocused, setListFocused] = useState(true);
-  const [listToggled, setListToggled] = useState(false);
 
   const setLoadedEmail = (data) => {
     setDataOnBackend(data);
@@ -86,17 +82,10 @@ const NewEmail = ({ windowId, docId, handleCloseEmail }) => {
             </span>
             {availableTemplates.length > 0 && (
               <div className="email-templates">
-                <RawList
-                  rank="primary"
+                <SimpleList
                   list={availableTemplates}
                   onSelect={onTemplateChanged}
                   selected={appliedTemplate}
-                  isFocused={listFocused}
-                  isToggled={listToggled}
-                  onOpenDropdown={() => setListToggled(true)}
-                  onCloseDropdown={() => setListToggled(false)}
-                  onFocus={() => setListFocused(true)}
-                  onBlur={() => setListFocused(false)}
                 />
               </div>
             )}
