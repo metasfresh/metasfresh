@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
@@ -11,13 +33,13 @@ import '@fullcalendar/common/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 
-import CalendarEventEditor from '../components/calendar/CalendarEventEditor';
+import CalendarEventEditor from '../../components/calendar/CalendarEventEditor';
 
-import * as api from '../api/calendar';
+import * as api from '../../api/calendar';
 import Moment from 'moment-timezone';
 import MomentTZ from 'moment-timezone';
-import { getCurrentActiveLocale } from '../utils/locale';
-import { DATE_TIMEZONE_FORMAT } from '../constants/Constants';
+import { getCurrentActiveLocale } from '../../utils/locale';
+import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
 
 const extractResourcesFromCalendarsArray = (calendars) => {
   const resourcesById = calendars

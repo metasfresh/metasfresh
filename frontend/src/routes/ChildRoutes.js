@@ -8,7 +8,7 @@ import Board from '../containers/Board.js';
 import Dashboard from '../containers/Dashboard.js';
 import InboxAll from '../containers/InboxAll.js';
 import NavigationTree from '../containers/NavigationTree.js';
-import Calendar from '../containers/Calendar';
+import CalendarPage from '../containers/calendar/CalendarPage';
 
 /**
  * @file Functional component.
@@ -32,7 +32,7 @@ const ChildRoutes = () => {
         <Route path="/sitemap" component={NavigationTree} />
         <Route path="/board/:boardId" component={BoardRoute} />
         <Route path="/inbox" component={InboxAll} />
-        <Route path="/calendar" component={Calendar} />
+        <Route path="/calendar" component={CalendarPage} />
         <Route
           path="/logout"
           render={() => {
