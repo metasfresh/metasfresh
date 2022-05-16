@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
 import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
@@ -234,7 +233,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		context.getProductInfoBuilderNonNull().prices(productPrices);
 	}
 
-	private void buildDispatchMessageRequest(@NonNull final Exchange exchange) throws JsonProcessingException
+	private void buildDispatchMessageRequest(@NonNull final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
@@ -243,7 +242,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		final JsonPPOrder jsonPPOrder = JsonConverter.mapToJsonPPOrder(context.getManufacturingOrderNonNull(), jsonProductInfo, context.getJsonBPartner());
 
 		final DispatchMessageRequest request = DispatchMessageRequest.builder()
-				.ftpPayload(JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(jsonPPOrder))
+				.ftpPayload(jsonPPOrder)
 				.ftpCredentials(context.getFtpCredentials())
 				.build();
 

@@ -34,6 +34,7 @@ import lombok.experimental.UtilityClass;
 import org.apache.camel.Predicate;
 
 import java.util.Map;
+import java.util.Objects;
 
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FTP_DIRECTORY;
@@ -111,6 +112,7 @@ public class ExportPPOrderHelper
 		return jsonResponseComposite.getLocations()
 				.stream()
 				.map(JsonResponseLocation::getGln)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 }

@@ -54,7 +54,7 @@ public class SendToFTPRouteBuilder extends RouteBuilder
 				.routeId(SEND_TO_FTP_ROUTE_ID)
 				.log("Route invoked!")
 				.process(this::prepareAndSendToFTP)
-				.marshal(RouteBuilderHelper.setupJacksonDataFormatFor(getContext(), String.class))
+				.marshal(RouteBuilderHelper.setupJacksonDataFormatFor(getContext(), Object.class))
 				.removeHeaders("CamelHttp*")
 				.toD("ftp://${header.FTPHost}:${header.FTPPort}/${header.FTPDirectory}?username=${header.FTPUsername}&password=${header.FTPPassword}&fileName=${header.FTPFilename}");
 		//@formatter:on
@@ -66,7 +66,7 @@ public class SendToFTPRouteBuilder extends RouteBuilder
 
 		final FTPCredentials ftpCredentials = request.getFtpCredentials();
 
-		exchange.getIn().setBody(request.getFtpPayload(), String.class);
+		exchange.getIn().setBody(request.getFtpPayload(), Object.class);
 		exchange.getIn().setHeader(HEADER_FTP_HOST, ftpCredentials.getFtpHost());
 		exchange.getIn().setHeader(HEADER_FTP_PORT, ftpCredentials.getFtpPort());
 		exchange.getIn().setHeader(HEADER_FTP_USERNAME, ftpCredentials.getFtpUsername());

@@ -129,11 +129,11 @@ public class ProductRestController_StepDef
 	private void verifyBPartnerProduct(@NonNull final JsonProductBPartner returnedProductBPartner, @NonNull final Map<String, String> row)
 	{
 		final String productNo = DataTableUtil.extractStringForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ProductNo);
-		final String ean = DataTableUtil.extractStringForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + "ean");
 		final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale);
 		final String exclusionFromSaleReason = DataTableUtil.extractStringOrNullForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason);
 		final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase);
 		final String exclusionFromPurchaseReason = DataTableUtil.extractStringOrNullForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason);
+		final String ean = DataTableUtil.extractStringOrNullForColumnName(row, BPARTNER_PRODUCT_RESPONSE_PATH + "ean");
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpartnerIdentifier);
@@ -144,7 +144,11 @@ public class ProductRestController_StepDef
 		assertThat(returnedProductBPartner.getExclusionFromSaleReason()).isEqualTo(exclusionFromSaleReason);
 		assertThat(returnedProductBPartner.isExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
 		assertThat(returnedProductBPartner.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
-		assertThat(returnedProductBPartner.getEan()).isEqualTo(ean);
+
+		if(Check.isNotBlank(ean))
+		{
+			assertThat(returnedProductBPartner.getEan()).isEqualTo(ean);
+		}
 	}
 
 	private void validateJsonProduct(@NonNull final Map<String, String> row, @NonNull final JsonProduct jsonProduct)

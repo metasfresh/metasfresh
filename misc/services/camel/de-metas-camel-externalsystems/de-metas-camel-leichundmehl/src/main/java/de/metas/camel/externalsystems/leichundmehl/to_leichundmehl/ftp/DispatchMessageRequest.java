@@ -33,7 +33,7 @@ public class DispatchMessageRequest
 {
 	@NonNull
 	@JsonProperty("ftpPayload")
-	String ftpPayload;
+	Object ftpPayload;
 
 	@NonNull
 	@JsonProperty("ftpCredentials")

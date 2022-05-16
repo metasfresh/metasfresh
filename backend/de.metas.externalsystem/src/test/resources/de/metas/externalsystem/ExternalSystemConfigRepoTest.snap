@@ -139,8 +139,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "value" : "testLeichMehlValue",
         "ftpHost" : "hostname",
         "ftpPort" : 1111,
-        "ftpUsername" : "notImportant",
-        "ftpPassword" : "notImportant",
+        "ftpUsername" : "ftpUsername",
+        "ftpPassword" : "ftpPassword",
         "ftpDirectory" : "directory"
       },
       "writeAudit" : true,
@@ -157,8 +157,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "value" : "testLeichMehlValue",
     "ftpHost" : "hostname",
     "ftpPort" : 1111,
-    "ftpUsername" : "notImportant",
-    "ftpPassword" : "notImportant",
+    "ftpUsername" : "ftpUsername",
+    "ftpPassword" : "ftpPassword",
     "ftpDirectory" : "directory"
   }
 ]
@@ -177,8 +177,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "value" : "testLeichMehlValue",
       "ftpHost" : "hostname",
       "ftpPort" : 1111,
-      "ftpUsername" : "notImportant",
-      "ftpPassword" : "notImportant",
+      "ftpUsername" : "ftpUsername",
+      "ftpPassword" : "ftpPassword",
       "ftpDirectory" : "directory"
     },
     "writeAudit" : true,
@@ -467,8 +467,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
       "value" : "LeichMehl",
       "ftpHost" : "hostname",
       "ftpPort" : 1111,
-      "ftpUsername" : "notImportant",
-      "ftpPassword" : "notImportant",
+      "ftpUsername" : "ftpUsername",
+      "ftpPassword" : "ftpPassword",
       "ftpDirectory" : "directory"
     },
     "writeAudit" : true,

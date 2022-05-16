@@ -245,7 +245,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		public void process(final Exchange exchange) throws IOException
 		{
 			final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
-			final JsonPPOrder jsonPPOrder = objectMapper.readValue(request.getFtpPayload(), JsonPPOrder.class);
+			final JsonPPOrder jsonPPOrder = (JsonPPOrder)request.getFtpPayload();
 
 			final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
 			final JsonPPOrder expectedJson = objectMapper.readValue(expectedDispatchMessageRequestIS, JsonPPOrder.class);
