@@ -47,7 +47,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -98,7 +98,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -144,7 +144,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -190,7 +190,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     }
