@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,58 +20,34 @@
  * #L%
  */
 
-package de.metas.purchasecandidate.purchaseordercreation;
+package de.metas.pricing.tax;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
+import de.metas.tax.api.TaxCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 @Value
 @Builder
-public class PurchaseOrderPricingInfo
+public class ProductTaxCategory
 {
 	@NonNull
-	OrgId orgId;
-
-	@Nullable
-	ZoneId orgTimeZone;
-
-	@NonNull
-	BPartnerId bpartnerId;
-
-	@NonNull
-	ZonedDateTime datePromised;
+	ProductTaxCategoryId productTaxCategoryId;
 
 	@NonNull
 	ProductId productId;
 
+	@NonNull
+	TaxCategoryId taxCategoryId;
+
+	@NonNull
+	Instant validFrom;
+
 	@Nullable
 	CountryId countryId;
-
-	@NonNull
-	Quantity quantity;
-
-	@NonNull
-	Boolean isManualPrice;
-
-	@Nullable
-	BigDecimal priceEntered;
-
-	@Nullable
-	UomId priceEnteredUomId;
-
-	@Nullable
-	CurrencyId currencyId;
 }

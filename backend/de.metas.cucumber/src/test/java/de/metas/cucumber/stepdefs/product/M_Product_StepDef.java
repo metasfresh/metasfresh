@@ -177,6 +177,15 @@ public class M_Product_StepDef
 		InterfaceWrapperHelper.saveRecord(taxCategory);
 	}
 
+	@Given("load M_Product:")
+	public void load_product(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			loadProduct(tableRow);
+		}
+	}
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
 	{
 		final String productName = tableRow.get("Name");
@@ -300,5 +309,16 @@ public class M_Product_StepDef
 				throw Check.fail("Unexpected type={}", type);
 		}
 		return productType;
+	}
+
+	private void loadProduct(@NonNull final Map<String, String> tableRow)
+	{
+		final int productId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID);
+
+		final I_M_Product product = productDAO.getById(productId);
+		assertThat(product).isNotNull();
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		productTable.put(productIdentifier, product);
 	}
 }

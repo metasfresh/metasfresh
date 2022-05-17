@@ -57,7 +57,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setQty(BigDecimal qty);
 
-	IEditablePricingContext setUomId(UomId uomId);
+	IEditablePricingContext setUomId(@Nullable UomId uomId);
 
 	default IEditablePricingContext setQty(@NonNull final Quantity qty)
 	{
@@ -68,7 +68,7 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setBPartnerId(BPartnerId bpartnerId);
 
-	IEditablePricingContext setCurrencyId(CurrencyId currencyId);
+	IEditablePricingContext setCurrencyId(@Nullable CurrencyId currencyId);
 
 	IEditablePricingContext setPriceDate(LocalDate priceDate);
 
@@ -103,9 +103,11 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setManualPriceEnabled(boolean manualPriceEnabled);
 
-	IEditablePricingContext setCountryId(CountryId countryId);
+	IEditablePricingContext setCountryId(@Nullable CountryId countryId);
 
 	IEditablePricingContext setFailIfNotCalculated();
 
 	IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag);
+
+	IEditablePricingContext setManualPrice(@Nullable final BigDecimal manualPrice);
 }

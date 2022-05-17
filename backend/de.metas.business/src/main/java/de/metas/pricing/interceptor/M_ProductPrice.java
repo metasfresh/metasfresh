@@ -1,5 +1,11 @@
 package de.metas.pricing.interceptor;
 
+import de.metas.pricing.M_ProductPrice_POCopyRecordSupport;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -8,10 +14,6 @@ import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.pricing.M_ProductPrice_POCopyRecordSupport;
-import de.metas.pricing.service.ProductPrices;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -43,6 +45,12 @@ import lombok.NonNull;
 @Component
 public class M_ProductPrice
 {
+	private final ProductTaxCategoryService productTaxCategoryService;
+
+	public M_ProductPrice(@NonNull final ProductTaxCategoryService productTaxCategoryService)
+	{
+		this.productTaxCategoryService = productTaxCategoryService;
+	}
 
 	@Init
 	public void init(final IModelValidationEngine engine)
@@ -61,5 +69,17 @@ public class M_ProductPrice
 	public void assertUomConversionExists(@NonNull final I_M_ProductPrice productPrice)
 	{
 		ProductPrices.assertUomConversionExists(productPrice);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID })
+	public void assertProductTaxCategoryExists(@NonNull final I_M_ProductPrice productPrice)
+	{
+		if (productPrice.getC_TaxCategory_ID() <= 0)
+		{
+			final TaxCategoryId taxCategoryId = productTaxCategoryService.getTaxCategoryId(productPrice);
+
+			Check.assumeNotNull(taxCategoryId, "No C_Tax_Category is set for product! M_Product_ID: {}", productPrice.getM_Product_ID());
+		}
 	}
 }

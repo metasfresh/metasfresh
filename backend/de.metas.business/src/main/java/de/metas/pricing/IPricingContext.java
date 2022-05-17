@@ -123,4 +123,6 @@ public interface IPricingContext extends IContextAware
 	boolean isFailIfNotCalculated();
 
 	boolean isSkipCheckingPriceListSOTrxFlag();
+
+	BigDecimal getManualPrice();
 }
