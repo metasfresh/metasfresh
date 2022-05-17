@@ -20,8 +20,8 @@ If  the order email should  not be propagated anywhere, set the value to ''N''',
 -- 2022-05-16T12:51:43.892192Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_SysConfig SET ConfigurationLevel='O', Description='Specify in what tables should the C_Order.Email be propagated.
-The table names will be comma-separated.
-If  the order email should  not be propagated anywhere, set the value to ''N''.
-The supported  table names are: C_DocOutbounbd_Log, C_Invoice, M_InOut.',Updated=TO_TIMESTAMP('2022-05-16 15:51:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541457
+The table names will be comma-separated. Possible table names are "M_InOut, C_Invoice, C_Doc_Outbound_Log"
+If  the order email should  not be propagated anywhere, set the value to ''N''.'
+,Updated=TO_TIMESTAMP('2022-05-16 15:51:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541457
 ;
 
