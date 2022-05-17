@@ -54,12 +54,13 @@ Feature: Reversal of material receipt is correctly considered in Material Dispo
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_16052022_1      | inOut_16052022_1      |
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | SUPPLY              | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 0   | 10                     |
-      | c_2        | UNEXPECTED_INCREASE | PURCHASE                      | p_1                     | 2021-04-13T21:00:00Z | 10  | 10                     |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | SUPPLY              | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 0   | 10                     |                                 |
+      | c_2        | UNEXPECTED_INCREASE | PURCHASE                      | p_1                     |                      | 10  | 10                     | 2021-04-14T00:00:00             |
     When the material receipt identified by inOut_16052022_1 is reversed
     Then after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_1        | SUPPLY              | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 0   | 0                      |
-      | c_2        | UNEXPECTED_INCREASE | PURCHASE                      | p_1                     | 2021-04-13T21:00:00Z | 10  | 10                     |
-      | c_3        | UNEXPECTED_DECREASE | PURCHASE                      | p_1                     | 2021-04-13T21:00:00Z | 10  | -10                    |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_1        | SUPPLY              | PURCHASE                      | p_1                     | 2021-04-15T21:00:00Z | 0   | 0                      |                                 |
+      | c_2        | UNEXPECTED_INCREASE | PURCHASE                      | p_1                     |                      | 10  | 10                     | 2021-04-14T00:00:00             |
+      | c_3        | UNEXPECTED_DECREASE | PURCHASE                      | p_1                     |                      | 10  | -10                    | 2021-04-14T00:00:00             |
+
