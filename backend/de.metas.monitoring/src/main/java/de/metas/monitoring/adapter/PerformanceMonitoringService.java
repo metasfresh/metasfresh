@@ -100,7 +100,9 @@ public interface PerformanceMonitoringService
 
 		PO("po"),
 
-		REST_CONTROLLER("rest-controller");
+		REST_CONTROLLER("rest-controller"),
+
+		INVOICE("invoice");
 
 		Type(final String code)
 		{

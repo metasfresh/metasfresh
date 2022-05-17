@@ -303,6 +303,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	{
 		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
 		final Metadata request = Metadata.builder()
+				.type(PerformanceMonitoringService.Type.INVOICE)
 				.action("createMissingInvoiceCandidates")
 				.name("createMissingInvoiceCandidatesForModel")
 				.build();
