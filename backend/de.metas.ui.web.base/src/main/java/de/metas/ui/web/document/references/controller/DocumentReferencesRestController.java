@@ -6,6 +6,8 @@ import de.metas.document.references.related_documents.RelatedDocumentsPermission
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ui.web.document.references.WebuiDocumentReference;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceCandidate;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
@@ -23,6 +25,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -139,6 +142,21 @@ public class DocumentReferencesRestController
 	}
 
 	private SseEmitter streamRootDocumentReferences(final DocumentPath documentPath)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> streamRootDocumentReferences0(documentPath),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DocumentReferencesRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("streamRootDocumentReferences")
+						.build());
+	}
+
+	private SseEmitter streamRootDocumentReferences0(final DocumentPath documentPath)
 	{
 		final JSONDocumentReferencesEventPublisher publisher = JSONDocumentReferencesEventPublisher.newInstance();
 

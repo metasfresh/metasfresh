@@ -25,6 +25,8 @@ package de.metas.rest_api.process.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;
@@ -48,6 +50,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -94,6 +97,22 @@ public class ProcessRestController
 	@ApiOperation("Invoke a process from the list returned by the `available` endpoint")
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
+			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
+			@Nullable @RequestBody(required = false) final RunProcessRequest request)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> invokeProcess0(processValue, request),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("ProcessRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("invokeProcess")
+						.build());
+	}
+	public ResponseEntity<?> invokeProcess0(
 			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
 			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{

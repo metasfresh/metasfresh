@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -89,6 +91,7 @@ import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -318,6 +321,24 @@ public class WindowRestController
 	}
 
 	private List<JSONDocument> getData(
+			@NonNull final DocumentPath documentPath,
+			@Nullable final DocumentQueryOrderByList orderBys,
+			@NonNull final JSONDocumentOptions jsonOpts)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getData0(documentPath, orderBys, jsonOpts),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("WindowRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("getData")
+						.build());
+	}
+
+	private List<JSONDocument> getData0(
 			@NonNull final DocumentPath documentPath,
 			@Nullable final DocumentQueryOrderByList orderBys,
 			@NonNull final JSONDocumentOptions jsonOpts)
@@ -934,6 +955,27 @@ public class WindowRestController
 	 */
 	@GetMapping("/{windowId}/{documentId}/processNewRecord")
 	public int processRecord(
+			@PathVariable("windowId") final String windowIdStr
+			//
+			,
+			@PathVariable("documentId") final String documentIdStr
+			//
+	)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> processRecord0(windowIdStr, documentIdStr),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("WindowRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("processRecord")
+						.build());
+	}
+
+	public int processRecord0(
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,

@@ -98,7 +98,9 @@ public interface PerformanceMonitoringService
 
 		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint"),
 
-		PO("po");
+		PO("po"),
+
+		REST_CONTROLLER("rest-controller");
 
 		Type(final String code)
 		{

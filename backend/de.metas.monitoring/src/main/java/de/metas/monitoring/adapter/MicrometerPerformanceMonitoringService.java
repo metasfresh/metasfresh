@@ -154,7 +154,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 	private String[] getCorrelationTriggers()
 	{
-		final String[] correlationTriggers = new String[] { "po" };
+		final String[] correlationTriggers = new String[] { "po", "rest-controller" };
 		return correlationTriggers;
 	}
 

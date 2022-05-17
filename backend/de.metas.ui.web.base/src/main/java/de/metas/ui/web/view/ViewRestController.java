@@ -25,6 +25,8 @@ package de.metas.ui.web.view;
 import com.google.common.collect.ImmutableList;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
@@ -60,6 +62,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.MimeType;
@@ -144,6 +147,24 @@ public class ViewRestController
 			, @RequestBody final JSONCreateViewRequest jsonRequest //
 	)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> createView0(windowIdStr, jsonRequest),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("ViewRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("createView")
+						.build());
+	}
+
+	public JSONViewResult createView0(
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @RequestBody final JSONCreateViewRequest jsonRequest //
+	)
+	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = extractWindowId(windowIdStr, jsonRequest.getWindowId());
@@ -205,6 +226,25 @@ public class ViewRestController
 	 */
 	@PostMapping("/{viewId}/filter")
 	public JSONViewResult filterView( //
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr //
+			, @RequestBody final JSONFilterViewRequest jsonRequest //
+	)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> filterView0(viewIdStr, viewIdStr, jsonRequest),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("ViewRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("filterView")
+						.build());
+	}
+
+	public JSONViewResult filterView0( //
 									  @PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @RequestBody final JSONFilterViewRequest jsonRequest //
@@ -255,6 +295,26 @@ public class ViewRestController
 
 	@GetMapping("/{viewId}")
 	public JSONViewResult getViewData(
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
+			@RequestParam(name = PARAM_PageLength) final int pageLength,
+			@RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getViewData0(windowId, viewIdStr, firstRow, pageLength, orderBysListStr),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("ViewRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("getViewData")
+						.build());
+	}
+
+	public JSONViewResult getViewData0(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
@@ -457,6 +517,23 @@ public class ViewRestController
 
 	@PostMapping("/{viewId}/quickActions")
 	public JSONDocumentActionsList getRowsQuickActions(
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@RequestBody final JSONGetViewActionsRequest request)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getRowsQuickActions0(windowId, viewIdStr, request),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("ViewRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("getRowsQuickActions")
+						.build());
+	}
+	public JSONDocumentActionsList getRowsQuickActions0(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestBody final JSONGetViewActionsRequest request)
