@@ -36,10 +36,7 @@ import '@fullcalendar/timegrid/main.css';
 import CalendarEventEditor from '../../components/calendar/CalendarEventEditor';
 
 import * as api from '../../api/calendar';
-import Moment from 'moment-timezone';
-import MomentTZ from 'moment-timezone';
-import { getCurrentActiveLocale } from '../../utils/locale';
-import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
+import { convertToMoment, normalizeDateTime } from './calendarUtils';
 
 const extractResourcesFromCalendarsArray = (calendars) => {
   const resourcesById = calendars
@@ -52,12 +49,12 @@ const extractResourcesFromCalendarsArray = (calendars) => {
   return Object.values(resourcesById);
 };
 
-const mergeCalendarEventToArray = (eventsArray, newEvent) => {
+const mergeCalendarEventToArray = (eventsArray, eventToAdd) => {
   let added = false;
   const result = [];
   for (const event of eventsArray) {
-    if (event.id === newEvent.id) {
-      result.push(newEvent);
+    if (event.id === eventToAdd.id) {
+      result.push(eventToAdd);
       added = true;
     } else {
       result.push(event);
@@ -65,34 +62,14 @@ const mergeCalendarEventToArray = (eventsArray, newEvent) => {
   }
 
   if (!added) {
-    result.push(newEvent);
+    result.push(eventToAdd);
   }
 
   return result;
 };
 
-const normalizeDateTime = (value) => {
-  if (!value) {
-    return null;
-  }
-
-  const moment = convertToMoment(value);
-  return moment.format(DATE_TIMEZONE_FORMAT);
-};
-
-const convertToMoment = (value) => {
-  if (!value) {
-    return null;
-  } else if (Moment.isMoment(value)) {
-    return value;
-  } else {
-    MomentTZ.locale(getCurrentActiveLocale());
-    return MomentTZ(value, 'YYYY-MM-DDTHH:mm:ssZ', true);
-  }
-};
-
 const Calendar = ({ className = 'container' }) => {
-  console.log('Calendar ctor------------------');
+  //console.log('Calendar ctor------------------');
   const [calendarEvents, setCalendarEvents] = React.useState({
     startStr: null,
     endStr: null,
@@ -102,12 +79,12 @@ const Calendar = ({ className = 'container' }) => {
   const [editingEvent, setEditingEvent] = React.useState(null);
 
   useEffect(() => {
-    console.log('fetching available calendars');
+    //console.log('fetching available calendars');
     api.getAvailableCalendars().then(setAvailableCalendars);
   }, []);
 
   const fetchCalendarEvents = (params) => {
-    console.log('fetchCalendarEvents', { params, calendarEvents });
+    //console.log('fetchCalendarEvents', { params, calendarEvents });
 
     const startDate = normalizeDateTime(params.startStr);
     const endDate = normalizeDateTime(params.endStr);
@@ -116,10 +93,10 @@ const Calendar = ({ className = 'container' }) => {
       calendarEvents.startDate === startDate &&
       calendarEvents.endDate === endDate
     ) {
-      console.log('fetchCalendarEvents: already fetched', calendarEvents);
+      //console.log('fetchCalendarEvents: already fetched', calendarEvents);
       return Promise.resolve(calendarEvents.events);
     } else {
-      console.log('fetchCalendarEvents: start fetching from backend');
+      //console.log('fetchCalendarEvents: start fetching from backend');
 
       const calendarIds = availableCalendars.map(
         (calendar) => calendar.calendarId
@@ -128,7 +105,7 @@ const Calendar = ({ className = 'container' }) => {
       return api
         .getCalendarEvents({ calendarIds, startDate, endDate })
         .then((events) => {
-          console.log('fetchCalendarEvents: got result', { events });
+          //console.log('fetchCalendarEvents: got result', { events });
           setCalendarEvents({ startDate, endDate, events });
         });
     }
@@ -139,8 +116,8 @@ const Calendar = ({ className = 'container' }) => {
     setEditingEvent({
       calendarId: calendar?.calendarId,
       resourceId: calendar?.resources?.[0].id,
-      start: params.date,
-      end: params.date,
+      start: convertToMoment(params.date),
+      end: convertToMoment(params.date),
       allDay: true,
     });
   };

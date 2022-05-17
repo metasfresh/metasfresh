@@ -2,15 +2,16 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import CalendarsDropDown from './CalendarsDropDown';
 import ResourcesDropDown from './ResourcesDropDown';
+import DatePicker from '../widget/DateTime/DatePicker';
+import Checkbox from '../widget/Checkbox';
+import { normalizeDateTime } from '../../containers/calendar/calendarUtils';
 
-const getCalendarById = (availableCalendars, calendarId) => {
-  if (!availableCalendars || !calendarId) {
+const getCalendarById = (calendarsArray, calendarId) => {
+  if (!calendarsArray || !calendarId) {
     return null;
   }
 
-  return availableCalendars.find(
-    (calendar) => calendar.calendarId === calendarId
-  );
+  return calendarsArray.find((calendar) => calendar.calendarId === calendarId);
 };
 
 const computeSelectedResource = (
@@ -75,8 +76,8 @@ const CalendarEventEditor = ({
       availableResources,
       resource,
       title: initialEvent.title,
-      start: initialEvent.start,
-      end: initialEvent?.end || initialEvent.start,
+      start: normalizeDateTime(initialEvent.start),
+      end: normalizeDateTime(initialEvent?.end || initialEvent.start),
       allDay: initialEvent.allDay,
     });
   }, [initialEvent]);
@@ -131,11 +132,29 @@ const CalendarEventEditor = ({
       </div>
       <div>
         <div>Start:</div>
-        <div>{`${form.start}`}</div>
+        <div>
+          <DatePicker
+            dateFormat={true}
+            timeFormat={!form.allDay}
+            value={form.start}
+            inputProps={{}}
+            patch={(date) =>
+              setForm({ ...form, start: normalizeDateTime(date) })
+            }
+          />
+        </div>
       </div>
       <div>
         <div>End:</div>
-        <div>{`${form.end}`}</div>
+        <div>
+          <DatePicker
+            dateFormat={true}
+            timeFormat={!form.allDay}
+            value={form.end}
+            inputProps={{}}
+            patch={(date) => setForm({ ...form, end: normalizeDateTime(date) })}
+          />
+        </div>
       </div>
       <div>
         <div>Title:</div>
@@ -149,7 +168,18 @@ const CalendarEventEditor = ({
       </div>
       <div>
         <div>All Day:</div>
-        <div>{form.allDay}</div>
+        <div>
+          {form.allDay}
+          <Checkbox
+            widgetData={{
+              value: form.allDay,
+            }}
+            handlePatch={(fieldName, value) => {
+              setForm({ ...form, allDay: !!value });
+              return Promise.resolve();
+            }}
+          />
+        </div>
       </div>
       <div>
         <button onClick={handleClickOK}>OK</button>
