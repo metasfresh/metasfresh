@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M_HU_PackingMaterial, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1707182421L;
+	private static final long serialVersionUID = -1790327323L;
 
     /** Standard Constructor */
     public X_M_HU_PackingMaterial (final Properties ctx, final int M_HU_PackingMaterial_ID, @Nullable final String trxName)
@@ -174,9 +174,21 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public boolean isInvoiceable() 
+	public boolean isInvoiceable()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceable);
+	}
+
+	@Override
+	public void setisQtyLUByMaxLoadWeight (final boolean isQtyLUByMaxLoadWeight)
+	{
+		set_Value (COLUMNNAME_isQtyLUByMaxLoadWeight, isQtyLUByMaxLoadWeight);
+	}
+
+	@Override
+	public boolean isQtyLUByMaxLoadWeight()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_isQtyLUByMaxLoadWeight);
 	}
 
 	@Override
@@ -189,6 +201,19 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	public BigDecimal getLength() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Length);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setMaxLoadWeight (final @Nullable BigDecimal MaxLoadWeight)
+	{
+		set_Value (COLUMNNAME_MaxLoadWeight, MaxLoadWeight);
+	}
+
+	@Override
+	public BigDecimal getMaxLoadWeight()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MaxLoadWeight);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
