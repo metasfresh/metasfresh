@@ -70,3 +70,12 @@ echo "=========="
 echo " ...done!"
 echo "=========="
 
+
+echo ""
+echo "==================="
+echo "adjusting configuration"
+echo "==================="
+psql -U metasfresh -d metasfresh ON_ERROR_STOP=ON -q1f adjust-config
+echo "=========="
+echo " ...done!"
+echo "=========="
