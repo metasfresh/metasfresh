@@ -20,8 +20,8 @@ Feature: create Purchase Candidate having manual price set
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205173                | bpartner_1               |
     And metasfresh contains M_Products:
-      | Identifier | Name                       | IsStocked |
-      | p_1        | noPriceProduct_10052022_33 | true      |
+      | Identifier | Name                      | IsStocked |
+      | p_1        | noPriceProduct_17052022_1 | true      |
     And metasfresh contains M_Product_TaxCategory:
       | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
       | ptc_1      | p_1                     | 1000009                     | 101                     | 2000-04-01 |
@@ -32,16 +32,16 @@ Feature: create Purchase Candidate having manual price set
    "purchaseCandidates":[
       {
          "orgCode":"001",
-         "productIdentifier":"val-noPriceProduct_10052022_33",
+         "productIdentifier":"val-noPriceProduct_17052022_1",
          "vendor":{
             "bpartnerIdentifier":"2156423",
             "locationIdentifier":"2205173"
          },
          "warehouseIdentifier":"540008",
          "externalPurchaseOrderUrl": "www.PurchaseNoProductPrice.com",
-         "externalHeaderId":"externalHeaderId_11052022_33",
-         "externalLineId":"externalLineId_11052022_33",
-         "poReference":"po_ref_10052022_33",
+         "externalHeaderId":"externalHeaderId_17052022_1",
+         "externalLineId":"externalLineId_17052022_1",
+         "poReference":"po_ref_17052022_1",
          "purchaseDatePromised":"2021-12-05T23:17:35.644Z",
          "purchaseDateOrdered":"2021-12-05T23:17:35.644Z",
          "qty":{
@@ -63,17 +63,17 @@ Feature: create Purchase Candidate having manual price set
 {
   "purchaseCandidates": [
     {
-      "externalHeaderId": "externalHeaderId_11052022_33",
+      "externalHeaderId": "externalHeaderId_17052022_1",
       "externalLineIds": [
-        "externalLineId_11052022_33"
+        "externalLineId_17052022_1"
       ]
     }
   ]
 }
 """
-    And a PurchaseOrder with externalId 'externalHeaderId_11052022_33' is created after not more than 30 seconds and has values
-      | ExternalPurchaseOrderURL       | POReference        | OPT.C_Order_ID.Identifier |
-      | www.PurchaseNoProductPrice.com | po_ref_10052022_33 | purchaseOrder_1           |
+    And a PurchaseOrder with externalId 'externalHeaderId_17052022_1' is created after not more than 30 seconds and has values
+      | ExternalPurchaseOrderURL       | POReference       | OPT.C_Order_ID.Identifier |
+      | www.PurchaseNoProductPrice.com | po_ref_17052022_1 | purchaseOrder_1           |
     And after not more than 30s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
@@ -108,8 +108,8 @@ Feature: create Purchase Candidate having manual price set
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference        | paymentTerm   | processed | docStatus |
-      | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_10052022_33 | 30 Tage netto | true      | CO        |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference       | paymentTerm   | processed | docStatus |
+      | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_17052022_1 | 30 Tage netto | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            |
