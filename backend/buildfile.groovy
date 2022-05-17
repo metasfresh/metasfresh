@@ -105,12 +105,13 @@ Map build(
 
                 currentBuild.description = """${currentBuild.description}<br/>
 				This build created the following deployable docker images 
-				<ul>
-				<li><code>${publishedMsv3ServerImageName}</code></li>
-				<li><code>${publishedWebuiApiImageName}</code></li>
-				<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
-				<li><code>${publishedDBInitDockerImageName}</code></li>
-				</ul>
+			    <ul>
+                <li><code>${publishedMsv3ServerImageName}</code></li>
+                <li><code>${publishedWebuiApiImageName}</code></li>
+                <li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
+                <li><code>${publishedAppImageName}</code></li>
+                <!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
+                </ul>
 				"""
 
                 dir('de.metas.cucumber') {
