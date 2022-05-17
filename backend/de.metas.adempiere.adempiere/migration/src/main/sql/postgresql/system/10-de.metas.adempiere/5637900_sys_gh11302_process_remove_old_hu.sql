@@ -1,7 +1,7 @@
 INSERT INTO m_hu (ad_client_id, ad_org_id, created, createdby, isactive, m_hu_id,m_hu_pi_version_id, value, updated, updatedby, hustatus)
 VALUES (1000000,1000000,date('2022-05-05'),100,'Y',100,101,100.,date('2022-05-05'),100,'A');
 
-CREATE OR REPLACE FUNCTION remove_hu_entries_between_dates(
+CREATE OR REPLACE FUNCTION delete_hu_entries_older_than_given_months(
     p_past_months NUMERIC,
     p_m_hu_placeholder_id NUMERIC
 )
@@ -10,41 +10,49 @@ CREATE OR REPLACE FUNCTION remove_hu_entries_between_dates(
 AS
 $$
 BEGIN
+    /*
+     Deletes all handling unit entries that have an inactive status and are older than the specified months.
+     The placeholder is used in other tables linking to the removed handling unit.
+     */
     CREATE TEMP TABLE temp_m_hu AS
     SELECT m_hu_id FROM m_hu WHERE hustatus != 'A' AND updated <= now() - (p_past_months || ' month')::INTERVAL;
     CREATE TEMP TABLE temp_m_hu_item AS
     SELECT m_hu_item_id FROM m_hu_item WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     CREATE TEMP TABLE temp_m_inventoryline AS
     SELECT m_inventoryline_id FROM m_inventoryline WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
+    CREATE TEMP TABLE temp_m_hu_trx_line AS
+    SELECT m_hu_trx_line_id FROM m_hu_trx_line WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
 
+    --We delete from or update these tables first, because of the fk constrains of other tables
     DELETE FROM m_hu_snapshot WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_attribute_snapshot WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_item_snapshot WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_item_storage_snapshot WHERE m_hu_item_id IN (SELECT m_hu_item_id FROM temp_m_hu_item);
     DELETE FROM m_hu_storage_snapshot WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
-    UPDATE m_receiptschedule_alloc SET m_lu_hu_id = p_m_hu_placeholder_id, m_tu_hu_id = p_m_hu_placeholder_id WHERE m_lu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_tu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_hu_item_id IN (SELECT m_hu_item_id FROM temp_m_hu_item);
-
     DELETE FROM m_picking_candidate WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_pickingslot_trx WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
-    UPDATE m_shipmentschedule_qtypicked SET m_lu_hu_id = p_m_hu_placeholder_id, m_tu_hu_id = p_m_hu_placeholder_id WHERE m_lu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_tu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR vhu_id IN (SELECT m_hu_id FROM temp_m_hu);
-
     DELETE FROM m_hu_trx_attribute WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_assignment WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_trace WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_source_hu WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
+
+    UPDATE m_receiptschedule_alloc SET m_lu_hu_id = p_m_hu_placeholder_id, m_tu_hu_id = p_m_hu_placeholder_id WHERE m_lu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_tu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_hu_item_id IN (SELECT m_hu_item_id FROM temp_m_hu_item);
+    UPDATE m_shipmentschedule_qtypicked SET m_lu_hu_id = p_m_hu_placeholder_id, m_tu_hu_id = p_m_hu_placeholder_id WHERE m_lu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR m_tu_hu_id IN (SELECT m_hu_id FROM temp_m_hu) OR vhu_id IN (SELECT m_hu_id FROM temp_m_hu);
     UPDATE m_package_hu SET m_hu_id = p_m_hu_placeholder_id WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     UPDATE m_inventoryline_hu SET m_hu_id = p_m_hu_placeholder_id WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     UPDATE pp_order_productattribute SET m_hu_id = p_m_hu_placeholder_id  WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     UPDATE pp_order_qty SET m_hu_id = p_m_hu_placeholder_id WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
 
+
+    --Tables below here have fk constrains
     DELETE FROM m_hu_attribute WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_storage WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_item_storage WHERE m_hu_item_id IN (SELECT m_hu_item_id FROM temp_m_hu_item);
 
-    CREATE TEMP TABLE temp_m_hu_trx_line AS
-    SELECT m_hu_trx_line_id FROM m_hu_trx_line WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
+    --The parents id must be set to null, or else we can't delete the entries
     UPDATE m_hu_trx_line SET parent_hu_trx_line_id = NULL WHERE parent_hu_trx_line_id IN (SELECT m_hu_trx_line_id FROM temp_m_hu_trx_line);
     DELETE FROM m_hu_trx_line WHERE m_hu_trx_line_id IN (SELECT m_hu_trx_line_id FROM temp_m_hu_trx_line);
+
 
     UPDATE m_inventoryline SET m_hu_id = p_m_hu_placeholder_id WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
     DELETE FROM m_hu_item WHERE m_hu_id IN (SELECT m_hu_id FROM temp_m_hu);
@@ -123,5 +131,45 @@ UPDATE AD_Scheduler SET CronPattern=NULL, Description='Removes old, inactive han
 -- 2022-05-05T12:12:48.784Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Scheduler SET CronPattern=NULL, IsActive='N',Updated=TO_TIMESTAMP('2022-05-05 14:12:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550087
+;
+
+-- 2022-05-17T05:35:09.566Z
+UPDATE AD_Process SET Description='Deletes from the DB all handling unit entries that have an inactive status and are older than the specified months. The placeholder is used in other tables linking to the removed handling unit.', Name='delete_hu_entries_older_than_given_months', SQLStatement='SELECT delete_hu_entries_older_than_given_months(%months%, %placeholder%);', Value='delete_hu_entries_older_than_given_months',Updated=TO_TIMESTAMP('2022-05-17 07:35:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:37:06.502Z
+UPDATE AD_Process SET SQLStatement='SELECT delete_hu_entries_older_than_given_months(%NoMonths%, %M_HU_ID%);',Updated=TO_TIMESTAMP('2022-05-17 07:37:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:37:56.132Z
+UPDATE AD_Process SET Name='Delete old HU Entries from DB',Updated=TO_TIMESTAMP('2022-05-17 07:37:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:42:56.586Z
+UPDATE AD_Process SET Description='Löscht Handling Unit Einträge aus der Datenbank die einen inaktiven Status haben und älter als die angebenen Monate sind. Ein HU-Platzhalter wird in den Tabellen eingetragen, die auf die gelöschten Einträge verweisen. ', Help=NULL, Name='Löscht alte HU Einträge aus der Datenbank',Updated=TO_TIMESTAMP('2022-05-17 07:42:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:42:56.579Z
+UPDATE AD_Process_Trl SET Description='Löscht Handling Unit Einträge aus der Datenbank die einen inaktiven Status haben und älter als die angebenen Monate sind. Ein HU-Platzhalter wird in den Tabellen eingetragen, die auf die gelöschten Einträge verweisen. ', Name='Löscht alte HU Einträge aus der Datenbank',Updated=TO_TIMESTAMP('2022-05-17 07:42:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:44:47.962Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-05-17 07:44:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:47:04.166Z
+UPDATE AD_Process_Trl SET Description='Deletes from the DB all handling unit entries that have an inactive status and are older than the specified months. The placeholder is used in other tables linking to the removed handling unit.', IsTranslated='Y', Name='Delete old HU entries from the DB',Updated=TO_TIMESTAMP('2022-05-17 07:47:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:47:42.220Z
+UPDATE AD_Process SET Description='Löscht Handling Unit Einträge aus der Datenbank, die einen inaktiven Status haben und älter als die angebenen Monate sind. Ein HU-Platzhalter wird in den Tabellen eingetragen, die auf die gelöschten Einträge verweisen. ', Help=NULL, Name='Lösche alte HU Einträge aus der Datenbank',Updated=TO_TIMESTAMP('2022-05-17 07:47:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:47:42.214Z
+UPDATE AD_Process_Trl SET Description='Löscht Handling Unit Einträge aus der Datenbank, die einen inaktiven Status haben und älter als die angebenen Monate sind. Ein HU-Platzhalter wird in den Tabellen eingetragen, die auf die gelöschten Einträge verweisen. ', Name='Lösche alte HU Einträge aus der Datenbank',Updated=TO_TIMESTAMP('2022-05-17 07:47:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585049
+;
+
+-- 2022-05-17T05:51:25.852Z
+UPDATE AD_Scheduler SET CronPattern='0 3 * * *', Description='Removes old, inactive handling units that are older than 24 months', ScheduleType='C',Updated=TO_TIMESTAMP('2022-05-17 07:51:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550087
 ;
 
