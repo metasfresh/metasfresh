@@ -68,6 +68,8 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
 
 		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
+		mkTagIfNotNull("SubType", metadata.getSubType().getCode()).ifPresent(tags::add);
+		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
 
 		if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationActive.get())
 		{
