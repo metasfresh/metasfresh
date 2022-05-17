@@ -398,3 +398,13 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2022-05-12 20:17:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=605412
 ;
 
+-- 2022-05-17T09:20:15.841Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Name='de.metas.process.pinstaceLogPersister.debouncer.bufferMaxSize',Updated=TO_TIMESTAMP('2022-05-17 12:20:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541455
+;
+
+-- 2022-05-17T09:20:37.087Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Name='de.metas.process.pinstaceLogPersister.debouncer.delayInMillis',Updated=TO_TIMESTAMP('2022-05-17 12:20:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541456
+;
+

@@ -61,7 +61,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 
 public class ADPInstanceDAO implements IADPInstanceDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(ADPInstanceDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADPInstanceDAO.class);
 
 	/** Result OK = 1 */
 	public static final int RESULT_OK = 1;
@@ -358,6 +358,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 		final Map<String,List<ProcessInfoLog>> trxName2ProcessLogInfo = new HashMap<>();
 
+		// dev-note: note that the different log records need to be persisted using their respective trx-names, so we need to first sort them accordingly
 		logsToSave.forEach(log -> {
 			final String currentTrx = CoalesceUtil.coalesceNotNull(log.getTrxName(), NO_TRX);
 

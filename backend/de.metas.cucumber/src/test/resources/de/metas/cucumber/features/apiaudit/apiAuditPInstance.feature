@@ -17,15 +17,9 @@ Feature: API Audit
       | Name            | Value    |
       | x-adpinstanceid | 12052022 |
 
-    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' and fulfills with '200' status code
-    And the actual response body is
-    """
-    {
-	"messageBody": "\"test-endpoint was called\""
-    }
-    """
+    When the metasfresh REST-API endpoint path 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' receives a 'POST' request with the headers from context
 
-    And there are added records in API_Request_Audit
+    Then there are added records in API_Request_Audit
       | OPT.AD_PInstance_ID | Method | Path                                                                          | AD_User.Name | Status      |
       | 12052022            | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 

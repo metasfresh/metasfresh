@@ -6,23 +6,22 @@ Feature: Store external system logs
 
   @from:cucumber
   Scenario: Store logs with table record reference
-    Given add I_AD_PInstance with id 11042022
+    Given add I_AD_PInstance with id 16042022
 
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/externalsystem/54321/externalstatus/message' and fulfills with '201' status code
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/externalsystem/16042022/externalstatus/message' and fulfills with '200' status code
     """
 {
-   "logs":
-      [
-        {
-            "message" : "Log Message",
-            "tableRecordReference" : {
-              "tableName" : "AD_PInstance",
-              "recordId" : 11042022
-            }
-        }
-      ]
+   "logs":[
+      {
+         "message":"Log Message",
+         "tableRecordRef":{
+            "tableName":"AD_PInstance",
+            "recordId":16042022
+         }
+      }
+   ]
 }
 """
     Then validate AD_PInstance_Log:
-      | AD_PInstance_ID | AD_Table_ID.TableName | Record_Id | P_Msg       |
-      | 11042022        | AD_PInstance          | 11042022  | Log Message |
+      | AD_PInstance_ID | AD_Table_ID.TableName | Record_ID | P_Msg       |
+      | 16042022        | AD_PInstance          | 16042022  | Log Message |

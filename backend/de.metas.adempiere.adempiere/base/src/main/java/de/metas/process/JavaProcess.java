@@ -1016,12 +1016,22 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	@Override
 	public final ILoggable addLog(final String msg, final Object... msgParameters)
 	{
-		if (msg == null)
+		final String actualMsg;
+
+		if (msg == null && msgParameters != null && msgParameters.length == 1 && msgParameters[0] instanceof Throwable)
 		{
-			return this;
+			actualMsg = "No message provided";
+		}
+		else if (msg == null)
+		{
+			actualMsg = null;
+		}
+		else
+		{
+			actualMsg = msg;
 		}
 
-		final LoggableWithThrowableUtil.FormattedMsgWithAdIssueId msgAndIssue = LoggableWithThrowableUtil.extractMsgAndAdIssue(msg, msgParameters);
+		final LoggableWithThrowableUtil.FormattedMsgWithAdIssueId msgAndIssue = LoggableWithThrowableUtil.extractMsgAndAdIssue(actualMsg, msgParameters);
 
 		getResult().addLog(0,
 						   SystemTime.asTimestamp(),

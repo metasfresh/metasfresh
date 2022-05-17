@@ -71,8 +71,8 @@ import java.util.Set;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ProcessExecutionResult
 {
-	private static String DEBOUNCER_BUFFER_MAX_SIZE_SYSCONFIG_NAME = "de.metas.process.debouncer.bufferMaxSize";
-	private static String DEBOUNCER_DELAY_IN_MILLIS_SYSCONFIG_NAME = "de.metas.process.debouncer.delayInMillis";
+	private static final String DEBOUNCER_BUFFER_MAX_SIZE_SYSCONFIG_NAME = "de.metas.process.pinstaceLogPersister.debouncer.bufferMaxSize";
+	private static final String DEBOUNCER_DELAY_IN_MILLIS_SYSCONFIG_NAME = "de.metas.process.pinstaceLogPersister.debouncer.delayInMillis";
 
 	public static ProcessExecutionResult newInstanceForADPInstanceId(final PInstanceId pinstanceId)
 	{
@@ -118,10 +118,13 @@ public class ProcessExecutionResult
 	private boolean timeout = false;
 
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
-
+	@JsonIgnore
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@JsonIgnore
+	private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
+
 	private final transient Debouncer<ProcessInfoLog> logsDebouncer = Debouncer.<ProcessInfoLog>builder()
-			.name("logsDebouncer")
+			.name(ProcessExecutionResult.class.getName() + ".Debouncer")
 			.bufferMaxSize(sysConfigBL.getIntValue(DEBOUNCER_BUFFER_MAX_SIZE_SYSCONFIG_NAME, 100))
 			.delayInMillis(sysConfigBL.getIntValue(DEBOUNCER_DELAY_IN_MILLIS_SYSCONFIG_NAME, 1000))
 			.consumer(this::syncCollectedLogsToDB)
@@ -708,7 +711,7 @@ public class ProcessExecutionResult
 	{
 		try
 		{
-			return new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getPinstanceId()));
+			return new ArrayList<>(pInstanceDAO.retrieveProcessInfoLogs(getPinstanceId()));
 		}
 		catch (final Exception ex)
 		{
@@ -853,7 +856,7 @@ public class ProcessExecutionResult
 
 	public void syncLogsToDB()
 	{
-		logsDebouncer.processBufferSync();
+		logsDebouncer.processAndClearBufferSync();
 	}
 
 	private void syncCollectedLogsToDB(@NonNull final List<ProcessInfoLog> collectedProcessInfoLogs)
@@ -863,7 +866,7 @@ public class ProcessExecutionResult
 			return;
 		}
 
-		Services.get(IADPInstanceDAO.class).saveProcessInfoLogs(getPinstanceId(), collectedProcessInfoLogs);
+		pInstanceDAO.saveProcessInfoLogs(getPinstanceId(), collectedProcessInfoLogs);
 	}
 
 	//

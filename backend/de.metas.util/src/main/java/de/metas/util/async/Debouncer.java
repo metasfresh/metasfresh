@@ -193,7 +193,7 @@ public final class Debouncer<T>
 		}
 	}
 
-	public void processBufferSync()
+	public void processAndClearBufferSync()
 	{
 		synchronized (lock)
 		{
@@ -202,6 +202,9 @@ public final class Debouncer<T>
 				final ArrayList<T> itemsToConsume = new ArrayList<>(buffer);
 
 				consumer.accept(itemsToConsume);
+
+				buffer.clear();
+
 			}
 		}
 	}
