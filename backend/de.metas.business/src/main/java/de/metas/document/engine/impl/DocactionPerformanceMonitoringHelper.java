@@ -32,7 +32,7 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class DocactionAPMHelper
+public class DocactionPerformanceMonitoringHelper
 {
 	public Metadata createMetadataFor(@NonNull final IDocument document, @NonNull final String docAction)
 	{

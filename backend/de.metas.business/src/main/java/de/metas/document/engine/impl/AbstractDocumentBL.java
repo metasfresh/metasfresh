@@ -108,7 +108,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		return perfMonServicew.monitor(
 				() -> processIt0(document, action, throwExIfNotSuccess),
-				DocactionAPMHelper.createMetadataFor(document, action));
+				DocactionPerformanceMonitoringHelper.createMetadataFor(document, action));
 	}
 
 	private boolean processIt0(@NonNull final IDocument document,

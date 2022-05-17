@@ -71,18 +71,18 @@ public class EventBusMonitoringService
 	{
 		// extract remote tracing infos from the event (if there are any) and create a (distributed) monitoring transaction.
 
-		final PerformanceMonitoringService.Metadata.MetadataBuilder transactionMetadata = PerformanceMonitoringService.Metadata.builder();
+		final PerformanceMonitoringService.Metadata.MetadataBuilder metadata = PerformanceMonitoringService.Metadata.builder();
 		for (final Map.Entry<String, Object> entry : event.getProperties().entrySet())
 		{
 			final String key = entry.getKey();
 			if (key.startsWith(PROP_TRACE_INFO_PREFIX))
 			{
-				transactionMetadata.distributedTransactionHeader(
+				metadata.distributedTransactionHeader(
 						key.substring(PROP_TRACE_INFO_PREFIX.length()),
 						Objects.toString(entry.getValue()));
 			}
 		}
-		transactionMetadata
+		metadata
 				.name("Process remote-event; topic=" + topic.getName())
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
 				.label("de.metas.event.remote-event.senderId", event.getSenderId())
@@ -91,6 +91,6 @@ public class EventBusMonitoringService
 
 		perfMonService.monitor(
 				processEvent,
-				transactionMetadata.build());
+				metadata.build());
 	}
 }
