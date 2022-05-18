@@ -31,6 +31,13 @@ const ModalComponent = ({
     const modalContent = document.querySelector('.js-panel-modal-content');
     if (!modalContent) return;
 
+    // Dirty solution, but use only if you need to
+    // there is no way to affect body
+    // because body is out of react app range
+    // and css dont affect parents
+    // but we have to change scope of scrollbar
+    document.body.style.overflow = 'hidden';
+
     modalContent.addEventListener('scroll', handleScroll);
     return () => {
       modalContent.removeEventListener('scroll', handleScroll);
@@ -58,9 +65,7 @@ const ModalComponent = ({
             <span className="panel-modal-header-title panel-modal-header-title-with-header-properties">
               {title ? title : 'Modal'}
               {description && (
-                <span className="panel-modal-description">
-                  {description}
-                </span>
+                <span className="panel-modal-description">{description}</span>
               )}
             </span>
             {renderedHeaderProperties && (
