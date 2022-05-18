@@ -75,7 +75,7 @@ echo ""
 echo "==================="
 echo "adjusting configuration"
 echo "==================="
-psql -U metasfresh -d metasfresh ON_ERROR_STOP=ON -q1f adjust-config
+psql -U metasfresh -d metasfresh ON_ERROR_STOP=ON -q1f /docker-entrypoint-initdb.d/adjust-config
 echo "=========="
 echo " ...done!"
 echo "=========="
