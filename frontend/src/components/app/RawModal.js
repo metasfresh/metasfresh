@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { deleteViewRequest, advSearchRequest, patchRequest } from '../../api';
+import { advSearchRequest, deleteViewRequest, patchRequest } from '../../api';
 import { PATCH_RESET } from '../../constants/ActionTypes';
 
 import { unsetIncludedView } from '../../actions/ViewActions';
@@ -20,7 +20,7 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { renderHeaderProperties } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
-import ModalButton from './ModalButton';
+import ModalButton from '../modal/ModalButton';
 
 /**
  * @file Class based component.

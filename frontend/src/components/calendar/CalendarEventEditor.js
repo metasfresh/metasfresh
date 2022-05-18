@@ -6,7 +6,7 @@ import DatePicker from '../widget/DateTime/DatePicker';
 import Checkbox from '../widget/Checkbox';
 import { normalizeDateTime } from '../../containers/calendar/calendarUtils';
 import ModalComponent from '../modal/ModalComponent';
-import ModalButton from '../app/ModalButton';
+import ModalButton from '../modal/ModalButton';
 
 const getCalendarById = (calendarsArray, calendarId) => {
   if (!calendarsArray || !calendarId) {
