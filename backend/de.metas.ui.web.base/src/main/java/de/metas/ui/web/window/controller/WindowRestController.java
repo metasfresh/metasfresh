@@ -179,6 +179,25 @@ public class WindowRestController
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
 			final WebRequest request)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getLayout0(windowIdStr, advanced, request),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("WindowRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("getLayout")
+						.label("uri", "/window/{windowId}/layout")
+						.build());
+	}
+
+	private ResponseEntity<JSONDocumentLayout> getLayout0(
+			@PathVariable("windowId") final String windowIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			final WebRequest request)
+	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
@@ -196,6 +215,25 @@ public class WindowRestController
 
 	@GetMapping("/{windowId}/{tabId}/layout")
 	public ResponseEntity<JSONDocumentLayout> getLayout(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			final WebRequest request)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getLayout0(windowIdStr, tabIdStr,advanced, request),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("WindowRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("getLayout")
+						.label("uri", "/window/{windowId}/{tabId}/layout")
+						.build());
+	}
+	private ResponseEntity<JSONDocumentLayout> getLayout0(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("tabId") final String tabIdStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
@@ -220,6 +258,26 @@ public class WindowRestController
 
 	@GetMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> getRootDocuments(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getRootDocuments0(windowIdStr, documentIdStr, fieldsListStr, advanced),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("WindowRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("getRootDocuments")
+						.label("uri", "/window/{windowId}/{documentId}")
+						.build());
+	}
+
+	private List<JSONDocument> getRootDocuments0(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
@@ -321,24 +379,6 @@ public class WindowRestController
 	}
 
 	private List<JSONDocument> getData(
-			@NonNull final DocumentPath documentPath,
-			@Nullable final DocumentQueryOrderByList orderBys,
-			@NonNull final JSONDocumentOptions jsonOpts)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getData0(documentPath, orderBys, jsonOpts),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("WindowRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("getData")
-						.build());
-	}
-
-	private List<JSONDocument> getData0(
 			@NonNull final DocumentPath documentPath,
 			@Nullable final DocumentQueryOrderByList orderBys,
 			@NonNull final JSONDocumentOptions jsonOpts)
@@ -975,7 +1015,7 @@ public class WindowRestController
 						.build());
 	}
 
-	public int processRecord0(
+	private int processRecord0(
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,
