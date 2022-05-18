@@ -35,6 +35,7 @@ import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.function.UnaryOperator;
@@ -102,6 +103,8 @@ public class ResourceAssignmentRepository
 		record.setAssignDateTo(TimeUtil.asTimestamp(request.getEndDate()));
 		record.setName(request.getName());
 		record.setDescription(request.getDescription());
+		record.setQty(BigDecimal.ONE); // backward compatibility
+		record.setIsConfirmed(false);
 		InterfaceWrapperHelper.saveRecord(record);
 		return fromRecord(record);
 	}
