@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:orderDocOutbound
+@ignore
 Feature: Validate order doc outbound log creation
   Especially tracing "C_Doc_Outbound_Log.CurrentEMailAddress"
 
