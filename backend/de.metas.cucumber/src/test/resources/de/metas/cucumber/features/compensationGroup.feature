@@ -128,17 +128,17 @@ Feature: Compensation Group
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | line1                      | shipment_1            | test_product_30_01      | 1           | true      |
-      | line2                      | shipment_1            | test_product_30_02      | 1           | true      |
+      | line1                     | shipment_1            | test_product_30_01      | 1           | true      |
+      | line2                     | shipment_1            | test_product_30_02      | 1           | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
       | invoice_1               | customer_bp_30_02        | bpLocation_2                      | ref_12301       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | test_product_30_01      | 1           | true      |
-      | invoice_1               | test_product_30_02      | 1           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | il1                         | invoice_1               | test_product_30_01      | 1           | true      |
+      | il2                         | invoice_1               | test_product_30_02      | 1           | true      |
 
 
   Scenario: Compensated product is sent last
@@ -232,15 +232,15 @@ Feature: Compensation Group
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | line1                      | shipment_2            | test_product_30_01      | 1           | true      |
-      | lin32                      | shipment_2            | test_product_30_02      | 1           | true      |
+      | line1                     | shipment_2            | test_product_30_01      | 1           | true      |
+      | lin32                     | shipment_2            | test_product_30_02      | 1           | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
       | invoice_2               | customer_bp_30_02        | bpLocation_2                      | ref_12302       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_2               | test_product_30_01      | 1           | true      |
-      | invoice_2               | test_product_30_02      | 1           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | il1                         | invoice_2               | test_product_30_01      | 1           | true      |
+      | il2                         | invoice_2               | test_product_30_02      | 1           | true      |
 
