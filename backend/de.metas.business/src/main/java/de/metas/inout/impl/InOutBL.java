@@ -44,7 +44,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -62,12 +61,9 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -600,6 +596,7 @@ public class InOutBL implements IInOutBL
 		return requestsRepo.createRequest(requestCandidate);
 	}
 
+	@Nullable
 	public String getLocationEmail(@NonNull final InOutId inOutId)
 	{
 		final I_M_InOut inout = inOutDAO.getById(inOutId);
@@ -618,34 +615,7 @@ public class InOutBL implements IInOutBL
 		{
 			return null;
 		}
-		final I_AD_User contactRecord = bpartnerDAO.getContactById(contactId);
-		if (contactRecord == null)
-		{
-			return null;
-		}
-			
-		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
-		if (contactLocationId != null)
-		{
-			final I_C_BPartner_Location contactLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(contactLocationId);
-			final String contactLocationEmail = contactLocationRecord.getEMail();
+		return bpartnerDAO.getContactLocationEmail(contactId);
 
-			if (!Check.isEmpty(contactLocationEmail))
-			{
-				return contactLocationEmail;
-			}
-		}
-
-		return null;
-	}
-
-	@Override
-	@NonNull
-	public LocalDate retrieveMovementDate(@NonNull final I_M_InOut inOut)
-	{
-		final OrgId orgId = OrgId.ofRepoId(inOut.getAD_Org_ID());
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-
-		return Objects.requireNonNull(TimeUtil.asLocalDate(inOut.getMovementDate(), timeZone));
 	}
 }

@@ -66,6 +66,7 @@ public class DunningService
 				.list();
 	}
 
+	@Nullable
 	public String getLocationEmail(@NonNull final DunningDocId dunningDocId)
 	{
 		final I_C_DunningDoc dunningDocRecord = dunningDAO.getByIdInTrx(dunningDocId);
@@ -86,21 +87,6 @@ public class DunningService
 			return null;
 		}
 
-		final I_AD_User dunningContactRecord = partnersRepo.getContactById(dunningContactId);
-
-		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, dunningContactRecord.getC_BPartner_Location_ID());
-
-		if (contactLocationId != null)
-		{
-			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdInTrx(contactLocationId);
-			final String contactLocationEmail = contactLocationRecord.getEMail();
-
-			if (!Check.isEmpty(contactLocationEmail))
-			{
-				return contactLocationEmail;
-			}
-		}
-
-		return null;
+		return partnersRepo.getContactLocationEmail(dunningContactId);
 	}
 }
