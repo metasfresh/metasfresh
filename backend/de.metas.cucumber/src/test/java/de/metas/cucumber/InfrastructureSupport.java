@@ -31,7 +31,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class InfrastructureSupport
 {
@@ -101,7 +101,7 @@ public class InfrastructureSupport
 
 		if (runAgainstDockerizedDatabase)
 		{
-			final String fullImageName = "metasfresh/metasfresh-db:latest";
+			final String fullImageName = "metasfresh/metasfresh-db:5.173";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
 			// the DB needs to be populated
