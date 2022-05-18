@@ -68,7 +68,10 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
 
 		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
-		mkTagIfNotNull("SubType", metadata.getSubType().getCode()).ifPresent(tags::add);
+		// if(metadata.getSubType() != null)
+		// {
+		// 	mkTagIfNotNull("SubType", metadata.getSubType().getCode()).ifPresent(tags::add);
+		// }
 		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
 
 		if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationActive.get())
@@ -131,7 +134,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 	private void addAdditionalTags(ArrayList<Tag> tags)
 	{
-		mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
+		// mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
 		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
 		step.set(step.get() + 1);
 		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
