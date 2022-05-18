@@ -31,3 +31,21 @@ INSERT INTO t_alter_column values('m_product_taxcategory','C_Country_ID','NUMERI
 -- 2022-05-17T12:59:06.823Z
 INSERT INTO t_alter_column values('m_product_taxcategory','C_Country_ID',null,'NULL',null)
 ;
+
+-- Column: C_PurchaseCandidate.Price_UOM_ID
+-- 2022-05-18T11:26:25.932Z
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2022-05-18 14:26:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582988
+;
+
+-- 2022-05-18T11:26:29.298Z
+INSERT INTO t_alter_column values('c_purchasecandidate','Price_UOM_ID','NUMERIC(10)',null,null)
+;
+
+-- Column: C_PurchaseCandidate.Price_UOM_ID
+-- 2022-05-18T11:30:40.790Z
+UPDATE AD_Column SET IsAutoApplyValidationRule='N',Updated=TO_TIMESTAMP('2022-05-18 14:30:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582988
+;
+
+-- 2022-05-18T11:30:44.514Z
+INSERT INTO t_alter_column values('c_purchasecandidate','Price_UOM_ID','NUMERIC(10)',null,null)
+;
