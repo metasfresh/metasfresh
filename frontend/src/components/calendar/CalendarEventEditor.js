@@ -5,6 +5,8 @@ import ResourcesDropDown from './ResourcesDropDown';
 import DatePicker from '../widget/DateTime/DatePicker';
 import Checkbox from '../widget/Checkbox';
 import { normalizeDateTime } from '../../containers/calendar/calendarUtils';
+import ModalComponent from '../modal/ModalComponent';
+import ModalButton from '../app/ModalButton';
 
 const getCalendarById = (calendarsArray, calendarId) => {
   if (!calendarsArray || !calendarId) {
@@ -104,89 +106,95 @@ const CalendarEventEditor = ({
     });
   };
 
+  const isNewEvent = !form.id;
+
+  const renderModalButtons = () => {
+    return (
+      <>
+        {!isNewEvent && (
+          <ModalButton onClick={() => onDelete(form.id)}>Delete</ModalButton>
+        )}
+        <ModalButton onClick={onCancel}>Cancel</ModalButton>
+        <ModalButton onClick={handleClickOK}>Done</ModalButton>
+      </>
+    );
+  };
+
   return (
-    <div>
-      <div>
-        <div>ID</div>
-        <div>{form.id}</div>
-      </div>
-      <div>
-        <div>Calendar:</div>
-        <div>
-          <CalendarsDropDown
-            calendars={availableCalendars}
-            selectedCalendar={form.calendar}
-            onSelect={onCalendarChanged}
-          />
+    <ModalComponent
+      title={isNewEvent ? 'Add event' : 'Edit event'}
+      renderButtons={renderModalButtons}
+      onClickOutside={onCancel}
+      shortcutActions={{
+        cancel: onCancel,
+      }}
+    >
+      <div className="window-wrapper">
+        <div className="sections-wrapper">
+          <div className="panel">
+            <FormRow label="Calendar">
+              <CalendarsDropDown
+                calendars={availableCalendars}
+                selectedCalendar={form.calendar}
+                onSelect={onCalendarChanged}
+              />
+            </FormRow>
+            <FormRow label="Resource">
+              <ResourcesDropDown
+                resources={form.availableResources}
+                selectedResource={form.resource}
+                onSelect={(resource) => setForm({ ...form, resource })}
+              />
+            </FormRow>
+            <FormRow label="Start date">
+              <div className="input-block input-icon-container input-secondary pulse-off">
+                <DatePicker
+                  dateFormat={true}
+                  timeFormat={!form.allDay}
+                  value={form.start}
+                  inputProps={{}}
+                  patch={(date) =>
+                    setForm({ ...form, start: normalizeDateTime(date) })
+                  }
+                />
+              </div>
+            </FormRow>
+            <FormRow label="End date">
+              <div className="input-block input-icon-container input-secondary pulse-off">
+                <DatePicker
+                  dateFormat={true}
+                  timeFormat={!form.allDay}
+                  value={form.end}
+                  inputProps={{}}
+                  patch={(date) =>
+                    setForm({ ...form, end: normalizeDateTime(date) })
+                  }
+                />
+              </div>
+            </FormRow>
+            <FormRow label="Title">
+              <input
+                className="input-field js-input-field"
+                type="text"
+                value={form.title ?? ''}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+              />
+            </FormRow>
+            <FormRow label="All day">
+              <Checkbox
+                widgetData={{
+                  value: form.allDay,
+                }}
+                handlePatch={(fieldName, value) => {
+                  setForm({ ...form, allDay: !!value });
+                  return Promise.resolve();
+                }}
+              />
+            </FormRow>
+          </div>
         </div>
       </div>
-      <div>
-        <div>Resource:</div>
-        <div>
-          <ResourcesDropDown
-            resources={form.availableResources}
-            selectedResource={form.resource}
-            onSelect={(resource) => setForm({ ...form, resource })}
-          />
-        </div>
-      </div>
-      <div>
-        <div>Start:</div>
-        <div>
-          <DatePicker
-            dateFormat={true}
-            timeFormat={!form.allDay}
-            value={form.start}
-            inputProps={{}}
-            patch={(date) =>
-              setForm({ ...form, start: normalizeDateTime(date) })
-            }
-          />
-        </div>
-      </div>
-      <div>
-        <div>End:</div>
-        <div>
-          <DatePicker
-            dateFormat={true}
-            timeFormat={!form.allDay}
-            value={form.end}
-            inputProps={{}}
-            patch={(date) => setForm({ ...form, end: normalizeDateTime(date) })}
-          />
-        </div>
-      </div>
-      <div>
-        <div>Title:</div>
-        <div>
-          <input
-            type="text"
-            value={form.title ?? ''}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-          />
-        </div>
-      </div>
-      <div>
-        <div>All Day:</div>
-        <div>
-          {form.allDay}
-          <Checkbox
-            widgetData={{
-              value: form.allDay,
-            }}
-            handlePatch={(fieldName, value) => {
-              setForm({ ...form, allDay: !!value });
-              return Promise.resolve();
-            }}
-          />
-        </div>
-      </div>
-      <div>
-        <button onClick={handleClickOK}>OK</button>
-        <button onClick={onCancel}>Cancel</button>
-        {form.id && <button onClick={() => onDelete(form.id)}>Delete</button>}
-      </div>
-    </div>
+    </ModalComponent>
   );
 };
 
@@ -196,6 +204,27 @@ CalendarEventEditor.propTypes = {
   onOK: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+};
+
+const FormRow = ({ label, children }) => {
+  return (
+    <div className="elements-line">
+      <div className="form-group row  form-field-Value">
+        <div className="form-control-label col-sm-3">{label}</div>
+        <div className="col-sm-9 ">
+          <div className="input-body-container">
+            <span />
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+FormRow.propTypes = {
+  label: PropTypes.string,
+  children: PropTypes.node.isRequired,
 };
 
 export default CalendarEventEditor;

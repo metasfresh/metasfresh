@@ -40,7 +40,6 @@ const SimpleList = ({ list, selected, onSelect }) => {
   // Stupid, but true.
   return (
     <RawList
-      rank="primary"
       list={isToggled ? list : []}
       listHash={isToggled ? listHash : null}
       onSelect={onSelect}

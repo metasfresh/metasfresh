@@ -33,10 +33,10 @@ import '@fullcalendar/common/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 
-import CalendarEventEditor from '../../components/calendar/CalendarEventEditor';
-
 import * as api from '../../api/calendar';
 import { convertToMoment, normalizeDateTime } from './calendarUtils';
+
+import CalendarEventEditor from '../../components/calendar/CalendarEventEditor';
 
 const extractResourcesFromCalendarsArray = (calendars) => {
   const resourcesById = calendars
