@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.inventory;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.inventory.HUAggregationType;
@@ -50,12 +49,12 @@ public class M_Inventory_StepDef
 {
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
-	private final StepDefData<I_M_Inventory> inventoryTable;
-	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
+	private final M_Inventory_StepDefData inventoryTable;
+	private final M_InventoryLine_StepDefData inventoryLineTable;
 
 	public M_Inventory_StepDef(
-			final StepDefData<I_M_Inventory> inventoryTable,
-			final StepDefData<I_M_InventoryLine> inventoryLineTable)
+			final M_Inventory_StepDefData inventoryTable,
+			final M_InventoryLine_StepDefData inventoryLineTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;

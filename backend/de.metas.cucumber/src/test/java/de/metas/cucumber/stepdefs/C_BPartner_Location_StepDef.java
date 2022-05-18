@@ -33,14 +33,16 @@ import org.compiere.model.I_C_Location;
 import java.util.List;
 import java.util.Map;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 public class C_BPartner_Location_StepDef
 {
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 
 	public C_BPartner_Location_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -64,7 +66,7 @@ public class C_BPartner_Location_StepDef
 
 		final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 		locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
-		InterfaceWrapperHelper.saveRecord(locationRecord);
+		saveRecord(locationRecord);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
 		bPartnerLocationRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
@@ -72,7 +74,7 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setGLN(gln);
 		bPartnerLocationRecord.setIsBillToDefault(true);
 		bPartnerLocationRecord.setIsShipTo(true);
-		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
+		saveRecord(bPartnerLocationRecord);
 
 		bPartnerLocationTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner_Location"), bPartnerLocationRecord);
 	}

@@ -22,26 +22,39 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_InOut;
 
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 
 public class M_InOut_StepDef
 {
-	private final StepDefData<I_M_InOut> shipmentTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
-	public M_InOut_StepDef(@NonNull final StepDefData<I_M_InOut> shipmentTable)
+	public M_InOut_StepDef(
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable)
 	{
 		this.shipmentTable = shipmentTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
 	}
 
 	@And("validate created shipments")
@@ -51,19 +64,32 @@ public class M_InOut_StepDef
 		for (final Map<String, String> row : dataTable)
 		{
 			final String identifier = DataTableUtil.extractStringForColumnName(row, "Shipment.Identifier");
-			final int bpartnerId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_id");
-			final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(row, "c_bpartner_location_id");
 			final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
-			final String poReference = DataTableUtil.extractStringForColumnName(row, "poreference");
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_POReference);
 			final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 			final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+					.map(I_C_BPartner::getC_BPartner_ID)
+					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+
+			final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Integer expectedBPartnerLocationId = bpartnerLocationTable.getOptional(bpartnerLocationIdentifier)
+					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+					.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
+
 			final I_M_InOut shipment = shipmentTable.get(identifier);
 
-			assertThat(shipment.getC_BPartner_ID()).isEqualTo(bpartnerId);
-			assertThat(shipment.getC_BPartner_Location_ID()).isEqualTo(bpartnerLocationId);
+			assertThat(shipment.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
+			assertThat(shipment.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId);
 			assertThat(shipment.getDateOrdered()).isEqualTo(dateOrdered);
-			assertThat(shipment.getPOReference()).isEqualTo(poReference);
+
+			if (Check.isNotBlank(poReference))
+			{
+				assertThat(shipment.getPOReference()).isEqualTo(poReference);
+			}
+
 			assertThat(shipment.isProcessed()).isEqualTo(processed);
 			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
 		}
