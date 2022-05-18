@@ -18,7 +18,7 @@ class DatePicker extends PureComponent {
     super(props);
     this.state = {
       isCalendarOpen: false,
-      datePatched: null,
+      datePatched: this.props.value,
     };
   }
 
