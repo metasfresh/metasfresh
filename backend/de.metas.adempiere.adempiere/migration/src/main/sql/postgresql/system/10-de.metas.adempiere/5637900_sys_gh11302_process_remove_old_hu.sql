@@ -462,3 +462,14 @@ UPDATE AD_WINDOW SET Name='Platzhalter HU', Description='Die HU ID die als Platz
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Menu SET   Name = 'Platzhalter HU', Description = 'Die HU ID die als Platzhalter für gelöschte Einträge verwendet wird. ', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580854
 ;
+
+-- 2022-05-18T15:47:09.666Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Placeholder HU',Updated=TO_TIMESTAMP('2022-05-18 17:47:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580854 AND AD_Language='en_US'
+;
+
+-- 2022-05-18T15:47:09.694Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580854,'en_US')
+;
+
