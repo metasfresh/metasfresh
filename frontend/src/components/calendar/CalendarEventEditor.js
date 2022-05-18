@@ -129,7 +129,7 @@ const CalendarEventEditor = ({
         cancel: onCancel,
       }}
     >
-      <div className="window-wrapper">
+      <div className="window-wrapper calendarEventEditor container-fluid">
         <div className="sections-wrapper">
           <div className="panel">
             <FormRow label="Calendar">
@@ -209,7 +209,7 @@ CalendarEventEditor.propTypes = {
 const FormRow = ({ label, children }) => {
   return (
     <div className="elements-line">
-      <div className="form-group row  form-field-Value">
+      <div className="row form-group form-field-Value">
         <div className="form-control-label col-sm-3">{label}</div>
         <div className="col-sm-9 ">
           <div className="input-body-container">
