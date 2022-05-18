@@ -164,7 +164,7 @@ public class JsonRequestBPartner
 	private boolean globalIdset;
 
 	@ApiModelProperty(position = 150, //
-			value = "Translates to `C_BPartner.GlobalId`")
+			value = "The ID of the price list that the business partner is to use as a customer. If provided, this will be used to lookup `C_BPartner.M_PricingSystem_ID`")
 	private JsonMetasfreshId priceListId;
 
 	private boolean priceListIdSet;
