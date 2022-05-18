@@ -168,6 +168,27 @@ public interface I_S_ResourceAssignment
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set All day.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllDay (boolean IsAllDay);
+
+	/**
+	 * Get All day.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllDay();
+
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_IsAllDay = new ModelColumn<>(I_S_ResourceAssignment.class, "IsAllDay", null);
+	String COLUMNNAME_IsAllDay = "IsAllDay";
+
+	/**
 	 * Set bestätigt.
 	 * Assignment is confirmed
 	 *

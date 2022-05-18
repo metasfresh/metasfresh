@@ -20,39 +20,46 @@
  * #L%
  */
 
-package de.metas.resource;
+package de.metas.calendar.util;
 
-import de.metas.calendar.util.CalendarDateRange;
-import de.metas.product.ResourceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Value
-public class ResourceAssignment
+public class CalendarDateRange
 {
-	@NonNull ResourceAssignmentId id;
-	@NonNull ResourceId resourceId;
+	@NonNull ZonedDateTime startDate;
+	@NonNull ZonedDateTime endDate;
+	boolean allDay;
 
-	@NonNull String name;
-	@Nullable String description;
-
-	@NonNull CalendarDateRange dateRange;
-
-	@Builder(toBuilder = true)
-	private ResourceAssignment(
-			@NonNull final ResourceAssignmentId id,
-			@NonNull final ResourceId resourceId,
-			@NonNull final String name,
-			@Nullable final String description,
-			@NonNull CalendarDateRange dateRange)
+	@Builder
+	private CalendarDateRange(
+			@NonNull final ZonedDateTime startDate,
+			@NonNull final ZonedDateTime endDate,
+			final boolean allDay)
 	{
-		this.id = id;
-		this.resourceId = resourceId;
-		this.name = name;
-		this.description = description;
-		this.dateRange = dateRange;
+		ZonedDateTime startDateToUse = startDate;
+		ZonedDateTime endDateToUse = endDate;
+
+		if (allDay)
+		{
+			startDateToUse = startDateToUse.truncatedTo(ChronoUnit.DAYS);
+			endDateToUse = endDateToUse.truncatedTo(ChronoUnit.DAYS);
+		}
+
+		if (startDateToUse.isAfter(endDateToUse))
+		{
+			final ZonedDateTime temp = startDateToUse;
+			startDateToUse = endDateToUse;
+			endDateToUse = temp;
+		}
+
+		this.allDay = allDay;
+		this.startDate = startDateToUse;
+		this.endDate = endDateToUse;
 	}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.resource;
 
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.product.ResourceId;
@@ -86,21 +87,35 @@ public class ResourceAssignmentRepository
 		return ResourceAssignment.builder()
 				.id(ResourceAssignmentId.ofRepoId(record.getS_ResourceAssignment_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
+				.name(record.getName())
+				.description(record.getDescription())
+				.dateRange(extractDateRange(record))
+				.build();
+	}
+
+	private static CalendarDateRange extractDateRange(@NonNull final I_S_ResourceAssignment record)
+	{
+		return CalendarDateRange.builder()
 				.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom()))
 				.endDate(CoalesceUtil.coalesceSuppliersNotNull(
 						() -> TimeUtil.asZonedDateTime(record.getAssignDateTo()),
 						() -> LocalDate.MAX.atTime(LocalTime.MAX).atZone(SystemTime.zoneId())))
-				.name(record.getName())
-				.description(record.getDescription())
+				.allDay(record.isAllDay())
 				.build();
+	}
+
+	private static void updateRecordFromDateRange(@NonNull final I_S_ResourceAssignment record, @NonNull final CalendarDateRange from)
+	{
+		record.setAssignDateFrom(TimeUtil.asTimestampNotNull(from.getStartDate()));
+		record.setAssignDateTo(TimeUtil.asTimestampNotNull(from.getEndDate()));
+		record.setIsAllDay(from.isAllDay());
 	}
 
 	public ResourceAssignment create(@NonNull final ResourceAssignmentCreateRequest request)
 	{
 		final I_S_ResourceAssignment record = InterfaceWrapperHelper.newInstance(I_S_ResourceAssignment.class);
 		record.setS_Resource_ID(request.getResourceId().getRepoId());
-		record.setAssignDateFrom(TimeUtil.asTimestamp(request.getStartDate()));
-		record.setAssignDateTo(TimeUtil.asTimestamp(request.getEndDate()));
+		updateRecordFromDateRange(record, request.getDateRange());
 		record.setName(request.getName());
 		record.setDescription(request.getDescription());
 		record.setQty(BigDecimal.ONE); // backward compatibility
@@ -115,10 +130,11 @@ public class ResourceAssignmentRepository
 
 		final ResourceAssignment changedResourceAssignment = mapper.apply(fromRecord(record));
 		record.setS_Resource_ID(changedResourceAssignment.getResourceId().getRepoId());
-		record.setAssignDateFrom(TimeUtil.asTimestampNotNull(changedResourceAssignment.getStartDate()));
-		record.setAssignDateTo(TimeUtil.asTimestamp(changedResourceAssignment.getEndDate()));
 		record.setName(changedResourceAssignment.getName());
 		record.setDescription(changedResourceAssignment.getDescription());
+
+		updateRecordFromDateRange(record, changedResourceAssignment.getDateRange());
+
 		InterfaceWrapperHelper.saveRecord(record);
 
 		return changedResourceAssignment;

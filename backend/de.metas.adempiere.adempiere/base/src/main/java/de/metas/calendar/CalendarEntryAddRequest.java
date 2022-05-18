@@ -22,13 +22,13 @@
 
 package de.metas.calendar;
 
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 
 @Value
 @Builder
@@ -38,9 +38,9 @@ public class CalendarEntryAddRequest
 
 	@NonNull CalendarGlobalId calendarId;
 	@Nullable CalendarResourceId resourceId;
-	@NonNull ZonedDateTime startDate;
-	@NonNull ZonedDateTime endDate;
 
 	@NonNull String title;
 	@Nullable String description;
+
+	@NonNull CalendarDateRange dateRange;
 }

@@ -50,10 +50,11 @@ export const addOrUpdateCalendarEvent = ({
   id,
   calendarId,
   resourceId,
-  startDate,
-  endDate,
   title,
   description = null,
+  startDate,
+  endDate,
+  allDay,
 }) => {
   const url = !id
     ? `${config.API_URL}/calendars/entries/add`
@@ -63,10 +64,11 @@ export const addOrUpdateCalendarEvent = ({
     .post(url, {
       calendarId,
       resourceId,
-      startDate,
-      endDate,
       title,
       description,
+      startDate,
+      endDate,
+      isAllDay: allDay,
     })
     .then(extractAxiosResponseData)
     .then(converters.fromAPIEvent);
@@ -110,10 +112,11 @@ const converters = {
 
     fromAPIEvent: (entry) => ({
       id: entry.entryId,
+      resourceId: entry.resourceId,
       title: entry.title,
       start: entry.startDate,
       end: entry.endDate,
-      resourceId: entry.resourceId,
+      allDay: entry.isAllDay,
     }),
   },
 };

@@ -38,9 +38,11 @@ public class JsonCalendarEntryUpdateRequest
 {
 	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;
-	@NonNull JsonDateTime startDate;
-	@NonNull JsonDateTime endDate;
 
 	@NonNull String title;
 	@Nullable String description;
+
+	@NonNull JsonDateTime startDate;
+	@NonNull JsonDateTime endDate;
+	boolean isAllDay;
 }

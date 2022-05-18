@@ -151,10 +151,9 @@ public class ResourceAssignmentCalendarService implements CalendarService
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resourceAssignment.getId()))
 				.calendarId(CALENDAR_ID)
 				.resourceId(CalendarResourceId.ofRepoId(resourceAssignment.getResourceId()))
-				.startDate(resourceAssignment.getStartDate())
-				.endDate(resourceAssignment.getEndDate())
 				.title(resourceAssignment.getName())
 				.description(resourceAssignment.getDescription())
+				.dateRange(resourceAssignment.getDateRange())
 				.build();
 	}
 
@@ -178,10 +177,9 @@ public class ResourceAssignmentCalendarService implements CalendarService
 
 		final ResourceAssignment resourceAssignment = resourceAssignmentRepository.create(ResourceAssignmentCreateRequest.builder()
 				.resourceId(request.getResourceId().toRepoId(ResourceId.class))
-				.startDate(request.getStartDate())
-				.endDate(request.getEndDate())
 				.name(request.getTitle())
 				.description(request.getDescription())
+				.dateRange(request.getDateRange())
 				.build());
 
 		return toCalendarEntry(resourceAssignment);
@@ -226,14 +224,9 @@ public class ResourceAssignmentCalendarService implements CalendarService
 			builder.resourceId(request.getResourceId().toRepoId(ResourceId.class));
 		}
 
-		if (request.getStartDate() != null)
+		if(request.getDateRange() != null)
 		{
-			builder.startDate(request.getStartDate());
-		}
-
-		if (request.getEndDate() != null)
-		{
-			builder.endDate(request.getEndDate());
+			builder.dateRange(request.getDateRange());
 		}
 
 		if (request.getTitle() != null)

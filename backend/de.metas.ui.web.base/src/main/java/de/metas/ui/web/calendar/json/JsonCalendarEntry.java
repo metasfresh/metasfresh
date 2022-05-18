@@ -42,11 +42,14 @@ public class JsonCalendarEntry
 	@NonNull CalendarEntryId entryId;
 	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;
-	@NonNull JsonDateTime startDate;
-	@NonNull JsonDateTime endDate;
 
 	@Nullable String title;
 	@Nullable String description;
+
+	@NonNull JsonDateTime startDate;
+	@NonNull JsonDateTime endDate;
+	boolean isAllDay;
+
 
 	public static JsonCalendarEntry of(@NonNull final CalendarEntry entry, @NonNull final ZoneId timeZone)
 	{
@@ -54,10 +57,11 @@ public class JsonCalendarEntry
 				.entryId(entry.getEntryId())
 				.calendarId(entry.getCalendarId())
 				.resourceId(entry.getResourceId())
-				.startDate(JsonDateTime.ofZonedDateTime(entry.getStartDate(), timeZone))
-				.endDate(JsonDateTime.ofZonedDateTime(entry.getEndDate(), timeZone))
 				.title(entry.getTitle())
 				.description(entry.getDescription())
+				.startDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getStartDate(), timeZone))
+				.endDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getEndDate(), timeZone))
+				.isAllDay(entry.getDateRange().isAllDay())
 				.build();
 	}
 }

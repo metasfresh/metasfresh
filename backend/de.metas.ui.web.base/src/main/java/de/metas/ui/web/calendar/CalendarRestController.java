@@ -29,6 +29,7 @@ import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarEntryUpdateRequest;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.MultiCalendarService;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
@@ -134,10 +135,13 @@ public class CalendarRestController
 				.userId(userSession.getLoggedUserId())
 				.calendarId(request.getCalendarId())
 				.resourceId(request.getResourceId())
-				.startDate(request.getStartDate().toZonedDateTime())
-				.endDate(request.getEndDate().toZonedDateTime())
 				.title(request.getTitle())
 				.description(request.getDescription())
+				.dateRange(CalendarDateRange.builder()
+						.startDate(request.getStartDate().toZonedDateTime())
+						.endDate(request.getEndDate().toZonedDateTime())
+						.allDay(request.isAllDay())
+						.build())
 				.build());
 
 		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone());
@@ -155,10 +159,13 @@ public class CalendarRestController
 				.entryId(CalendarEntryId.ofString(entryIdStr))
 				.calendarId(request.getCalendarId())
 				.resourceId(request.getResourceId())
-				.startDate(request.getStartDate().toZonedDateTime())
-				.endDate(request.getEndDate().toZonedDateTime())
 				.title(request.getTitle())
 				.description(request.getDescription())
+				.dateRange(CalendarDateRange.builder()
+						.startDate(request.getStartDate().toZonedDateTime())
+						.endDate(request.getEndDate().toZonedDateTime())
+						.allDay(request.isAllDay())
+						.build())
 				.build());
 
 		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone());

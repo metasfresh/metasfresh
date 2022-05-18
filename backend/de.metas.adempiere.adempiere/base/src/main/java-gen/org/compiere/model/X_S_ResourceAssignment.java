@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_ResourceAssignment extends org.compiere.model.PO implements I_S_ResourceAssignment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1118326135L;
+	private static final long serialVersionUID = 235750605L;
 
     /** Standard Constructor */
     public X_S_ResourceAssignment (final Properties ctx, final int S_ResourceAssignment_ID, @Nullable final String trxName)
@@ -69,6 +69,18 @@ public class X_S_ResourceAssignment extends org.compiere.model.PO implements I_S
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setIsAllDay (final boolean IsAllDay)
+	{
+		set_Value (COLUMNNAME_IsAllDay, IsAllDay);
+	}
+
+	@Override
+	public boolean isAllDay() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllDay);
 	}
 
 	@Override

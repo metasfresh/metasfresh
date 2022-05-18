@@ -112,13 +112,14 @@ const Calendar = ({ className = 'container' }) => {
   };
 
   const handleCreateNewEvent = (params) => {
+    //console.log('handleCreateNewEvent', { params });
     const calendar = availableCalendars?.[0];
     setEditingEvent({
       calendarId: calendar?.calendarId,
       resourceId: calendar?.resources?.[0].id,
       start: convertToMoment(params.date),
       end: convertToMoment(params.date),
-      allDay: true,
+      allDay: params.allDay,
     });
   };
 
