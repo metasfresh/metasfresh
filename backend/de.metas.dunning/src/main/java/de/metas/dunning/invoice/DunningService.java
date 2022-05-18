@@ -1,28 +1,27 @@
 package de.metas.dunning.invoice;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-import java.util.List;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.dunning.DunningDocId;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.dunning.model.I_C_DunningDoc_Line;
+import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
+import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
-import de.metas.dunning.DunningDocId;
-import de.metas.dunning.model.I_C_DunningDoc_Line;
-import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
-import de.metas.dunning.model.I_C_Dunning_Candidate;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /*
  * #%L
@@ -67,6 +66,7 @@ public class DunningService
 				.list();
 	}
 
+	@Nullable
 	public String getLocationEmail(@NonNull final DunningDocId dunningDocId)
 	{
 		final I_C_DunningDoc dunningDocRecord = dunningDAO.getByIdInTrx(dunningDocId);
@@ -87,21 +87,6 @@ public class DunningService
 			return null;
 		}
 
-		final I_AD_User dunningContactRecord = partnersRepo.getContactById(dunningContactId);
-
-		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, dunningContactRecord.getC_BPartner_Location_ID());
-
-		if (contactLocationId != null)
-		{
-			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdInTrx(contactLocationId);
-			final String contactLocationEmail = contactLocationRecord.getEMail();
-
-			if (!Check.isEmpty(contactLocationEmail))
-			{
-				return contactLocationEmail;
-			}
-		}
-
-		return null;
+		return partnersRepo.getContactLocationEmail(dunningContactId);
 	}
 }
