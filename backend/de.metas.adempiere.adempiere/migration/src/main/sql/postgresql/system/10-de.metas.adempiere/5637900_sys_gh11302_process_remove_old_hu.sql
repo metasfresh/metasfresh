@@ -10,10 +10,7 @@ CREATE OR REPLACE FUNCTION delete_hu_entries_older_than_given_months(
 AS
 $$
 BEGIN
-    /*
-     Deletes all handling unit entries that have an inactive status and are older than the specified months.
-     The placeholder is used in other tables linking to the removed handling unit.
-     */
+
     CREATE TEMP TABLE temp_m_hu AS
     SELECT m_hu_id FROM m_hu WHERE hustatus != 'A' AND updated <= now() - (p_past_months || ' month')::INTERVAL;
     CREATE TEMP TABLE temp_m_hu_item AS
@@ -65,6 +62,9 @@ BEGIN
 
 END
 $$;
+
+COMMENT ON FUNCTION delete_hu_entries_older_than_given_months(p_past_months NUMERIC, p_m_hu_placeholder_id NUMERIC) IS
+    'Deletes all handling unit entries that have an inactive status and are older than the specified months. The placeholder is used in other tables linking to the removed handling unit.';
 
 
 -- 2022-05-05T07:17:33.239Z
@@ -313,3 +313,152 @@ UPDATE AD_Process_Para SET EntityType='D',Updated=TO_TIMESTAMP('2022-05-17 22:34
 UPDATE AD_Process SET SQLStatement='SELECT delete_hu_entries_older_than_given_months(%PastMonths%, %Placeholder_HU_ID%);',Updated=TO_TIMESTAMP('2022-05-17 22:34:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585049
 ;
 
+-- 2022-05-18T10:53:05.218Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Verangenen Monate',Updated=TO_TIMESTAMP('2022-05-18 12:53:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580853 AND AD_Language='de_DE'
+;
+
+-- 2022-05-18T10:53:05.266Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580853,'de_DE')
+;
+
+-- 2022-05-18T10:53:05.310Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580853,'de_DE')
+;
+
+-- 2022-05-18T10:53:05.316Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='PastMonths', Name='Verangenen Monate', Description='Das Alter der HU Einträge in Monaten nachdem gelöscht wird. ', Help=NULL WHERE AD_Element_ID=580853
+;
+
+-- 2022-05-18T10:53:05.317Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='PastMonths', Name='Verangenen Monate', Description='Das Alter der HU Einträge in Monaten nachdem gelöscht wird. ', Help=NULL, AD_Element_ID=580853 WHERE UPPER(ColumnName)='PASTMONTHS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-05-18T10:53:05.329Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='PastMonths', Name='Verangenen Monate', Description='Das Alter der HU Einträge in Monaten nachdem gelöscht wird. ', Help=NULL WHERE AD_Element_ID=580853 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-05-18T10:53:05.333Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verangenen Monate', Description='Das Alter der HU Einträge in Monaten nachdem gelöscht wird. ', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580853) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580853)
+;
+
+-- 2022-05-18T10:53:05.581Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Verangenen Monate', Name='Verangenen Monate' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580853)
+;
+
+-- 2022-05-18T10:53:05.583Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Verangenen Monate', Description='Das Alter der HU Einträge in Monaten nachdem gelöscht wird. ', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580853
+;
+
+-- 2022-05-18T10:53:05.585Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Verangenen Monate', Description='Das Alter der HU Einträge in Monaten nachdem gelöscht wird. ', Help=NULL WHERE AD_Element_ID = 580853
+;
+
+-- 2022-05-18T10:53:05.586Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Verangenen Monate', Description = 'Das Alter der HU Einträge in Monaten nachdem gelöscht wird. ', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580853
+;
+
+-- 2022-05-18T10:53:20.912Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Verangenen Monate',Updated=TO_TIMESTAMP('2022-05-18 12:53:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580853 AND AD_Language='de_CH'
+;
+
+-- 2022-05-18T10:53:20.917Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580853,'de_CH')
+;
+
+-- 2022-05-18T10:53:29.417Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-05-18 12:53:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580853 AND AD_Language='de_CH'
+;
+
+-- 2022-05-18T10:53:29.421Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580853,'de_CH')
+;
+
+-- 2022-05-18T10:53:50.341Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Past Months ',Updated=TO_TIMESTAMP('2022-05-18 12:53:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580853 AND AD_Language='en_US'
+;
+
+-- 2022-05-18T10:53:50.345Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580853,'en_US')
+;
+
+-- 2022-05-18T11:12:45.570Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Platzhalter HU',Updated=TO_TIMESTAMP('2022-05-18 13:12:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580854 AND AD_Language='de_CH'
+;
+
+-- 2022-05-18T11:12:45.572Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580854,'de_CH')
+;
+
+-- 2022-05-18T11:13:00.712Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Platzhalter HU',Updated=TO_TIMESTAMP('2022-05-18 13:13:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580854 AND AD_Language='de_DE'
+;
+
+-- 2022-05-18T11:13:00.714Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580854,'de_DE')
+;
+
+-- 2022-05-18T11:13:00.721Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580854,'de_DE')
+;
+
+-- 2022-05-18T11:13:00.724Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Placeholder_HU_ID', Name='Platzhalter HU', Description='Die HU ID die als Platzhalter für gelöschte Einträge verwendet wird. ', Help=NULL WHERE AD_Element_ID=580854
+;
+
+-- 2022-05-18T11:13:00.725Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Placeholder_HU_ID', Name='Platzhalter HU', Description='Die HU ID die als Platzhalter für gelöschte Einträge verwendet wird. ', Help=NULL, AD_Element_ID=580854 WHERE UPPER(ColumnName)='PLACEHOLDER_HU_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-05-18T11:13:00.726Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Placeholder_HU_ID', Name='Platzhalter HU', Description='Die HU ID die als Platzhalter für gelöschte Einträge verwendet wird. ', Help=NULL WHERE AD_Element_ID=580854 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-05-18T11:13:00.727Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Platzhalter HU', Description='Die HU ID die als Platzhalter für gelöschte Einträge verwendet wird. ', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580854) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580854)
+;
+
+-- 2022-05-18T11:13:00.737Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Platzhalter HU', Name='Platzhalter HU' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580854)
+;
+
+-- 2022-05-18T11:13:00.738Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Platzhalter HU', Description='Die HU ID die als Platzhalter für gelöschte Einträge verwendet wird. ', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580854
+;
+
+-- 2022-05-18T11:13:00.740Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Platzhalter HU', Description='Die HU ID die als Platzhalter für gelöschte Einträge verwendet wird. ', Help=NULL WHERE AD_Element_ID = 580854
+;
+
+-- 2022-05-18T11:13:00.741Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Platzhalter HU', Description = 'Die HU ID die als Platzhalter für gelöschte Einträge verwendet wird. ', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580854
+;
