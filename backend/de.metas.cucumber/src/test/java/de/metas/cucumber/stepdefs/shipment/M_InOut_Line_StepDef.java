@@ -23,7 +23,11 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -31,22 +35,30 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Product_ID;
 
 public class M_InOut_Line_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final StepDefData<I_M_InOut> shipmentTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final M_Product_StepDefData productTable;
 
-	public M_InOut_Line_StepDef(@NonNull final StepDefData<I_M_InOut> shipmentTable)
+	public M_InOut_Line_StepDef(
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.shipmentTable = shipmentTable;
+		this.productTable = productTable;
 	}
 
 	@And("validate the created shipment lines")
@@ -59,12 +71,15 @@ public class M_InOut_Line_StepDef
 
 			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Integer expectedProductId = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_M_InOutLine shipmentLineRecord = queryBL.createQueryBuilder(I_M_InOutLine.class)
 					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentRecord.getM_InOut_ID())
-					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId)
+					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, expectedProductId)
 					.create()
 					.firstOnlyNotNull(I_M_InOutLine.class);
 
@@ -74,11 +89,23 @@ public class M_InOut_Line_StepDef
 
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
-		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer expectedProductId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
+
 		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(productId);
+		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(x12de355Code))
+		{
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+			assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+		}
+
+		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(shipmentLine.getMovementQty()).isEqualTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
 	}

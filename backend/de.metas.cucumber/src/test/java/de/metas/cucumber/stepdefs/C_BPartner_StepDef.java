@@ -26,6 +26,7 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -41,10 +42,12 @@ import org.compiere.util.Env;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
 
@@ -52,14 +55,13 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final StepDefData<I_C_BPartner> bPartnerTable;
+	private final C_BPartner_StepDefData bPartnerTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
-
+	private final M_PricingSystem_StepDefData pricingSystemTable;
 
 	public C_BPartner_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.pricingSystemTable = pricingSystemTable;
@@ -71,19 +73,29 @@ public class C_BPartner_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			createC_BPartner(tableRow);
+			createC_BPartner(tableRow, true);
 		}
 	}
 
-	private void createC_BPartner(@NonNull final Map<String, String> tableRow)
+	@Given("metasfresh contains C_BPartners without locations:")
+	public void metasfresh_contains_c_bpartners_without_locations(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			createC_BPartner(tableRow, false);
+		}
+	}
+
+	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final String bPartnerName = tableRow.get("Name");
 		final String bPartnerValue = CoalesceUtil.coalesce(tableRow.get("Value"), bPartnerName);
 
-		final I_C_BPartner bPartnerRecord =
+		final de.metas.edi.model.I_C_BPartner bPartnerRecord = InterfaceWrapperHelper.create(
 				CoalesceUtil.coalesceSuppliers(
 						() -> bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), bPartnerValue),
-						() -> InterfaceWrapperHelper.newInstance(I_C_BPartner.class));
+						() -> InterfaceWrapperHelper.newInstance(I_C_BPartner.class)), de.metas.edi.model.I_C_BPartner.class);
 
 		bPartnerRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		bPartnerRecord.setName(bPartnerName);
@@ -96,7 +108,10 @@ public class C_BPartner_StepDef
 		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
 		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
 		{
-			final int pricingSystemId = pricingSystemTable.get(pricingSystemIdentifier).getM_PricingSystem_ID();
+			final int pricingSystemId = pricingSystemTable.getOptional(pricingSystemIdentifier)
+					.map(I_M_PricingSystem::getM_PricingSystem_ID)
+					.orElseGet(() -> Integer.parseInt(pricingSystemIdentifier));
+
 			bPartnerRecord.setM_PricingSystem_ID(pricingSystemId);
 			bPartnerRecord.setPO_PricingSystem_ID(pricingSystemId);
 		}
@@ -112,7 +127,13 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
 		}
 
-		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord);
+		final boolean isEdiDesadvRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsEdiDesadvRecipient, false);
+		final boolean isEdiInvoicRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsEdiInvoicRecipient, false);
+
+		bPartnerRecord.setIsEdiDesadvRecipient(isEdiDesadvRecipient);
+		bPartnerRecord.setIsEdiInvoicRecipient(isEdiInvoicRecipient);
+
+		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
 
 		if (alsoCreateLocation)
