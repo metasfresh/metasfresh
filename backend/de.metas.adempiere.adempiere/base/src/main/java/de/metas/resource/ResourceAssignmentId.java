@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class ResourceAssignmentId implements RepoIdAware
@@ -74,5 +75,10 @@ public class ResourceAssignmentId implements RepoIdAware
 	public String getAsString()
 	{
 		return String.valueOf(repoId);
+	}
+
+	public static boolean equals(@Nullable final ResourceAssignmentId id1, @Nullable final ResourceAssignmentId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }
