@@ -57,6 +57,8 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -621,11 +623,17 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoice.setC_Activity_ID(order.getC_Activity_ID());
 		invoice.setUser1_ID(order.getUser1_ID());
 		invoice.setUser2_ID(order.getUser2_ID());
-
 		//
 		invoice.setSalesRep_ID(order.getSalesRep_ID());
 
-		invoice.setEMail(order.getEMail());
+		final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo =
+				SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+		if (orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(
+				ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
+		{
+			invoice.setEMail(order.getEMail());
+		}
+
 
 		// metas
 		final I_C_Invoice invoice2 = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
