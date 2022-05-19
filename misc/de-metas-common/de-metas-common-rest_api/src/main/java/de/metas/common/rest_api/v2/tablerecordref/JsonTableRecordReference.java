@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,31 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.common.rest_api.v2.tablerecordref;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.tablerecordref.JsonTableRecordReference;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-@Builder
-@JsonDeserialize(builder = LogMessageRequest.LogMessageRequestBuilder.class)
-public class LogMessageRequest
+public class JsonTableRecordReference
 {
 	@NonNull
-	@JsonProperty("logMessage")
-	String logMessage;
+	String tableName;
 
 	@NonNull
-	@JsonProperty("pinstanceId")
-	JsonMetasfreshId pInstanceId;
+	JsonMetasfreshId recordId;
 
-	@Nullable
-	@JsonProperty("tableRecordRef")
-	JsonTableRecordReference tableRecordReference;
+	@Builder
+	@JsonCreator
+	public JsonTableRecordReference(
+			@JsonProperty("tableName") @NonNull final String tableName,
+			@JsonProperty("recordId") @NonNull final JsonMetasfreshId recordId)
+	{
+		this.tableName = tableName;
+		this.recordId = recordId;
+	}
 }

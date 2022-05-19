@@ -46,6 +46,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
@@ -68,6 +69,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -101,6 +103,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Service
 public class ApiAuditService
 {
+	private static final Logger logger = LogManager.getLogger(ApiAuditService.class);
+
 	public static final String API_FILTER_REQUEST_ID_HEADER = "X-ApiFilter-Request-ID";
 
 	private static final AdMessageKey MSG_SUCCESSFUL_API_INVOCATION =
@@ -461,6 +465,7 @@ public class ApiAuditService
 					.time(Instant.now())
 					.httpHeaders(requestHeaders)
 					.requestURI(customHttpRequest.getRequestURI())
+					.pInstanceId(extractPInstanceId(requestHeadersMultiValueMap))
 					.build();
 
 			return apiRequestAuditRepository.save(apiRequestAudit);
@@ -629,6 +634,26 @@ public class ApiAuditService
 				.build();
 
 		buildHttpResponse(httpServletResponse, apiResponse, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+	}
+
+	@Nullable
+	private static PInstanceId extractPInstanceId(@NonNull final LinkedMultiValueMap<String, String> requestHeadersMultiValueMap)
+	{
+		try
+		{
+			return Optional.ofNullable(requestHeadersMultiValueMap.get(HEADER_PINSTANCE_ID))
+					.filter(pInstanceIdList -> !pInstanceIdList.isEmpty())
+					.map(pInstanceIdList -> pInstanceIdList.get(0))
+					.filter(Check::isNotBlank)
+					.map(Integer::parseInt)
+					.map(PInstanceId::ofRepoId)
+					.orElse(null);
+		}
+		catch (final Exception exception)
+		{
+			logger.error("Exception encountered while trying to read 'x-adpinstanceid' header!", exception);
+			return null;
+		}
 	}
 
 	@Value

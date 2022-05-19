@@ -56,6 +56,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -73,7 +74,7 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 @Service
 public class ExternalSystemService
 {
-	private static final transient Logger logger = LogManager.getLogger(ExternalSystemService.class);
+	private static final Logger logger = LogManager.getLogger(ExternalSystemService.class);
 	private static final String DEFAULT_ISSUE_SUMMARY = "No summary provided.";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -156,8 +157,7 @@ public class ExternalSystemService
 		{
 			final List<ProcessInfoLog> processInfoLogList = request.getLogs()
 					.stream()
-					.map(JsonPInstanceLog::getMessage)
-					.map(ProcessInfoLog::ofMessage)
+					.map(ExternalSystemService::extractProcessLogInfo)
 					.collect(Collectors.toList());
 
 			instanceDAO.saveProcessInfoLogs(pInstanceId, processInfoLogList);
@@ -234,5 +234,15 @@ public class ExternalSystemService
 				.pInstance_ID(pInstanceId)
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();
+	}
+
+	@NonNull
+	private static ProcessInfoLog extractProcessLogInfo(@NonNull final JsonPInstanceLog pInstanceLog)
+	{
+		final TableRecordReference tableRecordReference = Optional.ofNullable(pInstanceLog.getTableRecordReference())
+				.map(jsonRecordRef -> TableRecordReference.of(jsonRecordRef.getTableName(), jsonRecordRef.getRecordId().getValue()))
+				.orElse(null);
+
+		return ProcessInfoLog.ofMessageAndTableReference(pInstanceLog.getMessage(), tableRecordReference, ITrx.TRXNAME_None);
 	}
 }

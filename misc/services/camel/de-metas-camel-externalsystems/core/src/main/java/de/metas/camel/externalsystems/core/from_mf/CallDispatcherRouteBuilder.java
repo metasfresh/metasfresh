@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.core.from_mf;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -74,6 +75,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 					if (request.getAdPInstanceId() != null)
 					{
 						exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
+						exchange.getIn().setHeader(ExternalSystemConstants.HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
 					}
 				})
 				.log("routing request to route ${header.targetRoute}")
