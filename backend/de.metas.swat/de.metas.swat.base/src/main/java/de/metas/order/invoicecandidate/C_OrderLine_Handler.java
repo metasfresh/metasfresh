@@ -177,6 +177,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setBPartnerData(icRecord, orderLine);
 		setGroupCompensationData(icRecord, orderLine);
 
+		// task 13022 : set order's project
+		icRecord.setC_Project_ID(order.getC_Project_ID());
+
 		//
 		// Invoice Rule(s)
 		icRecord.setInvoiceRule(order.getInvoiceRule());
