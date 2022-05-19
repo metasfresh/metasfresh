@@ -450,7 +450,8 @@ public class OrderGroupRepository implements GroupRepository
 					request.getOrderId(),
 					orderLines,
 					request.getNewGroupTemplate(),
-					request.getNewContractConditionsId());
+					request.getNewContractConditionsId(),
+					request.getGroupCompensationOrderBy());
 		}
 		else
 		{
@@ -464,7 +465,8 @@ public class OrderGroupRepository implements GroupRepository
 			@Nullable final OrderId expectedOrderId,
 			@NonNull final List<I_C_OrderLine> existingRegularOrderLines,
 			@NonNull final GroupTemplate newGroupTemplate,
-			@Nullable final ConditionsId contractConditionsId)
+			@Nullable final ConditionsId contractConditionsId,
+			@Nullable final GroupCompensationOrderBy groupCompensationOrderBy)
 	{
 		existingRegularOrderLines.forEach(OrderGroupCompensationUtils::assertNotInGroup);
 
@@ -491,13 +493,14 @@ public class OrderGroupRepository implements GroupRepository
 		}
 
 		final GroupId groupId = createNewGroupId(GroupCreateRequest.builder()
-				.orderId(orderId)
-				.name(newGroupTemplate.getName())
-				.isNamePrinted(newGroupTemplate.isNamePrinted())
-				.activityId(newGroupTemplate.getActivityId())
-				.productCategoryId(newGroupTemplate.getProductCategoryId())
-				.groupTemplateId(newGroupTemplate.getId())
-				.build());
+														 .orderId(orderId)
+														 .name(newGroupTemplate.getName())
+														 .isNamePrinted(newGroupTemplate.isNamePrinted())
+														 .activityId(newGroupTemplate.getActivityId())
+														 .productCategoryId(newGroupTemplate.getProductCategoryId())
+														 .groupTemplateId(newGroupTemplate.getId())
+														 .groupCompensationOrderBy(groupCompensationOrderBy)
+														 .build());
 
 		setGroupIdToLines(allRegularOrderLines, groupId);
 		setActivityToLines(allRegularOrderLines, newGroupTemplate.getActivityId());
@@ -605,6 +608,11 @@ public class OrderGroupRepository implements GroupRepository
 		{
 			groupPO.setC_CompensationGroup_Schema_ID(request.getGroupTemplateId().getRepoId());
 		}
+		if (request.getGroupCompensationOrderBy() != null)
+		{
+			groupPO.setCompensationGroupOrderBy(request.getGroupCompensationOrderBy().getCode());
+		}
+
 		saveRecord(groupPO);
 
 		return createGroupId(request.getOrderId(), groupPO.getC_Order_CompensationGroup_ID());
@@ -720,18 +728,25 @@ public class OrderGroupRepository implements GroupRepository
 			nextLineNo.add(10);
 		};
 
-		final Consumer<Collection<I_C_OrderLine>> orderLinesSequenceUpdater = orderLines -> orderLines.stream()
-				.sorted(Comparator.<I_C_OrderLine, Integer>comparing(orderLine -> !orderLine.isGroupCompensationLine() ? 0 : 1)
-						.thenComparing(orderLine -> OrderGroupCompensationUtils.isGeneratedLine(orderLine) ? 0 : 1)
-						.thenComparing(I_C_OrderLine::getLine)
-						.thenComparing(I_C_OrderLine::getC_OrderLine_ID))
-				.forEach(orderLineSequenceUpdater);
+		final Consumer<Map.Entry<GroupId, Collection<I_C_OrderLine>>> orderLinesSequenceUpdater = orderLinesAndGroupId -> {
+			final GroupCompensationOrderBy orderBy = Optional
+					.ofNullable(getGroupInfoById(orderLinesAndGroupId.getKey()).getGroupCompensationOrderBy())
+					.orElse(GroupCompensationOrderBy.CompensationGroupLast);
+
+			orderLinesAndGroupId.getValue()
+					.stream()
+					.sorted(orderBy.getComparator()
+									.thenComparing(orderLine -> OrderGroupCompensationUtils.isGeneratedLine(orderLine) ? 0 : 1)
+									.thenComparing(I_C_OrderLine::getLine)
+									.thenComparing(I_C_OrderLine::getC_OrderLine_ID))
+					.forEach(orderLineSequenceUpdater);
+		};
 
 		//
 		// Renumber grouped order lines first
 		orderLinesByGroupId
 				.asMap()
-				.values()
+				.entrySet()
 				.forEach(orderLinesSequenceUpdater);
 
 		//
@@ -746,6 +761,7 @@ public class OrderGroupRepository implements GroupRepository
 				.groupId(groupId)
 				.name(groupRecord.getName())
 				.bomId(ProductBOMId.optionalOfRepoId(groupRecord.getPP_Product_BOM_ID()))
+				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(groupRecord.getCompensationGroupOrderBy()))
 				.build();
 	}
 

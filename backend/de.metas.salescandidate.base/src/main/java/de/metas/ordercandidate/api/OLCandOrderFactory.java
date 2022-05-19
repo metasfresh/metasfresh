@@ -18,6 +18,9 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.impex.InputDataSourceId;
+import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -27,14 +30,17 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -44,7 +50,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -140,6 +145,8 @@ class OLCandOrderFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
@@ -406,9 +413,10 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(orderLineIds)
-				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
-				.build());
+															.orderLineIds(orderLineIds)
+															.newGroupTemplate(createNewGroupTemplate(productId))
+															.groupCompensationOrderBy(getOrderGroupCompensationOrderBy(mainOrderLineInGroup))
+															.build());
 	}
 
 	@NonNull
@@ -423,13 +431,13 @@ class OLCandOrderFactory
 		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
-	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId, @Nullable final ProductCategoryId productCategoryId)
+	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId)
 	{
 		return GroupTemplate.builder()
 				.name(productBL.getProductName(productId))
 				.regularLinesToAdd(ImmutableList.of())
 				.compensationLines(ImmutableList.of())
-				.productCategoryId(productCategoryId)
+				.productCategoryId(productDAO.retrieveProductCategoryByProductId(productId))
 				.build();
 	}
 
@@ -647,5 +655,29 @@ class OLCandOrderFactory
 						.appendParametersToMessage()
 						.setParameter("salesRepFrom", olCand.getAssignSalesRepRule());
 		}
+	}
+
+	@Nullable
+	private GroupCompensationOrderBy getOrderGroupCompensationOrderBy(@NonNull final I_C_OrderLine orderLine)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
+
+		final de.metas.order.model.I_C_Order order = orderDAO.getById(orderId, de.metas.order.model.I_C_Order.class);
+
+		final InputDataSourceId inputDataSourceId = InputDataSourceId.ofRepoIdOrNull(order.getAD_InputDataSource_ID());
+
+		if (inputDataSourceId == null)
+		{
+			return null;
+		}
+
+		final I_AD_InputDataSource dataSource = inputDataSourceDAO.getById(inputDataSourceId);
+
+		if (OrderCandidate_Constants.INPUT_DATA_SOURCE_INTERNAL_NAME_SHOPWARE.equals(dataSource.getInternalName()))
+		{
+			return GroupCompensationOrderBy.CompensationGroupFirst;
+		}
+
+		return GroupCompensationOrderBy.CompensationGroupLast;
 	}
 }

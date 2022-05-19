@@ -474,6 +474,10 @@ public class OLCandRequestProcessor implements Processor
 				.forEach(request -> {
 					final List<JsonOLCandCreateRequest> compensationLines = groupKey2CompensationLines.get(request.getExternalLineId());
 
+					bulkRequestBuilder.request(request.toBuilder()
+													   .line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+													   .build());
+
 					if (compensationLines != null)
 					{
 						compensationLines
@@ -484,10 +488,6 @@ public class OLCandRequestProcessor implements Processor
 										.build())
 								.forEach(bulkRequestBuilder::request);
 					}
-
-					bulkRequestBuilder.request(request.toBuilder()
-													   .line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
-													   .build());
 				});
 
 		return bulkRequestBuilder.build();
