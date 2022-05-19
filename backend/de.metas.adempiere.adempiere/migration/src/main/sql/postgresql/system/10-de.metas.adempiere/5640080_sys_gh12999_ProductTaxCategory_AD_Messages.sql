@@ -57,3 +57,15 @@ UPDATE AD_Message_Trl SET MsgText='Der ausgewählte Produktpreis hat keine Steue
 -- 2022-05-19T17:09:57.019Z
 UPDATE AD_Message_Trl SET MsgText='Der ausgewählte Produktpreis hat keine Steuerkategorie!',Updated=TO_TIMESTAMP('2022-05-19 20:09:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545127
 ;
+
+-- 2022-05-19T17:53:12.960Z
+UPDATE AD_Message SET MsgText='Der ausgewählte Produktpreis hat keine Steuerkategorie!',Updated=TO_TIMESTAMP('2022-05-19 20:53:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545127
+;
+
+-- 2022-05-19T17:53:49.173Z
+UPDATE AD_Message SET MsgText='Die Produktsteuerkategorie kann nicht entfernt werden, da es Produkte gibt, die von ihr abhängen. Siehe unten: {0}',Updated=TO_TIMESTAMP('2022-05-19 20:53:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545125
+;
+
+-- 2022-05-19T17:54:08.350Z
+UPDATE AD_Message SET MsgText='Die Produktsteuerkategorie kann nicht geändert werden, da es Produkte gibt, die von ihr abhängen. Siehe unten: {0}',Updated=TO_TIMESTAMP('2022-05-19 20:54:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545126
+;
