@@ -37,7 +37,7 @@ public enum RecurrentNonBusinessDayFrequency
 	;
 
 	@Getter
-	private String code;
+	private final String code;
 
 	RecurrentNonBusinessDayFrequency(final String code)
 	{
