@@ -222,7 +222,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		final JsonErrorItem errorItem = getErrorItem(exchange);
 
 		final StringBuilder logMessageBuilder = new StringBuilder();
-		logMessageBuilder.append(" Error: ").append(StringUtils.removeCRLF(errorItem.toString()));
+		logMessageBuilder.append("Error: ").append(StringUtils.removeCRLF(errorItem.toString()));
 
 		final JsonTableRecordReference tableRecordReference = getAPIRequestId(exchange)
 				.map(apiRequestId -> JsonTableRecordReference
