@@ -304,7 +304,9 @@ public class MultiCustomerHUReturnsInOutProducer
 
 		if (shipFromLocation == null)
 		{
-			throw new AdempiereException(MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION, bpartnerId.getRepoId()).markAsUserValidationError();
+			final I_C_BPartner bPartner = bpartnerDAO.getById(bpartnerId);
+
+			throw new AdempiereException(MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION, bPartner.getName(), bPartner.getValue()).markAsUserValidationError();
 		}
 
 		return shipFromLocation;
