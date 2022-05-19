@@ -27,9 +27,6 @@ import de.metas.util.ISingletonService;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 
-import java.util.List;
-import java.util.Properties;
-
 // TODO: merge this into de.metas.resource.ResourceRepository
 public interface IResourceDAO extends ISingletonService
 {
@@ -38,10 +35,6 @@ public interface IResourceDAO extends ISingletonService
 	ResourceType getResourceTypeByResourceId(ResourceId resourceId);
 
 	I_S_Resource getById(ResourceId resourceId);
-
-	List<I_S_Resource> retrievePlants(Properties ctx);
-
-	I_S_Resource retrievePlant(Properties ctx, int resourceId);
 
 	void onResourceChanged(I_S_Resource resource);
 
