@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.dataentry.DataEntryListValueId;
-import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
+import de.metas.CreatedUpdatedInfo;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -48,7 +48,7 @@ public class JSONDataEntryRecord
 
 	Map<Integer, Boolean> yesNos;
 
-	Map<Integer, DataEntryCreatedUpdatedInfo> createdUpdatedInfos;
+	Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos;
 
 	@Builder
 	@JsonCreator
@@ -58,7 +58,7 @@ public class JSONDataEntryRecord
 			@Singular @JsonProperty("numbers") final Map<Integer, BigDecimal> numbers,
 			@Singular @JsonProperty("strings") final Map<Integer, String> strings,
 			@Singular @JsonProperty("yesNos") final Map<Integer, Boolean> yesNos,
-			@Singular @JsonProperty("createdUpdatedInfos") final Map<Integer, DataEntryCreatedUpdatedInfo> createdUpdatedInfos)
+			@Singular @JsonProperty("createdUpdatedInfos") final Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos)
 	{
 		this.dates = dates;
 		this.listValues = listValues;

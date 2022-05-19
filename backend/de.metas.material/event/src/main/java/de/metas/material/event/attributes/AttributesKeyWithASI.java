@@ -1,5 +1,6 @@
 package de.metas.material.event.attributes;
 
+import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
@@ -43,8 +44,9 @@ public class AttributesKeyWithASI
 			@JsonProperty("attributesKey") final AttributesKey attributesKey,
 			@JsonProperty("attributeSetInstanceId") final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		if (attributesKey == null)
+		if (attributesKey == null || attributesKey.isNone())
 		{
+			Check.assume(attributeSetInstanceId == null || attributeSetInstanceId.isNone(), "ASI expected to be NONE but it was {}", attributeSetInstanceId);
 			return NONE;
 		}
 		else

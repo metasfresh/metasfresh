@@ -1,5 +1,5 @@
 de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepositoryTest.getByDocumentId_InvoiceCandidateId=[ {
-  "id" : 100017,
+  "id" : 100018,
   "currentTriggerData" : {
     "orgId" : 100001,
     "triggerDocumentId" : {
@@ -13,29 +13,35 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "forecastedBasePoints" : 10,
     "invoiceableBasePoints" : 11,
     "invoicedBasePoints" : 12,
-    "tradedCommissionPercent" : 0
+    "productId" : 100015,
+    "totalQtyInvolved" : {
+      "qty" : "10",
+      "uomId" : 100004
+    },
+    "documentCurrencyId" : 1,
+    "commissionBase" : 33
   },
   "shares" : [ {
-    "id" : 100018,
+    "id" : 100019,
     "config" : {
       "@type" : "HierarchyConfig",
-      "id" : 100004,
+      "id" : 100005,
       "commissionProductId" : 100003,
       "subtractLowerLevelCommissionFromBase" : true,
       "bpartnerId2HierarchyContracts" : {
-        "100008" : {
+        "100009" : {
           "@type" : "HierarchyContract",
-          "id" : 100009,
+          "id" : 100010,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         },
-        "100011" : {
+        "100012" : {
           "@type" : "HierarchyContract",
-          "id" : 100012,
+          "id" : 100013,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         }
@@ -44,7 +50,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     },
     "level" : 10,
     "beneficiary" : {
-      "bPartnerId" : 100008
+      "bPartnerId" : 100009
     },
     "facts" : [ {
       "timestamp" : "2019-09-17T11:49:25Z",
@@ -63,39 +69,43 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "state" : "INVOICED",
       "points" : 1.2
     } ],
+    "payer" : {
+      "bpartnerId" : 1001
+    },
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 1,
     "invoiceablePointsSum" : 1.1,
     "invoicedPointsSum" : 1.2,
-    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
-      "id" : 100009,
+      "id" : 100010,
       "pointsPrecision" : 2,
-      "commissionSettingsLineId" : 100006,
+      "commissionSettingsLineId" : 100007,
       "commissionPercent" : 10,
       "simulation" : false
-    }
+    },
+    "commissionProductId" : 100003
   }, {
-    "id" : 100025,
+    "id" : 100026,
     "config" : {
       "@type" : "HierarchyConfig",
-      "id" : 100004,
+      "id" : 100005,
       "commissionProductId" : 100003,
       "subtractLowerLevelCommissionFromBase" : true,
       "bpartnerId2HierarchyContracts" : {
-        "100008" : {
+        "100009" : {
           "@type" : "HierarchyContract",
-          "id" : 100009,
+          "id" : 100010,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         },
-        "100011" : {
+        "100012" : {
           "@type" : "HierarchyContract",
-          "id" : 100012,
+          "id" : 100013,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         }
@@ -104,7 +114,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     },
     "level" : 20,
     "beneficiary" : {
-      "bPartnerId" : 100011
+      "bPartnerId" : 100012
     },
     "facts" : [ {
       "timestamp" : "2019-09-17T11:50:25Z",
@@ -123,24 +133,28 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "state" : "INVOICED",
       "points" : -7.8
     } ],
+    "payer" : {
+      "bpartnerId" : 1001
+    },
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 2,
     "invoiceablePointsSum" : 2.1,
     "invoicedPointsSum" : 2.2,
-    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
-      "id" : 100012,
+      "id" : 100013,
       "pointsPrecision" : 2,
-      "commissionSettingsLineId" : 100006,
+      "commissionSettingsLineId" : 100007,
       "commissionPercent" : 10,
       "simulation" : false
-    }
+    },
+    "commissionProductId" : 100003
   } ]
 } ]
 
 
 de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepositoryTest.getByDocumentId_InvoiceLineId=[ {
-  "id" : 100014,
+  "id" : 100015,
   "currentTriggerData" : {
     "orgId" : 100001,
     "triggerDocumentId" : {
@@ -160,21 +174,27 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "forecastedBasePoints" : 0,
     "invoiceableBasePoints" : 0,
     "invoicedBasePoints" : 100,
-    "tradedCommissionPercent" : 0
+    "productId" : 100012,
+    "totalQtyInvolved" : {
+      "qty" : "10",
+      "uomId" : 100004
+    },
+    "documentCurrencyId" : 1,
+    "commissionBase" : 100
   },
   "shares" : [ {
-    "id" : 100015,
+    "id" : 100016,
     "config" : {
       "@type" : "HierarchyConfig",
-      "id" : 100004,
+      "id" : 100005,
       "commissionProductId" : 100003,
       "subtractLowerLevelCommissionFromBase" : true,
       "bpartnerId2HierarchyContracts" : {
-        "100008" : {
+        "100009" : {
           "@type" : "HierarchyContract",
-          "id" : 100009,
+          "id" : 100010,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         }
@@ -183,32 +203,36 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     },
     "level" : 10,
     "beneficiary" : {
-      "bPartnerId" : 100008
+      "bPartnerId" : 100009
     },
     "facts" : [ ],
+    "payer" : {
+      "bpartnerId" : 1001
+    },
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 0,
     "invoiceablePointsSum" : 0,
     "invoicedPointsSum" : 0,
-    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
-      "id" : 100009,
+      "id" : 100010,
       "pointsPrecision" : 2,
-      "commissionSettingsLineId" : 100006,
+      "commissionSettingsLineId" : 100007,
       "commissionPercent" : 10,
       "simulation" : false
-    }
+    },
+    "commissionProductId" : 100003
   } ]
 } ]
 
 
 de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepositoryTest.save=[ {
-  "id" : 100016,
+  "id" : 100018,
   "currentTriggerData" : {
     "orgId" : 100001,
     "triggerDocumentId" : {
-      "invoiceCandidateId" : 100015,
-      "repoIdAware" : 100015
+      "invoiceCandidateId" : 100016,
+      "repoIdAware" : 100016
     },
     "triggerType" : "InvoiceCandidate",
     "invoiceCandidateWasDeleted" : false,
@@ -217,29 +241,35 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "forecastedBasePoints" : 10,
     "invoiceableBasePoints" : 11,
     "invoicedBasePoints" : 12,
-    "tradedCommissionPercent" : 0
+    "productId" : 100014,
+    "totalQtyInvolved" : {
+      "qty" : "10",
+      "uomId" : 100017
+    },
+    "documentCurrencyId" : 1,
+    "commissionBase" : 33
   },
   "shares" : [ {
-    "id" : 100017,
+    "id" : 100019,
     "config" : {
       "@type" : "HierarchyConfig",
-      "id" : 100004,
+      "id" : 100005,
       "commissionProductId" : 100003,
       "subtractLowerLevelCommissionFromBase" : true,
       "bpartnerId2HierarchyContracts" : {
-        "100008" : {
+        "100009" : {
           "@type" : "HierarchyContract",
-          "id" : 100009,
+          "id" : 100010,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         },
-        "100011" : {
+        "100012" : {
           "@type" : "HierarchyContract",
-          "id" : 100012,
+          "id" : 100013,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         }
@@ -248,7 +278,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     },
     "level" : 10,
     "beneficiary" : {
-      "bPartnerId" : 100008
+      "bPartnerId" : 100009
     },
     "facts" : [ {
       "timestamp" : "2019-09-17T11:49:25Z",
@@ -267,39 +297,43 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "state" : "INVOICED",
       "points" : 1.2
     } ],
+    "payer" : {
+      "bpartnerId" : 1001
+    },
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 1,
     "invoiceablePointsSum" : 1.1,
     "invoicedPointsSum" : 1.2,
-    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
-      "id" : 100009,
+      "id" : 100010,
       "pointsPrecision" : 2,
-      "commissionSettingsLineId" : 100006,
+      "commissionSettingsLineId" : 100007,
       "commissionPercent" : 10,
       "simulation" : false
-    }
+    },
+    "commissionProductId" : 100003
   }, {
-    "id" : 100018,
+    "id" : 100020,
     "config" : {
       "@type" : "HierarchyConfig",
-      "id" : 100004,
+      "id" : 100005,
       "commissionProductId" : 100003,
       "subtractLowerLevelCommissionFromBase" : true,
       "bpartnerId2HierarchyContracts" : {
-        "100008" : {
+        "100009" : {
           "@type" : "HierarchyContract",
-          "id" : 100009,
+          "id" : 100010,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         },
-        "100011" : {
+        "100012" : {
           "@type" : "HierarchyContract",
-          "id" : 100012,
+          "id" : 100013,
           "pointsPrecision" : 2,
-          "commissionSettingsLineId" : 100006,
+          "commissionSettingsLineId" : 100007,
           "commissionPercent" : 10,
           "simulation" : false
         }
@@ -308,7 +342,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     },
     "level" : 20,
     "beneficiary" : {
-      "bPartnerId" : 100011
+      "bPartnerId" : 100012
     },
     "facts" : [ {
       "timestamp" : "2019-09-17T11:50:05Z",
@@ -327,17 +361,21 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "state" : "INVOICED",
       "points" : -7.8
     } ],
+    "payer" : {
+      "bpartnerId" : 1001
+    },
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 2,
     "invoiceablePointsSum" : 2.1,
     "invoicedPointsSum" : 2.2,
-    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
-      "id" : 100012,
+      "id" : 100013,
       "pointsPrecision" : 2,
-      "commissionSettingsLineId" : 100006,
+      "commissionSettingsLineId" : 100007,
       "commissionPercent" : 10,
       "simulation" : false
-    }
+    },
+    "commissionProductId" : 100003
   } ]
 } ]

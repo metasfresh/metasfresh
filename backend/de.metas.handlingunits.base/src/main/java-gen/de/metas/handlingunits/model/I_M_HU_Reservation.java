@@ -214,7 +214,32 @@ public interface I_M_HU_Reservation
 	String COLUMNNAME_M_HU_Reservation_ID = "M_HU_Reservation_ID";
 
 	/**
-	 * Set Open Qty.
+	 * Set Picking Job Step.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Picking_Job_Step_ID (int M_Picking_Job_Step_ID);
+
+	/**
+	 * Get Picking Job Step.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Picking_Job_Step_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Step getM_Picking_Job_Step();
+
+	void setM_Picking_Job_Step(@Nullable de.metas.handlingunits.model.I_M_Picking_Job_Step M_Picking_Job_Step);
+
+	ModelColumn<I_M_HU_Reservation, de.metas.handlingunits.model.I_M_Picking_Job_Step> COLUMN_M_Picking_Job_Step_ID = new ModelColumn<>(I_M_HU_Reservation.class, "M_Picking_Job_Step_ID", de.metas.handlingunits.model.I_M_Picking_Job_Step.class);
+	String COLUMNNAME_M_Picking_Job_Step_ID = "M_Picking_Job_Step_ID";
+
+	/**
+	 * Set Qty Reserved.
 	 * Open Qty
 	 *
 	 * <br>Type: Quantity
@@ -224,7 +249,7 @@ public interface I_M_HU_Reservation
 	void setQtyReserved (BigDecimal QtyReserved);
 
 	/**
-	 * Get Open Qty.
+	 * Get Qty Reserved.
 	 * Open Qty
 	 *
 	 * <br>Type: Quantity

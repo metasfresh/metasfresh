@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
 
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
@@ -40,8 +40,6 @@ public interface CommissionContract
 {
 	/** @return never {@code null} */
 	FlatrateTermId getId();
-
-	CommissionConfig getConfig();
 
 	boolean isSimulation();
 }

@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,6 +73,7 @@ public class AttachmentRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, 10); // will be in the attachment-entry's CreatedUpdatedInfo
 
 		queryBL = Services.get(IQueryBL.class);
 

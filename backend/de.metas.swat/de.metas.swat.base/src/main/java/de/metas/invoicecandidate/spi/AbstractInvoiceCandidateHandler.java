@@ -47,6 +47,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
  *
@@ -114,9 +116,8 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	/**
 	 * Checks if the underlying product is a service which will never ever be received.
 	 *
-	 * @param ic
 	 * @return true if we deal with a service which will never ever be received
-	 * @task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
+	 * task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
 	 */
 	protected final boolean isNotReceivebleService(final I_C_Invoice_Candidate ic)
 	{
@@ -156,7 +157,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	 * @param ic invoice candidate
 	 * @param firstInOut first shipment/receipt or <code>null</code>
 	 */
-	protected final void setDeliveredDataFromFirstInOut(final I_C_Invoice_Candidate ic, final I_M_InOut firstInOut)
+	protected final void setDeliveredDataFromFirstInOut(@NonNull final I_C_Invoice_Candidate ic, @Nullable final I_M_InOut firstInOut)
 	{
 		ic.setM_InOut(firstInOut);
 
@@ -173,7 +174,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	}
 
 	@Override
-	public boolean isMissingInvoiceCandidate(Object model)
+	public boolean isMissingInvoiceCandidate(final Object model)
 	{
 		return true;
 	}

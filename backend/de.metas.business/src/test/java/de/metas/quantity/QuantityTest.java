@@ -21,27 +21,29 @@ package de.metas.quantity;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static java.math.BigDecimal.ONE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
+import de.metas.uom.UomId;
+import de.metas.uom.impl.UOMTestHelper;
+import de.metas.util.JSONObjectMapper;
+import de.metas.util.lang.Percent;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.assertj.core.data.Offset;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.hamcrest.number.BigDecimalCloseTo;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.uom.impl.UOMTestHelper;
-import de.metas.util.JSONObjectMapper;
-import de.metas.util.lang.Percent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+import static java.math.BigDecimal.ONE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class QuantityTest
 {
@@ -101,10 +103,9 @@ public class QuantityTest
 
 			//
 			// Assume their are equal
-			Assert.assertThat("Invalid Quantity.weightedAverage result (count=" + count + ")",
-					quantity.toBigDecimal(), // Actual
-					BigDecimalCloseTo.closeTo(currentQtyAvg, comparationError) // expectation
-			);
+			assertThat(quantity.toBigDecimal())
+					.overridingErrorMessage("Invalid Quantity.weightedAverage result (count=" + count + ")")
+					.isCloseTo(currentQtyAvg, Offset.offset(comparationError));
 		}
 	}
 
@@ -118,10 +119,10 @@ public class QuantityTest
 		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
 
 		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
-		Assert.assertSame("Invalid Qty", qty, quantity.toBigDecimal());
-		Assert.assertSame("Invalid UOM", uom, quantity.getUOM());
-		Assert.assertSame("Invalid Source Qty", sourceQty, quantity.getSourceQty());
-		Assert.assertSame("Invalid Source UOM", sourceUOM, quantity.getSourceUOM());
+		Assertions.assertSame(qty, quantity.toBigDecimal(), "Invalid Qty");
+		Assertions.assertSame(uom, quantity.getUOM(), "Invalid UOM");
+		Assertions.assertSame(sourceQty, quantity.getSourceQty(), "Invalid Source Qty");
+		Assertions.assertSame(sourceUOM, quantity.getSourceUOM(), "Invalid Source UOM");
 
 		final Quantity quantitySource = quantity.switchToSource();
 		new QuantityExpectation()
@@ -196,7 +197,7 @@ public class QuantityTest
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
 		final Quantity qtyToAdd = new Quantity(new BigDecimal("0"), qtyToAdd_uom, new BigDecimal("0"), qtyToAdd_sourceUom);
 		final Quantity qtyNew = qty.add(qtyToAdd);
-		Assert.assertSame("Invalid QtyNew", qty, qtyNew);
+		Assertions.assertSame(qty, qtyNew, "Invalid QtyNew");
 	}
 
 	@Test
@@ -204,6 +205,7 @@ public class QuantityTest
 	{
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
 		final I_C_UOM qty_sourceUom = uomHelper.createUOM("qty_sourceUom", 2);
+		//noinspection UnnecessaryLocalVariable
 		final I_C_UOM qtyToAdd_uom = qty_uom;
 		final I_C_UOM qtyToAdd_sourceUom = uomHelper.createUOM("qtyToAdd_sourceUom", 2);
 
@@ -223,7 +225,9 @@ public class QuantityTest
 	{
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
 		final I_C_UOM qty_sourceUom = uomHelper.createUOM("qty_sourceUom", 2);
+		//noinspection UnnecessaryLocalVariable
 		final I_C_UOM qtyToAdd_uom = qty_uom;
+		//noinspection UnnecessaryLocalVariable
 		final I_C_UOM qtyToAdd_sourceUom = qty_sourceUom;
 
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
@@ -244,6 +248,7 @@ public class QuantityTest
 		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
 		final I_C_UOM qty_sourceUom = uomHelper.createUOM("qty_sourceUom", 2);
 		final I_C_UOM qtyToAdd_uom = uomHelper.createUOM("qtyToAdd_Uom", 2);
+		//noinspection UnnecessaryLocalVariable
 		final I_C_UOM qtyToAdd_sourceUom = qty_sourceUom;
 
 		final Quantity qty = new Quantity(new BigDecimal("123"), qty_uom, new BigDecimal("456"), qty_sourceUom);
@@ -460,5 +465,76 @@ public class QuantityTest
 			final Quantity qty = Quantity.of("100", uom);
 			assertThat(qty.multiply(Percent.of(100))).isSameAs(qty);
 		}
+	}
+
+	@Nested
+	public class getCommonUomIdOfAll
+	{
+		@Test
+		void withSomeNullQtys()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+
+			final UomId commonUomId = Quantity.getCommonUomIdOfAll(Quantity.of(1, uom), null, Quantity.of(2, uom), null);
+			assertThat(commonUomId.getRepoId()).isEqualTo(uom.getC_UOM_ID());
+		}
+	}
+
+	@Nested
+	public class assertSameUOM
+	{
+		@Test
+		void empty()
+		{
+			Quantity.assertSameUOM();
+		}
+
+		@Test
+		void nullArray()
+		{
+			Quantity.assertSameUOM((Quantity[])null);
+		}
+
+		@Test
+		void nullQty()
+		{
+			Quantity.assertSameUOM((Quantity)null);
+		}
+
+		@Test
+		void singleQty()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+			Quantity.assertSameUOM(Quantity.of(1, uom));
+		}
+
+		@Test
+		void singleQty_withSomeNullQtys()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+			Quantity.assertSameUOM(null, Quantity.of(1, uom), null);
+		}
+
+		@Test
+		void sameUOM_withSomeNullQtys()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+
+			Quantity.assertSameUOM(Quantity.of(1, uom), null, Quantity.of(2, uom), null);
+		}
+
+		@Test
+		void distinctUOMs_withSomeNullQtys()
+		{
+			final I_C_UOM uom1 = uomHelper.createUOM("UOM1", 2);
+			final I_C_UOM uom2 = uomHelper.createUOM("UOM2", 2);
+
+			assertThatThrownBy(
+					() -> Quantity.assertSameUOM(Quantity.of(1, uom1), null, Quantity.of(2, uom2), null)
+			)
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("at least two quantity instances have different UOMs");
+		}
+
 	}
 }

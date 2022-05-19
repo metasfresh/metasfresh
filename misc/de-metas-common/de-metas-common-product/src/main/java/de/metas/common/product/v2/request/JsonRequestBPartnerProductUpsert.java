@@ -114,6 +114,12 @@ public class JsonRequestBPartnerProductUpsert
 	@ApiModelProperty(hidden = true)
 	private boolean dropShipSet;
 
+	@ApiModelProperty(position = 140, value = "Corresponding to I_C_BPartner_Product.UsedForVendor", allowEmptyValue = true)
+	private Boolean usedForVendor;
+
+	@ApiModelProperty(hidden = true)
+	private boolean usedForVendorSet;
+
 	public void setBpartnerIdentifier(final String bpartnerIdentifier)
 	{
 		this.bpartnerIdentifier = bpartnerIdentifier;
@@ -195,5 +201,11 @@ public class JsonRequestBPartnerProductUpsert
 	{
 		this.dropShip = dropShip;
 		dropShipSet = true;
+	}
+
+	public void setUsedForVendor(final Boolean usedForVendor)
+	{
+		this.usedForVendor = usedForVendor;
+		usedForVendorSet = true;
 	}
 }

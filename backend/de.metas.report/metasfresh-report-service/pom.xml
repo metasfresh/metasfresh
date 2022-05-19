@@ -118,6 +118,16 @@
 			<artifactId>jp.osdn.ocrb</artifactId>
 		</dependency>
  		-->
+		<dependency>
+			<groupId>de.metas.report.jasper</groupId>
+			<artifactId>roboto-fonts</artifactId>
+			<version>2012023.1-2</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.report.jasper</groupId>
+			<artifactId>source-code-pro-fonts</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
  		<!-- JXls integration -->
 		<dependency>

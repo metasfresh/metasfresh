@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -32,6 +33,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,6 +50,9 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -136,7 +141,7 @@ public class WarehouseBL implements IWarehouseBL
 		return getC_Location(warehouse);
 	}
 
-	private I_C_Location getC_Location(@NonNull final I_M_Warehouse warehouse)
+	private I_C_Location getC_Location(final I_M_Warehouse warehouse)
 	{
 		final BPartnerLocationId bpLocationId = extractBPartnerLocationId(warehouse);
 		final LocationId locationId = getLocationIdFromBPartnerLocationId(bpLocationId);
@@ -200,5 +205,58 @@ public class WarehouseBL implements IWarehouseBL
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@ (@M_Warehouse_ID@:" + warehouse.getName() + ")");
 		}
 		return warehouseBPLocationId;
+	}
+
+	@Override
+	public String getLocatorNameById(final LocatorId locatorId)
+	{
+		return warehouseDAO.getLocatorById(locatorId).getValue();
+	}
+
+	@Override
+	public String getWarehouseName(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseDAO.getWarehouseName(warehouseId);
+	}
+
+	@Override
+	public LocatorId getLocatorIdByRepoId(final int locatorRepoId)
+	{
+		return warehouseDAO.getLocatorIdByRepoId(locatorRepoId);
+	}
+
+	@Override
+	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
+	{
+		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
+	}
+
+
+	@Override
+	public WarehouseId getInTransitWarehouseId(final OrgId adOrgId)
+	{
+		return warehouseDAO.getInTransitWarehouseId(adOrgId);
+	}
+
+	@Override
+	public Optional<ResourceId> getPlantId(final WarehouseId warehouseId)
+	{
+		return ResourceId.optionalOfRepoId(warehouseDAO.getById(warehouseId).getPP_Plant_ID());
+	}
+
+	@Override
+	public void updateWarehouseLocation(@NonNull final LocationId oldLocationId, @NonNull final LocationId newLocationId)
+	{
+		final ImmutableSet<WarehouseId> warehouseIds = warehouseDAO.retrieveWarehouseWithLocation(oldLocationId);
+
+		warehouseIds.forEach(warehouseId -> updateWarehouseLocation(warehouseId, newLocationId));
+	}
+
+	private void updateWarehouseLocation(@NonNull final WarehouseId warehouseId, @NonNull final LocationId locationId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		warehouse.setC_Location_ID(locationId.getRepoId());
+
+		save(warehouse);
 	}
 }

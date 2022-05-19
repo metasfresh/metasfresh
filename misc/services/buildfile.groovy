@@ -17,16 +17,15 @@ def build(final MvnConf mvnConf,
         currentBuild.description = """${currentBuild.description}<p/>
 			<h2>misc services</h2>"""
 
-// comment back in when this is merged towards master or release        
-//        dir('mobile-webui/mobile-webui-frontend') {
-//            def buildFile = load('buildfile.groovy')
-//            buildFile.build(mvnConf, scmVars, forceBuild, forceSkipMobileWebui)
-//        }
+        dir('mobile-webui/mobile-webui-frontend') {
+            def buildFile = load('buildfile.groovy')
+            buildFile.build(mvnConf, scmVars, forceBuild, forceSkipMobileWebui)
+        }
         dir('procurement-webui') {
             def buildFile = load('buildfile.groovy')
             buildFile.build(mvnConf, scmVars, forceBuild, forceSkipProcurementWebui)
         }
-
+       
         withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
             dir('camel/de-metas-camel-edi') {
                 def ediBuildFile = load('buildfile.groovy')

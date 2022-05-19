@@ -22,10 +22,54 @@ package de.metas.contracts.commission.model;
  * #L%
  */
 
+import org.adempiere.model.ModelColumn;
+
 public interface I_C_Flatrate_Conditions extends de.metas.contracts.model.I_C_Flatrate_Conditions
 {
 	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
+
 	int getC_HierarchyCommissionSettings_ID();
+
 	void setC_HierarchyCommissionSettings_ID(int C_HierarchyCommissionSettings_ID);
 
+	/**
+	 * Set Mediated commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_MediatedCommissionSettings_ID(int C_MediatedCommissionSettings_ID);
+
+	/**
+	 * Get Mediated commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_MediatedCommissionSettings_ID();
+
+	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
+
+	/**
+	 * Set C_Customer_Trade_Margin.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Customer_Trade_Margin_ID (int C_Customer_Trade_Margin_ID);
+
+	/**
+	 * Get C_Customer_Trade_Margin.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Customer_Trade_Margin_ID();
+
+	ModelColumn<de.metas.contracts.model.I_C_Flatrate_Conditions, I_C_Customer_Trade_Margin> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(de.metas.contracts.model.I_C_Flatrate_Conditions.class, "C_Customer_Trade_Margin_ID", de.metas.contracts.commission.model.I_C_Customer_Trade_Margin.class);
+	String COLUMNNAME_C_Customer_Trade_Margin_ID = "C_Customer_Trade_Margin_ID";
 }

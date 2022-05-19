@@ -1,16 +1,9 @@
 package de.metas.invoicecandidate.api.impl;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.payment.paymentterm.PaymentTermId;
-import org.compiere.model.I_C_DocType;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
@@ -18,15 +11,22 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
+import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
-	/** @return builder */
+	/**
+	 * @return builder
+	 */
 	public static InvoiceHeaderImplBuilder builder()
 	{
 		return new InvoiceHeaderImplBuilder();
@@ -58,6 +58,10 @@ import javax.annotation.Nullable;
 	@Setter
 	private BPartnerId salesPartnerId;
 
+	@Getter
+	@Setter
+	private UserId salesRepId;
+
 	// 03805: add attribute C_Currency_ID
 	@Getter
 	@Setter
@@ -75,7 +79,7 @@ import javax.annotation.Nullable;
 	private I_C_DocType docTypeInvoice;
 
 	private boolean taxIncluded;
-	private String  externalId;
+	private String externalId;
 
 	private PaymentTermId paymentTermId;
 

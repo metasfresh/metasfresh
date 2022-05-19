@@ -1,34 +1,32 @@
 package de.metas.contracts.commission.commissioninstance.testhelpers;
 
-import static de.metas.util.Check.isEmpty;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.HashMap;
-import java.util.List;
-
-import de.metas.organization.OrgId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.util.Services;
-import org.adempiere.util.lang.IPair;
-import org.compiere.model.I_C_BPartner;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfigId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfigId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.util.lang.IPair;
+import org.compiere.model.I_C_BPartner;
+
+import java.util.HashMap;
+import java.util.List;
+
+import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -73,7 +71,7 @@ public class TestCommissionConfig
 	Boolean createShareForOwnRevenue = false;
 
 	@Singular
-	List<TestCommissionContract> contractTestRecords;
+	List<TestHierarchyCommissionContract> contractTestRecords;
 
 	@Singular
 	List<TestCommissionConfigLine> configLineTestRecords;
@@ -108,7 +106,7 @@ public class TestCommissionConfig
 		final ImmutableMap.Builder<String, BPartnerId> name2bpartnerId = ImmutableMap.builder();
 
 		final HashMap<String, I_C_BPartner> name2bpartnerRecord = new HashMap<>(); // used just locally in this method
-		for (final TestCommissionContract contractTestRecord : contractTestRecords)
+		for (final TestHierarchyCommissionContract contractTestRecord : contractTestRecords)
 		{
 			final I_C_Flatrate_Term termRecord = contractTestRecord.createContractData(
 					orgId,
@@ -124,7 +122,7 @@ public class TestCommissionConfig
 		}
 
 		// link sales reps into their hierarchy
-		for (final TestCommissionContract contractTestRecord : contractTestRecords)
+		for (final TestHierarchyCommissionContract contractTestRecord : contractTestRecords)
 		{
 			if (!isEmpty(contractTestRecord.getParentSalesRepName(), true))
 			{

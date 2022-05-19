@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -49,13 +50,15 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 {
 	private final CandidateChangeService candidateChangeService;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	protected final MainDataRequestHandler mainDataRequestHandler;
 
 	PPOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeService,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval, final MainDataRequestHandler mainDataRequestHandler)
 	{
 		this.candidateChangeService = candidateChangeService;
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.mainDataRequestHandler = mainDataRequestHandler;
 	}
 
 	/**
@@ -66,6 +69,8 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	protected final MaterialDispoGroupId handleAbstractPPOrderEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final Candidate headerCandidate = createHeaderCandidate(ppOrderEvent);
+
+		updateMainData(ppOrderEvent);
 
 		return headerCandidate.getGroupId();
 	}
@@ -155,4 +160,6 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 	protected abstract Flag extractIsAdviseEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent);
 
 	protected abstract Flag extractIsDirectlyPickSupply(@NonNull final AbstractPPOrderEvent ppOrderEvent);
+
+	protected abstract void updateMainData(@NonNull final AbstractPPOrderEvent ppOrderEvent);
 }

@@ -10,7 +10,6 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -34,6 +33,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
@@ -136,11 +136,9 @@ public class WEBUI_M_HU_Transform
 	@Param(parameterName = PARAM_HUPlanningReceiptOwnerPM_TU)
 	private boolean p_HUPlanningReceiptOwnerPM_TU;
 
-
 	protected static final String PARAM_MOVE_TO_WAREHOUSE_ID = "MoveToWarehouseId";
 	@Param(parameterName = PARAM_MOVE_TO_WAREHOUSE_ID)
-	private I_M_Warehouse moveToWarehouse;
-
+	private WarehouseId moveToWarehouseId;
 
 	protected static final String PARAM_SHOW_WAREHOUSE_ID = "ShowWarehouseID";
 	@Param(parameterName = PARAM_SHOW_WAREHOUSE_ID)
@@ -414,14 +412,14 @@ public class WEBUI_M_HU_Transform
 
 	private void moveToWarehouse(final WebuiHUTransformCommandResult result)
 	{
-		if (moveToWarehouse != null && showWarehouse)
+		if (moveToWarehouseId != null && showWarehouse)
 		{
 			final ImmutableList<I_M_HU> createdHUs = result.getHuIdsCreated()
 					.stream()
 					.map(handlingUnitsDAO::getById)
 					.collect(ImmutableList.toImmutableList());
 
-			huMovementBL.moveHUsToWarehouse(createdHUs, moveToWarehouse);
+			huMovementBL.moveHUsToWarehouse(createdHUs, moveToWarehouseId);
 		}
 	}
 
@@ -431,7 +429,7 @@ public class WEBUI_M_HU_Transform
 
 		if (!this.showWarehouse)
 		{
-			this.moveToWarehouse = null;
+			this.moveToWarehouseId = null;
 		}
 	}
 }

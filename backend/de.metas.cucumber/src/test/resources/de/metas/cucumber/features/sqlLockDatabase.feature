@@ -6,8 +6,8 @@ Feature: DB-Based Locking
   @from:cucumber
   Scenario: Acquiring a lock on an not-yet-locked record succeeds
     Given I_AD_PInstance with id 123124 is created
-    And a lock on the record with AD_Table 'AD_PInstance' and Record_ID 123124 is requested for a lock owner with prefix 'cucumber1a'
-    And the lock request was successful and the lock owner has the prefix 'cucumber1a'
+    When a lock on the record with AD_Table 'AD_PInstance' and Record_ID 123124 is requested for a lock owner with prefix 'cucumber1a'
+    Then the lock request was successful and the lock owner has the prefix 'cucumber1a'
 
   @from:cucumber
   Scenario: Acquiring a lock on an already-locked record fails

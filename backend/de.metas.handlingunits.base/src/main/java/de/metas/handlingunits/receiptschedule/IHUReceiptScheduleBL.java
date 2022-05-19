@@ -72,6 +72,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	/**
 	 * @return qty ordered minus qty moved (TU)
 	 */
+	@NonNull
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
 
 	@Value

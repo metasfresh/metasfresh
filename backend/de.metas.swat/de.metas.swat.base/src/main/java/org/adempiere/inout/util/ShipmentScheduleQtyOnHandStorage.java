@@ -70,7 +70,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		this.stockDetails = ImmutableList.copyOf(stockDetails);
 	}
 
-	private final ImmutableList<ShipmentScheduleAvailableStockDetail> toStockDetails(
+	private ImmutableList<ShipmentScheduleAvailableStockDetail> toStockDetails(
 			final List<I_M_ShipmentSchedule> shipmentSchedules,
 			final StockRepository stockRepository)
 	{

@@ -109,15 +109,15 @@ public class TimeUtil
 	/**
 	 * Get earliest time of a day (truncate)
 	 *
-	 * @param day   day 1..31
-	 * @param month month 1..12
 	 * @param year  year (if two digits: < 50 is 2000; > 50 is 1900)
+	 * @param month month 1..12
+	 * @param day   day 1..31
 	 * @return timestamp ** not too reliable
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
 	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
-	static public Timestamp getDay(final int year, final int month, final int day)
+	public static Timestamp getDay(final int year, final int month, final int day)
 	{
 		final int hour = 0;
 		final int minute = 0;
@@ -1288,6 +1288,11 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
+	public static Timestamp asTimestampNotNull(@NonNull final ZonedDateTime zdt)
+	{
+		return Timestamp.from(zdt.toInstant());
+	}
+
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
@@ -1667,7 +1672,6 @@ public class TimeUtil
 		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
 	}
 
-
 	public static LocalTime asLocalTime(@Nullable final Object obj)
 	{
 		if (obj == null)
@@ -1744,6 +1748,28 @@ public class TimeUtil
 	public static ZonedDateTime asZonedDateTime(@Nullable final Instant instant)
 	{
 		return instant != null ? instant.atZone(SystemTime.zoneId()) : null;
+	}
+
+	/**
+	 * @return timestamp converted to ZonedDateTime using system time zone.
+	 * @deprecated Please consider using {@link #asZonedDateTime(Timestamp, ZoneId)}.
+	 * <p>
+	 * If you don't know the {@link ZoneId} then
+	 * <ul>
+	 *     <li>please consider using {@link de.metas.organization.InstantAndOrgId} and don't assume system time zone.
+	 *     <li>or please consider using {@link Instant}
+	 *     </ul>
+	 *     <b>But please don't just assume the time zone is system time zone.</b>
+	 */
+	@Deprecated
+	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp)
+	{
+		return timestamp != null ? timestamp.toInstant().atZone(SystemTime.zoneId()) : null;
+	}
+
+	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
+	{
+		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;
 	}
 
 	/**
@@ -1912,6 +1938,12 @@ public class TimeUtil
 		}
 	}
 
+	@NonNull
+	public static Instant maxNotNull(@NonNull final Instant instant1, @NonNull final Instant instant2)
+	{
+		return max(instant1, instant2);
+	}
+
 	@Nullable
 	public static Instant max(
 			@Nullable final Instant instant1,
@@ -1961,7 +1993,6 @@ public class TimeUtil
 
 		return d1.isAfter(d2) ? d1 : d2;
 	}
-
 
 	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
 	{

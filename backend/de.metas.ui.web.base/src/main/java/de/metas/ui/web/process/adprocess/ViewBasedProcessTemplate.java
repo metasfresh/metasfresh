@@ -48,10 +48,9 @@ import java.util.stream.Stream;
 
 /**
  * An {@link JavaProcess} implementation template to be used by processes which are called from views.
+ * !! Does not work when a record is displayed in the detail view !! 
  * <p>
  * Important: to check for preconditions, please implement {@link IProcessPrecondition} <b>and</b> override {@link #checkPreconditionsApplicable()}.
- *
- * @author metas-dev <dev@metasfresh.com>
  */
 @ClientOnlyProcess
 public abstract class ViewBasedProcessTemplate extends JavaProcess

@@ -1,15 +1,17 @@
 package de.metas.shipper.gateway.spi.model;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Set;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Set;
 
 /*
  * #%L
@@ -44,15 +46,17 @@ public class DeliveryOrderCreateRequest
 	LocalDate pickupDate;
 	LocalTime timeFrom;
 	LocalTime timeTo;
+	AsyncBatchId asyncBatchId;
 
 	@Builder
 	public DeliveryOrderCreateRequest(
 			@NonNull final LocalDate pickupDate,
 			@NonNull @Singular final Set<Integer> packageIds,
 			final ShipperTransportationId shipperTransportationId,
-			@NonNull String shipperGatewayId,
+			@NonNull final String shipperGatewayId,
 			@NonNull final LocalTime timeFrom,
-			@NonNull final LocalTime timeTo)
+			@NonNull final LocalTime timeTo,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		this.pickupDate = pickupDate;
 		this.packageIds = Check.assumeNotEmpty(packageIds, "packageIds is not empty");
@@ -60,5 +64,6 @@ public class DeliveryOrderCreateRequest
 		this.shipperGatewayId = shipperGatewayId;
 		this.timeFrom = timeFrom;
 		this.timeTo = timeTo;
+		this.asyncBatchId = asyncBatchId;
 	}
 }

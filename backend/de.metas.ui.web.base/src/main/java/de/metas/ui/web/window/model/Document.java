@@ -1386,7 +1386,7 @@ public final class Document
 			changesCollector.collectReadonlyIfChanged(documentField, readonlyOld, reason);
 		}
 	}
-
+	@Nullable
 	private LogicExpressionResult computeFieldReadOnly(final IDocumentField documentField)
 	{
 		// Check document's readonly logic

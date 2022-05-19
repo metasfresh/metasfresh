@@ -55,11 +55,11 @@ public class M_InOut_Line_StepDef
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
-			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, "Shipment.Identifier");
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, "M_InOut_ID.Identifier");
 
 			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+			final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_M_InOutLine shipmentLineRecord = queryBL.createQueryBuilder(I_M_InOutLine.class)
@@ -74,7 +74,7 @@ public class M_InOut_Line_StepDef
 
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
-		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
 		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 

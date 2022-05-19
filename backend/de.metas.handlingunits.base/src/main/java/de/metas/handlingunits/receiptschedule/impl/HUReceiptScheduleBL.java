@@ -158,6 +158,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
+	@NonNull
 	public BigDecimal getQtyToMoveTU(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrZero(receiptSchedule);

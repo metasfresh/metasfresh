@@ -1,20 +1,21 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 /** Generated Interface for C_OrderLine
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_OrderLine 
+public interface I_C_OrderLine
 {
 
 	String Table_Name = "C_OrderLine";
 
-//	/** AD_Table_ID=260 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=260 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -94,29 +95,6 @@ public interface I_C_OrderLine
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
-	/**
-	 * Set Base Commission Points Per Price UOM.
-	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBase_Commission_Points_Per_Price_UOM (@Nullable BigDecimal Base_Commission_Points_Per_Price_UOM);
-
-	/**
-	 * Get Base Commission Points Per Price UOM.
-	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getBase_Commission_Points_Per_Price_UOM();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_Base_Commission_Points_Per_Price_UOM = new ModelColumn<>(I_C_OrderLine.class, "Base_Commission_Points_Per_Price_UOM", null);
-	String COLUMNNAME_Base_Commission_Points_Per_Price_UOM = "Base_Commission_Points_Per_Price_UOM";
 
 	/**
 	 * Set Pricing system.
@@ -245,6 +223,26 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Location> COLUMN_C_BPartner_Location_Value_ID = new ModelColumn<>(I_C_OrderLine.class, "C_BPartner_Location_Value_ID", org.compiere.model.I_C_Location.class);
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
+
+	/**
+	 * Set C_BPartner_Vendor_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
+
+	/**
+	 * Get C_BPartner_Vendor_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Vendor_ID();
+
+	String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
 
 	/**
 	 * Set Campaign.
@@ -1361,33 +1359,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
-	 * Set Zugehörige Bestellposition.
-	 * Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Bestellposition referenzieren.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLink_OrderLine_ID (int Link_OrderLine_ID);
-
-	/**
-	 * Get Zugehörige Bestellposition.
-	 * Mit diesem Feld kann eine Auftragsposition die ihr zugehörige Bestellposition referenzieren.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getLink_OrderLine_ID();
-
-	@Nullable org.compiere.model.I_C_OrderLine getLink_OrderLine();
-
-	void setLink_OrderLine(@Nullable org.compiere.model.I_C_OrderLine Link_OrderLine);
-
-	ModelColumn<I_C_OrderLine, org.compiere.model.I_C_OrderLine> COLUMN_Link_OrderLine_ID = new ModelColumn<>(I_C_OrderLine.class, "Link_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
-	String COLUMNNAME_Link_OrderLine_ID = "Link_OrderLine_ID";
-
-	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
@@ -1415,33 +1386,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Discount Schema.
-	 * Schema to calculate the trade discount percentage
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
-
-	/**
-	 * Get Discount Schema.
-	 * Schema to calculate the trade discount percentage
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_DiscountSchema_ID();
-
-	@Nullable org.compiere.model.I_M_DiscountSchema getM_DiscountSchema();
-
-	void setM_DiscountSchema(@Nullable org.compiere.model.I_M_DiscountSchema M_DiscountSchema);
-
-	ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchema> COLUMN_M_DiscountSchema_ID = new ModelColumn<>(I_C_OrderLine.class, "M_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
-	String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
-
-	/**
 	 * Set Discount Schema Break.
 	 * Rabattschema Stufe
 	 *
@@ -1467,6 +1411,33 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchemaBreak> COLUMN_M_DiscountSchemaBreak_ID = new ModelColumn<>(I_C_OrderLine.class, "M_DiscountSchemaBreak_ID", org.compiere.model.I_M_DiscountSchemaBreak.class);
 	String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
+
+	/**
+	 * Set Discount Schema.
+	 * Schema to calculate the trade discount percentage
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
+
+	/**
+	 * Get Discount Schema.
+	 * Schema to calculate the trade discount percentage
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_DiscountSchema_ID();
+
+	@Nullable org.compiere.model.I_M_DiscountSchema getM_DiscountSchema();
+
+	void setM_DiscountSchema(@Nullable org.compiere.model.I_M_DiscountSchema M_DiscountSchema);
+
+	ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchema> COLUMN_M_DiscountSchema_ID = new ModelColumn<>(I_C_OrderLine.class, "M_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
+	String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
 	 * Set Version Preisliste.
@@ -1630,7 +1601,7 @@ public interface I_C_OrderLine
 	/**
 	 * Set No Price Conditions Indicator.
 	 * Red means that mandatory pricing conditions are missing;
- yellow means that temporary pricing conditions were created just for the respective position.
+	 yellow means that temporary pricing conditions were created just for the respective position.
 	 *
 	 * <br>Type: Color
 	 * <br>Mandatory: false
@@ -1641,7 +1612,7 @@ public interface I_C_OrderLine
 	/**
 	 * Get No Price Conditions Indicator.
 	 * Red means that mandatory pricing conditions are missing;
- yellow means that temporary pricing conditions were created just for the respective position.
+	 yellow means that temporary pricing conditions were created just for the respective position.
 	 *
 	 * <br>Type: Color
 	 * <br>Mandatory: false
@@ -1651,29 +1622,6 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_NoPriceConditionsColor_ID = new ModelColumn<>(I_C_OrderLine.class, "NoPriceConditionsColor_ID", null);
 	String COLUMNNAME_NoPriceConditionsColor_ID = "NoPriceConditionsColor_ID";
-
-	/**
-	 * Set Minimum Order Qty.
-	 * Minimum order quantity in UOM
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOrder_Min (@Nullable BigDecimal Order_Min);
-
-	/**
-	 * Get Minimum Order Qty.
-	 * Minimum order quantity in UOM
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getOrder_Min();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
-	String COLUMNNAME_Order_Min = "Order_Min";
 
 	/**
 	 * Set Gesamtauftragsrabbat.
@@ -2480,7 +2428,7 @@ public interface I_C_OrderLine
 	int getTradeBom_Product_ID();
 
 	String COLUMNNAME_TradeBom_Product_ID = "TradeBom_Product_ID";
-
+	
 	/**
 	 * Set Traded Commission Percent.
 	 *

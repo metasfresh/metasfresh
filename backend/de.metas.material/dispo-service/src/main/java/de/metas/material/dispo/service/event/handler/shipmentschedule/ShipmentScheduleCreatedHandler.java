@@ -56,7 +56,7 @@ public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<Ship
 	}
 
 	@Override
-	public Collection<Class<? extends ShipmentScheduleCreatedEvent>> getHandeledEventType()
+	public Collection<Class<? extends ShipmentScheduleCreatedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(ShipmentScheduleCreatedEvent.class);
 	}

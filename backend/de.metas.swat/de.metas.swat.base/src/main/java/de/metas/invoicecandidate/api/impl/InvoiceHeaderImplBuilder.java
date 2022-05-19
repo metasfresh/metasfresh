@@ -5,6 +5,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -47,6 +48,8 @@ public class InvoiceHeaderImplBuilder
 	private String paymentRule;
 
 	private int Sales_BPartner_ID;
+
+	private int SalesRep_User_ID;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -101,6 +104,8 @@ public class InvoiceHeaderImplBuilder
 		// BPartner/Location/Contact
 		invoiceHeader.setBillTo(getBillTo());
 		invoiceHeader.setSalesPartnerId(BPartnerId.ofRepoIdOrNull(getSales_BPartner_ID()));
+
+		invoiceHeader.setSalesRepId(UserId.ofRepoIdOrNull(get_SaleRep_ID()));
 
 		// Descriptions
 		invoiceHeader.setDescription(getDescription());
@@ -252,9 +257,21 @@ public class InvoiceHeaderImplBuilder
 		return Sales_BPartner_ID;
 	}
 
+	public int get_SaleRep_ID ()
+	{
+		return SalesRep_User_ID;
+	}
+
+
 	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
 	{
 		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
+	}
+
+
+	public void setSalesRep_ID(final int salesRep_ID)
+	{
+		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
 	}
 
 	public int getC_Currency_ID()

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.bpartner.BPartnerId;
@@ -43,6 +44,8 @@ public interface IInvoiceHeader
 	BPartnerInfo getBillTo();
 
 	BPartnerId getSalesPartnerId();
+
+	UserId getSalesRepId();
 
 	// 03805 : add getter for C_Currency_ID
 	CurrencyId getCurrencyId();

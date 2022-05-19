@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de-metas-salesorder
+  ~ %%
+  ~ Copyright (C) 2021 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>de.metas.parent</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.metas.salesorder</groupId>
+    <artifactId>de-metas-salesorder</artifactId>
+
+    <properties>
+        <metasfresh.version>10.0.0</metasfresh.version>
+    </properties>
+
+    <version>10.0.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>de.metas.swat</groupId>
+            <artifactId>de.metas.swat.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.salescandidate</groupId>
+            <artifactId>de.metas.salescandidate.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+</project>

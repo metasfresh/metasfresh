@@ -658,6 +658,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			.add("AD_Role_ID".toLowerCase())
 			.add("M_AttributeSet_ID".toLowerCase())
 			.add("M_AttributeSetInstance_ID".toLowerCase())
+			.add("AD_System_ID".toLowerCase())
 			.build();
 
 	protected Object invokeParent(final Method method, final Object[] args) throws Exception

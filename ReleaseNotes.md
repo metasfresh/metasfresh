@@ -9,6 +9,161 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.174
+## Features
+* metasfresh
+  * https://github.com/metasfresh/metasfresh/issues/11679
+  * https://github.com/metasfresh/metasfresh/issues/11720
+  * https://github.com/metasfresh/metasfresh/issues/11728
+  * https://github.com/metasfresh/metasfresh/pull/11737
+  * https://github.com/metasfresh/metasfresh/issues/11744
+  * https://github.com/metasfresh/metasfresh/issues/11748
+  * https://github.com/metasfresh/metasfresh/issues/11750
+  * https://github.com/metasfresh/metasfresh/issues/11701
+  * https://github.com/metasfresh/metasfresh/issues/11758
+  * https://github.com/metasfresh/metasfresh/issues/11762
+  * https://github.com/metasfresh/metasfresh/issues/11763
+  * https://github.com/metasfresh/metasfresh/pull/11767
+  * https://github.com/metasfresh/metasfresh/issues/11769
+  * https://github.com/metasfresh/metasfresh/pull/11771
+  * https://github.com/metasfresh/metasfresh/issues/11772
+  * https://github.com/metasfresh/metasfresh/pull/11774
+  * https://github.com/metasfresh/metasfresh/pull/11776
+  * https://github.com/metasfresh/metasfresh/pull/11777
+  * https://github.com/metasfresh/metasfresh/issues/11784
+  * https://github.com/metasfresh/metasfresh/pull/11785
+  * https://github.com/metasfresh/metasfresh/issues/11789
+  * https://github.com/metasfresh/metasfresh/issues/11508
+  * https://github.com/metasfresh/metasfresh/issues/11797
+  * https://github.com/metasfresh/metasfresh/issues/11798
+  * https://github.com/metasfresh/metasfresh/issues/11803
+  * https://github.com/metasfresh/metasfresh/issues/11806
+  * https://github.com/metasfresh/metasfresh/issues/11812
+  * https://github.com/metasfresh/metasfresh/issues/11814
+  * https://github.com/metasfresh/metasfresh/issues/11817
+  * https://github.com/metasfresh/metasfresh/issues/11818
+  * https://github.com/metasfresh/metasfresh/issues/11821
+  * https://github.com/metasfresh/metasfresh/issues/11822
+  * https://github.com/metasfresh/metasfresh/pull/11829
+  * https://github.com/metasfresh/metasfresh/issues/11831
+  * https://github.com/metasfresh/metasfresh/issues/11832
+  * https://github.com/metasfresh/metasfresh/issues/11834
+  * https://github.com/metasfresh/metasfresh/pull/11836
+  * https://github.com/metasfresh/metasfresh/issues/11840
+  * https://github.com/metasfresh/metasfresh/issues/11841
+  * https://github.com/metasfresh/metasfresh/issues/11843
+  * https://github.com/metasfresh/metasfresh/issues/11847
+  * https://github.com/metasfresh/metasfresh/issues/11848
+  * https://github.com/metasfresh/metasfresh/pull/11849
+  * https://github.com/metasfresh/metasfresh/issues/11850
+  * https://github.com/metasfresh/metasfresh/issues/11851
+  * https://github.com/metasfresh/metasfresh/issues/11854
+  * https://github.com/metasfresh/metasfresh/issues/11860
+  * https://github.com/metasfresh/metasfresh/issues/11863
+  * https://github.com/metasfresh/metasfresh/issues/11864
+  * https://github.com/metasfresh/metasfresh/issues/11866
+  * https://github.com/metasfresh/metasfresh/issues/11868
+  * https://github.com/metasfresh/metasfresh/issues/11872
+  * https://github.com/metasfresh/metasfresh/issues/11873
+  * https://github.com/metasfresh/metasfresh/issues/11880
+  * https://github.com/metasfresh/metasfresh/issues/11884
+  * https://github.com/metasfresh/metasfresh/issues/11890
+  * https://github.com/metasfresh/metasfresh/issues/11898
+  * https://github.com/metasfresh/metasfresh/issues/11906
+  * https://github.com/metasfresh/metasfresh/issues/11908
+  * https://github.com/metasfresh/metasfresh/issues/11909
+  * https://github.com/metasfresh/metasfresh/pull/11912
+  * https://github.com/metasfresh/metasfresh/issues/11913
+  * https://github.com/metasfresh/metasfresh/pull/11918
+  * https://github.com/metasfresh/metasfresh/pull/11922
+  
+## Fixes
+* metasfresh
+  * https://github.com/metasfresh/metasfresh/issues/11766
+  * https://github.com/metasfresh/metasfresh/issues/11778
+  * https://github.com/metasfresh/metasfresh/issues/11780
+  * https://github.com/metasfresh/metasfresh/pull/11786
+  * https://github.com/metasfresh/metasfresh/issues/11791
+  * https://github.com/metasfresh/metasfresh/pull/11792
+  * https://github.com/metasfresh/metasfresh/issues/11793
+  * https://github.com/metasfresh/metasfresh/issues/11800
+  * https://github.com/metasfresh/metasfresh/pull/11802
+  * https://github.com/metasfresh/metasfresh/issues/11809
+  * https://github.com/metasfresh/metasfresh/issues/11810
+  * https://github.com/metasfresh/metasfresh/pull/11823
+  * https://github.com/metasfresh/metasfresh/issues/11825
+  * https://github.com/metasfresh/metasfresh/issues/11838
+  * https://github.com/metasfresh/metasfresh/issues/11856
+  * https://github.com/metasfresh/metasfresh/pull/11858
+  * https://github.com/metasfresh/metasfresh/issues/11895
+  * https://github.com/metasfresh/metasfresh/pull/11897
+  * https://github.com/metasfresh/metasfresh/pull/11915
+
+# metasfresh 5.173
+## Features
+* metasfresh
+  * [#11607](https://github.com/metasfresh/metasfresh/issues/11607) FE package updates - chunk 3 mid August
+  * [#11624](https://github.com/metasfresh/metasfresh/issues/11624) FE: option to always display "New BPartner" in order
+  * [#11654](https://github.com/metasfresh/metasfresh/issues/11654) Create Occupation Hierarchy tables and Validation Rules
+  * [#11665](https://github.com/metasfresh/metasfresh/issues/11665) C&E User / BPartner Synchronisation metasfresh => RabbitMQ
+  * [#11668](https://github.com/metasfresh/metasfresh/issues/11668) Chunk e2e for end of August 2021
+  * [#11694](https://github.com/metasfresh/metasfresh/issues/11694) Commission Calculation for Purchase Order Forwarding
+  * [#11698](https://github.com/metasfresh/metasfresh/issues/11698) Check and see more of the react* deps that can be updated and adapt code with the changes
+  * [#11699](https://github.com/metasfresh/metasfresh/issues/11699) Chunk e2e beginning of Sep 2021
+  * [#11701](https://github.com/metasfresh/metasfresh/issues/11701) Add organization-based filter for currently logged-in user: `OrgAccessSql`
+  * [#11713](https://github.com/metasfresh/metasfresh/issues/11713) Add `DeliveryViaRule` to DESADV
+  * [#11734](https://github.com/metasfresh/metasfresh/issues/11734) Add `isActive` Filter to window Product Price
+
+## Fixes
+* metasfresh
+  * [#11680](https://github.com/metasfresh/metasfresh/pull/11680) Fix `ESRDataImporterCamt54` context switching issues
+
+# metasfresh 5.172
+## Features
+* metasfresh
+  * [#11006](https://github.com/metasfresh/metasfresh/pull/11006) Persist and forward the current `C_Location_ID`
+  * [#11476](https://github.com/metasfresh/metasfresh/pull/11476) New Cost Estimate doctype and report
+  * [#11525](https://github.com/metasfresh/metasfresh/issues/11525) ESR Import with zip files
+  * [#11547](https://github.com/metasfresh/metasfresh/issues/11547) Smoothen the experience of connecting to shopware
+  * [#11578](https://github.com/metasfresh/metasfresh/pull/11578) BPartner full text search
+  * [#11587](https://github.com/metasfresh/metasfresh/issues/11587) Implement possibility to hide order lines
+  * [#11600](https://github.com/metasfresh/metasfresh/issues/11600) Budget für Mitarbeiter 2
+  * [#11605](https://github.com/metasfresh/metasfresh/issues/11605) Add ability to prevent sale of items under a certain qty
+  * [#11611](https://github.com/metasfresh/metasfresh/issues/11611) Ability to use variables when sending email via `MailWorkpackageProcessor`
+  * [#11616](https://github.com/metasfresh/metasfresh/pull/11616) Business partner window: field statuses
+  * [#11617](https://github.com/metasfresh/metasfresh/issues/11617) Option to always display "New BPartner" in order
+  * [#11620](https://github.com/metasfresh/metasfresh/pull/11620) Show no choice available in case mandatory is true and there are no results in the list
+  * [#11625](https://github.com/metasfresh/metasfresh/issues/11625) Add in the messages API endpoint `No results found` strings
+  * [#11630](https://github.com/metasfresh/metasfresh/issues/11630) Modal overlay for purchase order attachments
+  * [#11631](https://github.com/metasfresh/metasfresh/issues/11631) BPartner location name should be made unique, and consistent with
+  * [#11636](https://github.com/metasfresh/metasfresh/issues/11636) Modification to window Ingredients and Change Product Specification Report
+  * [#11640](https://github.com/metasfresh/metasfresh/issues/11640) Automated order, shipment & invoice generation
+  * [#11643](https://github.com/metasfresh/metasfresh/issues/11643) Create a membership month structure
+  * [#11647](https://github.com/metasfresh/metasfresh/issues/11647) Extend Boiler plates to product category and document type
+  * [#11651](https://github.com/metasfresh/metasfresh/issues/11651) FE package updates - chunk 4 end of August 2021
+  * [#11657](https://github.com/metasfresh/metasfresh/issues/11657) Add new boiler plate structure to sales order jasper report
+  * [#11662](https://github.com/metasfresh/metasfresh/issues/11662) Roles for `AD_User`, with possibility of restricting to one user for a role per business partner
+  * [#11670](https://github.com/metasfresh/metasfresh/issues/11670) Disable the tutorial feature temporary and the loaded deps
+  * [#11681](https://github.com/metasfresh/metasfresh/pull/11681) Full text search improvements
+  * [#11685](https://github.com/metasfresh/metasfresh/issues/11685) WebUI frontend: show a loading/spinner while the search assistant modal is loading
+
+## Fixes
+* metasfresh
+  * [#11573](https://github.com/metasfresh/metasfresh/issues/11573) Prevent bpartner logic selecting a shipping-location without `isShipTo='Y'`
+  * [#11588](https://github.com/metasfresh/metasfresh/issues/11588) Prevent same HU being returned multiple times
+  * [#11615](https://github.com/metasfresh/metasfresh/issues/11615) FE - Fields in bpartner issue should reflect their own status, not the bpartner field's status
+  * [#11622](https://github.com/metasfresh/metasfresh/issues/11622) Replace the empty hardcoded strings passed to `SelectionDropdown` component
+  * [#11627](https://github.com/metasfresh/metasfresh/issues/11627) The context menu jumps when opening in sub tab records
+  * [#11638](https://github.com/metasfresh/metasfresh/pull/11638) Avoid NPE if referenced `C_SubscriptionProgress` is gone
+  * [#11649](https://github.com/metasfresh/metasfresh/pull/11649) Master transportation order bug
+  * [#11656](https://github.com/metasfresh/metasfresh/pull/11656) Fix shopware-camel problems
+  * [#11659](https://github.com/metasfresh/metasfresh/pull/11659) Shopware - Fix problem with missing freight-costs if tax=0
+  * [#11661](https://github.com/metasfresh/metasfresh/pull/11661) Increase the web-api-client's buffer-size to 50MB
+  * [#11667](https://github.com/metasfresh/metasfresh/issues/11667) Fix function `report.taxnote(p_c_invoice_id numeric);`
+  * [#11674](https://github.com/metasfresh/metasfresh/issues/11674) Align Problem on Label Fields
+  * [#11675](https://github.com/metasfresh/metasfresh/issues/11675) Problem on Label Fields selection
+  * [#11684](https://github.com/metasfresh/metasfresh/pull/11684) BP Quick Input: assert price lists exist
+
 # metasfresh 5.171
 ## Features
 * metasfresh

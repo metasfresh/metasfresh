@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for EDI_DesadvLine
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_DesadvLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -182511967L;
+	private static final long serialVersionUID = -1679935146L;
 
     /** Standard Constructor */
-    public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
+    public X_EDI_DesadvLine (final Properties ctx, final int EDI_DesadvLine_ID, @Nullable final String trxName)
     {
       super (ctx, EDI_DesadvLine_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_EDI_DesadvLine (Properties ctx, ResultSet rs, String trxName)
+    public X_EDI_DesadvLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,18 +30,18 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
@@ -50,12 +51,12 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setC_UOM_Invoice_ID (int C_UOM_Invoice_ID)
+	public void setC_UOM_Invoice_ID (final int C_UOM_Invoice_ID)
 	{
 		if (C_UOM_Invoice_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_Invoice_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_Invoice_ID, Integer.valueOf(C_UOM_Invoice_ID));
+			set_Value (COLUMNNAME_C_UOM_Invoice_ID, C_UOM_Invoice_ID);
 	}
 
 	@Override
@@ -65,18 +66,18 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setEanCom_Invoice_UOM (java.lang.String EanCom_Invoice_UOM)
+	public void setEanCom_Invoice_UOM (final @Nullable java.lang.String EanCom_Invoice_UOM)
 	{
 		throw new IllegalArgumentException ("EanCom_Invoice_UOM is virtual column");	}
 
 	@Override
 	public java.lang.String getEanCom_Invoice_UOM() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EanCom_Invoice_UOM);
+		return get_ValueAsString(COLUMNNAME_EanCom_Invoice_UOM);
 	}
 
 	@Override
-	public void setEAN_CU (java.lang.String EAN_CU)
+	public void setEAN_CU (final @Nullable java.lang.String EAN_CU)
 	{
 		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
 	}
@@ -84,11 +85,11 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public java.lang.String getEAN_CU() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EAN_CU);
+		return get_ValueAsString(COLUMNNAME_EAN_CU);
 	}
 
 	@Override
-	public void setEAN_TU (java.lang.String EAN_TU)
+	public void setEAN_TU (final @Nullable java.lang.String EAN_TU)
 	{
 		set_Value (COLUMNNAME_EAN_TU, EAN_TU);
 	}
@@ -96,7 +97,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public java.lang.String getEAN_TU() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EAN_TU);
+		return get_ValueAsString(COLUMNNAME_EAN_TU);
 	}
 
 	@Override
@@ -106,18 +107,18 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setEDI_Desadv(de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv)
+	public void setEDI_Desadv(final de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv)
 	{
 		set_ValueFromPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class, EDI_Desadv);
 	}
 
 	@Override
-	public void setEDI_Desadv_ID (int EDI_Desadv_ID)
+	public void setEDI_Desadv_ID (final int EDI_Desadv_ID)
 	{
 		if (EDI_Desadv_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, Integer.valueOf(EDI_Desadv_ID));
+			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, EDI_Desadv_ID);
 	}
 
 	@Override
@@ -127,12 +128,12 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID)
+	public void setEDI_DesadvLine_ID (final int EDI_DesadvLine_ID)
 	{
 		if (EDI_DesadvLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, Integer.valueOf(EDI_DesadvLine_ID));
+			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, EDI_DesadvLine_ID);
 	}
 
 	@Override
@@ -142,7 +143,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setGTIN (java.lang.String GTIN)
+	public void setGTIN (final @Nullable java.lang.String GTIN)
 	{
 		set_Value (COLUMNNAME_GTIN, GTIN);
 	}
@@ -150,7 +151,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public java.lang.String getGTIN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
+		return get_ValueAsString(COLUMNNAME_GTIN);
 	}
 
 	/** 
@@ -163,22 +164,21 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/** CatchWeight = CatchWeight */
 	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
 	@Override
-	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn)
+	public void setInvoicableQtyBasedOn (final java.lang.String InvoicableQtyBasedOn)
 	{
-
 		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
 	}
 
 	@Override
 	public java.lang.String getInvoicableQtyBasedOn() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
+		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
 	@Override
-	public void setIsSubsequentDeliveryPlanned (boolean IsSubsequentDeliveryPlanned)
+	public void setIsSubsequentDeliveryPlanned (final boolean IsSubsequentDeliveryPlanned)
 	{
-		set_Value (COLUMNNAME_IsSubsequentDeliveryPlanned, Boolean.valueOf(IsSubsequentDeliveryPlanned));
+		set_Value (COLUMNNAME_IsSubsequentDeliveryPlanned, IsSubsequentDeliveryPlanned);
 	}
 
 	@Override
@@ -188,9 +188,9 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setLine (int Line)
+	public void setLine (final int Line)
 	{
-		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
+		set_Value (COLUMNNAME_Line, Line);
 	}
 
 	@Override
@@ -200,12 +200,12 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
@@ -215,9 +215,9 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setOrderLine (int OrderLine)
+	public void setOrderLine (final int OrderLine)
 	{
-		set_Value (COLUMNNAME_OrderLine, Integer.valueOf(OrderLine));
+		set_Value (COLUMNNAME_OrderLine, OrderLine);
 	}
 
 	@Override
@@ -227,7 +227,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public void setOrderPOReference (java.lang.String OrderPOReference)
+	public void setOrderPOReference (final @Nullable java.lang.String OrderPOReference)
 	{
 		set_Value (COLUMNNAME_OrderPOReference, OrderPOReference);
 	}
@@ -235,24 +235,24 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public java.lang.String getOrderPOReference() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_OrderPOReference);
+		return get_ValueAsString(COLUMNNAME_OrderPOReference);
 	}
 
 	@Override
-	public void setPriceActual (java.math.BigDecimal PriceActual)
+	public void setPriceActual (final @Nullable BigDecimal PriceActual)
 	{
 		set_Value (COLUMNNAME_PriceActual, PriceActual);
 	}
 
 	@Override
-	public java.math.BigDecimal getPriceActual() 
+	public BigDecimal getPriceActual() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setProductDescription (java.lang.String ProductDescription)
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
@@ -260,11 +260,11 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public java.lang.String getProductDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
+		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
 
 	@Override
-	public void setProductNo (java.lang.String ProductNo)
+	public void setProductNo (final @Nullable java.lang.String ProductNo)
 	{
 		set_Value (COLUMNNAME_ProductNo, ProductNo);
 	}
@@ -272,89 +272,89 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public java.lang.String getProductNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
+		return get_ValueAsString(COLUMNNAME_ProductNo);
 	}
 
 	@Override
-	public void setQtyDeliveredInInvoiceUOM (java.math.BigDecimal QtyDeliveredInInvoiceUOM)
+	public void setQtyDeliveredInInvoiceUOM (final @Nullable BigDecimal QtyDeliveredInInvoiceUOM)
 	{
 		set_Value (COLUMNNAME_QtyDeliveredInInvoiceUOM, QtyDeliveredInInvoiceUOM);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyDeliveredInInvoiceUOM() 
+	public BigDecimal getQtyDeliveredInInvoiceUOM() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInInvoiceUOM);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInInvoiceUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyDeliveredInStockingUOM (java.math.BigDecimal QtyDeliveredInStockingUOM)
+	public void setQtyDeliveredInStockingUOM (final @Nullable BigDecimal QtyDeliveredInStockingUOM)
 	{
 		set_Value (COLUMNNAME_QtyDeliveredInStockingUOM, QtyDeliveredInStockingUOM);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyDeliveredInStockingUOM() 
+	public BigDecimal getQtyDeliveredInStockingUOM() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInStockingUOM);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInStockingUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM)
+	public void setQtyDeliveredInUOM (final @Nullable BigDecimal QtyDeliveredInUOM)
 	{
 		set_Value (COLUMNNAME_QtyDeliveredInUOM, QtyDeliveredInUOM);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyDeliveredInUOM() 
+	public BigDecimal getQtyDeliveredInUOM() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInUOM);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyEntered (java.math.BigDecimal QtyEntered)
+	public void setQtyEntered (final @Nullable BigDecimal QtyEntered)
 	{
 		set_Value (COLUMNNAME_QtyEntered, QtyEntered);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyEntered() 
+	public BigDecimal getQtyEntered() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
+	public void setQtyItemCapacity (final @Nullable BigDecimal QtyItemCapacity)
 	{
 		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyItemCapacity() 
+	public BigDecimal getQtyItemCapacity() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
+	public void setQtyOrdered (final BigDecimal QtyOrdered)
 	{
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyOrdered() 
+	public BigDecimal getQtyOrdered() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setUPC_CU (java.lang.String UPC_CU)
+	public void setUPC_CU (final @Nullable java.lang.String UPC_CU)
 	{
 		set_Value (COLUMNNAME_UPC_CU, UPC_CU);
 	}
@@ -362,11 +362,11 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public java.lang.String getUPC_CU() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC_CU);
+		return get_ValueAsString(COLUMNNAME_UPC_CU);
 	}
 
 	@Override
-	public void setUPC_TU (java.lang.String UPC_TU)
+	public void setUPC_TU (final @Nullable java.lang.String UPC_TU)
 	{
 		set_Value (COLUMNNAME_UPC_TU, UPC_TU);
 	}
@@ -374,6 +374,6 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public java.lang.String getUPC_TU() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC_TU);
+		return get_ValueAsString(COLUMNNAME_UPC_TU);
 	}
 }
