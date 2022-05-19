@@ -1,7 +1,3 @@
--- View: EDI_Cctop_119_v
-
--- DROP VIEW IF EXISTS EDI_Cctop_119_v;
-
 DROP VIEW IF EXISTS EDI_Cctop_119_v;
 CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
 SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
