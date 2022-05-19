@@ -22,19 +22,18 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.sameInstance;
-
+import de.metas.async.QueueProcessorTestBase;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.async.QueueProcessorTestBase;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.processor.IWorkpackageProcessorFactory;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.util.Services;
+import static org.hamcrest.Matchers.sameInstance;
 
 /**
  * 
@@ -77,7 +76,7 @@ public class WorkpackageProcessorFactoryTest extends QueueProcessorTestBase
 	}
 
 	/**
-	 * Test that {@link WorkpackageProcessorFactory#getWorkpackageProcessor(I_C_Queue_PackageProcessor)} is returning a new instance each time.
+	 * Test that {@link WorkpackageProcessorFactory#getWorkpackageProcessor(de.metas.async.processor.descriptor.model.QueuePackageProcessor)} is returning a new instance each time.
 	 * 
 	 * We need this feature in case we want to use stateful processors.
 	 */
@@ -88,10 +87,10 @@ public class WorkpackageProcessorFactoryTest extends QueueProcessorTestBase
 
 		final WorkpackageProcessorFactory factory = new WorkpackageProcessorFactory();
 		
-		final IWorkpackageProcessor packageProcessor1 = factory.getWorkpackageProcessor(packageProcessorDef);
+		final IWorkpackageProcessor packageProcessor1 = factory.getWorkpackageProcessor(QueueProcessorDescriptorRepository.mapToPackageProcessor(packageProcessorDef));
 		Assert.assertNotNull("Workpackage processor not found", packageProcessor1);
 		
-		final IWorkpackageProcessor packageProcessor2 = factory.getWorkpackageProcessor(packageProcessorDef);
+		final IWorkpackageProcessor packageProcessor2 = factory.getWorkpackageProcessor(QueueProcessorDescriptorRepository.mapToPackageProcessor(packageProcessorDef));
 		Assert.assertNotNull("Workpackage processor not found", packageProcessor2);
 
 		Assert.assertNotSame("Each time when we ask for an package processor instance, a new instance shall be returned", packageProcessor2, packageProcessor1);

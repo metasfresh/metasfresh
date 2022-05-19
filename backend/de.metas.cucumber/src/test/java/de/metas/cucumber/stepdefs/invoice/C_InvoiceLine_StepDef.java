@@ -29,6 +29,9 @@ import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -50,17 +53,21 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	final C_Invoice_StepDefData invoiceTable;
+	final C_InvoiceLine_StepDefData invoiceLineTable;
 	final M_Product_StepDefData productTable;
 	final C_Tax_StepDefData taxTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Tax_StepDefData taxTable)
 	{
 		this.invoiceTable = invoiceTable;
+		this.invoiceLineTable = invoiceLineTable;
 		this.productTable = productTable;
 		this.taxTable = taxTable;
 	}
@@ -76,14 +83,16 @@ public class C_InvoiceLine_StepDef
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
+			final int expectedProductId = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 
 			//dev-note: we assume the tests are not using the same product and qty on different lines
 			final I_C_InvoiceLine invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
-					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced)
 					.create()
 					.firstOnlyNotNull(I_C_InvoiceLine.class);
@@ -133,6 +142,36 @@ public class C_InvoiceLine_StepDef
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
+		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEntered);
+
+		if (qtyEntered != null)
+		{
+			assertThat(invoiceLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+		}
+
+		final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
+
+		if (qtyEnteredInBPartnerUOM != null)
+		{
+			assertThat(invoiceLine.getQtyEnteredInBPartnerUOM()).isEqualTo(qtyEnteredInBPartnerUOM);
+		}
+
+		final String bPartnerUOMx12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(bPartnerUOMx12de355Code))
+		{
+			final UomId bPartnerUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(bPartnerUOMx12de355Code));
+			assertThat(invoiceLine.getC_UOM_BPartner_ID()).isEqualTo(bPartnerUOMId.getRepoId());
+		}
+
+		final String uomX12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(uomX12de355Code))
+		{
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(uomX12de355Code));
+			assertThat(invoiceLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+		}
+
 		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
@@ -172,5 +211,8 @@ public class C_InvoiceLine_StepDef
 			final I_C_Tax taxRecord = taxTable.get(taxIdentifier);
 			assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxRecord.getC_Tax_ID());
 		}
+
+		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
 	}
 }

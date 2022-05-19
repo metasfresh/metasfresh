@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -127,6 +128,25 @@ public class AsyncBatchService
 	}
 
 	@NonNull
+	public IEnqueueResult executeEnqueuedBatch(@NonNull final Supplier<IEnqueueResult> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		asyncBatchObserver.observeOn(asyncBatchId);
+
+		final IEnqueueResult result = trxManager.callInNewTrx(supplier::get);
+
+		if (result.getEnqueuedWorkPackageIds().isEmpty())
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
+		else
+		{
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+		}
+
+		return result;
+	}
+
+	@NonNull
 	private List<I_C_Queue_WorkPackage> getWorkPackagesFromCurrentRun(@NonNull final I_C_Async_Batch asyncBatch, @Nullable final String trxName)
 	{
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
@@ -135,7 +155,7 @@ public class AsyncBatchService
 
 		if (!startMonitoringFrom.isPresent())
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: asyncBatchId: {} not monitored! Return empty list!", asyncBatchId);
+			Loggables.withLogger(logger, Level.WARN).addLog("*** getWorkPackagesFromCurrentRun: C_Async_Batch_ID: {} not monitored! Return empty list!", asyncBatchId.getRepoId());
 			return ImmutableList.of();
 		}
 

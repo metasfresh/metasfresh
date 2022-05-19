@@ -1313,4 +1313,29 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+
+	@Override
+	public void setPicking_AgeTolerance_AfterMonths (final int Picking_AgeTolerance_AfterMonths)
+	{
+		set_Value (COLUMNNAME_Picking_AgeTolerance_AfterMonths, Picking_AgeTolerance_AfterMonths);
+	}
+
+	@Override
+	public int getPicking_AgeTolerance_AfterMonths()
+	{
+		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_AfterMonths);
+	}
+
+	@Override
+	public void setPicking_AgeTolerance_BeforeMonths (final int Picking_AgeTolerance_BeforeMonths)
+	{
+		set_Value (COLUMNNAME_Picking_AgeTolerance_BeforeMonths, Picking_AgeTolerance_BeforeMonths);
+	}
+
+	@Override
+	public int getPicking_AgeTolerance_BeforeMonths()
+	{
+		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_BeforeMonths);
+	}
+
 }

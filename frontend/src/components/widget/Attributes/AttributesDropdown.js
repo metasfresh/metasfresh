@@ -1,180 +1,125 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import onClickOutside from 'react-onclickoutside';
+import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import FocusTrap from 'focus-trap-react';
 
 import { DROPUP_START } from '../../../constants/Constants';
-
 import WidgetWrapper from '../../../containers/WidgetWrapper';
 
-/**
- * @file Class based component.
- * @module AttributesDropdown
- * @extends Component
- */
-class AttributesDropdown extends PureComponent {
+import onClickOutsideHOC from 'react-onclickoutside';
+
+export class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = {
-      patchCallbacks: new Map(),
-    };
   }
 
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  handleClickOutside = () => {
-    const { onClickOutside } = this.props;
+  // called by onClickOutsideHOC
+  handleClickOutside = () => this.props.onCompletion();
 
-    // we need to wait for fetching all of PATCH fields on blur
-    // to complete on updated instance
-    // TODO: Figure out if it would be possible to rewrite this
-    // using Promise.all somehow
-    const requestsInterval = window.setInterval(() => {
-      const intervalsLeft = this.state.patchCallbacks.size;
-
-      if (intervalsLeft === 0) {
-        window.clearInterval(requestsInterval);
-        onClickOutside();
-      }
-    }, 10);
-  };
-
-  /**
-   * @method handlePatch
-   * @summary ToDo: Describe the method
-   * @param {*} prop
-   * @param {*} value
-   * @param {*} id
-   * @todo Write the documentation
-   */
-  handlePatch = (prop, value, id) => {
-    const { handlePatch, attrId } = this.props;
-    const { patchCallbacks } = this.state;
-    const updatedCallbacks = patchCallbacks.set(id, true);
-
-    return new Promise((res) => {
-      this.setState(
-        {
-          patchCallbacks: updatedCallbacks,
-        },
-        () => {
-          return handlePatch(prop, value, attrId, () => {
-            this.state.patchCallbacks.delete(id);
-
-            res();
-          });
-        }
-      );
-    });
-  };
-
-  /**
-   * @method renderFields
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  renderFields = () => {
-    const {
-      tabIndex,
-      layout,
-      data,
-      attributeType,
-      handleChange,
-      attrId,
-      disableOnClickOutside,
-      enableOnClickOutside,
-      isModal,
-    } = this.props;
-
-    if (layout) {
-      return layout.map((item, idx) => {
-        const widgetData = item.fields.map((elem) => data[elem.field] || -1);
-        return (
-          <WidgetWrapper
-            dataSource="attributes-dropdown"
-            entity={attributeType}
-            widgetType={item.widgetType}
-            fields={item.fields}
-            dataId={attrId}
-            widgetData={widgetData}
-            gridAlign={item.gridAlign}
-            suppressChange={item.widgetType === 'YesNo'}
-            key={idx}
-            autoFocus={idx === 0}
-            type={item.type}
-            caption={item.caption}
-            handlePatch={(prop, value) => this.handlePatch(prop, value, idx)}
-            handleChange={handleChange}
-            disableOnClickOutside={disableOnClickOutside}
-            enableOnClickOutside={enableOnClickOutside}
-            attributeWidget={true}
-            {...{
-              tabIndex,
-              isModal,
-            }}
-          />
-        );
-      });
+  handleKeyDown = (event) => {
+    if ((event.key === 'Enter' && event.altKey) || event.key === 'Escape') {
+      event.stopPropagation();
+      event.preventDefault();
+      this.props.onCompletion();
     }
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
+  extractWidgetData = (elementLayout) => {
+    return elementLayout.fields.map(
+      (fieldLayout) => this.props.fieldsByName[fieldLayout.field] || -1
+    );
+  };
+
   render() {
-    const { rowIndex } = this.props;
+    const {
+      attributeType,
+      editingInstanceId,
+      layout,
+      rowIndex,
+      tabIndex,
+      isModal,
+      //
+      onFieldChange,
+      onFieldPatch,
+    } = this.props;
 
     return (
-      <div
-        className={classnames(
-          'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
-          {
-            'attributes-dropup': rowIndex > DROPUP_START,
-          }
-        )}
+      <FocusTrap
+        focusTrapOptions={{
+          // NOTE: we have to allowOutsideClick=true
+          // because else clicking on date picker calendar navigation buttons won't work
+          allowOutsideClick: true,
+          escapeDeactivates: false,
+        }}
       >
-        {this.renderFields()}
-      </div>
+        <div
+          className={classnames(
+            'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
+            { 'attributes-dropup': rowIndex > DROPUP_START }
+          )}
+          onKeyDown={this.handleKeyDown}
+        >
+          {layout.map((elementLayout, elementIndex) => (
+            <WidgetWrapper
+              key={elementIndex}
+              dataSource="attributes-dropdown"
+              entity={attributeType}
+              type={elementLayout.type}
+              caption={elementLayout.caption}
+              widgetType={elementLayout.widgetType}
+              fields={elementLayout.fields}
+              dataId={editingInstanceId}
+              widgetData={this.extractWidgetData(elementLayout)}
+              gridAlign={elementLayout.gridAlign}
+              autoFocus={elementIndex === 0}
+              handlePatch={(fieldName, value) => {
+                onFieldPatch(fieldName, value, editingInstanceId);
+              }}
+              handleChange={onFieldChange}
+              enableOnClickOutside={this.props.enableOnClickOutside}
+              disableOnClickOutside={this.props.disableOnClickOutside}
+              attributeWidget={true}
+              tabIndex={tabIndex}
+              isModal={isModal}
+            />
+          ))}
+        </div>
+      </FocusTrap>
     );
   }
 }
 
 /**
  * @typedef {object} Props Component props
+ *
+ * @prop {string} [attributeType] i.e. pattribute, address
+ * @prop {string|number} [editingInstanceId] the ID of the temporary editing instance
+ * @prop {array} [layout] array of element layouts
+ * @prop {object} [fieldsByName]
+ * @prop {number} [rowIndex] row index within the table
  * @prop {number} [tabIndex]
  * @prop {bool} [isModal]
- * @prop {object} data
- * @prop {string} attributeType
- * @prop {func} handleChange
- * @prop {*} attrId
- * @prop {array} layout
- * @prop {func} [onClickOutside]
- * @prop {func} handlePatch
- * @prop {func} disableOnClickOutside
- * @prop {func} enableOnClickOutside
- * @prop {func} allowShortcut
- * @prop {func} disableShortcut
- * @prop {bool} modalVisible
- * @prop {string} timeZone
+ *
+ * @prop {func} [onFieldChange]
+ * @prop {func} [onFieldPatch]
+ * @prop {func} [onCompletion]
  */
 AttributesDropdown.propTypes = {
+  attributeType: PropTypes.string.isRequired,
+  editingInstanceId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    .isRequired,
+  layout: PropTypes.array.isRequired,
+  fieldsByName: PropTypes.object.isRequired,
+  rowIndex: PropTypes.number,
   tabIndex: PropTypes.number,
   isModal: PropTypes.bool,
-  data: PropTypes.object.isRequired,
-  attributeType: PropTypes.string.isRequired,
-  handleChange: PropTypes.func.isRequired,
-  attrId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  layout: PropTypes.array,
-  onClickOutside: PropTypes.func,
-  handlePatch: PropTypes.func.isRequired,
-  disableOnClickOutside: PropTypes.func.isRequired,
-  enableOnClickOutside: PropTypes.func.isRequired,
-  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  //
+  onFieldChange: PropTypes.func.isRequired,
+  onFieldPatch: PropTypes.func.isRequired,
+  onCompletion: PropTypes.func.isRequired,
+  //
+  enableOnClickOutside: PropTypes.func.isRequired, // wired by onClickOutsideHOC
+  disableOnClickOutside: PropTypes.func.isRequired, // wired by onClickOutsideHOC
 };
 
-export default onClickOutside(AttributesDropdown);
+export default onClickOutsideHOC(AttributesDropdown);

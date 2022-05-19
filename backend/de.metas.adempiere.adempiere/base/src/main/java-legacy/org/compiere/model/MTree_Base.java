@@ -597,7 +597,7 @@ public class MTree_Base extends X_AD_Tree
 		}
 		//
 		// Insert
-		final StringBuilder sb = new StringBuilder("INSERT  INTO ")
+		final StringBuilder sb = new StringBuilder("INSERT INTO ")
 				.append(treeTableName)
 				.append(" (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, ")
 				.append("AD_Tree_ID, Node_ID, Parent_ID, SeqNo) ")
@@ -619,13 +619,8 @@ public class MTree_Base extends X_AD_Tree
 		sb.append(" AND NOT EXISTS (SELECT * FROM ").append(treeTableName).append(" e ")
 				.append("WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=").append(id).append(")");
 		//
-		int no = DB.executeUpdateEx(sb.toString(), trxName);
-		if (no < 0)
-		{
-			log.warn("#" + no + " - AD_Table_ID=" + AD_Table_ID);
-			return false;
-		}
-		log.debug("#" + no + " - AD_Table_ID=" + AD_Table_ID);
+		final int no = DB.executeUpdateEx(sb.toString(), trxName);
+		log.debug("Inserted into {} {} rows (AD_Table_ID={}, id={})", treeTableName, no, AD_Table_ID, id);
 		// MigrationLogger.instance.logMigrationSQL(po, sb.toString()); // metas: not needed because it's called directly from PO
 
 		listeners.onNodeInserted(po);
@@ -669,12 +664,7 @@ public class MTree_Base extends X_AD_Tree
 				.append(AD_Table_ID).append(")");
 		//
 		final int no = DB.executeUpdateEx(sb.toString(), trxName);
-		if (no <= 0)
-		{
-			log.warn("#" + no + " - AD_Table_ID=" + AD_Table_ID);
-			return false;
-		}
-		log.debug("#" + no + " - AD_Table_ID=" + AD_Table_ID);
+		log.debug("Deleted from {} {} rows (AD_Table_ID={}, id={})", treeTableName, no, AD_Table_ID, id);
 		// MigrationLogger.instance.logMigrationSQL(po, sb.toString()); // metas: not needed because it's called directly from PO
 		listeners.onNodeDeleted(po);
 
@@ -824,10 +814,10 @@ public class MTree_Base extends X_AD_Tree
 			sql.append(" AND (").append(sourceTableWhereClause).append(")");
 		}
 		sql.append(")");
-		log.trace(sql.toString());
+		log.trace("SQL: {}", sql);
 		//
 		final int deletes = DB.executeUpdateEx(sql.toString(), get_TrxName());
-		log.info(getName() + " Deleted #" + deletes);
+		log.debug("{}: Deleted {} rows", getName(), deletes);
 
 		// Check and create root node
 		{
@@ -836,7 +826,7 @@ public class MTree_Base extends X_AD_Tree
 			if (!query.anyMatch())
 			{
 				createNode(ROOT_Node_ID, ROOT_Node_ID);
-				log.info(getName() + " Root Node Created");
+				log.debug("{} Root Node Created", getName());
 			}
 		}
 
@@ -901,7 +891,7 @@ public class MTree_Base extends X_AD_Tree
 		{
 			// TODO: implement update parents logic
 		}
-		log.info(getName() + " Inserted #" + inserted);
+		log.debug("{} Inserted {} rows", getName(), inserted);
 	}
 
 	private PO createNode(int nodeId, int parentId)

@@ -86,12 +86,9 @@ public class PaySelectionServiceTest
 
 		assertThat(export.getName()).isEqualTo(bPartner.getName());
 		assertThat(export.getRecipientType()).isEqualTo(RecipientType.COMPANY);
-
 		assertThat(export.getIBAN()).isEqualTo(bp_bankAccount.getIBAN());
-		assertThat(export.getBIC()).isEqualTo(bp_bankAccount.getRoutingNo());
-
+		assertThat(export.getSwiftCode()).isEqualTo(bp_bankAccount.getSwiftCode());
 		assertThat(export.getAmount()).isEqualTo(Amount.of(BigDecimal.TEN, CurrencyCode.EUR));
-
 		assertThat(export.getAddressLine1()).isEqualTo(location.getAddress1());
 		assertThat(export.getAddressLine2()).isEqualTo(location.getAddress2());
 		assertThat(export.getRegionName()).isEqualTo(location.getRegionName());
@@ -135,6 +132,7 @@ public class PaySelectionServiceTest
 		bp_bankAccount.setC_Bank_ID(bank.getC_Bank_ID());
 		bp_bankAccount.setC_Currency_ID(currency.getC_Currency_ID());
 		bp_bankAccount.setIBAN("iban");
+		bp_bankAccount.setSwiftCode("SwiftCode");
 		bp_bankAccount.setRoutingNo("routingNo");
 		save(bp_bankAccount);
 

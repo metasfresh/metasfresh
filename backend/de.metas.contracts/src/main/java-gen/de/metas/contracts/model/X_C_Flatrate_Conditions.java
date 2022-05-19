@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
@@ -158,17 +157,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String CLEARINGAMTBASEON_ProductPrice = "ProductPrice";
 	/** FlatrateAmount = FlatrateAmount */
 	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
-	@Override
-	public void setClearingAmtBaseOn (final @Nullable java.lang.String ClearingAmtBaseOn)
-	{
-		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
-	}
-
-	@Override
-	public java.lang.String getClearingAmtBaseOn() 
-	{
-		return get_ValueAsString(COLUMNNAME_ClearingAmtBaseOn);
-	}
 
 	@Override
 	public void setC_MediatedCommissionSettings_ID (final int C_MediatedCommissionSettings_ID)
@@ -210,6 +198,18 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public int getC_SubscrDiscount_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_SubscrDiscount_ID);
+	}
+	
+	@Override
+	public void setClearingAmtBaseOn (final @Nullable java.lang.String ClearingAmtBaseOn)
+	{
+		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
+	}
+
+	@Override
+	public java.lang.String getClearingAmtBaseOn() 
+	{
+		return get_ValueAsString(COLUMNNAME_ClearingAmtBaseOn);
 	}
 
 	@Override
@@ -643,6 +643,8 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
 	/** LicenseFee = LicenseFee */
 	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
+	/** CallOrder = CallOrder */
+	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{

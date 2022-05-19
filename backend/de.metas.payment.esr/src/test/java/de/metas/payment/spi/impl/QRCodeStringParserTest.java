@@ -22,20 +22,21 @@
 
 package de.metas.payment.spi.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.banking.payment.PaymentString;
+import org.adempiere.test.AdempiereTestHelper;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
-import org.adempiere.test.AdempiereTestHelper;
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.*;
 
-import de.metas.banking.payment.PaymentString;
-
+@Disabled
 class QRCodeStringParserTest
 {
 	private static final String expectedIBAN = "CH1589144626811245431";

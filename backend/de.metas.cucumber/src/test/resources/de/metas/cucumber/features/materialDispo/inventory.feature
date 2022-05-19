@@ -19,6 +19,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
+  @Id:S0124_100
   Scenario: Physical inventory is correctly considered in Material Dispo when the product is both Sold and Purchased
     Given metasfresh contains M_Products:
       | Identifier | Name               | OPT.M_Product_Category_ID.Identifier | OPT.IsSold | OPT.IsPurchased |
@@ -40,6 +41,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
 
 
   @from:cucumber
+  @Id:S0124_110
   Scenario: Physical inventory is correctly considered in Material Dispo when the product is Manufactured
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
@@ -72,6 +74,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
 
 
   @from:cucumber
+  @Id:S0124_120
   Scenario: Physical inventory is correctly considered in Material Dispo when the product is a component in a BOM
     Given metasfresh contains M_Products:
       | Identifier | Name                                |

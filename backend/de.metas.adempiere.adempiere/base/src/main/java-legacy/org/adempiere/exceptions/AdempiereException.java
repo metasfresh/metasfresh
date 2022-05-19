@@ -589,7 +589,7 @@ public class AdempiereException extends RuntimeException
 	@Nullable
 	public final Object getParameter(@NonNull final String name)
 	{
-		return parameters != null ? parameters.get(name) : null;
+		return parameters != null ? Null.unbox(parameters.get(name)) : null;
 	}
 
 	public final Map<String, Object> getParameters()

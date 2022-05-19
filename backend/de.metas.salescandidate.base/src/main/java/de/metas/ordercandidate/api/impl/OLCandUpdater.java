@@ -116,7 +116,7 @@ public final class OLCandUpdater implements ITrxItemProcessor<I_C_OLCand, OLCand
 		}
 		else
 		{
-			bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID, -1));
+			bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, params.getParameterAsInt(I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID, -1));
 		}
 		return bpartnerLocationId;
 	}

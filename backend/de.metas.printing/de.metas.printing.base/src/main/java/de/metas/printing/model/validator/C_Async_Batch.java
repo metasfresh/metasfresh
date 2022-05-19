@@ -44,7 +44,8 @@ public class C_Async_Batch
 	public void print(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		if (asyncBatch.isProcessed()
-				&& asyncBatchBL.isAsyncBatchTypeInternalName(asyncBatch, Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing))
+				&& (asyncBatchBL.isAsyncBatchTypeInternalName(asyncBatch, Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing)
+				|| asyncBatchBL.isAsyncBatchTypeInternalName(asyncBatch, Async_Constants.C_Async_Batch_InternalName_DunningCandidate_Processing)))
 		{
 			ConcatenatePDFsCommand.builder()
 					.printingQueueItemsGeneratedAsyncBatch(asyncBatch)

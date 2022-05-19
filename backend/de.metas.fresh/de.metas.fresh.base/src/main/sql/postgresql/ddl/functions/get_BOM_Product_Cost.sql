@@ -15,7 +15,8 @@ DECLARE
     bomLine        record;
     bomCost        numeric := 0;
     subBomCost     numeric;
-    subBomUOMId    numeric;
+    subBomUomId    numeric;
+    subBomId       numeric;
     currentCost    numeric;
     costUOMId      numeric;
     costCurrencyId numeric;
@@ -26,14 +27,14 @@ BEGIN
     FOR bomLine IN (SELECT * FROM pp_product_bomline WHERE pp_product_bom_id = p_pp_product_bom_id AND isActive = 'Y' AND componenttype = 'CO')
         LOOP
             -- is this product a BOM?
-            subBomUOMId := (SELECT c_uom_id FROM pp_product_bom WHERE pp_product_bom.m_product_id = bomLine.m_product_id AND pp_product_bom.isactive = 'Y' AND pp_product_bom.validfrom <= p_onDate AND (pp_product_bom.validto >= p_onDate OR pp_product_bom.validTo IS NULL));
-            IF subBomUOMId IS NOT NULL THEN
-                subBomCost := de_metas_endcustomer_fresh_reports.get_BOM_Product_Cost(bomLine.m_product_id, p_priceListId, p_onDate) * bomLine.qtybom;
-                subBomCost := priceuomconvert(bomLine.m_product_id, subBomCost, subBomUOMId, bomLine.c_uom_id, 8);
+            SELECT c_uom_id, pp_product_bom_id FROM pp_product_bom WHERE pp_product_bom.m_product_id = bomLine.m_product_id AND pp_product_bom.isactive = 'Y' AND pp_product_bom.validfrom <= p_onDate AND (pp_product_bom.validto >= p_onDate OR pp_product_bom.validTo IS NULL) INTO subBomUomId, subBomId;
+            IF subBomId IS NOT NULL THEN
+                subBomCost := de_metas_endcustomer_fresh_reports.get_BOM_Product_Cost(subBomId, p_priceListId, p_onDate);
+                subBomCost := priceuomconvert(bomLine.m_product_id, subBomCost, bomLine.c_uom_id, subBomUOMId, 8);
                 IF (bomline.isqtypercentage = 'Y') THEN
-                    qtyBom := bomline.qtybom;
+                    qtyBom := bomLine.qtybatch;
                 ELSE
-                    qtyBom := bomline.qtybom * bomline.qtybatch;
+                    qtyBom := bomLine.qtybom;
                 END IF;
                 IF (subBomCost IS NULL) OR (qtyBom IS NULL) THEN
                     CONTINUE;
@@ -57,7 +58,7 @@ BEGIN
             IF costUOMId IS NULL OR costCurrencyId IS NULL OR currentCost = 0 THEN
                 CONTINUE ;
             END IF;
-            IF bomLine.isqtypercentage THEN
+            IF bomLine.isqtypercentage = 'Y' THEN
                 qtyBom := bomLine.qtybatch;
             ELSE
                 qtyBom := bomLine.qtybom;

@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.money.CurrencyId;
@@ -124,11 +125,11 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setExternalId(getExternalId());
 		invoiceHeader.setEMail(getEmail());
 
+		invoiceHeader.setPaymentRule(getPaymentRule());
+
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
-
-		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		return invoiceHeader;
 	}
@@ -281,10 +282,16 @@ public class InvoiceHeaderImplBuilder
 		}
 		else if (!BPartnerInfo.equals(this.billTo, billTo))
 		{
-			if (!BPartnerInfo.equals(this.billTo.withLocationId(null), billTo.withLocationId(null)))
+			if (!BPartnerInfo.equals(this.billTo.withLocationId(null).withContactId(null), billTo.withLocationId(null).withContactId(null)))
 			{
 				throw new AdempiereException("BillTo not matching: new=" + billTo + ", previous=" + this.billTo);
 			}
+		}
+
+
+		if(this.billTo.getContactId() != null && !BPartnerContactId.equals(billTo.getContactId(), this.billTo.getContactId()))
+		{
+			this.billTo = billTo.withContactId(null);
 		}
 	}
 

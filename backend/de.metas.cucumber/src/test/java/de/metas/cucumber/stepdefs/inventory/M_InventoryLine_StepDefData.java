@@ -30,4 +30,8 @@ import org.compiere.model.I_M_InventoryLine;
  */
 public class M_InventoryLine_StepDefData extends StepDefData<I_M_InventoryLine>
 {
+	public M_InventoryLine_StepDefData()
+	{
+		super(I_M_InventoryLine.class);
+	}
 }

@@ -58,8 +58,8 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 	{
 		CamelRouteUtil.setupProperties(getContext());
 
-		final String maximumRedeliveries = CamelRouteUtil.resolveProperty(getContext(), CamelConstants.EXPORT_BPARTNER_RETRY_COUNT, "0");
-		final String redeliveryDelay = CamelRouteUtil.resolveProperty(getContext(), CamelConstants.EXPORT_BPARTNER_RETRY_DELAY, "0");
+		final String maximumRedeliveries = CamelRouteUtil.resolveProperty(getContext(), CamelConstants.EXPORT_INFO_RETRY_COUNT, "0");
+		final String redeliveryDelay = CamelRouteUtil.resolveProperty(getContext(), CamelConstants.EXPORT_INFO_RETRY_DELAY, "0");
 
 		errorHandler(deadLetterChannel(RABBITMQ_DEADLETTER_ROUTE_ID)
 							 .logHandled(true)

@@ -40,6 +40,8 @@ import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -57,6 +59,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
@@ -97,6 +100,8 @@ public final class AggregationEngine
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(
+			OrderEmailPropagationSysConfigRepository.class);
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
@@ -373,7 +378,12 @@ public final class AggregationEngine
 			invoiceHeader.setC_Incoterms_ID(icRecord.getC_Incoterms_ID());
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
-			invoiceHeader.setEmail(icRecord.getEMail());
+
+			if(orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
+			{
+				invoiceHeader.setEmail(icRecord.getEMail());
+			}
+
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{
@@ -630,24 +640,34 @@ public final class AggregationEngine
 	private/* static */void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
+		final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
+		final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
+
 		final InvoiceDocBaseType docBaseType;
 
 		//
 		// Case: Invoice DocType was preset
 		if (invoiceHeader.getC_DocTypeInvoice() != null)
 		{
-			final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
 			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
-			docBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
+			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
+
+			// handle negative amounts: switch the base type to credit memo, based on the IsSOTrx
+			if (totalAmt.signum() < 0)
+			{
+				docBaseType = flipDocBaseType(invoiceDocBaseType, invoiceIsSOTrx);
+			}
+			else
+			{
+				docBaseType = invoiceDocBaseType;
+			}
 		}
 		//
 		// Case: no invoice DocType was set
 		// We need to find out the DocBaseType based on Total Amount and IsSOTrx
 		else
 		{
-			final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
-
 			if (invoiceIsSOTrx)
 			{
 				if (totalAmt.signum() < 0)
@@ -676,13 +696,35 @@ public final class AggregationEngine
 
 		//
 		// NOTE: in credit memos, amount are positive but the invoice effect is reversed
-		if (docBaseType.isCreditMemo())
+		if (totalAmt.signum() < 0)
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+	}
+
+	private InvoiceDocBaseType flipDocBaseType(final InvoiceDocBaseType docBaseType, final boolean invoiceIsSOTrx)
+	{
+		if (docBaseType.isCreditMemo())
+		{
+			if (invoiceIsSOTrx)
+			{
+				return InvoiceDocBaseType.CustomerInvoice;
+			}
+			else
+			{
+				return InvoiceDocBaseType.VendorInvoice;
+			}
+		}
+
+		if (invoiceIsSOTrx)
+		{
+			return InvoiceDocBaseType.CustomerCreditMemo;
+		}
+
+		return InvoiceDocBaseType.VendorCreditMemo;
 	}
 
 	private Optional<PaymentTermId> getPaymentTermId(final InvoiceHeaderImpl invoiceHeader)

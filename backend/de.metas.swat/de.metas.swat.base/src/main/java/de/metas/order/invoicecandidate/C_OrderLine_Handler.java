@@ -38,7 +38,9 @@ import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -83,6 +85,7 @@ import java.util.Properties;
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -190,7 +193,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		// 05265
-		icRecord.setIsSOTrx(orderLine.getC_Order().isSOTrx());
+		icRecord.setIsSOTrx(order.isSOTrx());
 
 		icRecord.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
@@ -213,13 +216,20 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
+		else
+		{
+			setDefaultInvoiceDocType(icRecord);
+		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
 		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
 
-		icRecord.setEMail(order.getEMail());
+		if(orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
+		{
+			icRecord.setEMail(order.getEMail());
+		}
 
 		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 
@@ -311,6 +321,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setC_PaymentTerm(ic, orderLine);
 
+		setIncoterms(ic, orderLine);
+
+		setC_Flatrate_Term_ID(ic, orderLine);
+
 		setPaymentRule(ic, orderLine);
 
 		setIncoterms(ic, orderLine);
@@ -342,6 +356,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 	}
 
+
+	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
+		ic.setIncotermLocation(order.getIncotermLocation());
+	}
+
 	private void setC_PaymentTerm(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
@@ -355,14 +378,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 	}
 
-	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
-	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		ic.setC_Incoterms_ID(order.getC_Incoterms_ID());
-		ic.setIncotermLocation(order.getIncotermLocation());
-	}
-	
 	/**
 	 * Sets {@link I_C_Invoice_Candidate#COLUMNNAME_QtyDelivered C_Invoice_Candidate.QtyDelivered} to {@link I_C_OrderLine#COLUMNNAME_QtyDelivered C_OrderLine.QtyDelivered}.
 	 * <p>
@@ -514,6 +529,13 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
 	}
 
+	@Override
+	public final void invalidateCandidatesFor(final Object model)
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
+	}
+
 	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
@@ -537,11 +559,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
 	}
 
-	@Override
-	public final void invalidateCandidatesFor(final Object model)
+	private static void setC_Flatrate_Term_ID(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
+		candidate.setC_Flatrate_Term_ID(orderLine.getC_Flatrate_Term_ID());
 	}
-
 }

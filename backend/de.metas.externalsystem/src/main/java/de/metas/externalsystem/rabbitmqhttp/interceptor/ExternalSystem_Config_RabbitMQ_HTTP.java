@@ -33,10 +33,12 @@ import org.springframework.stereotype.Component;
 public class ExternalSystem_Config_RabbitMQ_HTTP
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncBPartnersToRabbitMQ)
+			ifColumnsChanged = {
+					I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncBPartnersToRabbitMQ,
+					I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncExternalReferencesToRabbitMQ })
 	public void syncBPartner(final I_ExternalSystem_Config_RabbitMQ_HTTP configRabbitMQHttp)
 	{
-		if (!configRabbitMQHttp.isSyncBPartnersToRabbitMQ())
+		if (!configRabbitMQHttp.isSyncBPartnersToRabbitMQ() && !configRabbitMQHttp.isSyncExternalReferencesToRabbitMQ())
 		{
 			configRabbitMQHttp.setIsAutoSendWhenCreatedByUserGroup(false);
 		}

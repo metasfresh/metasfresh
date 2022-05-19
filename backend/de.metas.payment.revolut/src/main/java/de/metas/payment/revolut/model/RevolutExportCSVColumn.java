@@ -34,7 +34,7 @@ public enum RevolutExportCSVColumn
 	AccountNo("Account number"),
 	RoutingNo("Sort code or Routing number"),
 	IBAN("IBAN"),
-	BIC("BIC"),
+	SwiftCode("BIC"),
 	RecipientBankCountryName("Recipient bank country"),
 	Currency("Currency"),
 	Amount("Amount"),

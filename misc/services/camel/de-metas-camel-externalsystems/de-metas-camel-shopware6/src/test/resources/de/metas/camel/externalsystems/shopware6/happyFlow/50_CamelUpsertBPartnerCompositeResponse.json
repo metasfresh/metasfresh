@@ -2,7 +2,7 @@
   "responseItems": [
     {
       "responseBPartnerItem": {
-        "identifier": "ext-Shopware6-customerId",
+        "identifier": "customerId",
         "metasfreshId": 1,
         "syncOutcome": "UPDATED"
       },

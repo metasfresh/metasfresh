@@ -6,6 +6,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
@@ -57,6 +58,7 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.validator.PP_Order;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -94,6 +96,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 @ExtendWith(AdempiereTestWatcher.class)
+@Disabled
 public class PPOrderRequestedEventHandlerTests
 {
 	private static final MaterialDispoGroupId PPORDER_POJO_GROUPID = MaterialDispoGroupId.ofInt(33);
@@ -342,7 +345,8 @@ public class PPOrderRequestedEventHandlerTests
 		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
 				materialEventConverter,
-				PlainEventBusFactory.newInstance());
+				PlainEventBusFactory.newInstance(),
+				new MaterialEventObserver());
 		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(

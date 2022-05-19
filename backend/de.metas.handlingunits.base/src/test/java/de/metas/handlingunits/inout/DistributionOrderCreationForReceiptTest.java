@@ -14,7 +14,6 @@ import de.metas.interfaces.I_M_Movement;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;

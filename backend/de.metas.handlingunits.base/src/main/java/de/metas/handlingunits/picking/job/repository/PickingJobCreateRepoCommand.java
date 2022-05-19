@@ -34,7 +34,7 @@ class PickingJobCreateRepoCommand
 
 	public PickingJobCreateRepoCommand(
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
-			@NonNull PickingJobCreateRepoRequest request)
+			@NonNull final PickingJobCreateRepoRequest request)
 	{
 		this.loadingSupportServices = loadingSupportServices;
 
