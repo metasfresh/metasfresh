@@ -101,7 +101,7 @@ public class BpartnerPriceListServicesFacade
 		return priceListsRepo.retrievePriceListVersionId(priceListId, date);
 	}
 
-	public ImmutableList<ProductPrice> getProductPrices(final PriceListVersionId priceListVersionId)
+	public ImmutableList<ProductPrice> getProductPrices(@NonNull final PriceListVersionId priceListVersionId)
 	{
 		return priceListsRepo.retrieveProductPrices(priceListVersionId)
 				.map(productPriceRepository::toProductPrice)

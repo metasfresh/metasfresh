@@ -22,6 +22,8 @@
 
 package de.metas.pricing.tax;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.location.CountryId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -42,7 +44,10 @@ import java.util.stream.Stream;
 @Service
 public class ProductTaxCategoryService
 {
+	private static final AdMessageKey MSG_NO_C_TAX_CATEGORY_FOR_PRODUCT_PRICE = AdMessageKey.of("MissingTaxCategoryForProductPrice");
+
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ProductTaxCategoryRepository productTaxCategoryRepository;
 
 	public ProductTaxCategoryService(@NonNull final ProductTaxCategoryRepository productTaxCategoryRepository)
@@ -53,19 +58,25 @@ public class ProductTaxCategoryService
 	@NonNull
 	public TaxCategoryId getTaxCategoryId(@NonNull final I_M_ProductPrice productPrice)
 	{
-		final TaxCategoryId productPriceTaxCategoryId = TaxCategoryId.ofRepoIdOrNull(productPrice.getC_TaxCategory_ID());
-
-		if (productPriceTaxCategoryId != null)
-		{
-			return productPriceTaxCategoryId;
-		}
-
-		return findTaxCategoryId(productPrice)
-				.orElseThrow(() -> new AdempiereException("Product Tax Category must exist if Product Price's Tax Category ID is not set !")
+		return getTaxCategoryIdOptional(productPrice)
+				.orElseThrow(() -> new AdempiereException(msgBL.getTranslatableMsgText(MSG_NO_C_TAX_CATEGORY_FOR_PRODUCT_PRICE))
 						.appendParametersToMessage()
 						.setParameter("productPriceId", productPrice.getM_ProductPrice_ID())
 						.setParameter("productId", productPrice.getM_Product_ID())
 						.setParameter("priceListVersionId", productPrice.getM_PriceList_Version_ID()));
+	}
+
+	@NonNull
+	public Optional<TaxCategoryId> getTaxCategoryIdOptional(@NonNull final I_M_ProductPrice productPrice)
+	{
+		final TaxCategoryId productPriceTaxCategoryId = TaxCategoryId.ofRepoIdOrNull(productPrice.getC_TaxCategory_ID());
+
+		if (productPriceTaxCategoryId != null)
+		{
+			return Optional.of(productPriceTaxCategoryId);
+		}
+
+		return findTaxCategoryId(productPrice);
 	}
 
 	@NonNull
