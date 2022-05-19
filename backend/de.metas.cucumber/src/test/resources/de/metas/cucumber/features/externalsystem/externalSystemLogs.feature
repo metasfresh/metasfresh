@@ -8,7 +8,7 @@ Feature: Store external system logs
   Scenario: Store logs with table record reference
     Given add I_AD_PInstance with id 16042022
 
-    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/externalsystem/16042022/externalstatus/message' and fulfills with '200' status code
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/externalsystem/externalstatus/16042022/message' and fulfills with '200' status code
     """
 {
    "logs":[

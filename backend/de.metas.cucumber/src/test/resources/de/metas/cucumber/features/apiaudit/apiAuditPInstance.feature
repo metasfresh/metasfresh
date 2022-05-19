@@ -7,9 +7,9 @@ Feature: API Audit
 
   @from:cucumber
   Scenario: if a 'x-adpinstanceid' header is set when auditing v2 calls, it should end up in API_Request_Audit.AD_PInstance_ID
-    Given the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | c_1        | 10    | POST       | api/v2/test    | Y                       |
+    Given the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | Y                 |
 
     And add I_AD_PInstance with id 12052022
 
@@ -17,7 +17,7 @@ Feature: API Audit
       | Name            | Value    |
       | x-adpinstanceid | 12052022 |
 
-    When the metasfresh REST-API endpoint path 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' receives a 'POST' request with the headers from context
+    When the metasfresh REST-API endpoint path 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' receives a 'POST' request with the headers from context, expecting status='200'
 
     Then there are added records in API_Request_Audit
       | OPT.AD_PInstance_ID | Method | Path                                                                          | AD_User.Name | Status      |
@@ -32,6 +32,6 @@ Feature: API Audit
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
     And all the API audit data is reset
-    And the following API_Audit_Config record is set
-      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | c_2        | 9980  | null       | null           | Y                       |
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_2        | 9980  | null       | null           | N                     | Y                                | Y                 |
