@@ -14,3 +14,7 @@ INSERT INTO AD_Scheduler_Para (AD_Client_ID,AD_Org_ID,AD_Process_Para_ID,AD_Sche
 UPDATE AD_Scheduler SET CronPattern=NULL, IsActive='N',Updated=TO_TIMESTAMP('2022-05-19 11:03:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550088
 ;
 
+-- 2022-05-19T09:29:51.722Z
+UPDATE AD_Scheduler SET CronPattern=NULL, Frequency=10,Updated=TO_TIMESTAMP('2022-05-19 11:29:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550069
+;
+
