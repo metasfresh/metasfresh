@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,13 +20,14 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
-import de.metas.common.rest_api.v1.JsonPInstanceLog;
+import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
+import de.metas.common.rest_api.v2.JsonPInstanceLog;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -74,10 +75,12 @@ public class LogMessageRouteBuilder extends RouteBuilder
 		final CreatePInstanceLogRequest createPInstanceLogRequest = CreatePInstanceLogRequest.builder()
 				.log(JsonPInstanceLog.builder()
 							 .message(logMessageRequest.getLogMessage())
+							 .tableRecordRef(logMessageRequest.getTableRecordReference())
 							 .build())
 				.build();
 
 		exchange.getIn().setBody(createPInstanceLogRequest);
 		exchange.getIn().setHeader(HEADER_PINSTANCE_ID, logMessageRequest.getPInstanceId().getValue());
+		exchange.getIn().setHeader(ExternalSystemConstants.HEADER_PINSTANCE_ID, logMessageRequest.getPInstanceId().getValue());
 	}
 }

@@ -281,4 +281,20 @@ public class REST_API_StepDef
 
 		testContext.setHttpHeaders(additionalHeaders);
 	}
+
+	@And("following http headers are set on context")
+	public void add_http_headers(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> customHeaders = new HashMap<>();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String headerName = DataTableUtil.extractStringForColumnName(row, "Name");
+			final String headerValue = DataTableUtil.extractStringForColumnName(row, "Value");
+
+			customHeaders.put(headerName, headerValue);
+		}
+
+		testContext.setHttpHeaders(customHeaders);
+	}
 }

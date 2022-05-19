@@ -46,6 +46,7 @@ import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
@@ -71,6 +72,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -100,6 +102,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Service
 public class ApiAuditService
 {
+	private static final Logger logger = LogManager.getLogger(ApiAuditService.class);
+
 	/**
 	 * This header is used in a http-request to indicate that this request is a repeat and there is already an {@code API_Request_Audit} record in metasfresh.
 	 */
@@ -518,6 +522,7 @@ public class ApiAuditService
 					.time(Instant.now())
 					.httpHeaders(requestHeaders.toJson(objectMapper))
 					.requestURI(apiRequest.getRequestURI())
+					.pInstanceId(extractPInstanceId(requestHeadersMultiValueMap))
 					.build();
 
 			return apiRequestAuditRepository.save(apiRequestAudit);
@@ -695,6 +700,26 @@ public class ApiAuditService
 					.setParameter("ApiResponse", apiResponse);
 
 			Loggables.addLog("Error when trying to parse the api response body!", exception);
+		}
+	}
+
+	@Nullable
+	private static PInstanceId extractPInstanceId(@NonNull final LinkedMultiValueMap<String, String> requestHeadersMultiValueMap)
+	{
+		try
+		{
+			return Optional.ofNullable(requestHeadersMultiValueMap.get(HEADER_PINSTANCE_ID))
+					.filter(pInstanceIdList -> !pInstanceIdList.isEmpty())
+					.map(pInstanceIdList -> pInstanceIdList.get(0))
+					.filter(Check::isNotBlank)
+					.map(Integer::parseInt)
+					.map(PInstanceId::ofRepoId)
+					.orElse(null);
+		}
+		catch (final Exception exception)
+		{
+			logger.error("Exception encountered while trying to read 'x-adpinstanceid' header!", exception);
+			return null;
 		}
 	}
 
