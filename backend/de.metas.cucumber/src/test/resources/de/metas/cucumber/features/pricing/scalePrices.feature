@@ -39,11 +39,6 @@ Feature: scale prices
       | ol_1       | o_1                   | salesProduct_180520225  | 8          |
       | ol_2       | o_1                   | salesProduct_180520225  | 15         |
       | ol_3       | o_1                   | salesProduct_180520225  | 150        |
-    When update prices for order line
-      | C_OrderLine_ID.Identifier |
-      | ol_1                      |
-      | ol_2                      |
-      | ol_3                      |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -69,11 +64,7 @@ Feature: scale prices
       | ol_1       | o_1                   | salesProduct_180520225  | 8          |
       | ol_2       | o_1                   | salesProduct_180520225  | 15         |
       | ol_3       | o_1                   | salesProduct_180520225  | 150        |
-    When update prices for order line
-      | C_OrderLine_ID.Identifier |
-      | ol_1                      |
-      | ol_2                      |
-      | ol_3                      |
+
     Then validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 8          | 0            | 0           | 6     | 0        | EUR          | false     |
@@ -94,11 +85,7 @@ Feature: scale prices
       | ol_1       | o_1                   | salesProduct_180520225  | 8          |
       | ol_2       | o_1                   | salesProduct_180520225  | 15         |
       | ol_3       | o_1                   | salesProduct_180520225  | 150        |
-    When update prices for order line
-      | C_OrderLine_ID.Identifier |
-      | ol_1                      |
-      | ol_2                      |
-      | ol_3                      |
+
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 8          | 0            | 0           | 5     | 0        | EUR          | false     |
