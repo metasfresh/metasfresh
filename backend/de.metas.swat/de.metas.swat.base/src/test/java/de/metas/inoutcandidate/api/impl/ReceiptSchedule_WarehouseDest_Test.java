@@ -13,13 +13,16 @@ import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFi
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.impl.SysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -51,6 +54,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
 
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		final SysConfigBL sysConfigBL = new SysConfigBL();
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 	}
 
 	/**
