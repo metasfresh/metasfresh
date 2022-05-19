@@ -112,6 +112,7 @@ public class CalloutInOut extends CalloutEngine
 		inout.setC_Incoterms_ID(order.getC_Incoterms_ID());
 		inout.setIncotermLocation(order.getIncotermLocation());
 		inout.setEMail(order.getEMail());
+		inout.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 		// Warehouse (05251 begin: we need to use the advisor)
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
