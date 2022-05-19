@@ -272,4 +272,19 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
 	}
+
+	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1)
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
+	}
 }
