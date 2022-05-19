@@ -355,6 +355,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Description
 		icRecord.setDescription(inOut.getDescription());
 
+		// task 13022 : set inout's project
+		if(inOut.getC_Project_ID() > 0)
+		{
+			icRecord.setC_Project_ID(inOut.getC_Project_ID());
+		}
+		else if(inOut.getC_Order_ID() > 0
+				&& inOut.getC_Order().getC_Project_ID() > 0)
+		{
+			final I_C_Order order = inOut.getC_Order();
+			icRecord.setC_Project_ID(order.getC_Project_ID());
+		}
+
 		//
 		// Set invoice rule form linked order (if exists)
 		if (inOut.getC_Order_ID() > 0)
