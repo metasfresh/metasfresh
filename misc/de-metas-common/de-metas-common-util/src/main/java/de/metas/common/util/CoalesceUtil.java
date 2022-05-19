@@ -26,6 +26,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -166,6 +167,28 @@ public class CoalesceUtil
 			}
 		}
 		return 0;
+	}
+
+	/**
+	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
+	 *
+	 * @return first greater than zero value or zero
+	 */
+	@NonNull
+	public BigDecimal firstGreaterThanZero(@Nullable final BigDecimal... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final BigDecimal value : values)
+		{
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
 	}
 
 	@SafeVarargs
