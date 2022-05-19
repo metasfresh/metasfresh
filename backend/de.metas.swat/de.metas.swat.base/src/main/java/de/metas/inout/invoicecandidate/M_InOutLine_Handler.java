@@ -44,7 +44,9 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
@@ -126,6 +128,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
@@ -608,7 +611,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 			icRecord.setDateOrdered(order.getDateOrdered());
-			if (Check.isBlank(icRecord.getEMail()))
+
+			final boolean propagateToCInvoice = orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
+			if (Check.isBlank(icRecord.getEMail()) && propagateToCInvoice)
 			{
 				icRecord.setEMail(order.getEMail());
 			}
