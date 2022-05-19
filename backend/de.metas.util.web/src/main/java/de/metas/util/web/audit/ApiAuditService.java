@@ -522,7 +522,7 @@ public class ApiAuditService
 					.time(Instant.now())
 					.httpHeaders(requestHeaders.toJson(objectMapper))
 					.requestURI(apiRequest.getRequestURI())
-					.pInstanceId(extractPInstanceId(requestHeadersMultiValueMap))
+					.pInstanceId(extractPInstanceId(requestHeaders))
 					.build();
 
 			return apiRequestAuditRepository.save(apiRequestAudit);
@@ -704,13 +704,11 @@ public class ApiAuditService
 	}
 
 	@Nullable
-	private static PInstanceId extractPInstanceId(@NonNull final LinkedMultiValueMap<String, String> requestHeadersMultiValueMap)
+	private static PInstanceId extractPInstanceId(@NonNull final HttpHeadersWrapper requestHeaders)
 	{
 		try
 		{
-			return Optional.ofNullable(requestHeadersMultiValueMap.get(HEADER_PINSTANCE_ID))
-					.filter(pInstanceIdList -> !pInstanceIdList.isEmpty())
-					.map(pInstanceIdList -> pInstanceIdList.get(0))
+			return Optional.ofNullable(requestHeaders.getHeaderSingleValue(HEADER_PINSTANCE_ID))
 					.filter(Check::isNotBlank)
 					.map(Integer::parseInt)
 					.map(PInstanceId::ofRepoId)

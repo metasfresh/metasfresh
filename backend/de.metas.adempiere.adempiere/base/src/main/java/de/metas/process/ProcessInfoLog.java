@@ -16,12 +16,11 @@
  *****************************************************************************/
 package de.metas.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import javax.annotation.Nullable;
-import de.metas.common.util.time.SystemTime;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
