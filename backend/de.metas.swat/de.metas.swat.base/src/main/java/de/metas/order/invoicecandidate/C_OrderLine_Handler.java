@@ -177,9 +177,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setBPartnerData(icRecord, orderLine);
 		setGroupCompensationData(icRecord, orderLine);
 
-		// task 13022 : set order's project
-		icRecord.setC_Project_ID(order.getC_Project_ID());
-
 		//
 		// Invoice Rule(s)
 		icRecord.setInvoiceRule(order.getInvoiceRule());
@@ -204,6 +201,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// Dimension
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
+
+		// task 13022 : set order's project if no dimension is already set one
+		if(icRecord.getC_Project_ID() <= 0)
+		{
+			icRecord.setC_Project_ID(order.getC_Project_ID());
+		}
 
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
