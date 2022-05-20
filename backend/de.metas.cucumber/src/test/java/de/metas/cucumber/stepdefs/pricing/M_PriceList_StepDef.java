@@ -336,6 +336,8 @@ public class M_PriceList_StepDef
 
 		final String invoiceableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
 
+		final String useScalePrice = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_UseScalePrice);
+
 		final I_M_ProductPrice productPrice = existingProductPrice == null ? InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class) : existingProductPrice;
 
 		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
@@ -344,6 +346,10 @@ public class M_PriceList_StepDef
 		productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
 		productPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
+
+		if (useScalePrice != null) {
+			productPrice.setUseScalePrice(useScalePrice);
+		}
 
 		if (Check.isNotBlank(invoiceableQtyBasedOn))
 		{
