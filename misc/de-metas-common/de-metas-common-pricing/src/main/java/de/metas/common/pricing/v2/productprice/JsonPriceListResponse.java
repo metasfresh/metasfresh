@@ -22,33 +22,52 @@
 
 package de.metas.common.pricing.v2.productprice;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonSOTrx;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
-import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonResponsePrice.JsonResponsePriceBuilder.class)
-public class JsonResponsePrice
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = JsonPriceListResponse.JsonPriceListResponseBuilder.class)
+public class JsonPriceListResponse
 {
 	@NonNull
-	@JsonProperty("productId")
-	JsonMetasfreshId productId;
+	@JsonProperty("metasfreshId")
+	JsonMetasfreshId metasfreshId;
 
 	@NonNull
-	@JsonProperty("productCode")
-	String productCode;
+	@JsonProperty("name")
+	String name;
 
 	@NonNull
-	@JsonProperty("price")
-	BigDecimal price;
+	@JsonProperty("pricePrecision")
+	Integer pricePrecision;
 
 	@NonNull
-	@JsonProperty("taxCategoryId")
-	JsonMetasfreshId taxCategoryId;
+	@JsonProperty("isSOTrx")
+	JsonSOTrx isSOTrx;
+
+	@NonNull
+	@JsonProperty("currencyCode")
+	String currencyCode;
+
+	@Nullable
+	@JsonProperty("countryCode")
+	String countryCode;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonProperty("priceListVersions")
+	@Singular
+	List<JsonPriceListVersionResponse> priceListVersions;
 }

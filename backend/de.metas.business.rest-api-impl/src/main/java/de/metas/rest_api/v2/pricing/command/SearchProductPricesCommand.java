@@ -27,11 +27,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.pricing.v2.productprice.JsonPriceListResponse;
+import de.metas.common.pricing.v2.productprice.JsonPriceListVersionResponse;
 import de.metas.common.pricing.v2.productprice.JsonResponsePrice;
-import de.metas.common.pricing.v2.productprice.JsonResponsePriceList;
+import de.metas.common.pricing.v2.productprice.JsonResponseProductPriceQuery;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonSOTrx;
-import de.metas.currency.CurrencyCode;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -41,7 +42,6 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.ProductId;
@@ -56,12 +56,13 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -104,14 +105,14 @@ public class SearchProductPricesCommand
 
 	public static class SearchProductPricesCommandBuilder
 	{
-		public JsonResponsePriceList execute()
+		public JsonResponseProductPriceQuery execute()
 		{
 			return build().execute();
 		}
 	}
 
 	@NonNull
-	public JsonResponsePriceList execute()
+	public JsonResponseProductPriceQuery execute()
 	{
 		final ProductId productId = getProductId();
 
@@ -119,14 +120,14 @@ public class SearchProductPricesCommand
 
 		if (assignedBPPricingSystemIds.isEmpty())
 		{
-			return JsonResponsePriceList.builder().prices(ImmutableList.of()).build();
+			return JsonResponseProductPriceQuery.builder().priceList(ImmutableList.of()).build();
 		}
 
 		final String productValue = bpartnerPriceListServicesFacade.getProductValue(productId);
 
 		final ZonedDateTime priceDate = getTargetDateAndTime();
 
-		final ImmutableList.Builder<JsonResponsePrice> jsonResponsePriceCollector = ImmutableList.builder();
+		final ImmutableList.Builder<JsonPriceListResponse> jsonResponsePriceListCollector = ImmutableList.builder();
 
 		for (final PricingSystemId pricingSystemId : assignedBPPricingSystemIds)
 		{
@@ -134,24 +135,38 @@ public class SearchProductPricesCommand
 
 			for (final I_M_PriceList priceList : priceListsCollection.getPriceList())
 			{
-				final CurrencyCode priceListCurrencyCode = bpartnerPriceListServicesFacade.getCurrencyCodeById(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+				final I_M_PriceList_Version priceListVersion = bpartnerPriceListServicesFacade.getPriceListVersionOrNull(PriceListId.ofRepoId(priceList.getM_PriceList_ID()), priceDate, null);
 
-				streamPrices(productId, PriceListId.ofRepoId(priceList.getM_PriceList_ID()), priceDate)
-						.map(productPrice -> JsonResponsePrice.builder()
-								.productId(JsonMetasfreshId.of(productId.getRepoId()))
-								.productCode(productValue)
-								.taxCategoryId(JsonMetasfreshId.of(productPrice.getC_TaxCategory_ID()))
-								.currencyCode(priceListCurrencyCode.toThreeLetterCode())
-								.countryCode(getCountryCode(priceList))
-								.price(productPrice.getPriceStd())
-								.isSOTrx(JsonSOTrx.ofBoolean(priceList.isSOPriceList()))
-								.build())
-						.forEach(jsonResponsePriceCollector::add);
+				if (priceListVersion == null)
+				{
+					continue;
+				}
+
+				final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
+
+				final JsonPriceListVersionResponse jsonResponsePriceListVersion = JsonPriceListVersionResponse.builder()
+						.metasfreshId(JsonMetasfreshId.of(priceListVersionId.getRepoId()))
+						.name(priceListVersion.getName())
+						.validFrom(priceListVersion.getValidFrom().toInstant())
+						.jsonResponsePrices(getJsonResponsePrices(productId, productValue, priceListVersionId))
+						.build();
+
+				final JsonPriceListResponse priceListResponse = JsonPriceListResponse.builder()
+						.metasfreshId(JsonMetasfreshId.of(priceList.getM_PriceList_ID()))
+						.name(priceList.getName())
+						.pricePrecision(priceList.getPricePrecision())
+						.countryCode(getCountryCode(priceList))
+						.currencyCode(getCurrencyCode(priceList))
+						.isSOTrx(JsonSOTrx.ofBoolean(priceList.isSOPriceList()))
+						.priceListVersions(ImmutableList.of(jsonResponsePriceListVersion))
+						.build();
+
+				jsonResponsePriceListCollector.add(priceListResponse);
 			}
 		}
 
-		return JsonResponsePriceList.builder()
-				.prices(jsonResponsePriceCollector.build())
+		return JsonResponseProductPriceQuery.builder()
+				.priceList(jsonResponsePriceListCollector.build())
 				.build();
 	}
 
@@ -203,22 +218,27 @@ public class SearchProductPricesCommand
 	}
 
 	@NonNull
-	private Stream<I_M_ProductPrice> streamPrices(
+	private List<JsonResponsePrice> getJsonResponsePrices(
 			@NonNull final ProductId productId,
-			@NonNull final PriceListId priceListId,
-			@NonNull final ZonedDateTime priceDate)
+			@NonNull final String productValue,
+			@NonNull final PriceListVersionId priceListVersionId)
 	{
-		final PriceListVersionId priceListVersionId;
-		try
-		{
-			priceListVersionId = bpartnerPriceListServicesFacade.getPriceListVersionId(priceListId, priceDate);
-		}
-		catch (final PriceListVersionNotFoundException exception)
-		{
-			return Stream.empty();
-		}
-
 		return bpartnerPriceListServicesFacade.getProductPricesByPLVAndProduct(priceListVersionId, productId)
-				.stream();
+				.stream()
+				.map(productPrice -> JsonResponsePrice.builder()
+						.productId(JsonMetasfreshId.of(productId.getRepoId()))
+						.productCode(productValue)
+						.taxCategoryId(JsonMetasfreshId.of(productPrice.getC_TaxCategory_ID()))
+						.price(productPrice.getPriceStd())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private String getCurrencyCode(@NonNull final I_M_PriceList priceList)
+	{
+		return bpartnerPriceListServicesFacade
+				.getCurrencyCodeById(CurrencyId.ofRepoId(priceList.getC_Currency_ID()))
+				.toThreeLetterCode();
 	}
 }

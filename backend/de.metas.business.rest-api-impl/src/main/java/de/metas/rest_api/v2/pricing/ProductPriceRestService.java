@@ -27,10 +27,10 @@ import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceSearch;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
-import de.metas.common.pricing.v2.productprice.JsonResponsePriceList;
+import de.metas.common.pricing.v2.productprice.JsonResponseProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
@@ -124,7 +124,7 @@ public class ProductPriceRestService
 	}
 
 	@NonNull
-	public JsonResponsePriceList productPriceSearch(@NonNull final JsonRequestProductPriceSearch request, @Nullable final String orgCode)
+	public JsonResponseProductPriceQuery productPriceSearch(@NonNull final JsonRequestProductPriceQuery request, @Nullable final String orgCode)
 	{
 		return SearchProductPricesCommand.builder()
 				.productRestService(productRestService)

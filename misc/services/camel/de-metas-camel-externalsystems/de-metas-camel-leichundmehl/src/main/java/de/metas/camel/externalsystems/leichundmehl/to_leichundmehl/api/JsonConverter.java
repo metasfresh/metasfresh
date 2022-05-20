@@ -22,12 +22,17 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonBPartner;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonBPartnerProduct;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPPOrder;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPrice;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPriceList;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPriceListVersion;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
+import de.metas.common.pricing.v2.productprice.JsonPriceListResponse;
+import de.metas.common.pricing.v2.productprice.JsonPriceListVersionResponse;
 import de.metas.common.pricing.v2.productprice.JsonResponsePrice;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
@@ -45,12 +50,9 @@ public class JsonConverter
 	{
 		return JsonPrice.builder()
 				.price(json.getPrice())
-				.currencyCode(json.getCurrencyCode())
-				.isSOTrx(json.getIsSOTrx())
 				.productCode(json.getProductCode())
 				.productId(json.getProductId().getValue())
 				.taxCategoryId(json.getTaxCategoryId().getValue())
-				.countryCode(json.getCountryCode())
 				.build();
 	}
 
@@ -138,6 +140,37 @@ public class JsonConverter
 				.productDescription(json.getProductDescription())
 				.leadTimeInDays(json.getLeadTimeInDays())
 				.vendor(json.isVendor())
+				.build();
+	}
+
+	@NonNull
+	public JsonPriceListVersion mapToJsonPriceListVersion(@NonNull final JsonPriceListVersionResponse jsonResponsePriceListVersion)
+	{
+		return JsonPriceListVersion.builder()
+				.id(jsonResponsePriceListVersion.getMetasfreshId().getValue())
+				.name(jsonResponsePriceListVersion.getName())
+				.validFrom(jsonResponsePriceListVersion.getValidFrom())
+				.prices(jsonResponsePriceListVersion.getJsonResponsePrices()
+								.stream()
+								.map(JsonConverter::mapToJsonPrice)
+								.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	@NonNull
+	public JsonPriceList mapToJsonPriceList(@NonNull final JsonPriceListResponse jsonResponsePriceList)
+	{
+		return JsonPriceList.builder()
+				.id(jsonResponsePriceList.getMetasfreshId().getValue())
+				.name(jsonResponsePriceList.getName())
+				.pricePrecision(jsonResponsePriceList.getPricePrecision())
+				.currencyCode(jsonResponsePriceList.getCurrencyCode())
+				.countryCode(jsonResponsePriceList.getCountryCode())
+				.isSOTrx(jsonResponsePriceList.getIsSOTrx())
+				.priceListVersions(jsonResponsePriceList.getPriceListVersions()
+										   .stream()
+										   .map(JsonConverter::mapToJsonPriceListVersion)
+										   .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 }

@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
@@ -32,15 +31,15 @@ import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.JsonConverter;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonBPartner;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPPOrder;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPrice;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonPriceList;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp.DispatchMessageRequest;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceSearch;
-import de.metas.common.pricing.v2.productprice.JsonResponsePriceList;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
+import de.metas.common.pricing.v2.productprice.JsonResponseProductPriceQuery;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
@@ -95,10 +94,10 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseComposite.class))
 						.process(this::processJsonResponseComposite)
 
-						.process(this::attachJsonRequestProductPriceSearch)
+						.process(this::attachJsonRequestProductPriceQuery)
 						.to(direct(MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID))
-						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponsePriceList.class))
-						.process(this::processJsonResponsePriceListResponse)
+						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseProductPriceQuery.class))
+						.process(this::processJsonResponseProductPriceQuery)
 
 					.otherwise()
 						.log("No BPartnerId present on PPOrder!")
@@ -196,7 +195,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		context.setJsonBPartner(jsonBPartner);
 	}
 
-	private void attachJsonRequestProductPriceSearch(@NonNull final Exchange exchange)
+	private void attachJsonRequestProductPriceQuery(@NonNull final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
 																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
@@ -207,30 +206,30 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		final String productIdentifier = String.valueOf(responseManufacturingOrder.getProductId().getValue());
 		final String bpartnerIdentifier = String.valueOf(context.getBPartnerIdNonNull().getValue());
 
-		final JsonRequestProductPriceSearch requestProductPriceSearch = JsonRequestProductPriceSearch.builder()
+		final JsonRequestProductPriceQuery requestProductPriceQuery = JsonRequestProductPriceQuery.builder()
 				.productIdentifier(productIdentifier)
 				.bpartnerIdentifier(bpartnerIdentifier)
 				.targetDate(responseManufacturingOrder.getDatePromised().toLocalDate())
 				.build();
 
 		exchange.getIn().setHeader(HEADER_ORG_CODE, context.getJsonExternalSystemRequest().getOrgCode());
-		exchange.getIn().setBody(requestProductPriceSearch, JsonRequestProductPriceSearch.class);
+		exchange.getIn().setBody(requestProductPriceQuery, JsonRequestProductPriceQuery.class);
 	}
 
-	private void processJsonResponsePriceListResponse(@NonNull final Exchange exchange)
+	private void processJsonResponseProductPriceQuery(@NonNull final Exchange exchange)
 	{
-		final JsonResponsePriceList response = exchange.getIn().getBody(JsonResponsePriceList.class);
+		final JsonResponseProductPriceQuery response = exchange.getIn().getBody(JsonResponseProductPriceQuery.class);
 
-		final ImmutableList<JsonPrice> productPrices = response.getPrices()
+		final ImmutableList<JsonPriceList> priceLists = response.getPriceList()
 				.stream()
-				.map(JsonConverter::mapToJsonPrice)
+				.map(JsonConverter::mapToJsonPriceList)
 				.collect(ImmutableList.toImmutableList());
 
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
 																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
 																						  ExportPPOrderRouteContext.class);
 
-		context.getProductInfoBuilderNonNull().prices(productPrices);
+		context.getProductInfoBuilderNonNull().priceList(priceLists);
 	}
 
 	private void buildDispatchMessageRequest(@NonNull final Exchange exchange)

@@ -112,6 +112,6 @@ public class JsonProductInfo
 
 	@Nullable
 	@With
-	@JsonProperty("prices")
-	List<JsonPrice> prices;
+	@JsonProperty("priceList")
+	List<JsonPriceList> priceList;
 }

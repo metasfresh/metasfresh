@@ -36,7 +36,7 @@ import java.time.LocalDate;
 
 @Value
 @ApiModel
-public class JsonRequestProductPriceSearch
+public class JsonRequestProductPriceQuery
 {
 	@ApiModelProperty(position = 10,
 			dataType = "java.lang.String",
@@ -57,7 +57,7 @@ public class JsonRequestProductPriceSearch
 
 	@JsonCreator
 	@Builder
-	public JsonRequestProductPriceSearch(
+	public JsonRequestProductPriceQuery(
 			@NonNull @JsonProperty("bpartnerIdentifier") final String bpartnerIdentifier,
 			@NonNull @JsonProperty("productIdentifier") final String productIdentifier,
 			@NonNull @JsonProperty("targetDate") final LocalDate targetDate)

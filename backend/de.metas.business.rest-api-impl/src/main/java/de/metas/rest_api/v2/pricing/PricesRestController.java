@@ -24,9 +24,9 @@ package de.metas.rest_api.v2.pricing;
 
 import de.metas.Profiles;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceSearch;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
-import de.metas.common.pricing.v2.productprice.JsonResponsePriceList;
+import de.metas.common.pricing.v2.productprice.JsonResponseProductPriceQuery;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -128,11 +128,11 @@ public class PricesRestController
 	@PostMapping("{orgCode}/product/search")
 	public ResponseEntity<?> productPriceSearch(
 			@PathVariable("orgCode") @Nullable final String orgCode,
-			@RequestBody @NonNull final JsonRequestProductPriceSearch request)
+			@RequestBody @NonNull final JsonRequestProductPriceQuery request)
 	{
 		try
 		{
-			final JsonResponsePriceList result = productPriceRestService.productPriceSearch(request, orgCode);
+			final JsonResponseProductPriceQuery result = productPriceRestService.productPriceSearch(request, orgCode);
 
 			return ResponseEntity.ok(result);
 		}

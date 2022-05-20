@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-pricing
+ * de-metas-camel-leichundmehl
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,35 +20,35 @@
  * #L%
  */
 
-package de.metas.common.pricing.v2.productprice;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 
-@Value
 @Builder
-@JsonDeserialize(builder = JsonResponsePrice.JsonResponsePriceBuilder.class)
-public class JsonResponsePrice
+@Value
+@JsonDeserialize(builder = JsonPriceListVersion.JsonPriceListVersionBuilder.class)
+public class JsonPriceListVersion
 {
 	@NonNull
-	@JsonProperty("productId")
-	JsonMetasfreshId productId;
+	@JsonProperty("metasfreshId")
+	Integer id;
 
 	@NonNull
-	@JsonProperty("productCode")
-	String productCode;
+	@JsonProperty("name")
+	String name;
 
 	@NonNull
-	@JsonProperty("price")
-	BigDecimal price;
+	@JsonProperty("validFrom")
+	Instant validFrom;
 
 	@NonNull
-	@JsonProperty("taxCategoryId")
-	JsonMetasfreshId taxCategoryId;
+	@JsonProperty("prices")
+	List<JsonPrice> prices;
 }

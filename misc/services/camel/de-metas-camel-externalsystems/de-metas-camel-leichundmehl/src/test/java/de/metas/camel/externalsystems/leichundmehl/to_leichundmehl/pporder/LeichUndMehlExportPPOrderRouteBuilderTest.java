@@ -32,7 +32,7 @@ import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp.DispatchM
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp.FTPCredentials;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceSearch;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -59,7 +59,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	private static final String MOCK_RETRIEVE_PP_ORDER_ENDPOINT = "mock:RetrievePPOrderEndpoint";
 	private static final String MOCK_RETRIEVE_PRODUCT_INFO_ENDPOINT = "mock:RetrieveProductInfoEndpoint";
 	private static final String MOCK_RETRIEVE_BPARTNER_ENDPOINT = "mock:RetrieveBPartnerEndpoint";
-	private static final String MOCK_SEARCH_PRODUCT_PRICES_ENDPOINT = "mock:SearchProductPricesEndpoint";
+	private static final String MOCK_QUERY_PRODUCT_PRICES_ENDPOINT = "mock:QueryProductPricesEndpoint";
 	private static final String MOCK_FTP_ENDPOINT = "mock:FTPEndpoint";
 
 	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "0_JsonExternalSystemRequest.json";
@@ -68,8 +68,8 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	private static final String JSON_PRODUCT_RESPONSE = "20_JsonProduct.json";
 	private static final String JSON_RETRIEVE_BPARTNER_CAMEL_REQUEST = "30_BPRetrieveCamelRequest.json";
 	private static final String JSON_COMPOSITE_RESPONSE = "30_JsonResponseComposite.json";
-	private static final String JSON_SEARCH_PRODUCT_PRICES_REQUEST = "40_JsonRequestProductPriceSearch.json";
-	private static final String JSON_PRICE_LIST_RESPONSE = "40_JsonResponsePriceList.json";
+	private static final String JSON_QUERY_PRODUCT_PRICES_REQUEST = "40_JsonRequestProductPriceQuery.json";
+	private static final String JSON_QUERY_PRODUCT_PRICES_RESPONSE = "40_JsonResponseProductPriceQuery.json";
 	private static final String JSON_DISPATCH_MESSAGE_REQUEST = "50_DispatchMessageRequest_Payload.json";
 
 	private static final Integer ppOrderMetasfreshId = 11111;
@@ -128,10 +128,10 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		final MockEndpoint retrieveBPartnerMockEndpoint = getMockEndpoint(MOCK_RETRIEVE_BPARTNER_ENDPOINT);
 		retrieveBPartnerMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedBPRetrieveCamelRequestIS, BPRetrieveCamelRequest.class));
 
-		// validate the JsonRequestProductPriceSearch
-		final InputStream expectedSearchProductPricesRequestIS = this.getClass().getResourceAsStream(JSON_SEARCH_PRODUCT_PRICES_REQUEST);
-		final MockEndpoint searchProductPricesMockEndpoint = getMockEndpoint(MOCK_SEARCH_PRODUCT_PRICES_ENDPOINT);
-		searchProductPricesMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedSearchProductPricesRequestIS, JsonRequestProductPriceSearch.class));
+		// validate the JsonRequestProductPriceQuery
+		final InputStream expectedQueryProductPricesRequestIS = this.getClass().getResourceAsStream(JSON_QUERY_PRODUCT_PRICES_REQUEST);
+		final MockEndpoint queryProductPricesMockEndpoint = getMockEndpoint(MOCK_QUERY_PRODUCT_PRICES_ENDPOINT);
+		queryProductPricesMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedQueryProductPricesRequestIS, JsonRequestProductPriceQuery.class));
 
 		//input request
 		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_EXTERNAL_SYSTEM_REQUEST);
@@ -175,7 +175,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 
 								  advice.interceptSendToEndpoint("direct:" + MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID)
 										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_SEARCH_PRODUCT_PRICES_ENDPOINT)
+										  .to(MOCK_QUERY_PRODUCT_PRICES_ENDPOINT)
 										  .process(mockSearchProductPricesProcessor);
 
 								  advice.interceptSendToEndpoint("direct:" + SEND_TO_FTP_ROUTE_ID)
@@ -232,7 +232,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		public void process(final Exchange exchange)
 		{
 			called++;
-			final InputStream expectedJsonResponsePriceListIS = this.getClass().getResourceAsStream(JSON_PRICE_LIST_RESPONSE);
+			final InputStream expectedJsonResponsePriceListIS = this.getClass().getResourceAsStream(JSON_QUERY_PRODUCT_PRICES_RESPONSE);
 			exchange.getIn().setBody(expectedJsonResponsePriceListIS);
 		}
 	}

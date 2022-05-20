@@ -25,12 +25,10 @@ package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.v2.JsonSOTrx;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -52,18 +50,6 @@ public class JsonPrice
 	BigDecimal price;
 
 	@NonNull
-	@JsonProperty("currencyCode")
-	String currencyCode;
-
-	@NonNull
 	@JsonProperty("taxCategoryId")
 	Integer taxCategoryId;
-
-	@NonNull
-	@JsonProperty("isSOTrx")
-	JsonSOTrx isSOTrx;
-
-	@Nullable
-	@JsonProperty("countryCode")
-	String countryCode;
 }

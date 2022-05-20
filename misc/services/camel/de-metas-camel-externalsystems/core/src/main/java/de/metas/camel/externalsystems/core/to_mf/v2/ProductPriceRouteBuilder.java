@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.common.v2.ProductPriceUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceSearch;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceQuery;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import lombok.NonNull;
@@ -87,7 +87,7 @@ public class ProductPriceRouteBuilder extends RouteBuilder
 				.routeId(MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID)
 				.streamCaching()
 				.process(this::validateJsonRequestProductPriceSearch)
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductPriceSearch.class))
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductPriceQuery.class))
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
@@ -131,13 +131,13 @@ public class ProductPriceRouteBuilder extends RouteBuilder
 	private void validateJsonRequestProductPriceSearch(@NonNull final Exchange exchange)
 	{
 		final var lookupRequest = exchange.getIn().getBody();
-		if (!(lookupRequest instanceof JsonRequestProductPriceSearch))
+		if (!(lookupRequest instanceof JsonRequestProductPriceQuery))
 		{
 			throw new RuntimeCamelException("The route " + MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_ROUTE_ID + " requires the body to be instanceof JsonRequestProductPriceSearch."
 													+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 		}
 
-		final JsonRequestProductPriceSearch request = ((JsonRequestProductPriceSearch)lookupRequest);
+		final JsonRequestProductPriceQuery request = ((JsonRequestProductPriceQuery)lookupRequest);
 
 		exchange.getIn().setBody(request);
 	}

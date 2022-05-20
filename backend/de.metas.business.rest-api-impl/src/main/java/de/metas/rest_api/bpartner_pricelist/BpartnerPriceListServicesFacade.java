@@ -25,6 +25,7 @@ import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
@@ -91,6 +92,11 @@ public class BpartnerPriceListServicesFacade
 	public PriceListVersionId getPriceListVersionId(final PriceListId priceListId, final ZonedDateTime date)
 	{
 		return priceListsRepo.retrievePriceListVersionId(priceListId, date);
+	}
+
+	public I_M_PriceList_Version getPriceListVersionOrNull(final PriceListId priceListId, final ZonedDateTime date, final Boolean processedPLVFiltering)
+	{
+		return priceListsRepo.retrievePriceListVersionOrNull(priceListId, date, processedPLVFiltering);
 	}
 
 	public ImmutableList<I_M_ProductPrice> getProductPrices(PriceListVersionId priceListVersionId)

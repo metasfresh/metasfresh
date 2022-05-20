@@ -24,31 +24,18 @@ package de.metas.common.pricing.v2.productprice;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
+import java.util.List;
 
+@Builder(toBuilder = true)
 @Value
-@Builder
-@JsonDeserialize(builder = JsonResponsePrice.JsonResponsePriceBuilder.class)
-public class JsonResponsePrice
+@JsonDeserialize(builder = JsonResponseProductPriceQuery.JsonResponseProductPriceQueryBuilder.class)
+public class JsonResponseProductPriceQuery
 {
 	@NonNull
-	@JsonProperty("productId")
-	JsonMetasfreshId productId;
-
-	@NonNull
-	@JsonProperty("productCode")
-	String productCode;
-
-	@NonNull
-	@JsonProperty("price")
-	BigDecimal price;
-
-	@NonNull
-	@JsonProperty("taxCategoryId")
-	JsonMetasfreshId taxCategoryId;
+	@JsonProperty("priceList")
+	List<JsonPriceListResponse> priceList;
 }

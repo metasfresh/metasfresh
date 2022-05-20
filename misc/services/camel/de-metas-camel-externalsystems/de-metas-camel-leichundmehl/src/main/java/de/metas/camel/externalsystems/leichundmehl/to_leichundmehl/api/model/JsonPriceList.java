@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-pricing
+ * de-metas-camel-leichundmehl
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,24 +20,51 @@
  * #L%
  */
 
-package de.metas.common.pricing.v2.productprice;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.v2.JsonSOTrx;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-@Value
 @Builder
-@JsonDeserialize(builder = JsonResponsePriceList.JsonResponsePriceListBuilder.class)
-public class JsonResponsePriceList
+@Value
+@JsonDeserialize(builder = JsonPriceList.JsonPriceListBuilder.class)
+public class JsonPriceList
 {
+	@NonNull
+	@JsonProperty("metasfreshId")
+	Integer id;
+
+	@NonNull
+	@JsonProperty("name")
+	String name;
+
+	@NonNull
+	@JsonProperty("pricePrecision")
+	Integer pricePrecision;
+
+	@NonNull
+	@JsonProperty("currencyCode")
+	String currencyCode;
+
+	@NonNull
+	@JsonProperty("isSOTrx")
+	JsonSOTrx isSOTrx;
+
+	@Nullable
+	@JsonProperty("countryCode")
+	String countryCode;
+
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@JsonProperty("prices")
+	@JsonProperty("priceListVersions")
 	@Singular
-	List<JsonResponsePrice> prices;
+	List<JsonPriceListVersion> priceListVersions;
 }

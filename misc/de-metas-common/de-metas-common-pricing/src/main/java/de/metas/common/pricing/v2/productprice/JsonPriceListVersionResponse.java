@@ -29,26 +29,27 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 
-@Value
 @Builder
-@JsonDeserialize(builder = JsonResponsePrice.JsonResponsePriceBuilder.class)
-public class JsonResponsePrice
+@Value
+@JsonDeserialize(builder = JsonPriceListVersionResponse.JsonPriceListVersionResponseBuilder.class)
+public class JsonPriceListVersionResponse
 {
 	@NonNull
-	@JsonProperty("productId")
-	JsonMetasfreshId productId;
+	@JsonProperty("metasfreshId")
+	JsonMetasfreshId metasfreshId;
 
 	@NonNull
-	@JsonProperty("productCode")
-	String productCode;
+	@JsonProperty("name")
+	String name;
 
 	@NonNull
-	@JsonProperty("price")
-	BigDecimal price;
+	@JsonProperty("validFrom")
+	Instant validFrom;
 
 	@NonNull
-	@JsonProperty("taxCategoryId")
-	JsonMetasfreshId taxCategoryId;
+	@JsonProperty("prices")
+	List<JsonResponsePrice> jsonResponsePrices;
 }
