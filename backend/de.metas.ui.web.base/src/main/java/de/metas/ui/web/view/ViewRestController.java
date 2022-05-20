@@ -237,7 +237,7 @@ public class ViewRestController
 				PerformanceMonitoringService.class,
 				NoopPerformanceMonitoringService.INSTANCE);
 		return service.monitor(
-				() -> filterView0(viewIdStr, viewIdStr, jsonRequest),
+				() -> filterView0(windowIdStr, viewIdStr, jsonRequest),
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("ViewRestController")
@@ -249,7 +249,7 @@ public class ViewRestController
 	}
 
 	private JSONViewResult filterView0( //
-									  @PathVariable(PARAM_WindowId) final String windowIdStr //
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @RequestBody final JSONFilterViewRequest jsonRequest //
 	)
