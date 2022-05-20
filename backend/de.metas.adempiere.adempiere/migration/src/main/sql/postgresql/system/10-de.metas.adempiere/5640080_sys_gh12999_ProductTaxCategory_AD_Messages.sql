@@ -1,5 +1,5 @@
 -- 2022-05-19T17:01:12.900Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545125,0,TO_TIMESTAMP('2022-05-19 20:01:11','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Product tax category cannot be removed as there are products depending on it. See below: {0}','E',TO_TIMESTAMP('2022-05-19 20:01:11','YYYY-MM-DD HH24:MI:SS'),100,'ForbidRemovingProductTaxCategory')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545125,0,TO_TIMESTAMP('2022-05-19 20:01:11','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Product tax category cannot be removed as there are products depending on it. Product search-keys: {0}','E',TO_TIMESTAMP('2022-05-19 20:01:11','YYYY-MM-DD HH24:MI:SS'),100,'ForbidRemovingProductTaxCategory')
 ;
 
 -- 2022-05-19T17:01:12.916Z
@@ -19,7 +19,7 @@ UPDATE AD_Message_Trl SET MsgText='Die Produktsteuerkategorie kann nicht entfern
 ;
 
 -- 2022-05-19T17:04:34.466Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545126,0,TO_TIMESTAMP('2022-05-19 20:04:34','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Product tax category cannot be changed as there are products depending on it. See below: {0}','E',TO_TIMESTAMP('2022-05-19 20:04:34','YYYY-MM-DD HH24:MI:SS'),100,'ForbidChangingProductTaxCategory')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545126,0,TO_TIMESTAMP('2022-05-19 20:04:34','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Product tax category cannot be changed as there are products depending on it. Product search-keys: {0}','E',TO_TIMESTAMP('2022-05-19 20:04:34','YYYY-MM-DD HH24:MI:SS'),100,'ForbidChangingProductTaxCategory')
 ;
 
 -- 2022-05-19T17:04:34.469Z
@@ -63,9 +63,9 @@ UPDATE AD_Message SET MsgText='Der ausgewählte Produktpreis hat keine Steuerkat
 ;
 
 -- 2022-05-19T17:53:49.173Z
-UPDATE AD_Message SET MsgText='Die Produktsteuerkategorie kann nicht entfernt werden, da es Produkte gibt, die von ihr abhängen. Siehe unten: {0}',Updated=TO_TIMESTAMP('2022-05-19 20:53:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545125
+UPDATE AD_Message SET MsgText='Die Produktsteuerkategorie kann nicht entfernt werden, da es Produkte gibt, die von ihr abhängen. Produkt-Suchschlüssel: {0}',Updated=TO_TIMESTAMP('2022-05-19 20:53:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545125
 ;
 
 -- 2022-05-19T17:54:08.350Z
-UPDATE AD_Message SET MsgText='Die Produktsteuerkategorie kann nicht geändert werden, da es Produkte gibt, die von ihr abhängen. Siehe unten: {0}',Updated=TO_TIMESTAMP('2022-05-19 20:54:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545126
+UPDATE AD_Message SET MsgText='Die Produktsteuerkategorie kann nicht geändert werden, da es Produkte gibt, die von ihr abhängen. Produkt-Suchschlüssel: {0}',Updated=TO_TIMESTAMP('2022-05-19 20:54:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545126
 ;
