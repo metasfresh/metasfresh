@@ -23,12 +23,15 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -52,6 +55,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +63,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -98,12 +102,13 @@ public class InOutProducer implements IInOutProducer
 	protected final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = receiptScheduleBL.getHeaderAggregationKeyBuilder();
 
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	private static final String DYNATTR_HeaderAggregationKey = InOutProducer.class.getName() + "#HeaderAggregationKey";
-
+	
 	private ITrxItemProcessorContext processorCtx;
 
 	private final InOutGenerateResult result;
@@ -114,6 +119,7 @@ public class InOutProducer implements IInOutProducer
 	@NonNull
 	private final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 
+	@Nullable // can be null between two InOuts
 	private I_M_InOut _currentReceipt = null;
 	private int _currentReceiptLinesCount = 0;
 	private I_M_ReceiptSchedule currentReceiptSchedule = null;
@@ -129,8 +135,6 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * @param result
-	 * @param complete
 	 * @param movementDateRule if {@code ReceiptMovementDateRule#CURRENT_DATE} (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}.
 	 *                         else if {@code ReceiptMovementDateRule#EXTERNAL_DATE_IF_AVAIL} then the MovementDate will be taken from {@code externalInfoByReceiptScheduleId} if available
 	 *                         else if {@code ReceiptMovementDateRule#ORDER_DATE_PROMISED} then the date will be the DatePromised value of the receipt schedule's C_Order.
@@ -144,7 +148,7 @@ public class InOutProducer implements IInOutProducer
 		this.complete = complete;
 		this.movementDateRule = movementDateRule;
 
-		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesce(externalInfoByReceiptScheduleId, ImmutableMap.of());
+		this.externalInfoByReceiptScheduleId = CoalesceUtil.coalesceNotNull(externalInfoByReceiptScheduleId, ImmutableMap.of());
 	}
 
 	@Override
@@ -184,9 +188,13 @@ public class InOutProducer implements IInOutProducer
 			// NOTE: usually the item to process is out of transaction
 			InterfaceWrapperHelper.setTrxName(rs, ITrx.TRXNAME_ThreadInherited);
 
+			final I_M_InOut currentReceipt = getCurrentReceipt();
+
 			final List<? extends I_M_InOutLine> receiptLines = createCurrentReceiptLines();
 			for (final I_M_InOutLine receiptLine : receiptLines)
 			{
+				unsetHeaderProjectIdIfDiverging(currentReceipt, receiptLine, rs);
+
 				receiptScheduleBL.createRsaIfNotExists(rs, receiptLine);
 			}
 
@@ -211,6 +219,24 @@ public class InOutProducer implements IInOutProducer
 		previousReceiptSchedule = rs;
 	}
 
+	private void unsetHeaderProjectIdIfDiverging(
+			final @NonNull I_M_InOut receipt, 
+			final @NonNull I_M_InOutLine receiptLine, 
+			final @NonNull I_M_ReceiptSchedule rs)
+	{
+		if (receiptLine.getC_Project_ID() > 0
+				&& receipt.getC_Project_ID() > 0
+				&& receiptLine.getC_Project_ID() != receipt.getC_Project_ID())
+		{
+			// our lines have diverging project-IDs => need to unset the header's ID
+			Loggables.get().addLog("M_InOut_ID={} has C_Project_ID={}, but M_InOutLine_ID={} (M_ReceiptSchedule_ID={}) has C_Project_ID={}; -> Setting M_InOut.C_Project_ID:=0",
+								   receipt.getM_InOut_ID(), receipt.getC_Project_ID(),
+								   receiptLine.getM_InOutLine_ID(), rs.getM_ReceiptSchedule_ID(), receiptLine.getC_Project_ID());
+			receipt.setC_Project_ID(0);
+			InterfaceWrapperHelper.save(receipt);
+		}
+	}
+
 	@Override
 	public final boolean isSameChunk(final I_M_ReceiptSchedule rs)
 	{
@@ -224,8 +250,6 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 * @param previousReceiptSchedule
-	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
@@ -257,7 +281,7 @@ public class InOutProducer implements IInOutProducer
 		return false;
 	}
 
-	private final void addToCurrentReceiptLines(final List<? extends I_M_InOutLine> lines)
+	private void addToCurrentReceiptLines(final List<? extends I_M_InOutLine> lines)
 	{
 		Check.assumeNotNull(_currentReceipt, "current receipt not null");
 
@@ -269,7 +293,7 @@ public class InOutProducer implements IInOutProducer
 		_currentReceiptLinesCount += lines.size();
 	}
 
-	private final int getCurrentReceiptLinesCount()
+	private int getCurrentReceiptLinesCount()
 	{
 		return _currentReceiptLinesCount;
 	}
@@ -326,8 +350,6 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Sets current receipt on which next lines will be added
-	 *
-	 * @param currentReceipt
 	 */
 	private void setCurrentReceipt(final I_M_InOut currentReceipt)
 	{
@@ -391,7 +413,6 @@ public class InOutProducer implements IInOutProducer
 	/**
 	 * Same as {@link #getCurrentReceipt()} but it will wrapped to given model interface.
 	 *
-	 * @param inoutType
 	 * @return current receipt; never returns null
 	 * @see #getCurrentReceipt()
 	 */
@@ -424,13 +445,14 @@ public class InOutProducer implements IInOutProducer
 		return currentReceiptSchedule;
 	}
 
-	private final I_M_InOut createReceiptHeader(final I_M_ReceiptSchedule rs)
+	private I_M_InOut createReceiptHeader(@NonNull final I_M_ReceiptSchedule rs)
 	{
 		final Properties ctx = processorCtx.getCtx();
 		final String trxName = processorCtx.getTrx().getTrxName();
 
 		final I_M_InOut receiptHeader = InterfaceWrapperHelper.create(ctx, I_M_InOut.class, trxName);
 		receiptHeader.setAD_Org_ID(rs.getAD_Org_ID());
+		receiptHeader.setC_Project_ID(rs.getC_Project_ID()); // going to set this to null later, in case there are lines with different projects
 
 		//
 		// Document Type
@@ -527,8 +549,7 @@ public class InOutProducer implements IInOutProducer
 	protected final I_M_InOutLine newReceiptLine()
 	{
 		final I_M_InOut receipt = getCurrentReceipt();
-		final I_M_InOutLine line = inoutBL.newInOutLine(receipt, I_M_InOutLine.class);
-		return line;
+		return inoutBL.newInOutLine(receipt, I_M_InOutLine.class);
 	}
 
 	/**
@@ -566,7 +587,7 @@ public class InOutProducer implements IInOutProducer
 		final StockQtyAndUOMQty qtyToMove = receiptScheduleBL.getQtyToMove(rs);
 		line.setMovementQty(qtyToMove.getStockQty().toBigDecimal());
 
-		final UomId lineUomId = coalesce(
+		final UomId lineUomId = coalesceNotNull(
 				UomId.ofRepoIdOrNull(rs.getC_UOM_ID()),
 				qtyToMove.getStockQty().getUomId());
 
@@ -628,12 +649,12 @@ public class InOutProducer implements IInOutProducer
 	private Timestamp getExternalMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
 		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
-
 		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
 
 		if (externalInfo != null && externalInfo.getMovementDate() != null)
 		{
-			return TimeUtil.asTimestamp(externalInfo.getMovementDate());
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(receiptSchedule.getAD_Org_ID()));
+			return TimeUtil.asTimestamp(externalInfo.getMovementDate(), timeZone);
 		}
 
 		return Env.getDate(context);
