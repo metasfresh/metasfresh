@@ -18,9 +18,6 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
-import de.metas.impex.InputDataSourceId;
-import de.metas.impex.api.IInputDataSourceDAO;
-import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -30,17 +27,14 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
-import de.metas.order.OrderId;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
-import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
-import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -145,7 +139,6 @@ class OLCandOrderFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
@@ -395,12 +388,11 @@ class OLCandOrderFactory
 
 		final GroupCompensationType groupCompensationType = getGroupCompensationType(productForMainLine);
 		final GroupCompensationAmtType groupCompensationAmtType = getGroupCompensationAmtType(productForMainLine);
+		final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
 
 		if (groupCompensationType.equals(GroupCompensationType.Discount)
 				&& groupCompensationAmtType.equals(GroupCompensationAmtType.Percent))
 		{
-			final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
-
 			Optional.ofNullable(orderLineGroup.getDiscount())
 					.map(Percent::toBigDecimal)
 					.ifPresent(mainOrderLineInGroup::setGroupCompensationPercentage);
@@ -415,7 +407,7 @@ class OLCandOrderFactory
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
 															.orderLineIds(orderLineIds)
 															.newGroupTemplate(createNewGroupTemplate(productId))
-															.groupCompensationOrderBy(getOrderGroupCompensationOrderBy(mainOrderLineInGroup))
+															.groupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy())
 															.build());
 	}
 
@@ -655,29 +647,5 @@ class OLCandOrderFactory
 						.appendParametersToMessage()
 						.setParameter("salesRepFrom", olCand.getAssignSalesRepRule());
 		}
-	}
-
-	@Nullable
-	private GroupCompensationOrderBy getOrderGroupCompensationOrderBy(@NonNull final I_C_OrderLine orderLine)
-	{
-		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
-
-		final de.metas.order.model.I_C_Order order = orderDAO.getById(orderId, de.metas.order.model.I_C_Order.class);
-
-		final InputDataSourceId inputDataSourceId = InputDataSourceId.ofRepoIdOrNull(order.getAD_InputDataSource_ID());
-
-		if (inputDataSourceId == null)
-		{
-			return null;
-		}
-
-		final I_AD_InputDataSource dataSource = inputDataSourceDAO.getById(inputDataSourceId);
-
-		if (OrderCandidate_Constants.INPUT_DATA_SOURCE_INTERNAL_NAME_SHOPWARE.equals(dataSource.getInternalName()))
-		{
-			return GroupCompensationOrderBy.CompensationGroupFirst;
-		}
-
-		return GroupCompensationOrderBy.CompensationGroupLast;
 	}
 }

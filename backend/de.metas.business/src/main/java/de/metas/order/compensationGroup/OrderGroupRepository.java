@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -728,12 +729,12 @@ public class OrderGroupRepository implements GroupRepository
 			nextLineNo.add(10);
 		};
 
-		final Consumer<Map.Entry<GroupId, Collection<I_C_OrderLine>>> orderLinesSequenceUpdater = orderLinesAndGroupId -> {
+		final BiConsumer<GroupId, Collection<I_C_OrderLine>> orderLinesSequenceUpdater = (groupId, orderLines) -> {
 			final GroupCompensationOrderBy orderBy = Optional
-					.ofNullable(getGroupInfoById(orderLinesAndGroupId.getKey()).getGroupCompensationOrderBy())
+					.ofNullable(getGroupInfoById(groupId).getGroupCompensationOrderBy())
 					.orElse(GroupCompensationOrderBy.CompensationGroupLast);
 
-			orderLinesAndGroupId.getValue()
+			orderLines
 					.stream()
 					.sorted(orderBy.getComparator()
 									.thenComparing(orderLine -> OrderGroupCompensationUtils.isGeneratedLine(orderLine) ? 0 : 1)
@@ -746,7 +747,6 @@ public class OrderGroupRepository implements GroupRepository
 		// Renumber grouped order lines first
 		orderLinesByGroupId
 				.asMap()
-				.entrySet()
 				.forEach(orderLinesSequenceUpdater);
 
 		//

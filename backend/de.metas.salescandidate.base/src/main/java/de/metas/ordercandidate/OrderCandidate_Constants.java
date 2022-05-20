@@ -38,6 +38,5 @@ public final class OrderCandidate_Constants
 	 *      String)
 	 */
 	public static final String DATA_DESTINATION_INTERNAL_NAME = "DEST.de.metas.ordercandidate";
-	public static final String INPUT_DATA_SOURCE_INTERNAL_NAME_SHOPWARE = "Shopware";
 
 }

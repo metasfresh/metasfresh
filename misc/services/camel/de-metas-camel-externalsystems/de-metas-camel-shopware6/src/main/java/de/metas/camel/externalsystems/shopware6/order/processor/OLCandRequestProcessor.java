@@ -40,6 +40,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertI
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonProductLookup;
+import de.metas.common.ordercandidates.v2.request.JsonGroupCompensationOrderBy;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
@@ -316,6 +317,7 @@ public class OLCandRequestProcessor implements Processor
 		return JsonOrderLineGroup.builder()
 				.groupKey(isBundle ? orderLine.getId() : orderLine.getParentId())
 				.isGroupMainItem(isBundle)
+				.ordering(JsonGroupCompensationOrderBy.GroupFirst)
 				.build();
 	}
 

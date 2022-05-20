@@ -36,7 +36,8 @@
       "paymentTerm": "val-paymentTermValue",
       "orderLineGroup": {
         "groupKey": "externalLineId2",
-        "groupMainItem": true
+        "groupMainItem": true,
+        "ordering": "GroupFirst"
       },
       "dateCandidate": "2021-01-11",
       "line": 10,
@@ -87,7 +88,8 @@
       "paymentTerm": "val-paymentTermValue",
       "orderLineGroup": {
         "groupKey": "externalLineId2",
-        "groupMainItem": false
+        "groupMainItem": false,
+        "ordering": "GroupFirst"
       },
       "dateCandidate": "2021-01-11",
       "line": 20,

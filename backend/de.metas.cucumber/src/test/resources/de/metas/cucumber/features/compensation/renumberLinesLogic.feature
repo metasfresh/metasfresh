@@ -6,7 +6,7 @@ Feature: Check renumber lines logic
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
-  Scenario: Renumber lines with bundle product first when importing a Shopware order
+  Scenario: Renumber lines with bundle product first when orderLineGroup has ordering "GroupFirst"
     # Importing C_OLCand with the following sequence and groupMainItem (bundle) flag
     # - externalLineId18052022_1: line: 1, groupMainItem: false, belongs to externalLineId18052022_2 groupKey
     # - externalLineId18052022_2: line: 2, groupMainItem: true
@@ -75,7 +75,8 @@ Feature: Check renumber lines logic
          "deliveryRule":"A",
          "orderLineGroup":{
             "groupKey":"externalLineId18052022_1",
-            "groupMainItem":false
+            "groupMainItem":false,
+            "ordering":"GroupFirst"
          },
          "description":"lineDescription2",
          "dateOrdered":"2021-05-08",
@@ -108,7 +109,8 @@ Feature: Check renumber lines logic
          "orderLineGroup":{
             "groupKey":"externalLineId18052022_1",
             "groupMainItem":true,
-            "discount":2
+            "discount":2,
+            "ordering":"GroupFirst"
          },
          "description":"lineDescription",
          "dateOrdered":"2021-05-08",
@@ -168,7 +170,8 @@ Feature: Check renumber lines logic
          "deliveryRule":"A",
          "orderLineGroup":{
             "groupKey":"externalLineId18052022_5",
-            "groupMainItem":false
+            "groupMainItem":false,
+            "ordering":"GroupFirst"
          },
          "description":"lineDescription4",
          "dateOrdered":"2021-05-08",
@@ -201,7 +204,8 @@ Feature: Check renumber lines logic
          "orderLineGroup":{
             "groupKey":"externalLineId18052022_5",
             "groupMainItem":true,
-            "discount":4
+            "discount":4,
+            "ordering":"GroupFirst"
          },
          "description":"lineDescription3",
          "dateOrdered":"2021-05-08",
@@ -230,7 +234,7 @@ Feature: Check renumber lines logic
       | externalLineId18052022_5 | 5             | 30               |
 
 
-  Scenario: Renumber lines  with bundle product last when importing an Alberta order
+  Scenario: Renumber lines with bundle product last(default behavior) when orderLineGroup has no ordering sent
     #  Importing C_OLCand with the following sequence and groupMainItem (bundle) flag
     # - externalLineId19052022_1: line: 1, groupMainItem: false, belongs to externalLineId19052022_2 groupKey
     # - externalLineId19052022_2: line: 2, groupMainItem: true
@@ -277,7 +281,7 @@ Feature: Check renumber lines logic
          "orgCode":"001",
          "externalLineId":"externalLineId19052022_1",
          "externalHeaderId":"externalHeaderId19052022",
-         "dataSource":"int-Alberta",
+         "dataSource":"int-Shopware",
          "dataDest":null,
          "bpartner":{
             "bpartnerIdentifier":"gln-bPLocation19052022",
@@ -309,7 +313,7 @@ Feature: Check renumber lines logic
          "orgCode":"001",
          "externalLineId":"externalLineId19052022_2",
          "externalHeaderId":"externalHeaderId19052022",
-         "dataSource":"int-Alberta",
+         "dataSource":"int-Shopware",
          "dataDest":null,
          "bpartner":{
             "bpartnerIdentifier":"gln-bPLocation19052022",
@@ -342,7 +346,7 @@ Feature: Check renumber lines logic
          "orgCode":"001",
          "externalLineId":"externalLineId19052022_3",
          "externalHeaderId":"externalHeaderId19052022",
-         "dataSource":"int-Alberta",
+         "dataSource":"int-Shopware",
          "dataDest":null,
          "bpartner":{
             "bpartnerIdentifier":"gln-bPLocation19052022",
@@ -370,7 +374,7 @@ Feature: Check renumber lines logic
          "orgCode":"001",
          "externalLineId":"externalLineId19052022_4",
          "externalHeaderId":"externalHeaderId19052022",
-         "dataSource":"int-Alberta",
+         "dataSource":"int-Shopware",
          "dataDest":null,
          "bpartner":{
             "bpartnerIdentifier":"gln-bPLocation19052022",
@@ -402,7 +406,7 @@ Feature: Check renumber lines logic
          "orgCode":"001",
          "externalLineId":"externalLineId19052022_5",
          "externalHeaderId":"externalHeaderId19052022",
-         "dataSource":"int-Alberta",
+         "dataSource":"int-Shopware",
          "dataDest":null,
          "bpartner":{
             "bpartnerIdentifier":"gln-bPLocation19052022",
@@ -439,7 +443,7 @@ Feature: Check renumber lines logic
 """
 {
     "externalHeaderId": "externalHeaderId19052022",
-    "inputDataSourceName": "int-Alberta",
+    "inputDataSourceName": "int-Shopware",
     "ship": false,
     "invoice": false,
     "closeOrder": false
