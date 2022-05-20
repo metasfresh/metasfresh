@@ -351,6 +351,27 @@ public class ViewRestController
 			@RequestParam(name = "profileId", required = false) final String profileIdStr,
 			final WebRequest request)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getViewLayout0(windowIdStr, viewDataType, profileIdStr, request),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("ViewRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("getViewLayout")
+						.label("uri", "/rest/api/documentView/{windowId}/layout")
+						.label("windowId", windowIdStr)
+						.build());
+	}
+
+	private ResponseEntity<JSONViewLayout> getViewLayout0(
+			@PathVariable(PARAM_WindowId) final String windowIdStr,
+			@RequestParam(name = PARAM_ViewDataType) final JSONViewDataType viewDataType,
+			@RequestParam(name = "profileId", required = false) final String profileIdStr,
+			final WebRequest request)
+	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
