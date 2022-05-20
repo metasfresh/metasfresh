@@ -27,6 +27,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
@@ -77,6 +78,8 @@ public class M_InOutLine_HandlerTest
 
 	private I_M_InOutLine packagingInOutLine;
 	private I_M_InOut inout;
+
+	private I_C_Project project;
 	private PaymentTermId orderPaymentTermId;
 	private PaymentTermId paymentTermA;
 	private PaymentTermId paymentTermB;
@@ -102,6 +105,11 @@ public class M_InOutLine_HandlerTest
 		bPartnerLocation.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		save(bPartnerLocation);
 
+		project = newInstance(I_C_Project.class);
+		project.setValue("P01");
+		project.setName("Project 01");
+		save(project);
+
 		inout = newInstance(I_M_InOut.class);
 		inout.setIsSOTrx(true);
 		inout.setDocStatus(IDocument.STATUS_Completed); // otherwise the code won't consider the inoutLines' quantities
@@ -109,6 +117,7 @@ public class M_InOutLine_HandlerTest
 		inout.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		inout.setM_Warehouse_ID(1);
 		inout.setMovementDate(SystemTime.asTimestamp());
+		inout.setC_Project_ID(project.getC_Project_ID());
 		save(inout);
 
 		final I_C_UOM packagingProductUom = newInstance(I_C_UOM.class);
@@ -192,6 +201,9 @@ public class M_InOutLine_HandlerTest
 		assertThat(paymentTermId).isEqualTo(paymentTermB);
 	}
 
+
+
+
 	@Test
 	public void createCandidatesForInOutLine_one_materialInOutLine_with_PaymentTerm()
 	{
@@ -248,6 +260,19 @@ public class M_InOutLine_HandlerTest
 		inOutLineHandlerUnderTest.setOrderedData(ic);
 		inOutLineHandlerUnderTest.setDeliveredData(ic);
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
+	}
+
+
+	@Test
+	public void createCandidatesForInOutLine_one_inout_with_project()
+	{
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+
+		assertThat(ic.getC_Project_ID()).isEqualTo(project.getC_Project_ID());
 	}
 
 	@Test

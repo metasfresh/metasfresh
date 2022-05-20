@@ -202,6 +202,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
+		// task 13022 : set order's project if no dimension is already set one
+		if(icRecord.getC_Project_ID() <= 0)
+		{
+			icRecord.setC_Project_ID(order.getC_Project_ID());
+		}
+
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
