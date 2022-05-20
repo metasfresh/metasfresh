@@ -52,7 +52,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final ThreadLocal<Boolean> isCorrelationActive = ThreadLocal.withInitial(() -> false);
 	private final ThreadLocal<Boolean> isCorrelationLocked = ThreadLocal.withInitial(() -> false);
 	private final ThreadLocal<String[]> correlationTriggers = ThreadLocal.withInitial(this::getCorrelationTriggers);
-
+	private final ThreadLocal<String> initiator = ThreadLocal.withInitial(() -> "");
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
@@ -79,9 +79,26 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			isCorrelationActive.set(true);
 			correlationId.set(correlationIdProvider.getAndIncrement());
 		}
+		if(isCorrelationActive.get())
+		{
+			addAdditionalTags(tags);
+		}
 
-		addAdditionalTags(tags);
+		if(depth.get() == 0)
+		{
+			if(metadata.getAction() != null)
+			{
+				initiator.set(metadata.getType().getCode() + " - " + metadata.getAction());
+			}
+			else
+			{
+				initiator.set(metadata.getType().getCode());
+			}
+		}
+		mkTagIfNotNull("Initiator", initiator.get()).ifPresent(tags::add);
 
+
+		depth.set(depth.get() + 1);
 		try(final IAutoCloseable ignored = this.reduceDepth())
 		{
 			if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationLocked.get()){
@@ -138,11 +155,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
 		step.set(step.get() + 1);
 		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
-		depth.set(depth.get() + 1);
-		if(isCorrelationActive.get())
-		{
-			mkTagIfNotNull("CorrelationId", String.valueOf(correlationId.get())).ifPresent(tags::add);
-		}
+		mkTagIfNotNull("CorrelationId", String.valueOf(correlationId.get())).ifPresent(tags::add);
 	}
 
 	private IAutoCloseable reduceDepth()
@@ -159,7 +172,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 	private String[] getCorrelationTriggers()
 	{
-		final String[] correlationTriggers = new String[] { "rest-controller" };
+		final String[] correlationTriggers = new String[] { "" };
 		return correlationTriggers;
 	}
 

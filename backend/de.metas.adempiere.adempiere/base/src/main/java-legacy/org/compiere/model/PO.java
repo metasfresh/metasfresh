@@ -1761,11 +1761,9 @@ public abstract class PO
 					() -> load0(trxName, false), // gh #986 isRetry=false because this is our first attempt to load the record
 					PerformanceMonitoringService.Metadata
 							.builder()
-							.name("load " + tableName)
+							.name("PO")
 							.type(PerformanceMonitoringService.Type.PO)
-							.subType(PerformanceMonitoringService.SubType.LOAD)
-							.label("tableName", tableName)
-							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(get_ID()))
+							.action("load")
 							.build());
 		}
 		finally
@@ -2885,17 +2883,14 @@ public abstract class PO
 		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
 				PerformanceMonitoringService.class,
 				NoopPerformanceMonitoringService.INSTANCE);
-		final String tableName = get_TableName();
 
 		service.monitor(
 				() -> saveEx0(),
 				PerformanceMonitoringService.Metadata
 						.builder()
-						.name("save " + tableName)
+						.name("PO")
 						.type(PerformanceMonitoringService.Type.PO)
-						.subType(PerformanceMonitoringService.SubType.SAVE)
-						.label("tableName", tableName)
-						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(get_ID()))
+						.action("saveEx")
 						.build());
 	}
 	private final void saveEx0() throws AdempiereException
