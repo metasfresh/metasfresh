@@ -19,6 +19,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -73,7 +74,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 	@Nullable
 	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(
-			@NonNull final I_C_OrderLine line, 
+			@NonNull final I_C_OrderLine line,
 			final boolean createReceiptScheduleIfNotExists)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
