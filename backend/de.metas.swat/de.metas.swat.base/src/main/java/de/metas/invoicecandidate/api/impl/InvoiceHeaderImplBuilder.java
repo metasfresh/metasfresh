@@ -41,6 +41,8 @@ public class InvoiceHeaderImplBuilder
 
 	private int AD_Org_ID;
 
+	private int AD_InputDataSource_ID;
+
 	private final Set<Integer> C_Order_IDs = new LinkedHashSet<>();
 
 	private final Set<Integer> M_PriceList_IDs = new LinkedHashSet<>();
@@ -125,6 +127,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setEMail(getEmail());
 
 		invoiceHeader.setPaymentRule(getPaymentRule());
+
+		invoiceHeader.setAD_InputDataSource_ID(getAD_InputDataSource_ID());
 
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
@@ -325,6 +329,16 @@ public class InvoiceHeaderImplBuilder
 		C_Currency_ID = checkOverrideID("C_Currency_ID", C_Currency_ID, currencyId);
 	}
 
+	public int getAD_InputDataSource_ID()
+	{
+		return AD_InputDataSource_ID;
+	}
+
+	public void setAD_InputDataSource_ID(final int adInputDataSourceId)
+	{
+		AD_InputDataSource_ID = checkOverrideID("AD_InputDataSource_ID", AD_InputDataSource_ID, adInputDataSourceId);
+	}
+
 	public String getDescription()
 	{
 		return StringUtils.toString(Descriptions, "; ");
@@ -502,5 +516,6 @@ public class InvoiceHeaderImplBuilder
 	{
 		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
+
 
 }

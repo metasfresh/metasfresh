@@ -79,4 +79,6 @@ public interface IInvoiceHeader
 	String getIncotermLocation();
 
 	String getPaymentRule();
+
+	int getAD_InputDataSource_ID();
 }

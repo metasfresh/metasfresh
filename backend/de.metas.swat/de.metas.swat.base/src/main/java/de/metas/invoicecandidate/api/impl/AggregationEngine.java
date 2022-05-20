@@ -374,6 +374,7 @@ public final class AggregationEngine
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 			invoiceHeader.setEmail(icRecord.getEMail());
+			invoiceHeader.setAD_InputDataSource_ID(icRecord.getAD_InputDataSource_ID());
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{

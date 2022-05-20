@@ -40,6 +40,8 @@ import java.util.List;
 
 	private String eMail;
 
+	private int AD_InputDataSource_ID;
+
 	private LocalDate dateInvoiced;
 
 	private LocalDate dateAcct;
@@ -377,5 +379,10 @@ import java.util.List;
 	{
 		this.incotermLocation = incotermLocation;
 	}
+
+	@Override
+	public int getAD_InputDataSource_ID() {	return AD_InputDataSource_ID;}
+
+	public void setAD_InputDataSource_ID(final int AD_InputDataSource_ID){this.AD_InputDataSource_ID = AD_InputDataSource_ID;}
 
 }
