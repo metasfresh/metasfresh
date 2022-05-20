@@ -382,6 +382,52 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		assertTrue(cand2.isSOTrx() ? cand1.getC_OrderLine_ID() == oL2.getC_OrderLine_ID() : cand2.getC_OrderLine_ID() == oL2.getC_OrderLine_ID());
 	}
 
+
+	@Test
+	public void test_createCandidatesFor_Order_WithProject()
+	{
+		createCandidatesFor_Order_WithProject(11);
+	}
+
+	private void createCandidatesFor_Order_WithProject(@Nullable final int c_project_id)
+	{
+		final BPartnerLocationAndCaptureId bpartnerAndLocationId = createBPartnerAndLocation();
+
+		final I_C_OrderLine orderLine1;
+		{
+			final I_C_Order order1 = order("1");
+			order1.setAD_Org_ID(orgId.getRepoId());
+			order1.setM_Warehouse_ID(warehouseId.getRepoId());
+			order1.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+			order1.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
+			order1.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+			order1.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
+			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+			order1.setC_Currency_ID(10);
+			order1.setM_PricingSystem_ID(20);
+			order1.setC_Project_ID(c_project_id);
+
+			InterfaceWrapperHelper.save(order1);
+
+			orderLine1 = orderLine("1");
+			orderLine1.setAD_Org_ID(orgId.getRepoId());
+			orderLine1.setC_Order_ID(order1.getC_Order_ID());
+			orderLine1.setM_Product_ID(productId.getRepoId());
+
+			InterfaceWrapperHelper.save(orderLine1);
+
+			setUpActivityAndTaxRetrieval(order1, orderLine1);
+		}
+
+		final InvoiceCandidateGenerateResult invoiceCandidates = orderLineHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(orderLineHandler, orderLine1));
+
+		assertThat(invoiceCandidates.getC_Invoice_Candidates().size()).isEqualTo(1);
+
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidates.getC_Invoice_Candidates().get(0);
+
+		assertThat(invoiceCandidate.getC_Project_ID()).isEqualTo(c_project_id);
+	}
+
 	@Test
 	public void test_PresetDateInvoiced()
 	{

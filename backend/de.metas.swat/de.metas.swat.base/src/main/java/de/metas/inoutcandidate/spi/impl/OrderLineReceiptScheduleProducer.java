@@ -139,9 +139,11 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// BPartner & Location
 		receiptSchedule.setC_BPartner_ID(line.getC_BPartner_ID());
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
+		
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
-		receiptSchedule.setC_Project_ID(order.getC_Project_ID());
+		
+		receiptSchedule.setC_Project_ID(line.getC_Project_ID()); // C_OrderLine.C_Project_ID is set from order via model interceptor
 
 		//
 		// Delivery rule, Priority rule
