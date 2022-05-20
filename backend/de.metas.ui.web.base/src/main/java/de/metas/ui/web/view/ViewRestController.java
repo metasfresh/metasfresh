@@ -157,10 +157,12 @@ public class ViewRestController
 						.name("ViewRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("createView")
+						.label("uri", "/rest/api/documentView/{windowId}")
+						.label("windowId", windowIdStr)
 						.build());
 	}
 
-	public JSONViewResult createView0(
+	private JSONViewResult createView0(
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @RequestBody final JSONCreateViewRequest jsonRequest //
 	)
@@ -241,10 +243,12 @@ public class ViewRestController
 						.name("ViewRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("filterView")
+						.label("uri", "/rest/api/documentView/{windowId}/{viewId}/filter")
+						.label("windowId", windowIdStr)
 						.build());
 	}
 
-	public JSONViewResult filterView0( //
+	private JSONViewResult filterView0( //
 									  @PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @RequestBody final JSONFilterViewRequest jsonRequest //
@@ -311,10 +315,12 @@ public class ViewRestController
 						.name("ViewRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("getViewData")
+						.label("uri", "/rest/api/documentView/{windowId}/{viewId}")
+						.label("windowId", windowId)
 						.build());
 	}
 
-	public JSONViewResult getViewData0(
+	private JSONViewResult getViewData0(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
@@ -531,9 +537,12 @@ public class ViewRestController
 						.name("ViewRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("getRowsQuickActions")
+						.label("uri", "/rest/api/documentView/{windowId}/{viewId}/quickActions")
+						.label("windowId", windowId)
 						.build());
 	}
-	public JSONDocumentActionsList getRowsQuickActions0(
+
+	private JSONDocumentActionsList getRowsQuickActions0(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestBody final JSONGetViewActionsRequest request)

@@ -189,7 +189,8 @@ public class WindowRestController
 						.name("WindowRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("getLayout")
-						.label("uri", "/window/{windowId}/layout")
+						.label("uri", "/rest/api/window/{windowId}/layout")
+						.label("windowId", windowIdStr)
 						.build());
 	}
 
@@ -230,7 +231,8 @@ public class WindowRestController
 						.name("WindowRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("getLayout")
-						.label("uri", "/window/{windowId}/{tabId}/layout")
+						.label("uri", "/rest/api/window/{windowId}/{tabId}/layout")
+						.label("windowId", windowIdStr)
 						.build());
 	}
 	private ResponseEntity<JSONDocumentLayout> getLayout0(
@@ -273,7 +275,8 @@ public class WindowRestController
 						.name("WindowRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("getRootDocuments")
-						.label("uri", "/window/{windowId}/{documentId}")
+						.label("uri", "/rest/api/window/{windowId}/{documentId}")
+						.label("windowId", windowIdStr)
 						.build());
 	}
 
@@ -1012,6 +1015,8 @@ public class WindowRestController
 						.name("WindowRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("processRecord")
+						.label("uri", "/rest/api/window/{windowId}/{documentId}/processNewRecord")
+						.label("windowId", windowIdStr)
 						.build());
 	}
 

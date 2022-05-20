@@ -121,6 +121,25 @@ public class DocumentReferencesRestController
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentId)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> streamRootDocumentReferences0(windowIdStr, documentId),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DocumentReferencesRestController")
+						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
+						.action("streamRootDocumentReferences")
+						.label("uri", "/rest/api/window/{windowId}/{documentId}/references/sse")
+						.label("windowId", windowIdStr)
+						.build());
+	}
+
+	private SseEmitter streamRootDocumentReferences0(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentId)
+	{
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(
 				WindowId.fromJson(windowIdStr),
 				documentId);
@@ -142,21 +161,6 @@ public class DocumentReferencesRestController
 	}
 
 	private SseEmitter streamRootDocumentReferences(final DocumentPath documentPath)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> streamRootDocumentReferences0(documentPath),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("DocumentReferencesRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("streamRootDocumentReferences")
-						.build());
-	}
-
-	private SseEmitter streamRootDocumentReferences0(final DocumentPath documentPath)
 	{
 		final JSONDocumentReferencesEventPublisher publisher = JSONDocumentReferencesEventPublisher.newInstance();
 

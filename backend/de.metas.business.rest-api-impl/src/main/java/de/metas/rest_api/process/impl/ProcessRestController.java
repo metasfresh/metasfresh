@@ -110,9 +110,10 @@ public class ProcessRestController
 						.name("ProcessRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("invokeProcess")
+						.label("uri", "/api/v2/processes")
 						.build());
 	}
-	public ResponseEntity<?> invokeProcess0(
+	private ResponseEntity<?> invokeProcess0(
 			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
 			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{
