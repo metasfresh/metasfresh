@@ -1,8 +1,7 @@
 package de.metas.picking.modelvalidator;
 
 import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.common.util.WindowConstants;
 import de.metas.picking.model.I_M_Picking_Config;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -46,9 +45,6 @@ public class M_Picking_Config
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_Picking_Config.COLUMNNAME_WEBUI_PickingTerminal_ViewProfile)
 	public void resetCacheAfterViewProfileChange(final I_M_Picking_Config pickingConfig)
 	{
-		final CacheInvalidateMultiRequest invalidateMultiRequest = CacheInvalidateMultiRequest
-				.of(CacheInvalidateRequest.allRecordsForTable(I_AD_Window.Table_Name));
-
-		CacheMgt.get().reset(invalidateMultiRequest);
+		CacheMgt.get().reset(I_AD_Window.Table_Name, WindowConstants.PACKAGEABLE_VIEW_AD_WINDOW_ID);
 	}
 }
