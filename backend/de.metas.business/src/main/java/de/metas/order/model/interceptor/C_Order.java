@@ -206,7 +206,7 @@ public class C_Order
 	{
 		if (order.getC_Project_ID() <= 0)
 		{
-			return; // let possilbe the existing project assignment be
+			return; // let possible existing project assignment be
 		}
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
