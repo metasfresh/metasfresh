@@ -23,6 +23,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13001](https://github.com/metasfresh/metasfresh/issues/13001) Error on customer return 
   * [#12978](https://github.com/metasfresh/metasfresh/issues/12978) Respect UOM precision when calculating package weights
   * [#12986](https://github.com/metasfresh/metasfresh/issues/12986) Password displayed when hovering over the *** with mouse, w/o using the eye icon 
   * [#12919](https://github.com/metasfresh/metasfresh/pull/12925) fix flaky 'exportExternalReferenceToRabbitMQ.feature' scenario #12925
