@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.pinstance;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -80,12 +81,13 @@ public class AD_PInstance_StepDef
 	}
 
 	@Given("add I_AD_PInstance with id {int}")
-	public void new_PInstanceId_is_created(final int pInstanceIdString)
+	public void new_PInstanceId_is_created(final int pInstanceId)
 	{
-		final PInstanceId pInstanceId = PInstanceId.ofRepoId(pInstanceIdString);
-		final I_AD_PInstance pInstance = InterfaceWrapperHelper.newInstance(I_AD_PInstance.class);
+		final PInstanceId pInstanceIdRepoAware = PInstanceId.ofRepoId(pInstanceId);
+		final I_AD_PInstance pInstance = CoalesceUtil.coalesceSuppliersNotNull(() -> InterfaceWrapperHelper.load(pInstanceIdRepoAware, I_AD_PInstance.class),
+																			   () -> InterfaceWrapperHelper.newInstance(I_AD_PInstance.class));
 
-		pInstance.setAD_PInstance_ID(pInstanceId.getRepoId());
+		pInstance.setAD_PInstance_ID(pInstanceIdRepoAware.getRepoId());
 		pInstance.setAD_Process_ID(150); //a valid processId, picked randomly as it doesn't matter for our test
 		pInstance.setRecord_ID(0); //mandatory
 
