@@ -200,6 +200,22 @@ public class C_Order
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
+	public void updateProjectFromOrder(@NonNull final I_C_Order order)
+	{
+		if (order.getC_Project_ID() <= 0)
+		{
+			return; // let possible existing project assignment be
+		}
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			orderLine.setC_Project_ID(order.getC_Project_ID());
+			orderDAO.save(orderLine);
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID,
@@ -511,7 +527,7 @@ public class C_Order
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised )
+	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised)
 	public void updateOrderLineFromContract(final I_C_Order order)
 	{
 		orderDAO.retrieveOrderLines(order)
@@ -520,7 +536,7 @@ public class C_Order
 				.forEach(orderLineBL::updatePrices);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
 	public void validateVoidActionForMediatedOrder(final I_C_Order order)
 	{
 		if (orderBL.isMediated(order))
