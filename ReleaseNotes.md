@@ -23,6 +23,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#12991](https://github.com/metasfresh/metasfresh/issues/12991) For Picking Profile "Group by Order" the order and bpartner are not displayed in Picking Terminal
   * [#13001](https://github.com/metasfresh/metasfresh/issues/13001) Error on customer return 
   * [#12978](https://github.com/metasfresh/metasfresh/issues/12978) Respect UOM precision when calculating package weights
   * [#12986](https://github.com/metasfresh/metasfresh/issues/12986) Password displayed when hovering over the *** with mouse, w/o using the eye icon 
