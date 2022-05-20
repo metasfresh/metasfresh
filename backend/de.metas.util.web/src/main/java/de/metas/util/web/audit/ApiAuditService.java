@@ -50,6 +50,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
@@ -70,6 +71,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -149,6 +151,7 @@ public class ApiAuditService
 	private final ObjectMapper objectMapper;
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	public ApiAuditService(
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
@@ -508,6 +511,12 @@ public class ApiAuditService
 		{
 			final HttpHeadersWrapper requestHeaders = HttpHeadersWrapper.of(apiRequest.getHeaders());
 
+			validateExternalRequestHeaders(requestHeaders);
+
+			final PInstanceId pInstanceId = extractExternalRequestHeader(requestHeaders, HEADER_PINSTANCE_ID)
+					.map(PInstanceId::ofRepoId)
+					.orElse(null);
+
 			final ApiRequestAudit apiRequestAudit = ApiRequestAudit.builder()
 					.apiAuditConfigId(apiAuditConfig.getApiAuditConfigId())
 					.orgId(apiAuditConfig.getOrgId())
@@ -522,7 +531,7 @@ public class ApiAuditService
 					.time(Instant.now())
 					.httpHeaders(requestHeaders.toJson(objectMapper))
 					.requestURI(apiRequest.getRequestURI())
-					.pInstanceId(extractPInstanceId(requestHeaders))
+					.pInstanceId(pInstanceId)
 					.build();
 
 			return apiRequestAuditRepository.save(apiRequestAudit);
@@ -703,21 +712,37 @@ public class ApiAuditService
 		}
 	}
 
-	@Nullable
-	private static PInstanceId extractPInstanceId(@NonNull final HttpHeadersWrapper requestHeaders)
+	@NonNull
+	private static Optional<Integer> extractExternalRequestHeader(@NonNull final HttpHeadersWrapper requestHeaders, @NonNull final String headerName)
 	{
 		try
 		{
-			return Optional.ofNullable(requestHeaders.getHeaderSingleValue(HEADER_PINSTANCE_ID))
+			return Optional.ofNullable(requestHeaders.getHeaderSingleValue(headerName))
 					.filter(Check::isNotBlank)
-					.map(Integer::parseInt)
-					.map(PInstanceId::ofRepoId)
-					.orElse(null);
+					.map(Integer::parseInt);
 		}
 		catch (final Exception exception)
 		{
-			logger.error("Exception encountered while trying to read 'x-adpinstanceid' header!", exception);
-			return null;
+			logger.error("Exception encountered while trying to read '" + headerName + "' header!", exception);
+			throw new AdempiereException("Invalid '" + headerName + "' header : " + requestHeaders.getHeaderSingleValue(headerName), exception);
+		}
+	}
+
+	private void validateExternalRequestHeaders(@NonNull final HttpHeadersWrapper requestHeaders)
+	{
+		final Integer pInstanceId = extractExternalRequestHeader(requestHeaders, HEADER_PINSTANCE_ID).orElse(null);
+
+		if (pInstanceId != null && pInstanceDAO.getByIdOrNull(PInstanceId.ofRepoId(pInstanceId)) == null)
+		{
+			throw new AdempiereException("No AD_PInstance record found for '" + HEADER_PINSTANCE_ID + "':" + pInstanceId);
+		}
+
+		final Integer externalSystemConfigId = extractExternalRequestHeader(requestHeaders, HEADER_EXTERNALSYSTEM_CONFIG_ID).orElse(null);
+
+		// TableRecordReference is used here in order to avoid circular dependencies that would emerge from using I_ExternalSystem_Config and it's repository
+		if (externalSystemConfigId != null && TableRecordReference.of("ExternalSystem_Config", externalSystemConfigId).getModel() == null)
+		{
+			throw new AdempiereException("No IExternalSystemChildConfigId record found for '" + HEADER_EXTERNALSYSTEM_CONFIG_ID + "':" + externalSystemConfigId);
 		}
 	}
 

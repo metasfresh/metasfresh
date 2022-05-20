@@ -595,6 +595,12 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		return adPInstance;
 	}
 
+	@Override
+	public I_AD_PInstance getByIdOrNull(@NonNull final PInstanceId pinstanceId)
+	{
+		return loadOutOfTrx(pinstanceId, I_AD_PInstance.class);
+	}
+
 	private static final String SQL_SelectAll_AD_PInstance_SelectedIncludedRecords = "SELECT * FROM " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
 			+ " WHERE " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_PInstance_ID + "=?"
 			+ " ORDER BY " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_SeqNo;
