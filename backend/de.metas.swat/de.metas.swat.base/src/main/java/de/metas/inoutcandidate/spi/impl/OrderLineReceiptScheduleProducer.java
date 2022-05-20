@@ -74,7 +74,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 	@Nullable
 	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(
-			@NonNull final I_C_OrderLine line, 
+			@NonNull final I_C_OrderLine line,
 			final boolean createReceiptScheduleIfNotExists)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
