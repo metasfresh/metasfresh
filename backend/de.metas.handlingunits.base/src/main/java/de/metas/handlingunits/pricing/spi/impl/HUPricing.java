@@ -102,12 +102,16 @@ public class HUPricing extends AttributePricing
 			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
 			@Nullable final HUPIItemProductId packingMaterialId)
 	{
+		boolean noAttributeRelatedConditionSet = true;
+
 		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plv)
 				.setProductId(productId);
 
-		if(packingMaterialId.isRegular())
+		//match packing material if we have a real packing material
+		if(packingMaterialId != null && packingMaterialId.isRegular())
 		{
 			productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+			noAttributeRelatedConditionSet = false;
 		}
 
 		// Match attributes if we have attributes.
@@ -118,6 +122,12 @@ public class HUPricing extends AttributePricing
 		else
 		{
 			productPriceQuery.notStrictlyMatchingAttributes(attributeSetInstance);
+			noAttributeRelatedConditionSet = false;
+		}
+
+		if (noAttributeRelatedConditionSet)
+		{
+			return null;
 		}
 
 		return productPriceQuery.firstMatching(I_M_ProductPrice.class);
