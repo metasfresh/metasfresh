@@ -85,11 +85,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -363,8 +365,15 @@ class OLCandOrderFactory
 
 	private void validateAndCreateCompensationGroups()
 	{
-		groupsToOrderLines.keySet()
+		orderLines.values()
 				.stream()
+				//dev-note: make sure the compensation groups are created in the right order
+				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.map(primaryOrderLineToGroup::get)
+				.filter(Objects::nonNull)
+				.map(OrderLineGroup::getGroupKey)
 				.map(groupsToOrderLines::get)
 				.forEach(this::createCompensationGroup);
 	}
