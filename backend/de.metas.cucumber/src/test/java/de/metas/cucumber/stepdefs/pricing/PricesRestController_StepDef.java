@@ -201,10 +201,10 @@ public class PricesRestController_StepDef
 	private void validateJsonResponsePriceListVersion(@NonNull final Map<String, String> row, @NonNull final JsonPriceListVersionResponse jsonResponsePriceListVersion)
 	{
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(row, JsonPriceListVersionResponse.class.getSimpleName() + "." + I_M_PriceList_Version.COLUMNNAME_ValidFrom);
-		// final String plvName = DataTableUtil.extractStringForColumnName(row, JsonPriceListVersionResponse.class.getSimpleName() + "." + I_M_PriceList_Version.COLUMNNAME_Name);
+		final String plvName = DataTableUtil.extractStringForColumnName(row, JsonPriceListVersionResponse.class.getSimpleName() + "." + I_M_PriceList_Version.COLUMNNAME_Name);
 
 		assertThat(jsonResponsePriceListVersion.getValidFrom()).isEqualTo(validFrom.toInstant());
-		// assertThat(jsonResponsePriceListVersion.getName()).isEqualTo(plvName);
+		assertThat(jsonResponsePriceListVersion.getName()).isEqualTo(plvName);
 
 		final I_M_PriceList_Version priceListVersion = InterfaceWrapperHelper.load(jsonResponsePriceListVersion.getMetasfreshId().getValue(), I_M_PriceList_Version.class);
 		assertThat(priceListVersion).isNotNull();
