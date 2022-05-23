@@ -64,6 +64,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
@@ -287,6 +288,12 @@ public class C_BPartner_StepDef
 		if (EmptyUtil.isNotBlank(poInvoiceRule))
 		{
 			bPartnerRecord.setPO_InvoiceRule(poInvoiceRule);
+		}
+
+		final Boolean allowCampaignPrice = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAllowActionPrice, null);
+		if (allowCampaignPrice != null)
+		{
+			bPartnerRecord.setIsAllowActionPrice(allowCampaignPrice);
 		}
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
