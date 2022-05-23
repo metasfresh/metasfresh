@@ -266,14 +266,17 @@ public class C_Invoice_StepDef
 		InterfaceWrapperHelper.refresh(invoice);
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
-		assertThat(bPartner).isNotNull();
-		assertThat(invoice.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
+		final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+				.map(I_C_BPartner::getC_BPartner_ID)
+				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+		assertThat(invoice.getC_BPartner_ID()).isEqualTo(bPartnerId);
 
 		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bpartnerLocationIdentifier);
-		assertThat(bPartnerLocation).isNotNull();
-		assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
+		final Integer bPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
+				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
+
+		assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(bPartnerLocationId);
 
 		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_POReference);
 		if (Check.isNotBlank(poReference))
