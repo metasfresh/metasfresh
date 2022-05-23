@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13016](https://github.com/metasfresh/metasfresh/issues/13016) Shopware Fix order-item/bundle-sorting - part deux
   * [#13024](https://github.com/metasfresh/metasfresh/issues/13024) Improve API-Errormessage on wrong Headers
   * [#12966](https://github.com/metasfresh/metasfresh/issues/12966) Improve ways of API request troubleshooting
   * [#12964](https://github.com/metasfresh/metasfresh/issues/12964) Support purchase candidates with same product and diffente ASI in one PO
