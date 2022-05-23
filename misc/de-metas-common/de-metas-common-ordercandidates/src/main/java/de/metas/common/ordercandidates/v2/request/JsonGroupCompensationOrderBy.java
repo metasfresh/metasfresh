@@ -1,19 +1,8 @@
-package de.metas.order.compensationGroup;
-
-import de.metas.order.OrderId;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.acct.api.ActivityId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-ordercandidates
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,28 +20,14 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Value
-@Builder
-public class GroupCreateRequest
+package de.metas.common.ordercandidates.v2.request;
+
+import de.pentabyte.springfox.ApiEnum;
+
+public enum JsonGroupCompensationOrderBy
 {
-	@NonNull
-	OrderId orderId;
-
-	@NonNull
-	String name;
-
-	@Builder.Default
-	boolean isNamePrinted = true;
-
-	@Nullable
-	ActivityId activityId;
-
-	@Nullable
-	ProductCategoryId productCategoryId;
-
-	@Nullable
-	GroupTemplateId groupTemplateId;
-
-	@Nullable
-	GroupCompensationOrderBy groupCompensationOrderBy;
+	@ApiEnum("The bundle (compensation-group) product will be ordered first, before the group.")
+	GroupFirst,
+	@ApiEnum("The bundle (compensation-group) product will be ordered last, after the group.")
+	GroupLast
 }

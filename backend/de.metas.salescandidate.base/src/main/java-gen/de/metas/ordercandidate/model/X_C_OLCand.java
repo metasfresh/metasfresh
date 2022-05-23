@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1128591430L;
+	private static final long serialVersionUID = -2133349761L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -591,6 +591,39 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setCompensationGroupKey (final @Nullable java.lang.String CompensationGroupKey)
+	{
+		set_Value (COLUMNNAME_CompensationGroupKey, CompensationGroupKey);
+	}
+
+	@Override
+	public java.lang.String getCompensationGroupKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_CompensationGroupKey);
+	}
+
+	/**
+	 * CompensationGroupOrderBy AD_Reference_ID=541580
+	 * Reference name: CompensationGroupOrderBy
+	 */
+	public static final int COMPENSATIONGROUPORDERBY_AD_Reference_ID=541580;
+	/** CompensationGroupFirst = F */
+	public static final String COMPENSATIONGROUPORDERBY_CompensationGroupFirst = "F";
+	/** CompensationGroupLast = L */
+	public static final String COMPENSATIONGROUPORDERBY_CompensationGroupLast = "L";
+	@Override
+	public void setCompensationGroupOrderBy (final @Nullable java.lang.String CompensationGroupOrderBy)
+	{
+		set_Value (COLUMNNAME_CompensationGroupOrderBy, CompensationGroupOrderBy);
+	}
+
+	@Override
+	public java.lang.String getCompensationGroupOrderBy()
+	{
+		return get_ValueAsString(COLUMNNAME_CompensationGroupOrderBy);
+	}
+
+	@Override
 	public void setDateCandidate (final java.sql.Timestamp DateCandidate)
 	{
 		set_Value (COLUMNNAME_DateCandidate, DateCandidate);
@@ -962,7 +995,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public BigDecimal getGroupCompensationDiscountPercentage() 
+	public BigDecimal getGroupCompensationDiscountPercentage()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationDiscountPercentage);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -975,7 +1008,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getGroupingErrorMessage() 
+	public java.lang.String getGroupingErrorMessage()
 	{
 		return get_ValueAsString(COLUMNNAME_GroupingErrorMessage);
 	}
@@ -1726,7 +1759,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public BigDecimal getQtyItemCapacityInternal() 
+	public BigDecimal getQtyItemCapacityInternal()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacityInternal);
 		return bd != null ? bd : BigDecimal.ZERO;

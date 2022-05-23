@@ -837,6 +837,73 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_UOM_Internal_ID = "C_UOM_Internal_ID";
 
 	/**
+	 * Set Grouping key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompensationGroupKey (@Nullable java.lang.String CompensationGroupKey);
+
+	/**
+	 * Get Grouping key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCompensationGroupKey();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupKey = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupKey", null);
+	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
+
+	/**
+	 * Set CompensationGroupOrderBy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompensationGroupOrderBy (@Nullable java.lang.String CompensationGroupOrderBy);
+
+	/**
+	 * Get CompensationGroupOrderBy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCompensationGroupOrderBy();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupOrderBy = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupOrderBy", null);
+	String COLUMNNAME_CompensationGroupOrderBy = "CompensationGroupOrderBy";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_Created = new ModelColumn<>(I_C_OLCand.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Kand.-Datum.
 	 *
 	 * <br>Type: Date
@@ -2586,5 +2653,5 @@ public interface I_C_OLCand
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	
+
 }
