@@ -129,7 +129,6 @@ public class C_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
 			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
@@ -139,9 +138,13 @@ public class C_Order_StepDef
 			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 
+			final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+					.map(I_C_BPartner::getC_BPartner_ID)
+					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			order.setC_BPartner_ID(bPartnerId);
 			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
@@ -443,20 +446,29 @@ public class C_Order_StepDef
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Order order = orderTable.get(orderIdentifier);
 
-			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
-			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
-			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-					.docBaseType(docBaseType)
-					.docSubType(docSubType)
-					.adClientId(order.getAD_Client_ID())
-					.adOrgId(order.getAD_Org_ID())
-					.build();
+			if (Check.isNotBlank(docBaseType) && Check.isNotBlank(docSubType))
+			{
+				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+						.docBaseType(docBaseType)
+						.docSubType(docSubType)
+						.adClientId(order.getAD_Client_ID())
+						.adOrgId(order.getAD_Org_ID())
+						.build();
 
-			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
+				final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
 
-			order.setC_DocType_ID(docTypeId.getRepoId());
-			order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+				order.setC_DocType_ID(docTypeId.getRepoId());
+				order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+			}
+
+			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
+			if (Check.isNotBlank(paymentRule))
+			{
+				order.setPaymentRule(paymentRule);
+			}
 
 			InterfaceWrapperHelper.saveRecord(order);
 
