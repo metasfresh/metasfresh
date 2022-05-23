@@ -192,7 +192,26 @@ public class CoalesceUtil
 	}
 
 	@SafeVarargs
-	public int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
+	@NonNull
+	public BigDecimal firstGreaterThanZeroBigDecimalSupplier(@NonNull final Supplier<BigDecimal>... suppliers)
+	{
+		if (suppliers == null || suppliers.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final Supplier<BigDecimal> supplier : suppliers)
+		{
+			final BigDecimal value = supplier.get();
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
+	@SafeVarargs
+	public int firstGreaterThanZeroIntegerSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
 		if (suppliers == null || suppliers.length == 0)
 		{
