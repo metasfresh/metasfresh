@@ -1,5 +1,4 @@
 @from:cucumber
-@campaignPrices
 Feature: campaign prices
 
   Background:
@@ -41,20 +40,19 @@ Feature: campaign prices
       | cp_190     | salesProduct_190        | 6.00     | defaultPricingSystem              | 2022-05-01 | 2022-05-31 | Normal                        | DE                    | EUR                 | PCE               |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     |
-      | o_150      | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z |
+      | o_150_190  | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z |
       | o_160      | true    | bpartner_1               | 2022-06-05  | 2022-06-05T21:00:00Z |
-      | o_190      | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_150     | o_150                 | salesProduct_150        | 1          |
+      | ol_150     | o_150_190             | salesProduct_150        | 1          |
       | ol_160     | o_160                 | salesProduct_160        | 1          |
-      | ol_190     | o_190                 | salesProduct_190        | 1          |
+      | ol_190     | o_150_190             | salesProduct_190        | 1          |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_150                    | o_150                 | 2022-05-17  | salesProduct_150        | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
+      | ol_150                    | o_150_190             | 2022-05-17  | salesProduct_150        | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
       | ol_160                    | o_160                 | 2022-06-05  | salesProduct_160        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
-      | ol_190                    | o_190                 | 2022-05-17  | salesProduct_190        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
+      | ol_190                    | o_150_190             | 2022-05-17  | salesProduct_190        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
 
   @from:cucumber
   @Id:S0133_100
@@ -85,22 +83,21 @@ Feature: campaign prices
       | cp_200     | salesProduct_200        | 3.00     | bpartner_2                   | 2022-05-01 | 2022-05-31 | Normal                        | DE                    | EUR                 | PCE               |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     |
-      | o_100      | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z |
+      | o_100_170  | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z |
       | o_110      | true    | bpartner_1               | 2022-06-05  | 2022-06-05T21:00:00Z |
-      | o_170      | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z |
       | o_200      | true    | bpartner_2               | 2022-05-17  | 2022-05-17T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_100     | o_100                 | salesProduct_100        | 1          |
+      | ol_100     | o_100_170             | salesProduct_100        | 1          |
       | ol_110     | o_110                 | salesProduct_110        | 1          |
-      | ol_170     | o_170                 | salesProduct_170        | 1          |
+      | ol_170     | o_100_170             | salesProduct_170        | 1          |
       | ol_200     | o_200                 | salesProduct_200        | 1          |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_100                    | o_100                 | 2022-05-17  | salesProduct_100        | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
+      | ol_100                    | o_100_170             | 2022-05-17  | salesProduct_100        | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
       | ol_110                    | o_110                 | 2022-06-05  | salesProduct_110        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
-      | ol_170                    | o_170                 | 2022-05-17  | salesProduct_170        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
+      | ol_170                    | o_100_170             | 2022-05-17  | salesProduct_170        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
       | ol_200                    | o_200                 | 2022-05-17  | salesProduct_200        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
 
   @from:cucumber
@@ -131,21 +128,19 @@ Feature: campaign prices
       | cp_140     | salesProduct_140        | 6.00     | bpartner_1                   |                                   | 2022-05-01 | 2022-05-31 | Normal                        | DE                    | EUR                 | PCE               |
       | cp_180     | salesProduct_180        | 3.00     | bpartner_1                   | defaultPricingSystem_2            | 2022-05-01 | 2022-05-31 | Normal                        | DE                    | EUR                 | PCE               |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.M_PricingSystem_ID |
-      | o_120      | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z | defaultPricingSystem   |
-      | o_130      | true    | bpartner_1               | 2022-06-05  | 2022-06-05T21:00:00Z | defaultPricingSystem   |
-      | o_140      | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z | defaultPricingSystem   |
-      | o_180      | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z | defaultPricingSystem_2 |
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.M_PricingSystem_ID |
+      | o_120_140_180 | true    | bpartner_1               | 2022-05-17  | 2022-05-17T21:00:00Z | defaultPricingSystem   |
+      | o_130         | true    | bpartner_1               | 2022-06-05  | 2022-06-05T21:00:00Z | defaultPricingSystem   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_120     | o_120                 | salesProduct_120        | 1          |
+      | ol_120     | o_120_140_180         | salesProduct_120        | 1          |
       | ol_130     | o_130                 | salesProduct_130        | 1          |
-      | ol_140     | o_140                 | salesProduct_140        | 1          |
-      | ol_180     | o_180                 | salesProduct_180        | 1          |
+      | ol_140     | o_120_140_180         | salesProduct_140        | 1          |
+      | ol_180     | o_120_140_180         | salesProduct_180        | 1          |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_120                    | o_120                 | 2022-05-17  | salesProduct_120        | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
+      | ol_120                    | o_120_140_180         | 2022-05-17  | salesProduct_120        | 1          | 0            | 0           | 3     | 0        | EUR          | false     |
       | ol_130                    | o_130                 | 2022-06-05  | salesProduct_130        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
-      | ol_140                    | o_140                 | 2022-05-17  | salesProduct_140        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
-      | ol_180                    | o_180                 | 2022-05-17  | salesProduct_180        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
+      | ol_140                    | o_120_140_180         | 2022-05-17  | salesProduct_140        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
+      | ol_180                    | o_120_140_180         | 2022-05-17  | salesProduct_180        | 1          | 0            | 0           | 5     | 0        | EUR          | false     |
