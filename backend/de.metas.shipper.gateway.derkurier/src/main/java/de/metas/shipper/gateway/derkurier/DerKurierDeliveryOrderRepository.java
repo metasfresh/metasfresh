@@ -250,7 +250,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 					.build();
 			deliveryPositionBuilder.packageDimensions(packageDimensions);
 		}
-		deliveryPositionBuilder.grossWeightKg(lineRecord.getDK_ParcelWeight().intValue());
+		deliveryPositionBuilder.grossWeightKg(lineRecord.getDK_ParcelWeight());
 
 		final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.builder()
 				.station(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_DesiredStation, lineRecord, previousLineRecord))
@@ -411,7 +411,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				lineRecord.setDK_ParcelLength(BigDecimal.valueOf(packageDimensions.getLengthInCM()));
 				lineRecord.setDK_ParcelWidth(BigDecimal.valueOf(packageDimensions.getWidthInCM()));
 			}
-			lineRecord.setDK_ParcelWeight(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
+			lineRecord.setDK_ParcelWeight(deliveryPosition.getGrossWeightKg());
 
 			lineRecord.setDK_ParcelNumber(derKurierDeliveryData.getParcelNumber());
 

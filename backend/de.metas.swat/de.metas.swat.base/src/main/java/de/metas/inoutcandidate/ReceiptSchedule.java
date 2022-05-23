@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
@@ -59,6 +60,9 @@ public class ReceiptSchedule
 
 	@NonNull
 	private final ProductId productId;
+
+	@Nullable
+	private final ProjectId projectId;
 
 	@NonNull
 	private final Quantity quantityToDeliver;
