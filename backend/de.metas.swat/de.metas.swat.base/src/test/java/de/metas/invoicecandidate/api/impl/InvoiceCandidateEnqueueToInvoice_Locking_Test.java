@@ -27,6 +27,8 @@ import java.util.List;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.invoicecandidate.model.I_C_BPartner;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
@@ -63,6 +65,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		NOPWorkpackageLogsRepository.registerToSpringContext();
 	}
 

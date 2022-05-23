@@ -18,6 +18,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -114,6 +115,10 @@ public class PurchaseCandidate
 	private BigDecimal priceActual;
 	@Nullable
 	private BigDecimal priceEnteredEff;
+
+	@Nullable
+	private UomId priceUomId;
+
 	@Nullable
 	private Percent discount;
 	@Nullable
@@ -168,6 +173,7 @@ public class PurchaseCandidate
 			@Nullable final BigDecimal priceInternal,
 			@Nullable final BigDecimal priceActual,
 			@Nullable final BigDecimal priceEnteredEff,
+			@Nullable final UomId priceUomId,
 			@Nullable final Percent discount,
 			@Nullable final Percent discountInternal,
 			@Nullable final Percent discountEff,
@@ -181,6 +187,7 @@ public class PurchaseCandidate
 		this.id = id;
 		this.priceInternal = priceInternal;
 		this.priceEnteredEff = priceEnteredEff;
+		this.priceUomId = priceUomId;
 		this.discountInternal = discountInternal;
 		this.discountEff = discountEff;
 		this.isTaxIncluded = isTaxIncluded;

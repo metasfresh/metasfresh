@@ -16,6 +16,8 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.productprice.ProductPrice;
+import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.IProductBL;
@@ -25,7 +27,6 @@ import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -67,6 +68,13 @@ public class BpartnerPriceListServicesFacade
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
+	private final ProductPriceRepository productPriceRepository;
+
+	public BpartnerPriceListServicesFacade(@NonNull final ProductPriceRepository productPriceRepository)
+	{
+		this.productPriceRepository = productPriceRepository;
+	}
+
 	public CountryId getCountryIdByCountryCode(final String countryCode)
 	{
 		return countriesRepo.getCountryIdByCountryCode(countryCode);
@@ -93,9 +101,10 @@ public class BpartnerPriceListServicesFacade
 		return priceListsRepo.retrievePriceListVersionId(priceListId, date);
 	}
 
-	public ImmutableList<I_M_ProductPrice> getProductPrices(PriceListVersionId priceListVersionId)
+	public ImmutableList<ProductPrice> getProductPrices(@NonNull final PriceListVersionId priceListVersionId)
 	{
 		return priceListsRepo.retrieveProductPrices(priceListVersionId)
+				.map(productPriceRepository::toProductPrice)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -108,7 +117,7 @@ public class BpartnerPriceListServicesFacade
 	// 		TODO: IdentifierString must also be moved to the module containing IBPartnerDAO
 	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier, OrgId orgId)
 	{
-		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier,orgId);
+		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier, orgId);
 		return bpartnersRepo.retrieveBPartnerIdBy(query);
 	}
 

@@ -97,8 +97,8 @@ Feature: Mediated commission
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | IP        |
     And update order
-      | C_Order_ID.Identifier | DocBaseType | DocSubType |
-      | purchaseOrder_1       | POO         | MED        |
+      | C_Order_ID.Identifier | OPT.DocBaseType | OPT.DocSubType |
+      | purchaseOrder_1       | POO             | MED            |
     And perform document action
       | DocAction | C_Order_ID.Identifier |
       | CO        | purchaseOrder_1       |
