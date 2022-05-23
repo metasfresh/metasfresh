@@ -113,7 +113,7 @@ Feature: campaign prices
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.M_PricingSystem_ID |
       | o_120      | true    | bpartner_1               | 2022-05-03  | 2022-05-03T21:00:00Z |                        |
-      | o_130      | true    | bpartner_1               | 2022-06-15  | 2022-06-15T21:00:00Z |                        |
+      | o_130      | true    | bpartner_1               | 2022-05-15  | 2022-06-15T21:00:00Z |                        |
       | o_140      | true    | bpartner_1               | 2022-05-21  | 2022-05-21T21:00:00Z |                        |
       | o_180      | true    | bpartner_1               | 2022-05-28  | 2022-05-28T21:00:00Z | defaultPricingSystem   |
     And metasfresh contains C_OrderLines:
