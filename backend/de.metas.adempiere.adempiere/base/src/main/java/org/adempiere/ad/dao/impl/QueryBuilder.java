@@ -22,14 +22,11 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,12 +41,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.process.PInstanceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /* package */class QueryBuilder<T> implements IQueryBuilder<T>
 {
@@ -694,6 +692,17 @@ import lombok.NonNull;
 	public IQueryBuilder<T> addValidFromToMatchesFilter(final ModelColumn<T, ?> validFromColumn, final ModelColumn<T, ?> validToColumn, final Date dateToMatch)
 	{
 		filters.addValidFromToMatchesFilter(validFromColumn, validToColumn, dateToMatch);
+		return this;
+	}
+
+	@Override
+	public IQueryBuilder<T> addIntervalIntersection(
+			@NonNull final String lowerBoundColumnName,
+			@NonNull final String upperBoundColumnName,
+			@Nullable final ZonedDateTime lowerBoundValue,
+			@Nullable final ZonedDateTime upperBoundValue)
+	{
+		filters.addIntervalIntersection(lowerBoundColumnName, upperBoundColumnName, lowerBoundValue, upperBoundValue);
 		return this;
 	}
 }

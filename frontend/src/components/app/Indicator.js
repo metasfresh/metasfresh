@@ -1,28 +1,24 @@
-import PropTypes from 'prop-types';
 import React from 'react';
+import PropTypes from 'prop-types';
 
 /**
- * @file Indicator is a component that shows the save status to user in form of a save progress
- * line beneath the Header.
- * @module Indicator
+ * Indicator is a component that shows the save status to user in form of a save progress line beneath the Header.
  */
-const Indicator = ({ indicator, isDocumentNotSaved }) => (
-  <div>
-    <div
-      className={`indicator-bar ${
-        isDocumentNotSaved ? 'indicator-error' : ''
-      } ${!isDocumentNotSaved ? `indicator-${indicator}` : ''}`}
-    />
-  </div>
-);
+const Indicator = ({ indicator, isDocumentNotSaved }) => {
+  const className = isDocumentNotSaved
+    ? 'indicator-error'
+    : `indicator-${indicator}`;
 
-/**
- * @typedef {object} Props Component props
- * @prop {string} indicator
- * @prop {bool} [isDocumentNotSaved]
- */
+  return (
+    <div>
+      <div className={`indicator-bar ${className}`} />
+    </div>
+  );
+};
+
 Indicator.propTypes = {
-  indicator: PropTypes.string.isRequired,
+  indicator: PropTypes.oneOf(['pending', 'saving', 'saved', 'error'])
+    .isRequired,
   isDocumentNotSaved: PropTypes.bool,
 };
 
