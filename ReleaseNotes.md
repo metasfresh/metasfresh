@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#12974](https://github.com/metasfresh/metasfresh/issues/12974) Default paymentrule for packing item causes >1 invoice for the same order
   * [#13016](https://github.com/metasfresh/metasfresh/issues/13016) Shopware Fix order-item/bundle-sorting - part deux
   * [#13024](https://github.com/metasfresh/metasfresh/issues/13024) Improve API-Errormessage on wrong Headers
   * [#12966](https://github.com/metasfresh/metasfresh/issues/12966) Improve ways of API request troubleshooting
