@@ -53,6 +53,8 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final ThreadLocal<Boolean> isCorrelationLocked = ThreadLocal.withInitial(() -> false);
 	private final ThreadLocal<String[]> correlationTriggers = ThreadLocal.withInitial(this::getCorrelationTriggers);
 	private final ThreadLocal<String> initiator = ThreadLocal.withInitial(() -> "");
+	private final ThreadLocal<String> initiatorWindowId = ThreadLocal.withInitial(() -> "");
+	private final ThreadLocal<Boolean> isInitiatorLabelActive = ThreadLocal.withInitial(() -> false);
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
@@ -84,19 +86,25 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			addAdditionalTags(tags);
 		}
 
-		if(depth.get() == 0)
+		if(depth.get() == 0
+				&& metadata.getType() == Type.REST_CONTROLLER
+				&& metadata.getAction() != null
+				&& metadata.getWindowIdStr() != null)
 		{
-			if(metadata.getAction() != null)
-			{
-				initiator.set(metadata.getType().getCode() + " - " + metadata.getAction());
-			}
-			else
-			{
-				initiator.set(metadata.getType().getCode());
-			}
+			isInitiatorLabelActive.set(true);
+			initiator.set(metadata.getName() + " - " + metadata.getAction());
+			initiatorWindowId.set(metadata.getWindowIdStr());
 		}
-		mkTagIfNotNull("Initiator", initiator.get()).ifPresent(tags::add);
+		else
+		{
+			isInitiatorLabelActive.set(false);
+		}
 
+		if(isInitiatorLabelActive.get())
+		{
+			mkTagIfNotNull("Initiator", initiator.get()).ifPresent(tags::add);
+			mkTagIfNotNull("WindowId", initiatorWindowId.get()).ifPresent(tags::add);
+		}
 
 		depth.set(depth.get() + 1);
 		try(final IAutoCloseable ignored = this.reduceDepth())

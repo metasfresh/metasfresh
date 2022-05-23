@@ -157,8 +157,8 @@ public class ViewRestController
 						.name("ViewRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("createView")
+						.windowIdStr(windowIdStr)
 						.label("uri", "/rest/api/documentView/{windowId}")
-						.label("windowId", windowIdStr)
 						.build());
 	}
 
@@ -243,8 +243,8 @@ public class ViewRestController
 						.name("ViewRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("filterView")
+						.windowIdStr(windowIdStr)
 						.label("uri", "/rest/api/documentView/{windowId}/{viewId}/filter")
-						.label("windowId", windowIdStr)
 						.build());
 	}
 
@@ -299,7 +299,7 @@ public class ViewRestController
 
 	@GetMapping("/{viewId}")
 	public JSONViewResult getViewData(
-			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
 			@RequestParam(name = PARAM_PageLength) final int pageLength,
@@ -309,19 +309,19 @@ public class ViewRestController
 				PerformanceMonitoringService.class,
 				NoopPerformanceMonitoringService.INSTANCE);
 		return service.monitor(
-				() -> getViewData0(windowId, viewIdStr, firstRow, pageLength, orderBysListStr),
+				() -> getViewData0(windowIdStr, viewIdStr, firstRow, pageLength, orderBysListStr),
 				PerformanceMonitoringService.Metadata
 						.builder()
-						.name("ViewRestController")
+						.name(this.getClass().getName())
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("getViewData")
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.windowIdStr(windowIdStr)
 						.label("uri", "/rest/api/documentView/{windowId}/{viewId}")
-						.label("windowId", windowId)
 						.build());
 	}
 
 	private JSONViewResult getViewData0(
-			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
 			@RequestParam(name = PARAM_PageLength) final int pageLength,
@@ -329,7 +329,7 @@ public class ViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final ViewId viewId = ViewId.of(windowId, viewIdStr);
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final IView view = viewsRepo.getView(viewId);
 		final JSONOptions jsonOpts = newJSONOptions();
 		final ViewResult result = view.getPage(
@@ -361,8 +361,8 @@ public class ViewRestController
 						.name("ViewRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action("getViewLayout")
+						.windowIdStr(windowIdStr)
 						.label("uri", "/rest/api/documentView/{windowId}/layout")
-						.label("windowId", windowIdStr)
 						.build());
 	}
 
