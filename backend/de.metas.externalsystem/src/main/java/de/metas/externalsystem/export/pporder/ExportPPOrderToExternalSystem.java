@@ -112,4 +112,10 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 	protected abstract Map<String, String> buildParameters(@NonNull final IExternalSystemChildConfig childConfig, @NonNull final PPOrderId ppOrderId);
 
 	protected abstract String getExternalCommand();
+
+	@Override
+	public int getCurrentPendingItems()
+	{
+		return 0;
+	}
 }

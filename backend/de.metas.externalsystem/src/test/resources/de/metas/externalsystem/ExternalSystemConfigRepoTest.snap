@@ -51,28 +51,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
-  {
-    "id" : 100001,
-    "type" : "RabbitMQ",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "testRabbitMQValue",
-      "routingKey" : "routingKey",
-      "remoteUrl" : "remoteURL",
-      "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
@@ -143,23 +121,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "createBPartnerFolders" : false
     },
     "writeAudit" : false
-  }
-]
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
-  {
-    "id" : 100002,
-    "parentId" : 100001,
-    "value" : "testRabbitMQValue",
-    "routingKey" : "routingKey",
-    "remoteUrl" : "remoteURL",
-    "authToken" : "authToken",
-    "isSyncBPartnerToRabbitMQ" : true,
-    "isAutoSendWhenCreatedByUserGroup" : false,
-    "syncBPartnerToRabbitMQ" : true,
-    "autoSendWhenCreatedByUserGroup" : false,
-    "autoSendBPartnerEnabled" : false,
-    "sendBPartnerAllowed" : true
   }
 ]
 
@@ -285,13 +246,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "routingKey" : "routingKey",
       "remoteUrl" : "remoteURL",
       "authToken" : "authToken",
-	  "isSyncBPartnerToRabbitMQ" : true,
-	  "isAutoSendWhenCreatedByUserGroup" : true,
-	  "userGroupId" : 1,
+      "isSyncBPartnerToRabbitMQ" : true,
+      "isAutoSendWhenCreatedByUserGroup" : true,
+      "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
       "syncExternalReferencesToRabbitMQ" : false,
-	  "autoSendSubjectWhenCreatedByUserGroup" : true,
-	  "syncBPartnerToRabbitMQ" : true
+      "autoSendSubjectWhenCreatedByUserGroup" : true,
+      "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -313,8 +274,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
-      "bPartnerLocationIdJSONPath" : "JSONPathConstantBPartnerLocationID",
-      "salesRepJSONPath" : "/test/salesrep",
       "uomShopwareMappingList" : [
         {
           "externalSystemShopware6ConfigId" : 100002,
@@ -322,6 +281,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
+      "bPartnerLocationIdJSONPath" : "JSONPathConstantBPartnerLocationID",
+      "salesRepJSONPath" : "/test/salesrep",
       "emailJSONPath" : "JSONPathEmail",
       "freightCostNormalVatConfig" : {
         "productId" : 20,
@@ -331,12 +292,12 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "productId" : 30,
         "vatRates" : "3,4"
       },
-      "isActive" : true,
       "priceListId" : 40,
+      "isActive" : true,
+      "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
       "metasfreshIdJSONPath" : "JSONPathMetasfreshID",
-      "shopwareIdJSONPath" : "JSONPathShopwareID",
-      "value" : "testShopware6Value"
+      "shopwareIdJSONPath" : "JSONPathShopwareID"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -368,8 +329,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : false,
-      "productLookup" : "ProductNumber",
-      "value" : "testShopware6Value"
+      "value" : "testShopware6Value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -535,11 +496,34 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "autoSendSubjectWhenCreatedByUserGroup" : false,
         "syncBPartnerToRabbitMQ" : false
       },
-	  "writeAudit" : true,
-	  "auditFileFolder" : "auditFileFolder"
+      "writeAudit" : true,
+      "auditFileFolder" : "auditFileFolder"
     }
   ]
 ]
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "ftpHost" : "hostname",
+      "ftpPort" : 1111,
+      "ftpUsername" : "ftpUsername",
+      "ftpPassword" : "ftpPassword",
+      "ftpDirectory" : "directory"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
   {
