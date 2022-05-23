@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -47,7 +47,7 @@ public class ResourceAssignment
 			@NonNull final ResourceId resourceId,
 			@NonNull final String name,
 			@Nullable final String description,
-			@NonNull CalendarDateRange dateRange)
+			@NonNull final CalendarDateRange dateRange)
 	{
 		this.id = id;
 		this.resourceId = resourceId;
