@@ -903,21 +903,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return isColumnUpdateable(columnIndex);
 	}   // isUpdateable
 
-	/**
-	 * Set all columns updateable
-	 *
-	 * @param updateable updateable
-	 * @deprecated This method will be deleted in future because our {@link POInfo} has to be immutable.
-	 */
-	@Deprecated
-	public void setUpdateable(final boolean updateable)
-	{
-		for (final POInfoColumn m_column : m_columns)
-		{
-			m_column.IsUpdateable = updateable;
-		}
-	}    // setUpdateable
-
 	@Nullable
 	public String getReferencedTableNameOrNull(final String columnName)
 	{

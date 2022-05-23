@@ -1,23 +1,10 @@
 package de.metas.phonecall.service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_Phonecall_Schedule;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.standard.ICalendarBL;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallSchema;
 import de.metas.phonecall.PhonecallSchemaVersion;
@@ -33,6 +20,17 @@ import de.metas.util.time.generator.DateSequenceGenerator;
 import de.metas.util.time.generator.Frequency;
 import de.metas.util.time.generator.IDateShifter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Phonecall_Schedule;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L

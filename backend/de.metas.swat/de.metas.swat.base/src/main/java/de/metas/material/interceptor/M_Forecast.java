@@ -22,12 +22,11 @@
 
 package de.metas.material.interceptor;
 
-import de.metas.calendar.CalendarId;
-import de.metas.calendar.ICalendarBL;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.ICalendarBL;
+import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;

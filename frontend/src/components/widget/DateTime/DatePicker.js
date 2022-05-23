@@ -48,10 +48,12 @@ class DatePicker extends PureComponent {
   }
 
   handleDateChange = (dateObj) => {
+    // console.log('handleDateChange', { dateObj });
     if (!dateObj) {
       this.callPatchIfNeeded(null);
     } else {
       const dateAsMoment = this.convertToMoment(dateObj, true);
+      // console.log('handleDateChange', { dateAsMoment });
       if (dateAsMoment && dateAsMoment.isValid()) {
         this.callPatchIfNeeded(dateAsMoment);
       }
@@ -84,11 +86,12 @@ class DatePicker extends PureComponent {
     const { patch, field, handleChange } = this.props;
     const { datePatched } = this.state;
     try {
+      //console.log('callPatchIfNeeded: checking', { date, datePatched });
       if (!this.isSameMoment(date, datePatched)) {
         // calling handleChange manually to update date stored in the MasterWidget
         handleChange && handleChange(field, date);
 
-        // console.log('callPatchIfNeeded: patching date', { date, datePatched });
+        //console.log('callPatchIfNeeded: patching date', { date, datePatched });
         patch && patch(date);
       }
       //else { console.log('callPatchIfNeeded: !!!!NOT!!!!! patching date', { date, datePatched }); }
@@ -116,6 +119,7 @@ class DatePicker extends PureComponent {
   isSameMoment = (date1, date2) => {
     const moment1 = this.convertToMoment(date1);
     const moment2 = this.convertToMoment(date2);
+    //console.log('isSameMoment', { date1, moment1, date2, moment2 });
 
     return (
       moment1 === moment2 ||
@@ -124,26 +128,42 @@ class DatePicker extends PureComponent {
   };
 
   convertToMoment = (value, strict = false) => {
+    //console.log('convertToMoment --------------------', { value, strict });
     if (!value) {
       return null;
     } else if (Moment.isMoment(value)) {
       const moment = value;
+      //console.log('moment', moment);
       if (moment.isValid()) {
+        //console.log('convertToMoment: (1) valid moment => ', { momentNorm: this.normalizeMomentFormat(moment) });
         return this.normalizeMomentFormat(moment);
       } else {
+        //console.log('convertToMoment: (2) invalid moment => ', { moment });
         return moment;
       }
     } else {
       MomentTZ.locale(getCurrentActiveLocale());
 
+      //
+      // Try converting using display format
       let moment = MomentTZ(value, this.getMomentDisplayFormat(value), strict);
-      //console.log('convertToMoment1:', { value, moment });
       if (moment && moment.isValid()) {
+        // console.log('convertToMoment: (3) valid', this.normalizeMomentFormat(moment));
         return this.normalizeMomentFormat(moment);
       }
 
+      //
+      // Try converting using normalized format
       moment = MomentTZ(value, this.getMomentNormalizedFormat(), strict);
-      //console.log('convertToMoment2:', { value, moment });
+      if (moment && moment.isValid()) {
+        //console.log('convertToMoment: (4) valid', { moment, format: this.getMomentNormalizedFormat() });
+        return moment;
+      }
+
+      //
+      // Last try, try converting using standard ISO format
+      moment = MomentTZ(value, DATE_TIMEZONE_FORMAT, strict);
+      //console.log('convertToMoment: try using ISO format', { moment, isValid: moment && moment.isValid() });
       return moment;
     }
   };
@@ -153,7 +173,6 @@ class DatePicker extends PureComponent {
 
     MomentTZ.locale(getCurrentActiveLocale());
     const normalizedString = moment.format(format);
-
     let momentNorm = MomentTZ(normalizedString, format);
 
     const { dateFormat, timeFormat, timeZone } = this.props;
