@@ -23,9 +23,9 @@
 package de.metas.cucumber.stepdefs.externalreference;
 
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -70,13 +70,16 @@ public class S_ExternalReference_StepDef
 	private final ExternalReferenceTypes externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
 
 	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 
 	public S_ExternalReference_StepDef(
 			@NonNull final ExternalSystems externalSystems,
-			@NonNull final M_Product_StepDefData productTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable)
 	{
 		this.externalSystems = externalSystems;
 		this.productTable = productTable;
+		this.bpartnerTable = bpartnerTable;
 	}
 
 	@Then("verify that S_ExternalReference was created")
@@ -190,6 +193,11 @@ public class S_ExternalReference_StepDef
 		{
 			final I_M_Product product = productTable.get(recordIdentifier);
 			recordId = product.getM_Product_ID();
+		}
+		else if (externalReferenceType.equals(BPartnerExternalReferenceType.BPARTNER))
+		{
+			final I_C_BPartner bPartner = bpartnerTable.get(recordIdentifier);
+			recordId = bPartner.getC_BPartner_ID();
 		}
 		else
 		{

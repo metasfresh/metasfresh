@@ -23,18 +23,28 @@
 package de.metas.manufacturing.rest_api.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.manufacturing.v2.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.v2.JsonRequestSetOrdersExportStatusBulk;
+import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
+import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersReport;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.organization.IOrgDAO;
 import de.metas.product.ProductRepository;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -48,6 +58,11 @@ class ManufacturingOrderAPIService
 	private final ObjectMapper jsonObjectMapper;
 	private final HUReservationService huReservationService;
 	private final ExportSequenceNumberProvider exportSequenceNumberProvider;
+
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Builder
 	public ManufacturingOrderAPIService(
@@ -112,4 +127,31 @@ class ManufacturingOrderAPIService
 		return command.execute();
 	}
 
+	@NonNull
+	public JsonResponseManufacturingOrder retrievePPOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
+
+		final ImmutableList<JsonResponseManufacturingOrderBOMLine> bomLinesResponse = retrieveBomLines(ppOrderId);
+
+		final MapToJsonResponseManufacturingOrderRequest request = MapToJsonResponseManufacturingOrderRequest
+				.builder()
+				.components(bomLinesResponse)
+				.order(ppOrder)
+				.ppOrderBOMBL(ppOrderBOMBL)
+				.orgDAO(orgDAO)
+				.productRepository(productRepo)
+				.build();
+
+		return JsonConverter.toJson(request);
+	}
+
+	@NonNull
+	public ImmutableList<JsonResponseManufacturingOrderBOMLine> retrieveBomLines(@NonNull final PPOrderId ppOrderId)
+	{
+		return ppOrderBOMDAO.retrieveOrderBOMLines(ppOrderId)
+				.stream()
+				.map(bomLine -> JsonConverter.toJson(bomLine, ppOrderBOMBL, productRepo))
+				.collect(ImmutableList.toImmutableList());
+	}
 }

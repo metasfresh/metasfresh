@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersion;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsertItem;
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.Builder;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
