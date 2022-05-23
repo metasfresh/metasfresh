@@ -57,10 +57,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class C_CampaignPricePrice_StepDef
+public class C_CampaignPrice_StepDef
 {
-	private final M_ProductPrice_StepDefData productPriceTable;
-	private final M_ProductScalePrice_StepDefData productScalePriceTable;
 	private final M_Product_StepDefData productTable;
 	private final CurrencyRepository currencyRepository;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -69,16 +67,12 @@ public class C_CampaignPricePrice_StepDef
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	public C_CampaignPricePrice_StepDef(
-			@NonNull final M_ProductPrice_StepDefData productPriceTable,
-			@NonNull final M_ProductScalePrice_StepDefData productScalePriceTable,
+	public C_CampaignPrice_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable)
 	{
-		this.productPriceTable = productPriceTable;
-		this.productScalePriceTable = productScalePriceTable;
 		this.productTable = productTable;
 		this.currencyRepository = currencyRepository;
 		this.bpartnerTable = bpartnerTable;
