@@ -36,7 +36,8 @@
       "paymentTerm": "val-paymentTermValue",
       "orderLineGroup": {
         "groupKey": "externalLineId2",
-        "groupMainItem": true
+        "groupMainItem": true,
+        "ordering": "GroupFirst"
       },
       "dateCandidate": "2021-01-11",
       "line": 10,

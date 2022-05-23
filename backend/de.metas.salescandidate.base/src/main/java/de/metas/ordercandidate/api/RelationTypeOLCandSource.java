@@ -11,6 +11,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.payment.PaymentRule;
@@ -127,6 +128,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.isGroupingError(olCandRecord.isGroupingError())
 				.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
 				.discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
+				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(olCandRecord.getCompensationGroupOrderBy()))
 				.build();
 
 		return OLCand.builder()

@@ -13,6 +13,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.location.LocationId;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -280,6 +281,10 @@ public class OLCandRepository
 			Optional.ofNullable(orderLineGroup.getDiscount())
 					.map(Percent::toBigDecimal)
 					.ifPresent(olCandPO::setGroupCompensationDiscountPercentage);
+
+			Optional.ofNullable(orderLineGroup.getGroupCompensationOrderBy())
+					.map(GroupCompensationOrderBy::getCode)
+					.ifPresent(olCandPO::setCompensationGroupOrderBy);
 		}
 
 		olCandPO.setDescription(request.getDescription());

@@ -772,6 +772,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
 
 	/**
+	 * Set CompensationGroupOrderBy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompensationGroupOrderBy (@Nullable java.lang.String CompensationGroupOrderBy);
+
+	/**
+	 * Get CompensationGroupOrderBy.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCompensationGroupOrderBy();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupOrderBy = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupOrderBy", null);
+	String COLUMNNAME_CompensationGroupOrderBy = "CompensationGroupOrderBy";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

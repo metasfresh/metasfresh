@@ -44,7 +44,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -86,11 +85,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -140,6 +141,7 @@ class OLCandOrderFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
@@ -363,8 +365,15 @@ class OLCandOrderFactory
 
 	private void validateAndCreateCompensationGroups()
 	{
-		groupsToOrderLines.keySet()
+		orderLines.values()
 				.stream()
+				//dev-note: make sure the compensation groups are created in the right order
+				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.map(primaryOrderLineToGroup::get)
+				.filter(Objects::nonNull)
+				.map(OrderLineGroup::getGroupKey)
 				.map(groupsToOrderLines::get)
 				.forEach(this::createCompensationGroup);
 	}
@@ -388,12 +397,11 @@ class OLCandOrderFactory
 
 		final GroupCompensationType groupCompensationType = getGroupCompensationType(productForMainLine);
 		final GroupCompensationAmtType groupCompensationAmtType = getGroupCompensationAmtType(productForMainLine);
+		final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
 
 		if (groupCompensationType.equals(GroupCompensationType.Discount)
 				&& groupCompensationAmtType.equals(GroupCompensationAmtType.Percent))
 		{
-			final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
-
 			Optional.ofNullable(orderLineGroup.getDiscount())
 					.map(Percent::toBigDecimal)
 					.ifPresent(mainOrderLineInGroup::setGroupCompensationPercentage);
@@ -406,9 +414,10 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(orderLineIds)
-				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
-				.build());
+															.orderLineIds(orderLineIds)
+															.newGroupTemplate(createNewGroupTemplate(productId))
+															.groupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy())
+															.build());
 	}
 
 	@NonNull
@@ -423,13 +432,13 @@ class OLCandOrderFactory
 		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
-	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId, @Nullable final ProductCategoryId productCategoryId)
+	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId)
 	{
 		return GroupTemplate.builder()
 				.name(productBL.getProductName(productId))
 				.regularLinesToAdd(ImmutableList.of())
 				.compensationLines(ImmutableList.of())
-				.productCategoryId(productCategoryId)
+				.productCategoryId(productDAO.retrieveProductCategoryByProductId(productId))
 				.build();
 	}
 

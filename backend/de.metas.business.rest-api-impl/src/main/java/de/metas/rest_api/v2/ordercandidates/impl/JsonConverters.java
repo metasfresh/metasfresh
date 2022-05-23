@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.common.ordercandidates.v2.request.JsonApplySalesRepFrom;
+import de.metas.common.ordercandidates.v2.request.JsonGroupCompensationOrderBy;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
@@ -21,6 +22,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.OLCand;
@@ -162,6 +164,7 @@ public class JsonConverters
 				.groupKey(jsonOrderLineGroup.getGroupKey())
 				.isGroupMainItem(jsonOrderLineGroup.isGroupMainItem())
 				.discount(Percent.ofNullable(jsonOrderLineGroup.getDiscount()))
+				.groupCompensationOrderBy(toGroupCompensationOrderBy(jsonOrderLineGroup.getOrdering()))
 				.build();
 
 		if (orderLineGroup != null && orderLineGroup.isGroupMainItem() && productBL.isStocked(productInfo.getProductId()))
@@ -339,6 +342,7 @@ public class JsonConverters
 				: JsonOrderLineGroup.builder()
 				.groupKey(orderLineGroup.getGroupKey())
 				.isGroupMainItem(orderLineGroup.isGroupMainItem())
+				.ordering(toJsonGroupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy()))
 				.build();
 
 		return JsonOLCand.builder()
@@ -392,6 +396,44 @@ public class JsonConverters
 				return AssignSalesRepRule.CandidateFirst;
 			default:
 				throw new AdempiereException("Unsupported JsonApplySalesRepFrom " + jsonApplySalesRepFrom);
+		}
+	}
+
+	@Nullable
+	private static GroupCompensationOrderBy toGroupCompensationOrderBy(@Nullable final JsonGroupCompensationOrderBy ordering)
+	{
+		if (ordering == null)
+		{
+			return null;
+		}
+
+		switch (ordering)
+		{
+			case GroupFirst:
+				return GroupCompensationOrderBy.CompensationGroupFirst;
+			case GroupLast:
+				return GroupCompensationOrderBy.CompensationGroupLast;
+			default:
+				throw new AdempiereException("Unsupported JsonGroupCompensationOrderBy " + ordering);
+		}
+	}
+
+	@Nullable
+	private static JsonGroupCompensationOrderBy toJsonGroupCompensationOrderBy(@Nullable final GroupCompensationOrderBy groupCompensationOrderBy)
+	{
+		if (groupCompensationOrderBy == null)
+		{
+			return null;
+		}
+
+		switch (groupCompensationOrderBy)
+		{
+			case CompensationGroupFirst:
+				return JsonGroupCompensationOrderBy.GroupFirst;
+			case CompensationGroupLast:
+				return JsonGroupCompensationOrderBy.GroupLast;
+			default:
+				throw new AdempiereException("Unsupported GroupCompensationOrderBy " + groupCompensationOrderBy);
 		}
 	}
 }
