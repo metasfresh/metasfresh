@@ -95,7 +95,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			initiator.set(metadata.getName() + " - " + metadata.getAction());
 			initiatorWindowId.set(metadata.getWindowIdStr());
 		}
-		else
+		else if(depth.get() == 0)
 		{
 			isInitiatorLabelActive.set(false);
 		}
