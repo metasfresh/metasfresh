@@ -51,82 +51,25 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getById=[
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
     "id" : 100001,
-    "type" : "Ebay",
+    "type" : "RabbitMQ",
     "name" : "name",
     "active" : true,
     "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
-      "value" : "testEbayValue",
-      "appId" : "appId",
-      "certId" : "certId",
-      "devId" : "devId",
-      "refreshToken" : "refreshToken",
-      "externalSystemEbayConfigMappingList" : [ ],
-      "apiMode" : "SANDBOX",
-      "isActive" : true
+      "value" : "testRabbitMQValue",
+      "routingKey" : "routingKey",
+      "remoteUrl" : "remoteURL",
+      "authToken" : "authToken",
+      "isSyncBPartnerToRabbitMQ" : true,
+      "syncBPartnerToRabbitMQ" : true
     },
-    "writeAudit" : false
-  }
-]
-
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndParent=[
-  {
-    "id" : 100002,
-    "parentId" : 100001,
-    "value" : "testEbayValue",
-    "appId" : "appId",
-    "certId" : "certId",
-    "devId" : "devId",
-    "refreshToken" : "refreshToken",
-    "externalSystemEbayConfigMappingList" : [
-      {
-        "seqNo" : 10,
-        "docTypeOrderId" : 10000,
-        "paymentRule" : "K",
-        "bpartnerIfExists" : "UPDATE_MERGE",
-        "bpartnerIfNotExists" : "FAIL",
-        "bpartnerLocationIfExists" : "DONT_UPDATE",
-        "bpartnerLocationIfNotExists" : "CREATE",
-        "isInvoiceEmailEnabled" : true,
-        "paymentTermId" : 10000,
-        "ebayCustomerGroup" : "testWithAnä",
-        "ebayPaymentMethod" : "test",
-        "description" : "test"
-      }
-    ],
-    "apiMode" : "SANDBOX",
-    "isActive" : true
-  }
-]
-
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndValue=[
-  {
-    "id" : 100001,
-    "type" : "Ebay",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "testEbayValue",
-      "appId" : "appId",
-      "certId" : "certId",
-      "devId" : "devId",
-      "refreshToken" : "refreshToken",
-      "externalSystemEbayConfigMappingList" : [ ],
-      "apiMode" : "SANDBOX",
-      "isActive" : true
-    },
-    "writeAudit" : false
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -203,6 +146,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
   }
 ]
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testRabbitMQValue",
+    "routingKey" : "routingKey",
+    "remoteUrl" : "remoteURL",
+    "authToken" : "authToken",
+    "isSyncBPartnerToRabbitMQ" : true,
+    "isAutoSendWhenCreatedByUserGroup" : false,
+    "syncBPartnerToRabbitMQ" : true,
+    "autoSendWhenCreatedByUserGroup" : false,
+    "autoSendBPartnerEnabled" : false,
+    "sendBPartnerAllowed" : true
+  }
+]
+
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
@@ -220,9 +180,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
-      "autoSendBPartnerEnabled" : false,
-      "sendBPartnerAllowed" : true,
-      "autoSendWhenCreatedByUserGroup" : false,
+      "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : false,
       "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
@@ -241,9 +201,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "authToken" : "authToken",
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
-    "autoSendBPartnerEnabled" : false,
-    "sendBPartnerAllowed" : true,
-    "autoSendWhenCreatedByUserGroup" : false,
+    "isSyncExternalReferencesToRabbitMQ" : false,
+    "syncExternalReferencesToRabbitMQ" : false,
+    "autoSendSubjectWhenCreatedByUserGroup" : false,
     "syncBPartnerToRabbitMQ" : true
   }
 ]
@@ -263,13 +223,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "routingKey" : "routingKey",
       "remoteUrl" : "remoteURL",
       "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "isAutoSendWhenCreatedByUserGroup" : true,
-      "userGroupId" : 1,
-      "autoSendBPartnerEnabled" : true,
-      "sendBPartnerAllowed" : true,
-      "autoSendWhenCreatedByUserGroup" : true,
-      "syncBPartnerToRabbitMQ" : true
+	  "isSyncBPartnerToRabbitMQ" : true,
+	  "isAutoSendWhenCreatedByUserGroup" : true,
+	  "userGroupId" : 1,
+      "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
+	  "autoSendSubjectWhenCreatedByUserGroup" : true,
+	  "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -291,6 +251,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret",
       "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerLocationIdJSONPath" : "JSONPathConstantBPartnerLocationID",
+      "salesRepJSONPath" : "/test/salesrep",
       "uomShopwareMappingList" : [
         {
           "externalSystemShopware6ConfigId" : 100002,
@@ -298,12 +260,21 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep",
-      "priceListId" : 1,
+      "emailJSONPath" : "JSONPathEmail",
+      "freightCostNormalVatConfig" : {
+        "productId" : 20,
+        "vatRates" : "1,2"
+      },
+      "freightCostReducedVatConfig" : {
+        "productId" : 30,
+        "vatRates" : "3,4"
+      },
       "isActive" : true,
-      "value" : "testShopware6Value",
-      "productLookup" : "ProductNumber"
+      "priceListId" : 40,
+      "productLookup" : "ProductNumber",
+      "metasfreshIdJSONPath" : "JSONPathMetasfreshID",
+      "shopwareIdJSONPath" : "JSONPathShopwareID",
+      "value" : "testShopware6Value"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -332,12 +303,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : false,
-      "value" : "testShopware6Value",
-      "productLookup" : "ProductNumber"
+      "productLookup" : "ProductNumber",
+      "value" : "testShopware6Value"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -365,9 +335,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "paymentTermId" : 10000,
         "sw6CustomerGroup" : "testWithAnä",
         "sw6PaymentMethod" : "test",
-        "description" : "test",
-        "bPartnerIdJSONPath" : "/test/bp",
-        "bPartnerlookup" : "ExternalReference"
+        "description" : "test"
       }
     ],
     "uomShopwareMappingList" : [
@@ -377,7 +345,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "shopwareCode" : "shopwareCode"
       }
     ],
-    "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
     "priceListId" : 1,
     "isActive" : true,
@@ -408,7 +375,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
@@ -436,7 +402,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientSecret" : "new-clientSecret",
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [ ],
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 2,
       "isActive" : true,
@@ -483,6 +448,35 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
   }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
+  [
+    {
+      "id" : 100001,
+      "type" : "RabbitMQ",
+      "name" : "name",
+      "active" : true,
+      "orgId" : 0,
+      "childConfig" : {
+        "id" : 100002,
+        "parentId" : 100001,
+        "value" : "notImportant",
+        "routingKey" : "routingKey",
+        "remoteUrl" : "remoteURL",
+        "authToken" : "authToken",
+        "isSyncBPartnerToRabbitMQ" : false,
+        "isAutoSendWhenCreatedByUserGroup" : false,
+        "isSyncExternalReferencesToRabbitMQ" : false,
+        "syncExternalReferencesToRabbitMQ" : false,
+        "autoSendSubjectWhenCreatedByUserGroup" : false,
+        "syncBPartnerToRabbitMQ" : false
+      },
+	  "writeAudit" : true,
+	  "auditFileFolder" : "auditFileFolder"
+    }
+  ]
 ]
 
 

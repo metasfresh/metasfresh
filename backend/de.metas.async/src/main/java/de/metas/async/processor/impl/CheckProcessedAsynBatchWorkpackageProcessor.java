@@ -30,6 +30,7 @@ import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -58,52 +59,65 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		boolean hasError = false;
-
 		final List<I_C_Async_Batch> batches = queueDAO.retrieveAllItems(workpackage, I_C_Async_Batch.class);
-		for (final I_C_Async_Batch asyncBatch : batches)
+
+		if (batches == null || batches.size() != 1)
 		{
-			if (asyncBatch.isProcessed() || !asyncBatch.isActive())
-			{
-				// already processed => do nothing
-				continue;
-			}
-
-			// check if keep alive time expired and if it has; set wp to error
-			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
-			final boolean keepAliveTimeExpired = asyncBatchBL.keepAliveTimeExpired(asyncBatchId);
-			if (keepAliveTimeExpired)
-			{
-				hasError = true;
-				continue;
-			}
-
-			//
-			// Try to mark it as processed now
-			final boolean batchIsProcessed = asyncBatchBL.updateProcessed(asyncBatchId);
-			if (!batchIsProcessed)
-			{
-				throw WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
-			}
-
+			throw new AdempiereException("There should always be just one asyncBatch enqueued for each 'CheckProcessedAsynBatchWorkpackageProcessor' instance!")
+					.appendParametersToMessage()
+					.setParameter("C_Queue_WorkPackage_ID", workpackage.getC_Queue_WorkPackage_ID());
 		}
 
-		if (hasError)
+		final I_C_Async_Batch asyncBatch = batches.get(0);
+
+		if (asyncBatch.isProcessed() || !asyncBatch.isActive())
+		{
+			// already processed => do nothing
+			return Result.SUCCESS;
+		}
+
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+
+		//
+		// check if we need to wait for a bit before trying to set the processed status
+		final Duration delayUntilCheckingProcessedState = asyncBatchBL.getTimeUntilProcessedRecheck(asyncBatch);
+
+		if (delayUntilCheckingProcessedState.toMillis() > 0)
+		{
+			// a delay that didn't fit into Integer occured when during testing we got the async-batch's first/last processed from the actual time, but "now" from SystemTime with a fixed testing-value. 
+			Check.assume(delayUntilCheckingProcessedState.toMillis() <= Integer.MAX_VALUE, "The delay until re-checking processed state of C_Async_Batch_ID={} can't be too big", asyncBatch.getC_Async_Batch_ID());
+			throw WorkpackageSkipRequestException.createWithTimeout("AsyncBatch not ready for processed status check. Postponed!", Math.toIntExact(delayUntilCheckingProcessedState.toMillis()));
+		}
+
+		//
+		// try to set the processed status
+		final boolean batchIsProcessed = asyncBatchBL.updateProcessedOutOfTrx(asyncBatchId);
+		if (batchIsProcessed)
+		{
+			return Result.SUCCESS;
+		}
+
+		//
+		// check if keep alive time expired and if it has; set wp to error
+		final boolean keepAliveTimeExpired = asyncBatchBL.keepAliveTimeExpired(asyncBatchId);
+		if (keepAliveTimeExpired)
 		{
 			throw new AdempiereException("@IAsyncBatchBL.keepAliveTimeExpired@");
 		}
 
-		return Result.SUCCESS;
+		throw WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
 	}
 
 	private int getWorkpackageSkipTimeoutMillis(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final long skipTimeoutMillis = asyncBatchBL.getAsyncBatchType(asyncBatch).map(AsyncBatchType::getSkipTimeout).orElse(Duration.ZERO).toMillis();
-		if (skipTimeoutMillis > 0)
+		if (asyncBatch.getC_Async_Batch_Type_ID() > 0)
 		{
-			return (int)skipTimeoutMillis;
+			final long skipTimeoutMillis = asyncBatchBL.getAsyncBatchType(asyncBatch).map(AsyncBatchType::getSkipTimeout).orElse(Duration.ZERO).toMillis();
+			if (skipTimeoutMillis > 0)
+			{
+				return (int)skipTimeoutMillis;
+			}
 		}
-
 		return sysConfigBL.getIntValue(SYSCONFIG_WorkpackageSkipTimeoutMillis, DEFAULT_WorkpackageSkipTimeoutMillis);
 	}
 }

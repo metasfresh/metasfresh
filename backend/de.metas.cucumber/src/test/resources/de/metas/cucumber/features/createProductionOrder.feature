@@ -5,7 +5,9 @@ Feature: create production order
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And metasfresh has date and time 2021-04-11T08:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
     And load M_AttributeSet:
       | M_AttributeSet_ID.Identifier   | Name               |
@@ -16,8 +18,11 @@ Feature: create production order
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
+    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
+  @Id:S0129.1_100
+  @Id:S0129.2_100
   Scenario:  The manufacturing order is created from a manufacturing order candidate
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
@@ -84,9 +89,8 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        | productPlanningASI                       |
-    And metasfresh initially has no MD_Candidate data
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | EndcustomerPP_1 | N            | Y              | ps_1                          |
@@ -107,6 +111,7 @@ Feature: create production order
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | ol_1       | o_1                   | p_1                     | 10         | olASI                                    |
+    # Complete the order to set the production dispo in motion
     When the order identified by o_1 is completed
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -120,9 +125,11 @@ Feature: create production order
     And after not more than 30s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           | bomLineASI                               |
+    # now create the PP_Order from the candidates
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
+    # this is the PP_Order_Candidates from above, but now with processed=Y
     Then after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | ocP_1      | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                                   |
@@ -139,14 +146,18 @@ Feature: create production order
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_3        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | 0                      | bomASI                                   |
       | c_l_3      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | 0                      | bomLineASI                               |
-    And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | c_2                        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0   | -10                    | bomASI                                   |
-      | c_l_1                      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0   | 0                      | bomLineASI                               |
-      | c_l_2                      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 100                    | bomLineASI                               |
+    And after not more than 30s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
+      | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0   | -10                    | bomASI                                   |
+      | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0   | 0                      | bomLineASI                               |
+      | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 100                    | bomLineASI                               |
 
   @from:cucumber
+  @Id:S0129.2_130
+  @Id:S0129.2_150
+  @Id:S0129.2_170
   Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it
+    # Basic setup
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
       | p_3        | trackedProduct_2           | standard_category                    |
@@ -210,9 +221,8 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_2     | p_3                     | bomVersions_2                        | false        | productPlanningASI                       |
-    And metasfresh initially has no MD_Candidate data
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_2     | p_3                     | bomVersions_2                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_3 | EndcustomerPP_2 | N            | Y              | ps_2                          |
@@ -227,6 +237,7 @@ Feature: create production order
     ]
   }
   """
+    # Create the order to start it all
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_2        | true    | endcustomer_3            | 2021-06-17  | 2021-06-16T21:00:00Z |
@@ -265,7 +276,7 @@ Feature: create production order
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_4        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 10   | 0                      | bomASI                                   |
       | c_l_3      | DEMAND            | PRODUCTION                    | p_4                     | 2021-06-16T21:00:00Z | -100 | 0                      | bomLineASI                               |
-    And the following MD_Candidates are validated
+    And after not more than 30s, MD_Candidates are found
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_3                        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 0   | -10                    | bomASI                                   |
       | c_l_1                      | DEMAND            | PRODUCTION                    | p_4                     | 2021-06-16T21:00:00Z | 0   | 0                      | bomLineASI                               |
@@ -273,6 +284,7 @@ Feature: create production order
     And the following PP_Order_Candidates are re-opened
       | PP_Order_Candidate_ID.Identifier |
       | ocP_2                            |
+    # raise the quantity from 10 to 22, so 12 additional items are requried
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule |
       | ocP_2                            | 22         |                   |
@@ -280,7 +292,7 @@ Feature: create production order
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_4        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 10  | 12                     | bomASI                                   |
       | c_l_4      | SUPPLY            |                               | p_4                     | 2021-06-16T21:00:00Z | 120 | 0                      | bomLineASI                               |
-    And the following MD_Candidates are validated
+    And after not more than 30s, MD_Candidates are found
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_3                        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 12  | 2                      | bomASI                                   |
       | c_l_1                      | DEMAND            | PRODUCTION                    | p_4                     | 2021-06-16T21:00:00Z | 120 | -120                   | bomLineASI                               |
@@ -305,7 +317,7 @@ Feature: create production order
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_5        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 12   | 12                     | bomASI                                   |
       | c_l_5      | DEMAND            | PRODUCTION                    | p_4                     | 2021-06-16T21:00:00Z | -120 | 0                      | bomLineASI                               |
-    And the following MD_Candidates are validated
+    And after not more than 30s, MD_Candidates are found
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_4                        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 10  | 0                      | bomASI                                   |
       | c_3                        | SUPPLY            | PRODUCTION                    | p_3                     | 2021-06-16T21:00:00Z | 0   | -10                    | bomASI                                   |
@@ -341,8 +353,8 @@ Feature: create production order
       | boml_11    | bom_11                       | p_22                    | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_11 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_11    | p_11                    | bomVersions_3                        | false        |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_11    | p_11                    | bomVersions_3                            | false        |
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | s_1        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10  | 10                     |
@@ -359,10 +371,12 @@ Feature: create production order
     When the order identified by o_11 is completed
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | s_1        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10   | 10                     |
       | c_11       | DEMAND            | SHIPMENT                      | p_11                    | 2021-04-12T21:00:00Z | -20  | -10                    |
       | c_22       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 10   | 0                      |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | -100 | -100                   |
       | c_l_2      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100  | 0                      |
+      | s_2        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_11      | false     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
@@ -385,19 +399,18 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_33       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 10   | 0                      |
-      | c_l_3      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | -100 | 0                      |
-    And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_22                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 0   | -10                    |
-      | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | 0   | 0                      |
-      | c_l_2                      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100 | 100                    |
-    And the following stock MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | M_Product_ID.Identifier | DateProjected        | Qty |
-      | s_2                        | p_11                    | 2021-04-14T21:00:00Z | 10  |
+      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | s_1                        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10   | 10                     |
+      | c_11                       | DEMAND            | SHIPMENT                      | p_11                    | 2021-04-12T21:00:00Z | -20  | -10                    |
+      | c_22                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 0    | -10                    |
+      | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | 0    | 0                      |
+      | c_l_2                      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100  | 100                    |
+      | c_33                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 10   | 0                      |
+      | c_l_3                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | -100 | 0                      |
+      | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
 
   @from:cucumber
+  @Id:S0129.2_200
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past
     Given metasfresh contains M_Products:
       | Identifier | Name                       | OPT.M_Product_Category_ID.Identifier |
@@ -465,8 +478,8 @@ Feature: create production order
   }
   """
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ppln_111   | p_111                   | bomVersions_4                        | false        | productPlanningASI                       |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ppln_111   | p_111                   | bomVersions_4                            | false        | productPlanningASI                       |
     And metasfresh contains C_BPartners:
       | Identifier      | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_222 | EndcustomerPP_4 | N            | Y              | ps_111                        |
@@ -507,7 +520,7 @@ Feature: create production order
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_222      | SUPPLY            | PRODUCTION                    | p_111                   | 2021-04-11T21:00:00Z | 10  | 10                     | bomASI                                   |
       | c_l_3      | SUPPLY            |                               | p_222                   | 2021-04-11T21:00:00Z | 100 | 0                      | bomLineASI                               |
-    And the following MD_Candidates are validated
+    And after not more than 30s, MD_Candidates are found
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_111                      | DEMAND            | SHIPMENT                      | p_111                   | 2021-04-12T21:00:00Z | 10  | 0                      | bomASI                                   |
       | c_l_1                      | DEMAND            | PRODUCTION                    | p_222                   | 2021-04-11T21:00:00Z | 100 | -100                   | bomLineASI                               |
@@ -531,12 +544,10 @@ Feature: create production order
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
       | c_333      | SUPPLY            | PRODUCTION                    | p_111                   | 2021-04-11T21:00:00Z | 10   | 10                     | bomASI                                   |
       | c_l_4      | DEMAND            | PRODUCTION                    | p_222                   | 2021-04-11T21:00:00Z | -100 | 0                      | bomLineASI                               |
-    And the following MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.M_AttributeSetInstance_ID.Identifier |
-      | c_222                      | SUPPLY            | PRODUCTION                    | p_111                   | 2021-04-11T21:00:00Z | 0   | 0                      | bomASI                                   |
-      | c_l_1                      | DEMAND            | PRODUCTION                    | p_222                   | 2021-04-11T21:00:00Z | 0   | 0                      | bomLineASI                               |
-      | c_l_2                      | SUPPLY            |                               | p_222                   | 2021-04-12T21:00:00Z | 100 | 100                    | bomLineASI                               |
-      | c_l_3                      | SUPPLY            |                               | p_222                   | 2021-04-11T21:00:00Z | 100 | 100                    | bomLineASI                               |
+      | c_222      | SUPPLY            | PRODUCTION                    | p_111                   | 2021-04-11T21:00:00Z | 0    | 0                      | bomASI                                   |
+      | c_l_1      | DEMAND            | PRODUCTION                    | p_222                   | 2021-04-11T21:00:00Z | 0    | 0                      | bomLineASI                               |
+      | c_l_2      | SUPPLY            |                               | p_222                   | 2021-04-12T21:00:00Z | 100  | 100                    | bomLineASI                               |
+      | c_l_3      | SUPPLY            |                               | p_222                   | 2021-04-11T21:00:00Z | 100  | 100                    | bomLineASI                               |
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, other md_candidates already exist and the date is changed in the future
@@ -565,8 +576,8 @@ Feature: create production order
       | boml_11    | bom_11                       | p_22                    | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_11 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_11    | p_11                    | bomVersions_5                        | false        |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_11    | p_11                    | bomVersions_5                            | false        |
     And metasfresh initially has this MD_Candidate data
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | s_1        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10  | 10                     |
@@ -574,6 +585,7 @@ Feature: create production order
     And metasfresh contains C_BPartners:
       | Identifier     | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_22 | EndcustomerPP_5 | N            | Y              | ps_11                         |
+    # Create a sales order at a date in between the two MD_Candidates
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_11       | true    | endcustomer_22           | 2021-04-13  | 2021-04-12T21:00:00Z |
@@ -583,29 +595,30 @@ Feature: create production order
     When the order identified by o_11 is completed
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | s_1        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10   | 10                     |
       | c_11       | DEMAND            | SHIPMENT                      | p_11                    | 2021-04-12T21:00:00Z | -20  | -10                    |
       | c_22       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-12T21:00:00Z | 10   | 0                      |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | -100 | -100                   |
       | c_l_2      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100  | 0                      |
+      | s_2        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_11      | false     | p_11                    | bom_11                       | ppln_11                           | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    |
     And after not more than 30s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_11                            | olc_11     | p_22                    | 100        | PCE               | CO            | boml_11                          |
+    # leave QtyEntered untouched, but update DateStartSchedule, to move the candidate "behind" the second inventory-up
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID.Identifier | QtyEntered | DateStartSchedule    |
       | oc_11                            |            | 2021-04-15T21:00:00Z |
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_22       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-15T21:00:00Z | 10  | 10                     |
-    And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | s_1                        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10  | 10                     |
       | c_11                       | DEMAND            | SHIPMENT                      | p_11                    | 2021-04-12T21:00:00Z | 20  | -10                    |
+      | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10  | 0                      |
+      | c_22                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-15T21:00:00Z | 10  | 10                     |
       | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-15T21:00:00Z | 100 | 0                      |
-    And the following stock MD_Candidates are validated
-      | MD_Candidate_ID.Identifier | M_Product_ID.Identifier | DateProjected        | Qty |
-      | s_2                        | p_11                    | 2021-04-14T21:00:00Z | 0   |
+      | c_l_2                      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100 | 100                    |
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_11                            |
@@ -622,19 +635,21 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_11                           | ppo_11                 | 10         | PCE               |
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_33       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-15T21:00:00Z | 10   | 10                     |
-      | c_l_3      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-15T21:00:00Z | -100 | 0                      |
-    And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_22                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-15T21:00:00Z | 0   | 0                      |
+      | s_1                        | INVENTORY_UP      |                               | p_11                    | 2021-04-10T21:00:00Z | 10  | 10                     |
       | c_l_2                      | SUPPLY            |                               | p_22                    | 2021-04-12T21:00:00Z | 100 | 100                    |
+      | c_11                       | DEMAND            | SHIPMENT                      | p_11                    | 2021-04-12T21:00:00Z | 20  | -10                    |
+      | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10  | 0                      |
+      | c_22                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-15T21:00:00Z | 0   | 0                      |
+      | c_33                       | SUPPLY            | PRODUCTION                    | p_11                    | 2021-04-15T21:00:00Z | 10  | 10                     |
+      | c_l_3                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-15T21:00:00Z | 100 | 0                      |
       | c_l_1                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-15T21:00:00Z | 0   | 100                    |
 
-
   @from:cucumber
-  Scenario: BOM is created with two lines, Manufacturing order candidate is generated, then another BOM (newer than the previous one in terms of validFrom) is created from the API, Manufacturing order candidate and Material schedules are updated accordingly, then the manufacturing order is created from the manufacturing order candidate
-
+  Scenario: BOM bom_1 is created with two components. Manufacturing order candidate is generated,
+  then another BOM (newer than the previous one in terms of validFrom) is created from the API,
+  Manufacturing order candidate and Material schedules are updated accordingly,
+  then the manufacturing order is created from the manufacturing order candidate.
     Given metasfresh contains M_Products:
       | Identifier | Value           | Name                         |
       | p_1        | trackedValue6   | trackedProduct_6             |
@@ -662,9 +677,8 @@ Feature: create production order
       | boml_2     | bom_1                        | p_comp_2                | 2021-04-01 | 15       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_1     | p_1                     | bomVersions_1                        | false        |
-    And metasfresh initially has no MD_Candidate data
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | EndcustomerPP_6 | N            | Y              | ps_1                          |
@@ -696,7 +710,6 @@ Feature: create production order
       | GRSSignum           | component1ExternalRef6   | Product                    | p_comp_1            |
       | GRSSignum           | component3ExternalRef6   | Product                    | p_comp_3            |
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bom/version/001' and fulfills with '200' status code
-
     """
  {
     "uomCode": "PCE",
@@ -746,11 +759,6 @@ Feature: create production order
       | oc_1                             | olc_2      | p_comp_2                | 0          | PCE               | CO            | boml_2                           |
       | oc_1                             | olc_3      | p_comp_3                | 300        | PCE               | CO            | boml_4                           |
     And after not more than 30s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_l_3_d    | DEMAND            | PRODUCTION                    | p_comp_3                | 2021-04-16T21:00:00Z | -300 | -300                   |
-      | c_l_3_s    | SUPPLY            |                               | p_comp_3                | 2021-04-16T21:00:00Z | 300  | 0                      |
-      | c_l_1_s2   | SUPPLY            |                               | p_comp_1                | 2021-04-16T21:00:00Z | 100  | 0                      |
-    And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1                        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 10  | -10                    |
       | c_2                        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10  | 0                      |
@@ -778,11 +786,6 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ocP_1                            | ppo_1                  | 10         | PCE               |
     And after not more than 30s, MD_Candidates are found
-      | Identifier  | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_3         | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | 0                      |
-      | c_ppo_l_1_d | DEMAND            | PRODUCTION                    | p_comp_1                | 2021-04-16T21:00:00Z | -200 | 0                      |
-      | c_ppo_l_2_d | DEMAND            | PRODUCTION                    | p_comp_3                | 2021-04-16T21:00:00Z | -300 | 0                      |
-    And the following MD_Candidates are validated
       | MD_Candidate_ID.Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1                        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 10  | -10                    |
       | c_2                        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0   | -10                    |

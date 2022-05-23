@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<EDI_cctop_invoic_v AD_Client_Value="Spavetti" ReplicationMode="1" ReplicationType="M" SequenceNo="1489023" TrxName="" Version="*">
+<?xml version="1.0" encoding="UTF-8"?><EDI_cctop_invoic_v AD_Client_Value="Spavetti" ReplicationMode="1" ReplicationType="M" SequenceNo="1489023" TrxName="" Version="*">
     <C_BPartner_Location_ID>2209104</C_BPartner_Location_ID>
     <C_Invoice_ID>1488989</C_Invoice_ID>
     <DateInvoiced>2021-02-05+01:00</DateInvoiced>
@@ -138,7 +137,7 @@
         <Rate>2.500000000000</Rate>
         <taxfree>N</taxfree>
         <Value>Product_Qty24_Value</Value>
-        <VendorProductNo>Product_Qty24_VendorProductNo</VendorProductNo>
+        <CustomerProductNo>Product_Qty24_CustomerProductNo</CustomerProductNo>
         <EDI_cctop_invoic_v_ID>1488989</EDI_cctop_invoic_v_ID>
         <ProductDescription>Product_Qty24_Description</ProductDescription>
         <OrderPOReference>OrderPOReference</OrderPOReference>
@@ -165,7 +164,7 @@
         <Rate>2.500000000000</Rate>
         <taxfree>N</taxfree>
         <Value>Product_Qty60_Value</Value>
-        <VendorProductNo>Product_Qty60_VendorProductNo</VendorProductNo>
+        <CustomerProductNo>Product_Qty60_CustomerProductNo</CustomerProductNo>
         <EDI_cctop_invoic_v_ID>1488989</EDI_cctop_invoic_v_ID>
         <ProductDescription>Product_Qty60_Value_Description</ProductDescription>
         <OrderPOReference>OrderPOReference</OrderPOReference>
@@ -192,7 +191,7 @@
         <Rate>2.500000000000</Rate>
         <taxfree>N</taxfree>
         <Value>Product_Qty10_Value</Value>
-        <VendorProductNo>Product_Qty10_VendorProductNo</VendorProductNo>
+        <CustomerProductNo>Product_Qty10_CustomerProductNo</CustomerProductNo>
         <EDI_cctop_invoic_v_ID>1488989</EDI_cctop_invoic_v_ID>
         <ProductDescription>Product_Qty10_Description</ProductDescription>
         <OrderPOReference>OrderPOReference</OrderPOReference>

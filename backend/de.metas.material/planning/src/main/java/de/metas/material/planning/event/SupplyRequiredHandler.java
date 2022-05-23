@@ -125,7 +125,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		events.addAll(dDOrderAdvisedEventCreator.createDDOrderAdvisedEvents(descriptor, mrpContext));
 		events.addAll(ppOrderCandidateAdvisedEventCreator.createPPOrderCandidateAdvisedEvents(descriptor, mrpContext));
 
-		events.forEach(postMaterialEventService::postEventNow);
+		events.forEach(postMaterialEventService::enqueueEventNow);
 	}
 
 	private IMutableMRPContext createMRPContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
@@ -181,6 +181,11 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private void updateMainData(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
+		if (supplyRequiredDescriptor.isSimulated())
+		{
+			return;
+		}
+
 		final ZoneId orgTimezone = orgDAO.getTimeZone(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
 
 		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier

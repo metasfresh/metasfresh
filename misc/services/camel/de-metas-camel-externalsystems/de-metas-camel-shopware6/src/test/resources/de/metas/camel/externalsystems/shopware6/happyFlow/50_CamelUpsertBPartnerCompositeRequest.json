@@ -3,7 +3,7 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-Shopware6-customerId",
+        "bpartnerIdentifier": "customerId",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
@@ -71,7 +71,7 @@
               }
             ],
             "syncAdvise": {
-              "ifNotExists": "FAIL",
+              "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
             }
           }

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,30 +22,37 @@
 
 package de.metas.audit.apirequest.request;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.apirequest.config.ApiAuditConfigId;
+import de.metas.audit.request.ApiRequestIterator;
+import de.metas.audit.request.ApiRequestQuery;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.util.stream.Stream;
+import java.util.Iterator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class ApiRequestAuditRepository
 {
+	private final static String SYS_CONFIG_ITERATOR_BUFFER_SIZE = "de.metas.audit.request.IteratorBufferSize";
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull
 	public ApiRequestAudit save(@NonNull final ApiRequestAudit apiRequestAudit)
@@ -66,6 +73,7 @@ public class ApiRequestAuditRepository
 		record.setTime(TimeUtil.asTimestamp(apiRequestAudit.getTime()));
 		record.setHttpHeaders(apiRequestAudit.getHttpHeaders());
 		record.setRequestURI(apiRequestAudit.getRequestURI());
+		record.setAD_PInstance_ID(PInstanceId.toRepoId(apiRequestAudit.getPInstanceId()));
 
 		saveRecord(record);
 
@@ -81,44 +89,47 @@ public class ApiRequestAuditRepository
 	}
 
 	@NonNull
-	public ImmutableList<ApiRequestAudit> getAllFailingTimeWiseSorted()
+	public ApiRequestIterator getByQuery(@NonNull final ApiRequestQuery query)
 	{
-		final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_API_Request_Audit.class)
-				.addColumnAscending(I_API_Request_Audit.COLUMNNAME_Time)
-				.createQueryOrderBy();
+		final IQueryBuilder<I_API_Request_Audit> apiRequestQueryBuilder = queryBL.createQueryBuilder(I_API_Request_Audit.class)
+				.addInArrayFilter(I_API_Request_Audit.COLUMNNAME_Status, query.getApiRequestStatusCodeSet());
 
-		return queryBL.createQueryBuilder(I_API_Request_Audit.class)
-				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_API_Request_Audit.COLUMNNAME_IsErrorAcknowledged, true)
-				.addEqualsFilter(I_API_Request_Audit.COLUMNNAME_Status, Status.ERROR)
-				.create()
-				.setOrderBy(orderBy)
-				.stream()
-				.map(this::recordToRequestAudit)
-				.collect(ImmutableList.toImmutableList());
+		if (query.getIsErrorAcknowledged() != null)
+		{
+			apiRequestQueryBuilder.addEqualsFilter(I_API_Request_Audit.COLUMNNAME_IsErrorAcknowledged, query.getIsErrorAcknowledged());
+		}
+
+		final IQuery<I_API_Request_Audit> apiRequestAuditQuery = apiRequestQueryBuilder.create();
+
+		if (query.isOrderByTimeAscending())
+		{
+			final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_API_Request_Audit.class)
+					.addColumnAscending(I_API_Request_Audit.COLUMNNAME_Time)
+					.createQueryOrderBy();
+
+			apiRequestAuditQuery.setOrderBy(orderBy);
+		}
+
+		final int bufferSize = sysConfigBL.getIntValue(SYS_CONFIG_ITERATOR_BUFFER_SIZE, -1);
+		if (bufferSize > 0)
+		{
+			apiRequestAuditQuery.setOption(IQuery.OPTION_IteratorBufferSize, bufferSize);
+		}
+
+		final Iterator<I_API_Request_Audit> apiRequestRecordsIterator = apiRequestAuditQuery.iterate(I_API_Request_Audit.class);
+
+		return ApiRequestIterator.of(apiRequestRecordsIterator, ApiRequestAuditRepository::recordToRequestAudit);
 	}
 
-	public Stream<ApiRequestAudit> getAllProcessedRequests()
+	public void deleteRequestAudit(@NonNull final ApiRequestAuditId apiRequestAuditId)
 	{
-		final ICompositeQueryFilter<I_API_Request_Audit> acknowledgedErrors = queryBL.createCompositeQueryFilter(I_API_Request_Audit.class)
-				.addEqualsFilter(I_API_Request_Audit.COLUMNNAME_Status, Status.ERROR)
-				.addEqualsFilter(I_API_Request_Audit.COLUMNNAME_IsErrorAcknowledged, true);
+		final I_API_Request_Audit record = InterfaceWrapperHelper.load(apiRequestAuditId, I_API_Request_Audit.class);
 
-		final ICompositeQueryFilter<I_API_Request_Audit> processedOrAcknowledgedErrors = queryBL.createCompositeQueryFilter(I_API_Request_Audit.class)
-				.setJoinOr()
-				.addEqualsFilter(I_API_Request_Audit.COLUMNNAME_Status, Status.PROCESSED)
-				.addFilter(acknowledgedErrors);
-
-		return queryBL.createQueryBuilder(I_API_Request_Audit.class)
-				.filter(processedOrAcknowledgedErrors)
-				.create()
-				.iterateAndStream()
-				.map(this::recordToRequestAudit);
+		InterfaceWrapperHelper.deleteRecord(record);
 	}
-
 
 	@NonNull
-	public ApiRequestAudit recordToRequestAudit(@NonNull final I_API_Request_Audit record)
+	public static ApiRequestAudit recordToRequestAudit(@NonNull final I_API_Request_Audit record)
 	{
 		return ApiRequestAudit.builder()
 				.apiRequestAuditId(ApiRequestAuditId.ofRepoId(record.getAPI_Request_Audit_ID()))
@@ -136,13 +147,7 @@ public class ApiRequestAuditRepository
 				.time(TimeUtil.asInstantNonNull(record.getTime()))
 				.httpHeaders(record.getHttpHeaders())
 				.requestURI(record.getRequestURI())
+				.pInstanceId(PInstanceId.ofRepoIdOrNull(record.getAD_PInstance_ID()))
 				.build();
-	}
-
-	public void deleteRequestAudit(@NonNull final ApiRequestAuditId apiRequestAuditId)
-	{
-		final I_API_Request_Audit record = InterfaceWrapperHelper.load(apiRequestAuditId, I_API_Request_Audit.class);
-
-		InterfaceWrapperHelper.deleteRecord(record);
 	}
 }

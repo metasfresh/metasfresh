@@ -32,11 +32,13 @@ export function getFormatForDateField(widgetType) {
  * @param {object} value
  * @param {string} [FORMAT]
  */
-export function getFormattedDate(value, FORMAT) {
-  if (Moment.isMoment(value)) {
-    return value.format(FORMAT);
+export function getFormattedDate(value, format) {
+  if (!value) {
+    return null;
   }
-  return value ? Moment(value).format(FORMAT) : null;
+
+  const moment = Moment.isMoment(value) ? value : Moment(value);
+  return moment.format(format);
 }
 
 /*

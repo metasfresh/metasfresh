@@ -22,48 +22,30 @@
 
 package de.metas.scheduler.eventbus;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.scheduler.SchedulerAction;
 import de.metas.scheduler.SchedulerSearchKey;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 
 @Value
-@JsonDeserialize(builder = ManageSchedulerRequest.ManageSchedulerRequestBuilder.class)
+@Builder
+@Jacksonized
 public class ManageSchedulerRequest
 {
 	@NonNull SchedulerSearchKey schedulerSearchKey;
-	@NonNull Advice schedulerAdvice;
+	@NonNull SchedulerAction schedulerAction;
 	@NonNull ClientId clientId;
-	@Nullable Advice supervisorAdvice;
+	@Nullable
+	SupervisorAction supervisorAction;
 
-	@JsonCreator
-	@Builder
-	public ManageSchedulerRequest(
-			@JsonProperty("schedulerSearchKey") @NonNull final SchedulerSearchKey schedulerSearchKey,
-			@JsonProperty("schedulerAdvice") @NonNull final Advice schedulerAdvice,
-			@JsonProperty("clientId") @NonNull final ClientId clientId,
-			@JsonProperty("supervisorAdvice") @Nullable final Advice supervisorAdvice)
-	{
-		this.schedulerSearchKey = schedulerSearchKey;
-		this.schedulerAdvice = schedulerAdvice;
-		this.clientId = clientId;
-		this.supervisorAdvice = supervisorAdvice;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	public enum Advice
+	public enum SupervisorAction
 	{
 		ENABLE,
-		DISABLE,
-		RESTART
+		DISABLE
 	}
 }

@@ -22,24 +22,24 @@ package de.metas.async.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Async Queue related DAO
@@ -49,8 +49,6 @@ import de.metas.util.ISingletonService;
 public interface IQueueDAO extends ISingletonService
 {
 	void save(I_C_Async_Batch asyncBatch);
-
-	void save(I_C_Queue_Block block);
 
 	void save(I_C_Queue_WorkPackage workpackage);
 
@@ -136,4 +134,6 @@ public interface IQueueDAO extends ISingletonService
 	Set<Integer> retrieveAllItemIds(I_C_Queue_WorkPackage workPackage);
 
 	List<I_C_Queue_WorkPackage> retrieveUnprocessedWorkPackagesByEnqueuedRecord(Class<? extends IWorkpackageProcessor> packageProcessorClass, TableRecordReference recordRef);
+
+	int assignAsyncBatchForProcessing(Set<QueuePackageProcessorId> queuePackageProcessorId, AsyncBatchId asyncBatchId);
 }

@@ -19,6 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -63,6 +64,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return (PurchaseOrderItem)purchaseItem;
 	}
 
+	@Nullable
 	public static PurchaseOrderItem castOrNull(final PurchaseItem purchaseItem)
 	{
 		return (purchaseItem instanceof PurchaseOrderItem) ? cast(purchaseItem) : null;
@@ -150,11 +152,18 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getId();
 	}
 
+	@NonNull
 	public ProductId getProductId()
 	{
 		return getPurchaseCandidate().getProductId();
 	}
 
+	@NonNull
+	public AttributeSetInstanceId getAttributeSetInstanceId()
+	{
+		return getPurchaseCandidate().getAttributeSetInstanceId();
+	}
+	
 	public int getUomId()
 	{
 		final Quantity purchasedQty = getPurchasedQty();
@@ -186,6 +195,7 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchaseCandidate().getPurchaseDatePromised();
 	}
 
+	@Nullable
 	public OrderId getSalesOrderId()
 	{
 		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineIdOrNull();

@@ -27,12 +27,13 @@ import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.grssignum.from_grs.product.PushRawMaterialsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
-import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartnerProduct;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
+import de.metas.common.rest_api.v2.attachment.JsonTag;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -52,51 +53,39 @@ public class RawMaterialAttachFileProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange)
 	{
-		final JsonBPartnerProduct jsonBPartnerProduct = exchange.getIn().getBody(JsonBPartnerProduct.class);
+		final de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonAttachment jsonAttachment = exchange.getIn().getBody(de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonAttachment.class);
 
 		final PushRawMaterialsRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT, PushRawMaterialsRouteContext.class);
 
-		final JsonAttachmentRequest attachmentRequest = getAttachmentRequest(routeContext, jsonBPartnerProduct);
+		final JsonAttachmentRequest attachmentRequest = getAttachmentRequest(routeContext, jsonAttachment);
 
 		exchange.getIn().setBody(attachmentRequest);
 	}
 
+	@NonNull
 	private JsonAttachmentRequest getAttachmentRequest(
 			@NonNull final PushRawMaterialsRouteContext routeContext,
-			@NonNull final JsonBPartnerProduct jsonBPartnerProduct)
+			@NonNull final de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonAttachment jsonAttachment)
 	{
-		final String filePath = jsonBPartnerProduct.getAttachmentFilePath();
+		final JsonMetasfreshId bpartnerMetasfreshId = routeContext.getCurrentBPartnerID();
 
-		if (Check.isBlank(filePath))
+		if (bpartnerMetasfreshId == null)
 		{
-			throw new RuntimeCamelException("JsonBPartnerProduct.ANHANGDATEI can not be missing at this point!");
+			throw new RuntimeCamelException("bpartnerMetasfreshId can not be null at this point!");
 		}
-
-		final String bpartnerMetasfreshId = jsonBPartnerProduct.getBPartnerMetasfreshId();
-
-		if (Check.isBlank(bpartnerMetasfreshId))
-		{
-			throw new RuntimeCamelException("JsonBPartnerProduct.METASFRESHID can not be null at this point!");
-		}
-
-		final Path attachmentPath = Paths.get(routeContext.getBasePathForExportDirectoriesNotNull(), filePath);
-
-		final JsonAttachment attachment = JsonAttachment.builder()
-				.type(JsonAttachmentSourceType.LocalFileURL)
-				.fileName(attachmentPath.getFileName().toString())
-				.data(attachmentPath.toUri().toString())
-				.build();
 
 		final JsonProduct jsonProduct = routeContext.getJsonProduct();
 
-		final JsonExternalReferenceTarget targetBPartner = JsonExternalReferenceTarget.ofTypeAndId(EXTERNAL_REF_TYPE_BPARTNER, bpartnerMetasfreshId);
+		final JsonExternalReferenceTarget targetBPartner = JsonExternalReferenceTarget
+				.ofTypeAndId(EXTERNAL_REF_TYPE_BPARTNER, String.valueOf(bpartnerMetasfreshId.getValue()));
+
 		final JsonExternalReferenceTarget targetProduct = JsonExternalReferenceTarget
 				.ofTypeAndId(EXTERNAL_REF_TYPE_PRODUCT, ExternalIdentifierFormat.asExternalIdentifier(jsonProduct.getProductId()));
 
 		return JsonAttachmentRequest.builder()
 				.targets(ImmutableList.of(targetBPartner, targetProduct))
 				.orgCode(getAuthOrgCode())
-				.attachment(attachment)
+				.attachment(buildJsonAttachment(jsonAttachment))
 				.build();
 	}
 
@@ -104,5 +93,43 @@ public class RawMaterialAttachFileProcessor implements Processor
 	private String getAuthOrgCode()
 	{
 		return ((TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials()).getOrgCode();
+	}
+
+	@NonNull
+	private JsonAttachment buildJsonAttachment(@NonNull final de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonAttachment attachment)
+	{
+		final Path attachmentPath = Paths.get(attachment.getFileName());
+
+		return JsonAttachment.builder()
+				.fileName(attachmentPath.getFileName().toString())
+				.data(attachmentPath.toUri().toString())
+				.type(JsonAttachmentSourceType.LocalFileURL)
+				.tags(buildJsonTags(attachment))
+				.build();
+	}
+
+	@NonNull
+	private ImmutableList<JsonTag> buildJsonTags(@NonNull final de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonAttachment attachment)
+	{
+		final ImmutableList.Builder<JsonTag> jsonTagBuilder = ImmutableList.builder();
+
+		jsonTagBuilder.add(JsonTag.of(AttachmentTags.ID.getName(), attachment.getId()));
+
+		if (Check.isNotBlank(attachment.getValidUntil()))
+		{
+			jsonTagBuilder.add(JsonTag.of(AttachmentTags.VALID_TO.getName(), attachment.getValidUntil()));
+		}
+
+		if (Check.isNotBlank(attachment.getDocumentType()))
+		{
+			jsonTagBuilder.add(JsonTag.of(AttachmentTags.DOCUMENT_TYPE.getName(), attachment.getDocumentType()));
+		}
+
+		if (Check.isNotBlank(attachment.getDocumentGroup()))
+		{
+			jsonTagBuilder.add(JsonTag.of(AttachmentTags.DOCUMENT_GROUP.getName(), attachment.getDocumentGroup()));
+		}
+
+		return jsonTagBuilder.build();
 	}
 }

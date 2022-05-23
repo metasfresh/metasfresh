@@ -135,6 +135,13 @@ public abstract class ExportHUToExternalSystemService extends ExportToExternalSy
 								   .build());
 	}
 
+	@VisibleForTesting
+	@Override
+	public int getCurrentPendingItems()
+	{
+		return this.syncHuDebouncer.getCurrentBufferSize();
+	}
+
 	private void exportCollectedHUsIfRequired(@NonNull final Collection<ExportHUCandidate> huCandidates)
 	{
 		if (huCandidates.isEmpty())

@@ -28,6 +28,7 @@ import de.metas.audit.apirequest.HttpMethod;
 import de.metas.audit.apirequest.common.HttpHeadersWrapper;
 import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -87,6 +88,9 @@ public class ApiRequestAudit
 
 	@Nullable
 	String requestURI;
+
+	@Nullable
+	PInstanceId pInstanceId;
 
 	@NonNull
 	public ApiRequestAuditId getIdNotNull()

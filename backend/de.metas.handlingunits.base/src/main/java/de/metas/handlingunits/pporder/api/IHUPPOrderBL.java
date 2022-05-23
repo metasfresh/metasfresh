@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -78,4 +79,6 @@ public interface IHUPPOrderBL extends ISingletonService
 	Stream<I_PP_Order> streamManufacturingOrders(ManufacturingOrderQuery query);
 
 	void save(org.eevolution.model.I_PP_Order ppOrder);
+
+	List<HuId> retrieveAvailableToIssue(I_PP_Order_BOMLine ppOrderBomLine);
 }

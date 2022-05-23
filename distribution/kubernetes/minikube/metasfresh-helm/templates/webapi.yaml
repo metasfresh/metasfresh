@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-{{ .Release.Name }}-webapi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-webapi
+spec:
+  selector:
+    app: metasfresh-{{ .Release.Name }}-webapi
+  ports:
+  - name: webapi-http
+    port: {{ .Values.webapi.port.webapi }}
+    protocol: TCP
+    targetPort: {{ .Values.webapi.port.webapi }}
+  - name: webapi-remote-debug
+    port: {{ .Values.webapi.port.debug }}
+    protocol: TCP
+    targetPort: {{ .Values.webapi.port.debug }} 
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metasfresh-{{ .Release.Name }}-webapi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-webapi
+spec:
+  selector:
+    matchLabels:
+      app: metasfresh-{{ .Release.Name }}-webapi
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: metasfresh-{{ .Release.Name }}-webapi
+    spec:
+      containers:
+      - name: metasfresh-{{ .Release.Name }}-webapi
+        image: {{ .Values.webapi.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.webapi.port.webapi }}
+        - containerPort: {{ .Values.webapi.port.debug }} 
+        env:
+        {{ if .Values.ingress.tls.enabled }}
+        - name: WEBUI_FRONTEND_URL
+          value: https://{{ .Values.ingress.webui.url }}:443
+        {{ else }}
+        - name: WEBUI_FRONTEND_URL
+          value: http://{{ .Values.ingress.webui.url }}:80
+        {{ end }}
+        #db
+        - name: DB_HOST
+          value: metasfresh-{{ .Release.Name }}-db
+        - name: DB_NAME
+          value: {{ .Values.db.name }}
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-db-secret
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-db-secret
+              key: password
+        - name: DB_CONNECTION_POOL_MAX_SIZE
+          value: '{{ .Values.db.dbConnectionPoolMaxSize }}'
+        #search
+        - name: ES_HOST
+          value: metasfresh-{{ .Release.Name }}-search
+        - name: ES_PORT
+          value: '{{ .Values.search.port.search }}'
+        # This var is needed to prevent an error at startup; thx to https://stackoverflow.com/questions/69487385/elasticsearch-client-is-defaulting-to-localhost 
+        - name: SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS
+          value: metasfresh-{{ .Release.Name }}-search:{{ .Values.search.port.search }}
+        #rabbitmq
+        - name: RABBITMQ_HOST
+          value: metasfresh-{{ .Release.Name }}-rabbitmq
+        - name: RABBITMQ_PORT
+          value: '{{ .Values.rabbitmq.port.broker }}'
+        - name: RABBITMQ_USER
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-rabbitmq-secret
+              key: username
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-rabbitmq-secret
+              key: password
+        #app
+        - name: APP_HOST
+          value: metasfresh-{{ .Release.Name }}-app
+        volumeMounts:
+        - mountPath: /opt/metasfresh/metasfresh-webui-api/log
+          name: log
+        - mountPath: /opt/metasfresh/metasfresh-webui-api/heapdump
+          name: heapdump
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      restartPolicy: Always
+      initContainers:
+      - name: init-wait-for-app
+        image: busybox
+        command: ['sh', '-c', 'until nc -vz metasfresh-{{ .Release.Name }}-app {{ .Values.app.port.app }}; do echo waiting for app; sleep 2; done;']
+      volumes:
+      - name: log
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/webapi/log
+          type: DirectoryOrCreate
+      - name: heapdump
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/webapi/heapdump
+          type: DirectoryOrCreate
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone
+          

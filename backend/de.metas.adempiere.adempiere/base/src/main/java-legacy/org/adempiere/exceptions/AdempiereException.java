@@ -295,7 +295,7 @@ public class AdempiereException extends RuntimeException
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
-	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)
+	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
@@ -589,7 +589,7 @@ public class AdempiereException extends RuntimeException
 	@Nullable
 	public final Object getParameter(@NonNull final String name)
 	{
-		return parameters != null ? parameters.get(name) : null;
+		return parameters != null ? Null.unbox(parameters.get(name)) : null;
 	}
 
 	public final Map<String, Object> getParameters()

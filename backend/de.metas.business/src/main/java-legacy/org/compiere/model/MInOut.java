@@ -46,7 +46,9 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
@@ -397,7 +399,16 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser1_ID(order.getUser1_ID());
 		setUser2_ID(order.getUser2_ID());
 		setPriorityRule(order.getPriorityRule());
-		setEMail(order.getEMail());
+
+		final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+
+		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(
+				ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
+
+		if(propagateToMInOut)
+		{
+			setEMail(order.getEMail());
+		}
 		// Drop shipment
 		// metas start: cg: 01717
 		if (order.isSOTrx())

@@ -61,21 +61,24 @@ public class AD_Scheduler_Controller extends JavaProcess implements IProcessPrec
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final AdSchedulerId adSchedulerId = AdSchedulerId.ofRepoId(getRecord_ID());
 
 		switch (SchedulerAction.ofCode(p_Action))
 		{
 			case ENABLE:
-				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.ENABLE, ManageSchedulerRequest.Advice.ENABLE);
+				sendManageSchedulerRequest(adSchedulerId, SchedulerAction.ENABLE, ManageSchedulerRequest.SupervisorAction.ENABLE);
 				break;
 			case DISABLE:
-				final ManageSchedulerRequest.Advice supervisorAdvice = deactivateSupervisor ? ManageSchedulerRequest.Advice.DISABLE : null;
-				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.DISABLE, supervisorAdvice);
+				final ManageSchedulerRequest.SupervisorAction supervisorAction = deactivateSupervisor ? ManageSchedulerRequest.SupervisorAction.DISABLE : null;
+				sendManageSchedulerRequest(adSchedulerId, SchedulerAction.DISABLE, supervisorAction);
+				break;
+			case RUN_ONCE:
+				sendManageSchedulerRequest(adSchedulerId, SchedulerAction.RUN_ONCE, null);
 				break;
 			case RESTART:
-				sendManageSchedulerRequest(adSchedulerId, ManageSchedulerRequest.Advice.RESTART, ManageSchedulerRequest.Advice.ENABLE);
+				sendManageSchedulerRequest(adSchedulerId, SchedulerAction.RESTART, ManageSchedulerRequest.SupervisorAction.ENABLE);
 				break;
 			default:
 				throw new AdempiereException("Unsupported action!")
@@ -88,14 +91,14 @@ public class AD_Scheduler_Controller extends JavaProcess implements IProcessPrec
 
 	private void sendManageSchedulerRequest(
 			@NonNull final AdSchedulerId adSchedulerId,
-			@NonNull final ManageSchedulerRequest.Advice schedulerAdvice,
-			@Nullable final ManageSchedulerRequest.Advice supervisorAdvice)
+			@NonNull final SchedulerAction schedulerAction,
+			@Nullable final ManageSchedulerRequest.SupervisorAction supervisorAction)
 	{
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 													 .schedulerSearchKey(SchedulerSearchKey.of(adSchedulerId))
 													 .clientId(Env.getClientId())
-													 .schedulerAdvice(schedulerAdvice)
-													 .supervisorAdvice(supervisorAdvice)
+													 .schedulerAction(schedulerAction)
+													 .supervisorAction(supervisorAction)
 													 .build());
 	}
 }

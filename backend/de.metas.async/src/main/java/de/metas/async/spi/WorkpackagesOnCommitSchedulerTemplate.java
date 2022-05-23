@@ -3,8 +3,8 @@ package de.metas.async.spi;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
+import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -368,44 +368,42 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 				return;
 			}
 
-			final IWorkPackageBlockBuilder blockBuilder = Services.get(IWorkPackageQueueFactory.class)
-					.getQueueForEnqueuing(ctx, workpackageProcessorClass)
-					.newBlock()
-					.setContext(ctx);
+			final IWorkPackageQueue workPackageQueue = Services.get(IWorkPackageQueueFactory.class)
+					.getQueueForEnqueuing(ctx, workpackageProcessorClass);
 
 			if (isCreateOneWorkpackagePerModel())
 			{
 				for (final Object model : models)
 				{
-					createAndSubmitWorkpackage(blockBuilder, ImmutableList.of(model), null);
+					createAndSubmitWorkpackage(workPackageQueue, ImmutableList.of(model), null);
 				}
 			}
 			else if (isCreateOneWorkpackagePerAsyncBatch())
 			{
-				createAndSubmitWorkpackagesByAsyncBatch(blockBuilder);
+				createAndSubmitWorkpackagesByAsyncBatch(workPackageQueue);
 			}
 			else
 			{
-				createAndSubmitWorkpackage(blockBuilder, models, null);
+				createAndSubmitWorkpackage(workPackageQueue, models, null);
 			}
 		}
 
 		private void createAndSubmitWorkpackage(
-				@NonNull final IWorkPackageBlockBuilder blockBuilder,
+				@NonNull final IWorkPackageQueue workPackageQueue,
 				@NonNull final Collection<Object> modelsToEnqueue,
 				@Nullable final AsyncBatchId asyncBatchId)
 		{
-			blockBuilder.newWorkpackage()
+			workPackageQueue.newWorkPackage()
 					.setUserInChargeId(userIdInCharge)
 					.parameters(parameters)
 					.addElements(modelsToEnqueue)
 					.setC_Async_Batch_ID(asyncBatchId)
-					.build();
+					.buildAndEnqueue();
 		}
 
-		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageBlockBuilder blockBuilder)
+		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageQueue workPackageQueue)
 		{
-			batchId2Models.forEach((key, models) -> createAndSubmitWorkpackage(blockBuilder, models, AsyncBatchId.toAsyncBatchIdOrNull(key)));
+			batchId2Models.forEach((key, models) -> createAndSubmitWorkpackage(workPackageQueue, models, AsyncBatchId.toAsyncBatchIdOrNull(key)));
 		}
 
 		private boolean hasNoModels()

@@ -12,6 +12,7 @@
 
 package io.swagger.client.api;
 
+import com.google.gson.reflect.TypeToken;
 import io.swagger.client.ApiCallback;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
@@ -20,15 +21,10 @@ import io.swagger.client.Configuration;
 import io.swagger.client.Pair;
 import io.swagger.client.ProgressRequestBody;
 import io.swagger.client.ProgressResponseBody;
-
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-
-
 import io.swagger.client.model.Article;
 import io.swagger.client.model.ArticleMapping;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,14 +53,13 @@ public class DefaultApi {
     /**
      * Build call for addArticle
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param body article to add (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call addArticleCall(String albertaApiKey, String tenant, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call addArticleCall(String albertaApiKey, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
         
         // create path and map variables
@@ -76,8 +71,6 @@ public class DefaultApi {
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (albertaApiKey != null)
         localVarHeaderParams.put("alberta-api-key", apiClient.parameterToString(albertaApiKey));
-        if (tenant != null)
-        localVarHeaderParams.put("tenant", apiClient.parameterToString(tenant));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
@@ -96,7 +89,7 @@ public class DefaultApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -110,17 +103,13 @@ public class DefaultApi {
     }
     
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call addArticleValidateBeforeCall(String albertaApiKey, String tenant, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call addArticleValidateBeforeCall(String albertaApiKey, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         // verify the required parameter 'albertaApiKey' is set
         if (albertaApiKey == null) {
             throw new ApiException("Missing the required parameter 'albertaApiKey' when calling addArticle(Async)");
         }
-        // verify the required parameter 'tenant' is set
-        if (tenant == null) {
-            throw new ApiException("Missing the required parameter 'tenant' when calling addArticle(Async)");
-        }
         
-        com.squareup.okhttp.Call call = addArticleCall(albertaApiKey, tenant, body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = addArticleCall(albertaApiKey, body, progressListener, progressRequestListener);
         return call;
 
         
@@ -133,13 +122,12 @@ public class DefaultApi {
      * neuen Artikel in Alberta anlegen
      * Legt einen neuen Artikel in Alberta an
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param body article to add (optional)
      * @return ArticleMapping
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ArticleMapping addArticle(String albertaApiKey, String tenant, Article body) throws ApiException {
-        ApiResponse<ArticleMapping> resp = addArticleWithHttpInfo(albertaApiKey, tenant, body);
+    public ArticleMapping addArticle(String albertaApiKey, Article body) throws ApiException {
+        ApiResponse<ArticleMapping> resp = addArticleWithHttpInfo(albertaApiKey, body);
         return resp.getData();
     }
 
@@ -147,13 +135,12 @@ public class DefaultApi {
      * neuen Artikel in Alberta anlegen
      * Legt einen neuen Artikel in Alberta an
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param body article to add (optional)
      * @return ApiResponse&lt;ArticleMapping&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<ArticleMapping> addArticleWithHttpInfo(String albertaApiKey, String tenant, Article body) throws ApiException {
-        com.squareup.okhttp.Call call = addArticleValidateBeforeCall(albertaApiKey, tenant, body, null, null);
+    public ApiResponse<ArticleMapping> addArticleWithHttpInfo(String albertaApiKey, Article body) throws ApiException {
+        com.squareup.okhttp.Call call = addArticleValidateBeforeCall(albertaApiKey, body, null, null);
         Type localVarReturnType = new TypeToken<ArticleMapping>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -162,13 +149,12 @@ public class DefaultApi {
      * neuen Artikel in Alberta anlegen (asynchronously)
      * Legt einen neuen Artikel in Alberta an
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param body article to add (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call addArticleAsync(String albertaApiKey, String tenant, Article body, final ApiCallback<ArticleMapping> callback) throws ApiException {
+    public com.squareup.okhttp.Call addArticleAsync(String albertaApiKey, Article body, final ApiCallback<ArticleMapping> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -189,7 +175,7 @@ public class DefaultApi {
             };
         }
 
-        com.squareup.okhttp.Call call = addArticleValidateBeforeCall(albertaApiKey, tenant, body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = addArticleValidateBeforeCall(albertaApiKey, body, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<ArticleMapping>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
@@ -197,14 +183,13 @@ public class DefaultApi {
     /**
      * Build call for addInsuranceContract
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param body insuranceContract to add (optional)
      * @param progressListener Progress listener
      * @param progressRequestListener Progress request listener
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call addInsuranceContractCall(String albertaApiKey, String tenant, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call addInsuranceContractCall(String albertaApiKey, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
         
         // create path and map variables
@@ -216,8 +201,6 @@ public class DefaultApi {
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (albertaApiKey != null)
         localVarHeaderParams.put("alberta-api-key", apiClient.parameterToString(albertaApiKey));
-        if (tenant != null)
-        localVarHeaderParams.put("tenant", apiClient.parameterToString(tenant));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
@@ -236,7 +219,7 @@ public class DefaultApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -250,17 +233,13 @@ public class DefaultApi {
     }
     
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call addInsuranceContractValidateBeforeCall(String albertaApiKey, String tenant, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call addInsuranceContractValidateBeforeCall(String albertaApiKey, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         // verify the required parameter 'albertaApiKey' is set
         if (albertaApiKey == null) {
             throw new ApiException("Missing the required parameter 'albertaApiKey' when calling addInsuranceContract(Async)");
         }
-        // verify the required parameter 'tenant' is set
-        if (tenant == null) {
-            throw new ApiException("Missing the required parameter 'tenant' when calling addInsuranceContract(Async)");
-        }
         
-        com.squareup.okhttp.Call call = addInsuranceContractCall(albertaApiKey, tenant, body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = addInsuranceContractCall(albertaApiKey, body, progressListener, progressRequestListener);
         return call;
 
         
@@ -273,13 +252,12 @@ public class DefaultApi {
      * neuen Krankenkassenvertrag in Alberta anlegen
      * Legt einen neuen Krankenkassenvertrag in Alberta an
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param body insuranceContract to add (optional)
      * @return ArticleMapping
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ArticleMapping addInsuranceContract(String albertaApiKey, String tenant, Article body) throws ApiException {
-        ApiResponse<ArticleMapping> resp = addInsuranceContractWithHttpInfo(albertaApiKey, tenant, body);
+    public ArticleMapping addInsuranceContract(String albertaApiKey, Article body) throws ApiException {
+        ApiResponse<ArticleMapping> resp = addInsuranceContractWithHttpInfo(albertaApiKey, body);
         return resp.getData();
     }
 
@@ -287,13 +265,12 @@ public class DefaultApi {
      * neuen Krankenkassenvertrag in Alberta anlegen
      * Legt einen neuen Krankenkassenvertrag in Alberta an
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param body insuranceContract to add (optional)
      * @return ApiResponse&lt;ArticleMapping&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<ArticleMapping> addInsuranceContractWithHttpInfo(String albertaApiKey, String tenant, Article body) throws ApiException {
-        com.squareup.okhttp.Call call = addInsuranceContractValidateBeforeCall(albertaApiKey, tenant, body, null, null);
+    public ApiResponse<ArticleMapping> addInsuranceContractWithHttpInfo(String albertaApiKey, Article body) throws ApiException {
+        com.squareup.okhttp.Call call = addInsuranceContractValidateBeforeCall(albertaApiKey, body, null, null);
         Type localVarReturnType = new TypeToken<ArticleMapping>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -302,13 +279,12 @@ public class DefaultApi {
      * neuen Krankenkassenvertrag in Alberta anlegen (asynchronously)
      * Legt einen neuen Krankenkassenvertrag in Alberta an
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param body insuranceContract to add (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call addInsuranceContractAsync(String albertaApiKey, String tenant, Article body, final ApiCallback<ArticleMapping> callback) throws ApiException {
+    public com.squareup.okhttp.Call addInsuranceContractAsync(String albertaApiKey, Article body, final ApiCallback<ArticleMapping> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -329,7 +305,7 @@ public class DefaultApi {
             };
         }
 
-        com.squareup.okhttp.Call call = addInsuranceContractValidateBeforeCall(albertaApiKey, tenant, body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = addInsuranceContractValidateBeforeCall(albertaApiKey, body, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<ArticleMapping>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
@@ -337,7 +313,6 @@ public class DefaultApi {
     /**
      * Build call for updateArticle
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param customerNumber  (required)
      * @param body article to update (optional)
      * @param progressListener Progress listener
@@ -345,7 +320,7 @@ public class DefaultApi {
      * @return Call to execute
      * @throws ApiException If fail to serialize the request body object
      */
-    public com.squareup.okhttp.Call updateArticleCall(String albertaApiKey, String tenant, String customerNumber, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    public com.squareup.okhttp.Call updateArticleCall(String albertaApiKey, String customerNumber, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         Object localVarPostBody = body;
         
         // create path and map variables
@@ -358,8 +333,6 @@ public class DefaultApi {
         Map<String, String> localVarHeaderParams = new HashMap<String, String>();
         if (albertaApiKey != null)
         localVarHeaderParams.put("alberta-api-key", apiClient.parameterToString(albertaApiKey));
-        if (tenant != null)
-        localVarHeaderParams.put("tenant", apiClient.parameterToString(tenant));
 
         Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
@@ -378,7 +351,7 @@ public class DefaultApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
@@ -392,21 +365,17 @@ public class DefaultApi {
     }
     
     @SuppressWarnings("rawtypes")
-    private com.squareup.okhttp.Call updateArticleValidateBeforeCall(String albertaApiKey, String tenant, String customerNumber, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
+    private com.squareup.okhttp.Call updateArticleValidateBeforeCall(String albertaApiKey, String customerNumber, Article body, final ProgressResponseBody.ProgressListener progressListener, final ProgressRequestBody.ProgressRequestListener progressRequestListener) throws ApiException {
         // verify the required parameter 'albertaApiKey' is set
         if (albertaApiKey == null) {
             throw new ApiException("Missing the required parameter 'albertaApiKey' when calling updateArticle(Async)");
-        }
-        // verify the required parameter 'tenant' is set
-        if (tenant == null) {
-            throw new ApiException("Missing the required parameter 'tenant' when calling updateArticle(Async)");
         }
         // verify the required parameter 'customerNumber' is set
         if (customerNumber == null) {
             throw new ApiException("Missing the required parameter 'customerNumber' when calling updateArticle(Async)");
         }
         
-        com.squareup.okhttp.Call call = updateArticleCall(albertaApiKey, tenant, customerNumber, body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = updateArticleCall(albertaApiKey, customerNumber, body, progressListener, progressRequestListener);
         return call;
 
         
@@ -419,14 +388,13 @@ public class DefaultApi {
      * Artikel in Alberta ändern
      * ändert einen Artikel in Alberta
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param customerNumber  (required)
      * @param body article to update (optional)
      * @return ArticleMapping
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ArticleMapping updateArticle(String albertaApiKey, String tenant, String customerNumber, Article body) throws ApiException {
-        ApiResponse<ArticleMapping> resp = updateArticleWithHttpInfo(albertaApiKey, tenant, customerNumber, body);
+    public ArticleMapping updateArticle(String albertaApiKey, String customerNumber, Article body) throws ApiException {
+        ApiResponse<ArticleMapping> resp = updateArticleWithHttpInfo(albertaApiKey, customerNumber, body);
         return resp.getData();
     }
 
@@ -434,14 +402,13 @@ public class DefaultApi {
      * Artikel in Alberta ändern
      * ändert einen Artikel in Alberta
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param customerNumber  (required)
      * @param body article to update (optional)
      * @return ApiResponse&lt;ArticleMapping&gt;
      * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the response body
      */
-    public ApiResponse<ArticleMapping> updateArticleWithHttpInfo(String albertaApiKey, String tenant, String customerNumber, Article body) throws ApiException {
-        com.squareup.okhttp.Call call = updateArticleValidateBeforeCall(albertaApiKey, tenant, customerNumber, body, null, null);
+    public ApiResponse<ArticleMapping> updateArticleWithHttpInfo(String albertaApiKey, String customerNumber, Article body) throws ApiException {
+        com.squareup.okhttp.Call call = updateArticleValidateBeforeCall(albertaApiKey, customerNumber, body, null, null);
         Type localVarReturnType = new TypeToken<ArticleMapping>(){}.getType();
         return apiClient.execute(call, localVarReturnType);
     }
@@ -450,14 +417,13 @@ public class DefaultApi {
      * Artikel in Alberta ändern (asynchronously)
      * ändert einen Artikel in Alberta
      * @param albertaApiKey  (required)
-     * @param tenant  (required)
      * @param customerNumber  (required)
      * @param body article to update (optional)
      * @param callback The callback to be executed when the API call finishes
      * @return The request call
      * @throws ApiException If fail to process the API call, e.g. serializing the request body object
      */
-    public com.squareup.okhttp.Call updateArticleAsync(String albertaApiKey, String tenant, String customerNumber, Article body, final ApiCallback<ArticleMapping> callback) throws ApiException {
+    public com.squareup.okhttp.Call updateArticleAsync(String albertaApiKey, String customerNumber, Article body, final ApiCallback<ArticleMapping> callback) throws ApiException {
 
         ProgressResponseBody.ProgressListener progressListener = null;
         ProgressRequestBody.ProgressRequestListener progressRequestListener = null;
@@ -478,7 +444,7 @@ public class DefaultApi {
             };
         }
 
-        com.squareup.okhttp.Call call = updateArticleValidateBeforeCall(albertaApiKey, tenant, customerNumber, body, progressListener, progressRequestListener);
+        com.squareup.okhttp.Call call = updateArticleValidateBeforeCall(albertaApiKey, customerNumber, body, progressListener, progressRequestListener);
         Type localVarReturnType = new TypeToken<ArticleMapping>(){}.getType();
         apiClient.executeAsync(call, localVarReturnType, callback);
         return call;
@@ -527,7 +493,7 @@ public class DefaultApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))

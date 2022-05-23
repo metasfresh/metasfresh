@@ -32,7 +32,9 @@ public enum SchedulerAction implements ReferenceListAwareEnum
 	// AD_Reference_ID = 541532
 	ENABLE("E"),
 	DISABLE("D"),
-	RESTART("R");
+	RESTART("R"),
+	RUN_ONCE("O")
+	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<SchedulerAction> index = ReferenceListAwareEnums.index(values());
 

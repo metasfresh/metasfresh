@@ -115,6 +115,8 @@ public class ImportOrdersRouteContext
 	@Getter(AccessLevel.NONE)
 	private final boolean skipNextImportStartingTimestamp;
 
+	private final int pageLimit;
+
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
@@ -127,6 +129,12 @@ public class ImportOrdersRouteContext
 	private LocalDate dateRequired;
 
 	private boolean isMultipleShippingAddresses;
+
+	@Nullable
+	private String metasfreshIdJsonPath;
+
+	@Nullable
+	private String shopwareIdJsonPath;
 
 	@Nullable
 	@Getter(AccessLevel.NONE)
@@ -143,6 +151,11 @@ public class ImportOrdersRouteContext
 
 	@Nullable
 	JsonOrderAddress orderShippingAddress;
+
+	@Setter(AccessLevel.NONE)
+	private int ordersResponsePageIndex;
+
+	private boolean moreOrdersAvailable;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -271,37 +284,52 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
-	public ExternalIdentifier getEffectiveCustomerId()
+	public ExternalIdentifier getMetasfreshId()
 	{
-		final JsonExternalSystemShopware6ConfigMapping configMapping = getMatchingShopware6Mapping();
-
-		if (configMapping == null
-				|| Check.isBlank(configMapping.getBpartnerIdJSONPath())
-				|| configMapping.getBpartnerLookup() == null)
+		final String id = getId(metasfreshIdJsonPath);
+		if (Check.isNotBlank(id))
 		{
-			final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
-
 			return ExternalIdentifier.builder()
-					.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
-					.rawValue(customerId)
+					.identifier(id)
+					.rawValue(id)
 					.build();
 		}
+		return getUserId();
+	}
 
-		final String customBPartnerId = getOrderNotNull().getCustomField(configMapping.getBpartnerIdJSONPath());
+	@NonNull
+	public ExternalIdentifier getUserId()
+	{
+		final String id = getId(shopwareIdJsonPath);
+		if (Check.isNotBlank(id))
+		{
+			return ExternalIdentifier.builder()
+					.identifier(ExternalIdentifierFormat.formatExternalId(id))
+					.rawValue(id)
+					.build();
+		}
+		final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
 
-		return switch (configMapping.getBpartnerLookup())
-				{
-					case MetasfreshId -> ExternalIdentifier.builder()
-							.identifier(customBPartnerId)
-							.rawValue(customBPartnerId)
-							.build();
-					case ExternalReference -> ExternalIdentifier.builder()
-							.identifier(ExternalIdentifierFormat.formatExternalId(customBPartnerId))
-							.rawValue(customBPartnerId)
-							.build();
+		return ExternalIdentifier.builder()
+				.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
+				.rawValue(customerId)
+				.build();
+	}
 
-					default -> throw new RuntimeException("Unsupported JsonBPartnerLookup=" + configMapping.getBpartnerLookup());
-				};
+	@Nullable
+	private String getId(@Nullable final String bpLocationCustomJsonPath)
+	{
+		if (Check.isBlank(bpLocationCustomJsonPath))
+		{
+			return null;
+		}
+		final OrderCandidate order = getOrderNotNull();
+		final String id = order.getCustomField(bpLocationCustomJsonPath);
+		if (Check.isNotBlank(id))
+		{
+			return id;
+		}
+		return null;
 	}
 
 	@Nullable
@@ -317,13 +345,13 @@ public class ImportOrdersRouteContext
 				.map(s -> s + separator)
 				.orElse("");
 
-		final String locationBPartnerName = 
-				// prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n") + not having the company name in this rendered string, because that info is already given elsewhere
-				prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
-				+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
-				+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
+		final String locationBPartnerName =
+				prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n")
+						+ prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
+						+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")
+						+ prepareNameSegment.apply(orderShippingAddress.getLastName(), "");
 
 		return StringUtils.trimBlankToNull(locationBPartnerName);
 	}
@@ -343,5 +371,10 @@ public class ImportOrdersRouteContext
 		}
 
 		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
+	}
+
+	public void incrementPageIndex()
+	{
+		this.ordersResponsePageIndex++;
 	}
 }

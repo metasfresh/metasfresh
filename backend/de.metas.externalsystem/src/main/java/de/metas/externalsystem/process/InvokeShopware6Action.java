@@ -25,7 +25,6 @@ package de.metas.externalsystem.process;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.externalsystem.JsonBPartnerLookup;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
@@ -36,7 +35,6 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
-import de.metas.externalsystem.shopware6.BPartnerLookup;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -62,16 +60,17 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIEN
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_METASFRESH_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_EMAIL;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_LOOKUP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UOM_MAPPINGS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRODUCT_LOOKUP;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE;
 
 public class InvokeShopware6Action extends InvokeExternalSystemProcess
@@ -80,7 +79,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final DocTypeService docTypeService = SpringContextHolder.instance.getBean(DocTypeService.class);
-	
+
 	private static final String PARAM_ORDERNO = "OrderNo";
 	@Param(parameterName = PARAM_ORDERNO)
 	private String orderNo;
@@ -123,6 +122,8 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_UOM_MAPPINGS, invokeShopwareService.getUOMMappings(shopware6Config));
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, shopware6Config.getValue());
 		parameters.put(PARAM_PRODUCT_LOOKUP, shopware6Config.getProductLookup().getCode());
+		parameters.put(PARAM_JSON_PATH_CONSTANT_METASFRESH_ID, shopware6Config.getMetasfreshIdJSONPath());
+		parameters.put(PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID, shopware6Config.getShopwareIdJSONPath());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{
@@ -213,7 +214,6 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 				.ifNotExists(SyncAdvise.IfNotExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerLocationIfNotExists()))
 				.build();
 
-		final String bPartnerLookupCode = BPartnerLookup.toCode(externalSystemShopware6ConfigMapping.getBPartnerlookup());
 
 		final JsonExternalSystemShopware6ConfigMapping.JsonExternalSystemShopware6ConfigMappingBuilder builder =
 				JsonExternalSystemShopware6ConfigMapping.builder()
@@ -224,9 +224,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo())
 						.invoiceEmailEnabled(externalSystemShopware6ConfigMapping.getIsInvoiceEmailEnabled())
 						.bPartnerSyncAdvice(bPartnerSyncAdvice)
-						.bPartnerLocationSyncAdvice(bpartnerLocationSyncAdvice)
-						.bpartnerIdJSONPath(externalSystemShopware6ConfigMapping.getBPartnerIdJSONPath())
-						.bpartnerLookup(JsonBPartnerLookup.valueOfNullable(bPartnerLookupCode));
+						.bPartnerLocationSyncAdvice(bpartnerLocationSyncAdvice);
 
 		final JsonOrderDocType orderDocType = docTypeService
 				.getOrderDocType(externalSystemShopware6ConfigMapping.getDocTypeOrderId())
@@ -243,5 +241,13 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		}
 
 		return builder.build();
+	}
+	
+	@Override
+	protected String getOrgCode()
+	{
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
+
+		return orgDAO.getById(config.getOrgId()).getValue();
 	}
 }

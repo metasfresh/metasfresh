@@ -22,6 +22,7 @@
 
 package de.metas.order;
 
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,24 +33,36 @@ import javax.annotation.Nullable;
 @Value
 public class OrderLineGroup
 {
+	@NonNull
 	String groupKey;
+
 	boolean isGroupMainItem;
+
 	boolean isGroupingError;
+
+	@Nullable
 	String groupingErrorMessage;
+
 	@Nullable
 	Percent discount;
 
+	@Nullable
+	GroupCompensationOrderBy groupCompensationOrderBy;
+
 	@Builder
-	private OrderLineGroup(@NonNull final String groupKey,
+	private OrderLineGroup(
+			@NonNull final String groupKey,
 			final boolean isGroupMainItem,
 			final boolean isGroupingError,
 			@Nullable final String groupingErrorMessage,
-			@Nullable final Percent discount)
+			@Nullable final Percent discount,
+			@Nullable final GroupCompensationOrderBy groupCompensationOrderBy)
 	{
 		this.groupKey = groupKey;
 		this.isGroupMainItem = isGroupMainItem;
 		this.isGroupingError = isGroupingError;
 		this.groupingErrorMessage = groupingErrorMessage;
 		this.discount = discount;
+		this.groupCompensationOrderBy = groupCompensationOrderBy;
 	}
 }

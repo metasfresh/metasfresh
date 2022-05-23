@@ -32,12 +32,13 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
-import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.impl.QueueProcessorService;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -270,6 +271,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -589,14 +592,25 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					UomId.ofRepoIdOrNull(ila.getC_UOM_ID()));
 			qtyInvoicedSum = StockQtyAndUOMQtys.add(qtyInvoicedSum, ilaQtysInvoiced);
 
+
+			//
+			// 12904: in case of an Adjustment Invoice(price diff), get price from invoice line
+			final boolean isIlaInvoiceAnAdjInvoice=Services.get(IInvoiceBL.class)
+					         .isAdjustmentCharge(ila.getC_InvoiceLine().getC_Invoice());
+
+			final BigDecimal usedPriceActual = isIlaInvoiceAnAdjInvoice ?
+					         ila.getC_InvoiceLine().getPriceActual():
+					         ic.getPriceActual();
+
 			//
 			// 07202: We update the net amount invoice according to price UOM.
 			// final BigDecimal priceActual = ic.getPriceActual();
 			final ProductPrice priceActual = ProductPrice.builder()
-					.money(Money.of(ic.getPriceActual(), icCurrencyId))
-					.productId(productId)
-					.uomId(icUomId)
-					.build();
+							.money(Money.of(usedPriceActual, icCurrencyId))
+							.productId(productId)
+							.uomId(icUomId)
+							.build();
+
 
 			final Quantity qtyInvoicedInUOM = extractQtyInvoiced(ila);
 
@@ -997,11 +1011,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IStatefulWorkpackageProcessorFactory packageProcessorFactory = Services.get(IStatefulWorkpackageProcessorFactory.class);
 		packageProcessorFactory.registerWorkpackageProcessor(packageProcessor);
 
-		final IWorkPackageQueue packageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, packageProcessor.getClass());
+		final I_C_Queue_PackageProcessor packageProcessorConfig = queueDAO.retrievePackageProcessorDefByClass(ctx, InvoiceCandWorkpackageProcessor.class);
+		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(packageProcessorConfig.getC_Queue_PackageProcessor_ID());
 
-		final IQueueProcessor queueProcessor = Services.get(IQueueProcessorFactory.class).createSynchronousQueueProcessor(packageQueue);
+		final IQueueProcessor queueProcessor = queueProcessorFactory.createAsynchronousQueueProcessor(packageProcessorId);
 		queueProcessor.setWorkpackageProcessorFactory(packageProcessorFactory);
-		queueProcessor.run();
+
+		final QueueProcessorService queueProcessorService = SpringContextHolder.instance.getBean(QueueProcessorService.class);
+
+		queueProcessorService.runAndWait(queueProcessor);
 
 		return result;
 	}
@@ -1415,10 +1433,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		final boolean isAdjustmentChargeInvoice =invoiceBL.isAdjustmentCharge(invoice);
+
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 
 		final I_C_Invoice invoiceExt = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 
@@ -1521,7 +1543,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					// reversalQtyInvoiced = 5 (because we reverse a credit memo), qtyInvoicedForIc = 1 => overlap=2 => create ila with qty -5-(+2)=3
 					final StockQtyAndUOMQty overlap = reversalQtyInvoiced.add(qtyInvoicedForIc);
-					qtyInvoicedForIla = reversalQtyInvoiced.subtract(overlap);
+
+					//
+					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
+					if(isAdjustmentChargeInvoice){
+						qtyInvoicedForIla = reversalQtyInvoiced;
+					}
+					else
+					{
+						qtyInvoicedForIla = reversalQtyInvoiced.subtract(overlap);
+					}
 
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + reversalQtyInvoiced
 							+ ", @C_Invoice_Candidate@ @QtyInvoiced@ = " + qtyInvoicedForIc

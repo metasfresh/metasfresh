@@ -321,8 +321,13 @@ const reducer = produce((draftState, action) => {
 
     case types.SET_TABLE_NAVIGATION: {
       const { id, active } = action.payload;
-
-      draftState[id].navigationActive = active;
+      if (draftState[id]) {
+        draftState[id].navigationActive = active;
+      } else {
+        console.error(
+          `Table with ID ${id} is not present in state. Skip setting navigationActive=${active}`
+        );
+      }
 
       return;
     }

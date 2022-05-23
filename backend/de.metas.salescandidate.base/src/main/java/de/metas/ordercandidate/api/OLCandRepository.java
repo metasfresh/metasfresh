@@ -13,6 +13,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.location.LocationId;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -68,14 +69,6 @@ public class OLCandRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
-	{
-		return RelationTypeOLCandSource.builder()
-				.orderDefaults(processor.getDefaults())
-				.olCandProcessorId(processor.getId())
-				.build();
-	}
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -280,6 +273,10 @@ public class OLCandRepository
 			Optional.ofNullable(orderLineGroup.getDiscount())
 					.map(Percent::toBigDecimal)
 					.ifPresent(olCandPO::setGroupCompensationDiscountPercentage);
+
+			Optional.ofNullable(orderLineGroup.getGroupCompensationOrderBy())
+					.map(GroupCompensationOrderBy::getCode)
+					.ifPresent(olCandPO::setCompensationGroupOrderBy);
 		}
 
 		olCandPO.setDescription(request.getDescription());
@@ -314,6 +311,11 @@ public class OLCandRepository
 
 		olCandPO.setApplySalesRepFrom(request.getAssignSalesRepRule().getCode());
 		olCandPO.setC_BPartner_SalesRep_Internal_ID(BPartnerId.toRepoId(request.getSalesRepInternalId()));
+
+		if (request.getQtyItemCapacity() != null)
+		{
+			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
+		}
 
 		saveRecord(olCandWithIssuesInterface);
 

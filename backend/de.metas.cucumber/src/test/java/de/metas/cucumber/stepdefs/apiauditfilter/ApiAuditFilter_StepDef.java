@@ -22,19 +22,28 @@
 
 package de.metas.cucumber.stepdefs.apiauditfilter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonErrorItem;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.web.audit.ApiRequestReplayService;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -43,14 +52,10 @@ public class ApiAuditFilter_StepDef
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final TestContext testContext;
-	private final API_Audit_Config_StepDefData apiAuditConfigTable;
 
-	public ApiAuditFilter_StepDef(
-			@NonNull final TestContext testContext,
-			@NonNull final API_Audit_Config_StepDefData apiAuditConfigTable)
+	public ApiAuditFilter_StepDef(@NonNull final TestContext testContext)
 	{
 		this.testContext = testContext;
-		this.apiAuditConfigTable = apiAuditConfigTable;
 	}
 
 	@And("all the API audit data is reset")
@@ -71,5 +76,20 @@ public class ApiAuditFilter_StepDef
 		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue())));
 
 		apiRequestReplayService.replayApiRequests(responseAuditRecords);
+	}
+
+	@Then("validate api response error message")
+	public void validate_api_response_error_message(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String message = DataTableUtil.extractStringForColumnName(row, "JsonErrorItem.message");
+
+			final JsonErrorItem jsonErrorItem = objectMapper.readValue(testContext.getApiResponse().getContent(), JsonErrorItem.class);
+
+			assertThat(jsonErrorItem.getMessage()).isEqualTo(message);
+		}
 	}
 }

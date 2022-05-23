@@ -34,6 +34,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.scheduler.SchedulerAction;
 import de.metas.scheduler.SchedulerSearchKey;
 import de.metas.scheduler.eventbus.ManageSchedulerRequest;
 import de.metas.scheduler.eventbus.SchedulerEventBusService;
@@ -69,8 +70,8 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
 													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
 													 .clientId(Env.getClientId())
-													 .schedulerAdvice(ManageSchedulerRequest.Advice.ENABLE)
-													 .supervisorAdvice(ManageSchedulerRequest.Advice.ENABLE)
+													 .schedulerAction(SchedulerAction.ENABLE)
+													 .supervisorAction(ManageSchedulerRequest.SupervisorAction.ENABLE)
 													 .build());
 		return MSG_OK;
 	}

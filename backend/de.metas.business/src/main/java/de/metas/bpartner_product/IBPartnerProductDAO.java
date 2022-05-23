@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
@@ -73,7 +74,7 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 *
 	 * @return first entry, order by BP vendor and org_ID, nulls last
 	 */
-	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, OrgId orgId);
+	I_C_BPartner_Product retrieveBPProductForCustomer(@NonNull I_C_BPartner customerPartner, @NonNull I_M_Product product, @NonNull OrgId orgId);
 
 	List<I_C_BPartner_Product> retrieveForProductIds(Set<ProductId> productIds);
 

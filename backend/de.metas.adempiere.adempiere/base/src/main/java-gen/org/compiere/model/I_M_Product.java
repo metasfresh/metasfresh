@@ -2028,4 +2028,56 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Weight = new ModelColumn<>(I_M_Product.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+
+	/**
+	 * Set Picking_AgeTolerance_AfterMonths.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPicking_AgeTolerance_AfterMonths (int Picking_AgeTolerance_AfterMonths);
+
+	/**
+	 * Get Picking_AgeTolerance_AfterMonths.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPicking_AgeTolerance_AfterMonths();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Picking_AgeTolerance_AfterMonths = new ModelColumn<>(I_M_Product.class, "Picking_AgeTolerance_AfterMonths", null);
+	String COLUMNNAME_Picking_AgeTolerance_AfterMonths = "Picking_AgeTolerance_AfterMonths";
+
+	/**
+	 * Set Picking_AgeTolerance_BeforeMonths.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPicking_AgeTolerance_BeforeMonths (int Picking_AgeTolerance_BeforeMonths);
+
+	/**
+	 * Get Picking_AgeTolerance_BeforeMonths.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPicking_AgeTolerance_BeforeMonths();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Picking_AgeTolerance_BeforeMonths = new ModelColumn<>(I_M_Product.class, "Picking_AgeTolerance_BeforeMonths", null);
+	String COLUMNNAME_Picking_AgeTolerance_BeforeMonths = "Picking_AgeTolerance_BeforeMonths";
+
+	/**
+	 * Set Primärverpackung.
+	 * Beschreibung der Primärverpackung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
 }

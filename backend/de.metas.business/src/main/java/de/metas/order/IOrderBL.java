@@ -80,11 +80,19 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
+	/**
+	 * @return the order's bill location <b>OR</b> falls back to the "general" contact ({@code C_Order.C_BParter_Location_ID}).
+	 */
+	@NonNull
 	BPartnerLocationAndCaptureId getBillToLocationId(I_C_Order order);
 
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
 
+	/**
+	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
+	 * Be sure to first check with {@link #hasBillToContactId(I_C_Order)}.
+	 */
 	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
@@ -197,6 +205,10 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void reopenLine(I_C_OrderLine orderLine);
 
+	/**
+	 * @return {@code true} if the order has a bill contact
+	 * <b>OR</b> a "general" contact ({@code C_Order.AD_User_ID}) that is consistent with the order's Bill_BPartner.
+	 */
 	boolean hasBillToContactId(@NonNull I_C_Order order);
 
 	/**

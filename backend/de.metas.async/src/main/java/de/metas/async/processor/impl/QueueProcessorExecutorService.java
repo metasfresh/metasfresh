@@ -1,17 +1,15 @@
 package de.metas.async.processor.impl;
 
-import org.adempiere.util.concurrent.DelayedRunnableExecutor;
-import org.compiere.util.Ini;
-
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.processor.IQueueProcessorsExecutor;
-import de.metas.util.Services;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import org.adempiere.util.concurrent.DelayedRunnableExecutor;
+import org.compiere.util.Ini;
 
 class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 {
 	private final IQueueProcessorsExecutor executor;
+	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	/**
 	 * Used to delayed invoke {@link #initNow()}.
@@ -29,7 +27,7 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 		{
 			// nice toString representation to be displayed part of the thread name
 			return QueueProcessorExecutorService.class.getName() + "-delayedInit";
-		};
+		}
 	});
 
 	public QueueProcessorExecutorService()
@@ -81,19 +79,17 @@ class QueueProcessorExecutorService implements IQueueProcessorExecutorService
 		}
 
 		// Remove all queue processors. It shall be none, but just to make sure
-		executor.removeAllQueueProcessor();
+		executor.shutdown();
 
-		for (final I_C_Queue_Processor processorDef : Services.get(IQueueDAO.class).retrieveAllProcessors())
-		{
-			executor.addQueueProcessor(processorDef);
-		}
+		queueProcessorDescriptorRepository.getAllQueueProcessors()
+				.forEach(executor::addQueueProcessor);
 	}
 
 	@Override
 	public void removeAllQueueProcessors()
 	{
 		delayedInit.cancelAndReset();
-		executor.removeAllQueueProcessor();
+		executor.shutdown();
 	}
 
 	@Override

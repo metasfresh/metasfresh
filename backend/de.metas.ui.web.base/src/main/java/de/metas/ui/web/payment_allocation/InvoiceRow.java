@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
@@ -115,6 +116,8 @@ public class InvoiceRow implements IViewRow
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
 	private final InvoiceDocBaseType docBaseType;
+	@Getter
+	private final InvoiceAmtMultiplier invoiceAmtMultiplier;
 
 	@Getter
 	private final CurrencyConversionTypeId currencyConversionTypeId;
@@ -132,13 +135,13 @@ public class InvoiceRow implements IViewRow
 			@NonNull final LocalDate dateInvoiced,
 			@NonNull final LookupValue bpartner,
 			@NonNull final InvoiceDocBaseType docBaseType,
+			@NonNull final InvoiceAmtMultiplier invoiceAmtMultiplier,
 			@NonNull final Amount grandTotal,
 			@NonNull final Amount openAmt,
 			@NonNull final Amount discountAmt,
 			@Nullable final Amount bankFeeAmt,
 			@Nullable final Amount serviceFeeAmt,
-			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
-	)
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId)
 	{
 		this.isPreparedForAllocation = isPreparedForAllocation;
 		this.docTypeName = docTypeName;
@@ -153,6 +156,7 @@ public class InvoiceRow implements IViewRow
 		this.discountAmt = discountAmt;
 		this.serviceFeeAmt = serviceFeeAmt;
 		this.bankFeeAmt = bankFeeAmt;
+		this.invoiceAmtMultiplier = invoiceAmtMultiplier;
 		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
 		this.currencyCodeString = currencyCode.toThreeLetterCode();
 

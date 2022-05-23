@@ -196,7 +196,7 @@ public interface I_Revolut_Payment_Export
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBIC (@Nullable java.lang.String BIC);
+	void setSwiftCode (@Nullable java.lang.String SwiftCode);
 
 	/**
 	 * Get Swift code.
@@ -206,10 +206,10 @@ public interface I_Revolut_Payment_Export
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getBIC();
+	@Nullable java.lang.String getSwiftCode();
 
-	ModelColumn<I_Revolut_Payment_Export, Object> COLUMN_BIC = new ModelColumn<>(I_Revolut_Payment_Export.class, "BIC", null);
-	String COLUMNNAME_BIC = "BIC";
+	ModelColumn<I_Revolut_Payment_Export, Object> COLUMN_SwiftCode = new ModelColumn<>(I_Revolut_Payment_Export.class, "SwiftCode", null);
+	String COLUMNNAME_SwiftCode = "SwiftCode";
 
 	/**
 	 * Set Currency.

@@ -1,7 +1,14 @@
 package de.metas.migration.async;
 
-import java.util.Properties;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -12,16 +19,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Properties;
 
 /*
  * #%L
@@ -91,9 +89,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 
 				final I_C_Queue_WorkPackage nextWorkpackage = Services.get(IWorkPackageQueueFactory.class)
 						.getQueueForEnqueuing(ctx, getClass())
-						.newBlock()
-						.setContext(ctx)
-						.newWorkpackage()
+						.newWorkPackage()
 						.bindToTrxName(localTrxName)
 						// Workpackage Parameters
 						.parameters()
@@ -101,7 +97,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 						.setParameter(PARAM_AFTER_FINISH_SQL, params.getParameterAsString(PARAM_AFTER_FINISH_SQL))
 						.end()
 						// Build & enqueue
-						.build();
+						.buildAndEnqueue();
 
 				loggable.addLog("New workpackage enqueued: {0}", nextWorkpackage);
 			}

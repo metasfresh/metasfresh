@@ -64,8 +64,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(DeliveryOrderWorkpackageProcessor.class)
-				.newBlock()
-				.newWorkpackage()
+				.newWorkPackage()
 				.setC_Async_Batch_ID(asyncBatchId)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.bindToThreadInheritedTrx()
@@ -73,7 +72,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 				.setParameter(PARAM_DeliveryOrderRepoId, deliveryOrderRepoId)
 				.setParameter(PARAM_ShipperGatewayId, shipperGatewayId)
 				.end()
-				.build();
+				.buildAndEnqueue();
 	}
 
 	private static final String PARAM_DeliveryOrderRepoId = "DeliveryOrderRepoId";

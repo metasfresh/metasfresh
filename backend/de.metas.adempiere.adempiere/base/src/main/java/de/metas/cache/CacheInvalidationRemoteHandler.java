@@ -148,7 +148,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
 			Services.get(IEventBusFactory.class)
 					.getEventBus(TOPIC_CacheInvalidation)
-					.postEvent(event);
+					.enqueueEvent(event);
 		}
 	}
 

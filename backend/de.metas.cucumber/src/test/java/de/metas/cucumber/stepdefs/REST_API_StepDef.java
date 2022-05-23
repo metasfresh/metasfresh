@@ -193,6 +193,28 @@ public class REST_API_StepDef
 		testContext.setApiResponse(apiResponse);
 	}
 
+	@When("a {string} request with the below payload and headers from context is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_api_external_ref_receives_request_with_additional_headers_and_below_payload(
+			@NonNull final String verb,
+			@NonNull final String endpointPath,
+			@NonNull final String statusCode,
+			@NonNull final String payload) throws IOException
+	{
+		testContext.setRequestPayload(payload);
+
+		final APIRequest request = APIRequest.builder()
+				.endpointPath(endpointPath)
+				.verb(verb)
+				.statusCode(Integer.parseInt(statusCode))
+				.authToken(userAuthToken)
+				.additionalHeaders(testContext.getHttpHeaders())
+				.payload(payload)
+				.build();
+
+		apiResponse = RESTUtil.performHTTPRequest(request);
+		testContext.setApiResponse(apiResponse);
+	}
+
 	@Then("the metasfresh REST-API responds with")
 	public void the_metasfresh_REST_API_responds_with(@NonNull final String expectedResponse) throws JSONException
 	{
@@ -258,5 +280,21 @@ public class REST_API_StepDef
 		additionalHeaders.put(key, value);
 
 		testContext.setHttpHeaders(additionalHeaders);
+	}
+
+	@And("following http headers are set on context")
+	public void add_http_headers(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> customHeaders = new HashMap<>();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String headerName = DataTableUtil.extractStringForColumnName(row, "Name");
+			final String headerValue = DataTableUtil.extractStringForColumnName(row, "Value");
+
+			customHeaders.put(headerName, headerValue);
+		}
+
+		testContext.setHttpHeaders(customHeaders);
 	}
 }

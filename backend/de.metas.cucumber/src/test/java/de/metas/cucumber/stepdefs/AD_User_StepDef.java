@@ -171,6 +171,12 @@ public class AD_User_StepDef
 			userRecord.setPhone(phone);
 		}
 
+		final String login = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Login);
+		if (Check.isNotBlank(login))
+		{
+			userRecord.setLogin(login);
+		}
+
 		InterfaceWrapperHelper.saveRecord(userRecord);
 
 		final String userIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);

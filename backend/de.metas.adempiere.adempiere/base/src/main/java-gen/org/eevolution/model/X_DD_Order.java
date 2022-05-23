@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for DD_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1567347324L;
+	private static final long serialVersionUID = 548969864L;
 
     /** Standard Constructor */
     public X_DD_Order (final Properties ctx, final int DD_Order_ID, @Nullable final String trxName)
@@ -655,6 +655,18 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public boolean isSelected() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSelected);
+	}
+
+	@Override
+	public void setIsSimulated (final boolean IsSimulated)
+	{
+		set_Value (COLUMNNAME_IsSimulated, IsSimulated);
+	}
+
+	@Override
+	public boolean isSimulated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
 	}
 
 	@Override

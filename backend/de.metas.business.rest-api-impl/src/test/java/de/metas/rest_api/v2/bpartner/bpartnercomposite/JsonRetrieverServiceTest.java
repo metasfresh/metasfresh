@@ -39,6 +39,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
+import de.metas.test.SnapshotFunctionFactory;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
@@ -75,7 +76,7 @@ class JsonRetrieverServiceTest
 	@BeforeAll
 	static void initStatic()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll

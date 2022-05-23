@@ -163,7 +163,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(I_C_Payment payment)
+	public List<I_C_AllocationLine> retrieveAllocationLines(@NonNull I_C_Payment payment)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
