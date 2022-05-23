@@ -50,8 +50,8 @@ Feature: Prices rest controller
       | priceList_1               | priceListName_1            | 2                                    | DE                                | EUR                                | SALES                         |
 
     And validate JsonResponseProductPriceQuery.JsonPriceListResponse.JsonPriceListVersionResponse
-      | M_PriceList_Version_ID.Identifier | M_PriceList_ID.Identifier | JsonPriceListVersionResponse.Name | JsonPriceListVersionResponse.ValidFrom |
-      | priceListVersion_1                | priceList_1               | priceListVersionName_1            | 2022-05-01                             |
+      | M_PriceList_Version_ID.Identifier | M_PriceList_ID.Identifier | JsonPriceListVersionResponse.ValidFrom |
+      | priceListVersion_1                | priceList_1               | 2022-05-01                             |
 
     And validate JsonResponseProductPriceQuery.JsonPriceListResponse.JsonPriceListVersionResponse.JsonResponsePrice
       | M_PriceList_Version_ID.Identifier | M_PriceList_ID.Identifier | M_Product_ID.Identifier | JsonResponsePrice.Value | JsonResponsePrice.PriceStd | C_TaxCategory_ID.InternalName |
