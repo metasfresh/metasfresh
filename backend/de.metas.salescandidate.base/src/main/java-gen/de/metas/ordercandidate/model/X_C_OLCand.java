@@ -519,18 +519,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setCompensationGroupKey (final @Nullable java.lang.String CompensationGroupKey)
-	{
-		set_Value (COLUMNNAME_CompensationGroupKey, CompensationGroupKey);
-	}
-
-	@Override
-	public java.lang.String getCompensationGroupKey()
-	{
-		return get_ValueAsString(COLUMNNAME_CompensationGroupKey);
-	}
-
-	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
