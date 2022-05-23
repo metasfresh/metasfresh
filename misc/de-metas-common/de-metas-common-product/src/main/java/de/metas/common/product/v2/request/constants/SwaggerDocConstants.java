@@ -24,9 +24,10 @@ package de.metas.common.product.v2.request.constants;
 
 public class SwaggerDocConstants
 {
-	public static final String PRODUCT_IDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
+	public static final String PRODUCT_IDENTIFIER_DOC = "Identifier of the product in question. Can be\\n"
 			+ "* a plain `<M_Product_ID>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<M_Product_ID.ExternalId>`";
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>";
+
 	public static final String BPARTNER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
 			+ "* or something like `ext-<ExternalSystemName>-<C_BPartner.ExternalId>`\n";
