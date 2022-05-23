@@ -52,6 +52,33 @@ public interface I_API_Request_Audit
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Process Instance.
+	 * Instance of a Process
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_PInstance_ID (int AD_PInstance_ID);
+
+	/**
+	 * Get Process Instance.
+	 * Instance of a Process
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_PInstance_ID();
+
+	@Nullable org.compiere.model.I_AD_PInstance getAD_PInstance();
+
+	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
+
+	ModelColumn<I_API_Request_Audit, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_API_Request_Audit.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
+	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
+
+	/**
 	 * Set Role.
 	 * Responsibility Role
 	 *
@@ -239,7 +266,7 @@ public interface I_API_Request_Audit
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Fehler zur Kentnis genommen.
+	 * Set Error acknowledged.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -248,7 +275,7 @@ public interface I_API_Request_Audit
 	void setIsErrorAcknowledged (boolean IsErrorAcknowledged);
 
 	/**
-	 * Get Fehler zur Kentnis genommen.
+	 * Get Error acknowledged.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

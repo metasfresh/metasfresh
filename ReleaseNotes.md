@@ -12,6 +12,10 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#12974](https://github.com/metasfresh/metasfresh/issues/12974) Default paymentrule for packing item causes >1 invoice for the same order
+  * [#13016](https://github.com/metasfresh/metasfresh/issues/13016) Shopware Fix order-item/bundle-sorting - part deux
+  * [#13024](https://github.com/metasfresh/metasfresh/issues/13024) Improve API-Errormessage on wrong Headers
+  * [#12966](https://github.com/metasfresh/metasfresh/issues/12966) Improve ways of API request troubleshooting
   * [#12964](https://github.com/metasfresh/metasfresh/issues/12964) Support purchase candidates with same product and diffente ASI in one PO
   * [#12928](https://github.com/metasfresh/metasfresh/issues/12928) shopware - use pagination when polling for orders
   * [#12849](https://github.com/metasfresh/metasfresh/issues/12849) Handle multiple contacts and negative amounts in invoices
@@ -22,6 +26,10 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#12997](https://github.com/metasfresh/metasfresh/issues/12997) Open amt incorrect after vendor credit memo is created for a vendor invoice
+  * [#12980](https://github.com/metasfresh/metasfresh/issues/12980) Scale Price not used despite usescaleprice=S
+  * [#12991](https://github.com/metasfresh/metasfresh/issues/12991) For Picking Profile "Group by Order" the order and bpartner are not displayed in Picking Terminal
+  * [#13001](https://github.com/metasfresh/metasfresh/issues/13001) Error on customer return 
   * [#12978](https://github.com/metasfresh/metasfresh/issues/12978) Respect UOM precision when calculating package weights
   * [#12986](https://github.com/metasfresh/metasfresh/issues/12986) Password displayed when hovering over the *** with mouse, w/o using the eye icon 
   * [#12919](https://github.com/metasfresh/metasfresh/pull/12925) fix flaky 'exportExternalReferenceToRabbitMQ.feature' scenario #12925

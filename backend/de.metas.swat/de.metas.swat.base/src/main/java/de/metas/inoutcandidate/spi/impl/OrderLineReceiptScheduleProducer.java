@@ -19,6 +19,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -40,32 +41,11 @@ import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  *
@@ -92,7 +72,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		createOrReceiptScheduleFromOrderLine(orderLine, createReceiptScheduleIfNotExists);
 	}
 
-	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(final I_C_OrderLine line, final boolean createReceiptScheduleIfNotExists)
+	@Nullable
+	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(
+			@NonNull final I_C_OrderLine line,
+			final boolean createReceiptScheduleIfNotExists)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
@@ -158,6 +141,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
+		receiptSchedule.setC_Project_ID(order.getC_Project_ID());
 
 		//
 		// Delivery rule, Priority rule
@@ -282,9 +266,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 	/**
 	 * Create LotNumberDate Attribute instance and set it in the receipt shcedule's ASI
-	 *
-	 * @param receiptSchedule
-	 * @param order
 	 */
 	private void createLotNumberDateAI(final I_M_ReceiptSchedule receiptSchedule, final I_C_Order order)
 	{

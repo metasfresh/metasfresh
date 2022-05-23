@@ -29,9 +29,11 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -81,6 +83,8 @@ public class C_OrderLine_StepDef
 	private final C_Flatrate_Term_StepDefData contractTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_BPartner_StepDefData partnerTable,
@@ -89,7 +93,8 @@ public class C_OrderLine_StepDef
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
-			@NonNull final C_TaxCategory_StepDefData taxCategoryTable)
+			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable)
 	{
 		this.productTable = productTable;
 		this.partnerTable = partnerTable;
@@ -99,6 +104,7 @@ public class C_OrderLine_StepDef
 		this.flatrateConditionsTable = flatrateConditionsTable;
 		this.contractTable = contractTable;
 		this.taxCategoryTable = taxCategoryTable;
+		this.huPiItemProductTable = huPiItemProductTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -111,8 +117,11 @@ public class C_OrderLine_StepDef
 			orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + ".Identifier");
-			final I_M_Product product = productTable.get(productIdentifier);
-			orderLine.setM_Product_ID(product.getM_Product_ID());
+			final Integer productId = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+			orderLine.setM_Product_ID(productId);
 			orderLine.setQtyEntered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyEntered));
 
 			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -261,7 +270,7 @@ public class C_OrderLine_StepDef
 		for (final Map<String, String> row : table)
 		{
 			final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_OrderLine orderLine = orderLineTable.get(olIdentifier);
+			final de.metas.handlingunits.model.I_C_OrderLine orderLine = InterfaceWrapperHelper.create(orderLineTable.get(olIdentifier), de.metas.handlingunits.model.I_C_OrderLine.class);
 
 			final String contractIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -276,6 +285,16 @@ public class C_OrderLine_StepDef
 			if (updatedQtyEntered != null)
 			{
 				orderLine.setQtyEntered(updatedQtyEntered);
+			}
+
+			final String piItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID);
+			if (Check.isNotBlank(piItemProductIdentifier))
+			{
+				final Integer piItemProductId = huPiItemProductTable.getOptional(piItemProductIdentifier)
+						.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+						.orElseGet(() -> Integer.parseInt(piItemProductIdentifier));
+
+				orderLine.setM_HU_PI_Item_Product_ID(piItemProductId);
 			}
 
 			saveRecord(orderLine);
