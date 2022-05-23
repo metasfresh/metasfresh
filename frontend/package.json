@@ -106,7 +106,7 @@
     "moment-timezone-data-webpack-plugin": "1.5.0",
     "nock": "13.2.2",
     "nyc": "15.1.0",
-    "postcss": "8.4.5",
+    "postcss": "7.0.36",
     "postcss-color-function": "4.1.0",
     "postcss-import": "14.0.2",
     "postcss-loader": "6.2.1",
