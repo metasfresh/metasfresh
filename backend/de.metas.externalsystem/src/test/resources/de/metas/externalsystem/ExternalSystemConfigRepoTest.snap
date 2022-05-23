@@ -51,25 +51,82 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getById=[
   {
     "id" : 100001,
-    "type" : "RabbitMQ",
+    "type" : "Ebay",
     "name" : "name",
     "active" : true,
     "orgId" : 0,
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
-      "value" : "testRabbitMQValue",
-      "routingKey" : "routingKey",
-      "remoteUrl" : "remoteURL",
-      "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
+      "value" : "testEbayValue",
+      "appId" : "appId",
+      "certId" : "certId",
+      "devId" : "devId",
+      "refreshToken" : "refreshToken",
+      "externalSystemEbayConfigMappingList" : [ ],
+      "apiMode" : "SANDBOX",
+      "isActive" : true
     },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
+    "writeAudit" : false
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testEbayValue",
+    "appId" : "appId",
+    "certId" : "certId",
+    "devId" : "devId",
+    "refreshToken" : "refreshToken",
+    "externalSystemEbayConfigMappingList" : [
+      {
+        "seqNo" : 10,
+        "docTypeOrderId" : 10000,
+        "paymentRule" : "K",
+        "bpartnerIfExists" : "UPDATE_MERGE",
+        "bpartnerIfNotExists" : "FAIL",
+        "bpartnerLocationIfExists" : "DONT_UPDATE",
+        "bpartnerLocationIfNotExists" : "CREATE",
+        "isInvoiceEmailEnabled" : true,
+        "paymentTermId" : 10000,
+        "ebayCustomerGroup" : "testWithAnä",
+        "ebayPaymentMethod" : "test",
+        "description" : "test"
+      }
+    ],
+    "apiMode" : "SANDBOX",
+    "isActive" : true
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "Ebay",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testEbayValue",
+      "appId" : "appId",
+      "certId" : "certId",
+      "devId" : "devId",
+      "refreshToken" : "refreshToken",
+      "externalSystemEbayConfigMappingList" : [ ],
+      "apiMode" : "SANDBOX",
+      "isActive" : true
+    },
+    "writeAudit" : false
   }
 ]
 
@@ -146,23 +203,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
-  {
-    "id" : 100002,
-    "parentId" : 100001,
-    "value" : "testRabbitMQValue",
-    "routingKey" : "routingKey",
-    "remoteUrl" : "remoteURL",
-    "authToken" : "authToken",
-    "isSyncBPartnerToRabbitMQ" : true,
-    "isAutoSendWhenCreatedByUserGroup" : false,
-    "syncBPartnerToRabbitMQ" : true,
-    "autoSendWhenCreatedByUserGroup" : false,
-    "autoSendBPartnerEnabled" : false,
-    "sendBPartnerAllowed" : true
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
@@ -180,10 +220,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
-      "syncBPartnerToRabbitMQ" : true,
-      "autoSendWhenCreatedByUserGroup" : false,
       "autoSendBPartnerEnabled" : false,
-      "sendBPartnerAllowed" : true
+      "sendBPartnerAllowed" : true,
+      "autoSendWhenCreatedByUserGroup" : false,
+      "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -201,10 +241,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "authToken" : "authToken",
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
-    "syncBPartnerToRabbitMQ" : true,
-    "autoSendWhenCreatedByUserGroup" : false,
     "autoSendBPartnerEnabled" : false,
-    "sendBPartnerAllowed" : true
+    "sendBPartnerAllowed" : true,
+    "autoSendWhenCreatedByUserGroup" : false,
+    "syncBPartnerToRabbitMQ" : true
   }
 ]
 
@@ -223,13 +263,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "routingKey" : "routingKey",
       "remoteUrl" : "remoteURL",
       "authToken" : "authToken",
-	  "isSyncBPartnerToRabbitMQ" : true,
-	  "isAutoSendWhenCreatedByUserGroup" : true,
-	  "userGroupId" : 1,
-	  "syncBPartnerToRabbitMQ" : true,
-	  "autoSendWhenCreatedByUserGroup" : true,
-	  "autoSendBPartnerEnabled" : true,
-	  "sendBPartnerAllowed" : true
+      "isSyncBPartnerToRabbitMQ" : true,
+      "isAutoSendWhenCreatedByUserGroup" : true,
+      "userGroupId" : 1,
+      "autoSendBPartnerEnabled" : true,
+      "sendBPartnerAllowed" : true,
+      "autoSendWhenCreatedByUserGroup" : true,
+      "syncBPartnerToRabbitMQ" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -262,8 +302,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
-      "productLookup" : "ProductNumber",
-      "value" : "testShopware6Value"
+      "value" : "testShopware6Value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -296,8 +336,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : false,
-      "productLookup" : "ProductNumber",
-      "value" : "testShopware6Value"
+      "value" : "testShopware6Value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
