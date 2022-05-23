@@ -25,6 +25,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#12997](https://github.com/metasfresh/metasfresh/issues/12997) Open amt incorrect after vendor credit memo is created for a vendor invoice
   * [#12980](https://github.com/metasfresh/metasfresh/issues/12980) Scale Price not used despite usescaleprice=S
   * [#12991](https://github.com/metasfresh/metasfresh/issues/12991) For Picking Profile "Group by Order" the order and bpartner are not displayed in Picking Terminal
   * [#13001](https://github.com/metasfresh/metasfresh/issues/13001) Error on customer return 
