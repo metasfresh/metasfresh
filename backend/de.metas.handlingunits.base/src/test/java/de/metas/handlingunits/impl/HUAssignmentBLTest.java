@@ -21,6 +21,8 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -28,6 +30,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +65,8 @@ public class HUAssignmentBLTest
 
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
-		
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+
 		//
 		// Make sure Main handling units interceptor is registered
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();

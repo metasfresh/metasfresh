@@ -181,6 +181,16 @@ public class C_BPartner_StepDef
 		}
 	}
 
+	@Given("load C_BPartner:")
+	public void load_bpartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			load_bpartner(tableRow);
+		}
+	}
+
 	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final String bPartnerName = tableRow.get("Name");
@@ -358,5 +368,15 @@ public class C_BPartner_StepDef
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
+	}
+
+	private void load_bpartner(@NonNull final Map<String, String> tableRow)
+	{
+		final int bpartnerId = DataTableUtil.extractIntForColumnName(tableRow, COLUMNNAME_C_BPartner_ID);
+		final I_C_BPartner bPartner = bpartnerDAO.getById(bpartnerId);
+		assertThat(bPartner).isNotNull();
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		bPartnerTable.put(bpartnerIdentifier, bPartner);
 	}
 }

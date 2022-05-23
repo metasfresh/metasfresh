@@ -163,8 +163,10 @@ public class M_HU_LUTU_Configuration_StepDef
 	private I_M_HU_LUTU_Configuration computeLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfig, @NonNull final Map<String, String> row)
 	{
 		final String piProductItemIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(piProductItemIdentifier);
-		assertThat(huPiItemProduct).isNotNull();
+		final Integer huPiItemProductId = huPiItemProductTable.getOptional(piProductItemIdentifier)
+				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));;
+		assertThat(huPiItemProductId).isNotNull();
 
 		final boolean isInfiniteQtyCU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU);
 		final BigDecimal qtyCU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCU);
@@ -177,7 +179,7 @@ public class M_HU_LUTU_Configuration_StepDef
 		final boolean isInfiniteQtyTU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyTU);
 		final BigDecimal qtyTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyTU);
 
-		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), huPiItemProduct.getM_HU_PI_Item_Product_ID(), I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), huPiItemProductId, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 		lutuConfig.setM_HU_PI_Item_Product_ID(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
 		lutuConfig.setM_TU_HU_PI(tuPI);
@@ -191,10 +193,12 @@ public class M_HU_LUTU_Configuration_StepDef
 		if (qtyLU.signum() > 0)
 		{
 			final String luHuPiIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT.M_LU_HU_PI_ID." + TABLECOLUMN_IDENTIFIER);
-			final I_M_HU_PI luHuPi = huPiTable.get(luHuPiIdentifier);
-			assertThat(luHuPi).isNotNull();
+			final Integer luHuPiId = huPiTable.getOptional(luHuPiIdentifier)
+					.map(I_M_HU_PI::getM_HU_PI_ID)
+					.orElseGet(() -> Integer.parseInt(luHuPiIdentifier));
+			assertThat(luHuPiId).isNotNull();
 
-			final I_M_HU_PI luPI = InterfaceWrapperHelper.create(Env.getCtx(), luHuPi.getM_HU_PI_ID(), I_M_HU_PI.class, ITrx.TRXNAME_None);
+			final I_M_HU_PI luPI = InterfaceWrapperHelper.create(Env.getCtx(), luHuPiId, I_M_HU_PI.class, ITrx.TRXNAME_None);
 
 			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
 			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
