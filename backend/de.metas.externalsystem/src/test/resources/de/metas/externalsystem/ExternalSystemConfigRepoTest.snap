@@ -164,6 +164,68 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getActiveByType=[
+  [
+    {
+      "id" : 100001,
+      "type" : "LeichUndMehl",
+      "name" : "name",
+      "active" : true,
+      "orgId" : 0,
+      "childConfig" : {
+        "id" : 100002,
+        "parentId" : 100001,
+        "value" : "testLeichMehlValue",
+        "ftpHost" : "hostname",
+        "ftpPort" : 1111,
+        "ftpUsername" : "ftpUsername",
+        "ftpPassword" : "ftpPassword",
+        "ftpDirectory" : "directory"
+      },
+      "writeAudit" : true,
+      "auditFileFolder" : "auditFileFolder"
+    }
+  ]
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testLeichMehlValue",
+    "ftpHost" : "hostname",
+    "ftpPort" : 1111,
+    "ftpUsername" : "ftpUsername",
+    "ftpPassword" : "ftpPassword",
+    "ftpDirectory" : "directory"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testLeichMehlValue",
+      "ftpHost" : "hostname",
+      "ftpPort" : 1111,
+      "ftpUsername" : "ftpUsername",
+      "ftpPassword" : "ftpPassword",
+      "ftpDirectory" : "directory"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
     "id" : 100001,
@@ -477,6 +539,28 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
 	  "auditFileFolder" : "auditFileFolder"
     }
   ]
+]
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "ftpHost" : "hostname",
+      "ftpPort" : 1111,
+      "ftpUsername" : "ftpUsername",
+      "ftpPassword" : "ftpPassword",
+      "ftpDirectory" : "directory"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
 ]
 
 
