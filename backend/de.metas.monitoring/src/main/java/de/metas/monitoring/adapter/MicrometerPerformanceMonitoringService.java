@@ -47,11 +47,6 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final MeterRegistry meterRegistry;
 	private final ThreadLocal<Integer> step = ThreadLocal.withInitial(() -> 1);
 	private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
-	private final AtomicInteger correlationIdProvider = new AtomicInteger();
-	private final ThreadLocal<Integer> correlationId = ThreadLocal.withInitial(() -> 0);
-	private final ThreadLocal<Boolean> isCorrelationActive = ThreadLocal.withInitial(() -> false);
-	private final ThreadLocal<Boolean> isCorrelationLocked = ThreadLocal.withInitial(() -> false);
-	private final ThreadLocal<String[]> correlationTriggers = ThreadLocal.withInitial(this::getCorrelationTriggers);
 	private final ThreadLocal<String> initiator = ThreadLocal.withInitial(() -> "");
 	private final ThreadLocal<String> initiatorWindowId = ThreadLocal.withInitial(() -> "");
 	private final ThreadLocal<Boolean> isInitiatorLabelActive = ThreadLocal.withInitial(() -> false);
@@ -76,15 +71,10 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		// }
 		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
 
-		if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationActive.get())
-		{
-			isCorrelationActive.set(true);
-			correlationId.set(correlationIdProvider.getAndIncrement());
-		}
-		if(isCorrelationActive.get())
-		{
-			addAdditionalTags(tags);
-		}
+		// if(isInitiatorLabelActive.get())
+		// {
+		// 	addAdditionalTags(tags);
+		// }
 
 		if(depth.get() == 0
 				&& metadata.getType() == Type.REST_CONTROLLER
@@ -98,6 +88,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		else if(depth.get() == 0)
 		{
 			isInitiatorLabelActive.set(false);
+			step.set(1);
 		}
 
 		if(isInitiatorLabelActive.get())
@@ -109,13 +100,6 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		depth.set(depth.get() + 1);
 		try(final IAutoCloseable ignored = this.reduceDepth())
 		{
-			if(isCorrelationTrigger(metadata.getType().getCode()) && !isCorrelationLocked.get()){
-				try(final IAutoCloseable ignored2 = this.endCorrelation())
-				{
-					isCorrelationLocked.set(true);
-					return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
-				}
-			}
 			return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
 		}
 	}
@@ -159,37 +143,15 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 	private void addAdditionalTags(ArrayList<Tag> tags)
 	{
-		// mkTagIfNotNull("ThreadId", String.valueOf(Thread.currentThread().getId())).ifPresent(tags::add);
 		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
 		step.set(step.get() + 1);
 		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
-		mkTagIfNotNull("CorrelationId", String.valueOf(correlationId.get())).ifPresent(tags::add);
 	}
 
 	private IAutoCloseable reduceDepth()
 	{
 		return () -> {
 			depth.set(depth.get() - 1);
-		};
-	}
-
-	private Boolean isCorrelationTrigger(String type)
-	{
-		return Arrays.asList(correlationTriggers.get()).contains(type);
-	}
-
-	private String[] getCorrelationTriggers()
-	{
-		final String[] correlationTriggers = new String[] { "" };
-		return correlationTriggers;
-	}
-
-	private IAutoCloseable endCorrelation()
-	{
-		return () -> {
-			isCorrelationActive.set(false);
-			isCorrelationLocked.set(false);
-			step.set(1);
 		};
 	}
 }
