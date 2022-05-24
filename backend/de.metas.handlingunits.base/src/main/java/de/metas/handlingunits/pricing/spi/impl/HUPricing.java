@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_ProductPrice;
@@ -13,6 +14,7 @@ import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPriceQuery.ProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
@@ -68,7 +70,7 @@ public class HUPricing extends AttributePricing
 		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
 		if (ctxPriceListVersion == null)
 		{
-			logger.debug("No price list version found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - return empty because no price list version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
@@ -77,7 +79,7 @@ public class HUPricing extends AttributePricing
 		final HUPIItemProductId packingMaterialId = getPackingMaterialId(pricingCtx);
 		if (packingMaterialId == null)
 		{
-			logger.debug("No packing material found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - return empty because no packing material found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
@@ -89,7 +91,7 @@ public class HUPricing extends AttributePricing
 
 		if (productPrice == null)
 		{
-			logger.debug("No product attribute pricing found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute- return empty because no product attribute pricing found: {}", pricingCtx);
 			return Optional.empty(); // no matching
 		}
 
@@ -100,7 +102,7 @@ public class HUPricing extends AttributePricing
 			@NonNull final I_M_PriceList_Version plv,
 			@NonNull final ProductId productId,
 			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
-			@Nullable final HUPIItemProductId packingMaterialId)
+			@NonNull final HUPIItemProductId packingMaterialId)
 	{
 		boolean noAttributeRelatedConditionSet = true;
 
@@ -142,13 +144,13 @@ public class HUPricing extends AttributePricing
 	 * <li>LineNetAmt is computed from QtyEnteredInPriceUOM x PriceActual</li>
 	 * </ul>
 	 *
-	 * @task 08147
+	 * task 08147
 	 */
 	@Override
 	protected void setResultForProductPriceAttribute(
 			final IPricingContext pricingCtx,
 			final IPricingResult result,
-			final org.compiere.model.I_M_ProductPrice productPrice)
+			@NonNull final org.compiere.model.I_M_ProductPrice productPrice)
 	{
 		super.setResultForProductPriceAttribute(pricingCtx, result, productPrice);
 	}
@@ -156,6 +158,7 @@ public class HUPricing extends AttributePricing
 	/**
 	 * @return the default product price, <b>if</b> it matches the <code>M_HU_PI_Item_Product_ID</code> of the given <code>pricingCtx</code>.
 	 */
+	@Nullable
 	private I_M_ProductPrice findDefaultPriceAttributeOrNull(final IPricingContext pricingCtx)
 	{
 		//
@@ -210,6 +213,7 @@ public class HUPricing extends AttributePricing
 		return HUPIItemProductId.equals(productPricePackingMaterialId, ctxPackingMaterialId);
 	}
 
+	@Nullable
 	private HUPIItemProductId getPackingMaterialId(final IPricingContext pricingCtx)
 	{
 		final Object referencedObj = pricingCtx.getReferencedObject();
