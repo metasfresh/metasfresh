@@ -1,5 +1,6 @@
 package org.adempiere.ad.dao;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.process.PInstanceId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -12,11 +13,13 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * @param <T> model type
  * @author tsa
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface IQueryBuilder<T>
 {
 	/**
@@ -106,6 +109,10 @@ public interface IQueryBuilder<T>
 	//@formatter:on
 
 	IQuery<T> create();
+
+	default Stream<T> stream() { return create().stream(); }
+
+	default ImmutableList<T> list() { return create().listImmutable(getModelClass()); }
 
 	IQueryBuilder<T> addNotEqualsFilter(String columnName, @Nullable Object value);
 
