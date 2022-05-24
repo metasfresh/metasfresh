@@ -42,6 +42,23 @@ const computeSelectedResource = (
   }
 };
 
+const checkFormValid = (form) => {
+  console.log('checkFormValid', form);
+  const isCalendarValid = !!form.calendar;
+  const isResourceValid = !!form.resource;
+  const isTitleValid = form.title && form.title.length > 0;
+  const isStartDateValid = !!form.start;
+  const isEndDateValid = !!form.end;
+
+  return (
+    isCalendarValid &&
+    isResourceValid &&
+    isTitleValid &&
+    isStartDateValid &&
+    isEndDateValid
+  );
+};
+
 const CalendarEventEditor = ({
   availableCalendars,
   initialEvent, // { calendarId, resourceId, title, start, end, allDay }
@@ -107,6 +124,7 @@ const CalendarEventEditor = ({
   };
 
   const isNewEvent = !form.id;
+  const isFormValid = checkFormValid(form);
 
   const renderModalButtons = () => {
     return (
@@ -115,7 +133,9 @@ const CalendarEventEditor = ({
           <ModalButton onClick={() => onDelete(form.id)}>Delete</ModalButton>
         )}
         <ModalButton onClick={onCancel}>Cancel</ModalButton>
-        <ModalButton onClick={handleClickOK}>Done</ModalButton>
+        <ModalButton onClick={handleClickOK} disabled={!isFormValid}>
+          Done
+        </ModalButton>
       </>
     );
   };
