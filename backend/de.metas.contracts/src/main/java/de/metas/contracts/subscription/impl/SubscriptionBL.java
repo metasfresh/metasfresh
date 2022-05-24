@@ -3,9 +3,7 @@ package de.metas.contracts.subscription.impl;
 import com.google.common.base.Preconditions;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
@@ -106,11 +104,9 @@ public class SubscriptionBL implements ISubscriptionBL
 
 	public static final Logger logger = LogManager.getLogger(SubscriptionBL.class);
 	public static final int SEQNO_FIRST_VALUE = 10;
+
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final ISubscriptionDAO subscriptionDAO = Services.get(ISubscriptionDAO.class);
-
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public I_C_Flatrate_Term createSubscriptionTerm(
