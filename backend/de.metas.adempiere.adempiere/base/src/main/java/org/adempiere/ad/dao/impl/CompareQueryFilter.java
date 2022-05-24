@@ -22,21 +22,6 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryFilterModifier;
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.compiere.Adempiere;
-import org.compiere.model.MQuery;
-import org.compiere.util.TimeUtil;
-
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -44,6 +29,19 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryFilterModifier;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.compiere.Adempiere;
+import org.compiere.model.MQuery;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 @EqualsAndHashCode(doNotUseGetters = true, exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
 public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
@@ -115,7 +113,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	}
 
-	/* package */ CompareQueryFilter(final String columnName, final Operator operator, final Object value)
+	/* package */ CompareQueryFilter(final String columnName, final Operator operator, @Nullable final Object value)
 	{
 		this(columnName, operator, value, NullQueryFilterModifier.instance);
 	}
