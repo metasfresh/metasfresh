@@ -184,10 +184,6 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		setDeliveredData(icRecord);
 
 		icRecord.setQtyToInvoice(ZERO); // to be computed
-
-		// TODO
-		// final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
-		// final BPartnerLocationAndCaptureId commissionToLocationId = ContractLocationHelper.extractBillToLocationId(flatrateTerm);
 		
 		final SOTrx soTrx = SOTrx.ofBoolean(commissionShareRecord.isSOTrx());
 
