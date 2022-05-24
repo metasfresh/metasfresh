@@ -1,52 +1,6 @@
 package de.metas.material.planning.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.DayOfWeek;
-import java.time.temporal.TemporalUnit;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.I_S_ResourceType;
-import org.compiere.model.X_M_Product;
-import org.compiere.model.X_S_Resource;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.annotation.CacheCtx;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
@@ -57,6 +11,21 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_ResourceType;
+import org.compiere.model.X_M_Product;
+import org.compiere.model.X_S_Resource;
+import org.compiere.util.TimeUtil;
+
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalUnit;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class ResourceDAO implements IResourceDAO
 {
@@ -80,7 +49,7 @@ public class ResourceDAO implements IResourceDAO
 		return loadOutOfTrx(resourceId, I_S_Resource.class);
 	}
 
-	private ResourceType toResourceType(I_S_ResourceType record)
+	private ResourceType toResourceType(final I_S_ResourceType record)
 	{
 		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_ID());
 		final TemporalUnit durationUnit = Services.get(IUOMDAO.class).getTemporalUnitByUomId(durationUomId);
@@ -146,57 +115,17 @@ public class ResourceDAO implements IResourceDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_S_Resource.Table_Name + "#by"
-			+ "#" + I_S_Resource.COLUMNNAME_AD_Client_ID
-			+ "#" + I_S_Resource.COLUMNNAME_IsManufacturingResource)
-	public List<I_S_Resource> retrievePlants(final @CacheCtx Properties ctx)
-	{
-		final IQueryBuilder<I_S_Resource> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_S_Resource.class, ctx, ITrx.TRXNAME_None);
-
-		final ICompositeQueryFilter<I_S_Resource> filters = queryBuilder.getCompositeFilter();
-
-		//
-		// Only manufacturing resources
-		filters.addEqualsFilter(I_S_Resource.COLUMNNAME_IsManufacturingResource, true);
-
-		//
-		// Only Plant resources
-		filters.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
-
-		//
-		// Only for current AD_Client_ID
-		filters.addOnlyContextClient(ctx);
-
-		//
-		// Only active ones
-		filters.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_S_Resource.COLUMNNAME_S_Resource_ID);
-
-		return queryBuilder
-				.create()
-				.list(I_S_Resource.class);
-	}
-
-	@Override
-	public I_S_Resource retrievePlant(final Properties ctx, final int resourceId)
-	{
-		for (final I_S_Resource plant : retrievePlants(ctx))
-		{
-			if (plant.getS_Resource_ID() == resourceId)
-			{
-				return plant;
-			}
-		}
-
-		return null;
-	}
-
-	@Override
 	public void onResourceChanged(@NonNull final I_S_Resource resource)
 	{
+		//
+		// Validate Manufacturing Resource
+		if (resource.isManufacturingResource()
+				&& X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant.equals(resource.getManufacturingResourceType())
+				&& resource.getPlanningHorizon() <= 0)
+		{
+			throw new FillMandatoryException(I_S_Resource.COLUMNNAME_PlanningHorizon);
+		}
+
 		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
 		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(resource.getS_ResourceType_ID());
 

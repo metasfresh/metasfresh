@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
@@ -42,6 +44,8 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 
 public class C_BPartner_Location_StepDef
 {
@@ -51,6 +55,7 @@ public class C_BPartner_Location_StepDef
 
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_BPartner_Location_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -92,6 +97,16 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationTable.putOrReplace(bpLocationIdentifier, bPartnerLocation);
 		}
 
+	}
+
+	@Given("load C_BPartner_Location:")
+	public void load_bpartner_location(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			load_bpartner_location(tableRow);
+		}
 	}
 
 	private void createC_BPartner_Location(@NonNull final Map<String, String> tableRow)
@@ -171,5 +186,22 @@ public class C_BPartner_Location_StepDef
 
 		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
 		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
+	}
+
+	private void load_bpartner_location(@NonNull final Map<String, String> tableRow)
+	{
+		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer bpartnerId = bPartnerTable.getOptional(bpartnerIdentifier)
+				.map(I_C_BPartner::getC_BPartner_ID)
+				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+
+		final int bpartnerLocationId = DataTableUtil.extractIntForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID);
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId);
+
+		final I_C_BPartner_Location bPartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bPartnerLocationId);
+		assertThat(bPartnerLocation).isNotNull();
+
+		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		bPartnerLocationTable.put(bpartnerLocationIdentifier, bPartnerLocation);
 	}
 }

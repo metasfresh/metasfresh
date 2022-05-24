@@ -30,19 +30,20 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.rules.AbstractPriceListBasedRule;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_ProductScalePrice;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -61,6 +62,8 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 {
 
 	public static final AdMessageKey MSG_NO_SCALE_PRICE = AdMessageKey.of("NoScalePrice");
+
+	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
 
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
@@ -128,7 +131,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 
 		calculateWithScalePrice(pricingCtx, result, scalePrice);
 
-		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
+		result.setTaxCategoryId(productTaxCategoryService.getTaxCategoryId(productPrice));
 	}
 
 	private IPricingResult calculateWithScalePrice(

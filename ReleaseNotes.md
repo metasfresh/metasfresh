@@ -12,6 +12,12 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#12931](https://github.com/metasfresh/metasfresh/issues/12931) API - Export PP_Orders with extended informations
+  * [#12982](https://github.com/metasfresh/metasfresh/issues/12982) Korrektur action in material receipt candidates is not considered correctly in Material Dispo
+  * [#12999](https://github.com/metasfresh/metasfresh/issues/12999) Allow Defining Tax-Categories without a M_ProductPrice
+  * [#12974](https://github.com/metasfresh/metasfresh/issues/12974) Default paymentrule for packing item causes >1 invoice for the same order
+  * [#13016](https://github.com/metasfresh/metasfresh/issues/13016) Shopware Fix order-item/bundle-sorting - part deux
+  * [#13024](https://github.com/metasfresh/metasfresh/issues/13024) Improve API-Errormessage on wrong Headers
   * [#12966](https://github.com/metasfresh/metasfresh/issues/12966) Improve ways of API request troubleshooting
   * [#12964](https://github.com/metasfresh/metasfresh/issues/12964) Support purchase candidates with same product and diffente ASI in one PO
   * [#12928](https://github.com/metasfresh/metasfresh/issues/12928) shopware - use pagination when polling for orders
@@ -23,6 +29,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#12997](https://github.com/metasfresh/metasfresh/issues/12997) Open amt incorrect after vendor credit memo is created for a vendor invoice
   * [#12980](https://github.com/metasfresh/metasfresh/issues/12980) Scale Price not used despite usescaleprice=S
   * [#12991](https://github.com/metasfresh/metasfresh/issues/12991) For Picking Profile "Group by Order" the order and bpartner are not displayed in Picking Terminal
   * [#13001](https://github.com/metasfresh/metasfresh/issues/13001) Error on customer return 

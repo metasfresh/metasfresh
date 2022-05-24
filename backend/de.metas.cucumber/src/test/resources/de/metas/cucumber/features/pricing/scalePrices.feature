@@ -8,9 +8,6 @@ Feature: scale prices
     And metasfresh contains M_PricingSystems
       | Identifier           | Name                 | Value                |
       | defaultPricingSystem | defaultPricingSystem | defaultPricingSystem |
-    And metasfresh contains M_Products:
-      | Identifier             | Name                   |
-      | salesProduct_180520225 | salesProduct_180520225 |
     And metasfresh contains M_PriceLists
       | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
       | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
@@ -23,9 +20,12 @@ Feature: scale prices
 
   @from:cucumber
   Scenario: scale price with 'Use scale price' set on product price
-    Given metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.UseScalePrice |
-      | pp_1       | defaultPLV                        | salesProduct_180520225  | 5.00     | PCE               | Normal                        | S                 |
+    Given metasfresh contains M_Products:
+      | Identifier               | Name                     |
+      | salesProduct_180520225_1 | salesProduct_180520225_1 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.UseScalePrice |
+      | pp_1       | defaultPLV                        | salesProduct_180520225_1 | 5.00     | PCE               | Normal                        | S                 |
     And metasfresh contains M_ProductScalePrices:
       | Identifier | M_ProductPrice_ID | PriceLimit | PriceList | PriceStd | Qty |
       | ps_1       | pp_1              | 0          | 0         | 5        | 1   |
@@ -35,22 +35,25 @@ Feature: scale prices
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | bpartner_1               | 2022-05-17  |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | salesProduct_180520225  | 8          |
-      | ol_2       | o_1                   | salesProduct_180520225  | 15         |
-      | ol_3       | o_1                   | salesProduct_180520225  | 150        |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier  | QtyEntered |
+      | ol_1       | o_1                   | salesProduct_180520225_1 | 8          |
+      | ol_2       | o_1                   | salesProduct_180520225_1 | 15         |
+      | ol_3       | o_1                   | salesProduct_180520225_1 | 150        |
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 8          | 0            | 0           | 5     | 0        | EUR          | false     |
-      | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 15         | 0            | 0           | 4.5   | 0        | EUR          | false     |
-      | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 150        | 0            | 0           | 4     | 0        | EUR          | false     |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225_1 | 8          | 0            | 0           | 5     | 0        | EUR          | false     |
+      | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225_1 | 15         | 0            | 0           | 4.5   | 0        | EUR          | false     |
+      | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225_1 | 150        | 0            | 0           | 4     | 0        | EUR          | false     |
 
   @from:cucumber
   Scenario: scale price with 'Don't use scale price' set on product price
-    Given metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.UseScalePrice |
-      | pp_1       | defaultPLV                        | salesProduct_180520225  | 6.00     | PCE               | Normal                        | N                 |
+    Given metasfresh contains M_Products:
+      | Identifier               | Name                     |
+      | salesProduct_180520225_2 | salesProduct_180520225_2 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.UseScalePrice |
+      | pp_1       | defaultPLV                        | salesProduct_180520225_2 | 6.00     | PCE               | Normal                        | N                 |
     And metasfresh contains M_ProductScalePrices:
       | Identifier | M_ProductPrice_ID | PriceLimit | PriceList | PriceStd | Qty |
       | ps_1       | pp_1              | 0          | 0         | 5        | 1   |
@@ -60,35 +63,38 @@ Feature: scale prices
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | bpartner_1               | 2022-05-17  |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | salesProduct_180520225  | 8          |
-      | ol_2       | o_1                   | salesProduct_180520225  | 15         |
-      | ol_3       | o_1                   | salesProduct_180520225  | 150        |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier  | QtyEntered |
+      | ol_1       | o_1                   | salesProduct_180520225_2 | 8          |
+      | ol_2       | o_1                   | salesProduct_180520225_2 | 15         |
+      | ol_3       | o_1                   | salesProduct_180520225_2 | 150        |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 8          | 0            | 0           | 6     | 0        | EUR          | false     |
-      | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 15         | 0            | 0           | 6     | 0        | EUR          | false     |
-      | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 150        | 0            | 0           | 6     | 0        | EUR          | false     |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225_2 | 8          | 0            | 0           | 6     | 0        | EUR          | false     |
+      | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225_2 | 15         | 0            | 0           | 6     | 0        | EUR          | false     |
+      | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225_2 | 150        | 0            | 0           | 6     | 0        | EUR          | false     |
 
 
   @from:cucumber
   Scenario: scale price with 'Use scale price, fallback product price' set on product price
-    Given metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.UseScalePrice |
-      | pp_1       | defaultPLV                        | salesProduct_180520225  | 5.00     | PCE               | Normal                        | Y                 |
+    Given metasfresh contains M_Products:
+      | Identifier               | Name                     |
+      | salesProduct_180520225_3 | salesProduct_180520225_3 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.UseScalePrice |
+      | pp_1       | defaultPLV                        | salesProduct_180520225_3 | 5.00     | PCE               | Normal                        | Y                 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | bpartner_1               | 2022-05-17  |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_1       | o_1                   | salesProduct_180520225  | 8          |
-      | ol_2       | o_1                   | salesProduct_180520225  | 15         |
-      | ol_3       | o_1                   | salesProduct_180520225  | 150        |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier  | QtyEntered |
+      | ol_1       | o_1                   | salesProduct_180520225_3 | 8          |
+      | ol_2       | o_1                   | salesProduct_180520225_3 | 15         |
+      | ol_3       | o_1                   | salesProduct_180520225_3 | 150        |
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 8          | 0            | 0           | 5     | 0        | EUR          | false     |
-      | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 15         | 0            | 0           | 5     | 0        | EUR          | false     |
-      | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225  | 150        | 0            | 0           | 5     | 0        | EUR          | false     |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225_3 | 8          | 0            | 0           | 5     | 0        | EUR          | false     |
+      | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225_3 | 15         | 0            | 0           | 5     | 0        | EUR          | false     |
+      | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225_3 | 150        | 0            | 0           | 5     | 0        | EUR          | false     |
 

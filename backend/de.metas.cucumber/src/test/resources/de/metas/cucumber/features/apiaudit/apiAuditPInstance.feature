@@ -35,3 +35,44 @@ Feature: API Audit
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
       | c_2        | 9980  | null       | null           | N                     | Y                                | Y                 |
+
+  @from:cucumber
+  Scenario: if 'x-adpinstanceid' header is set when auditing v2 calls, but the value is not found in DB, the request should fail
+    Given the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | Y                 |
+
+    And following http headers are set on context
+      | Name            | Value  |
+      | x-adpinstanceid | 200522 |
+
+    When the metasfresh REST-API endpoint path 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=500' receives a 'POST' request with the headers from context, expecting status='500'
+
+    Then validate api response error message
+      | JsonErrorItem.message                                     |
+      | No AD_PInstance record found for 'x-adpinstanceid':200522 |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_2        | 9980  | null       | null           | N                     | Y                                | Y                 |
+
+
+  @from:cucumber
+  Scenario: if 'x-externalsystemconfigid' header is set when auditing v2 calls, but the value is not found in DB, the request should fail
+    Given the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | POST       | api/v2/test    | N                     | Y                                | Y                 |
+
+    And following http headers are set on context
+      | Name                     | Value    |
+      | x-externalsystemconfigid | 200522   |
+
+    When the metasfresh REST-API endpoint path 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=500' receives a 'POST' request with the headers from context, expecting status='500'
+
+    Then validate api response error message
+      | JsonErrorItem.message                                                              |
+      | No IExternalSystemChildConfigId record found for 'x-externalsystemconfigid':200522 |
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_2        | 9980  | null       | null           | N                     | Y                                | Y                 |
