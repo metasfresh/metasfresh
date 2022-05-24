@@ -312,7 +312,7 @@ public class ViewRestController
 				() -> getViewData0(windowIdStr, viewIdStr, firstRow, pageLength, orderBysListStr),
 				PerformanceMonitoringService.Metadata
 						.builder()
-						.name(this.getClass().getName())
+						.name("ViewRestController")
 						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.windowIdStr(windowIdStr)

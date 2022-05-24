@@ -292,7 +292,7 @@ public final class ViewResult
 				() -> getPage0(),
 				PerformanceMonitoringService.Metadata
 						.builder()
-						.name(this.getClass().getName())
+						.name("ViewResult")
 						.type(PerformanceMonitoringService.Type.VIEW)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());

@@ -384,7 +384,7 @@ public class ViewsRepository implements IViewsRepository
 				() -> getView0(viewIdStr),
 				PerformanceMonitoringService.Metadata
 						.builder()
-						.name(this.getClass().getName())
+						.name("ViewRepository")
 						.type(PerformanceMonitoringService.Type.VIEW)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
