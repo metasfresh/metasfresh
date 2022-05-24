@@ -1,0 +1,14 @@
+FROM openjdk:8-jdk-oraclelinux7
+
+RUN yum -y install yum-utils && yum-config-manager --add-repo http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo && yum-config-manager --enable epel-apache-maven && yum install -y apache-maven && yum -y clean all  && rm -rf /var/cache
+
+COPY --from=metas-mvn-backend:latest /root/.m2 /root/.m2/
+
+WORKDIR /cucumber
+COPY backend/de.metas.cucumber/ .
+
+RUN mvn clean test-compile
+
+ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
+
+CMD mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true
