@@ -31,6 +31,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
+@Builder(toBuilder = true)
 public class ResourceAssignment
 {
 	@NonNull ResourceAssignmentId id;
@@ -40,19 +41,4 @@ public class ResourceAssignment
 	@Nullable String description;
 
 	@NonNull CalendarDateRange dateRange;
-
-	@Builder(toBuilder = true)
-	private ResourceAssignment(
-			@NonNull final ResourceAssignmentId id,
-			@NonNull final ResourceId resourceId,
-			@NonNull final String name,
-			@Nullable final String description,
-			@NonNull final CalendarDateRange dateRange)
-	{
-		this.id = id;
-		this.resourceId = resourceId;
-		this.name = name;
-		this.description = description;
-		this.dateRange = dateRange;
-	}
 }
