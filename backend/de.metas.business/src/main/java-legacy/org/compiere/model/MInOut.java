@@ -1232,11 +1232,16 @@ public class MInOut extends X_M_InOut implements IDocument
 		return IDocument.STATUS_InProgress;
 	} // prepareIt
 
+	/**
+	  * Use M_Product.Weight or fall back to a KGM-UOM-conversion to the the product's weight.
+	  */
 	private BigDecimal getProductWeight(final @NonNull MProduct product, final @NonNull MInOutLine line)
 	{
-		return CoalesceUtil.firstGreaterThanZeroBigDecimalSupplier(() -> product.getWeight().multiply(line.getMovementQty()),
+		return CoalesceUtil.firstGreaterThanZeroBigDecimalSupplier(
+				() -> product.getWeight().multiply(line.getMovementQty()),
 				() -> uomConversionBL.convertFromProductUOM(ProductId.ofRepoIdOrNull(product.getM_Product_ID()), uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM), line.getMovementQty()));
 	}
+
 
 	private void checkCreditLimit()
 	{
