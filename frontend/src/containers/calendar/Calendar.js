@@ -46,6 +46,31 @@ const mergeCalendarEventToArray = (eventsArray, eventToAdd) => {
   return result;
 };
 
+const suggestCalendarIdAndResourceIdByResourceId = (calendars, resourceId) => {
+  if (!calendars || calendars.length === 0) {
+    return {};
+  }
+
+  if (resourceId) {
+    for (const calendar of calendars) {
+      for (const resource of calendar.resources) {
+        if (resource.id === resourceId) {
+          return {
+            calendarId: calendar.calendarId,
+            resourceId: resource.id,
+          };
+        }
+      }
+    }
+  }
+
+  const firstCalendar = calendars[0];
+  return {
+    calendarId: firstCalendar.calendarId,
+    resourceId: firstCalendar.resources?.[0].id,
+  };
+};
+
 const Calendar = ({ className = 'container' }) => {
   //console.log('Calendar ctor------------------');
   const [calendarEvents, setCalendarEvents] = React.useState({
@@ -91,10 +116,16 @@ const Calendar = ({ className = 'container' }) => {
 
   const handleCreateNewEvent = (params) => {
     //console.log('handleCreateNewEvent', { params });
-    const calendar = availableCalendars?.[0];
+    const { calendarId, resourceId } =
+      suggestCalendarIdAndResourceIdByResourceId(
+        availableCalendars,
+        params?.resource?.id
+      );
+    //console.log('handleCreateNewEvent', { calendarId, resourceId });
+
     setEditingEvent({
-      calendarId: calendar?.calendarId,
-      resourceId: calendar?.resources?.[0].id,
+      calendarId,
+      resourceId,
       start: convertToMoment(params.date),
       end: convertToMoment(params.date),
       allDay: params.allDay,
