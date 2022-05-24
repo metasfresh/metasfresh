@@ -239,8 +239,7 @@ public class PP_Order_Candidate_StepDef
 			}
 		};
 
-		final boolean candidateFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderCandidateQueryExecutor);
-		assertThat(candidateFound).isTrue();
+		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderCandidateQueryExecutor);
 
 		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(orderCandidateRecordIdentifier);
 

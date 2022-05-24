@@ -81,8 +81,7 @@ public class AD_EventLog_Entry_StepDef
 				return true;
 			};
 
-			final boolean recordFound = StepDefUtil.tryAndWait(timeoutSec, 1000, logEntryRecordFound);
-			assertThat(recordFound).isTrue();
+			StepDefUtil.tryAndWait(timeoutSec, 1000, logEntryRecordFound);
 		}
 	}
 }
