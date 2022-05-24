@@ -58,11 +58,11 @@ public class OrderLineRepository
 
 	public OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final int warehouseRepoId = CoalesceUtil.firstGreaterThanZeroSupplier(
+		final int warehouseRepoId = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> orderLineRecord.getM_Warehouse_ID(),
 				() -> orderLineRecord.getC_Order().getM_Warehouse_ID());
 
-		final int bPartnerRepoId = CoalesceUtil.firstGreaterThanZeroSupplier(
+		final int bPartnerRepoId = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> orderLineRecord.getC_BPartner_ID(),
 				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
 
