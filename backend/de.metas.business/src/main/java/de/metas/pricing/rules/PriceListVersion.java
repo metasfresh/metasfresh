@@ -31,6 +31,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Calculate Price using Price List Version
  *
@@ -47,7 +49,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
-	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
+	public void calculate(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
 		if (!applies(pricingCtx, result))
 		{
@@ -117,6 +119,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 				: BooleanWithReason.falseBecause(reason);
 	}
 
+	@Nullable
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
 			final I_M_PriceList_Version ctxPriceListVersion,
 			final ZonedDateTime promisedDate)
@@ -140,6 +143,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		return priceListsRepo.getPriceListVersionById(priceListVersionId);
 	}
 
+	@Nullable
 	private I_M_PriceList_Version getPriceListVersionEffective(final IPricingContext pricingCtx)
 	{
 		final I_M_PriceList_Version contextPLV = pricingCtx.getM_PriceList_Version();
@@ -151,7 +155,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		final I_M_PriceList_Version plv = priceListsRepo.retrievePriceListVersionOrNull(
 				pricingCtx.getPriceListId(),
 				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()),
-				(Boolean)null // processed
+				null // processed
 		);
 
 		return plv != null && plv.isActive() ? plv : null;

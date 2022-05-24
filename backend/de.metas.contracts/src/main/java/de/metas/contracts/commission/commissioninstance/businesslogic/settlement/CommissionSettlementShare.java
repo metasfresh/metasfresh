@@ -1,21 +1,19 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.settlement;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShareId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShareId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -43,7 +41,7 @@ import lombok.Setter;
 public class CommissionSettlementShare
 {
 	/** a settlement share doesn't make sense without a sales commission share. */
-	private SalesCommissionShareId salesCommissionShareId;
+	private CommissionShareId salesCommissionShareId;
 
 	@Setter(AccessLevel.NONE)
 	private CommissionPoints pointsToSettleSum;
@@ -57,7 +55,7 @@ public class CommissionSettlementShare
 	@JsonCreator
 	@Builder
 	private CommissionSettlementShare(
-			@JsonProperty("salesCommissionShareId") @NonNull final SalesCommissionShareId salesCommissionShareId,
+			@JsonProperty("salesCommissionShareId") @NonNull final CommissionShareId salesCommissionShareId,
 			@JsonProperty("facts") @NonNull final List<CommissionSettlementFact> facts)
 	{
 		this.salesCommissionShareId = salesCommissionShareId;

@@ -34,6 +34,7 @@ public enum PathSegmentsEnum
 	SEARCH("search"),
 	ORDER("order"),
 	PRODUCT("product"),
+	UNIT("unit"),
 	DELIVERIES("deliveries"),
 	ORDER_ADDRESS("order-address"),
 	OATH("oauth"),

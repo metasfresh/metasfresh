@@ -30,7 +30,6 @@ import lombok.experimental.UtilityClass;
  * Static methods to create and manipulate {@link SqlDocumentFilterConverter} instances.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public final class SqlDocumentFilterConverters
@@ -45,18 +44,13 @@ public final class SqlDocumentFilterConverters
 	 */
 	public static SqlDocumentFilterConverter createEntityBindingEffectiveConverter(@NonNull final SqlEntityBinding entityBinding)
 	{
-		final SqlDocumentFilterConvertersList converters = entityBinding.getFilterConverters();
-		final SqlDocumentFilterConverter fallBackConverter = SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
-
-		final SqlDocumentFilterConvertersListWithFallback sqlDocumentFilterConverter = //
-				SqlDocumentFilterConvertersListWithFallback.newInstance(converters, fallBackConverter);
+		final SqlDocumentFilterConverter converters = entityBinding.getFilterConverters()
+				.withFallback(SqlDefaultDocumentFilterConverter.newInstance(entityBinding));
 
 		final SqlDocumentFilterConverterDecorator decoratorOrNull = entityBinding.getFilterConverterDecorator().orElse(null);
-		if (decoratorOrNull == null)
-		{
-			return sqlDocumentFilterConverter;
-		}
-		return decoratorOrNull.decorate(sqlDocumentFilterConverter);
+		return decoratorOrNull != null
+				? decoratorOrNull.decorate(converters)
+				: converters;
 	}
 
 	public static SqlDocumentFilterConvertersList.Builder listBuilder()
@@ -68,5 +62,4 @@ public final class SqlDocumentFilterConverters
 	{
 		return SqlDocumentFilterConvertersList.EMPTY;
 	}
-
 }

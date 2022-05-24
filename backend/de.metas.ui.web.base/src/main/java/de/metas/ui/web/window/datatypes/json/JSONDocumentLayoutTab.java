@@ -145,11 +145,15 @@ public final class JSONDocumentLayoutTab
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONViewOrderBy> defaultOrderBys;
 
-	@JsonProperty("supportQuickInput")
-	private final boolean supportQuickInput;
+	@JsonProperty("quickInputSupport")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final JSONQuickInputSupport quickInputSupport;
 
 	@JsonProperty("queryOnActivate")
 	private final boolean queryOnActivate;
+
+	@JsonProperty("newRecordInputMode")
+	private final JSONIncludedTabNewRecordInputMode newRecordInputMode;
 
 	@ApiModelProperty(allowEmptyValue = true, //
 			value = "If set to true, then the frontend shall render the tab in \"detail\" view. It can assume that there is at most one record to be shown in the tab.<br>"
@@ -165,8 +169,12 @@ public final class JSONDocumentLayoutTab
 	{
 		final ViewLayout gridLayout = includedTabLayout.getGridLayout();
 
-		supportQuickInput = includedTabLayout.isSupportQuickInput();
+		quickInputSupport = includedTabLayout.getQuickInputSupport() != null
+				? JSONQuickInputSupport.of(includedTabLayout.getQuickInputSupport(), options.getAdLanguage())
+				: null;
+
 		queryOnActivate = includedTabLayout.isQueryOnActivate();
+		newRecordInputMode = JSONIncludedTabNewRecordInputMode.of(includedTabLayout.getNewRecordInputMode());
 
 		windowId = includedTabLayout.getWindowId();
 		tabId = includedTabLayout.getDetailId();

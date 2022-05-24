@@ -1,18 +1,20 @@
 package de.metas.esb.edi.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for EDI_Desadv
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_EDI_Desadv 
 {
 
-    /** TableName=EDI_Desadv */
-    public static final String Table_Name = "EDI_Desadv";
+	String Table_Name = "EDI_Desadv";
 
-    /** AD_Table_ID=540644 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540644 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +25,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +37,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +47,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Bill Location.
@@ -58,7 +58,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBill_Location_ID (int Bill_Location_ID);
+	void setBill_Location_ID (int Bill_Location_ID);
 
 	/**
 	 * Get Bill Location.
@@ -67,10 +67,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getBill_Location_ID();
+	int getBill_Location_ID();
 
-    /** Column name Bill_Location_ID */
-    public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
 	 * Set Business Partner.
@@ -79,7 +78,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
 	 * Get Business Partner.
@@ -88,10 +87,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Location.
@@ -100,7 +98,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
 	 * Get Location.
@@ -109,10 +107,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_Location_ID();
+	int getC_BPartner_Location_ID();
 
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
 	 * Set Currency.
@@ -122,7 +119,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Currency_ID (int C_Currency_ID);
+	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
 	 * Get Currency.
@@ -132,10 +129,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Currency_ID();
+	int getC_Currency_ID();
 
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Get Created.
@@ -145,12 +141,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_Created = new ModelColumn<>(I_EDI_Desadv.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -160,10 +154,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Date.
@@ -173,7 +166,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateOrdered (java.sql.Timestamp DateOrdered);
+	void setDateOrdered (@Nullable java.sql.Timestamp DateOrdered);
 
 	/**
 	 * Get Date.
@@ -183,12 +176,33 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateOrdered();
+	@Nullable java.sql.Timestamp getDateOrdered();
 
-    /** Column definition for DateOrdered */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_DateOrdered = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "DateOrdered", null);
-    /** Column name DateOrdered */
-    public static final String COLUMNNAME_DateOrdered = "DateOrdered";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_DateOrdered = new ModelColumn<>(I_EDI_Desadv.class, "DateOrdered", null);
+	String COLUMNNAME_DateOrdered = "DateOrdered";
+
+	/**
+	 * Set Delivery Via.
+	 * How the order will be delivered
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
+
+	/**
+	 * Get Delivery Via.
+	 * How the order will be delivered
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDeliveryViaRule();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_DeliveryViaRule = new ModelColumn<>(I_EDI_Desadv.class, "DeliveryViaRule", null);
+	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
 
 	/**
 	 * Set Document No.
@@ -198,7 +212,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
 
 	/**
 	 * Get Document No.
@@ -208,12 +222,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentNo();
+	@Nullable java.lang.String getDocumentNo();
 
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_DocumentNo = new ModelColumn<>(I_EDI_Desadv.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Ship Business Partner.
@@ -222,7 +234,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
+	void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
 
 	/**
 	 * Get Ship Business Partner.
@@ -231,10 +243,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDropShip_BPartner_ID();
+	int getDropShip_BPartner_ID();
 
-    /** Column name DropShip_BPartner_ID */
-    public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+	String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
 
 	/**
 	 * Set Ship Location.
@@ -243,7 +254,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDropShip_Location_ID (int DropShip_Location_ID);
+	void setDropShip_Location_ID (int DropShip_Location_ID);
 
 	/**
 	 * Get Ship Location.
@@ -252,10 +263,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDropShip_Location_ID();
+	int getDropShip_Location_ID();
 
-    /** Column name DropShip_Location_ID */
-    public static final String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
+	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
 	 * Set DESADV.
@@ -264,7 +274,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEDI_Desadv_ID (int EDI_Desadv_ID);
+	void setEDI_Desadv_ID (int EDI_Desadv_ID);
 
 	/**
 	 * Get DESADV.
@@ -273,12 +283,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getEDI_Desadv_ID();
+	int getEDI_Desadv_ID();
 
-    /** Column definition for EDI_Desadv_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_Desadv_ID = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_Desadv_ID", null);
-    /** Column name EDI_Desadv_ID */
-    public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_Desadv_ID = new ModelColumn<>(I_EDI_Desadv.class, "EDI_Desadv_ID", null);
+	String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
 	 * Set EDI Fehlermeldung.
@@ -287,7 +295,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEDIErrorMsg (java.lang.String EDIErrorMsg);
+	void setEDIErrorMsg (@Nullable java.lang.String EDIErrorMsg);
 
 	/**
 	 * Get EDI Fehlermeldung.
@@ -296,12 +304,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEDIErrorMsg();
+	@Nullable java.lang.String getEDIErrorMsg();
 
-    /** Column definition for EDIErrorMsg */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDIErrorMsg = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDIErrorMsg", null);
-    /** Column name EDIErrorMsg */
-    public static final String COLUMNNAME_EDIErrorMsg = "EDIErrorMsg";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_EDIErrorMsg = new ModelColumn<>(I_EDI_Desadv.class, "EDIErrorMsg", null);
+	String COLUMNNAME_EDIErrorMsg = "EDIErrorMsg";
 
 	/**
 	 * Set EDI Status Exportieren.
@@ -310,7 +316,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEDI_ExportStatus (java.lang.String EDI_ExportStatus);
+	void setEDI_ExportStatus (@Nullable java.lang.String EDI_ExportStatus);
 
 	/**
 	 * Get EDI Status Exportieren.
@@ -319,12 +325,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEDI_ExportStatus();
+	@Nullable java.lang.String getEDI_ExportStatus();
 
-    /** Column definition for EDI_ExportStatus */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_ExportStatus = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "EDI_ExportStatus", null);
-    /** Column name EDI_ExportStatus */
-    public static final String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_EDI_ExportStatus = new ModelColumn<>(I_EDI_Desadv.class, "EDI_ExportStatus", null);
+	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
 
 	/**
 	 * Set Geliefert %.
@@ -333,7 +337,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFulfillmentPercent (java.math.BigDecimal FulfillmentPercent);
+	void setFulfillmentPercent (BigDecimal FulfillmentPercent);
 
 	/**
 	 * Get Geliefert %.
@@ -342,12 +346,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFulfillmentPercent();
+	BigDecimal getFulfillmentPercent();
 
-    /** Column definition for FulfillmentPercent */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_FulfillmentPercent = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "FulfillmentPercent", null);
-    /** Column name FulfillmentPercent */
-    public static final String COLUMNNAME_FulfillmentPercent = "FulfillmentPercent";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_FulfillmentPercent = new ModelColumn<>(I_EDI_Desadv.class, "FulfillmentPercent", null);
+	String COLUMNNAME_FulfillmentPercent = "FulfillmentPercent";
 
 	/**
 	 * Set Geliefert % Minimum.
@@ -356,7 +358,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFulfillmentPercentMin (java.math.BigDecimal FulfillmentPercentMin);
+	void setFulfillmentPercentMin (@Nullable BigDecimal FulfillmentPercentMin);
 
 	/**
 	 * Get Geliefert % Minimum.
@@ -365,12 +367,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFulfillmentPercentMin();
+	BigDecimal getFulfillmentPercentMin();
 
-    /** Column definition for FulfillmentPercentMin */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_FulfillmentPercentMin = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "FulfillmentPercentMin", null);
-    /** Column name FulfillmentPercentMin */
-    public static final String COLUMNNAME_FulfillmentPercentMin = "FulfillmentPercentMin";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_FulfillmentPercentMin = new ModelColumn<>(I_EDI_Desadv.class, "FulfillmentPercentMin", null);
+	String COLUMNNAME_FulfillmentPercentMin = "FulfillmentPercentMin";
 
 	/**
 	 * Set Übergabeadresse.
@@ -379,7 +379,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHandOver_Location_ID (int HandOver_Location_ID);
+	void setHandOver_Location_ID (int HandOver_Location_ID);
 
 	/**
 	 * Get Übergabeadresse.
@@ -388,10 +388,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getHandOver_Location_ID();
+	int getHandOver_Location_ID();
 
-    /** Column name HandOver_Location_ID */
-    public static final String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
+	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
 
 	/**
 	 * Set Handover partner.
@@ -400,7 +399,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHandOver_Partner_ID (int HandOver_Partner_ID);
+	void setHandOver_Partner_ID (int HandOver_Partner_ID);
 
 	/**
 	 * Get Handover partner.
@@ -409,10 +408,34 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getHandOver_Partner_ID();
+	int getHandOver_Partner_ID();
 
-    /** Column name HandOver_Partner_ID */
-    public static final String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+	String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+
+	/**
+	 * Set Invoicable Quantity per.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInvoicableQtyBasedOn (@Nullable java.lang.String InvoicableQtyBasedOn);
+
+	/**
+	 * Get Invoicable Quantity per.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getInvoicableQtyBasedOn();
+
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_InvoicableQtyBasedOn = new ModelColumn<>(I_EDI_Desadv.class, "InvoicableQtyBasedOn", null);
+	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
 	 * Set Active.
@@ -422,7 +445,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -432,12 +455,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_IsActive = new ModelColumn<>(I_EDI_Desadv.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Bewegungs-Datum.
@@ -447,7 +468,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
+	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
 
 	/**
 	 * Get Bewegungs-Datum.
@@ -457,12 +478,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getMovementDate();
+	@Nullable java.sql.Timestamp getMovementDate();
 
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_MovementDate = new ModelColumn<>(I_EDI_Desadv.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
 	 * Set Order Reference.
@@ -472,7 +491,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPOReference (java.lang.String POReference);
+	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -482,12 +501,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPOReference();
+	@Nullable java.lang.String getPOReference();
 
-    /** Column definition for POReference */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "POReference", null);
-    /** Column name POReference */
-    public static final String COLUMNNAME_POReference = "POReference";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_POReference = new ModelColumn<>(I_EDI_Desadv.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Processed.
@@ -496,7 +513,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
 	 * Get Processed.
@@ -505,12 +522,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_Processed = new ModelColumn<>(I_EDI_Desadv.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Process Now.
@@ -519,7 +534,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
 	 * Get Process Now.
@@ -528,12 +543,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_Processing = new ModelColumn<>(I_EDI_Desadv.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set SumDeliveredInStockingUOM.
@@ -542,7 +555,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSumDeliveredInStockingUOM (java.math.BigDecimal SumDeliveredInStockingUOM);
+	void setSumDeliveredInStockingUOM (BigDecimal SumDeliveredInStockingUOM);
 
 	/**
 	 * Get SumDeliveredInStockingUOM.
@@ -551,12 +564,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getSumDeliveredInStockingUOM();
+	BigDecimal getSumDeliveredInStockingUOM();
 
-    /** Column definition for SumDeliveredInStockingUOM */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_SumDeliveredInStockingUOM = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "SumDeliveredInStockingUOM", null);
-    /** Column name SumDeliveredInStockingUOM */
-    public static final String COLUMNNAME_SumDeliveredInStockingUOM = "SumDeliveredInStockingUOM";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_SumDeliveredInStockingUOM = new ModelColumn<>(I_EDI_Desadv.class, "SumDeliveredInStockingUOM", null);
+	String COLUMNNAME_SumDeliveredInStockingUOM = "SumDeliveredInStockingUOM";
 
 	/**
 	 * Set SumOrderedInStockingUOM.
@@ -565,7 +576,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSumOrderedInStockingUOM (java.math.BigDecimal SumOrderedInStockingUOM);
+	void setSumOrderedInStockingUOM (BigDecimal SumOrderedInStockingUOM);
 
 	/**
 	 * Get SumOrderedInStockingUOM.
@@ -574,12 +585,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getSumOrderedInStockingUOM();
+	BigDecimal getSumOrderedInStockingUOM();
 
-    /** Column definition for SumOrderedInStockingUOM */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_SumOrderedInStockingUOM = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "SumOrderedInStockingUOM", null);
-    /** Column name SumOrderedInStockingUOM */
-    public static final String COLUMNNAME_SumOrderedInStockingUOM = "SumOrderedInStockingUOM";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_SumOrderedInStockingUOM = new ModelColumn<>(I_EDI_Desadv.class, "SumOrderedInStockingUOM", null);
+	String COLUMNNAME_SumOrderedInStockingUOM = "SumOrderedInStockingUOM";
 
 	/**
 	 * Get Updated.
@@ -589,12 +598,10 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_Updated = new ModelColumn<>(I_EDI_Desadv.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -604,10 +611,9 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Nutzer 1.
@@ -617,7 +623,7 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUserFlag (java.lang.String UserFlag);
+	void setUserFlag (@Nullable java.lang.String UserFlag);
 
 	/**
 	 * Get Nutzer 1.
@@ -627,10 +633,8 @@ public interface I_EDI_Desadv
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUserFlag();
+	@Nullable java.lang.String getUserFlag();
 
-    /** Column definition for UserFlag */
-    public static final org.adempiere.model.ModelColumn<I_EDI_Desadv, Object> COLUMN_UserFlag = new org.adempiere.model.ModelColumn<I_EDI_Desadv, Object>(I_EDI_Desadv.class, "UserFlag", null);
-    /** Column name UserFlag */
-    public static final String COLUMNNAME_UserFlag = "UserFlag";
+	ModelColumn<I_EDI_Desadv, Object> COLUMN_UserFlag = new ModelColumn<>(I_EDI_Desadv.class, "UserFlag", null);
+	String COLUMNNAME_UserFlag = "UserFlag";
 }

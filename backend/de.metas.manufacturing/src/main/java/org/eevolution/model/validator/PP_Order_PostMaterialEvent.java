@@ -99,4 +99,15 @@ public class PP_Order_PostMaterialEvent
 
 		materialEventService.postEventAfterNextCommit(changeEvent);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyDelivered )
+	public void postMaterialEvent_qtyDelivered(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
+				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
+				.inspectPPOrderAfterChange();
+
+		materialEventService.postEventAfterNextCommit(changeEvent);
+	}
+
 }

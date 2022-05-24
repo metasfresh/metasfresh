@@ -1,0 +1,25 @@
+-- 2021-09-02T08:49:14.457Z
+-- URL zum Konzept
+UPDATE AD_UI_Section_Trl SET Name='',Updated=TO_TIMESTAMP('2021-09-02 10:49:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_UI_Section_ID=541587
+;
+
+-- 2021-09-02T08:49:16.453Z
+-- URL zum Konzept
+UPDATE AD_UI_Section_Trl SET Name='',Updated=TO_TIMESTAMP('2021-09-02 10:49:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_UI_Section_ID=541587
+;
+
+-- 2021-09-02T08:49:18.134Z
+-- URL zum Konzept
+UPDATE AD_UI_Section_Trl SET Name='',Updated=TO_TIMESTAMP('2021-09-02 10:49:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_UI_Section_ID=541587
+;
+
+-- 2021-09-02T08:49:19.205Z
+-- URL zum Konzept
+UPDATE AD_UI_Section_Trl SET Name='',Updated=TO_TIMESTAMP('2021-09-02 10:49:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='it_CH' AND AD_UI_Section_ID=541587
+;
+
+-- 2021-09-02T08:49:20.947Z
+-- URL zum Konzept
+UPDATE AD_UI_Section_Trl SET Name='',Updated=TO_TIMESTAMP('2021-09-02 10:49:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_UI_Section_ID=541587
+;
+

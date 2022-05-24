@@ -45,7 +45,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -54,7 +53,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -77,12 +75,15 @@ public class OrgChangeRepository
 
 	private final BPartnerCompositeRepository bPartnerCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
+	private final MembershipContractRepository membershipContractRepo;
 
 	public OrgChangeRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
-			@NonNull final OrgMappingRepository orgMappingRepo)
+			@NonNull final OrgMappingRepository orgMappingRepo,
+			@NonNull final MembershipContractRepository membershipContractRepo)
 	{
 		this.bPartnerCompositeRepo = bPartnerCompositeRepo;
 		this.orgMappingRepo = orgMappingRepo;
+		this.membershipContractRepo = membershipContractRepo;
 	}
 
 	public OrgChangeBPartnerComposite getByIdAndOrgChangeDate(
@@ -103,7 +104,7 @@ public class OrgChangeRepository
 
 	private Optional<GroupCategoryId> getGroupCategoryId(@NonNull final BPartnerId bpartnerId, final Instant orgChangeDate, final OrgId orgId)
 	{
-		return queryMembershipRunningSubscription(bpartnerId, orgChangeDate, orgId)
+		return membershipContractRepo.queryMembershipRunningSubscription(bpartnerId, orgChangeDate, orgId)
 				.stream()
 				.map(term -> productDAO.getById(term.getM_Product_ID()))
 				.filter(product -> product.getC_CompensationGroup_Schema_Category_ID() > 0)
@@ -124,7 +125,7 @@ public class OrgChangeRepository
 
 	private List<FlatrateTerm> getMembershipSubscriptions(final BPartnerId bpartnerId, final Instant orgChangeDate, final OrgId orgId)
 	{
-		final Set<FlatrateTermId> membershipFlatrateTermIds = retrieveMembershipSubscriptionIds(bpartnerId, orgChangeDate, orgId);
+		final Set<FlatrateTermId> membershipFlatrateTermIds = membershipContractRepo.retrieveMembershipSubscriptionIds(bpartnerId, orgChangeDate, orgId);
 		return membershipFlatrateTermIds.stream()
 				.map(this::createFlatrateTerm)
 				.collect(ImmutableList.toImmutableList());
@@ -165,45 +166,8 @@ public class OrgChangeRepository
 
 	public boolean hasAnyMembershipProduct(@NonNull final OrgId orgId)
 	{
-		return queryMembershipProducts(orgId).anyMatch();
+		return membershipContractRepo.queryMembershipProducts(orgId).anyMatch();
 	}
-
-	private IQuery<I_M_Product> queryMembershipProducts(@NonNull final OrgId orgId)
-	{
-		return queryBL.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
-				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID, null)
-				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_Category_ID, null)
-				.create();
-	}
-
-	private IQuery<I_C_Flatrate_Term> queryMembershipRunningSubscription(
-			@NonNull final BPartnerId bPartnerId,
-			@NonNull final Instant orgChangeDate,
-			@NonNull final OrgId orgId)
-	{
-		final IQuery<I_M_Product> membershipProductQuery = queryMembershipProducts(orgId);
-
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
-									 I_M_Product.COLUMNNAME_M_Product_ID,
-									 membershipProductQuery)
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
-				.create();
-	}
-
-	private Set<FlatrateTermId> retrieveMembershipSubscriptionIds(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final Instant orgChangeDate,
-			@NonNull final OrgId orgId)
-	{
-		return queryMembershipRunningSubscription(bpartnerId, orgChangeDate, orgId)
-				.listIds(FlatrateTermId::ofRepoId);
-	}
-
 	private Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final Instant orgChangeDate,

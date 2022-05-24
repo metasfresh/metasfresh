@@ -2,7 +2,6 @@ package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickFrom;
@@ -12,7 +11,6 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
-import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -59,8 +57,6 @@ import java.util.stream.Stream;
 public class ProductsToPickRowsService
 {
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
-	private final IBPartnerBL bpartnersService;
-	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 
 	private static final AdMessageKey MSG_TYPE_UNALLOCATED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.UnAllocated_Type_Error");
@@ -68,13 +64,9 @@ public class ProductsToPickRowsService
 
 	public ProductsToPickRowsService(
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
-			@NonNull final IBPartnerBL bpartnersService,
-			@NonNull final HUReservationService huReservationService,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.pickingConfigRepo = pickingConfigRepo;
-		this.bpartnersService = bpartnersService;
-		this.huReservationService = huReservationService;
 		this.pickingCandidateService = pickingCandidateService;
 	}
 
@@ -89,17 +81,13 @@ public class ProductsToPickRowsService
 		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
 
 		return ProductsToPickRowsDataFactory.builder()
-				.bpartnersService(bpartnersService)
-				.huReservationService(huReservationService)
 				.pickingCandidateService(pickingCandidateService)
 				.locatorLookup(LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name))
-				//
 				.considerAttributes(pickingConfig.isConsiderAttributes())
-				//
 				.build();
 	}
 
-	public PickRequest createPickRequest(@NonNull final ProductsToPickRow row, boolean isPickingReviewRequired)
+	public PickRequest createPickRequest(@NonNull final ProductsToPickRow row, final boolean isPickingReviewRequired)
 	{
 		final ProductsToPickRowType rowType = row.getType();
 		if (ProductsToPickRowType.PICK_FROM_HU.equals(rowType))
@@ -156,13 +144,17 @@ public class ProductsToPickRowsService
 				.build();
 	}
 
-	public List<PickingCandidate> createPickingCandidates(@NonNull final PackageableRow packageableRow)
+	public void createPickingCandidates(@NonNull final PackageableRow packageableRow)
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
-		return productsToPickRowsData.getAllRows().stream()
-				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickRequest(productsToPickRow, false/* isPickingReviewRequired */)))
-				.map(pickHUResult -> pickHUResult.getPickingCandidate())
-				.collect(ImmutableList.toImmutableList());
+		productsToPickRowsData
+				.getAllRows()
+				.forEach(this::createAndSavePickingCandidates);
+	}
+
+	private void createAndSavePickingCandidates(final ProductsToPickRow productsToPickRow)
+	{
+		pickingCandidateService.createAndSavePickingCandidates(createPickRequest(productsToPickRow, false));
 	}
 
 	@NonNull
@@ -202,9 +194,9 @@ public class ProductsToPickRowsService
 				.filter(ProductsToPickRow::isEligibleForPacking);
 	}
 
-	public boolean anyRowsEligibleForPicking(final List<ProductsToPickRow> selectedRows)
+	public boolean noRowsEligibleForPicking(final List<ProductsToPickRow> selectedRows)
 	{
-		return streamRowsEligibleForPicking(selectedRows).findAny().isPresent();
+		return !streamRowsEligibleForPicking(selectedRows).findAny().isPresent();
 	}
 
 	@NonNull

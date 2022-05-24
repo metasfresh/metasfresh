@@ -62,20 +62,17 @@ public class AttachmentProcessor implements Processor
 
 		if(attachment.getMetadata() == null)
 		{
-			throw new RuntimeException("No attachment metadata received for attachment id" + attachment.getId());
+			throw new RuntimeException("No attachment metadata received for attachment id=" + attachment.getId());
 		}
 
 		final File file = getFile(routeContext, attachment.getId());
-
 		final byte[] fileData = Files.readAllBytes(file.toPath());
 
 		final String base64FileData = Base64.getEncoder().encodeToString(fileData);
-
-		final String effectiveFileName = AttachmentUtil.appendPDFSuffix(file.getName());
 		
 		final JsonAttachment jsonAttachment = JsonAttachment.builder()
-				.fileName(effectiveFileName)
-				.mimeType(GetAttachmentRouteConstants.MIME_TYPE_PDF)
+				.fileName(attachment.getFilename())
+				.mimeType(attachment.getContentType())
 				.data(base64FileData)
 				.tags(computeTags(attachment))
 				.build();

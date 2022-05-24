@@ -2,16 +2,12 @@ package de.metas.contracts.inoutcandidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.document.location.DocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -131,7 +127,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
-		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(subscriptionLine.getM_ShipmentSchedule());
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(InterfaceWrapperHelper.load(subscriptionLine.getM_ShipmentSchedule_ID(), I_M_ShipmentSchedule.class));
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
 		return ImmutableShipmentScheduleSegment.builder()

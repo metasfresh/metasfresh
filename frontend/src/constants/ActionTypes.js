@@ -413,3 +413,9 @@ export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';
  * @type {string} used to set the boolean flag `showSpinner` in the store
  */
 export const SET_SPINNER = 'SET_SPINNER';
+
+/**
+ * @constant
+ * @type {string} used to update the lastBackPage to keep the last visited page under appHandler
+ */
+export const UPDATE_LAST_BACK_PAGE = 'UPDATE_LAST_BACK_PAGE';

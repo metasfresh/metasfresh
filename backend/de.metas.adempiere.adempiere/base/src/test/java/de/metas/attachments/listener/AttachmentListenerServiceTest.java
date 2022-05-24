@@ -23,9 +23,11 @@
 package de.metas.attachments.listener;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.CreatedUpdatedInfo;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.user.UserId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -34,6 +36,8 @@ import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.time.ZonedDateTime;
 
 import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
 import static org.junit.Assert.assertEquals;
@@ -72,6 +76,7 @@ public class AttachmentListenerServiceTest
 		final AttachmentEntry attachmentEntryMock = AttachmentEntry.builder()
 				.type(AttachmentEntry.Type.Data)
 				.linkedRecord(tableRecordReferenceMock)
+				.createdUpdatedInfo(CreatedUpdatedInfo.createNew(UserId.ofRepoId(10), ZonedDateTime.now()))
 				.build();
 
 		Mockito.doNothing().when(tableAttachmentListenerService).notifyUser(any(), any(), any());

@@ -52,7 +52,7 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 	}
 
 	@Override
-	public Collection<Class<? extends ForecastCreatedEvent>> getHandeledEventType()
+	public Collection<Class<? extends ForecastCreatedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(ForecastCreatedEvent.class);
 	}

@@ -92,14 +92,14 @@ public enum ShipmentAllocationBestBeforePolicy implements ReferenceListAwareEnum
 	{
 		if (this == Expiring_First)
 		{
-			final LocalDate bestBefore1Effective = CoalesceUtil.coalesce(bestBefore1, LocalDate.MAX);
-			final LocalDate bestBefore2Effective = CoalesceUtil.coalesce(bestBefore2, LocalDate.MAX);
+			final LocalDate bestBefore1Effective = CoalesceUtil.coalesceNotNull(bestBefore1, LocalDate.MAX);
+			final LocalDate bestBefore2Effective = CoalesceUtil.coalesceNotNull(bestBefore2, LocalDate.MAX);
 			return bestBefore1Effective.compareTo(bestBefore2Effective);
 		}
 		else if (this == Newest_First)
 		{
-			final LocalDate bestBefore1Effective = CoalesceUtil.coalesce(bestBefore1, LocalDate.MIN);
-			final LocalDate bestBefore2Effective = CoalesceUtil.coalesce(bestBefore2, LocalDate.MIN);
+			final LocalDate bestBefore1Effective = CoalesceUtil.coalesceNotNull(bestBefore1, LocalDate.MIN);
+			final LocalDate bestBefore2Effective = CoalesceUtil.coalesceNotNull(bestBefore2, LocalDate.MIN);
 			return -1 * bestBefore1Effective.compareTo(bestBefore2Effective);
 		}
 		else

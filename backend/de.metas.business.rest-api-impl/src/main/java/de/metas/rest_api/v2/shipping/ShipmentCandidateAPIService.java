@@ -366,18 +366,15 @@ class ShipmentCandidateAPIService
 	{
 		final Product product = productId2Product.get(shipmentSchedule.getProductId());
 
-		final JsonProductBuilder productBuilder = JsonProduct.builder()
+		return JsonProduct.builder()
 				.productNo(product.getProductNo())
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
 				.weight(product.getWeight())
-				.stocked(product.isStocked());
-		if (product.getDescription() != null)
-		{
-			productBuilder.description(product.getDescription().translate(adLanguage));
-		}
-		return productBuilder.build();
+				.stocked(product.isStocked())
+				.description(product.getDescription().translate(adLanguage))
+				.build();
 	}
 
 	@Nullable
@@ -651,7 +648,7 @@ class ShipmentCandidateAPIService
 
 			if (shipmentSchedule.getBillBPartnerId() != null)
 			{
-				idsRegistryBuilder.bPartnerId(shipmentSchedule.getShipBPartnerId());
+				idsRegistryBuilder.bPartnerId(shipmentSchedule.getBillBPartnerId());
 			}
 
 			if (shipmentSchedule.getAttributeSetInstanceId() != null)

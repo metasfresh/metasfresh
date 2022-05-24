@@ -2,6 +2,8 @@ package de.metas.ui.web.window.model.lookup;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -27,5 +29,5 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 @FunctionalInterface
 public interface LookupValueByIdSupplier
 {
-	LookupValue findById(Object id);
+	LookupValue findById(@Nullable Object id);
 }

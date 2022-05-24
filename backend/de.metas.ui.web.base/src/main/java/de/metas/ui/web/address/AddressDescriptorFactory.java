@@ -1,17 +1,5 @@
 package de.metas.ui.web.address;
 
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Postal;
-import org.compiere.model.I_C_Region;
-import org.springframework.stereotype.Component;
-
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -32,6 +20,18 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
+import org.compiere.model.I_C_Region;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -61,17 +61,25 @@ public class AddressDescriptorFactory
 	private final CCache<Integer, AddressDescriptor> cache = CCache.newLRUCache("AddressDescriptor", 1, 0);
 
 	private static final String SYSCONFIG_UsePostalLookup = "de.metas.ui.web.address.UsePostalLookup";
+	private static final String SYSCONFIG_AllowPOBoxAddress = "de.metas.ui.web.address.AllowPOBoxAddress";
 
 	public AddressDescriptor getAddressDescriptor()
 	{
 		final int key = 0; // some dummy key
-		return cache.getOrLoad(key, () -> createAddressDescriptor());
+		return cache.getOrLoad(key, this::createAddressDescriptor);
 	}
 
 	private boolean isUsePostalLookup()
 	{
 		final boolean defaultWhenNotFound = false; // don't use postal lookup by default
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_UsePostalLookup, defaultWhenNotFound);
+
+	}
+
+	private boolean isAllowPOBoxAddress()
+	{
+		final boolean defaultWhenNotFound = false; // don't allow POBox address by default
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AllowPOBoxAddress, defaultWhenNotFound);
 	}
 
 	private AddressDescriptor createAddressDescriptor()
@@ -87,9 +95,7 @@ public class AddressDescriptorFactory
 				.setDocumentType(DocumentType.Address, AddressDescriptor.DocumentTypeId) // we have only one descriptor for all addresses
 				.setCaption(Services.get(IMsgBL.class).getTranslatableMsgText("C_Location_ID"))
 				.setDataBinding(new AddressDataBindingDescriptorBuilder())
-				.disableDefaultTableCallouts()
-		//
-		;
+				.disableDefaultTableCallouts();
 
 		//
 		// Address1 ... Address4 fields
@@ -112,8 +118,22 @@ public class AddressDescriptorFactory
 				.setValueClass(String.class)
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
-
 		//
+		final boolean allowPOBoxAddress = isAllowPOBoxAddress();
+		if (allowPOBoxAddress)
+		{
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_IsPOBoxNum)
+					.setValueClass(Boolean.class)
+					.setWidgetType(DocumentFieldWidgetType.YesNo)
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_IsPOBoxNum, false, I_C_Location::isPOBoxNum, AddressFieldBinding::writeValue_IsPOBoxNum)));
+
+			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_POBox)
+					.setValueClass(String.class)
+					.setDisplayLogic("@" + IAddressModel.COLUMNNAME_IsPOBoxNum + "/N@=Y")
+					.setWidgetType(DocumentFieldWidgetType.Text)
+					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_POBox, false, I_C_Location::getPOBox, AddressFieldBinding::writeValue_POBox)));
+		}
+
 		// Postal, City, Region and Country fields
 		final boolean usePostalLookup = isUsePostalLookup();
 		if (usePostalLookup)
@@ -183,10 +203,10 @@ public class AddressDescriptorFactory
 				.setMandatoryLogic(false)
 				//
 				.addCharacteristic(Characteristic.PublicField)
-		//
-		// .setDataBinding(new AddressFieldBinding(columnName, false, I_C_Location::get))
-		//
-		;
+				//
+				// .setDataBinding(new AddressFieldBinding(columnName, false, I_C_Location::get))
+				//
+				;
 
 	}
 
@@ -197,8 +217,8 @@ public class AddressDescriptorFactory
 		addressDescriptor.getFields()
 				.stream()
 				.filter(fieldDescriptor -> fieldDescriptor.hasCharacteristic(Characteristic.PublicField))
-				.map(fieldDescriptor -> createLayoutElement(fieldDescriptor))
-				.forEach(layoutElement -> layout.addElement(layoutElement));
+				.map(AddressDescriptorFactory::createLayoutElement)
+				.forEach(layout::addElement);
 
 		return layout.build();
 	}
@@ -238,7 +258,7 @@ public class AddressDescriptorFactory
 
 	private static final class AddressCallout
 	{
-		private static final void onC_Country_ID(final ICalloutField calloutField)
+		private static void onC_Country_ID(final ICalloutField calloutField)
 		{
 			final IAddressModel location = calloutField.getModel(IAddressModel.class);
 			final I_C_Country country = location.getC_Country();
@@ -250,7 +270,7 @@ public class AddressDescriptorFactory
 
 	public static final class AddressFieldBinding implements DocumentFieldDataBindingDescriptor
 	{
-		public static final AddressFieldBinding internalField(final String columnName)
+		public static AddressFieldBinding internalField(final String columnName)
 		{
 			final boolean mandatory = false;
 			final Function<I_C_Location, Object> readMethod = (location) -> null;
@@ -295,6 +315,7 @@ public class AddressDescriptorFactory
 			return readMethod.apply(locationRecord);
 		}
 
+		@Nullable
 		private static Object readValue_C_Region_ID(final I_C_Location locationRecord)
 		{
 			final I_C_Region region = locationRecord.getC_Region();
@@ -313,6 +334,7 @@ public class AddressDescriptorFactory
 			return null;
 		}
 
+		@Nullable
 		private static Object readValue_C_Country_ID(final I_C_Location locationRecord)
 		{
 			final CountryId countryId = CountryId.ofRepoIdOrNull(locationRecord.getC_Country_ID());
@@ -361,6 +383,16 @@ public class AddressDescriptorFactory
 		public static void writeValue_City(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
 		{
 			toLocationRecord.setCity(fromField.getValueAs(String.class));
+		}
+
+		public static void writeValue_IsPOBoxNum(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
+		{
+			toLocationRecord.setIsPOBoxNum(fromField.getValueAsBoolean());
+		}
+
+		public static void writeValue_POBox(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)
+		{
+			toLocationRecord.setPOBox(fromField.getValueAs(String.class));
 		}
 
 		public static void writeValue_C_City_ID(final I_C_Location toLocationRecord, final IDocumentFieldView fromField)

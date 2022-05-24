@@ -25,6 +25,9 @@ package de.metas.async.spi;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkpackageSkipRequest;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /**
  * Implementation responsible for processing given workPackage.
@@ -36,7 +39,7 @@ public interface IWorkpackageProcessor
 	String PARAMETERNAME_ElementsLockOwner = "ElementsLockOwner";
 
 	/**
-	 * The possible results of an {@link IWorkpackageProcessor#processWorkPackage(I_C_Queue_WorkPackage)} invocation.
+	 * The possible results of an {@link IWorkpackageProcessor#processWorkPackage(I_C_Queue_WorkPackage, String)}  invocation.
 	 * 
 	 * 
 	 */
@@ -61,5 +64,5 @@ public interface IWorkpackageProcessor
 	 * 
 	 * @throws IWorkpackageSkipRequest if we want to skip this workpackage. The request will contain more infos.
 	 */
-	Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName);
+	Result processWorkPackage(@NonNull I_C_Queue_WorkPackage workpackage, @Nullable String localTrxName);
 }

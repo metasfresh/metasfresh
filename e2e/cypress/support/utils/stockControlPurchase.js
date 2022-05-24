@@ -22,25 +22,23 @@ export class StockControlPurchase {
     return this;
   }
 
-
   static applyStockControlPurchase(stockControlPurchase) {
     cy.visitWindow('540253');
     cy.clickHeaderNav('new');
 
     cy.writeIntoStringField('Description', stockControlPurchase.description);
 
-    stockControlPurchase.products.forEach(product => {
+    stockControlPurchase.products.forEach((product) => {
       StockControlPurchase.applyProduct(product);
     });
   }
-
 
   static applyProduct(product) {
     cy.pressAddNewButton();
     cy.writeIntoLookupListField('M_Product_ID', product.product, product.product, true);
 
     cy.writeIntoStringField('QtyCount', product.qty, true);
-    cy.selectInListField('PP_Plant_ID', 'test', true);
+    cy.selectInListField('M_Warehouse_ID', product.warehouse, true);
     cy.pressDoneButton();
   }
 }
@@ -61,7 +59,10 @@ export class StockControlPurchaseProduct {
     this.qty = qty;
     return this;
   }
+
+  setWarehouse(warehouse) {
+    cy.log(`StockControlPurchaseProduct - setWarehouse = ${warehouse}`);
+    this.warehouse = warehouse;
+    return this;
+  }
 }
-
-
-

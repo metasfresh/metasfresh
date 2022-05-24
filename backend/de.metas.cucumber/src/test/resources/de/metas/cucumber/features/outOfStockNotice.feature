@@ -2,12 +2,12 @@ Feature: warehouse out of stock notice
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
-  @ignore
   Scenario: warehouse out of stock notice api test
     Given metasfresh contains M_Products:
-      | Identifier | Name            |
-      | p_3        | salesProduct_46 |
+      | Identifier | Name            | Value           |
+      | p_3        | salesProduct_46 | salesProduct_46 |
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_2        | 540008         | 2021-04-17   |
@@ -41,17 +41,18 @@ Feature: warehouse out of stock notice
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute | OPT.Warehouse_ID |
       | s_sched_1  | ol_3                      | N             | 540008           |
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/warehouses/540008/outOfStockNotice' and fulfills with '200' status code
-    """
-{
-  "closePendingShipmentSchedules": true,
-  "createInventory": true,
-  "orgCode": "001",
-  "productIdentifier": "val-salesProduct_46"
-}
-"""
+  """
+  {
+    "closePendingShipmentSchedules": true,
+    "createInventory": true,
+    "orgCode": "001",
+    "productIdentifier": "val-salesProduct_46"
+  }
+  """
     Then the shipment-schedule is closed
       | M_ShipmentSchedule_ID.Identifier |
       | s_sched_1                        |
     And there is a new completed inventory for the issued out of stock notice
       | M_Warehouse_ID | QtyCount | QtyBook |
       | 540008         | 0        | 10      |
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE

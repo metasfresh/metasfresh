@@ -603,4 +603,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 
+	@Override
+	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final Class<T> clazz)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
+				.create()
+				.mapByRepoIdAware(ShipmentScheduleId::ofRepoId, clazz);
+	}
 }

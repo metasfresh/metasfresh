@@ -20,9 +20,11 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -55,7 +57,6 @@ public class AttachmentEntryService
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
 
-
 	@VisibleForTesting
 	public static AttachmentEntryService createInstanceForUnitTesting()
 	{
@@ -71,8 +72,7 @@ public class AttachmentEntryService
 				attachmentLogRepository,
 				attachmentEntryFactory,
 				attachmentMigrationService,
-				attachmentHandlerRegistry,
-				tableAttachmentListenerService);
+				attachmentHandlerRegistry);
 	}
 
 	/**
@@ -85,8 +85,7 @@ public class AttachmentEntryService
 			@NonNull final AttachmentLogRepository attachmentLogRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
 			@NonNull final AttachmentMigrationService attachmentMigrationService,
-			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry,
-			@NonNull final TableAttachmentListenerService tableAttachmentListenerService)
+			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentLogRepository = attachmentLogRepository;
@@ -105,11 +104,13 @@ public class AttachmentEntryService
 		return createNewAttachment(modelReference, request);
 	}
 
-	/** Convenience method */
+	/**
+	 * Convenience method
+	 */
 	public AttachmentEntry createNewAttachment(
 			@NonNull final Object referencedRecord,
 			@NonNull final String name,
-			@NonNull final byte[] bytes)
+			final byte[] bytes)
 	{
 		final TableRecordReference modelReference = TableRecordReference.of(referencedRecord);
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.fromByteArray(name, bytes);
@@ -186,10 +187,12 @@ public class AttachmentEntryService
 		return CollectionUtils.singleElement(entryWithReferencedRecords);
 	}
 
-	/** Note: the given objects may be "record" models or {@link TableRecordReference}s. */
+	/**
+	 * Note: the given objects may be "record" models or {@link TableRecordReference}s.
+	 */
 	public Collection<AttachmentEntry> createAttachmentLinks(
 			@NonNull final Collection<AttachmentEntry> entries,
-			@NonNull final Collection<? extends Object> referencedRecords)
+			@NonNull final Collection<?> referencedRecords)
 	{
 		final ImmutableList<AttachmentEntry> unsavedAttachmentsWithLinks = createAttachmentLinksDontSave(entries, referencedRecords);
 
@@ -201,8 +204,8 @@ public class AttachmentEntryService
 	 * Note: the given objects may be "record" models {@code I_C_Order} or {@link TableRecordReference}s.
 	 */
 	public Collection<AttachmentEntry> shareAttachmentLinks(
-			@NonNull final Collection<? extends Object> referencedRecordsSource,
-			@NonNull final Collection<? extends Object> referencedRecordsDest)
+			@NonNull final Collection<?> referencedRecordsSource,
+			@NonNull final Collection<?> referencedRecordsDest)
 	{
 		final ImmutableList.Builder<AttachmentEntry> destAttachmentEntries = ImmutableList.builder();
 
@@ -221,7 +224,7 @@ public class AttachmentEntryService
 	}
 
 	private Collection<AttachmentEntry> expandAndSave(
-			@NonNull final Collection<? extends Object> originalReferencedRecords,
+			@NonNull final Collection<?> originalReferencedRecords,
 			@NonNull final ImmutableList<AttachmentEntry> attachmentEntriesToSave)
 	{
 		if (attachmentEntriesToSave.isEmpty())
@@ -237,13 +240,12 @@ public class AttachmentEntryService
 						attachmentEntriesToSave,
 						additionalReferences.getAdditionalReferences());
 
-		final Collection<AttachmentEntry> result = attachmentEntryRepository.saveAll(destAttachmentEntriesWithAdditionalRefs);
-		return result;
+		return attachmentEntryRepository.saveAll(destAttachmentEntriesWithAdditionalRefs);
 	}
 
 	private ImmutableList<AttachmentEntry> createAttachmentLinksDontSave(
 			@NonNull final Collection<AttachmentEntry> entries,
-			@NonNull final Collection<? extends Object> referencedRecords)
+			@NonNull final Collection<?> referencedRecords)
 	{
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
 
@@ -329,11 +331,14 @@ public class AttachmentEntryService
 
 	public List<AttachmentEntry> getByQuery(@NonNull final AttachmentEntryQuery query)
 	{
+		final Comparator<AttachmentEntry> youngestFirst = (e1, e2) -> e2.getCreatedUpdatedInfo().getCreated().compareTo(e1.getCreatedUpdatedInfo().getCreated());
+		final Comparator<AttachmentEntry> biggestIdFirst = (e1, e2) -> Integer.compare(AttachmentEntryId.getRepoId(e2.getId()), AttachmentEntryId.getRepoId(e1.getId()));
 		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
 				.stream()
 				.filter(e -> e.getTags().hasAllTagsSetToTrue(query.getTagsSetToTrue()))
 				.filter(e -> e.getTags().hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
 				.filter(e -> Check.isEmpty(query.getMimeType(), true) || Objects.equals(e.getMimeType(), query.getMimeType()))
+				.sorted(youngestFirst.thenComparing(biggestIdFirst))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -369,6 +374,7 @@ public class AttachmentEntryService
 		return attachmentEntryRepository.retrieveAttachmentEntryDataResource(attachmentEntryId);
 	}
 
+	@Nullable
 	public AttachmentEntry getByFilenameOrNull(
 			@NonNull final Object referencedRecord,
 			@NonNull final String fileName)
@@ -385,9 +391,21 @@ public class AttachmentEntryService
 
 	public void updateData(
 			@NonNull final AttachmentEntryId attachmentEntryId,
-			@NonNull final byte[] data)
+			final byte[] data)
 	{
 		attachmentEntryRepository.updateAttachmentEntryData(attachmentEntryId, data);
+	}
+
+	@NonNull
+	public Stream<EmailAttachment> streamEmailAttachments(@NonNull final TableRecordReference recordRef, @Nullable final String tagName)
+	{
+		return attachmentEntryRepository.getByReferencedRecord(recordRef)
+				.stream()
+				.filter(attachmentEntry -> Check.isBlank(tagName) || attachmentEntry.getTags().hasTag(tagName))
+				.map(attachmentEntry -> EmailAttachment.builder()
+						.filename(attachmentEntry.getFilename())
+						.attachmentDataSupplier(() -> retrieveData(attachmentEntry.getId()))
+						.build());
 	}
 
 	/**

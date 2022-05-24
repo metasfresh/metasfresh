@@ -37,8 +37,6 @@
         <!-- For versions info, see https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <spring.version>5.3.4</spring.version>
 
-        <guava.version>30.1.1-jre</guava.version>
-
         <!-- jackson-dataformat-xml:2.9.9 has two different version in its dependency tree -->
         <woodstox.stax2-api.version>4.1</woodstox.stax2-api.version>
 
@@ -79,6 +77,8 @@
 
         <module>de.metas.business.rest-api</module>
         <module>de.metas.business.rest-api-impl</module>
+
+        <module>de.metas.workflow.rest-api</module>
 
         <module>de.metas.report</module>
 
@@ -187,8 +187,13 @@
         <module>de.metas.servicerepair.base</module>
         <module>de.metas.servicerepair.webui</module>
 
+        <module>de.metas.picking.rest-api</module>
+        <module>de.metas.distribution.rest-api</module>
+
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
+
+        <module>de-metas-salesorder</module>
     </modules>
 
     <dependencyManagement>
@@ -287,7 +292,7 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.5</version>
+                <version>${commons-io.version}</version>
             </dependency>
 
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
@@ -323,22 +328,7 @@
             <!-- Swagger -->
             <dependency>
                 <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger2</artifactId>
-                <version>${springfox-swagger.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.reflections</groupId>
-                        <artifactId>reflections</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger-ui</artifactId>
+                <artifactId>springfox-boot-starter</artifactId>
                 <version>${springfox-swagger.version}</version>
             </dependency>
 

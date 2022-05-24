@@ -1,15 +1,16 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderLineDocId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.order.OrderLineId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -46,6 +47,8 @@ public class CommissionInstanceRepoTools
 				return new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(instanceRecord.getC_Invoice_ID(), instanceRecord.getC_InvoiceLine_ID()));
 			case SalesCreditmemo:
 				return new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(instanceRecord.getC_Invoice_ID(), instanceRecord.getC_InvoiceLine_ID()));
+			case MediatedOrder:
+				return new MediatedOrderLineDocId(OrderLineId.ofRepoId(instanceRecord.getC_OrderLine_ID()));
 			default:
 				throw new AdempiereException("Unexpected triggerType=" + triggerType);
 		}

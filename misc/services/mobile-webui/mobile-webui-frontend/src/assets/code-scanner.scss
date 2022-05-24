@@ -1,0 +1,30 @@
+.scanner-btn-green {
+    width: 8em;
+    color: white;
+    background-color: $base-mf-green;
+    font-weight: 400;
+    border: 0px;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.scanner-btn-green:hover {
+    color: white;
+    background-color: $base-mf-green;
+}
+.scanner-btn-green:focus {
+    color: white;
+    border-color: $base-mf-green;
+}
+.scanner-container {
+    width: 100%;
+    // background: $yellow-background;
+    // position: absolute;
+    // top: 6em;
+    // right:0px;
+    // bottom:0px;
+    // left:0px;
+}
+.centered-text {
+    text-align: center;
+}

@@ -25,9 +25,12 @@ package de.metas.camel.externalsystems.shopware6.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +41,10 @@ import static org.assertj.core.api.Assertions.*;
 public class ShopwareClientTests
 {
 
-	private final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com");
+	private final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
+	private final PInstanceLogger pInstanceLogger = PInstanceLogger.of(processLogger);
+
+	private final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com", pInstanceLogger);
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Test

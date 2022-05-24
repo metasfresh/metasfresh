@@ -166,6 +166,7 @@ public class WarehouseService
 		}
 
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(outOfStockInfoRequest.getOrgCode());
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: orgCode resolved to AD_Org_ID {}!", OrgId.toRepoIdOrAny(orgId));
 
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(outOfStockInfoRequest.getProductIdentifier());
 
@@ -175,13 +176,13 @@ public class WarehouseService
 						.resourceName("M_Product")
 						.build());
 
-		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: productIdentifier resolved to M_Product_ID {}!", productId);
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: productIdentifier resolved to M_Product_ID {}!", ProductId.toRepoId(productId));
 
 		final AttributeSetInstanceId attributeSetInstanceId = computeAttributeSetInstanceFromJson(outOfStockInfoRequest.getAttributeSetInstance())
 				.orElse(null);
 
-		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: attributeSetInstance emerged to asiId: {}!", attributeSetInstanceId);
-
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: attributeSetInstance emerged to asiId: {}!", AttributeSetInstanceId.toRepoId(attributeSetInstanceId));
+		
 		final Optional<WarehouseId> targetWarehouseId = ALL.equals(warehouseIdentifier)
 				? Optional.empty()
 				: Optional.of(getWarehouseByIdentifier(orgId, warehouseIdentifier));

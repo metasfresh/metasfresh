@@ -25,6 +25,9 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterData;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
+import de.metas.ui.web.handlingunits.filter.HuIdsFilterList;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
@@ -516,18 +519,17 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			final @NonNull DocumentFilterList allOtherFilters,
 			final @NonNull SqlDocumentFilterConverterContext context)
 	{
-		final ImmutableSet<HuId> onlyHUIds = huIdsFilterData.getFixedHUIds().orElse(null);
-
 		// shortcut: In case
-		// 1. we don't have an initial HU query
-		// 2. but just some HU Ids specified,
-		// 3. and no other filters
+		// 1. no other filters
+		// 2. huIdsFilterData can be reduced to a fixed set of HUIds
 		// => don't bother the DB but return the list of IDs that we already have
-		if (huIdsFilterData.hasNoInitialHUQuery()
-				&& onlyHUIds != null
-				&& allOtherFilters.isEmpty())
+		if (allOtherFilters.isEmpty())
 		{
-			return onlyHUIds;
+			final HuIdsFilterList onlyHUIds = huIdsFilterData.getFixedHUIds().orElse(null);
+			if(onlyHUIds != null && !onlyHUIds.isAll())
+			{
+				return onlyHUIds.toSet();
+			}
 		}
 
 		final SqlDocumentFilterConverter sqlFilterConverter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding);

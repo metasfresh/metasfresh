@@ -92,7 +92,7 @@ public class DocumentAttachmentsRestController
 		return getDocumentAttachments(documentPath);
 	}
 
-	private DocumentAttachments getDocumentAttachments(final DocumentPath documentPath)
+	private DocumentAttachments getDocumentAttachments(@NonNull final DocumentPath documentPath)
 	{
 		if (documentPath.isComposedKey())
 		{

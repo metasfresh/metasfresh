@@ -116,6 +116,8 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final ShipperId shipperId = olCandBL.getShipperId(params, orderDefaults, olCandRecord);
 		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
+		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
+		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
 
 		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
 				? null
@@ -142,6 +144,8 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
 				.orderLineGroup(orderLineGroup)
+				.salesRepInternalId(salesRepInternalId)
+				.assignSalesRepRule(assignSalesRepRule)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
 				.build();
 	}
