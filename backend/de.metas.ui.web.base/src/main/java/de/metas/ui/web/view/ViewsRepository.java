@@ -6,8 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -32,7 +30,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -376,20 +373,6 @@ public class ViewsRepository implements IViewsRepository
 
 	@Override
 	public IView getView(@NonNull final String viewIdStr)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getView0(viewIdStr),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("ViewRepository")
-						.type(PerformanceMonitoringService.Type.VIEW)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
-	}
-	private IView getView0(@NonNull final String viewIdStr)
 	{
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		final IView view = getViewIfExists(viewId);

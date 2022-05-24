@@ -12,15 +12,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -284,21 +281,6 @@ public final class ViewResult
 	 * @throws IllegalStateException if the page is not loaded, see {@link #isPageLoaded()}
 	 */
 	public List<IViewRow> getPage()
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getPage0(),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("ViewResult")
-						.type(PerformanceMonitoringService.Type.VIEW)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
-	}
-
-	private List<IViewRow> getPage0()
 	{
 		if (page == null)
 		{
