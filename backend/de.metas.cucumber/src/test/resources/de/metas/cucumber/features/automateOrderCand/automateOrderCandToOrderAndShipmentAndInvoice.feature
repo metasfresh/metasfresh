@@ -120,19 +120,19 @@ Feature: Process order candidate and automatically generate shipment and invoice
 """
 
     Then process metasfresh response
-      | Order.Identifier | Shipment.Identifier | Invoice.Identifier |
-      | order_1          |                     |                    |
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
+      | order_1               |                       |                         |
     # We expect just an order and no shipment and no invoice. Thus the empty identifiers
 
-    And validate created order
-      | Order.Identifier | externalId          | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1          | 1444_zeroQtyShipped | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        |
+    And validate the created orders
+      | C_Order_ID.Identifier | externalId          | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 1444_zeroQtyShipped | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        |
 
     And validate the created order lines
-      | Order.Identifier | dateordered | productIdentifier.m_product_id | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1          | 2021-07-20  | 2005577                        | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
+      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | order_1               | 2021-07-20  | 2005577                 | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
     # We didn't close the order, so we expect QtyOrdered=10
-    
+
   @from:cucumber
   @topic:orderCandidate
   Scenario: Order candidate to shipment in first step and then invoice with close order
@@ -638,5 +638,5 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1          | 2005577                 | 8           | true      |
+      | invoice_1               | 2005577                 | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
