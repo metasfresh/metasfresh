@@ -9,14 +9,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.util.TimeUtil;
 
-import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalUnit;
@@ -61,8 +57,8 @@ public class ResourceType
 	LocalTime timeSlotEnd;
 
 	/**
-	 * Get how many hours/day a is available.
-	 * Minutes, secords and millis are discarded.
+	 * Get how many hours/day are available.
+	 * Minutes, seconds and millis are discarded.
 	 *
 	 * @return available hours
 	 */
@@ -101,21 +97,9 @@ public class ResourceType
 		return availableDaysOfWeek.contains(dayOfWeek);
 	}
 
-	@Deprecated
-	public Timestamp getDayStart(final Timestamp date)
-	{
-		final Instant dayStart = getDayStart(date.toInstant());
-		return Timestamp.from(dayStart);
-	}
-
 	public Instant getDayStart(@NonNull final Instant date)
 	{
 		return getDayStart(date.atZone(SystemTime.zoneId())).toInstant();
-	}
-
-	public LocalDateTime getDayStart(final LocalDateTime date)
-	{
-		return getDayStart(date.atZone(SystemTime.zoneId())).toLocalDateTime();
 	}
 
 	public ZonedDateTime getDayStart(final ZonedDateTime date)
@@ -130,21 +114,9 @@ public class ResourceType
 		}
 	}
 
-	@Deprecated
-	public Timestamp getDayEnd(final Timestamp date)
-	{
-		final LocalDateTime dayEnd = getDayEnd(TimeUtil.asLocalDateTime(date));
-		return TimeUtil.asTimestamp(dayEnd);
-	}
-
 	public Instant getDayEnd(final Instant date)
 	{
 		return getDayEnd(date.atZone(SystemTime.zoneId())).toInstant();
-	}
-
-	public LocalDateTime getDayEnd(final LocalDateTime date)
-	{
-		return getDayEnd(date.atZone(SystemTime.zoneId())).toLocalDateTime();
 	}
 
 	public ZonedDateTime getDayEnd(final ZonedDateTime date)
