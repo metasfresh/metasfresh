@@ -23,18 +23,14 @@
 package de.metas.resource;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.product.ResourceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class Resource
+public class ResourceGroup
 {
-	@NonNull ResourceId resourceId;
+	@NonNull ResourceGroupId id;
 	@NonNull ITranslatableString name;
-	@Nullable ResourceGroupId resourceGroupId;
 }

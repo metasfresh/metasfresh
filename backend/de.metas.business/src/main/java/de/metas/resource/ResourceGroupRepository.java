@@ -25,77 +25,65 @@ package de.metas.resource;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_Resource_Group;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
-// TODO merge IResourceDAO into this repository
 @Repository
-public class ResourceRepository
+public class ResourceGroupRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<Integer, ResourcesMap> cache = CCache.<Integer, ResourcesMap>builder()
-			.tableName(I_S_Resource.Table_Name)
+	private final CCache<Integer, ResourceGroupsMap> cache = CCache.<Integer, ResourceGroupsMap>builder()
+			.tableName(I_S_Resource_Group.Table_Name)
 			.build();
 
-	public ImmutableList<Resource> getResources()
+	public ImmutableList<ResourceGroup> getAllActive()
 	{
-		return getResourcesMap().toList();
+		return getMap().toList();
 	}
 
-	private ResourcesMap getResourcesMap()
+	private ResourceGroupsMap getMap()
 	{
-		return cache.getOrLoad(0, this::retrieveResourcesMap);
+		return cache.getOrLoad(0, this::retrieveMap);
 	}
 
-	private ResourcesMap retrieveResourcesMap()
+	private ResourceGroupsMap retrieveMap()
 	{
-		final ImmutableList<Resource> resources = queryBL.createQueryBuilder(I_S_Resource.class)
+		final ImmutableList<ResourceGroup> list = queryBL.createQueryBuilder(I_S_Resource_Group.class)
 				.addOnlyActiveRecordsFilter()
-				.create()
 				.stream()
-				.map(ResourceRepository::toResource)
+				.map(record -> toResourceGroup(record))
 				.collect(ImmutableList.toImmutableList());
 
-		return new ResourcesMap(resources);
+		return new ResourceGroupsMap(list);
 	}
 
-	private static Resource toResource(@NonNull final I_S_Resource record)
+	private static ResourceGroup toResourceGroup(final I_S_Resource_Group record)
 	{
 		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(record);
 
-		return Resource.builder()
-				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
-				.name(trl.getColumnTrl(I_S_Resource.COLUMNNAME_Name, record.getName()))
-				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
+		return ResourceGroup.builder()
+				.id(ResourceGroupId.ofRepoId(record.getS_Resource_Group_ID()))
+				.name(trl.getColumnTrl(I_S_Resource_Group.COLUMNNAME_Name, record.getName()))
 				.build();
 	}
 
-	//
-	//
-	//
-	//
-	//
-
-	private static final class ResourcesMap
+	private static class ResourceGroupsMap
 	{
-		private final ImmutableList<Resource> resources;
+		private final ImmutableList<ResourceGroup> list;
 
-		ResourcesMap(final List<Resource> resources)
+		private ResourceGroupsMap(@NonNull final ImmutableList<ResourceGroup> list)
 		{
-			this.resources = ImmutableList.copyOf(resources);
+			this.list = list;
 		}
 
-		public ImmutableList<Resource> toList()
+		public ImmutableList<ResourceGroup> toList()
 		{
-			return resources;
+			return list;
 		}
 	}
 }
