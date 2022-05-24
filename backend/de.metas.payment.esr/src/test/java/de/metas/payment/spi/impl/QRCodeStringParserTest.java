@@ -26,7 +26,6 @@ import de.metas.banking.payment.PaymentString;
 import org.adempiere.test.AdempiereTestHelper;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -36,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.*;
 
-@Disabled
 class QRCodeStringParserTest
 {
 	private static final String expectedIBAN = "CH1589144626811245431";
@@ -54,7 +52,7 @@ class QRCodeStringParserTest
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/payment/spi/impl/QRR_PurchaseInvoice.txt");
 		assertThat(inputStream).isNotNull();
 
-		String qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+		final String qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
 
 		final PaymentString paymentString = new QRCodeStringParser().parse(qrCode);
 
