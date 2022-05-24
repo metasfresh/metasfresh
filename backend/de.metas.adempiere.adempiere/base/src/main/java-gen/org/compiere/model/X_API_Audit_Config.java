@@ -95,7 +95,7 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
-	public int getKeepErroredRequestDays() 
+	public int getKeepErroredRequestDays()
 	{
 		return get_ValueAsInt(COLUMNNAME_KeepErroredRequestDays);
 	}
@@ -161,6 +161,16 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	public static final String METHOD_PUT = "PUT";
 	/** DELETE = DELETE */
 	public static final String METHOD_DELETE = "DELETE";
+	/** OPTIONS = OPTIONS */
+	public static final String METHOD_OPTIONS = "OPTIONS";
+	/** PATCH = PATCH */
+	public static final String METHOD_PATCH = "PATCH";
+	/** HEAD = HEAD */
+	public static final String METHOD_HEAD = "HEAD";
+	/** TRACE = TRACE */
+	public static final String METHOD_TRACE = "TRACE";
+	/** CONNECT = CONNECT */
+	public static final String METHOD_CONNECT = "CONNECT";
 	@Override
 	public void setMethod (final @Nullable java.lang.String Method)
 	{

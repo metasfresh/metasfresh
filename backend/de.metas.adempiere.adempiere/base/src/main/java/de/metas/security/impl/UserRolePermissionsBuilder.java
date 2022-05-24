@@ -22,16 +22,6 @@ package de.metas.security.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.model.tree.AdTreeId;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_ClientInfo;
-import org.compiere.util.Env;
-
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.Role;
@@ -43,12 +33,22 @@ import de.metas.security.permissions.GenericPermissions;
 import de.metas.security.permissions.OrgPermissions;
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
 import de.metas.security.permissions.TableColumnPermissions;
+import de.metas.security.permissions.TableOrgPermissions;
 import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.tree.AdTreeId;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.util.Env;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class UserRolePermissionsBuilder
 {
@@ -63,6 +63,7 @@ class UserRolePermissionsBuilder
 				.setMenuInfo(permissions.getMenuInfo())
 				//
 				.setOrgPermissions(permissions.getOrgPermissions())
+				.setTableOrgPermissions(permissions.getTableOrgPermissions())
 				.setTablePermissions(permissions.getTablePermissions())
 				.setColumnPermissions(permissions.getColumnPermissions())
 				.setWindowPermissions(permissions.getWindowPermissions())
@@ -94,6 +95,7 @@ class UserRolePermissionsBuilder
 
 	//
 	private OrgPermissions orgAccesses;
+	private TableOrgPermissions tableOrgAccesses;
 	private TablePermissions tableAccesses;
 	private TableColumnPermissions columnAccesses;
 	private ElementPermissions windowAccesses;
@@ -128,33 +130,37 @@ class UserRolePermissionsBuilder
 			final Role role = getRole();
 			orgAccesses = userRolePermissionsRepo.retrieveOrgPermissions(role, adUserId);
 		}
+		if(tableOrgAccesses == null)
+		{
+			tableOrgAccesses = userRolePermissionsRepo.retrieveTableOrgPermissions(adRoleId);
+		}
 		if (tableAccesses == null)
 		{
-			tableAccesses = userRolePermissionsRepo.retrieveTablePermissions(adRoleId);
+			tableAccesses = userRolePermissionsRepo.getTablePermissions(adRoleId);
 		}
 		if (columnAccesses == null)
 		{
-			columnAccesses = userRolePermissionsRepo.retrieveTableColumnPermissions(adRoleId);
+			columnAccesses = userRolePermissionsRepo.getTableColumnPermissions(adRoleId);
 		}
 		if (windowAccesses == null)
 		{
-			windowAccesses = userRolePermissionsRepo.retrieveWindowPermissions(adRoleId, adClientId);
+			windowAccesses = userRolePermissionsRepo.getWindowPermissions(adRoleId);
 		}
 		if (processAccesses == null)
 		{
-			processAccesses = userRolePermissionsRepo.retrieveProcessPermissions(adRoleId, adClientId);
+			processAccesses = userRolePermissionsRepo.getProcessPermissions(adRoleId);
 		}
 		if (taskAccesses == null)
 		{
-			taskAccesses = userRolePermissionsRepo.retrieveTaskPermissions(adRoleId, adClientId);
+			taskAccesses = userRolePermissionsRepo.getTaskPermissions(adRoleId);
 		}
 		if (workflowAccesses == null)
 		{
-			workflowAccesses = userRolePermissionsRepo.retrieveWorkflowPermissions(adRoleId, adClientId);
+			workflowAccesses = userRolePermissionsRepo.getWorkflowPermissions(adRoleId);
 		}
 		if (formAccesses == null)
 		{
-			formAccesses = userRolePermissionsRepo.retrieveFormPermissions(adRoleId, adClientId);
+			formAccesses = userRolePermissionsRepo.getFormPermissions(adRoleId);
 		}
 
 		if (miscPermissions == null)
@@ -255,7 +261,7 @@ class UserRolePermissionsBuilder
 		return this;
 	}
 
-	private final Role getRole()
+	private Role getRole()
 	{
 		if (_role == null)
 		{
@@ -360,6 +366,17 @@ class UserRolePermissionsBuilder
 	public UserRolePermissionsBuilder setOrgPermissions(final OrgPermissions orgAccesses)
 	{
 		this.orgAccesses = orgAccesses;
+		return this;
+	}
+
+	public TableOrgPermissions getTableOrgPermissions()
+	{
+		return tableOrgAccesses;
+	}
+
+	public UserRolePermissionsBuilder setTableOrgPermissions(final TableOrgPermissions tableOrgAccesses)
+	{
+		this.tableOrgAccesses = tableOrgAccesses;
 		return this;
 	}
 

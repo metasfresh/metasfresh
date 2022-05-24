@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
-import { connect } from 'react-redux';
 
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
@@ -515,8 +514,7 @@ export class DraggableWrapper extends Component {
 }
 
 DraggableWrapper.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   editmode: PropTypes.bool,
 };
 
-export default connect()(DragDropContext(HTML5Backend)(DraggableWrapper));
+export default DragDropContext(HTML5Backend)(DraggableWrapper);

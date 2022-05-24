@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
@@ -1158,6 +1159,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_HaddexControlNr = new ModelColumn<>(I_C_BPartner.class, "HaddexControlNr", null);
 	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
+
+	/**
+	 * Set Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalName (@Nullable java.lang.String InternalName);
+
+	/**
+	 * Get Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalName();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_InternalName = new ModelColumn<>(I_C_BPartner.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
 
 	/**
 	 * Set Druckformat Rechnung.

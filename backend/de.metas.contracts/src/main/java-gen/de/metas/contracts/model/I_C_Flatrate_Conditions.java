@@ -1,14 +1,14 @@
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Flatrate_Conditions 
 {
 
@@ -170,6 +170,31 @@ public interface I_C_Flatrate_Conditions
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Subscription discount.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
+
+	/**
+	 * Get Subscription discount.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_SubscrDiscount_ID();
+
+	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
+
+	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
+
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
+	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
 
 	/**
 	 * Set UOM.
@@ -397,7 +422,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsFreeOfCharge = "IsFreeOfCharge";
 
 	/**
-	 * Set Manueller Preis.
+	 * Set Manual Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -406,7 +431,7 @@ public interface I_C_Flatrate_Conditions
 	void setIsManualPrice (boolean IsManualPrice);
 
 	/**
-	 * Get Manueller Preis.
+	 * Get Manual Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

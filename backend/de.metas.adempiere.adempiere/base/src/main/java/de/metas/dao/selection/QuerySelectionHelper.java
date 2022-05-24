@@ -1,18 +1,6 @@
 package de.metas.dao.selection;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
-
-import org.adempiere.ad.dao.impl.TypedSqlQuery;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -20,6 +8,17 @@ import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.POInfo;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
 
 /*
  * #%L
@@ -189,7 +188,8 @@ public class QuerySelectionHelper
 			@NonNull final String querySelectionUUID)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(clazz);
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(clazz);
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final String keyColumnName = poInfo.getKeyColumnName();
 		final String keyColumnNameFQ = tableName + "." + keyColumnName;
 
 		//

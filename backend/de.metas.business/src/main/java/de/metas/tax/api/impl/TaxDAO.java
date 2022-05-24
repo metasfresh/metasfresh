@@ -59,7 +59,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.tax.api.TypeOfDestCountry.DOMESTIC;
 import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
@@ -415,7 +415,7 @@ public class TaxDAO implements ITaxDAO
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, typeOfDestCountry.getCode(), null);
 		}
 
-		final Timestamp fiscalRepresentationFromDate = coalesce(taxQuery.getDateOfInterest(), Env.getDate());
+		final Timestamp fiscalRepresentationFromDate = coalesceNotNull(taxQuery.getDateOfInterest(), Env.getDate());
 		final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(destCountryId, orgId, fiscalRepresentationFromDate);
 		loggable.addLog("BPartner has fiscal Representation = {}", hasFiscalRepresentation);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, StringUtils.ofBoolean(hasFiscalRepresentation), null);

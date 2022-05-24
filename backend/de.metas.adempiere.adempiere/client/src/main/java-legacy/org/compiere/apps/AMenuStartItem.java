@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
 
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import de.metas.workflow.WFNode;
 import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;

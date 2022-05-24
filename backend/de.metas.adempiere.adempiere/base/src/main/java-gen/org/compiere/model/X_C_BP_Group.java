@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BP_Group
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2023555423L;
+	private static final long serialVersionUID = 130660288L;
 
     /** Standard Constructor */
     public X_C_BP_Group (final Properties ctx, final int C_BP_Group_ID, @Nullable final String trxName)
@@ -64,13 +64,15 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 
 	/** 
 	 * BPNameAndGreetingStrategy AD_Reference_ID=541338
-	 * Reference name: BPNameAndGreetingStrategy
+	 * Reference name: Individual business partner's name format
 	 */
 	public static final int BPNAMEANDGREETINGSTRATEGY_AD_Reference_ID=541338;
 	/** First Contact = FC */
 	public static final String BPNAMEANDGREETINGSTRATEGY_FirstContact = "FC";
 	/** Membership Contact = MC */
 	public static final String BPNAMEANDGREETINGSTRATEGY_MembershipContact = "MC";
+	/** Do Nothing = XX */
+	public static final String BPNAMEANDGREETINGSTRATEGY_DoNothing = "XX";
 	@Override
 	public void setBPNameAndGreetingStrategy (final @Nullable java.lang.String BPNameAndGreetingStrategy)
 	{

@@ -23,7 +23,8 @@
 package de.metas.handlingunits.reservation;
 
 import de.metas.common.util.CoalesceUtil;
- import de.metas.order.OrderAndLineId;
+import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
@@ -32,45 +33,71 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class HUReservationDocRef
 {
-	@Nullable
-	OrderLineId salesOrderLineId;
-	@Nullable
-	ProjectId projectId;
+	@Nullable OrderLineId salesOrderLineId;
+	@Nullable ProjectId projectId;
+	@Nullable PickingJobStepId pickingJobStepId;
+
+	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderLineId salesOrderLineId) {return HUReservationDocRef.builder().salesOrderLineId(salesOrderLineId).build();}
+
+	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderAndLineId salesOrderLineId) {return ofSalesOrderLineId(salesOrderLineId.getOrderLineId());}
+
+	public static HUReservationDocRef ofProjectId(@NonNull final ProjectId projectId) {return HUReservationDocRef.builder().projectId(projectId).build();}
+
+	public static HUReservationDocRef ofPickingJobStepId(@NonNull final PickingJobStepId pickingJobStepId) {return HUReservationDocRef.builder().pickingJobStepId(pickingJobStepId).build();}
 
 	@Builder
 	private HUReservationDocRef(
 			@Nullable final OrderLineId salesOrderLineId,
-			@Nullable final ProjectId projectId)
+			@Nullable final ProjectId projectId,
+			@Nullable final PickingJobStepId pickingJobStepId)
 	{
-		if (CoalesceUtil.countNotNulls(salesOrderLineId, projectId) != 1)
+		if (CoalesceUtil.countNotNulls(salesOrderLineId, projectId, pickingJobStepId) != 1)
 		{
 			throw new AdempiereException("One and only one document shall be set")
 					.appendParametersToMessage()
 					.setParameter("salesOrderLineId", salesOrderLineId)
-					.setParameter("projectId", projectId);
+					.setParameter("projectId", projectId)
+					.setParameter("pickingJobStepId", pickingJobStepId);
 		}
 
 		this.salesOrderLineId = salesOrderLineId;
 		this.projectId = projectId;
+		this.pickingJobStepId = pickingJobStepId;
 	}
 
-	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderLineId salesOrderLineId)
+	public static boolean equals(@Nullable final HUReservationDocRef ref1, @Nullable final HUReservationDocRef ref2) {return Objects.equals(ref1, ref2);}
+
+	public interface CaseMappingFunction<R>
 	{
-		return HUReservationDocRef.builder().salesOrderLineId(salesOrderLineId).build();
+		R salesOrderLineId(@NonNull OrderLineId salesOrderLineId);
+
+		R projectId(@NonNull ProjectId projectId);
+
+		R pickingJobStepId(@NonNull PickingJobStepId pickingJobStepId);
 	}
 
-	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderAndLineId salesOrderLineId)
+	public <R> R map(@NonNull final CaseMappingFunction<R> mappingFunction)
 	{
-		return ofSalesOrderLineId(salesOrderLineId.getOrderLineId());
+		if (salesOrderLineId != null)
+		{
+			return mappingFunction.salesOrderLineId(salesOrderLineId);
+		}
+		else if (projectId != null)
+		{
+			return mappingFunction.projectId(projectId);
+		}
+		else if (pickingJobStepId != null)
+		{
+			return mappingFunction.pickingJobStepId(pickingJobStepId);
+		}
+		else
+		{
+			throw new IllegalStateException("Unknown state: " + this);
+		}
 	}
-
-	public static HUReservationDocRef ofProjectId(@NonNull final ProjectId projectId)
-	{
-		return HUReservationDocRef.builder().projectId(projectId).build();
-	}
-
 }

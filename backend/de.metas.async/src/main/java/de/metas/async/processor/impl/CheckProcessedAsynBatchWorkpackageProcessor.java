@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.async.processor.impl;
 
 /*
@@ -59,7 +56,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		final List<I_C_Async_Batch> batches = queueDAO.retrieveItems(workpackage, I_C_Async_Batch.class, localTrxName);
 

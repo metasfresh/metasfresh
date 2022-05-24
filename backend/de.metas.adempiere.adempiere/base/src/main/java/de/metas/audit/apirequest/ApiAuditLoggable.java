@@ -81,6 +81,9 @@ public class ApiAuditLoggable implements ILoggable
 		this.bufferSize = bufferSize;
 	}
 
+	/**
+	 * @param msgParameters The last parameter may be a {@link Throwable}. In that case, an AD_Issue is created and added to the log.
+	 */
 	@Override
 	public ILoggable addLog(@Nullable final String msg, final Object... msgParameters)
 	{

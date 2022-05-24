@@ -1,31 +1,11 @@
 package de.metas.security.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import de.metas.money.CurrencyId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.tree.AdTreeId;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_Role_Included;
-import org.compiere.model.I_AD_User_Roles;
-import org.compiere.model.I_AD_User_Substitute;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CCache;
 import de.metas.menu.AdMenuId;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IRolesTreeNode;
@@ -48,6 +28,24 @@ import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.tree.AdTreeId;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Role_Included;
+import org.compiere.model.I_AD_User_Roles;
+import org.compiere.model.I_AD_User_Substitute;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class RoleDAO implements IRoleDAO
 {
@@ -358,4 +356,11 @@ public class RoleDAO implements IRoleDAO
 				.anyMatch();
 	}
 
+	public void deleteUserRolesByUserId(final UserId userId)
+	{
+		Services.get(IQueryBL.class).createQueryBuilder(I_AD_User_Roles.class)
+				.addEqualsFilter(I_AD_User_Roles.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
+	}
 }

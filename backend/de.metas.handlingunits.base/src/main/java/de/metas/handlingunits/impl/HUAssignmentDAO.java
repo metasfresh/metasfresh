@@ -267,27 +267,16 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
-	public void deleteHUAssignments(final Object model, final Collection<HuId> huIds, final String trxName)
+	public void deleteHUAssignments(@NonNull Properties ctx, @NonNull final TableRecordReference modelRef, @NonNull final Collection<HuId> huIds, final String trxName)
 	{
-		Check.assumeNotNull(model, "model not null");
-		Check.assumeNotNull(huIds, "husToUnAssign not null");
 		if (huIds.isEmpty())
 		{
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
-		final int recordId = InterfaceWrapperHelper.getId(model);
-
-		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = queryBL
-				.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName);
-
-		//
-		// Note that here we don't want to skip anything; we want the HUAssignmentBL to do it's job, so we clean everything up
-		queryBuilder
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
+		queryBL.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, modelRef.getAD_Table_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, modelRef.getRecord_ID())
 				.addInArrayOrAllFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
 				.create()
 				.delete();

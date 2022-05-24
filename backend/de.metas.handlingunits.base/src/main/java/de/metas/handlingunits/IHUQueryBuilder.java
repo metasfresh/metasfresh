@@ -22,10 +22,11 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.order.OrderLineId;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
 import lombok.NonNull;
@@ -36,6 +37,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.ModelColumn;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
@@ -84,12 +86,12 @@ public interface IHUQueryBuilder
 	 */
 	IQueryFilter<I_M_HU> createQueryFilter();
 
-	/** Retrieves all HUs which are matching our criterias */
+	/** Retrieves all HUs which are matching our criteria */
 	List<I_M_HU> list();
 
-	Set<HuId> listIds();
+	ImmutableSet<HuId> listIds();
 
-	/** Retrieves all HUs which are matching our criterias, but no more then <code>limit</code> number. */
+	/** Retrieves all HUs which are matching our criteria, but no more than <code>limit</code> number. */
 	List<I_M_HU> list(final int limit);
 
 	/**
@@ -104,7 +106,7 @@ public interface IHUQueryBuilder
 	/** Retrieves first {@link I_M_HU} */
 	I_M_HU first();
 
-	/** Counts how many {@link I_M_HU}s are matched by our criterias */
+	/** Counts how many {@link I_M_HU}s are matched by our criteria */
 	int count();
 
 	/**
@@ -129,7 +131,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * Optionally set the context in which the query will run.<br>
-	 * If omitted, then then {@link org.adempiere.model.PlainContextAware#newWithThreadInheritedTrx()} is used.
+	 * If omitted, then {@link org.adempiere.model.PlainContextAware#newWithThreadInheritedTrx()} is used.
 	 *
 	 * @param contextProvider an instance that can be used as parameter for {@link org.adempiere.model.InterfaceWrapperHelper#getContextAware(Object)}.
 	 * @return this
@@ -256,7 +258,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * If <code>true</code> then only active HUs will be matched (i.e. IsActive='Y').
-	 * By default this is true.
+	 * By default, this is true.
 	 */
 	IHUQueryBuilder setOnlyActiveHUs(boolean onlyActiveHUs);
 
@@ -313,6 +315,7 @@ public interface IHUQueryBuilder
 	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouseIds(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
 	 * opposed to any) of the specified attributes and values will match the query.
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	IHUQueryBuilder addOnlyWithAttributeInList(I_M_Attribute attribute, String attributeValueType, List<?> values);
 
 	/**
@@ -334,6 +337,7 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(AttributeCode attributeCode);
 
+	@SuppressWarnings("UnusedReturnValue")
 	IHUQueryBuilder allowSqlWhenFilteringAttributes(boolean allow);
 
 	/**
@@ -449,16 +453,20 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder setNotEmptyStorageOnly();
 
 	/**
-	 * Entries that are reserved to the given order line or are not reserved at all will be the only ones retrieved.
+	 * Entries that are reserved to the given document or are not reserved at all will be the only ones retrieved.
 	 */
-	IHUQueryBuilder setExcludeReservedToOtherThan(OrderLineId orderLineId);
+	IHUQueryBuilder setExcludeReservedToOtherThan(HUReservationDocRef documentRef);
 
 	/**
-	 * Ignored if also {@link #setExcludeReservedToOtherThan(OrderLineId)} was called.
+	 * Ignored if also {@link #setExcludeReservedToOtherThan(HUReservationDocRef)} was called.
 	 */
 	IHUQueryBuilder setExcludeReserved();
 
-	IHUQueryBuilder addOnlyInLocatorIds(Collection<Integer> locatorIds);
+	IHUQueryBuilder addOnlyInLocatorId(@NonNull LocatorId locatorId);
+
+	IHUQueryBuilder addOnlyInLocatorRepoIds(Collection<Integer> locatorIds);
+
+	IHUQueryBuilder addOnlyInLocatorIds(Collection<LocatorId> locatorIds);
 
 	/**
 	 * If true = include only the HUs which have a product with {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} = true

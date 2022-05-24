@@ -9,6 +9,7 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
@@ -44,8 +45,8 @@ import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.organization.OrgId;
@@ -242,7 +243,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -908,7 +909,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand olCand = olCands.get(0);
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1034,7 +1035,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getBillBPartner().getBpartner().getChangeInfo().getLastUpdatedMillis()).isEqualTo(FIXED_TIME.toInstant().toEpochMilli());
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1075,7 +1076,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(
@@ -1148,7 +1149,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(

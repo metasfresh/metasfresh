@@ -13,10 +13,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -128,10 +132,10 @@ public final class CollectionUtils
 			return Collections.emptySet();
 		}
 
-		final Set<T> set = new HashSet<>(arr.length);
-		Collections.addAll(set, arr);
+		final HashSet<T> result = new HashSet<>(arr.length);
+		Collections.addAll(result, arr);
 
-		return set;
+		return result;
 	}
 
 	/**
@@ -273,27 +277,30 @@ public final class CollectionUtils
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/**
-	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
-	 *
-	 * @param collection      input list (i.e. list to convert)
-	 * @param extractFunction converter to be used to convert elements
-	 * @return list of OutputTypes.
-	 */
-	@Nullable
-	public static <R, T> ImmutableList<R> convert(
-			@Nullable final Collection<T> collection,
-			@NonNull final Function<T, R> extractFunction)
+	public static <R, T> ImmutableList<R> map(
+			@NonNull final ImmutableList<T> collection,
+			@NonNull final Function<T, R> mappingFunction)
 	{
-		if (collection == null)
+		if (collection.isEmpty())
 		{
-			return null;
+			return ImmutableList.of();
 		}
 
-		return collection
-				.stream()
-				.map(extractFunction)
-				.collect(ImmutableList.toImmutableList());
+		ImmutableList.Builder<R> result = ImmutableList.builder();
+		boolean hasChanges = false;
+		for (final T item : collection)
+		{
+			final R changedItem = mappingFunction.apply(item);
+			result.add(changedItem);
+
+			if (!hasChanges && !Objects.equals(item, changedItem))
+			{
+				hasChanges = true;
+			}
+		}
+
+		//noinspection unchecked
+		return hasChanges ? result.build() : (ImmutableList<R>)collection;
 	}
 
 	/**
@@ -349,6 +356,21 @@ public final class CollectionUtils
 
 		//
 		return values;
+	}
+
+	public static <K, V> LinkedHashMap<K, V> uniqueLinkedHashMap(
+			@NonNull final Stream<V> stream,
+			@NonNull final Function<? super V, ? extends K> keyFunction)
+	{
+		// thx to https://reversecoding.net/java-8-list-to-map/
+		return stream
+				.collect(Collectors.toMap(
+						keyFunction,
+						Function.identity(),
+						(u, v) -> {
+							throw new IllegalStateException(String.format("Duplicate key %s", u));
+						},
+						LinkedHashMap::new));
 	}
 
 	public static <T> ImmutableList<T> ofCommaSeparatedList(

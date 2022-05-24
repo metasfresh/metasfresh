@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.async.api.impl;
 
 
@@ -48,6 +45,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -70,6 +68,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
 
@@ -276,12 +275,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final String keepAliveTimeHours = asyncBatchType.getKeepAliveTimeHours();
 
 		// if null or empty, keep alive for ever
-		if (Check.isEmpty(keepAliveTimeHours, true))
+		if (Check.isBlank(keepAliveTimeHours))
 		{
 			return false;
 		}
 
-		final int keepAlive = Integer.valueOf(keepAliveTimeHours);
+		final int keepAlive = Integer.parseInt(keepAliveTimeHours);
 
 		// if 0, keep alive for ever
 		if (keepAlive == 0)
@@ -294,15 +293,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final long diffHours = TimeUtil.getHoursBetween(lastUpdated, today);
 
-		if (diffHours > keepAlive)
-		{
-			return true;
-		}
-
-		return false;
+		return diffHours > keepAlive;
 	}
 
 	@Override
+	@Nullable
 	public I_C_Queue_WorkPackage notify(final I_C_Async_Batch asyncBatch, final I_C_Queue_WorkPackage workpackage)
 	{
 		//
@@ -330,7 +325,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 
 		return null;
-
 	}
 
 	@Override
@@ -383,11 +377,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@NonNull
 	public AsyncBatchId newAsyncBatch(@NonNull final String asyncBatchType)
 	{
-		final I_C_Async_Batch asyncBatch = newAsyncBatch()
+		final I_C_Async_Batch asyncBatch = trxManager.callInNewTrx(() -> newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
-				.build();
+				.build());
 
 		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}

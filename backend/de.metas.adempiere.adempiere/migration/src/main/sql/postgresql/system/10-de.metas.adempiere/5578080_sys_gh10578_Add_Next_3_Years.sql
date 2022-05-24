@@ -63,7 +63,7 @@ BEGIN
 
 -- 2021-02-02T08:54:17.412Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540158,TO_TIMESTAMP('2021-02-02 10:54:17','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-01-31','YYYY-MM-DD'),'Y','Jan-22',1,'S','N',TO_TIMESTAMP('2022-01-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540158,TO_TIMESTAMP('2021-02-02 10:54:17','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-01-31','YYYY-MM-DD'),'Y','Jan-22',1,'S','N',TO_TIMESTAMP('2022-01-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:17.421Z
@@ -258,7 +258,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:22.002Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540159,TO_TIMESTAMP('2021-02-02 10:54:21','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-02-28','YYYY-MM-DD'),'Y','Feb-22',2,'S','N',TO_TIMESTAMP('2022-02-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:21','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540159,TO_TIMESTAMP('2021-02-02 10:54:21','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-02-28','YYYY-MM-DD'),'Y','Feb-22',2,'S','N',TO_TIMESTAMP('2022-02-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:21','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:22.013Z
@@ -453,7 +453,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:26.620Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540160,TO_TIMESTAMP('2021-02-02 10:54:26','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-03-31','YYYY-MM-DD'),'Y','Mär-22',3,'S','N',TO_TIMESTAMP('2022-03-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:26','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540160,TO_TIMESTAMP('2021-02-02 10:54:26','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-03-31','YYYY-MM-DD'),'Y','Mär-22',3,'S','N',TO_TIMESTAMP('2022-03-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:26','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:26.627Z
@@ -648,7 +648,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:31.337Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540161,TO_TIMESTAMP('2021-02-02 10:54:31','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-04-30','YYYY-MM-DD'),'Y','Apr-22',4,'S','N',TO_TIMESTAMP('2022-04-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:31','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540161,TO_TIMESTAMP('2021-02-02 10:54:31','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-04-30','YYYY-MM-DD'),'Y','Apr-22',4,'S','N',TO_TIMESTAMP('2022-04-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:31','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:31.344Z
@@ -843,7 +843,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:36.003Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540162,TO_TIMESTAMP('2021-02-02 10:54:35','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-05-31','YYYY-MM-DD'),'Y','Mai-22',5,'S','N',TO_TIMESTAMP('2022-05-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:35','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540162,TO_TIMESTAMP('2021-02-02 10:54:35','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-05-31','YYYY-MM-DD'),'Y','Mai-22',5,'S','N',TO_TIMESTAMP('2022-05-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:36.012Z
@@ -1038,7 +1038,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:40.568Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540163,TO_TIMESTAMP('2021-02-02 10:54:40','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-06-30','YYYY-MM-DD'),'Y','Jun-22',6,'S','N',TO_TIMESTAMP('2022-06-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:40','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540163,TO_TIMESTAMP('2021-02-02 10:54:40','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-06-30','YYYY-MM-DD'),'Y','Jun-22',6,'S','N',TO_TIMESTAMP('2022-06-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:40','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:40.578Z
@@ -1233,7 +1233,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:45.175Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540164,TO_TIMESTAMP('2021-02-02 10:54:45','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-07-31','YYYY-MM-DD'),'Y','Jul-22',7,'S','N',TO_TIMESTAMP('2022-07-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:45','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540164,TO_TIMESTAMP('2021-02-02 10:54:45','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-07-31','YYYY-MM-DD'),'Y','Jul-22',7,'S','N',TO_TIMESTAMP('2022-07-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:45','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:45.183Z
@@ -1428,7 +1428,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:49.508Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540165,TO_TIMESTAMP('2021-02-02 10:54:49','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-08-31','YYYY-MM-DD'),'Y','Aug-22',8,'S','N',TO_TIMESTAMP('2022-08-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:49','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540165,TO_TIMESTAMP('2021-02-02 10:54:49','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-08-31','YYYY-MM-DD'),'Y','Aug-22',8,'S','N',TO_TIMESTAMP('2022-08-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:49','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:49.512Z
@@ -1623,7 +1623,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:53.844Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540166,TO_TIMESTAMP('2021-02-02 10:54:53','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-09-30','YYYY-MM-DD'),'Y','Sep-22',9,'S','N',TO_TIMESTAMP('2022-09-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:53','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540166,TO_TIMESTAMP('2021-02-02 10:54:53','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-09-30','YYYY-MM-DD'),'Y','Sep-22',9,'S','N',TO_TIMESTAMP('2022-09-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:53.852Z
@@ -1818,7 +1818,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:54:58.121Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540167,TO_TIMESTAMP('2021-02-02 10:54:58','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-10-31','YYYY-MM-DD'),'Y','Okt-22',10,'S','N',TO_TIMESTAMP('2022-10-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:58','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540167,TO_TIMESTAMP('2021-02-02 10:54:58','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-10-31','YYYY-MM-DD'),'Y','Okt-22',10,'S','N',TO_TIMESTAMP('2022-10-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:54:58','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:54:58.126Z
@@ -2013,7 +2013,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:55:02.528Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540168,TO_TIMESTAMP('2021-02-02 10:55:02','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-11-30','YYYY-MM-DD'),'Y','Nov-22',11,'S','N',TO_TIMESTAMP('2022-11-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:55:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540168,TO_TIMESTAMP('2021-02-02 10:55:02','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-11-30','YYYY-MM-DD'),'Y','Nov-22',11,'S','N',TO_TIMESTAMP('2022-11-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:55:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:55:02.537Z
@@ -2208,7 +2208,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:55:06.946Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540169,TO_TIMESTAMP('2021-02-02 10:55:06','YYYY-MM-DD HH24:MI:SS'),100,540016,TO_TIMESTAMP('2022-12-31','YYYY-MM-DD'),'Y','Dez-22',12,'S','N',TO_TIMESTAMP('2022-12-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:55:06','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540169,TO_TIMESTAMP('2021-02-02 10:55:06','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2022'),TO_TIMESTAMP('2022-12-31','YYYY-MM-DD'),'Y','Dez-22',12,'S','N',TO_TIMESTAMP('2022-12-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:55:06','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:55:06.955Z
@@ -2428,7 +2428,7 @@ begin
 
 -- 2021-02-02T08:58:07.202Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540170,TO_TIMESTAMP('2021-02-02 10:58:07','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-01-31','YYYY-MM-DD'),'Y','Jan-23',1,'S','N',TO_TIMESTAMP('2023-01-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:07','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540170,TO_TIMESTAMP('2021-02-02 10:58:07','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-01-31','YYYY-MM-DD'),'Y','Jan-23',1,'S','N',TO_TIMESTAMP('2023-01-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:07','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:07.214Z
@@ -2623,7 +2623,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:11.675Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540171,TO_TIMESTAMP('2021-02-02 10:58:11','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-02-28','YYYY-MM-DD'),'Y','Feb-23',2,'S','N',TO_TIMESTAMP('2023-02-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:11','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540171,TO_TIMESTAMP('2021-02-02 10:58:11','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-02-28','YYYY-MM-DD'),'Y','Feb-23',2,'S','N',TO_TIMESTAMP('2023-02-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:11.696Z
@@ -2818,7 +2818,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:16.001Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540172,TO_TIMESTAMP('2021-02-02 10:58:15','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-03-31','YYYY-MM-DD'),'Y','Mär-23',3,'S','N',TO_TIMESTAMP('2023-03-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540172,TO_TIMESTAMP('2021-02-02 10:58:15','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-03-31','YYYY-MM-DD'),'Y','Mär-23',3,'S','N',TO_TIMESTAMP('2023-03-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:16.010Z
@@ -3013,7 +3013,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:20.462Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540173,TO_TIMESTAMP('2021-02-02 10:58:20','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-04-30','YYYY-MM-DD'),'Y','Apr-23',4,'S','N',TO_TIMESTAMP('2023-04-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:20','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540173,TO_TIMESTAMP('2021-02-02 10:58:20','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-04-30','YYYY-MM-DD'),'Y','Apr-23',4,'S','N',TO_TIMESTAMP('2023-04-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:20','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:20.481Z
@@ -3208,7 +3208,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:25.153Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540174,TO_TIMESTAMP('2021-02-02 10:58:25','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-05-31','YYYY-MM-DD'),'Y','Mai-23',5,'S','N',TO_TIMESTAMP('2023-05-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:25','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540174,TO_TIMESTAMP('2021-02-02 10:58:25','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-05-31','YYYY-MM-DD'),'Y','Mai-23',5,'S','N',TO_TIMESTAMP('2023-05-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:25.157Z
@@ -3403,7 +3403,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:29.567Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540175,TO_TIMESTAMP('2021-02-02 10:58:29','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-06-30','YYYY-MM-DD'),'Y','Jun-23',6,'S','N',TO_TIMESTAMP('2023-06-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:29','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540175,TO_TIMESTAMP('2021-02-02 10:58:29','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-06-30','YYYY-MM-DD'),'Y','Jun-23',6,'S','N',TO_TIMESTAMP('2023-06-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:29','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:29.573Z
@@ -3598,7 +3598,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:33.956Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540176,TO_TIMESTAMP('2021-02-02 10:58:33','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-07-31','YYYY-MM-DD'),'Y','Jul-23',7,'S','N',TO_TIMESTAMP('2023-07-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:33','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540176,TO_TIMESTAMP('2021-02-02 10:58:33','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-07-31','YYYY-MM-DD'),'Y','Jul-23',7,'S','N',TO_TIMESTAMP('2023-07-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:33','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:33.965Z
@@ -3793,7 +3793,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:38.147Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540177,TO_TIMESTAMP('2021-02-02 10:58:38','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-08-31','YYYY-MM-DD'),'Y','Aug-23',8,'S','N',TO_TIMESTAMP('2023-08-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:38','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540177,TO_TIMESTAMP('2021-02-02 10:58:38','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-08-31','YYYY-MM-DD'),'Y','Aug-23',8,'S','N',TO_TIMESTAMP('2023-08-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:38','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:38.158Z
@@ -3988,7 +3988,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:42.353Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540178,TO_TIMESTAMP('2021-02-02 10:58:42','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-09-30','YYYY-MM-DD'),'Y','Sep-23',9,'S','N',TO_TIMESTAMP('2023-09-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:42','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540178,TO_TIMESTAMP('2021-02-02 10:58:42','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-09-30','YYYY-MM-DD'),'Y','Sep-23',9,'S','N',TO_TIMESTAMP('2023-09-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:42','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:42.361Z
@@ -4183,7 +4183,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:46.403Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540179,TO_TIMESTAMP('2021-02-02 10:58:46','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-10-31','YYYY-MM-DD'),'Y','Okt-23',10,'S','N',TO_TIMESTAMP('2023-10-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:46','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540179,TO_TIMESTAMP('2021-02-02 10:58:46','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-10-31','YYYY-MM-DD'),'Y','Okt-23',10,'S','N',TO_TIMESTAMP('2023-10-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:46','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:46.412Z
@@ -4378,7 +4378,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:50.653Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540180,TO_TIMESTAMP('2021-02-02 10:58:50','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-11-30','YYYY-MM-DD'),'Y','Nov-23',11,'S','N',TO_TIMESTAMP('2023-11-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:50','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540180,TO_TIMESTAMP('2021-02-02 10:58:50','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-11-30','YYYY-MM-DD'),'Y','Nov-23',11,'S','N',TO_TIMESTAMP('2023-11-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:50.658Z
@@ -4573,7 +4573,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:58:54.915Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540181,TO_TIMESTAMP('2021-02-02 10:58:54','YYYY-MM-DD HH24:MI:SS'),100,540017,TO_TIMESTAMP('2023-12-31','YYYY-MM-DD'),'Y','Dez-23',12,'S','N',TO_TIMESTAMP('2023-12-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:54','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540181,TO_TIMESTAMP('2021-02-02 10:58:54','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2023'),TO_TIMESTAMP('2023-12-31','YYYY-MM-DD'),'Y','Dez-23',12,'S','N',TO_TIMESTAMP('2023-12-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:58:54','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:58:54.920Z
@@ -4782,7 +4782,7 @@ BEGIN
 
 -- 2021-02-02T08:59:21.381Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540182,TO_TIMESTAMP('2021-02-02 10:59:21','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-01-31','YYYY-MM-DD'),'Y','Jan-24',1,'S','N',TO_TIMESTAMP('2024-01-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:21','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540182,TO_TIMESTAMP('2021-02-02 10:59:21','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-01-31','YYYY-MM-DD'),'Y','Jan-24',1,'S','N',TO_TIMESTAMP('2024-01-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:21','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:21.385Z
@@ -4977,7 +4977,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:25.653Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540183,TO_TIMESTAMP('2021-02-02 10:59:25','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-02-29','YYYY-MM-DD'),'Y','Feb-24',2,'S','N',TO_TIMESTAMP('2024-02-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:25','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540183,TO_TIMESTAMP('2021-02-02 10:59:25','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-02-29','YYYY-MM-DD'),'Y','Feb-24',2,'S','N',TO_TIMESTAMP('2024-02-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:25.664Z
@@ -5172,7 +5172,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:29.915Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540184,TO_TIMESTAMP('2021-02-02 10:59:29','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-03-31','YYYY-MM-DD'),'Y','Mär-24',3,'S','N',TO_TIMESTAMP('2024-03-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:29','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540184,TO_TIMESTAMP('2021-02-02 10:59:29','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-03-31','YYYY-MM-DD'),'Y','Mär-24',3,'S','N',TO_TIMESTAMP('2024-03-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:29','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:29.923Z
@@ -5367,7 +5367,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:34.028Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540185,TO_TIMESTAMP('2021-02-02 10:59:33','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-04-30','YYYY-MM-DD'),'Y','Apr-24',4,'S','N',TO_TIMESTAMP('2024-04-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:33','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540185,TO_TIMESTAMP('2021-02-02 10:59:33','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-04-30','YYYY-MM-DD'),'Y','Apr-24',4,'S','N',TO_TIMESTAMP('2024-04-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:33','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:34.037Z
@@ -5562,7 +5562,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:38.331Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540186,TO_TIMESTAMP('2021-02-02 10:59:38','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-05-31','YYYY-MM-DD'),'Y','Mai-24',5,'S','N',TO_TIMESTAMP('2024-05-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:38','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540186,TO_TIMESTAMP('2021-02-02 10:59:38','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-05-31','YYYY-MM-DD'),'Y','Mai-24',5,'S','N',TO_TIMESTAMP('2024-05-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:38','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:38.335Z
@@ -5757,7 +5757,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:42.570Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540187,TO_TIMESTAMP('2021-02-02 10:59:42','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-06-30','YYYY-MM-DD'),'Y','Jun-24',6,'S','N',TO_TIMESTAMP('2024-06-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:42','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540187,TO_TIMESTAMP('2021-02-02 10:59:42','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-06-30','YYYY-MM-DD'),'Y','Jun-24',6,'S','N',TO_TIMESTAMP('2024-06-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:42','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:42.577Z
@@ -5952,7 +5952,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:46.838Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540188,TO_TIMESTAMP('2021-02-02 10:59:46','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-07-31','YYYY-MM-DD'),'Y','Jul-24',7,'S','N',TO_TIMESTAMP('2024-07-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:46','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540188,TO_TIMESTAMP('2021-02-02 10:59:46','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-07-31','YYYY-MM-DD'),'Y','Jul-24',7,'S','N',TO_TIMESTAMP('2024-07-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:46','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:46.860Z
@@ -6147,7 +6147,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:50.940Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540189,TO_TIMESTAMP('2021-02-02 10:59:50','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-08-31','YYYY-MM-DD'),'Y','Aug-24',8,'S','N',TO_TIMESTAMP('2024-08-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:50','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540189,TO_TIMESTAMP('2021-02-02 10:59:50','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-08-31','YYYY-MM-DD'),'Y','Aug-24',8,'S','N',TO_TIMESTAMP('2024-08-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:50.949Z
@@ -6342,7 +6342,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:55.271Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540190,TO_TIMESTAMP('2021-02-02 10:59:55','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-09-30','YYYY-MM-DD'),'Y','Sep-24',9,'S','N',TO_TIMESTAMP('2024-09-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:55','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540190,TO_TIMESTAMP('2021-02-02 10:59:55','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-09-30','YYYY-MM-DD'),'Y','Sep-24',9,'S','N',TO_TIMESTAMP('2024-09-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:55.280Z
@@ -6537,7 +6537,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T08:59:59.620Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540191,TO_TIMESTAMP('2021-02-02 10:59:59','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-10-31','YYYY-MM-DD'),'Y','Okt-24',10,'S','N',TO_TIMESTAMP('2024-10-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:59','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540191,TO_TIMESTAMP('2021-02-02 10:59:59','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-10-31','YYYY-MM-DD'),'Y','Okt-24',10,'S','N',TO_TIMESTAMP('2024-10-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 10:59:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T08:59:59.629Z
@@ -6732,7 +6732,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T09:00:04.046Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540192,TO_TIMESTAMP('2021-02-02 11:00:03','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-11-30','YYYY-MM-DD'),'Y','Nov-24',11,'S','N',TO_TIMESTAMP('2024-11-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 11:00:03','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540192,TO_TIMESTAMP('2021-02-02 11:00:03','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-11-30','YYYY-MM-DD'),'Y','Nov-24',11,'S','N',TO_TIMESTAMP('2024-11-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 11:00:03','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T09:00:04.051Z
@@ -6927,7 +6927,7 @@ INSERT INTO C_PeriodControl (AD_Client_ID,AD_Org_ID,C_PeriodControl_ID,C_Period_
 
 -- 2021-02-02T09:00:08.426Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540193,TO_TIMESTAMP('2021-02-02 11:00:08','YYYY-MM-DD HH24:MI:SS'),100,540018,TO_TIMESTAMP('2024-12-31','YYYY-MM-DD'),'Y','Dez-24',12,'S','N',TO_TIMESTAMP('2024-12-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 11:00:08','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,Created,CreatedBy,C_Year_ID,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540193,TO_TIMESTAMP('2021-02-02 11:00:08','YYYY-MM-DD HH24:MI:SS'),100,(select c_year_id from c_year where FiscalYear='2024'),TO_TIMESTAMP('2024-12-31','YYYY-MM-DD'),'Y','Dez-24',12,'S','N',TO_TIMESTAMP('2024-12-01','YYYY-MM-DD'),TO_TIMESTAMP('2021-02-02 11:00:08','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-02T09:00:08.435Z

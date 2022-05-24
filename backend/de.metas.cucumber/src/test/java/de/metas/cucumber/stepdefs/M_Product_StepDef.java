@@ -121,7 +121,7 @@ public class M_Product_StepDef
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
 	{
 		final String productName = tableRow.get("Name");
-		final String productValue = CoalesceUtil.coalesce(tableRow.get("Value"), productName);
+		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
 		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
 
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(

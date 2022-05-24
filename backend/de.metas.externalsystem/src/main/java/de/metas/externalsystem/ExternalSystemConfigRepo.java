@@ -28,11 +28,15 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
+import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
@@ -42,11 +46,15 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
+import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -91,6 +99,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemRabbitMQConfigId.cast(id));
 			case WOO:
 				return getById(ExternalSystemWooCommerceConfigId.cast(id));
+			case GRSSignum:
+				return getById(ExternalSystemGRSSignumConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -109,6 +119,9 @@ public class ExternalSystemConfigRepo
 						.map(this::getExternalSystemParentConfig);
 			case WOO:
 				return getWooCommerceConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
+			case GRSSignum:
+				return getGRSSignumConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
 			case RabbitMQ:
 				return getRabbitMQConfigByValue(value)
@@ -135,6 +148,8 @@ public class ExternalSystemConfigRepo
 				return getRabbitMQConfigByParentId(id);
 			case WOO:
 				return getWooCommerceConfigByParentId(id);
+			case GRSSignum:
+				return getGRSSignumConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -146,6 +161,29 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 
 		return externalSystemConfigRecord.getType();
+	}
+
+	@NonNull
+	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
+	{
+		switch (externalSystemType)
+		{
+			case Alberta:
+				return getAllByTypeAlberta();
+			case RabbitMQ:
+				return getAllByTypeRabbitMQ();
+			case WOO:
+				return getAllByTypeWOO();
+			case Shopware6:
+			case Other:
+				throw new AdempiereException("Method not supported")
+						.appendParametersToMessage()
+						.setParameter("externalSystemType", externalSystemType);
+			case GRSSignum:
+				return getAllByTypeGRS();
+			default:
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		}
 	}
 
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
@@ -359,6 +397,8 @@ public class ExternalSystemConfigRepo
 				.baseUrl(config.getBaseURL())
 				.clientSecret(config.getClient_Secret())
 				.externalSystemShopware6ConfigMappingList(getExternalSystemShopware6ConfigMappingList(externalSystemShopware6ConfigId))
+				.uomShopwareMappingList(getUOMShopwareMappingList(externalSystemShopware6ConfigId))
+				.priceListId(PriceListId.ofRepoIdOrNull(config.getM_PriceList_ID()))
 				.clientId(config.getClient_Id())
 				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
@@ -411,6 +451,7 @@ public class ExternalSystemConfigRepo
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
 				.name(externalSystemConfigRecord.getName())
+				.orgId(OrgId.ofRepoId(externalSystemConfigRecord.getAD_Org_ID()))
 				.isActive(externalSystemConfigRecord.isActive())
 				.writeAudit(externalSystemConfigRecord.isWriteAudit())
 				.auditFileFolder(externalSystemConfigRecord.getAuditFileFolder());
@@ -541,6 +582,7 @@ public class ExternalSystemConfigRepo
 		record.setJSONPathConstantBPartnerLocationID(config.getBPartnerLocationIdJSONPath());
 		record.setJSONPathSalesRepID(config.getSalesRepJSONPath());
 
+		record.setM_PriceList_ID(NumberUtils.asInteger(config.getPriceListId(), -1));
 		record.setIsActive(config.getIsActive());
 		record.setExternalSystemValue(config.getValue());
 
@@ -585,25 +627,69 @@ public class ExternalSystemConfigRepo
 		return record;
 	}
 
+
 	@NonNull
-	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
+	private Optional<IExternalSystemChildConfig> getGRSSignumConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
-		switch (externalSystemType)
-		{
-			case Alberta:
-				return getAllByTypeAlberta();
-			case RabbitMQ:
-				return getAllByTypeRabbitMQ();
-			case WOO:
-				return getAllByTypeWOO();
-			case Shopware6:
-			case Other:
-				throw new AdempiereException("Method not supported")
-						.appendParametersToMessage()
-						.setParameter("externalSystemType", externalSystemType);
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
-		}
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_GRSSignum.class)
+				.map(this::buildExternalSystemGRSSignumConfig);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemGRSSignumConfigId id)
+	{
+		final I_ExternalSystem_Config_GRSSignum config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_GRSSignum.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_GRSSignum config)
+	{
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
+
+		final ExternalSystemGRSSignumConfig child = buildExternalSystemGRSSignumConfig(config);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemGRSSignumConfig buildExternalSystemGRSSignumConfig(@NonNull final I_ExternalSystem_Config_GRSSignum config)
+	{
+		return ExternalSystemGRSSignumConfig.builder()
+				.id(ExternalSystemGRSSignumConfigId.ofRepoId(config.getExternalSystem_Config_GRSSignum_ID()))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
+				.baseUrl(config.getBaseURL())
+				.build();
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_GRSSignum> getGRSSignumConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_GRSSignum.class);
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeGRS()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -615,5 +701,27 @@ public class ExternalSystemConfigRepo
 				.stream()
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private List<UOMShopwareMapping> getUOMShopwareMappingList(@NonNull final ExternalSystemShopware6ConfigId externalSystemShopware6ConfigId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6_UOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Shopware6_UOM.COLUMNNAME_ExternalSystem_Config_Shopware6_ID, externalSystemShopware6ConfigId.getRepoId())
+				.create()
+				.stream()
+				.map(this::toUOMShopwareMapping)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private UOMShopwareMapping toUOMShopwareMapping(@NonNull final I_ExternalSystem_Config_Shopware6_UOM record)
+	{
+		return UOMShopwareMapping.builder()
+				.externalSystemShopware6ConfigId(ExternalSystemShopware6ConfigId.ofRepoId(record.getExternalSystem_Config_Shopware6_ID()))
+				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+				.shopwareCode(record.getShopwareCode())
+				.build();
 	}
 }

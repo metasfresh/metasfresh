@@ -343,7 +343,7 @@ public class Scheduler extends AdempiereServer
 							orgId,
 							adUserId,
 							Env.getLocalDate(schedulerCtx))
-					.orNull();
+					.orElse(null);
 
 			// gh #2092: without a role, we won't be able to run the process, because ProcessExecutor.assertPermissions() will fail.
 			Check.errorIf(role == null,

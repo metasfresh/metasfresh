@@ -115,7 +115,7 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 		HUMoveToDirectWarehouseService.newInstance()
 				.setDocumentsCollection(documentsCollection)
 				.setHUView(getView())
-				.setMovementDate(SystemTime.asTimestamp()) // now
+				.setMovementDate(SystemTime.asInstant()) // now
 				// .setDescription(description) // none
 				.setFailOnFirstError(true)
 				.setLoggable(this)

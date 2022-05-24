@@ -37,7 +37,7 @@ import {
 } from './view';
 import {
   loginRequest,
-  localLoginRequest,
+  checkLoginRequest,
   loginWithToken,
   loginCompletionRequest,
   logoutRequest,
@@ -98,7 +98,7 @@ export {
   getZoomIntoWindow,
   headerPropertiesRequest,
   initQuickInput,
-  localLoginRequest,
+  checkLoginRequest,
   locationConfigRequest,
   locationSearchRequest,
   loginCompletionRequest,

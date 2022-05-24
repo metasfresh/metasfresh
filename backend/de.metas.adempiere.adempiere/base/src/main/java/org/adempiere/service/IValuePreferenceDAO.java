@@ -1,10 +1,10 @@
 package org.adempiere.service;
 
-import java.util.Properties;
-
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
 import org.compiere.model.I_AD_Preference;
 
-import de.metas.util.ISingletonService;
+import java.util.Properties;
 
 /*
  * #%L
@@ -51,4 +51,9 @@ public interface IValuePreferenceDAO extends ISingletonService
 	 */
 	void save(Properties ctx, String attribute, Object value, int adClientId, int adOrgId, int adUserId, int adWindowId);
 
+	/**
+	 *
+	 * @param userId
+	 */
+	void deleteUserPreferenceByUserId(final UserId userId);
 }

@@ -1,29 +1,8 @@
 package org.adempiere.exceptions;
 
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-
-import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.logging.LoggingHelper;
-import org.compiere.model.Null;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-
-import ch.qos.logback.classic.Level;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
@@ -34,6 +13,24 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.logging.LoggingHelper;
+import org.compiere.model.Null;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 /**
  * Any exception that occurs inside the Adempiere core
@@ -252,6 +249,10 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
 		this.mdcContextMap = captureMDCContextMap();
+
+		// when this constructor is called, usually we have nice error messages,
+		// so we can consider those user-friendly errors
+		this.userValidationError = true;
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)

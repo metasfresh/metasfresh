@@ -59,6 +59,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE C_Printing_Queue ADD CONSTRAINT ADPrinterHWMediaTray_CPrintingQueue FOREIGN KEY (AD_PrinterHW_MediaTray_ID) REFERENCES public.AD_PrinterHW_MediaTray DEFERRABLE INITIALLY DEFERRED
 ;
 
+delete from ad_field where (ad_tab_id, ad_column_id)=(540460, 552685); -- clean up possible legacy field
 -- 2021-02-10T15:00:32.020Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,Updated,UpdatedBy,AD_Field_ID,IsDisplayedGrid,AD_Column_ID,Name,AD_Org_ID,EntityType) VALUES (540460,'N',256,'N','N','N','N',0,'Y',TO_TIMESTAMP('2021-02-10 17:00:31','YYYY-MM-DD HH24:MI:SS'),100,'N',TO_TIMESTAMP('2021-02-10 17:00:31','YYYY-MM-DD HH24:MI:SS'),100,631591,'N',552685,'Warteschlangen-Aggregationsmerkmal',0,'de.metas.printing')

@@ -77,7 +77,7 @@ public class RabbitMQEventBusConfiguration
 	/**
 	 * Attempt to set the application name (e.g. metasfresh-webui-api) as the rabbitmq connection name.
 	 * Thx to https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-messaging.html#boot-features-rabbitmq
-	 *
+	 * <p>
 	 * (although right now it doesn't need to work..)
 	 */
 	@Bean
@@ -126,7 +126,7 @@ public class RabbitMQEventBusConfiguration
 		public AnonymousQueue eventsQueue()
 		{
 			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
-			return new AnonymousQueue(eventQueueNamingStrategy); 
+			return new AnonymousQueue(eventQueueNamingStrategy);
 		}
 
 		@Bean
@@ -232,6 +232,36 @@ public class RabbitMQEventBusConfiguration
 		public Binding schedulerBinding()
 		{
 			return BindingBuilder.bind(schedulerQueue()).to(schedulerExchange());
+		}
+	}
+
+	@Configuration
+	public static class AsyncMilestoneQueueConfiguration
+	{
+		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.async.asyncbatchmilestone.request.AsyncMilestoneNotifyRequest");
+		private static final String QUEUE_BEAN_NAME = "metasfreshAsyncMilestoneQueue";
+		private static final String EXCHANGE_NAME = "metasfresh-async-milestone-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue asyncMilestoneQueue()
+		{
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public FanoutExchange asyncMilestoneExchange()
+		{
+			return new FanoutExchange(EXCHANGE_NAME);
+		}
+
+		@Bean
+		public Binding asyncMilestoneBinding()
+		{
+			return BindingBuilder.bind(asyncMilestoneQueue()).to(asyncMilestoneExchange());
 		}
 	}
 }

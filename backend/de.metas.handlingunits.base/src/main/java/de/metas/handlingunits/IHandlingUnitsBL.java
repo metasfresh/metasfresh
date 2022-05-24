@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -53,6 +54,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -72,19 +74,31 @@ import java.util.function.Predicate;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
+	/**
+	 * Supposed to be called only from the interal HULoader.
+	 */
+	IAutoCloseable huLoaderInProgress();
+
+	/**
+	 * @return {@code true} if the HULoader is currently doing its thing within this thread.
+	 */
+	boolean isHULoaderInProgress();
+	
 	I_M_HU getById(HuId huId);
 
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
 
 	List<I_M_HU> getVHUs(HuId huId);
 
-	Set<HuId> getVHUIds(HuId huId);
+	ImmutableSet<HuId> getVHUIds(HuId huId);
 
-	Set<HuId> getVHUIds(Set<HuId> huIds);
+	ImmutableSet<HuId> getVHUIds(Set<HuId> huIds);
 
 	List<I_M_HU> getVHUs(I_M_HU hu);
 
 	IHUQueryBuilder createHUQueryBuilder();
+
+	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
 
 	/**
 	 * @return default storage factory
@@ -270,7 +284,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		 * If the filter returns {@code false} for a given HU, then neither that HU or its parents will be added to the result.
 		 */
 		@Default
-		Predicate<I_M_HU> filter = hu -> true;
+		@NonNull Predicate<I_M_HU> filter = hu -> true;
 	}
 
 	/**

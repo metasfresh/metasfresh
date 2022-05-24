@@ -4,7 +4,7 @@ DROP VIEW IF EXISTS M_Packageable_V
 CREATE OR REPLACE VIEW M_Packageable_V AS
 SELECT p.*
 
-     -- note: keep in sync with de.metas.inoutcandidate.api.Packageable.getQtyPickedOrDelivered()
+     -- note: keep in sync with de.metas.picking.api.Packageable.getQtyPickedOrDelivered()
      , p.QtyDelivered + p.QtyPickedNotDelivered + p.QtyPickedPlanned AS QtyPickedOrDelivered
 FROM (
          SELECT

@@ -3,9 +3,9 @@ package de.metas.ui.web.devices;
 import com.google.common.collect.ImmutableList;
 import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
-import de.metas.ui.web.websocket.WebSocketProducer;
-import de.metas.ui.web.websocket.WebSocketProducerFactory;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.websocket.producers.WebSocketProducer;
+import de.metas.websocket.producers.WebSocketProducerFactory;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -102,7 +102,7 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 		}
 
 		@Override
-		public List<JSONDeviceValueChangedEvent> produceEvents(@NonNull final JSONOptions jsonOpts)
+		public List<JSONDeviceValueChangedEvent> produceEvents()
 		{
 			final AttributeDeviceAccessor deviceAccessor = Services.get(IDevicesHubFactory.class)
 					.getDefaultAttributesDevicesHub()
@@ -112,6 +112,7 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 				throw new RuntimeException("Device accessor no longer exists for: " + deviceId);
 			}
 
+			final JSONOptions jsonOpts = JSONOptions.newInstance();
 			final Object valueObj = deviceAccessor.acquireValue();
 			final Object valueJson = Values.valueToJsonObject(valueObj, jsonOpts);
 

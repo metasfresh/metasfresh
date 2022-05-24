@@ -8,13 +8,14 @@ import classnames from 'classnames';
 
 import {
   getUserLang,
-  localLoginRequest,
+  checkLoginRequest,
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
 import { loginSuccess } from '../../actions/AppActions';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
 
@@ -102,11 +103,12 @@ class LoginForm extends Component {
 
   /**
    * @method checkIfAlreadyLogged
-   * @summary ToDo: Describe the method.
+   * @summary Used to verify if a user is already logged in. i.e user is authenticated in another tab and we are on the loging form screen.
    * @param {*} err
    */
   checkIfAlreadyLogged(err) {
-    return localLoginRequest().then((response) => {
+    const { history } = this.props;
+    return checkLoginRequest().then((response) => {
       if (response.data) {
         return history.push('/');
       }

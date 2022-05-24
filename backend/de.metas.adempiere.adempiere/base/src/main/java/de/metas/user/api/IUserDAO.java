@@ -97,4 +97,5 @@ public interface IUserDAO extends ISingletonService
 	Optional<I_AD_User> getCounterpartUser(
 			@NonNull UserId sourceUserId,
 			@NonNull OrgId targetOrgId);
+
 }
