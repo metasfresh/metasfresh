@@ -57,7 +57,7 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 {
 	private static final CalendarServiceId ID = CalendarServiceId.ofString("ResourceGroupAssignment");
 
-	private static final CalendarGlobalId CALENDAR_ID = CalendarGlobalId.of(ID, "Resource Groups");
+	private static final CalendarGlobalId CALENDAR_ID = CalendarGlobalId.of(ID, "default");
 
 	private final ResourceGroupRepository resourceGroupRepository;
 	private final ResourceGroupAssignmentRepository resourceGroupAssignmentRepository;
@@ -81,7 +81,7 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 	{
 		final CalendarRef calendar = CalendarRef.builder()
 				.calendarId(CALENDAR_ID)
-				.name(TranslatableStrings.adElementOrMessage("Default"))
+				.name(TranslatableStrings.adElementOrMessage("S_Resource_Group_ID"))
 				.resources(resourceGroupRepository.getAllActive()
 						.stream()
 						.map(ResourceGroupAssignmentCalendarService::toCalendarResourceRef)
