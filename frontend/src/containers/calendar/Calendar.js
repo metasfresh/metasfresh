@@ -46,15 +46,15 @@ const mergeCalendarEventToArray = (eventsArray, eventToAdd) => {
   return result;
 };
 
-const suggestCalendarIdAndResourceIdByResourceId = (calendars, resourceId) => {
+const suggestCalendarIdAndResourceId = (calendars, preferredResourceId) => {
   if (!calendars || calendars.length === 0) {
     return {};
   }
 
-  if (resourceId) {
+  if (preferredResourceId) {
     for (const calendar of calendars) {
       for (const resource of calendar.resources) {
-        if (resource.id === resourceId) {
+        if (resource.id === preferredResourceId) {
           return {
             calendarId: calendar.calendarId,
             resourceId: resource.id,
@@ -116,11 +116,10 @@ const Calendar = ({ className = 'container' }) => {
 
   const handleCreateNewEvent = (params) => {
     //console.log('handleCreateNewEvent', { params });
-    const { calendarId, resourceId } =
-      suggestCalendarIdAndResourceIdByResourceId(
-        availableCalendars,
-        params?.resource?.id
-      );
+    const { calendarId, resourceId } = suggestCalendarIdAndResourceId(
+      availableCalendars,
+      params?.resource?.id
+    );
     //console.log('handleCreateNewEvent', { calendarId, resourceId });
 
     setEditingEvent({
