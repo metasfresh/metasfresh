@@ -15,8 +15,8 @@ Feature: campaign prices
       | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
       | defaultPLV | defaultPriceList          | PLVName1 | 2022-04-29 |
     And metasfresh contains C_BPartners:
-      | Identifier | Name         | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsAllowActionPrice |
-      | bpartner_1 | BPartnerTest | Y              | defaultPricingSystem          | true                   |
+      | Identifier | Name         | OPT.C_BP_Group_ID | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsAllowActionPrice |
+      | bpartner_1 | BPartnerTest | 1000000           | Y              | defaultPricingSystem          | true                   |
 
   @from:cucumber
   @Id:S0133_150
@@ -106,10 +106,10 @@ Feature: campaign prices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_3       | defaultPLV                        | salesProduct_3          | 5.00     | PCE               | Normal                        |
     And metasfresh contains C_CampaignPrices
-      | Identifier | M_Product_ID.Identifier | PriceStd | OPT.C_BP_Group_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | ValidFrom  | ValidTo    | C_TaxCategory_ID.InternalName | C_Country.CountryCode | C_Currency.ISO_Code | C_UOM_ID.X12DE355 |
-      | cp_120     | salesProduct_3          | 3.00     | bpartner_1                   |                                   | 2022-05-01 | 2022-05-08 | Normal                        | DE                    | EUR                 | PCE               |
-      | cp_130     | salesProduct_3          | 6.00     | bpartner_1                   |                                   | 2022-05-18 | 2022-05-24 | Normal                        | DE                    | EUR                 | PCE               |
-      | cp_180     | salesProduct_3          | 3.00     | bpartner_1                   | defaultPricingSystem_2            | 2022-05-25 | 2022-05-31 | Normal                        | DE                    | EUR                 | PCE               |
+      | Identifier | M_Product_ID.Identifier | PriceStd | OPT.C_BP_Group_ID | OPT.M_PricingSystem_ID.Identifier | ValidFrom  | ValidTo    | C_TaxCategory_ID.InternalName | C_Country.CountryCode | C_Currency.ISO_Code | C_UOM_ID.X12DE355 |
+      | cp_120     | salesProduct_3          | 3.00     | 1000000           |                                   | 2022-05-01 | 2022-05-08 | Normal                        | DE                    | EUR                 | PCE               |
+      | cp_130     | salesProduct_3          | 6.00     | 1000000           |                                   | 2022-05-18 | 2022-05-24 | Normal                        | DE                    | EUR                 | PCE               |
+      | cp_180     | salesProduct_3          | 3.00     | 1000000           | defaultPricingSystem_2            | 2022-05-25 | 2022-05-31 | Normal                        | DE                    | EUR                 | PCE               |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.M_PricingSystem_ID |
       | o_120      | true    | bpartner_1               | 2022-05-03  | 2022-05-03T21:00:00Z |                        |

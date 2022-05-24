@@ -61,6 +61,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
@@ -185,6 +186,9 @@ public class C_BPartner_StepDef
 		final String bPartnerName = tableRow.get("Name");
 		final String bPartnerValue = CoalesceUtil.coalesce(tableRow.get("Value"), bPartnerName);
 
+		final Integer bpGroupId = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BP_Group_ID))
+				.orElse(BP_GROUP_ID);
+
 		final I_C_BPartner bPartnerRecord =
 				CoalesceUtil.coalesceSuppliers(
 						() -> bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), bPartnerValue),
@@ -193,7 +197,7 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		bPartnerRecord.setName(bPartnerName);
 		bPartnerRecord.setValue(bPartnerValue);
-		bPartnerRecord.setC_BP_Group_ID(BP_GROUP_ID);
+		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsVendor), false));
 		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));

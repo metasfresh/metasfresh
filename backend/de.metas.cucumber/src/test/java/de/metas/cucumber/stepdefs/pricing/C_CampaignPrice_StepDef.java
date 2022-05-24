@@ -59,13 +59,14 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_CampaignPrice_StepDef
 {
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+
 	private final M_Product_StepDefData productTable;
 	private final CurrencyRepository currencyRepository;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_PricingSystem_StepDefData pricingSystemTable;
-
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public C_CampaignPrice_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -96,8 +97,8 @@ public class C_CampaignPrice_StepDef
 
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_Campaign_Price.COLUMNNAME_PriceStd);
 
-		final String country = DataTableUtil.extractStringForColumnName(tableRow, I_C_Country.Table_Name + "." + I_C_Country.COLUMNNAME_CountryCode);
-		final I_C_Country countryPO = Services.get(ICountryDAO.class).retrieveCountryByCountryCode(country);
+		final String countryCode = DataTableUtil.extractStringForColumnName(tableRow, I_C_Country.Table_Name + "." + I_C_Country.COLUMNNAME_CountryCode);
+		final I_C_Country country = countryDAO.retrieveCountryByCountryCode(countryCode);
 
 		final String currencyISO = DataTableUtil.extractStringForColumnName(tableRow, I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyISO));
@@ -110,18 +111,12 @@ public class C_CampaignPrice_StepDef
 		final Timestamp validTo = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Campaign_Price.COLUMNNAME_ValidTo);
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID + ".Identifier");
-		final String bpGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID + ".Identifier");
+		final Integer bPartnerGroupId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID );
 
 		final Integer bPartnerId = Optional.ofNullable(bpartnerIdentifier)
 				.map(bPIdentifier -> bpartnerTable.getOptional(bPIdentifier)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElseGet(() -> Integer.parseInt(bPIdentifier)))
-				.orElse(null);
-
-		final Integer bPartnerGroupId = Optional.ofNullable(bpGroupIdentifier)
-				.map(bPGroupIdentifier -> bpartnerTable.getOptional(bPGroupIdentifier)
-						.map(I_C_BPartner::getC_BP_Group_ID)
-						.orElseGet(() -> Integer.parseInt(bPGroupIdentifier)))
 				.orElse(null);
 
 		final String pricingSystem = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
@@ -132,17 +127,18 @@ public class C_CampaignPrice_StepDef
 				.orElse(null);
 
 		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final UomId campaignPriceUOM = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 
 		final I_C_Campaign_Price campaignPrice = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_Campaign_Price.class);
 		campaignPrice.setM_Product_ID(product.getM_Product_ID());
 		campaignPrice.setPriceStd(priceStd);
-		campaignPrice.setC_Country_ID(countryPO.getC_Country_ID());
+		campaignPrice.setC_Country_ID(country.getC_Country_ID());
 		campaignPrice.setC_Currency_ID(currencyId.getRepoId());
 		campaignPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 		campaignPrice.setValidFrom(validFrom);
 		campaignPrice.setValidTo(validTo);
-		campaignPrice.setC_UOM_ID(productPriceUomId.getRepoId());
+		campaignPrice.setC_UOM_ID(campaignPriceUOM.getRepoId());
+
 		if (bPartnerId != null)
 		{
 			campaignPrice.setC_BPartner_ID(bPartnerId);
@@ -157,7 +153,6 @@ public class C_CampaignPrice_StepDef
 		}
 
 		InterfaceWrapperHelper.saveRecord(campaignPrice);
-
 	}
 
 }
