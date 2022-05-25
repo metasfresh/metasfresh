@@ -336,7 +336,18 @@ public class InvoiceHeaderImplBuilder
 
 	public void setAD_InputDataSource_ID(final int adInputDataSourceId)
 	{
-		AD_InputDataSource_ID = checkOverrideID("AD_InputDataSource_ID", AD_InputDataSource_ID, adInputDataSourceId);
+		if (this.AD_InputDataSource_ID <= 0)
+		{
+			this.AD_InputDataSource_ID = adInputDataSourceId;
+		}
+		else if (this.AD_InputDataSource_ID == adInputDataSourceId)
+		{
+			this.AD_InputDataSource_ID = adInputDataSourceId;
+		}
+		else if (this.AD_InputDataSource_ID != adInputDataSourceId)
+		{
+			this.AD_InputDataSource_ID = 0;
+		}
 	}
 
 	public String getDescription()

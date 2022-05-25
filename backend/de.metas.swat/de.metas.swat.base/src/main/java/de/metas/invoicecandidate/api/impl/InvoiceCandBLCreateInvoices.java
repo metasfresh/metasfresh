@@ -407,6 +407,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
+			invoice.setAD_InputDataSource_ID(invoiceHeader.getAD_InputDataSource_ID());
 
 			if (invoiceHeader.getM_InOut_ID() > 0)
 			{

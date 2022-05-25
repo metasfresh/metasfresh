@@ -153,6 +153,16 @@ public interface I_I_Invoice
 
 	public I_C_Activity getC_Activity() throws RuntimeException;
 
+	/** Set Activity.
+	 * Business Activity
+	 */
+	public void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/** Get Activity.
+	 * Business Activity
+	 */
+	public int getAD_InputDataSource_ID();
+
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
