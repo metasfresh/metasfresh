@@ -201,21 +201,33 @@ const Calendar = ({ className = 'container' }) => {
         events={fetchCalendarEvents}
         dateClick={handleCreateNewEvent}
         eventClick={handleEditEvent}
+        eventDragStart={(event) => {
+          console.log('eventDragStart', { event });
+        }}
         eventDragStop={(event) => {
           console.log('eventDragStop', { event });
         }}
         eventDrop={(event) => {
           console.log('eventDrop', { event });
         }}
-        //   eventDragStart: Identity<(arg: EventDragStartArg) => void>;
-        // eventDragStop: Identity<(arg: EventDragStopArg) => void>;
-        // eventDrop: Identity<(arg: EventDropArg) => void>;
-        // eventResizeStart: Identity<(arg: EventResizeStartArg) => void>;
-        // eventResizeStop: Identity<(arg: EventResizeStopArg) => void>;
-        // eventResize: Identity<(arg: EventResizeDoneArg) => void>;
-        // drop: Identity<(arg: DropArg) => void>;
-        // eventReceive: Identity<(arg: EventReceiveArg) => void>;
-        // eventLeave: Identity<(arg: EventLeaveArg) => void>;
+        drop={(event) => {
+          console.log('drop', { event });
+        }}
+        eventResizeStart={(event) => {
+          console.log('eventResizeStart', { event });
+        }}
+        eventResizeStop={(event) => {
+          console.log('eventResizeStop', { event });
+        }}
+        eventResize={(event) => {
+          console.log('eventResize', { event });
+        }}
+        eventReceive={(event) => {
+          console.log('eventReceive', { event });
+        }}
+        eventLeave={(event) => {
+          console.log('eventLeave', { event });
+        }}
       />
     </div>
   );
