@@ -23,7 +23,6 @@
 package de.metas.cucumber;
 
 import de.metas.ServerBoot;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
 import de.metas.util.Services;
@@ -33,7 +32,6 @@ import io.cucumber.plugin.event.EventPublisher;
 import io.cucumber.plugin.event.TestRunFinished;
 import io.cucumber.plugin.event.TestRunStarted;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.util.SocketUtils;
 
@@ -92,6 +90,7 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		System.setProperty(CFG_INTERNAL_PORT, Integer.toString(appServerPort)); //
 		System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait 
 		System.setProperty(SYSCONFIG_DEBOUNCER_DELAY_MILLIS, "100");
+		System.setProperty(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, "true");
 		final String[] args = { //
 				"-dbHost", dbHost,
 				"-dbPort", dbPort,
@@ -100,8 +99,6 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 				"-rabbitUser", infrastructureSupport.getRabbitUser(),
 				"-rabbitPassword", infrastructureSupport.getRabbitPassword()
 		};
-
-		sysConfigBL.setValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, true, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 
 		ServerBoot.main(args);
 	}
