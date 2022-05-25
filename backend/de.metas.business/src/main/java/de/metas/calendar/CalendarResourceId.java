@@ -24,42 +24,68 @@ package de.metas.calendar;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
+import com.google.common.base.Splitter;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 
+@EqualsAndHashCode
 public class CalendarResourceId
 {
-	private final String string;
+	private final String type;
+	private final int repoId;
 
-	private static final Interner<CalendarResourceId> interner = Interners.newStrongInterner();
-
-	private CalendarResourceId(@NonNull final String string)
+	private CalendarResourceId(@NonNull final String type, final int repoId)
 	{
-		this.string = StringUtils.trimBlankToNull(string);
-		if (this.string == null)
+		final String typeNorm = StringUtils.trimBlankToNull(type);
+		if (typeNorm == null)
 		{
-			throw new AdempiereException("calendarResourceId shall not be blank");
+			throw new AdempiereException("Invalid CalendarResourceId: type shall not be blank");
 		}
+		if (repoId <= 0)
+		{
+			throw new AdempiereException("Invalid CalendarResourceId: repoId shall be positive");
+		}
+
+		this.type = typeNorm;
+		this.repoId = repoId;
 	}
 
+	/**
+	 * @implNote private method because we want to be used only by jackson deserializer. In case it's needed, feel free to make it public.
+	 */
 	@JsonCreator
-	public static CalendarResourceId ofString(@NonNull final String string)
+	private static CalendarResourceId ofString(@NonNull final String string)
 	{
-		return interner.intern(new CalendarResourceId(string));
+		try
+		{
+			final List<String> parts = Splitter.on("-").splitToList(string);
+			if (parts.size() != 2)
+			{
+				throw new AdempiereException("Expected 2 parts only but got " + parts);
+			}
+
+			final String type = parts.get(0);
+			final int repoId = Integer.parseInt(parts.get(1));
+			return new CalendarResourceId(type, repoId);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Invalid calendar resource ID: `" + string + "`", ex);
+		}
 	}
 
 	@JsonValue
 	public String getAsString()
 	{
-		return string;
+		return type + "-" + repoId;
 	}
 
 	@Deprecated
@@ -71,13 +97,32 @@ public class CalendarResourceId
 
 	public static boolean equals(@Nullable final CalendarResourceId id1, @Nullable final CalendarResourceId id2) {return Objects.equals(id1, id2);}
 
-	public static CalendarResourceId ofRepoId(@NonNull final RepoIdAware id)
+	public static <T extends RepoIdAware> CalendarResourceId ofRepoId(@NonNull final T id)
 	{
-		return ofString(String.valueOf(id.getRepoId()));
+		return new CalendarResourceId(extractType(id.getClass()), id.getRepoId());
 	}
 
-	public <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> type)
+	private static <T extends RepoIdAware> String extractType(@NonNull final Class<T> clazz) {return clazz.getSimpleName();}
+
+	public <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> clazz)
 	{
-		return RepoIdAwares.ofObject(string, type);
+		if (!Objects.equals(this.type, extractType(clazz)))
+		{
+			throw new AdempiereException("Cannot convert " + this + " to " + clazz);
+		}
+
+		return RepoIdAwares.ofRepoId(repoId, clazz);
 	}
+
+	@Nullable
+	public <T extends RepoIdAware> T toRepoIdOrNull(@NonNull final Class<T> clazz)
+	{
+		if (!Objects.equals(this.type, extractType(clazz)))
+		{
+			return null;
+		}
+
+		return RepoIdAwares.ofRepoId(repoId, clazz);
+	}
+
 }

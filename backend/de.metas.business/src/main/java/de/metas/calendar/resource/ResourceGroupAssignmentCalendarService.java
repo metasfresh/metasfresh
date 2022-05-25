@@ -124,10 +124,7 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 		final ImmutableSet<ResourceGroupId> onlyResourceGroupIds;
 		if (!calendarQuery.getOnlyResourceIds().isEmpty())
 		{
-			onlyResourceGroupIds = calendarQuery.getOnlyResourceIds()
-					.stream()
-					.map(calendarResourceId -> calendarResourceId.toRepoId(ResourceGroupId.class))
-					.collect(ImmutableSet.toImmutableSet());
+			onlyResourceGroupIds = calendarQuery.getOnlyResourceIdsOfType(ResourceGroupId.class);
 			if (onlyResourceGroupIds.isEmpty())
 			{
 				return null;

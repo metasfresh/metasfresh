@@ -22,7 +22,9 @@
 
 package de.metas.calendar;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.user.UserId;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -30,10 +32,12 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Set;
 
 @Value
 @Builder
+@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public class CalendarQuery
 {
 	@Nullable UserId availableForUserId;
@@ -53,4 +57,14 @@ public class CalendarQuery
 	{
 		return onlyCalendarIds.isEmpty() || onlyCalendarIds.contains(calendarId);
 	}
+
+	public <T extends RepoIdAware> ImmutableSet<T> getOnlyResourceIdsOfType(@NonNull final Class<T> clazz)
+	{
+		return onlyResourceIds
+				.stream()
+				.map(calendarResourceId -> calendarResourceId.toRepoIdOrNull(clazz))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }

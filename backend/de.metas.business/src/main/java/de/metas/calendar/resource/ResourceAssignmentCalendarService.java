@@ -124,10 +124,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 		final ImmutableSet<ResourceId> onlyResourceIds;
 		if (!calendarQuery.getOnlyResourceIds().isEmpty())
 		{
-			onlyResourceIds = calendarQuery.getOnlyResourceIds()
-					.stream()
-					.map(calendarResourceId -> calendarResourceId.toRepoId(ResourceId.class))
-					.collect(ImmutableSet.toImmutableSet());
+			onlyResourceIds = calendarQuery.getOnlyResourceIdsOfType(ResourceId.class);
 			if (onlyResourceIds.isEmpty())
 			{
 				return null;
@@ -224,7 +221,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 			builder.resourceId(request.getResourceId().toRepoId(ResourceId.class));
 		}
 
-		if(request.getDateRange() != null)
+		if (request.getDateRange() != null)
 		{
 			builder.dateRange(request.getDateRange());
 		}
