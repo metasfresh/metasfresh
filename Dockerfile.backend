@@ -24,7 +24,7 @@ RUN --mount=type=secret,id=mysecret \
         --project-id 1 \
         --name "New test run" \
         --source "unit-tests-github" \
-		--tags $REFNAME
+		--tags $REFNAME \
         --results **/TEST-*.xml \
         -- mvn test ;\
     else \
