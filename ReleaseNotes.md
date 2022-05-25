@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#12931](https://github.com/metasfresh/metasfresh/issues/12931) API - Export PP_Orders with extended informations
   * [#12982](https://github.com/metasfresh/metasfresh/issues/12982) Korrektur action in material receipt candidates is not considered correctly in Material Dispo
   * [#12999](https://github.com/metasfresh/metasfresh/issues/12999) Allow Defining Tax-Categories without a M_ProductPrice
   * [#12974](https://github.com/metasfresh/metasfresh/issues/12974) Default paymentrule for packing item causes >1 invoice for the same order
@@ -25,6 +26,7 @@ Here come the actual release notes:
   * [#12826](https://github.com/metasfresh/metasfresh/issues/12826) MetasfreshEventBusService - always post events to rabbitMQ
   * [#12840](https://github.com/metasfresh/metasfresh/issues/12840) Overhaul C_OLcand => C_Order processing
   * [#12837](https://github.com/metasfresh/metasfresh/issues/12837) Shopware Fix order-item/bundle-sorting
+  * [#13045](https://github.com/metasfresh/metasfresh/pull/13045) log to loggables why an attribute based price is not applied
 
 ## Fixes
 * metasfresh
