@@ -36,7 +36,7 @@ jobs:
       - name: build-db
         run: docker buildx build -f Dockerfile.db-standalone -t metas-db:latest -t mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }} -t mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
       - name: build-db-preloaded
-        run: docker buildx build -f Dockerfile.db-preloaded -t mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }}-preloaded -t mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT-preloaded .
+        run: docker buildx build -f Dockerfile.db-preloaded -t metas-db:preloaded -t mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }}-preloaded -t mazorn/metas-db:${{ steps.sanitize.outputs.sanitized-ref-name }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT-preloaded .
 
       - name: run-cucumber-tests
         env:
