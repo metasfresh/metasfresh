@@ -145,6 +145,7 @@ const Calendar = ({ className = 'container' }) => {
         resourceId: event.resourceId,
         startDate: event.start,
         endDate: event.end,
+        allDay: event.allDay,
         title: event.title,
       })
       .then((eventFromBackend) => {

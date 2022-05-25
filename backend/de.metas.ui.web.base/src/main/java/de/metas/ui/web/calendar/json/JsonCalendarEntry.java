@@ -48,7 +48,7 @@ public class JsonCalendarEntry
 
 	@NonNull JsonDateTime startDate;
 	@NonNull JsonDateTime endDate;
-	boolean isAllDay;
+	boolean allDay;
 
 
 	public static JsonCalendarEntry of(@NonNull final CalendarEntry entry, @NonNull final ZoneId timeZone)
@@ -61,7 +61,7 @@ public class JsonCalendarEntry
 				.description(entry.getDescription())
 				.startDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getStartDate(), timeZone))
 				.endDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getEndDate(), timeZone))
-				.isAllDay(entry.getDateRange().isAllDay())
+				.allDay(entry.getDateRange().isAllDay())
 				.build();
 	}
 }

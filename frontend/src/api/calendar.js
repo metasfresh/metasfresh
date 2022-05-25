@@ -94,7 +94,7 @@ const converters = {
       title: entry.title,
       start: entry.startDate,
       end: entry.endDate,
-      allDay: entry.isAllDay,
+      allDay: entry.allDay,
     }),
   },
 };
