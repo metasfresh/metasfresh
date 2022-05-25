@@ -40,6 +40,8 @@ import java.util.List;
 
 	private String eMail;
 
+	@Getter
+	@Setter
 	private int AD_InputDataSource_ID;
 
 	private LocalDate dateInvoiced;

@@ -410,15 +410,6 @@ public interface I_C_SubscriptionProgress
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Inputsource.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
-
-	/**
 	 * Get Inputsource.
 	 *
 	 * <br>Type: Search

@@ -2781,15 +2781,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
-	 * Set Inputsource.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
-
-	/**
 	 * Get Inputsource.
 	 *
 	 * <br>Type: Search

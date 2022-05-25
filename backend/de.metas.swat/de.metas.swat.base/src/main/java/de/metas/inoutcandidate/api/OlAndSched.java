@@ -164,6 +164,7 @@ public final class OlAndSched
 		return salesOrder.map(I_C_Order::getPOReference).orElse(null);
 	}
 
+	@Nullable
 	public InputDataSourceId getSalesOrderADInputDatasourceID()
 	{
 		if(!salesOrder.isPresent())
