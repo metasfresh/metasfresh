@@ -11,4 +11,19 @@ RUN mvn clean test-compile
 
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
 
-CMD mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true
+ARG REFNAME=local
+
+CMD if [[ -f "/run/secrets/mysecret" ]] ;\
+    then \
+        TESTMO_TOKEN="$(cat /run/secrets/mysecret)" \
+        testmo automation:run:submit \
+        --instance https://metasfresh.testmo.net \
+        --project-id 1 \
+        --name "New test run" \
+        --source "cucumber-tests-github" \
+		--tags $REFNAME \
+        --results target/*.xml \
+        -- mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true ;\
+    else \
+        mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true ;\
+    fi

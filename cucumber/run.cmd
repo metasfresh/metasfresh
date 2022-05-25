@@ -1,3 +1,1 @@
-docker-compose up -d
-docker ps
-docker logs --tail 500 -f cucumber_cucumber_1
+docker-compose up --abort-on-container-exit --exit-code-from cucumber
