@@ -37,7 +37,7 @@ import java.util.List;
 
 // TODO merge IResourceDAO into this repository
 @Repository
-public class ResourceRepository
+class ResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 

@@ -83,18 +83,27 @@ const converters = {
    * https://fullcalendar.io converters
    */
   fullcalendar_io: {
-    fromAPIResource: (resource) => ({
-      id: resource.resourceId,
-      title: resource.name,
-    }),
+    fromAPIResource: (apiResource) => {
+      const resource = {
+        id: apiResource.resourceId,
+        title: apiResource.name,
+      };
 
-    fromAPIEvent: (entry) => ({
-      id: entry.entryId,
-      resourceId: entry.resourceId,
-      title: entry.title,
-      start: entry.startDate,
-      end: entry.endDate,
-      allDay: entry.allDay,
+      // IMPORTANT: fullcalendar does not display the resource if parentId is not found (even if is null or undefined).
+      if (apiResource.parentId) {
+        resource.parentId = apiResource.parentId;
+      }
+
+      return resource;
+    },
+
+    fromAPIEvent: (apiEntry) => ({
+      id: apiEntry.entryId,
+      resourceId: apiEntry.resourceId,
+      title: apiEntry.title,
+      start: apiEntry.startDate,
+      end: apiEntry.endDate,
+      allDay: apiEntry.allDay,
     }),
   },
 };

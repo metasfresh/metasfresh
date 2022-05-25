@@ -33,4 +33,5 @@ public class ResourceGroup
 {
 	@NonNull ResourceGroupId id;
 	@NonNull ITranslatableString name;
+	boolean isActive;
 }

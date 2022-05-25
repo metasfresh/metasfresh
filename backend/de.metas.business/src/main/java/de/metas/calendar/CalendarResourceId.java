@@ -102,6 +102,12 @@ public class CalendarResourceId
 		return new CalendarResourceId(extractType(id.getClass()), id.getRepoId());
 	}
 
+	@Nullable
+	public static <T extends RepoIdAware> CalendarResourceId ofNullableRepoId(@Nullable final T id)
+	{
+		return id != null ? ofRepoId(id) : null;
+	}
+
 	private static <T extends RepoIdAware> String extractType(@NonNull final Class<T> clazz) {return clazz.getSimpleName();}
 
 	public <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> clazz)

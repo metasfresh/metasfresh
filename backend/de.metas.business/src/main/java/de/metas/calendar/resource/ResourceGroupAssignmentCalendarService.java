@@ -40,9 +40,8 @@ import de.metas.resource.ResourceGroupAssignment;
 import de.metas.resource.ResourceGroupAssignmentCreateRequest;
 import de.metas.resource.ResourceGroupAssignmentId;
 import de.metas.resource.ResourceGroupAssignmentQuery;
-import de.metas.resource.ResourceGroupAssignmentRepository;
 import de.metas.resource.ResourceGroupId;
-import de.metas.resource.ResourceGroupRepository;
+import de.metas.resource.ResourceService;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -59,15 +58,11 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 
 	private static final CalendarGlobalId CALENDAR_ID = CalendarGlobalId.of(ID, "default");
 
-	private final ResourceGroupRepository resourceGroupRepository;
-	private final ResourceGroupAssignmentRepository resourceGroupAssignmentRepository;
+	private final ResourceService resourceService;
 
-	public ResourceGroupAssignmentCalendarService(
-			@NonNull final ResourceGroupRepository resourceGroupRepository,
-			@NonNull final ResourceGroupAssignmentRepository resourceGroupAssignmentRepository)
+	public ResourceGroupAssignmentCalendarService(@NonNull final ResourceService resourceService)
 	{
-		this.resourceGroupRepository = resourceGroupRepository;
-		this.resourceGroupAssignmentRepository = resourceGroupAssignmentRepository;
+		this.resourceService = resourceService;
 	}
 
 	@Override
@@ -82,7 +77,7 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 		final CalendarRef calendar = CalendarRef.builder()
 				.calendarId(CALENDAR_ID)
 				.name(TranslatableStrings.adElementOrMessage("S_Resource_Group_ID"))
-				.resources(resourceGroupRepository.getAllActive()
+				.resources(resourceService.getAllActiveGroups()
 						.stream()
 						.map(ResourceGroupAssignmentCalendarService::toCalendarResourceRef)
 						.collect(ImmutableSet.toImmutableSet()))
@@ -91,9 +86,12 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 		return Stream.of(calendar);
 	}
 
-	private static CalendarResourceRef toCalendarResourceRef(final ResourceGroup resourceGroup)
+	static CalendarResourceRef toCalendarResourceRef(final ResourceGroup resourceGroup)
 	{
-		return CalendarResourceRef.of(CalendarResourceId.ofRepoId(resourceGroup.getId()), resourceGroup.getName());
+		return CalendarResourceRef.builder()
+				.calendarResourceId(CalendarResourceId.ofRepoId(resourceGroup.getId()))
+				.name(resourceGroup.getName())
+				.build();
 	}
 
 	@Override
@@ -105,7 +103,7 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 			return Stream.empty();
 		}
 
-		return resourceGroupAssignmentRepository.query(resourceGroupAssignmentQuery)
+		return resourceService.queryResourceGroupAssignments(resourceGroupAssignmentQuery)
 				.map(ResourceGroupAssignmentCalendarService::toCalendarEntry);
 	}
 
@@ -172,12 +170,13 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 			throw new AdempiereException("Fill mandatory `resourceId`");
 		}
 
-		final ResourceGroupAssignment assignment = resourceGroupAssignmentRepository.create(ResourceGroupAssignmentCreateRequest.builder()
-				.resourceGroupId(request.getResourceId().toRepoId(ResourceGroupId.class))
-				.name(request.getTitle())
-				.description(request.getDescription())
-				.dateRange(request.getDateRange())
-				.build());
+		final ResourceGroupAssignment assignment = resourceService.createResourceGroupAssignment(
+				ResourceGroupAssignmentCreateRequest.builder()
+						.resourceGroupId(request.getResourceId().toRepoId(ResourceGroupId.class))
+						.name(request.getTitle())
+						.description(request.getDescription())
+						.dateRange(request.getDateRange())
+						.build());
 
 		return toCalendarEntry(assignment);
 	}
@@ -186,7 +185,7 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
 		assertValidCalendarId(request.getCalendarId());
-		final ResourceGroupAssignment changedAssignment = resourceGroupAssignmentRepository.changeById(
+		final ResourceGroupAssignment changedAssignment = resourceService.changeResourceGroupAssignmentById(
 				toResourceGroupAssignmentId(request.getEntryId()),
 				assignment -> updateResourceAssignment(assignment, request)
 		);
@@ -203,7 +202,7 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 	@Override
 	public void deleteEntryById(@NonNull final CalendarEntryId entryId)
 	{
-		resourceGroupAssignmentRepository.deleteById(toResourceGroupAssignmentId(entryId));
+		resourceService.deleteResourceGroupAssignment(toResourceGroupAssignmentId(entryId));
 	}
 
 	private static ResourceGroupAssignment updateResourceAssignment(
@@ -221,7 +220,7 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 			builder.resourceGroupId(request.getResourceId().toRepoId(ResourceGroupId.class));
 		}
 
-		if(request.getDateRange() != null)
+		if (request.getDateRange() != null)
 		{
 			builder.dateRange(request.getDateRange());
 		}

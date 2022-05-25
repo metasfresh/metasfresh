@@ -23,12 +23,17 @@
 package de.metas.calendar;
 
 import de.metas.i18n.ITranslatableString;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Value(staticConstructor = "of")
+import javax.annotation.Nullable;
+
+@Value
+@Builder
 public class CalendarResourceRef
 {
 	@NonNull CalendarResourceId calendarResourceId;
 	@NonNull ITranslatableString name;
+	@Nullable CalendarResourceId parentId;
 }

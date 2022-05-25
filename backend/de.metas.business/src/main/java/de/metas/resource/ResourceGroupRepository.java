@@ -23,17 +23,23 @@
 package de.metas.resource;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_Resource_Group;
 import org.springframework.stereotype.Repository;
 
+import java.util.Set;
+
 @Repository
-public class ResourceGroupRepository
+class ResourceGroupRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -43,7 +49,12 @@ public class ResourceGroupRepository
 
 	public ImmutableList<ResourceGroup> getAllActive()
 	{
-		return getMap().toList();
+		return getMap().getAllActive();
+	}
+
+	public ImmutableList<ResourceGroup> getByIds(@NonNull final Set<ResourceGroupId> ids)
+	{
+		return !ids.isEmpty() ? getMap().getByIds(ids) : ImmutableList.of();
 	}
 
 	private ResourceGroupsMap getMap()
@@ -54,9 +65,9 @@ public class ResourceGroupRepository
 	private ResourceGroupsMap retrieveMap()
 	{
 		final ImmutableList<ResourceGroup> list = queryBL.createQueryBuilder(I_S_Resource_Group.class)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter()
 				.stream()
-				.map(record -> toResourceGroup(record))
+				.map(ResourceGroupRepository::toResourceGroup)
 				.collect(ImmutableList.toImmutableList());
 
 		return new ResourceGroupsMap(list);
@@ -69,21 +80,37 @@ public class ResourceGroupRepository
 		return ResourceGroup.builder()
 				.id(ResourceGroupId.ofRepoId(record.getS_Resource_Group_ID()))
 				.name(trl.getColumnTrl(I_S_Resource_Group.COLUMNNAME_Name, record.getName()))
+				.isActive(record.isActive())
 				.build();
 	}
 
 	private static class ResourceGroupsMap
 	{
-		private final ImmutableList<ResourceGroup> list;
+		@Getter
+		private final ImmutableList<ResourceGroup> allActive;
+		private final ImmutableMap<ResourceGroupId, ResourceGroup> byId;
 
 		private ResourceGroupsMap(@NonNull final ImmutableList<ResourceGroup> list)
 		{
-			this.list = list;
+			this.allActive = list.stream().filter(ResourceGroup::isActive).collect(ImmutableList.toImmutableList());
+			this.byId = Maps.uniqueIndex(list, ResourceGroup::getId);
 		}
 
-		public ImmutableList<ResourceGroup> toList()
+		private ResourceGroup getById(@NonNull final ResourceGroupId id)
 		{
-			return list;
+			final ResourceGroup resourceGroup = byId.get(id);
+			if (resourceGroup == null)
+			{
+				throw new AdempiereException("No resource group found for " + id);
+			}
+			return resourceGroup;
+		}
+
+		public ImmutableList<ResourceGroup> getByIds(@NonNull final Set<ResourceGroupId> ids)
+		{
+			return ids.stream()
+					.map(this::getById)
+					.collect(ImmutableList.toImmutableList());
 		}
 	}
 }

@@ -43,7 +43,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
-public class ResourceAssignmentRepository
+class ResourceAssignmentRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 

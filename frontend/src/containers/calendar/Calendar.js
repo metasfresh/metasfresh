@@ -24,7 +24,19 @@ const extractResourcesFromCalendarsArray = (calendars) => {
       return accum;
     }, {});
 
-  return Object.values(resourcesById);
+  const resources = Object.values(resourcesById);
+
+  // IMPORTANT: completely remove 'parentId' property if it's not found in our list of resources
+  // Else fullcalendar.io won't render that resource at all.
+  resources.forEach((resource) => {
+    if ('parentId' in resource && !resourcesById[resource.parentId]) {
+      console.log('removing parentId because was not found: ', resource);
+      delete resource.parentId;
+    }
+  });
+  //console.log('extractResourcesFromCalendarsArray', resources);
+
+  return resources;
 };
 
 const mergeCalendarEventToArray = (eventsArray, eventToAdd) => {

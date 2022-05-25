@@ -41,8 +41,9 @@ import de.metas.resource.ResourceAssignment;
 import de.metas.resource.ResourceAssignmentCreateRequest;
 import de.metas.resource.ResourceAssignmentId;
 import de.metas.resource.ResourceAssignmentQuery;
-import de.metas.resource.ResourceAssignmentRepository;
-import de.metas.resource.ResourceRepository;
+import de.metas.resource.ResourceGroup;
+import de.metas.resource.ResourceGroupId;
+import de.metas.resource.ResourceService;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -50,6 +51,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.stream.Stream;
 
 @Component
@@ -59,15 +61,11 @@ public class ResourceAssignmentCalendarService implements CalendarService
 
 	private static final CalendarGlobalId CALENDAR_ID = CalendarGlobalId.of(ID, "default");
 
-	private final ResourceRepository resourceRepository;
-	private final ResourceAssignmentRepository resourceAssignmentRepository;
+	private final ResourceService resourceService;
 
-	public ResourceAssignmentCalendarService(
-			@NonNull final ResourceRepository resourceRepository,
-			@NonNull final ResourceAssignmentRepository resourceAssignmentRepository)
+	public ResourceAssignmentCalendarService(@NonNull final ResourceService resourceService)
 	{
-		this.resourceRepository = resourceRepository;
-		this.resourceAssignmentRepository = resourceAssignmentRepository;
+		this.resourceService = resourceService;
 	}
 
 	@Override
@@ -82,18 +80,40 @@ public class ResourceAssignmentCalendarService implements CalendarService
 		final CalendarRef calendar = CalendarRef.builder()
 				.calendarId(CALENDAR_ID)
 				.name(TranslatableStrings.adElementOrMessage("S_Resource_ID"))
-				.resources(resourceRepository.getResources()
-						.stream()
-						.map(ResourceAssignmentCalendarService::toCalendarResourceRef)
-						.collect(ImmutableSet.toImmutableSet()))
+				.resources(getResources())
 				.build();
 
 		return Stream.of(calendar);
 	}
 
+	private ImmutableSet<CalendarResourceRef> getResources()
+	{
+		final HashSet<CalendarResourceRef> result = new HashSet<>();
+		final HashSet<ResourceGroupId> resourceGroupIds = new HashSet<>();
+		for (final Resource resource : resourceService.getResources())
+		{
+			result.add(toCalendarResourceRef(resource));
+			if (resource.getResourceGroupId() != null)
+			{
+				resourceGroupIds.add(resource.getResourceGroupId());
+			}
+		}
+
+		for (final ResourceGroup resourceGroup : resourceService.getGroupsByIds(resourceGroupIds))
+		{
+			result.add(ResourceGroupAssignmentCalendarService.toCalendarResourceRef(resourceGroup));
+		}
+
+		return ImmutableSet.copyOf(result);
+	}
+
 	private static CalendarResourceRef toCalendarResourceRef(final Resource resource)
 	{
-		return CalendarResourceRef.of(CalendarResourceId.ofRepoId(resource.getResourceId()), resource.getName());
+		return CalendarResourceRef.builder()
+				.calendarResourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
+				.name(resource.getName())
+				.parentId(CalendarResourceId.ofNullableRepoId(resource.getResourceGroupId()))
+				.build();
 	}
 
 	@Override
@@ -105,7 +125,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 			return Stream.empty();
 		}
 
-		return resourceAssignmentRepository.query(resourceAssignmentQuery)
+		return resourceService.queryResourceAssignments(resourceAssignmentQuery)
 				.map(ResourceAssignmentCalendarService::toCalendarEntry);
 	}
 
@@ -172,7 +192,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 			throw new AdempiereException("Fill mandatory `resourceId`");
 		}
 
-		final ResourceAssignment resourceAssignment = resourceAssignmentRepository.create(ResourceAssignmentCreateRequest.builder()
+		final ResourceAssignment resourceAssignment = resourceService.createResourceAssignment(ResourceAssignmentCreateRequest.builder()
 				.resourceId(request.getResourceId().toRepoId(ResourceId.class))
 				.name(request.getTitle())
 				.description(request.getDescription())
@@ -186,7 +206,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
 		assertValidCalendarId(request.getCalendarId());
-		final ResourceAssignment changedResourceAssignment = resourceAssignmentRepository.changeById(
+		final ResourceAssignment changedResourceAssignment = resourceService.changeResourceAssignment(
 				toResourceAssignmentId(request.getEntryId()),
 				resourceAssignment -> updateResourceAssignment(resourceAssignment, request)
 		);
@@ -203,7 +223,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	@Override
 	public void deleteEntryById(@NonNull final CalendarEntryId entryId)
 	{
-		resourceAssignmentRepository.deleteById(toResourceAssignmentId(entryId));
+		resourceService.deleteResourceAssignment(toResourceAssignmentId(entryId));
 	}
 
 	private static ResourceAssignment updateResourceAssignment(
