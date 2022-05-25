@@ -17,7 +17,7 @@ jobs:
       - name: build-backend
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
-        run: docker buildx build -f Dockerfile.backend --secret id=mysecret -t metas-mvn-backend:latest .
+        run: docker buildx build -f Dockerfile.backend --secret id=mysecret --build-arg REFNAME=${{ steps.sanitize.outputs.sanitized-ref-name }} -t metas-mvn-backend:latest .
       - name: build-camel
         run: docker buildx build -f Dockerfile.camel -t metas-mvn-camel:latest .
       

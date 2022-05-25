@@ -11,6 +11,7 @@ WORKDIR /backend
 COPY backend .
 RUN mvn clean install -Dmaven.gitcommitid.skip=true -DskipTests
 
+ARG REFNAME=local
 SHELL ["/bin/bash", "-c"]
 
 RUN --mount=type=secret,id=mysecret \
@@ -23,6 +24,7 @@ RUN --mount=type=secret,id=mysecret \
         --project-id 1 \
         --name "New test run" \
         --source "unit-tests-github" \
+		--tags $REFNAME
         --results **/TEST-*.xml \
         -- mvn test ;\
     else \
