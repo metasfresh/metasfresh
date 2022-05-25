@@ -43,7 +43,7 @@ const computeSelectedResource = (
 };
 
 const checkFormValid = (form) => {
-  console.log('checkFormValid', form);
+  //console.log('checkFormValid', form);
   const isCalendarValid = !!form.calendar;
   const isResourceValid = !!form.resource;
   const isTitleValid = form.title && form.title.length > 0;
