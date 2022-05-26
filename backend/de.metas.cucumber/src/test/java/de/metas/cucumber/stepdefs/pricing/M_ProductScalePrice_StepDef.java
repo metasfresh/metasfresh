@@ -22,9 +22,12 @@
 
 package de.metas.cucumber.stepdefs.pricing;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.util.Services;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_ProductPrice;
@@ -34,9 +37,12 @@ import java.util.List;
 import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class M_ProductScalePrice_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final M_ProductPrice_StepDefData productPriceTable;
 	private final M_ProductScalePrice_StepDefData productScalePriceTable;
 
@@ -67,7 +73,16 @@ public class M_ProductScalePrice_StepDef
 		final BigDecimal priceList = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductScalePrice.COLUMNNAME_PriceList);
 		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductScalePrice.COLUMNNAME_Qty);
 
-		final I_M_ProductScalePrice productScalePrice = InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class);
+		final I_M_ProductScalePrice productScalePrice =
+				CoalesceUtil.coalesceSuppliers(
+						() -> queryBL.createQueryBuilder(I_M_ProductScalePrice.class)
+								.addEqualsFilter(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, productPrice.getM_ProductPrice_ID())
+								.addEqualsFilter(I_M_ProductScalePrice.COLUMNNAME_Qty, qty)
+								.create()
+								.firstOnlyOrNull(I_M_ProductScalePrice.class),
+						() -> InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class));
+
+		assertThat(productScalePrice).isNotNull();
 		productScalePrice.setM_ProductPrice_ID(productPrice.getM_ProductPrice_ID());
 		productScalePrice.setPriceLimit(priceLimit);
 		productScalePrice.setPriceList(priceList);

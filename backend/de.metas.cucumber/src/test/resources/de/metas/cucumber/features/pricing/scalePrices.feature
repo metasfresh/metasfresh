@@ -41,7 +41,7 @@ Feature: scale prices
       | ol_3       | o_1                   | salesProduct_180520225_1 | 150        |
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225_1 | 8          | 0            | 0           | 5     | 0        | EUR          | false     |
       | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225_1 | 15         | 0            | 0           | 4.5   | 0        | EUR          | false     |
       | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225_1 | 150        | 0            | 0           | 4     | 0        | EUR          | false     |
@@ -69,7 +69,7 @@ Feature: scale prices
       | ol_3       | o_1                   | salesProduct_180520225_2 | 150        |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225_2 | 8          | 0            | 0           | 6     | 0        | EUR          | false     |
       | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225_2 | 15         | 0            | 0           | 6     | 0        | EUR          | false     |
       | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225_2 | 150        | 0            | 0           | 6     | 0        | EUR          | false     |
@@ -93,7 +93,7 @@ Feature: scale prices
       | ol_3       | o_1                   | salesProduct_180520225_3 | 150        |
 
     And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier  | qtyordered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_1                      | o_1                   | 2022-05-17  | salesProduct_180520225_3 | 8          | 0            | 0           | 5     | 0        | EUR          | false     |
       | ol_2                      | o_1                   | 2022-05-17  | salesProduct_180520225_3 | 15         | 0            | 0           | 5     | 0        | EUR          | false     |
       | ol_3                      | o_1                   | 2022-05-17  | salesProduct_180520225_3 | 150        | 0            | 0           | 5     | 0        | EUR          | false     |
