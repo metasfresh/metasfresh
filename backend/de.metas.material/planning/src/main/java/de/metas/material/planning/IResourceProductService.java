@@ -1,13 +1,13 @@
 package de.metas.material.planning;
 
-import java.time.temporal.TemporalUnit;
-
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.resource.ResourceTypeId;
+import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.util.ISingletonService;
+import java.time.temporal.TemporalUnit;
 
 /*
  * #%L
