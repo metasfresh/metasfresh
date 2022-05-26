@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.productionorder;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -41,8 +40,6 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-
-import static org.assertj.core.api.Assertions.*;
 
 public class PP_OrderCandidate_PP_Order_StepDef
 {
@@ -91,9 +88,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 				return allocationRecord != null;
 			};
 
-			final boolean allocationFound = StepDefUtil.tryAndWait(timeoutSec, 500, allocationQueryExecutor);
-
-			assertThat(allocationFound).isTrue();
+			StepDefUtil.tryAndWait(timeoutSec, 500, allocationQueryExecutor);
 		}
 	}
 }
