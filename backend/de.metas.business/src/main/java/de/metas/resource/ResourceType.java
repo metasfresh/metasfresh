@@ -43,6 +43,8 @@ import java.time.temporal.TemporalUnit;
 @Builder
 public class ResourceType
 {
+	@NonNull ResourceTypeId id;
+
 	@Getter(AccessLevel.PRIVATE) boolean active;
 
 	@NonNull ProductCategoryId productCategoryId;

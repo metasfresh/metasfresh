@@ -53,6 +53,7 @@ public class ResourceTypeRepository
 		final TemporalUnit durationUnit = uomDAO.getTemporalUnitByUomId(durationUomId);
 
 		return ResourceType.builder()
+				.id(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
 				.active(record.isActive())
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.durationUomId(durationUomId)
