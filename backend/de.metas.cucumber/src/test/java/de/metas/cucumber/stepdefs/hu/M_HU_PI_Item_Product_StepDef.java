@@ -31,6 +31,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -47,6 +48,8 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.PCE_UOM_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
+import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -164,5 +167,35 @@ public class M_HU_PI_Item_Product_StepDef
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		huPiItemProductTable.put(huPiItemProductIdentifier, huPiItemProductRecord);
+	}
+
+	@And("update M_HU_PI_Item_Product:")
+	public void update_M_HU_PI_Item_Product(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			updateItemProduct(row);
+		}
+	}
+
+	private void updateItemProduct(@NonNull final Map<String, String> row)
+	{
+		final String itemProductIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Integer itemProductId = huPiItemProductTable.getOptional(itemProductIdentifier)
+				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+				.orElseGet(() -> Integer.parseInt(itemProductIdentifier));
+
+		final I_M_HU_PI_Item_Product mHuPiItemProductRecord = InterfaceWrapperHelper.load(itemProductId, I_M_HU_PI_Item_Product.class);
+
+		final String gtin = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_GTIN);
+
+		if (Check.isNotBlank(gtin))
+		{
+			mHuPiItemProductRecord.setGTIN(gtin);
+		}
+
+		saveRecord(mHuPiItemProductRecord);
 	}
 }

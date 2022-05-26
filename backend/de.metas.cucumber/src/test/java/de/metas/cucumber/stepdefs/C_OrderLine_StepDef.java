@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -38,6 +39,8 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -46,6 +49,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -116,12 +120,11 @@ public class C_OrderLine_StepDef
 			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 			orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + ".Identifier");
-			final Integer productId = productTable.getOptional(productIdentifier)
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
+			final Integer productID = productTable.getOptional(productIdentifier)
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-			orderLine.setM_Product_ID(productId);
+			orderLine.setM_Product_ID(productID);
 			orderLine.setQtyEntered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyEntered));
 
 			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -151,9 +154,22 @@ public class C_OrderLine_StepDef
 				orderLine.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
 			}
 
-			saveRecord(orderLine);
+			final String itemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			orderLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
+			final de.metas.handlingunits.model.I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(orderLine, de.metas.handlingunits.model.I_C_OrderLine.class);
+
+			if (de.metas.util.Check.isNotBlank(itemProductIdentifier))
+			{
+				final Integer huPiItemProductRecordID = huPiItemProductTable.getOptional(itemProductIdentifier)
+						.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+						.orElseGet(() -> Integer.parseInt(itemProductIdentifier));
+
+				orderLineRecord.setM_HU_PI_Item_Product_ID(huPiItemProductRecordID);
+			}
+
+			saveRecord(orderLineRecord);
+
+			orderLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLineRecord);
 		}
 	}
 
