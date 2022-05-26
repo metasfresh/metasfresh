@@ -96,8 +96,7 @@ WITH plvvr AS
                   plv.PLV2_ID,
                   p_AD_Language,
                   p_show_product_price_pi_flag
-              ) AS t ON TRUE
-          WHERE validFromPLV2 IS NOT NULL)
+              ) AS t ON TRUE)
 SELECT --
        r.bp_value,
        r.bp_name,
