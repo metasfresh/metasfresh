@@ -30,9 +30,15 @@ public interface CoreConstants
 
 	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
 
+	String CONCURRENT_CONSUMERS_PROPERTY = "{{dispatcher.rabbitmq.consumer.concurrentConsumers}}";
+	String THREAD_POOL_SIZE_PROPERTY = "{{dispatcher.rabbitmq.consumer.threadPoolSize}}";
+
 	String FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES
 			+ "?durable=true"
 			+ "&autoDelete=false"
+			+ "&autoAck=false"
+			+ "&threadPoolSize=" + THREAD_POOL_SIZE_PROPERTY
+			+ "&concurrentConsumers=" + CONCURRENT_CONSUMERS_PROPERTY
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
 			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
 }
