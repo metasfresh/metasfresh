@@ -32,6 +32,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13043](https://github.com/metasfresh/metasfresh/issues/13043) Fix disabled unit tests from `de.metas.manufacturing`
   * [#12997](https://github.com/metasfresh/metasfresh/issues/12997) Open amt incorrect after vendor credit memo is created for a vendor invoice
   * [#12980](https://github.com/metasfresh/metasfresh/issues/12980) Scale Price not used despite usescaleprice=S
   * [#12991](https://github.com/metasfresh/metasfresh/issues/12991) For Picking Profile "Group by Order" the order and bpartner are not displayed in Picking Terminal

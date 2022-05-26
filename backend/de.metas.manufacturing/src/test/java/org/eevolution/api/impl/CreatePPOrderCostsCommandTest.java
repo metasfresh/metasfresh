@@ -34,7 +34,6 @@ import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -43,7 +42,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
-@Disabled
 @ExtendWith(AdempiereTestWatcher.class)
 public class CreatePPOrderCostsCommandTest
 {
