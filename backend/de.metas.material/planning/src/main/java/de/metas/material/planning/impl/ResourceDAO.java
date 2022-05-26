@@ -2,10 +2,10 @@ package de.metas.material.planning.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceType;
 import de.metas.resource.ResourceTypeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;

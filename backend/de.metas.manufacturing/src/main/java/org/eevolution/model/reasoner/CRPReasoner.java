@@ -40,8 +40,8 @@ package org.eevolution.model.reasoner;
  */
 
 import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceType;
 import de.metas.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceUnAvailable;

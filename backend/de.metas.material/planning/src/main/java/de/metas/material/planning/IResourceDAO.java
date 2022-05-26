@@ -23,6 +23,7 @@ package de.metas.material.planning;
  */
 
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceType;
 import de.metas.resource.ResourceTypeId;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_S_Resource;

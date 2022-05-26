@@ -2,10 +2,10 @@ package de.metas.material.planning.impl;
 
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.ResourceType;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceType;
 import de.metas.resource.ResourceTypeId;
 import de.metas.util.Services;
 import lombok.NonNull;
