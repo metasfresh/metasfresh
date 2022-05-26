@@ -28,13 +28,8 @@ import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.process.export.IExport;
-import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -43,14 +38,12 @@ import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.process.PInstanceId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
@@ -60,6 +53,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -67,7 +61,6 @@ import java.util.function.Supplier;
 import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_Invoice_Candidate_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 
@@ -125,6 +118,8 @@ public class C_Invoice_StepDef
 
 		//enqueue invoice candidate
 		final I_C_Invoice_Candidate invoiceCandidateRecord = getFirstInvoiceCandidateByOrderId(targetOrderId);
+
+		assertThat(invoiceCandidateRecord).isNotNull();
 
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), null);
 
@@ -190,7 +185,7 @@ public class C_Invoice_StepDef
 		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
 	}
 
-	@NonNull
+	@Nullable
 	private I_C_Invoice_Candidate getFirstInvoiceCandidateByOrderId(@NonNull final OrderId targetOrderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
@@ -198,12 +193,17 @@ public class C_Invoice_StepDef
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, targetOrderId)
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
-				.firstNotNull(I_C_Invoice_Candidate.class);
+				.first(I_C_Invoice_Candidate.class);
 	}
 
 	private boolean isInvoiceCandidateReadyToBeProcessed(@NonNull final OrderId targetOrderId)
 	{
 		final I_C_Invoice_Candidate invoiceableInvoiceCand = getFirstInvoiceCandidateByOrderId(targetOrderId);
+
+		if (invoiceableInvoiceCand == null)
+		{
+			return false;
+		}
 
 		return invoiceableInvoiceCand.getQtyToInvoice().signum() > 0 || invoiceableInvoiceCand.getQtyToInvoice_Override().signum() > 0;
 	}
