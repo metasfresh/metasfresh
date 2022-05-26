@@ -5,11 +5,11 @@
     - `durable=true`
     - `autoDelete=false`
     - `autoAck=false`
-      - messages should not be auto acknowledged, which means that they should not be acknowledged immediately after they have been consumed
-    - `threadPoolSize=4`
-      - the consumers use a Thread Pool Executor with a fixed number of threads. This setting specifies that number
+      - messages will only be acknowledged when the camel route is done processing the exchange.
     - `concurrentConsumers=4`
-      - the number of concurrent consumers when consuming from RabbitMQ
+      - the number of concurrent consumers the camel component will use when consuming from RabbitMQ.
+    - `threadPoolSize=4`
+      - the consumers use a Thread Pool Executor with a fixed number of threads. This setting specifies that number.
     - `routingKey=MF_TO_ExternalSystem`
     - `queue=MF_TO_ExternalSystem`
 - the message is then routed to the appropriate "external system" route
