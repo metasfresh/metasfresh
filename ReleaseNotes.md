@@ -12,7 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
-  * [#13038](https://github.com/metasfresh/metasfresh/issues/13038) Campaign price where m_pricingsystem_id is set not used in orderline 
+  * [#13017](https://github.com/metasfresh/metasfresh/issues/13017) EDI - Extend INVOIC export format
+  * [#13038](https://github.com/metasfresh/metasfresh/issues/13038) Campaign price where m_pricingsystem_id is set not used in orderline
   * [#12931](https://github.com/metasfresh/metasfresh/issues/12931) API - Export PP_Orders with extended informations
   * [#12982](https://github.com/metasfresh/metasfresh/issues/12982) Korrektur action in material receipt candidates is not considered correctly in Material Dispo
   * [#12999](https://github.com/metasfresh/metasfresh/issues/12999) Allow Defining Tax-Categories without a M_ProductPrice
