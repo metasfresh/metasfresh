@@ -63,9 +63,12 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
@@ -197,6 +200,9 @@ public class C_BPartner_StepDef
 		final String bPartnerName = tableRow.get("Name");
 		final String bPartnerValue = CoalesceUtil.coalesce(tableRow.get("Value"), bPartnerName);
 
+		final Integer bpGroupId = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BP_Group_ID))
+				.orElse(BP_GROUP_ID);
+
 		final de.metas.edi.model.I_C_BPartner bPartnerRecord = InterfaceWrapperHelper.create(
 				CoalesceUtil.coalesceSuppliers(
 						() -> bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), bPartnerValue),
@@ -205,7 +211,7 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		bPartnerRecord.setName(bPartnerName);
 		bPartnerRecord.setValue(bPartnerValue);
-		bPartnerRecord.setC_BP_Group_ID(BP_GROUP_ID);
+		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsVendor), false));
 		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
@@ -309,6 +315,12 @@ public class C_BPartner_StepDef
 		if (EmptyUtil.isNotBlank(poInvoiceRule))
 		{
 			bPartnerRecord.setPO_InvoiceRule(poInvoiceRule);
+		}
+
+		final Boolean allowCampaignPrice = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAllowActionPrice, null);
+		if (allowCampaignPrice != null)
+		{
+			bPartnerRecord.setIsAllowActionPrice(allowCampaignPrice);
 		}
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
