@@ -1,22 +1,8 @@
-package de.metas.material.planning.interceptor;
-
-import de.metas.resource.ResourceService;
-import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_S_ResourceType;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
-import java.sql.Timestamp;
-
 /*
  * #%L
- * metasfresh-material-planning
+ * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +19,21 @@ import java.sql.Timestamp;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.resource.interceptor;
+
+import de.metas.resource.ResourceService;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_S_ResourceType;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
+import java.sql.Timestamp;
+
 @Interceptor(I_S_ResourceType.class)
 @Component
 public class S_ResourceType

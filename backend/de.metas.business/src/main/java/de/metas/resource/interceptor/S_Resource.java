@@ -1,21 +1,8 @@
-package de.metas.material.planning.interceptor;
-
-import de.metas.product.IProductDAO;
-import de.metas.product.ResourceId;
-import de.metas.resource.ResourceService;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 /*
  * #%L
- * metasfresh-material-planning
+ * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +19,20 @@ import org.springframework.stereotype.Component;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.resource.interceptor;
+
+import de.metas.product.IProductDAO;
+import de.metas.product.ResourceId;
+import de.metas.resource.ResourceService;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
 @Interceptor(I_S_Resource.class)
 @Component
 public class S_Resource
