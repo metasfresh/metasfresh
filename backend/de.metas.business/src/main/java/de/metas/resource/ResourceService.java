@@ -153,59 +153,56 @@ public class ResourceService
 		return resourceTypeRepository.getById(resource.getResourceTypeId());
 	}
 
-	public void onResourceChanged(@NonNull final I_S_Resource resource)
+	public void onResourceChanged(@NonNull final I_S_Resource resourceRecord)
 	{
 		//
 		// Validate Manufacturing Resource
-		if (resource.isManufacturingResource()
-				&& ManufacturingResourceType.isPlant(resource.getManufacturingResourceType())
-				&& resource.getPlanningHorizon() <= 0)
+		if (resourceRecord.isManufacturingResource()
+				&& ManufacturingResourceType.isPlant(resourceRecord.getManufacturingResourceType())
+				&& resourceRecord.getPlanningHorizon() <= 0)
 		{
 			throw new FillMandatoryException(I_S_Resource.COLUMNNAME_PlanningHorizon);
 		}
 
-		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
-		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(resource.getS_ResourceType_ID());
-
-		productsRepo.updateProductsByResourceIds(ImmutableSet.of(resourceId), (resourceId1, existingProduct) -> {
-			final I_M_Product productToUpdate;
-			if (existingProduct == null)
-			{
-				final ResourceType fromResourceType = getResourceTypeById(resourceTypeId);
-				productToUpdate = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-
-				updateProductFromResourceType(productToUpdate, fromResourceType);
-			}
-			else
-			{
-				productToUpdate = existingProduct;
-			}
-
-			updateProductFromResource(productToUpdate, resource);
-		});
+		createOrUpdateProductFromResource(ResourceRepository.toResource(resourceRecord));
 	}
 
-	private static void updateProductFromResource(@NonNull final I_M_Product product, @NonNull final I_S_Resource from)
+	private void createOrUpdateProductFromResource(final @NonNull Resource resource)
+	{
+		productsRepo.updateProductsByResourceIds(
+				ImmutableSet.of(resource.getResourceId()),
+				(resourceId, product) -> {
+					if(InterfaceWrapperHelper.isNew(product))
+					{
+						final ResourceType fromResourceType = getResourceTypeById(resource.getResourceTypeId());
+						updateProductFromResourceType(product, fromResourceType);
+					}
+
+					updateProductFromResource(product, resource);
+				});
+	}
+
+	private static void updateProductFromResource(@NonNull final I_M_Product product, @NonNull final Resource from)
 	{
 		product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
-		product.setS_Resource_ID(from.getS_Resource_ID());
+		product.setS_Resource_ID(from.getResourceId().getRepoId());
 		product.setIsActive(from.isActive());
 
 		product.setValue("PR" + from.getValue()); // the "PR" is a QnD solution to the possible problem that if the production resource's value is set to its ID (like '1000000") there is probably already a product with the same value.
-		product.setName(from.getName());
+		product.setName(from.getName().getDefaultValue());
 		product.setDescription(from.getDescription());
 	}
 
 	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
-		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(resourceTypeRecord.getS_ResourceType_ID());
-		final Set<ResourceId> resourceIds = resourceRepository.getActiveResourceIdsByResourceTypeId(resourceTypeId);
+		final ResourceType resourceType = resourceTypeRepository.toResourceType(resourceTypeRecord);
+
+		final Set<ResourceId> resourceIds = resourceRepository.getActiveResourceIdsByResourceTypeId(resourceType.getId());
 		if (resourceIds.isEmpty())
 		{
 			return;
 		}
 
-		final ResourceType resourceType = resourceTypeRepository.toResourceType(resourceTypeRecord);
 		productsRepo.updateProductsByResourceIds(resourceIds, product -> updateProductFromResourceType(product, resourceType));
 	}
 
