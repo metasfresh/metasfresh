@@ -14,6 +14,7 @@ import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,7 +33,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_AD_Workflow;
-import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
@@ -86,7 +86,7 @@ public class OrderCheckupTestHelper
 
 		final I_S_Resource plant = InterfaceWrapperHelper.create(ctx, I_S_Resource.class, ITrx.TRXNAME_None);
 		plant.setIsManufacturingResource(true);
-		plant.setManufacturingResourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
+		plant.setManufacturingResourceType(ManufacturingResourceType.Plant.getCode());
 		plant.setValue(name);
 		plant.setName(name);
 		plant.setAD_User_ID(responsibleUser.getAD_User_ID());

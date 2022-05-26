@@ -24,6 +24,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.resource.ResourceService;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
@@ -57,7 +58,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
@@ -216,7 +216,7 @@ public class MRPTestHelper
 		this.resourceType_Plants = createResourceType("Plants");
 		this.resourceType_Workcenters = createResourceType("Workcenters");
 
-		final I_S_Resource workcenter1 = createResource("workcenter1", X_S_Resource.MANUFACTURINGRESOURCETYPE_WorkCenter, resourceType_Workcenters);
+		final I_S_Resource workcenter1 = createResource("workcenter1", ManufacturingResourceType.WorkCenter, resourceType_Workcenters);
 		final ResourceId workcenter1Id = ResourceId.ofRepoId(workcenter1.getS_Resource_ID());
 
 		this.workflow_Standard = createWorkflow("Standard_MFG");
@@ -239,11 +239,11 @@ public class MRPTestHelper
 
 	private void createMasterData_WarehouseAndPlants()
 	{
-		this.plant01 = createResource("Plant01", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, resourceType_Plants);
+		this.plant01 = createResource("Plant01", ManufacturingResourceType.Plant, resourceType_Plants);
 		this.warehouse_plant01 = createWarehouse("Plant01_Warehouse01", adOrg01);
 		this.warehouse_plant01_locatorId = getDefaultLocatorId(warehouse_plant01);
 
-		this.plant02 = createResource("Plant02", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, resourceType_Plants);
+		this.plant02 = createResource("Plant02", ManufacturingResourceType.Plant, resourceType_Plants);
 		this.warehouse_plant02 = createWarehouse("Plant02_Warehouse01", adOrg01);
 
 		this.warehouse_picking01 = createWarehouse("Picking_Warehouse01", adOrg01);
@@ -349,12 +349,12 @@ public class MRPTestHelper
 
 	public I_S_Resource createResource(
 			final String name,
-			final String manufacturingResourceType,
+			final ManufacturingResourceType manufacturingResourceType,
 			final I_S_ResourceType resourceType)
 	{
 		final I_S_Resource resource = InterfaceWrapperHelper.newInstance(I_S_Resource.class, contextProvider);
 		resource.setIsManufacturingResource(true);
-		resource.setManufacturingResourceType(manufacturingResourceType);
+		resource.setManufacturingResourceType(manufacturingResourceType.getCode());
 		resource.setIsAvailable(true);
 		resource.setName(name);
 		resource.setValue(name);

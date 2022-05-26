@@ -37,7 +37,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_M_Product;
-import org.compiere.model.X_S_Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -159,7 +158,7 @@ public class ResourceService
 		//
 		// Validate Manufacturing Resource
 		if (resource.isManufacturingResource()
-				&& X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant.equals(resource.getManufacturingResourceType())
+				&& ManufacturingResourceType.isPlant(resource.getManufacturingResourceType())
 				&& resource.getPlanningHorizon() <= 0)
 		{
 			throw new FillMandatoryException(I_S_Resource.COLUMNNAME_PlanningHorizon);

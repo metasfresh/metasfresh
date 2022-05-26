@@ -77,6 +77,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -92,7 +93,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -563,13 +563,14 @@ public class ManufacturingOrderAPIServiceTest
 		{
 			final I_S_Resource plant = newInstance(I_S_Resource.class);
 			plant.setIsManufacturingResource(true);
-			plant.setManufacturingResourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
+			plant.setManufacturingResourceType(ManufacturingResourceType.Plant.getCode());
 			plant.setValue(name);
 			plant.setName(name);
 			saveRecord(plant);
 			return ResourceId.ofRepoId(plant.getS_Resource_ID());
 		}
 
+		@SuppressWarnings("SameParameterValue")
 		private void createDocType(final String docBaseType)
 		{
 			final I_C_DocType docType = newInstance(I_C_DocType.class);

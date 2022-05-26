@@ -3,6 +3,7 @@ package de.metas.material.planning.impl;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,7 +14,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -180,7 +180,7 @@ public class ProductPlanningDAO_findPlantTest
 		final I_S_Resource plant = InterfaceWrapperHelper.newInstance(I_S_Resource.class, context);
 		plant.setValue(name);
 		plant.setName(name);
-		plant.setManufacturingResourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
+		plant.setManufacturingResourceType(ManufacturingResourceType.Plant.getCode());
 		InterfaceWrapperHelper.save(plant);
 		return ResourceId.ofRepoId(plant.getS_Resource_ID());
 	}

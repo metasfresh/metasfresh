@@ -10,6 +10,7 @@ import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.util.Services;
@@ -18,7 +19,6 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_S_Resource;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -135,7 +135,7 @@ public class MaterialCockpitRowFactory
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_S_Resource.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.Plant)
 				.create()
 				.list();
 	}
