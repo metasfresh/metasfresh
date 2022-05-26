@@ -35,26 +35,29 @@ import org.springframework.stereotype.Component;
 @Component
 public class S_Resource
 {
+	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 	/**
 	 * Creates a resource product.<br>
-	 * Note that it's important to create it <b>after</b> new, because otherwise the given {@code resource}'s {@code Value} mit still be {@code null} (https://github.com/metasfresh/metasfresh/issues/1580)
+	 * Note that it's important to create it <b>after</b> new, because otherwise the given {@code resource}'s {@code Value} mit still be {@code null} (<a href="https://github.com/metasfresh/metasfresh/issues/1580">issue 1580</a>)
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createResourceProduct(final I_S_Resource resource)
 	{
-		Services.get(IResourceDAO.class).onResourceChanged(resource);
+		resourceDAO.onResourceChanged(resource);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
 	public void updateResourceProduct(final I_S_Resource resource)
 	{
-		Services.get(IResourceDAO.class).onResourceChanged(resource);
+		resourceDAO.onResourceChanged(resource);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteResourceProduct(final I_S_Resource resource)
 	{
 		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
-		Services.get(IProductDAO.class).deleteProductByResourceId(resourceId);
+		productDAO.deleteProductByResourceId(resourceId);
 	}
 }

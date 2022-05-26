@@ -29,6 +29,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class ResourceDAO implements IResourceDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
 	@Override
 	public ResourceType getResourceTypeById(@NonNull final ResourceTypeId resourceTypeId)
 	{
@@ -52,7 +56,7 @@ public class ResourceDAO implements IResourceDAO
 	private ResourceType toResourceType(final I_S_ResourceType record)
 	{
 		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_ID());
-		final TemporalUnit durationUnit = Services.get(IUOMDAO.class).getTemporalUnitByUomId(durationUomId);
+		final TemporalUnit durationUnit = uomDAO.getTemporalUnitByUomId(durationUomId);
 
 		return ResourceType.builder()
 				.active(record.isActive())
@@ -129,8 +133,6 @@ public class ResourceDAO implements IResourceDAO
 		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
 		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(resource.getS_ResourceType_ID());
 
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-
 		productsRepo.updateProductsByResourceIds(ImmutableSet.of(resourceId), (resourceId1, existingProduct) -> {
 			final I_M_Product productToUpdate;
 			if (existingProduct == null)
@@ -149,7 +151,7 @@ public class ResourceDAO implements IResourceDAO
 		});
 	}
 
-	private void updateProductFromResource(@NonNull final I_M_Product product, @NonNull final I_S_Resource from)
+	private static void updateProductFromResource(@NonNull final I_M_Product product, @NonNull final I_S_Resource from)
 	{
 		product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
 		product.setS_Resource_ID(from.getS_Resource_ID());
@@ -163,23 +165,27 @@ public class ResourceDAO implements IResourceDAO
 	@Override
 	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
-		final Set<ResourceId> resourceIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_S_Resource.class) // in trx!
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeRecord.getS_ResourceType_ID())
-				.create()
-				.listIds(ResourceId::ofRepoId);
+		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(resourceTypeRecord.getS_ResourceType_ID());
+		final Set<ResourceId> resourceIds = getResourceIdsByResourceTypeId(resourceTypeId);
 		if (resourceIds.isEmpty())
 		{
 			return;
 		}
 
 		final ResourceType resourceType = toResourceType(resourceTypeRecord);
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		productsRepo.updateProductsByResourceIds(resourceIds, product -> updateProductFromResourceType(product, resourceType));
 	}
 
-	private void updateProductFromResourceType(final I_M_Product product, final ResourceType from)
+	private Set<ResourceId> getResourceIdsByResourceTypeId(final ResourceTypeId resourceTypeId)
+	{
+		return queryBL.createQueryBuilder(I_S_Resource.class) // in trx!
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeId)
+				.create()
+				.listIds(ResourceId::ofRepoId);
+	}
+
+	private static void updateProductFromResourceType(final I_M_Product product, final ResourceType from)
 	{
 		product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
 		product.setC_UOM_ID(from.getDurationUomId().getRepoId());
