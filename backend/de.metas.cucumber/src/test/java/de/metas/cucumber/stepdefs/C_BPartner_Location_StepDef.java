@@ -213,17 +213,17 @@ public class C_BPartner_Location_StepDef
 
 		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(bPartnerLocationID, I_C_BPartner_Location.class);
 
-		final String email = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_EMail);
+		final String email = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_EMail);
 		if (Check.isNotBlank(email))
 		{
-			bPartnerLocation.setEMail(email);
+			bPartnerLocation.setEMail(DataTableUtil.nullToken2Null(email));
 		}
 
-		final String gln = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_GLN);
+		final String gln = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_GLN);
 
 		if (Check.isNotBlank(gln))
 		{
-			bPartnerLocation.setGLN(gln);
+			bPartnerLocation.setGLN(DataTableUtil.nullToken2Null(gln));
 		}
 
 		saveRecord(bPartnerLocation);

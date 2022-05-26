@@ -373,11 +373,11 @@ public class M_Product_StepDef
 
 		final I_M_Product productRecord = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 
-		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
+		final String gtin = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
 
 		if (Check.isNotBlank(gtin))
 		{
-			productRecord.setGTIN(gtin);
+			productRecord.setGTIN(DataTableUtil.nullToken2Null(gtin));
 		}
 
 		saveRecord(productRecord);

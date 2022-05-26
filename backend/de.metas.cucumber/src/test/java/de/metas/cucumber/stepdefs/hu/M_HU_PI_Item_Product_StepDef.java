@@ -188,11 +188,11 @@ public class M_HU_PI_Item_Product_StepDef
 
 		final I_M_HU_PI_Item_Product mHuPiItemProductRecord = InterfaceWrapperHelper.load(itemProductId, I_M_HU_PI_Item_Product.class);
 
-		final String gtin = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_GTIN);
+		final String gtin = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_GTIN);
 
 		if (Check.isNotBlank(gtin))
 		{
-			mHuPiItemProductRecord.setGTIN(gtin);
+			mHuPiItemProductRecord.setGTIN(DataTableUtil.nullToken2Null(gtin));
 		}
 
 		saveRecord(mHuPiItemProductRecord);
