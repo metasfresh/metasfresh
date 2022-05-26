@@ -90,7 +90,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	{
 		final HashSet<CalendarResourceRef> result = new HashSet<>();
 		final HashSet<ResourceGroupId> resourceGroupIds = new HashSet<>();
-		for (final Resource resource : resourceService.getResources())
+		for (final Resource resource : resourceService.getAllActiveResources())
 		{
 			result.add(toCalendarResourceRef(resource));
 			if (resource.getResourceGroupId() != null)

@@ -24,6 +24,7 @@ package de.metas.resource;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,6 +36,10 @@ import javax.annotation.Nullable;
 public class Resource
 {
 	@NonNull ResourceId resourceId;
+	boolean isActive;
 	@NonNull ITranslatableString name;
 	@Nullable ResourceGroupId resourceGroupId;
+	@NonNull ResourceTypeId resourceTypeId;
+
+	@Nullable UserId responsibleId;
 }

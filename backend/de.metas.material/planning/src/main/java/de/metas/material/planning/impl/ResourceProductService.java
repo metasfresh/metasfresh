@@ -1,14 +1,15 @@
 package de.metas.material.planning.impl;
 
-import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
 import de.metas.resource.ResourceTypeId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 
 /*
@@ -34,16 +35,28 @@ import org.compiere.model.I_M_Product;
  */
 public class ResourceProductService implements IResourceProductService
 {
+	private ResourceService _resourceService;
+
+	private ResourceService resourceService()
+	{
+		ResourceService resourceService = this._resourceService;
+		if (resourceService == null)
+		{
+			resourceService = this._resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+		}
+		return resourceService;
+	}
+
 	@Override
 	public ResourceType getResourceTypeById(final ResourceTypeId resourceTypeId)
 	{
-		return Services.get(IResourceDAO.class).getResourceTypeById(resourceTypeId);
+		return resourceService().getResourceTypeById(resourceTypeId);
 	}
 
 	@Override
 	public ResourceType getResourceTypeByResourceId(final ResourceId resourceId)
 	{
-		return Services.get(IResourceDAO.class).getResourceTypeByResourceId(resourceId);
+		return resourceService().getResourceTypeByResourceId(resourceId);
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package org.eevolution.mrp.api.impl;
 
-import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -10,14 +9,12 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
@@ -27,6 +24,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceService;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.util.Services;
@@ -73,7 +71,6 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.PPProductPlanningBuilder;
 import org.eevolution.util.ProductBOMBuilder;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -168,7 +165,6 @@ public class MRPTestHelper
 		this.docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 
 		setupContext();
-		setupMRPExecutorService();
 
 		registerModelValidators();
 
@@ -208,11 +204,6 @@ public class MRPTestHelper
 		}
 
 		SystemTime.setTimeSource(() -> _today.toInstant().toEpochMilli());
-	}
-
-	private void setupMRPExecutorService()
-	{
-		LogManager.setLoggerLevel(getMRPLogger(), Level.INFO);
 	}
 
 	private void createMasterData()
@@ -293,7 +284,7 @@ public class MRPTestHelper
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
 				new PPOrderBOMBL(),
-				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
+				new DDOrderLowLevelService(new DDOrderLowLevelDAO(), ResourceService.newInstanceForJUnitTesting()),
 				new ProductBOMVersionsDAO(),
 				new ProductBOMService(new ProductBOMVersionsDAO()));
 	}
@@ -542,11 +533,6 @@ public class MRPTestHelper
 		InterfaceWrapperHelper.save(docType);
 	}
 
-	public void dumpMRPRecords(final String message)
-	{
-		MRPTracer.dumpMRPRecords(message);
-	}
-
 	public ProductBOMBuilder newProductBOM()
 	{
 		return new ProductBOMBuilder()
@@ -583,11 +569,6 @@ public class MRPTestHelper
 			InterfaceWrapperHelper.save(wf);
 		}
 
-	}
-
-	public final Logger getMRPLogger()
-	{
-		return LogManager.getLogger(IMaterialPlanningContext.LOGGERNAME);
 	}
 
 	public I_PP_Order createPP_Order(

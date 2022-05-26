@@ -23,12 +23,17 @@
 package de.metas.resource;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Repository;
@@ -45,9 +50,32 @@ class ResourceRepository
 			.tableName(I_S_Resource.Table_Name)
 			.build();
 
-	public ImmutableList<Resource> getResources()
+	public Resource getById(@NonNull final ResourceId id)
 	{
-		return getResourcesMap().toList();
+		return getResourcesMap().getById(id);
+	}
+
+	/**
+	 * Used for legacy purposes
+	 */
+	static I_S_Resource retrieveRecordById(@NonNull final ResourceId id)
+	{
+		final I_S_Resource resourceRecord = InterfaceWrapperHelper.load(id, I_S_Resource.class);
+		if (resourceRecord == null)
+		{
+			throw new AdempiereException("No resource found for id " + id);
+		}
+		return resourceRecord;
+	}
+
+	public ImmutableList<Resource> getAllActive()
+	{
+		return getResourcesMap().getAllActive();
+	}
+
+	public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(final ResourceTypeId resourceTypeId)
+	{
+		return getResourcesMap().getActiveResourceIdsByResourceTypeId(resourceTypeId);
 	}
 
 	private ResourcesMap getResourcesMap()
@@ -58,7 +86,7 @@ class ResourceRepository
 	private ResourcesMap retrieveResourcesMap()
 	{
 		final ImmutableList<Resource> resources = queryBL.createQueryBuilder(I_S_Resource.class)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.map(ResourceRepository::toResource)
@@ -73,8 +101,11 @@ class ResourceRepository
 
 		return Resource.builder()
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
+				.isActive(record.isActive())
 				.name(trl.getColumnTrl(I_S_Resource.COLUMNNAME_Name, record.getName()))
 				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
+				.resourceTypeId(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
+				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
 				.build();
 	}
 
@@ -86,16 +117,36 @@ class ResourceRepository
 
 	private static final class ResourcesMap
 	{
-		private final ImmutableList<Resource> resources;
+		private final ImmutableList<Resource> allActive;
+		private final ImmutableMap<ResourceId, Resource> byId;
 
-		ResourcesMap(final List<Resource> resources)
+		ResourcesMap(final List<Resource> list)
 		{
-			this.resources = ImmutableList.copyOf(resources);
+			this.allActive = list.stream().filter(Resource::isActive).collect(ImmutableList.toImmutableList());
+			this.byId = Maps.uniqueIndex(list, Resource::getResourceId);
 		}
 
-		public ImmutableList<Resource> toList()
+		public ImmutableList<Resource> getAllActive()
 		{
-			return resources;
+			return allActive;
+		}
+
+		public Resource getById(@NonNull final ResourceId id)
+		{
+			final Resource resource = byId.get(id);
+			if (resource == null)
+			{
+				throw new AdempiereException("Resource not found by ID: " + id);
+			}
+			return resource;
+		}
+
+		public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(@NonNull final ResourceTypeId resourceTypeId)
+		{
+			return allActive.stream()
+					.filter(resource -> ResourceTypeId.equals(resource.getResourceTypeId(), resourceTypeId))
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

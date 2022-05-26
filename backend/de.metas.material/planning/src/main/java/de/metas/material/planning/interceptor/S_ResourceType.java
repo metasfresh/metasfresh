@@ -1,17 +1,16 @@
 package de.metas.material.planning.interceptor;
 
-import java.sql.Timestamp;
-
+import de.metas.resource.ResourceService;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.ModelValidator;
-
-import de.metas.material.planning.IResourceDAO;
-import de.metas.util.Services;
 import org.springframework.stereotype.Component;
+
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -38,10 +37,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class S_ResourceType
 {
-	static final S_ResourceType INSTANCE = new S_ResourceType();
+	private final ResourceService resourceService;
 
-	private S_ResourceType()
+	public S_ResourceType(@NonNull final ResourceService resourceService)
 	{
+		this.resourceService = resourceService;
 	}
 
 	@ModelChange(timings = {
@@ -75,9 +75,9 @@ public class S_ResourceType
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void updateProducts(final I_S_ResourceType resourceType)
+	public void afterSave(final I_S_ResourceType resourceType)
 	{
-		Services.get(IResourceDAO.class).onResourceTypeChanged(resourceType);
+		resourceService.onResourceTypeChanged(resourceType);
 	}
 
 }

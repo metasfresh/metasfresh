@@ -95,6 +95,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.resource.ResourceService;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
@@ -381,7 +382,7 @@ public class HUTestHelper
 	private DDNetworkBuilder emptiesDDNetworkBuilder;
 
 	public Properties ctx;
-	public String trxName;
+	@Nullable public String trxName;
 	private ZonedDateTime today;
 
 	public final IContextAware contextProvider = new IContextAware()
@@ -417,13 +418,6 @@ public class HUTestHelper
 		{
 			init();
 		}
-	}
-
-	public HUTestHelper setInitAdempiere(final boolean initAdempiere)
-	{
-		Check.assume(!initialized, "helper not initialized");
-		this.initAdempiere = initAdempiere;
-		return this;
 	}
 
 	/**
@@ -570,7 +564,7 @@ public class HUTestHelper
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				huReservationService);
-		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
@@ -741,11 +735,6 @@ public class HUTestHelper
 
 		defaultWarehouse = createWarehouse(NAME_Default_Warehouse, false); // issueWarehouse
 		issueWarehouse = createWarehouse(NAME_Issue_Warehouse, true);
-	}
-
-	protected void customInit()
-	{
-		// nothing
 	}
 
 	public IHandlingUnitsBL handlingUnitsBL() {return Services.get(IHandlingUnitsBL.class);}

@@ -1,9 +1,10 @@
 package de.metas.material.planning.interceptor;
 
-import de.metas.material.planning.IResourceDAO;
 import de.metas.product.IProductDAO;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceService;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_S_Resource;
@@ -35,29 +36,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class S_Resource
 {
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final ResourceService resourceService;
 
-	/**
-	 * Creates a resource product.<br>
-	 * Note that it's important to create it <b>after</b> new, because otherwise the given {@code resource}'s {@code Value} mit still be {@code null} (<a href="https://github.com/metasfresh/metasfresh/issues/1580">issue 1580</a>)
-	 */
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
-	public void createResourceProduct(final I_S_Resource resource)
+	public S_Resource(@NonNull final ResourceService resourceService)
 	{
-		resourceDAO.onResourceChanged(resource);
+		this.resourceService = resourceService;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
-	public void updateResourceProduct(final I_S_Resource resource)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void afterSave(final I_S_Resource resourceRecord)
 	{
-		resourceDAO.onResourceChanged(resource);
+		resourceService.onResourceChanged(resourceRecord);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteResourceProduct(final I_S_Resource resource)
+	public void beforeDelete(final I_S_Resource resourceRecord)
 	{
-		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
+		final ResourceId resourceId = ResourceId.ofRepoId(resourceRecord.getS_Resource_ID());
 		productDAO.deleteProductByResourceId(resourceId);
 	}
 }
