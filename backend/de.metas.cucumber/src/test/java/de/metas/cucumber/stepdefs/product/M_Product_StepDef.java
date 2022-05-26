@@ -151,22 +151,22 @@ public class M_Product_StepDef
 			bPartnerProduct.setIsExcludedFromSale(isExcludedFromSale);
 			bPartnerProduct.setIsExcludedFromPurchase(isExcludedFromPurchase);
 
-			if(Check.isNotBlank(exclusionFromSaleReason))
+			if (Check.isNotBlank(exclusionFromSaleReason))
 			{
 				bPartnerProduct.setExclusionFromSaleReason(exclusionFromSaleReason);
 			}
 
-			if(Check.isNotBlank(exclusionFromPurchaseReason))
+			if (Check.isNotBlank(exclusionFromPurchaseReason))
 			{
 				bPartnerProduct.setExclusionFromPurchaseReason(exclusionFromPurchaseReason);
 			}
 
-			if(Check.isNotBlank(productNumber))
+			if (Check.isNotBlank(productNumber))
 			{
 				bPartnerProduct.setProductNo(productNumber);
 			}
 
-			if(Check.isNotBlank(upc))
+			if (Check.isNotBlank(upc))
 			{
 				bPartnerProduct.setUPC(upc);
 			}

@@ -28,9 +28,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,10 +40,9 @@ import org.compiere.model.I_C_Location;
 import java.util.List;
 import java.util.Map;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;

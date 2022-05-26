@@ -37,9 +37,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceId;
-import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.process.export.IExport;
-import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -60,9 +57,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -75,8 +70,6 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -86,18 +79,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_Invoice_Candidate_ID;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 
 public class C_Invoice_StepDef
 {
@@ -348,7 +339,7 @@ public class C_Invoice_StepDef
 
 		if (invoiceIdentifiers.isEmpty())
 		{
-			throw new RuntimeException("No invoice identifier present for column: " +  COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			throw new RuntimeException("No invoice identifier present for column: " + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 		}
 
 		final boolean lookingForMultipleInvoices = invoiceIdentifiers.size() > 1;
@@ -439,7 +430,7 @@ public class C_Invoice_StepDef
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, targetOrderId)
-				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.orderBy(COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
 				.firstNotNull(I_C_Invoice_Candidate.class);
 	}
