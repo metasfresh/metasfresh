@@ -71,6 +71,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -224,6 +225,8 @@ public class C_Invoice_StepDef
 
 		//enqueue invoice candidate
 		final I_C_Invoice_Candidate invoiceCandidateRecord = getFirstInvoiceCandidateByOrderId(targetOrderId);
+
+		assertThat(invoiceCandidateRecord).isNotNull();
 
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(org.testcontainers.shaded.com.google.common.collect.ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), null);
 
@@ -424,7 +427,7 @@ public class C_Invoice_StepDef
 		return true;
 	}
 
-	@NonNull
+	@Nullable
 	private I_C_Invoice_Candidate getFirstInvoiceCandidateByOrderId(@NonNull final OrderId targetOrderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
@@ -432,12 +435,17 @@ public class C_Invoice_StepDef
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, targetOrderId)
 				.orderBy(COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
-				.firstNotNull(I_C_Invoice_Candidate.class);
+				.first(I_C_Invoice_Candidate.class);
 	}
 
 	private boolean isInvoiceCandidateReadyToBeProcessed(@NonNull final OrderId targetOrderId)
 	{
 		final I_C_Invoice_Candidate invoiceableInvoiceCand = getFirstInvoiceCandidateByOrderId(targetOrderId);
+
+		if (invoiceableInvoiceCand == null)
+		{
+			return false;
+		}
 
 		return invoiceableInvoiceCand.getQtyToInvoice().signum() > 0 || invoiceableInvoiceCand.getQtyToInvoice_Override().signum() > 0;
 	}
