@@ -4,10 +4,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
 import de.metas.util.ISingletonService;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-
-import java.time.temporal.TemporalUnit;
 
 /*
  * #%L
@@ -40,8 +37,4 @@ public interface IResourceProductService extends ISingletonService
 	I_M_Product getProductByResourceId(ResourceId resourceId);
 
 	ProductId getProductIdByResourceId(ResourceId resourceId);
-
-	TemporalUnit getResourceTemporalUnit(ResourceId resourceId);
-
-	I_C_UOM getResoureUOM(ResourceId resourceId);
 }

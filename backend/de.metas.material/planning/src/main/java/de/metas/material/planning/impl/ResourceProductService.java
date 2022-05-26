@@ -3,18 +3,13 @@ package de.metas.material.planning.impl;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.ResourceType;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
-import de.metas.uom.UOMUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-
-import java.time.temporal.TemporalUnit;
 
 /*
  * #%L
@@ -65,20 +60,5 @@ public class ResourceProductService implements IResourceProductService
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		return productsRepo.getProductIdByResourceId(resourceId);
-	}
-
-	@Override
-	public TemporalUnit getResourceTemporalUnit(final ResourceId resourceId)
-	{
-		final ProductId resourceProductId = getProductIdByResourceId(resourceId);
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(resourceProductId);
-		return UOMUtil.toTemporalUnit(uom);
-	}
-
-	@Override
-	public I_C_UOM getResoureUOM(final ResourceId resourceId)
-	{
-		final I_M_Product product = getProductByResourceId(resourceId);
-		return Services.get(IProductBL.class).getStockUOM(product);
 	}
 }
