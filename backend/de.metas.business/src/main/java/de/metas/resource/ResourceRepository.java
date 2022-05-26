@@ -95,14 +95,16 @@ class ResourceRepository
 		return new ResourcesMap(resources);
 	}
 
-	private static Resource toResource(@NonNull final I_S_Resource record)
+	static Resource toResource(@NonNull final I_S_Resource record)
 	{
 		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return Resource.builder()
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.isActive(record.isActive())
+				.value(record.getValue())
 				.name(trl.getColumnTrl(I_S_Resource.COLUMNNAME_Name, record.getName()))
+				.description(record.getDescription())
 				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
 				.resourceTypeId(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
 				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))

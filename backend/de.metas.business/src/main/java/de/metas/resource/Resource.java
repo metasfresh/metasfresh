@@ -37,7 +37,9 @@ public class Resource
 {
 	@NonNull ResourceId resourceId;
 	boolean isActive;
+	@NonNull String value;
 	@NonNull ITranslatableString name;
+	@Nullable String description;
 	@Nullable ResourceGroupId resourceGroupId;
 	@NonNull ResourceTypeId resourceTypeId;
 
