@@ -28,6 +28,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -42,17 +43,18 @@ public class ResourceTypeId implements RepoIdAware
 		return new ResourceTypeId(repoId);
 	}
 
+	@Nullable
 	public static ResourceTypeId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ResourceTypeId(repoId) : null;
 	}
 
-	public static int toRepoId(final ResourceTypeId ResourceTypeId)
+	public static int toRepoId(@Nullable final ResourceTypeId resourceTypeId)
 	{
-		return ResourceTypeId != null ? ResourceTypeId.getRepoId() : -1;
+		return resourceTypeId != null ? resourceTypeId.getRepoId() : -1;
 	}
 
-	public static boolean equals(final ResourceTypeId o1, final ResourceTypeId o2)
+	public static boolean equals(@Nullable final ResourceTypeId o1, @Nullable final ResourceTypeId o2)
 	{
 		return Objects.equals(o1, o2);
 	}
