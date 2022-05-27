@@ -27,6 +27,8 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -55,6 +57,7 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.db.Database;
@@ -1089,6 +1092,21 @@ public class DB
 	 */
 	public int getSQLValueEx(@Nullable final String trxName, final String sql, final Object... params) throws DBException
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getSQLValueEx0(trxName, sql, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private int getSQLValueEx0(@Nullable final String trxName, final String sql, final Object... params) throws DBException
+	{
 		int retValue = -1;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1184,6 +1202,21 @@ public class DB
 	 */
 	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getSQLValueStringEx0(trxName, sql, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private String getSQLValueStringEx0(@Nullable final String trxName, final String sql, final Object... params)
+	{
 		String retValue = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1277,6 +1310,21 @@ public class DB
 	 * @throws DBException if there is any SQLException
 	 */
 	public BigDecimal getSQLValueBDEx(final String trxName, final String sql, final Object... params) throws DBException
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getSQLValueBDEx0(trxName, sql, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private BigDecimal getSQLValueBDEx0(final String trxName, final String sql, final Object... params) throws DBException
 	{
 		BigDecimal retValue = null;
 		PreparedStatement pstmt = null;
@@ -2844,6 +2892,21 @@ public class DB
 	 * @return each resulted row as a {@link List<String>}
 	 */
 	public ImmutableList<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getSQL_ResultRowsAsListsOfStrings0(sqlStatement, parameters, trxName),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private ImmutableList<List<String>> getSQL_ResultRowsAsListsOfStrings0(final String sqlStatement, final List<Object> parameters, final String trxName)
 	{
 		List<List<String>> result = null;
 		PreparedStatement pstmt = null;
