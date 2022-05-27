@@ -12,6 +12,7 @@ COPY backend .
 RUN mvn clean install -Dmaven.gitcommitid.skip=true -DskipTests
 
 ARG REFNAME=local
+ENV REFNAME=$REFNAME
 SHELL ["/bin/bash", "-c"]
 
 RUN --mount=type=secret,id=mysecret \
