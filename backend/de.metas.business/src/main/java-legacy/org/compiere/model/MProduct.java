@@ -21,24 +21,20 @@
  */
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import de.metas.organization.OrgId;
-import de.metas.product.ProductCategoryId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.ProductId;
-import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductType;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.DB;
+
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
  * Product Model
@@ -340,7 +336,7 @@ public class MProduct extends X_M_Product
 	@Override
 	protected boolean beforeDelete()
 	{
-		if (PRODUCTTYPE_Resource.equals(getProductType()) && getS_Resource_ID() > 0)
+		if(ProductType.ofCode(getProductType()).isResource() && getS_Resource_ID() > 0)
 		{
 			throw new AdempiereException("@S_Resource_ID@<>0");
 		}

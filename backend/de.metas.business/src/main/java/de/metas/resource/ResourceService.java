@@ -25,6 +25,7 @@ package de.metas.resource;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -183,7 +184,7 @@ public class ResourceService
 
 	private static void updateProductFromResource(@NonNull final I_M_Product product, @NonNull final Resource from)
 	{
-		product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
+		product.setProductType(ProductType.Resource.getCode());
 		product.setS_Resource_ID(from.getResourceId().getRepoId());
 		product.setIsActive(from.isActive());
 
@@ -207,7 +208,7 @@ public class ResourceService
 
 	private static void updateProductFromResourceType(final I_M_Product product, final ResourceType from)
 	{
-		product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
+		product.setProductType(ProductType.Resource.getCode());
 		product.setC_UOM_ID(from.getDurationUomId().getRepoId());
 		product.setM_Product_Category_ID(from.getProductCategoryId().getRepoId());
 	}
