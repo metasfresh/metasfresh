@@ -76,6 +76,8 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		// 	addAdditionalTags(tags);
 		// }
 
+		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
+
 		if(depth.get() == 0
 				&& metadata.getType() == Type.REST_CONTROLLER
 				&& metadata.getAction() != null
@@ -95,12 +97,20 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			mkTagIfNotNull("Initiator", initiator.get()).ifPresent(tags::add);
 			mkTagIfNotNull("WindowId", initiatorWindowId.get()).ifPresent(tags::add);
+			depth.set(depth.get() + 1);
+			try(final IAutoCloseable ignored = this.reduceDepth())
+			{
+				return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
+			}
 		}
 
-		depth.set(depth.get() + 1);
-		try(final IAutoCloseable ignored = this.reduceDepth())
+		try
 		{
-			return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
+			return callable.call();
+		}
+		catch (Exception e)
+		{
+			throw PerformanceMonitoringServiceUtil.asRTE(e);
 		}
 	}
 
