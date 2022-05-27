@@ -24,6 +24,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -516,6 +517,7 @@ public class OLCandBL implements IOLCandBL
 				.isGroupingError(olCandRecord.isGroupingError())
 				.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
 				.discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
+				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(olCandRecord.getCompensationGroupOrderBy()))
 				.build();
 
 		return OLCand.builder()

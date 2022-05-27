@@ -28,10 +28,12 @@ import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.common.error.ErrorProcessor;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
+import de.metas.common.rest_api.v2.tablerecordref.JsonTableRecordReference;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import lombok.NonNull;
@@ -185,17 +187,20 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
 
 		final StringBuilder logMessageBuilder = new StringBuilder();
+		logMessageBuilder.append("Error: ").append(StringUtils.removeCRLF(errorItem.toString()));
 
-		getAPIRequestId(exchange)
-				.ifPresent(apiRequestId -> logMessageBuilder.append("ApiRequestAuditId: ")
-						.append(apiRequestId)
-						.append(";"));
-
-		logMessageBuilder.append(" Error: ").append(StringUtils.removeCRLF(errorItem.toString()));
+		final JsonTableRecordReference tableRecordReference = getAPIRequestId(exchange)
+				.map(apiRequestId -> JsonTableRecordReference
+						.builder()
+						.recordId(JsonMetasfreshId.of(apiRequestId))
+						.tableName(ExternalSystemConstants.API_REQUEST_AUDIT_TABLE_NAME)
+						.build())
+				.orElse(null);
 
 		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
 				.logMessage(logMessageBuilder.toString())
 				.pInstanceId(JsonMetasfreshId.of(pInstanceId))
+				.tableRecordReference(tableRecordReference)
 				.build();
 
 		exchange.getIn().setBody(logMessageRequest);

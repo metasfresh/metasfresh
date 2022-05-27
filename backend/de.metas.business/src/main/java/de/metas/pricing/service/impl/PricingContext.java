@@ -83,9 +83,12 @@ class PricingContext implements IEditablePricingContext
 	 */
 	private LocalDate priceDateNow = SystemTime.asLocalDate();
 
+	@Nullable
 	private CountryId countryId;
 
+	@Nullable
 	private UomId uomId;
+	@Nullable
 	private CurrencyId currencyId;
 	private BPartnerId bpartnerId;
 	private BigDecimal qty;
@@ -97,6 +100,9 @@ class PricingContext implements IEditablePricingContext
 	private boolean failIfNotCalculated = false;
 
 	private boolean disallowDiscount;
+
+	@Nullable
+	private BigDecimal manualPrice;
 
 	@Getter
 	private PricingConditionsBreak forcePricingConditionsBreak;
@@ -130,6 +136,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.failIfNotCalculated = failIfNotCalculated;
 		pricingCtxNew.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 		pricingCtxNew.properties.putAll(properties);
+		pricingCtxNew.manualPrice = manualPrice;
 
 		return pricingCtxNew;
 	}
@@ -248,13 +255,14 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
+	@Nullable
 	public CurrencyId getCurrencyId()
 	{
 		return currencyId;
 	}
 
 	@Override
-	public IEditablePricingContext setCurrencyId(final CurrencyId currencyId)
+	public IEditablePricingContext setCurrencyId(@Nullable final CurrencyId currencyId)
 	{
 		this.currencyId = currencyId;
 		return this;
@@ -404,6 +412,7 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
+	@Nullable
 	public CountryId getCountryId()
 	{
 		return countryId;
@@ -433,6 +442,19 @@ class PricingContext implements IEditablePricingContext
 	public IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(final boolean skipCheckingPriceListSOTrxFlag)
 	{
 		this.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
+		return this;
+	}
+
+	@Nullable
+	public BigDecimal getManualPrice()
+	{
+		return manualPrice;
+	}
+
+	@Override
+	public IEditablePricingContext setManualPrice(@Nullable final BigDecimal manualPrice)
+	{
+		this.manualPrice = manualPrice;
 		return this;
 	}
 

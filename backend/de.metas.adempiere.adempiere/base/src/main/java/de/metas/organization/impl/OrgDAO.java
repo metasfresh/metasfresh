@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.calendar.CalendarId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.image.AdImageId;
 import de.metas.organization.IOrgDAO;

@@ -74,6 +74,7 @@ public class OrderLineBuilder
 	private Quantity qty;
 
 	@Nullable private BigDecimal manualPrice;
+	@Nullable private UomId priceUomId;
 	private BigDecimal manualDiscount;
 
 	@Nullable private String description;
@@ -114,6 +115,7 @@ public class OrderLineBuilder
 		{
 			orderLine.setIsManualPrice(true);
 			orderLine.setPriceEntered(manualPrice);
+			orderLine.setPrice_UOM_ID(UomId.toRepoId(priceUomId));
 		}
 
 		if (manualDiscount != null)
@@ -220,6 +222,13 @@ public class OrderLineBuilder
 	private UomId getUomId()
 	{
 		return qty != null ? qty.getUomId() : null;
+	}
+
+	public OrderLineBuilder priceUomId(@Nullable final UomId priceUomId)
+	{
+		assertNotBuilt();
+		this.priceUomId = priceUomId;
+		return this;
 	}
 
 	public OrderLineBuilder manualPrice(@Nullable final BigDecimal manualPrice)

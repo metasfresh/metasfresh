@@ -398,6 +398,23 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		dimensionService.updateRecord(icRecord, inOutLineDimension);
 
+
+		// task 13022 : set inout's project if dimension didn't already
+		if(icRecord.getC_Project_ID() <= 0)
+		{
+			if(inOut.getC_Project_ID() > 0)
+			{
+				icRecord.setC_Project_ID(inOut.getC_Project_ID());
+			}
+			// get order's project if exists
+			else if(inOut.getC_Order_ID() > 0
+					&& inOut.getC_Order().getC_Project_ID() > 0)
+			{
+				final I_C_Order order = inOut.getC_Order();
+				icRecord.setC_Project_ID(order.getC_Project_ID());
+			}
+		}
+
 		//DocType
 		final DocTypeId invoiceDocTypeId = extractDocTypeId(inOutLineRecord);
 		if (invoiceDocTypeId != null)
@@ -610,6 +627,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (inOut.getC_Order_ID() > 0)
 		{
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
+			icRecord.setPaymentRule(order.getPaymentRule());
 			icRecord.setDateOrdered(order.getDateOrdered());
 
 			final boolean propagateToCInvoice = orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));

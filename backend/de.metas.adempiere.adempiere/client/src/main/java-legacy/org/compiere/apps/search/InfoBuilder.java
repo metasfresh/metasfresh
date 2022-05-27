@@ -1,14 +1,8 @@
 package org.compiere.apps.search;
 
-import java.awt.Frame;
-import java.awt.Image;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
-import javax.swing.JFrame;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.service.IADInfoWindowBL;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -23,13 +17,14 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
  * Info window (see {@link Info}) builder.
@@ -45,8 +40,6 @@ public class InfoBuilder
 	public static final String ACTION_InfoBPartner = "InfoBPartner";
 	public static final String ACTION_InfoProduct = "InfoProduct";
 	public static final String ACTION_InfoAsset = "InfoAsset";
-	//public static final String ACTION_InfoAccount = "InfoAccount"; // no longer supported
-	public static final String ACTION_InfoSchedule = "InfoSchedule";
 	public static final String ACTION_InfoMRP = "InfoMRP";
 	public static final String ACTION_InfoCRP = "InfoCRP";
 	public static final String ACTION_InfoOrder = "InfoOrder";
@@ -54,15 +47,12 @@ public class InfoBuilder
 	public static final String ACTION_InfoInOut = "InfoInOut";
 	public static final String ACTION_InfoPayment = "InfoPayment";
 	public static final String ACTION_InfoCashLine = "InfoCashLine";
-	public static final String ACTION_InfoAssignment = "InfoAssignment";
 
 	/** Map of TableName to IconName to be used */
 	public static final ImmutableMap<String, String> tableName2iconName = ImmutableMap.<String, String> builder()
 			.put(I_C_BPartner.Table_Name, ACTION_InfoBPartner)
 			.put(I_M_Product.Table_Name, ACTION_InfoProduct)
 			.put(I_A_Asset.Table_Name, ACTION_InfoAsset)
-			// .put(I_.Table_Name, ACTION_InfoAccount)
-			// .put(I_.Table_Name, ACTION_InfoSchedule)
 			// .put(I_.Table_Name, ACTION_InfoMRP)
 			// .put(I_.Table_Name, ACTION_InfoCRP)
 			.put(I_C_Order.Table_Name, ACTION_InfoOrder)
@@ -70,7 +60,6 @@ public class InfoBuilder
 			.put(I_M_InOut.Table_Name, ACTION_InfoInOut)
 			.put(I_C_Payment.Table_Name, ACTION_InfoPayment)
 			.put(I_C_CashLine.Table_Name, ACTION_InfoCashLine)
-			.put(I_S_ResourceAssignment.Table_Name, ACTION_InfoAssignment)
 			.build();
 
 	public static InfoBuilder newBuilder()
@@ -278,24 +267,6 @@ public class InfoBuilder
 				.buildAndShow();
 	} // showCashLine
 
-	/**
-	 * Show Assignment Info (non modal)
-	 *
-	 * @param frame Parent Frame
-	 * @param WindowNo window no
-	 * @param value query value
-	 */
-	static void showAssignment(final Frame frame, final int WindowNo, final String value)
-	{
-		newBuilder()
-				.setParentFrame(frame)
-				.setWindowNo(WindowNo)
-				.setModal(false)
-				.setTableName(I_S_ResourceAssignment.Table_Name)
-				.setSearchValue(value)
-				.buildAndShow();
-	} // showAssignment
-
 	//
 	//
 	// --------------------------------------------------------------------------------------------------------------------
@@ -440,10 +411,6 @@ public class InfoBuilder
 		else if (tableName.equals("C_CashLine"))
 		{
 			info = new InfoCashLine(parentFrame, modal, windowNo, value, multiSelection, whereClause);
-		}
-		else if (tableName.equals("S_ResourceAssigment"))
-		{
-			info = new InfoAssignment(parentFrame, modal, windowNo, value, multiSelection, whereClause);
 		}
 		else
 		{

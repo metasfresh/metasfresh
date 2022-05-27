@@ -22,13 +22,9 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -39,11 +35,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Composite Query Filters. Contains a set of {@link IQueryFilter} joined together by AND or OR (see {@link #setJoinAnd()}, {@link #setJoinOr()}).
@@ -303,8 +302,8 @@ import javax.annotation.Nullable;
 	 * @param sqlFiltersToAppend
 	 */
 	private final void appendSqlWhereClause(final StringBuilder resultSqlWhereClause,
-			final List<ISqlQueryFilter> resultSqlFilters,
-			final List<ISqlQueryFilter> sqlFiltersToAppend)
+											final List<ISqlQueryFilter> resultSqlFilters,
+											final List<ISqlQueryFilter> sqlFiltersToAppend)
 	{
 		//
 		// If there are no SQL filters to append, return right away
@@ -716,8 +715,8 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final String columnName,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+															 final String subQueryColumnName,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -729,8 +728,8 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final String columnName,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+																final String subQueryColumnName,
+																final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -743,8 +742,8 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final ModelColumn<T, ?> column,
-			final ModelColumn<ST, ?> subQueryColumn,
-			final IQuery<ST> subQuery)
+																final ModelColumn<ST, ?> subQueryColumn,
+																final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -758,8 +757,8 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final ModelColumn<T, ?> column,
-			final ModelColumn<ST, ?> subQueryColumn,
-			final IQuery<ST> subQuery)
+															 final ModelColumn<ST, ?> subQueryColumn,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -779,9 +778,9 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final String columnName,
-			final IQueryFilterModifier modifier,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+															 final IQueryFilterModifier modifier,
+															 final String subQueryColumnName,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -1040,5 +1039,20 @@ import javax.annotation.Nullable;
 		_compiled = false;
 		return this;
 
+	}
+
+	@Override
+	public CompositeQueryFilter<T> addIntervalIntersection(
+			@NonNull final String lowerBoundColumnName,
+			@NonNull final String upperBoundColumnName,
+			@Nullable final ZonedDateTime lowerBoundValue,
+			@Nullable final ZonedDateTime upperBoundValue)
+	{
+		addFilter(new DateIntervalIntersectionQueryFilter<T>(
+				ModelColumnNameValue.forColumnName(lowerBoundColumnName),
+				ModelColumnNameValue.forColumnName(upperBoundColumnName),
+				lowerBoundValue,
+				upperBoundValue));
+		return this;
 	}
 }
