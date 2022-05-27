@@ -42,6 +42,7 @@ import de.metas.product.ResourceId;
 import de.metas.product.UpdateProductRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -427,7 +428,7 @@ public class ProductDAO implements IProductDAO
 	{
 		final ProductId productId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
@@ -451,7 +452,7 @@ public class ProductDAO implements IProductDAO
 
 		final Set<ProductId> existingProductIds = queryBL
 				.createQueryBuilder(I_M_Product.class) // in trx!
-				.addInArrayFilter(I_M_Product.COLUMN_S_Resource_ID, resourceIds)
+				.addInArrayFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceIds)
 				.create()
 				.listIds(ProductId::ofRepoId);
 
@@ -475,9 +476,9 @@ public class ProductDAO implements IProductDAO
 	{
 		queryBL
 				.createQueryBuilder(I_M_Product.class) // in trx
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
+				//.addOnlyActiveRecordsFilter()
+				//.addOnlyContextClient()
 				.create()
 				.delete();
 	}
@@ -515,7 +516,7 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public void updateProduct(@NonNull final UpdateProductRequest request)
 	{
-		final I_M_Product product = load(request.getProductId(), I_M_Product.class); // in-trx
+		final I_M_Product product = getByIdInTrx(request.getProductId());
 
 		if (request.getIsBOM() != null)
 		{
@@ -553,23 +554,25 @@ public class ProductDAO implements IProductDAO
 	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		if (product != null && Check.isNotBlank(product.getGuaranteeMonths()))
+		final String guaranteeMonths = product != null ? StringUtils.trimBlankToNull(product.getGuaranteeMonths()) : null;
+		if (guaranteeMonths == null)
 		{
-			switch (product.getGuaranteeMonths())
-			{
-				case X_M_Product.GUARANTEEMONTHS_12:
-					return ONE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_24:
-					return TWO_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_36:
-					return THREE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_60:
-					return FIVE_YEAR_DAYS;
-				default:
-					return 0;
-			}
+			return 0;
 		}
-		return 0;
+
+		switch (guaranteeMonths)
+		{
+			case X_M_Product.GUARANTEEMONTHS_12:
+				return ONE_YEAR_DAYS;
+			case X_M_Product.GUARANTEEMONTHS_24:
+				return TWO_YEAR_DAYS;
+			case X_M_Product.GUARANTEEMONTHS_36:
+				return THREE_YEAR_DAYS;
+			case X_M_Product.GUARANTEEMONTHS_60:
+				return FIVE_YEAR_DAYS;
+			default:
+				return 0;
+		}
 	}
 
 	@Override
