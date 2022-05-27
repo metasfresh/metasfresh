@@ -20,6 +20,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
+import de.metas.impex.InputDataSourceId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -374,7 +375,7 @@ public final class AggregationEngine
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 			invoiceHeader.setEmail(icRecord.getEMail());
-			invoiceHeader.setAD_InputDataSource_ID(icRecord.getAD_InputDataSource_ID());
+			invoiceHeader.setAD_InputDataSource_ID(InputDataSourceId.ofRepoIdOrNull(icRecord.getAD_InputDataSource_ID()));
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{

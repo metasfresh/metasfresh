@@ -43,7 +43,7 @@ import java.util.List;
 
 	@Getter
 	@Setter
-	private int inputDataSourceId;
+	private InputDataSourceId inputDataSourceId;
 
 	private LocalDate dateInvoiced;
 
@@ -384,8 +384,8 @@ import java.util.List;
 	}
 
 	@Override
-	public int getAD_InputDataSource_ID() {	return inputDataSourceId;}
+	public InputDataSourceId getAD_InputDataSource_ID() {	return inputDataSourceId;}
 
-	public void setAD_InputDataSource_ID(final int inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
+	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
 
 }

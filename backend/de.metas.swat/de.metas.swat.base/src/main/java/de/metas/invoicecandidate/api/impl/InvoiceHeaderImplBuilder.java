@@ -14,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
+import de.metas.impex.InputDataSourceId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -41,7 +42,7 @@ public class InvoiceHeaderImplBuilder
 
 	private int AD_Org_ID;
 
-	private int inputDataSourceId;
+	private InputDataSourceId inputDataSourceId;
 
 	private final Set<Integer> C_Order_IDs = new LinkedHashSet<>();
 
@@ -329,24 +330,24 @@ public class InvoiceHeaderImplBuilder
 		C_Currency_ID = checkOverrideID("C_Currency_ID", C_Currency_ID, currencyId);
 	}
 
-	public int getAD_InputDataSource_ID()
+	public InputDataSourceId getAD_InputDataSource_ID()
 	{
 		return inputDataSourceId;
 	}
 
-	public void setAD_InputDataSource_ID(final int adInputDataSourceId)
+	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId)
 	{
-		if (this.inputDataSourceId <= 0)
+		if (this.inputDataSourceId == null)
 		{
-			this.inputDataSourceId = adInputDataSourceId;
+			this.inputDataSourceId = inputDataSourceId;
 		}
-		else if (this.inputDataSourceId == adInputDataSourceId)
+		else if (this.inputDataSourceId == inputDataSourceId)
 		{
-			this.inputDataSourceId = adInputDataSourceId;
+			this.inputDataSourceId = inputDataSourceId;
 		}
-		else if (this.inputDataSourceId != adInputDataSourceId)
+		else if (this.inputDataSourceId != inputDataSourceId)
 		{
-			this.inputDataSourceId = 0;
+			this.inputDataSourceId = null;
 		}
 	}
 
