@@ -40,7 +40,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
@@ -511,15 +510,6 @@ public interface IQuery<T>
 	 * @see #list(Class)
 	 */
 	<K, ET extends T> Map<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
-
-	/**
-	 * Gets an immutable ID to model map.
-	 *
-	 * @return ID to model map
-	 * @see #map(Class, Function)
-	 * @see Model2IdFunction
-	 */
-	<ET extends T> Map<Integer, ET> mapToId(Class<ET> modelClass);
 
 	/**
 	 * Retrieves the records as {@link ListMultimap}.
