@@ -114,6 +114,8 @@ public interface IQueryBuilder<T>
 
 	default ImmutableList<T> list() { return create().listImmutable(getModelClass()); }
 
+	default int delete() { return create().delete(); }
+
 	IQueryBuilder<T> addNotEqualsFilter(String columnName, @Nullable Object value);
 
 	IQueryBuilder<T> addNotEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
