@@ -22,10 +22,8 @@
 
 package de.metas.resource.interceptor;
 
-import de.metas.product.IProductDAO;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceService;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -37,7 +35,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class S_Resource
 {
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final ResourceService resourceService;
 
 	public S_Resource(@NonNull final ResourceService resourceService)
@@ -45,16 +42,22 @@ public class S_Resource
 		this.resourceService = resourceService;
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	void beforeSave(final I_S_Resource resourceRecord)
+	{
+		resourceService.validateResourceBeforeSave(resourceRecord);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(final I_S_Resource resourceRecord)
+	void afterSave(final I_S_Resource resourceRecord)
 	{
 		resourceService.onResourceChanged(resourceRecord);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void beforeDelete(final I_S_Resource resourceRecord)
+	void beforeDelete(final I_S_Resource resourceRecord)
 	{
 		final ResourceId resourceId = ResourceId.ofRepoId(resourceRecord.getS_Resource_ID());
-		productDAO.deleteProductByResourceId(resourceId);
+		resourceService.onResourceBeforeDelete(resourceId);
 	}
 }

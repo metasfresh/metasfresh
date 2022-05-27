@@ -46,7 +46,7 @@ import java.util.stream.Stream;
 @Service
 public class ResourceService
 {
-	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final ResourceRepository resourceRepository;
 	private final ResourceGroupRepository resourceGroupRepository;
 	private final ResourceAssignmentRepository resourceAssignmentRepository;
@@ -153,7 +153,7 @@ public class ResourceService
 		return resourceTypeRepository.getById(resource.getResourceTypeId());
 	}
 
-	public void onResourceChanged(@NonNull final I_S_Resource resourceRecord)
+	public void validateResourceBeforeSave(final @NonNull I_S_Resource resourceRecord)
 	{
 		//
 		// Validate Manufacturing Resource
@@ -163,16 +163,19 @@ public class ResourceService
 		{
 			throw new FillMandatoryException(I_S_Resource.COLUMNNAME_PlanningHorizon);
 		}
+	}
 
+	public void onResourceChanged(@NonNull final I_S_Resource resourceRecord)
+	{
 		createOrUpdateProductFromResource(ResourceRepository.toResource(resourceRecord));
 	}
 
 	private void createOrUpdateProductFromResource(final @NonNull Resource resource)
 	{
-		productsRepo.updateProductsByResourceIds(
+		productDAO.updateProductsByResourceIds(
 				ImmutableSet.of(resource.getResourceId()),
 				(resourceId, product) -> {
-					if(InterfaceWrapperHelper.isNew(product))
+					if (InterfaceWrapperHelper.isNew(product))
 					{
 						final ResourceType fromResourceType = getResourceTypeById(resource.getResourceTypeId());
 						updateProductFromResourceType(product, fromResourceType);
@@ -193,6 +196,11 @@ public class ResourceService
 		product.setDescription(from.getDescription());
 	}
 
+	public void onResourceBeforeDelete(@NonNull final ResourceId resourceId)
+	{
+		productDAO.deleteProductByResourceId(resourceId);
+	}
+
 	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
 		final ResourceType resourceType = resourceTypeRepository.toResourceType(resourceTypeRecord);
@@ -203,7 +211,7 @@ public class ResourceService
 			return;
 		}
 
-		productsRepo.updateProductsByResourceIds(resourceIds, product -> updateProductFromResourceType(product, resourceType));
+		productDAO.updateProductsByResourceIds(resourceIds, product -> updateProductFromResourceType(product, resourceType));
 	}
 
 	private static void updateProductFromResourceType(final I_M_Product product, final ResourceType from)
