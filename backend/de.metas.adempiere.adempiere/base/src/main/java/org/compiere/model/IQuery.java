@@ -22,7 +22,7 @@
 
 package org.compiere.model;
 
- import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -416,7 +416,23 @@ public interface IQuery<T>
 	 * @param failIfProcessed fail if any of those records are Processed.
 	 * @return how many records were deleted
 	 */
-	int delete(boolean failIfProcessed);
+	default int delete(final boolean failIfProcessed)
+	{
+		final List<T> records = list();
+		if (records.isEmpty())
+		{
+			return 0;
+		}
+
+		int countDeleted = 0;
+		for (final Object record : records)
+		{
+			InterfaceWrapperHelper.delete(record, failIfProcessed);
+			countDeleted++;
+		}
+
+		return countDeleted;
+	}
 
 	/**
 	 * @return executor which will assist you to mass-update fields of models which are matched by this query
