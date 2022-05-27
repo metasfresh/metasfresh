@@ -222,8 +222,6 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final I_C_Flatrate_Term term = subscriptionLine.getC_Flatrate_Term();
 
-		shipmentSchedule.setAD_InputDataSource_ID(subscriptionLine.getAD_InputDataSource_ID());
-
 		Check.assume(term.getM_Product_ID() > 0, term + " has M_Product_ID>0");
 
 		shipmentSchedule.setM_Product_ID(term.getM_Product_ID());

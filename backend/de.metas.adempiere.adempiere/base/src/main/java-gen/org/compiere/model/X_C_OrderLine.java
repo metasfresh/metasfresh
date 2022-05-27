@@ -1910,10 +1910,4 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
-
-	@Override
-	public int getAD_InputDataSource_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
-	}
 }

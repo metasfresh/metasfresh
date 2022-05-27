@@ -2126,12 +2126,12 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	public void setAD_InputDataSource_ID (final int inputDataSourceId)
 	{
-		if (AD_InputDataSource_ID < 1)
+		if (inputDataSourceId < 1)
 			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
 		else
-			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, inputDataSourceId);
 	}
 
 	@Override

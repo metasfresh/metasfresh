@@ -39,7 +39,7 @@ public interface I_C_Invoice_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+	void setAD_InputDataSource_ID (int inputDataSourceId);
 
 	/**
 	 * Get Inputsource.

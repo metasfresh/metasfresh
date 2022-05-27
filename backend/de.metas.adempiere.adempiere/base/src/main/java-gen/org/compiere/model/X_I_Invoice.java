@@ -220,15 +220,15 @@ public class X_I_Invoice extends PO implements I_I_Invoice, I_Persistent
 	}
 
 	/** Set DataSource.
-	 @param AD_InputDataSource_ID
+	 @param inputDataSourceId
 	 Business DataSource
 	 */
-	public void setAD_InputDataSource_ID (int AD_InputDataSource_ID)
+	public void setAD_InputDataSource_ID (int inputDataSourceId)
 	{
-		if (AD_InputDataSource_ID < 1)
+		if (inputDataSourceId < 1)
 			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
 		else
-			set_Value (COLUMNNAME_AD_InputDataSource_ID, Integer.valueOf(AD_InputDataSource_ID));
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, Integer.valueOf(inputDataSourceId));
 	}
 
 	/** Get DataSource.
@@ -1274,6 +1274,4 @@ public class X_I_Invoice extends PO implements I_I_Invoice, I_Persistent
 	{
 		return (String)get_Value(COLUMNNAME_UPC);
 	}
-
-
 }

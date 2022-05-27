@@ -2779,16 +2779,4 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_OrderLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
-
-	/**
-	 * Get Inputsource.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_InputDataSource_ID();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_OrderLine.class, "AD_InputDataSource_ID", null);
-	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 }

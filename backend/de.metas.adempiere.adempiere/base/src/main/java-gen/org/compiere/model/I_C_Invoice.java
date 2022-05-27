@@ -1961,7 +1961,7 @@ public interface I_C_Invoice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+	void setAD_InputDataSource_ID (int inputDataSourceId);
 
 	/**
 	 * Get Inputsource.

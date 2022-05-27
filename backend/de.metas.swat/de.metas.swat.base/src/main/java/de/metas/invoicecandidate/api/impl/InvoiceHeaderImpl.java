@@ -17,6 +17,7 @@ import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
 import org.compiere.model.I_C_DocType;
+import de.metas.impex.InputDataSourceId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -42,7 +43,7 @@ import java.util.List;
 
 	@Getter
 	@Setter
-	private int AD_InputDataSource_ID;
+	private int inputDataSourceId;
 
 	private LocalDate dateInvoiced;
 
@@ -383,8 +384,8 @@ import java.util.List;
 	}
 
 	@Override
-	public int getAD_InputDataSource_ID() {	return AD_InputDataSource_ID;}
+	public int getAD_InputDataSource_ID() {	return inputDataSourceId;}
 
-	public void setAD_InputDataSource_ID(final int AD_InputDataSource_ID){this.AD_InputDataSource_ID = AD_InputDataSource_ID;}
+	public void setAD_InputDataSource_ID(final int inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
 
 }

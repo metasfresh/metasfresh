@@ -694,7 +694,6 @@ public class ImportInvoice extends JavaProcess
 					invoice.setC_DocTypeTarget_ID(imp.getC_DocType_ID());
 					invoice.setIsSOTrx(imp.isSOTrx());
 					invoice.setEMail(imp.getEMail());
-					invoice.setAD_InputDataSource_ID(imp.getAD_InputDataSource_ID());
 					if (imp.getDocumentNo() != null)
 						invoice.setDocumentNo(imp.getDocumentNo());
 					//
