@@ -55,6 +55,7 @@ import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
@@ -143,13 +144,13 @@ public interface IQuery<T>
 
 	/**
 	 * @return first ID or -1 if no records are found.
-	 *         No exception is thrown if multiple results exist, they are just ignored.
+	 * No exception is thrown if multiple results exist, they are just ignored.
 	 */
 	int firstId();
 
 	/**
 	 * @return first ID or null if no records are found.
-	 *         No exception is thrown if multiple results exist, they are just ignored.
+	 * No exception is thrown if multiple results exist, they are just ignored.
 	 */
 	@Nullable
 	default <ID extends RepoIdAware> ID firstId(@NonNull final java.util.function.Function<Integer, ID> idMapper)
@@ -159,13 +160,13 @@ public interface IQuery<T>
 
 	/**
 	 * @return first ID or -1 if no records are found.
-	 *         An exception is thrown if multiple results exist.
+	 * An exception is thrown if multiple results exist.
 	 */
 	int firstIdOnly() throws DBException;
 
 	/**
 	 * @return first ID or null if no records are found.
-	 *         An exception is thrown if multiple results exist.
+	 * An exception is thrown if multiple results exist.
 	 */
 	@Nullable
 	default <ID extends RepoIdAware> ID firstIdOnly(@NonNull final java.util.function.Function<Integer, ID> idMapper)
@@ -179,8 +180,8 @@ public interface IQuery<T>
 		return Optional.ofNullable(firstIdOnly(idMapper));
 	}
 
-
-	@Nullable <ET extends T> ET first() throws DBException;
+	@Nullable
+	<ET extends T> ET first() throws DBException;
 
 	/**
 	 * @return first record or null
@@ -202,8 +203,7 @@ public interface IQuery<T>
 	/**
 	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
-	@NonNull
-	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
+	@NonNull <ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
@@ -217,8 +217,7 @@ public interface IQuery<T>
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
-	@NonNull
-	<ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
+	@NonNull <ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there are more then one record <code>null</code> will be returned instead of throwing exception.
@@ -356,7 +355,7 @@ public interface IQuery<T>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
 	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate(Class)} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *            page size.
+	 *              page size.
 	 * @return this
 	 */
 	IQuery<T> setLimit(QueryLimit limit);
@@ -372,8 +371,8 @@ public interface IQuery<T>
 	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
-	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate(Class)} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *            page size.
+	 * @param limit  integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate(Class)} method is used and the underlying database supports paging, then the limit value (if set) is used as
+	 *               page size.
 	 * @param offset integer greater than zero or {@link #NO_LIMIT}
 	 * @return this
 	 */
@@ -433,6 +432,8 @@ public interface IQuery<T>
 
 		return countDeleted;
 	}
+
+	default void forEach(@NonNull final Consumer<T> action) {stream().forEach(action);}
 
 	/**
 	 * @return executor which will assist you to mass-update fields of models which are matched by this query
