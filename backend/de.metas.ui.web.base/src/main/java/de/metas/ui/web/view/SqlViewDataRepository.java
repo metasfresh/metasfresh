@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.FilterSql;
@@ -38,6 +40,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -206,6 +209,21 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	@Override
 	public IViewRow retrieveById(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> retrieveById0(viewEvalCtx, viewId, rowId),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("SqlViewDataRepository")
+						.type(PerformanceMonitoringService.Type.VIEW)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private IViewRow retrieveById0(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
 	{
 		final SqlAndParams sqlAndParams = sqlViewSelect.selectById()
 				.viewEvalCtx(viewEvalCtx)

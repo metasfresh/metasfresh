@@ -107,7 +107,9 @@ public interface PerformanceMonitoringService
 
 		INVOICE("invoice"),
 
-		DB("db");
+		DB("db"),
+
+		VIEW("view");
 
 		Type(final String code)
 		{
