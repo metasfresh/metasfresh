@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_S_Resource_Group_Assignment extends org.compiere.model.PO implements I_S_Resource_Group_Assignment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1640749178L;
+	private static final long serialVersionUID = -1234324180L;
 
     /** Standard Constructor */
     public X_S_Resource_Group_Assignment (final Properties ctx, final int S_Resource_Group_Assignment_ID, @Nullable final String trxName)
@@ -107,18 +107,6 @@ public class X_S_Resource_Group_Assignment extends org.compiere.model.PO impleme
 	public int getS_Resource_Group_Assignment_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_Group_Assignment_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource_Group getS_Resource_Group()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_Group_ID, org.compiere.model.I_S_Resource_Group.class);
-	}
-
-	@Override
-	public void setS_Resource_Group(final org.compiere.model.I_S_Resource_Group S_Resource_Group)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_Group_ID, org.compiere.model.I_S_Resource_Group.class, S_Resource_Group);
 	}
 
 	@Override

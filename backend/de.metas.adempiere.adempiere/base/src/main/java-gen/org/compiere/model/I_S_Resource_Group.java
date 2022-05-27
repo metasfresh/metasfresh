@@ -98,6 +98,29 @@ public interface I_S_Resource_Group
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Duration Unit.
+	 * Unit of Duration
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDurationUnit (java.lang.String DurationUnit);
+
+	/**
+	 * Get Duration Unit.
+	 * Unit of Duration
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDurationUnit();
+
+	ModelColumn<I_S_Resource_Group, Object> COLUMN_DurationUnit = new ModelColumn<>(I_S_Resource_Group.class, "DurationUnit", null);
+	String COLUMNNAME_DurationUnit = "DurationUnit";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -119,6 +142,28 @@ public interface I_S_Resource_Group
 
 	ModelColumn<I_S_Resource_Group, Object> COLUMN_IsActive = new ModelColumn<>(I_S_Resource_Group.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_Category_ID (int M_Product_Category_ID);
+
+	/**
+	 * Get Product Category.
+	 * Category of a Product
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_Category_ID();
+
+	String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
 	/**
 	 * Set Name.

@@ -375,11 +375,6 @@ public interface I_S_Resource
 	 */
 	int getS_Resource_Group_ID();
 
-	@Nullable org.compiere.model.I_S_Resource_Group getS_Resource_Group();
-
-	void setS_Resource_Group(@Nullable org.compiere.model.I_S_Resource_Group S_Resource_Group);
-
-	ModelColumn<I_S_Resource, org.compiere.model.I_S_Resource_Group> COLUMN_S_Resource_Group_ID = new ModelColumn<>(I_S_Resource.class, "S_Resource_Group_ID", org.compiere.model.I_S_Resource_Group.class);
 	String COLUMNNAME_S_Resource_Group_ID = "S_Resource_Group_ID";
 
 	/**
@@ -423,11 +418,6 @@ public interface I_S_Resource
 	 */
 	int getS_ResourceType_ID();
 
-	org.compiere.model.I_S_ResourceType getS_ResourceType();
-
-	void setS_ResourceType(org.compiere.model.I_S_ResourceType S_ResourceType);
-
-	ModelColumn<I_S_Resource, org.compiere.model.I_S_ResourceType> COLUMN_S_ResourceType_ID = new ModelColumn<>(I_S_Resource.class, "S_ResourceType_ID", org.compiere.model.I_S_ResourceType.class);
 	String COLUMNNAME_S_ResourceType_ID = "S_ResourceType_ID";
 
 	/**

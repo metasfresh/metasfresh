@@ -40,6 +40,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.ResourceId;
 import de.metas.product.UpdateProductRequest;
+import de.metas.resource.ResourceGroupId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -477,9 +478,36 @@ public class ProductDAO implements IProductDAO
 		queryBL
 				.createQueryBuilder(I_M_Product.class) // in trx
 				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
-				//.addOnlyActiveRecordsFilter()
-				//.addOnlyContextClient()
+				.delete();
+	}
+
+	@Override
+	public void updateProductByResourceGroupId(@NonNull final ResourceGroupId resourceGroupId, @NonNull final Consumer<I_M_Product> productUpdater)
+	{
+		final Set<ProductId> existingProductIds = queryBL.createQueryBuilder(I_M_Product.class) // in trx!
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_Group_ID, resourceGroupId)
 				.create()
+				.listIds(ProductId::ofRepoId);
+
+		final Map<ResourceGroupId, I_M_Product> existingProductsByResourceGroupId = Maps.uniqueIndex(
+				loadByRepoIdAwares(existingProductIds, I_M_Product.class),
+				product -> ResourceGroupId.ofRepoId(product.getS_Resource_Group_ID()));
+
+		I_M_Product product = existingProductsByResourceGroupId.get(resourceGroupId);
+		if (product == null)
+		{
+			product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		}
+
+		productUpdater.accept(product);
+		InterfaceWrapperHelper.save(product);
+	}
+
+	@Override
+	public void deleteProductByResourceGroupId(@NonNull final ResourceGroupId resourceGroupId)
+	{
+		queryBL.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_Group_ID, resourceGroupId)
 				.delete();
 	}
 

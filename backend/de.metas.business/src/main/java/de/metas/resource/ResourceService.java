@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -36,7 +38,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
-import org.compiere.model.X_M_Product;
+import org.compiere.model.I_S_Resource_Group;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -47,6 +49,7 @@ import java.util.stream.Stream;
 public class ResourceService
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ResourceRepository resourceRepository;
 	private final ResourceGroupRepository resourceGroupRepository;
 	private final ResourceAssignmentRepository resourceAssignmentRepository;
@@ -221,6 +224,44 @@ public class ResourceService
 		product.setM_Product_Category_ID(from.getProductCategoryId().getRepoId());
 	}
 
+	public void onResourceGroupChanged(final I_S_Resource_Group record)
+	{
+		createOrUpdateProductFromResourceGroup(ResourceGroupRepository.toResourceGroup(record));
+	}
+
+	private void createOrUpdateProductFromResourceGroup(final ResourceGroup resourceGroup)
+	{
+		productDAO.updateProductByResourceGroupId(
+				resourceGroup.getId(),
+				product -> {
+					if (InterfaceWrapperHelper.isNew(product))
+					{
+						final UomId uomId = uomDAO.getUomIdByTemporalUnit(resourceGroup.getDurationUnit());
+						product.setProductType(ProductType.Resource.getCode());
+						product.setC_UOM_ID(uomId.getRepoId());
+						product.setM_Product_Category_ID(resourceGroup.getProductCategoryId().getRepoId());
+					}
+
+					product.setProductType(ProductType.Resource.getCode());
+					product.setS_Resource_Group_ID(resourceGroup.getId().getRepoId());
+					product.setIsActive(resourceGroup.isActive());
+
+					product.setValue("RG" + resourceGroup.getId().getRepoId());
+					product.setName(resourceGroup.getName().getDefaultValue());
+					product.setDescription(resourceGroup.getDescription());
+				});
+	}
+
+	public void onResourceGroupBeforeDelete(final ResourceGroupId resourceGroupId)
+	{
+		productDAO.deleteProductByResourceGroupId(resourceGroupId);
+	}
+
+	//
+	//
+	// ------------------------------------------------------------------------
+	//
+	//
 	@UtilityClass
 	@Deprecated
 	public static class Legacy

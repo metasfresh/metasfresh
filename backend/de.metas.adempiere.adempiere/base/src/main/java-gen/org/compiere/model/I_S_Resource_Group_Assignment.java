@@ -247,11 +247,6 @@ public interface I_S_Resource_Group_Assignment
 	 */
 	int getS_Resource_Group_ID();
 
-	org.compiere.model.I_S_Resource_Group getS_Resource_Group();
-
-	void setS_Resource_Group(org.compiere.model.I_S_Resource_Group S_Resource_Group);
-
-	ModelColumn<I_S_Resource_Group_Assignment, org.compiere.model.I_S_Resource_Group> COLUMN_S_Resource_Group_ID = new ModelColumn<>(I_S_Resource_Group_Assignment.class, "S_Resource_Group_ID", org.compiere.model.I_S_Resource_Group.class);
 	String COLUMNNAME_S_Resource_Group_ID = "S_Resource_Group_ID";
 
 	/**

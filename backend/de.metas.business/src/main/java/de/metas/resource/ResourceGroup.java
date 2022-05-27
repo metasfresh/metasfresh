@@ -23,9 +23,13 @@
 package de.metas.resource;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.product.ProductCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.temporal.TemporalUnit;
 
 @Value
 @Builder
@@ -33,5 +37,9 @@ public class ResourceGroup
 {
 	@NonNull ResourceGroupId id;
 	@NonNull ITranslatableString name;
+	@Nullable String description;
 	boolean isActive;
+
+	@NonNull ProductCategoryId productCategoryId;
+	@NonNull TemporalUnit durationUnit;
 }

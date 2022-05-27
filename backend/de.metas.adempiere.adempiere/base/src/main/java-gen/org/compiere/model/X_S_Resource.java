@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -430368634L;
+	private static final long serialVersionUID = -1915472746L;
 
     /** Standard Constructor */
     public X_S_Resource (final Properties ctx, final int S_Resource_ID, @Nullable final String trxName)
@@ -209,18 +209,6 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource_Group getS_Resource_Group()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_Group_ID, org.compiere.model.I_S_Resource_Group.class);
-	}
-
-	@Override
-	public void setS_Resource_Group(final org.compiere.model.I_S_Resource_Group S_Resource_Group)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_Group_ID, org.compiere.model.I_S_Resource_Group.class, S_Resource_Group);
-	}
-
-	@Override
 	public void setS_Resource_Group_ID (final int S_Resource_Group_ID)
 	{
 		if (S_Resource_Group_ID < 1) 
@@ -248,18 +236,6 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_S_ResourceType getS_ResourceType()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_ResourceType_ID, org.compiere.model.I_S_ResourceType.class);
-	}
-
-	@Override
-	public void setS_ResourceType(final org.compiere.model.I_S_ResourceType S_ResourceType)
-	{
-		set_ValueFromPO(COLUMNNAME_S_ResourceType_ID, org.compiere.model.I_S_ResourceType.class, S_ResourceType);
 	}
 
 	@Override

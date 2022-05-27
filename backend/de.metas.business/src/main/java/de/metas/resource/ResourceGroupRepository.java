@@ -27,7 +27,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -73,14 +76,17 @@ class ResourceGroupRepository
 		return new ResourceGroupsMap(list);
 	}
 
-	private static ResourceGroup toResourceGroup(final I_S_Resource_Group record)
+	static ResourceGroup toResourceGroup(final I_S_Resource_Group record)
 	{
 		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return ResourceGroup.builder()
 				.id(ResourceGroupId.ofRepoId(record.getS_Resource_Group_ID()))
 				.name(trl.getColumnTrl(I_S_Resource_Group.COLUMNNAME_Name, record.getName()))
+				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.isActive(record.isActive())
+				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
+				.durationUnit(WFDurationUnit.ofCode(record.getDurationUnit()).getTemporalUnit())
 				.build();
 	}
 
