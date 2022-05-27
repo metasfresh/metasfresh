@@ -87,6 +87,7 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_S_ResourceType")
 			.add("org.compiere.model.I_S_Resource")
+			.add("org.compiere.model.I_S_Resource_Group")
 			//
 			.add("org.compiere.model.I_M_PricingSystem")
 			.add("org.compiere.model.I_M_PriceList")
