@@ -23,7 +23,7 @@ CMD if [[ -f "/run/secrets/mysecret" ]] ;\
         --source "cucumber-tests-github" \
 		--tags $REFNAME \
         --results target/*.xml \
-        -- mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true ;\
+        -- mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true || echo 'ok';\
     else \
-        mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true ;\
+        mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true || echo 'ok';\
     fi
