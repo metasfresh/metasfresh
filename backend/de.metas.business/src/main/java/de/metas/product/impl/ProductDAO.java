@@ -478,7 +478,11 @@ public class ProductDAO implements IProductDAO
 		queryBL
 				.createQueryBuilder(I_M_Product.class) // in trx
 				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
-				.delete();
+				.forEach(product -> {
+					// have to unset it because if not, the beforeSave interceptor will fail
+					product.setS_Resource_ID(-1);
+					InterfaceWrapperHelper.save(product);
+				});
 	}
 
 	@Override
@@ -508,7 +512,11 @@ public class ProductDAO implements IProductDAO
 	{
 		queryBL.createQueryBuilder(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_Group_ID, resourceGroupId)
-				.delete();
+				.forEach(product -> {
+					// have to unset it because if not, the beforeSave interceptor will fail
+					product.setS_Resource_Group_ID(-1);
+					InterfaceWrapperHelper.save(product);
+				});
 	}
 
 	@Override

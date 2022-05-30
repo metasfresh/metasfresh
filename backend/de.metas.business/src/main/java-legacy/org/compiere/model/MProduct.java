@@ -21,10 +21,13 @@
  */
 package org.compiere.model;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductType;
+import de.metas.product.ResourceId;
+import de.metas.resource.ResourceGroupId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
@@ -265,14 +268,25 @@ public class MProduct extends X_M_Product
 	}	// toString
 
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		// Reset Stocked if not Item
 		// AZ Goodwill: Bug Fix isStocked always return false
 		// if (isStocked() && !PRODUCTTYPE_Item.equals(getProductType()))
-		if (!PRODUCTTYPE_Item.equals(getProductType()))
+		final ProductType productType = ProductType.ofCode(getProductType());
+		if (!productType.isItem())
 		{
 			setIsStocked(false);
+		}
+
+		if(productType.isResource())
+		{
+			final ResourceId resourceId = ResourceId.ofRepoIdOrNull(getS_Resource_ID());
+			final ResourceGroupId resourceGroupId = ResourceGroupId.ofRepoIdOrNull(getS_Resource_Group_ID());
+			if(CoalesceUtil.countNotNulls(resourceId, resourceGroupId) != 1)
+			{
+				throw new AdempiereException("In case of resource products the resource or the resource group shall be set (one and only one)");
+			}
 		}
 
 		// UOM reset
@@ -336,12 +350,20 @@ public class MProduct extends X_M_Product
 	@Override
 	protected boolean beforeDelete()
 	{
-		if(ProductType.ofCode(getProductType()).isResource() && getS_Resource_ID() > 0)
+		final ProductType productType = ProductType.ofCode(getProductType());
+		if(productType.isResource() && getS_Resource_ID() > 0)
 		{
-			throw new AdempiereException("@S_Resource_ID@<>0");
+			final ResourceId resourceId = ResourceId.ofRepoIdOrNull(getS_Resource_ID());
+			final ResourceGroupId resourceGroupId = ResourceGroupId.ofRepoIdOrNull(getS_Resource_Group_ID());
+			if(CoalesceUtil.countNotNulls(resourceId, resourceGroupId) > 0)
+			{
+				throw new AdempiereException("Resource products cannot be deleted by user");
+			}
 		}
 
 		//
-		return delete_Accounting("M_Product_Acct");
-	}	// beforeDelete
+		delete_Accounting("M_Product_Acct");
+
+		return true;
+	}
 }
