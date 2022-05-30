@@ -102,7 +102,7 @@ public class Callout_AD_Menu extends CalloutEngine
 	{
 		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
 		final WorkflowId workflowId = WorkflowId.ofRepoIdOrNull(menu.getAD_Workflow_ID());
-		if (workflowId != null)
+		if (workflowId == null)
 			return "";
 
 		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
