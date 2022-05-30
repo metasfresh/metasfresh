@@ -207,7 +207,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
 		// task 13022 : set order's project if no dimension is already set one
-		if(icRecord.getC_Project_ID() <= 0)
+		if (icRecord.getC_Project_ID() <= 0)
 		{
 			icRecord.setC_Project_ID(order.getC_Project_ID());
 		}
@@ -232,13 +232,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
 
-		if(orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
+		if (orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
 		{
 			icRecord.setEMail(order.getEMail());
 		}
 
 		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
-
 
 		// external identifiers
 		icRecord.setExternalLineId(orderLine.getExternalId());
@@ -362,7 +361,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 	}
 
-
 	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
@@ -455,15 +453,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(icRecord.getC_OrderLine(), I_C_OrderLine.class);
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 
-		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-				.deliveryLocationAdapter(order)
+		final DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+				.locationAdapter(order)
 				.toDocumentLocation();
-		if (orderDeliveryLocation.getBpartnerLocationId() == null)
-		{
-			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-					.locationAdapter(order)
-					.toDocumentLocation();
-		}
 
 		// Tax
 		final TaxId taxId = taxBL.getTaxNotNull(
