@@ -201,34 +201,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
-		final DocumentLocation orderDeliveryLocation;
-
-		if (order.isDropShip())
-		{
-			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-					.deliveryLocationAdapter(order)
-					.toDocumentLocation();
-		}
-		else
-		{
-			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-					.locationAdapter(order)
-					.toDocumentLocation();
-		}
-
-		//
-		// Tax
-		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
-				icRecord,
-				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
-				orderLine.getM_Product_ID(),
-				order.getDatePromised(), // shipDate
-				OrgId.ofRepoId(order.getAD_Org_ID()),
-				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
-				SOTrx.ofBoolean(order.isSOTrx()));
-		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
+		icRecord.setC_Tax_ID(orderLine.getC_Tax_ID());
 
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
