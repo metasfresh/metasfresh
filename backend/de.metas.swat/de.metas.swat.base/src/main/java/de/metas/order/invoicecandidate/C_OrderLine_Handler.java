@@ -201,10 +201,15 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
-		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-				.deliveryLocationAdapter(order)
-				.toDocumentLocation();
-		if(orderDeliveryLocation.getBpartnerLocationId() == null)
+		final DocumentLocation orderDeliveryLocation;
+
+		if (order.isDropShip())
+		{
+			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(order)
+					.toDocumentLocation();
+		}
+		else
 		{
 			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
 					.locationAdapter(order)
