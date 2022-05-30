@@ -123,6 +123,11 @@ public class ResourceService
 		return resourceGroupRepository.getByIds(ids);
 	}
 
+	public ResourceGroup getGroupById(@NonNull final ResourceGroupId id)
+	{
+		return resourceGroupRepository.getById(id);
+	}
+
 	public Stream<ResourceGroupAssignment> queryResourceGroupAssignments(final ResourceGroupAssignmentQuery query)
 	{
 		return resourceGroupAssignmentRepository.query(query);

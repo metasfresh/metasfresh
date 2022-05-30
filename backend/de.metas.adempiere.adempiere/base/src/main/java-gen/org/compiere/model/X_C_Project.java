@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 107991095L;
+	private static final long serialVersionUID = -1432280558L;
 
     /** Standard Constructor */
     public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)
@@ -592,6 +592,8 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public static final String PROJECTCATEGORY_ServiceChargeProject = "S";
 	/** ServiceOrRepair = R */
 	public static final String PROJECTCATEGORY_ServiceOrRepair = "R";
+	/** Budget = B */
+	public static final String PROJECTCATEGORY_Budget = "B";
 	@Override
 	public void setProjectCategory (final @Nullable java.lang.String ProjectCategory)
 	{

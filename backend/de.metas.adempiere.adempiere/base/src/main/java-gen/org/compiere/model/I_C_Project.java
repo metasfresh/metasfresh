@@ -285,7 +285,7 @@ public interface I_C_Project
 	/**
 	 * Set Parent Project.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -294,7 +294,7 @@ public interface I_C_Project
 	/**
 	 * Get Parent Project.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

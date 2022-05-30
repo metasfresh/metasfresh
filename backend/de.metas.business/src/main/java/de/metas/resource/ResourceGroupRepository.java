@@ -60,6 +60,11 @@ class ResourceGroupRepository
 		return !ids.isEmpty() ? getMap().getByIds(ids) : ImmutableList.of();
 	}
 
+	public ResourceGroup getById(@NonNull final ResourceGroupId id)
+	{
+		return getMap().getById(id);
+	}
+
 	private ResourceGroupsMap getMap()
 	{
 		return cache.getOrLoad(0, this::retrieveMap);
