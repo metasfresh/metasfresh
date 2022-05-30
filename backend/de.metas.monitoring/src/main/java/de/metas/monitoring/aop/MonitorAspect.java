@@ -45,12 +45,14 @@ import java.util.concurrent.Callable;
 public class MonitorAspect
 {
 	private final MicrometerPerformanceMonitoringService service;
-	public MonitorAspect(@NonNull final MicrometerPerformanceMonitoringService service){
+	public MonitorAspect(@NonNull final MicrometerPerformanceMonitoringService service)
+	{
 		this.service = service;
 	}
 
 	@Around("@annotation(de.metas.monitoring.annotation.Monitor)")
-	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable {
+	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
+	{
 		final PerformanceMonitoringService.Metadata metadata;
 		final Callable callable = getCallableFromProceedingJoinPoint( pjp );
 
@@ -68,7 +70,7 @@ public class MonitorAspect
 			String windowIdStr = (String)pathVariables.get("windowId");
 
 			metadata = PerformanceMonitoringService.Metadata.builder()
-					.name(method.getClass().getSimpleName())
+					.name(pjp.getTarget().getClass().getSimpleName())
 					.type(monitor.type())
 					.action(method.getName())
 					.windowIdStr(windowIdStr)
@@ -77,7 +79,7 @@ public class MonitorAspect
 		else
 		{
 			metadata = PerformanceMonitoringService.Metadata.builder()
-					.name(method.getClass().getSimpleName())
+					.name(pjp.getTarget().getClass().getSimpleName())
 					.type(monitor.type())
 					.action(method.getName())
 					.build();
@@ -87,22 +89,31 @@ public class MonitorAspect
 
 	}
 
-	private Callable<Object> getCallableFromProceedingJoinPoint(final ProceedingJoinPoint pjp) {
-		Callable<Object> callable = new Callable<Object>() {
+	private Callable<Object> getCallableFromProceedingJoinPoint(final ProceedingJoinPoint pjp)
+	{
+		Callable<Object> callable = new Callable<Object>()
+		{
 
 			@Override
-			public Object call() throws Exception {
-				try {
+			public Object call() throws Exception
+			{
+				try
+				{
 					return pjp.proceed();
-				} catch (Exception e) {
+				}
+				catch (Exception e)
+				{
 					throw e;
-				} catch (Throwable t) {
+				}
+				catch (Throwable t)
+				{
 					throw new RuntimeException(t);
 				}
 			}
 
 			@Override
-			public String toString() {
+			public String toString()
+			{
 				return pjp.getTarget().toString();
 			}
 		};
