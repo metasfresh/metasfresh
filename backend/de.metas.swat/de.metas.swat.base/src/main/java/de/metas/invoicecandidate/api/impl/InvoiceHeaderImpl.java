@@ -83,6 +83,8 @@ import java.util.List;
 
 	private PaymentTermId paymentTermId;
 
+	private String paymentRule;
+
 	private int C_Async_Batch_ID;
 
 	private int C_Incoterms_ID;
@@ -306,6 +308,17 @@ import java.util.List;
 	public PaymentTermId getPaymentTermId()
 	{
 		return paymentTermId;
+	}
+
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	@Override
+	public String getPaymentRule()
+	{
+		return paymentRule;
 	}
 
 	@Override

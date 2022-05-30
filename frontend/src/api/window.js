@@ -2,6 +2,7 @@ import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
+import { formatSortingQuery } from '../utils';
 
 /**
  * @param attributeType 'pattribute' or 'address'
@@ -87,7 +88,7 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     docId: docId,
     tabId: tabId,
     rowId: null, // all rows
-    orderBy: orderBy,
+    orderBy: formatSortingQuery(orderBy),
   })
     .then(
       (res) =>

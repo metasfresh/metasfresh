@@ -11,6 +11,7 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -282,12 +283,14 @@ public interface IInvoiceCandidateHandler
 
 		Percent discount;
 
-		TaxCategoryId taxCategoryId;
+		InvoicableQtyBasedOn invoicableQtyBasedOn;
+
 		Boolean taxIncluded;
+		TaxId taxId;
+		TaxCategoryId taxCategoryId;
 
 		BigDecimal compensationGroupBaseAmt;
 
-		InvoicableQtyBasedOn invoicableQtyBasedOn;
 	}
 
 }

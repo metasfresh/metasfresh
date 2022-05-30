@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_PackingMaterial
  *  @author metasfresh (generated) 
@@ -177,6 +177,18 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	public boolean isQtyLUByMaxLoadWeight() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_isQtyLUByMaxLoadWeight);
+	}
+
+	@Override
+	public void setIsInvoiceable (final boolean IsInvoiceable)
+	{
+		set_Value (COLUMNNAME_IsInvoiceable, IsInvoiceable);
+	}
+
+	@Override
+	public boolean isInvoiceable() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceable);
 	}
 
 	@Override

@@ -1,8 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_HU_PackingMaterial
  *  @author metasfresh (generated) 
@@ -339,6 +340,29 @@ public interface I_M_HU_PackingMaterial
 
 	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_isQtyLUByMaxLoadWeight = new ModelColumn<>(I_M_HU_PackingMaterial.class, "isQtyLUByMaxLoadWeight", null);
 	String COLUMNNAME_isQtyLUByMaxLoadWeight = "isQtyLUByMaxLoadWeight";
+
+	/**
+	 * Set Include in Invoice.
+	 * If checked, when this packing material is used for a shipment it will also be included in the invoice
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceable (boolean IsInvoiceable);
+
+	/**
+	 * Get Include in Invoice.
+	 * If checked, when this packing material is used for a shipment it will also be included in the invoice
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoiceable();
+
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_IsInvoiceable = new ModelColumn<>(I_M_HU_PackingMaterial.class, "IsInvoiceable", null);
+	String COLUMNNAME_IsInvoiceable = "IsInvoiceable";
 
 	/**
 	 * Set Länge.

@@ -2141,7 +2141,7 @@ public class DB
 	/**
 	 * Create persistent selection in T_Selection table
 	 */
-	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, @Nullable final String trxName)
+	public void createT_Selection(@NonNull final PInstanceId pinstanceId, @NonNull final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final int pinstanceRepoId = pinstanceId.getRepoId();
 
@@ -2180,7 +2180,7 @@ public class DB
 	 *
 	 * @return generated AD_PInstance_ID that can be used to identify the selection
 	 */
-	public PInstanceId createT_Selection(final Iterable<Integer> selection, final String trxName)
+	public PInstanceId createT_Selection(@NonNull final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		createT_Selection(pinstanceId, selection, trxName);

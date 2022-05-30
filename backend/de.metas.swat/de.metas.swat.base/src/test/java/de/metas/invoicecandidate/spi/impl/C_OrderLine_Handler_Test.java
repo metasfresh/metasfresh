@@ -50,7 +50,9 @@ import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -162,6 +164,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 			order1.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 			order1.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
+			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+			order1.setC_Currency_ID(10);
+			order1.setM_PricingSystem_ID(20);
 			InterfaceWrapperHelper.save(order1);
 
 			orderLine1 = orderLine("1");
@@ -181,6 +186,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order2.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 			order2.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 			order2.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
+			order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+			order2.setC_Currency_ID(10);
+			order2.setM_PricingSystem_ID(20);
 			InterfaceWrapperHelper.save(order2);
 
 			orderLine2 = orderLine("2");
@@ -266,6 +274,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order1.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order1.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 		order1.setDocStatus(DocStatus.Completed.getCode());
+		order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+		order1.setC_Currency_ID(10);
+		order1.setM_PricingSystem_ID(20);
 		InterfaceWrapperHelper.save(order1);
 
 		final I_C_OrderLine oL1 = orderLine("1");
@@ -289,6 +300,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order2.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order2.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 		order2.setDocStatus(DocStatus.Completed.getCode());
+		order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+		order2.setC_Currency_ID(10);
+		order2.setM_PricingSystem_ID(20);
 		InterfaceWrapperHelper.save(order2);
 
 		final I_C_OrderLine oL2 = orderLine("2");
@@ -312,6 +326,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order3.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order3.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 		order3.setDocStatus(DocStatus.WaitingConfirmation.getCode());
+		order3.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+		order3.setC_Currency_ID(10);
+		order3.setM_PricingSystem_ID(20);
 		InterfaceWrapperHelper.save(order3);
 
 		final I_C_OrderLine oL3 = orderLine("3");
@@ -335,6 +352,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order4.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order4.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 		order4.setDocStatus(DocStatus.Completed.getCode());
+		order4.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+		order4.setC_Currency_ID(10);
+		order4.setM_PricingSystem_ID(20);
 		InterfaceWrapperHelper.save(order4);
 
 		final I_C_OrderLine oL4 = orderLine("4");
@@ -369,7 +389,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		test_PresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 1));
 	}
 
-	private void test_PresetDateInvoiced(final LocalDate presetDateInvoiced)
+	private void test_PresetDateInvoiced(@Nullable final LocalDate presetDateInvoiced)
 	{
 		final BPartnerLocationAndCaptureId bpartnerAndLocationId = createBPartnerAndLocation();
 
@@ -382,6 +402,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 			order1.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 			order1.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
+			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+			order1.setC_Currency_ID(10);
+			order1.setM_PricingSystem_ID(20);
 			InterfaceWrapperHelper.save(order1);
 
 			orderLine1 = orderLine("1");
@@ -417,6 +440,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 			order1.setBill_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 			order1.setBill_Location_Value_ID(differentLocationId.getRepoId());
+			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
+			order1.setC_Currency_ID(10);
+			order1.setM_PricingSystem_ID(20);
 			InterfaceWrapperHelper.save(order1);
 
 			orderLine1 = orderLine("1");

@@ -199,7 +199,7 @@ public class WebsocketSender implements InitializingBean
 		 * internal name, used for logging
 		 */
 		private final String name;
-		private final boolean autoflush;
+		private final boolean doAutoflush;
 		private final List<WebsocketEvent> events = new ArrayList<>();
 		private final Debouncer<WebsocketEvent> debouncer;
 
@@ -209,7 +209,7 @@ public class WebsocketSender implements InitializingBean
 				final boolean autoflush)
 		{
 			this.name = name;
-			this.autoflush = autoflush;
+			this.doAutoflush = autoflush;
 			this.debouncer = debouncer;
 		}
 
@@ -220,7 +220,7 @@ public class WebsocketSender implements InitializingBean
 					.payload(payload)
 					.converted(false)
 					.build();
-			if (autoflush)
+			if (doAutoflush)
 			{
 				debouncer.add(event);
 			}
@@ -237,7 +237,7 @@ public class WebsocketSender implements InitializingBean
 					.payload(message)
 					.converted(true)
 					.build();
-			if (autoflush)
+			if (doAutoflush)
 			{
 				debouncer.add(event);
 			}

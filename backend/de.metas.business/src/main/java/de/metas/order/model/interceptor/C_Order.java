@@ -35,6 +35,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -92,6 +93,7 @@ public class C_Order
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -241,6 +243,34 @@ public class C_Order
 		if (deliveryViaRule != null)
 		{
 			order.setDeliveryViaRule(deliveryViaRule.getCode());
+		}
+	}
+
+	/**
+	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
+	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setPaymentRule(final I_C_Order order)
+	{
+		if (!InterfaceWrapperHelper.isCopying(order))
+		{
+			final I_C_BPartner bpartner = order.getC_BPartner();
+			final PaymentRule paymentRule;
+			if (bpartner != null && bpartner.getPaymentRule() != null)
+			{
+				paymentRule = order.isSOTrx()
+						? PaymentRule.ofCode(bpartner.getPaymentRule())
+						: PaymentRule.ofCode(bpartner.getPaymentRulePO());
+			}
+			else
+			{
+				paymentRule = invoiceBL.getDefaultPaymentRule();
+			}
+			order.setPaymentRule(paymentRule.getCode());
 		}
 	}
 

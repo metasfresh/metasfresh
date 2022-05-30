@@ -587,7 +587,7 @@ RawList.propTypes = {
   isMultiselect: PropTypes.bool,
   compositeWidgetData: PropTypes.array,
   field: PropTypes.string,
-  wrapperElement: PropTypes.node,
+  wrapperElement: PropTypes.any,
 };
 
 RawList.defaultProps = {

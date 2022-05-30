@@ -1648,12 +1648,7 @@ public class CalloutOrder extends CalloutEngine
 			return false;
 		}
 
-		if (!orderLine.isEnforcePriceLimit())
-		{
-			return false;
-		}
-
-		return true;
+		return orderLine.isEnforcePriceLimit();
 	}
 
 	public String attributeSetInstance(final ICalloutField calloutField)
