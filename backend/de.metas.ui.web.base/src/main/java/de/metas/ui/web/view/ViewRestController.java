@@ -27,6 +27,7 @@ import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
@@ -344,29 +345,9 @@ public class ViewRestController
 		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/layout")
 	public ResponseEntity<JSONViewLayout> getViewLayout(
-			@PathVariable(PARAM_WindowId) final String windowIdStr,
-			@RequestParam(name = PARAM_ViewDataType) final JSONViewDataType viewDataType,
-			@RequestParam(name = "profileId", required = false) final String profileIdStr,
-			final WebRequest request)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getViewLayout0(windowIdStr, viewDataType, profileIdStr, request),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("ViewRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("getViewLayout")
-						.windowIdStr(windowIdStr)
-						.label("uri", "/rest/api/documentView/{windowId}/layout")
-						.build());
-	}
-
-	private ResponseEntity<JSONViewLayout> getViewLayout0(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@RequestParam(name = PARAM_ViewDataType) final JSONViewDataType viewDataType,
 			@RequestParam(name = "profileId", required = false) final String profileIdStr,

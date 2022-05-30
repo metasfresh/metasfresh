@@ -36,6 +36,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
@@ -1746,25 +1747,14 @@ public abstract class PO
 	 * @param trxName transaction
 	 * @return true if loaded
 	 */
+	@Monitor(type = PerformanceMonitoringService.Type.PO)
 	public final boolean load(final String trxName)
 	{
 		m_loadingLock.lock();
 		try
 		{
 			m_loading = true;
-			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-					PerformanceMonitoringService.class,
-					NoopPerformanceMonitoringService.INSTANCE);
-			final String tableName = get_TableName();
-
-			return service.monitor(
-					() -> load0(trxName, false), // gh #986 isRetry=false because this is our first attempt to load the record
-					PerformanceMonitoringService.Metadata
-							.builder()
-							.name("PO")
-							.type(PerformanceMonitoringService.Type.PO)
-							.action("load")
-							.build());
+			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
 		}
 		finally
 		{
