@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Project
  *  @author metasfresh (generated) 
@@ -280,6 +281,47 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, org.compiere.model.I_C_Project_Label> COLUMN_C_Project_Label_ID = new ModelColumn<>(I_C_Project.class, "C_Project_Label_ID", org.compiere.model.I_C_Project_Label.class);
 	String COLUMNNAME_C_Project_Label_ID = "C_Project_Label_ID";
+
+	/**
+	 * Set Parent Project.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_Parent_ID (int C_Project_Parent_ID);
+
+	/**
+	 * Get Parent Project.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_Parent_ID();
+
+	String COLUMNNAME_C_Project_Parent_ID = "C_Project_Parent_ID";
+
+	/**
+	 * Set External project reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_Reference_Ext (@Nullable java.lang.String C_Project_Reference_Ext);
+
+	/**
+	 * Get External project reference.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getC_Project_Reference_Ext();
+
+	ModelColumn<I_C_Project, Object> COLUMN_C_Project_Reference_Ext = new ModelColumn<>(I_C_Project.class, "C_Project_Reference_Ext", null);
+	String COLUMNNAME_C_Project_Reference_Ext = "C_Project_Reference_Ext";
 
 	/**
 	 * Set Project Type.
@@ -629,7 +671,7 @@ public interface I_C_Project
 	String COLUMNNAME_IsCommitment = "IsCommitment";
 
 	/**
-	 * Set Zusammenfassungseintrag.
+	 * Set Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -639,7 +681,7 @@ public interface I_C_Project
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
+	 * Get Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -740,7 +782,7 @@ public interface I_C_Project
 	String COLUMNNAME_Note = "Note";
 
 	/**
-	 * Set VK Total.
+	 * Set Planned Amount.
 	 * Planned amount for this project
 	 *
 	 * <br>Type: Amount
@@ -750,7 +792,7 @@ public interface I_C_Project
 	void setPlannedAmt (BigDecimal PlannedAmt);
 
 	/**
-	 * Get VK Total.
+	 * Get Planned Amount.
 	 * Planned amount for this project
 	 *
 	 * <br>Type: Amount
