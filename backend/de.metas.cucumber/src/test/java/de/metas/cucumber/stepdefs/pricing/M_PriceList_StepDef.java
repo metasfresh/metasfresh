@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.pricing;
 
+import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -268,7 +269,11 @@ public class M_PriceList_StepDef
 		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_PriceList_Version priceListVersion = priceListVersionTable.get(plvIdentifier);
 
+		final String invoiceableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
+		
 		final I_M_ProductPrice existingProductPrice = ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, ProductId.ofRepoId(productId));
+
+		final String useScalePrice = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_UseScalePrice);
 
 		final I_M_ProductPrice productPrice = existingProductPrice == null ? InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class) : existingProductPrice;
 
@@ -278,6 +283,15 @@ public class M_PriceList_StepDef
 		productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 		productPrice.setPriceStd(priceStd);
 		productPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
+
+		if (useScalePrice != null) {
+			productPrice.setUseScalePrice(useScalePrice);
+		}
+
+		if (Check.isNotBlank(invoiceableQtyBasedOn))
+		{
+			productPrice.setInvoicableQtyBasedOn(invoiceableQtyBasedOn);
+		}
 
 		saveRecord(productPrice);
 
