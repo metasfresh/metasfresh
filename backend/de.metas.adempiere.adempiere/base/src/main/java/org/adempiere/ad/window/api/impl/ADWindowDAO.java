@@ -886,6 +886,13 @@ public class ADWindowDAO implements IADWindowDAO
 		return AdTabId.ofRepoId(targetTab.getAD_Tab_ID());
 	}
 
+	@Override
+	public AdTabId copyTabToWindow(@NonNull final AdTabId sourceTabId, @NonNull final AdWindowId targetWindowId)
+	{
+		final I_AD_Tab sourceTab = load(sourceTabId, I_AD_Tab.class);
+		return copyTabToWindow(sourceTab, targetWindowId);
+	}
+
 	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
 	{
 		final AdWindowId targetWindowId = AdWindowId.ofRepoId(targetWindow.getAD_Window_ID());
