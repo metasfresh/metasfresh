@@ -1624,10 +1624,13 @@ public class CalloutOrder extends CalloutEngine
 				{
 					final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
 
+					final BPartnerId warehouseBPartnerId = BPartnerId.ofRepoIdOrNull(warehouse.getC_BPartner_ID());
+
 					OrderDocumentLocationAdapterFactory
 							.deliveryLocationAdapter(order)
 							.setFrom(DocumentLocation.builder()
-											 .bpartnerLocationId(BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()))
+											 .bpartnerId(warehouseBPartnerId)
+											 .bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(warehouseBPartnerId, warehouse.getC_BPartner_Location_ID()))
 											 .locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
 											 .build());
 				}
