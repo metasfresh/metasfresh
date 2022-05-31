@@ -111,6 +111,7 @@ public class MaterialDispoRecordRepository
 		{
 			case DEMAND:
 			case INVENTORY_DOWN:
+			case UNEXPECTED_DECREASE:
 				stockCandidate = candidateRepositoryRetrieval
 						.retrieveSingleChild(candidate.getId())
 						.orElseThrow(() -> new AdempiereException("").appendParametersToMessage()
@@ -120,6 +121,7 @@ public class MaterialDispoRecordRepository
 				return MaterialDispoDataItem.of(candidate, stockCandidate);
 			case SUPPLY:
 			case INVENTORY_UP:
+			case UNEXPECTED_INCREASE:
 				stockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(candidate.getParentId()));
 				return MaterialDispoDataItem.of(candidate, stockCandidate);
 			default:

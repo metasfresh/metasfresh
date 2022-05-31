@@ -7,6 +7,7 @@ import de.metas.error.AdIssueId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -55,6 +56,8 @@ final class OLCandFactory
 				.isGroupingError(record.isGroupingError())
 				.groupingErrorMessage(record.getGroupingErrorMessage())
 				.discount(Percent.ofNullable(record.getGroupCompensationDiscountPercentage()))
+				.isGroupMainItem(record.isGroupCompensationLine())
+				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(record.getCompensationGroupOrderBy()))
 				.build();
 
 		final Quantity qtyItemCapacity = olCandEffectiveValuesBL.getQtyItemCapacity_Effective(record);

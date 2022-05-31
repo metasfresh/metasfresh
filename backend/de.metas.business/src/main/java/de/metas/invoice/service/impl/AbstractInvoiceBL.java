@@ -1852,13 +1852,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.orgId(invoice.getAD_Org_ID())
 				.bpartnerId(invoice.getC_BPartner_ID())
 				.invoiceId(invoice.getC_Invoice_ID())
-				.amount(openAmt)
+				.amount(invoice.isSOTrx() ? openAmt : openAmt.negate())
 			.lineDone()
 			.addLine()
 				.orgId(creditMemo.getAD_Org_ID())
 				.bpartnerId(creditMemo.getC_BPartner_ID())
 				.invoiceId(creditMemo.getC_Invoice_ID())
-				.amount(openAmt.negate())
+				.amount(invoice.isSOTrx() ? openAmt.negate() : openAmt)
 			.lineDone()
 			.create(true); // completeIt = true
 		// @formatter:on

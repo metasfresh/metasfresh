@@ -22,15 +22,12 @@ package de.metas.material.planning;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.product.ResourceId;
+import de.metas.util.ISingletonService;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 
-import de.metas.product.ResourceId;
-import de.metas.util.ISingletonService;
-
+// TODO: merge this into de.metas.resource.ResourceRepository
 public interface IResourceDAO extends ISingletonService
 {
 	ResourceType getResourceTypeById(ResourceTypeId resourceTypeId);
@@ -38,10 +35,6 @@ public interface IResourceDAO extends ISingletonService
 	ResourceType getResourceTypeByResourceId(ResourceId resourceId);
 
 	I_S_Resource getById(ResourceId resourceId);
-
-	List<I_S_Resource> retrievePlants(Properties ctx);
-
-	I_S_Resource retrievePlant(Properties ctx, int resourceId);
 
 	void onResourceChanged(I_S_Resource resource);
 

@@ -16,6 +16,8 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.productprice.ProductPrice;
+import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.IProductBL;
@@ -25,6 +27,7 @@ import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
@@ -67,6 +70,13 @@ public class BpartnerPriceListServicesFacade
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
+	private final ProductPriceRepository productPriceRepository;
+
+	public BpartnerPriceListServicesFacade(@NonNull final ProductPriceRepository productPriceRepository)
+	{
+		this.productPriceRepository = productPriceRepository;
+	}
+
 	public CountryId getCountryIdByCountryCode(final String countryCode)
 	{
 		return countriesRepo.getCountryIdByCountryCode(countryCode);
@@ -93,10 +103,22 @@ public class BpartnerPriceListServicesFacade
 		return priceListsRepo.retrievePriceListVersionId(priceListId, date);
 	}
 
-	public ImmutableList<I_M_ProductPrice> getProductPrices(PriceListVersionId priceListVersionId)
+	public I_M_PriceList_Version getPriceListVersionOrNull(final PriceListId priceListId, final ZonedDateTime date, final Boolean processedPLVFiltering)
+	{
+		return priceListsRepo.retrievePriceListVersionOrNull(priceListId, date, processedPLVFiltering);
+	}
+
+	public ImmutableList<ProductPrice> getProductPrices(@NonNull final PriceListVersionId priceListVersionId)
 	{
 		return priceListsRepo.retrieveProductPrices(priceListVersionId)
+				.map(productPriceRepository::toProductPrice)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableList<I_M_ProductPrice> getProductPricesByPLVAndProduct(@NonNull final PriceListVersionId priceListVersionId, @NonNull final ProductId productId)
+	{
+		return priceListsRepo.retrieveProductPrices(priceListVersionId, productId);
 	}
 
 	public ImmutableMap<ProductId, String> getProductValues(ImmutableSet<ProductId> productIds)
@@ -104,11 +126,17 @@ public class BpartnerPriceListServicesFacade
 		return productsService.getProductValues(productIds);
 	}
 
+	@NonNull
+	public String getProductValue(@NonNull final ProductId productId)
+	{
+		return productsService.getProductValue(productId);
+	}
+
 	// TODO move this method to de.metas.bpartner.service.IBPartnerDAO since it has nothing to do with price list
 	// 		TODO: IdentifierString must also be moved to the module containing IBPartnerDAO
-	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier, OrgId orgId)
+	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier, final OrgId orgId)
 	{
-		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier,orgId);
+		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier, orgId);
 		return bpartnersRepo.retrieveBPartnerIdBy(query);
 	}
 
