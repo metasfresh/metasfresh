@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.pricing;
 
+import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -41,7 +42,6 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -347,7 +347,8 @@ public class M_PriceList_StepDef
 		productPrice.setPriceStd(priceStd);
 		productPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 
-		if (useScalePrice != null) {
+		if (useScalePrice != null)
+		{
 			productPrice.setUseScalePrice(useScalePrice);
 		}
 
