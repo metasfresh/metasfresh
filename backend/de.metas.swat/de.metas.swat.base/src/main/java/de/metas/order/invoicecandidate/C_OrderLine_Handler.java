@@ -443,26 +443,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(icRecord.getC_OrderLine(), I_C_OrderLine.class);
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 
-		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-				.deliveryLocationAdapter(order)
-				.toDocumentLocation();
-		if (orderDeliveryLocation.getBpartnerLocationId() == null)
-		{
-			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-					.locationAdapter(order)
-					.toDocumentLocation();
-		}
-
-		// Tax
-		final TaxId taxId = taxBL.getTaxNotNull(
-				icRecord,
-				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
-				orderLine.getM_Product_ID(),
-				order.getDatePromised(), // shipDate
-				OrgId.ofRepoId(order.getAD_Org_ID()),
-				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
-				SOTrx.ofBoolean(order.isSOTrx()));
+		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
 		// ts: we *must* use the order line's data
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
