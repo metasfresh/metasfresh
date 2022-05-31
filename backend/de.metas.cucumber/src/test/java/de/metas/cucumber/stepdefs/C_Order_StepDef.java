@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -35,6 +36,7 @@ import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -46,6 +48,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -77,12 +80,16 @@ public class C_Order_StepDef
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_Order> orderTable;
 
+	private final C_Project_StepDefData projectTable;
+
 	public C_Order_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_Order> orderTable)
+			@NonNull final StepDefData<I_C_Order> orderTable,
+			@NonNull final C_Project_StepDefData projectTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.projectTable = projectTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -261,6 +268,17 @@ public class C_Order_StepDef
 		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
 		assertThat(docType).isNotNull();
 		assertThat(docType.getDocBaseType()).isEqualTo(docbasetype);
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final Integer projectId = projectTable.getOptional(projectIdentifier)
+					.map(I_C_Project::getC_Project_ID)
+					.orElseGet(() -> Integer.parseInt(projectIdentifier));
+
+			assertThat(order.getC_Project_ID()).isEqualTo(projectId);
+		}
 	}
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")

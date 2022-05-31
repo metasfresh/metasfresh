@@ -17,6 +17,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -182,6 +183,8 @@ public class OLCandRepository
 		olCandPO.setQtyEntered(request.getQty());
 		olCandPO.setC_UOM_ID(request.getUomId().getRepoId());
 		olCandPO.setM_HU_PI_Item_Product_ID(request.getHuPIItemProductId());
+
+		olCandPO.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
 
 		if (request.getPricingSystemId() != null)
 		{

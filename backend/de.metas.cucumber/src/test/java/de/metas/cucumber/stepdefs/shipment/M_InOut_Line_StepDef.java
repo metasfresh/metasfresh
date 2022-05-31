@@ -23,12 +23,16 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
@@ -43,10 +47,14 @@ public class M_InOut_Line_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final StepDefData<I_M_InOut> shipmentTable;
+	private final C_Project_StepDefData projectTable;
 
-	public M_InOut_Line_StepDef(@NonNull final StepDefData<I_M_InOut> shipmentTable)
+	public M_InOut_Line_StepDef(
+			@NonNull final StepDefData<I_M_InOut> shipmentTable,
+			@NonNull final C_Project_StepDefData projectTable)
 	{
 		this.shipmentTable = shipmentTable;
+		this.projectTable = projectTable;
 	}
 
 	@And("validate the created shipment lines")
@@ -81,5 +89,16 @@ public class M_InOut_Line_StepDef
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(productId);
 		assertThat(shipmentLine.getMovementQty()).isEqualTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final Integer projectId = projectTable.getOptional(projectIdentifier)
+					.map(I_C_Project::getC_Project_ID)
+					.orElseGet(() -> Integer.parseInt(projectIdentifier));
+
+			assertThat(shipmentLine.getC_Project_ID()).isEqualTo(projectId);
+		}
 	}
 }

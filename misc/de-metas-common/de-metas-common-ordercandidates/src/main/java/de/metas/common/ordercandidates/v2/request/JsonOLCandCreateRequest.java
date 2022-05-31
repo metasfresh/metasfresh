@@ -266,12 +266,16 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyShipped;
 
-	@ApiModelProperty(position = 430, //
+	@ApiModelProperty(position = 430, value = "Translates to C_OLCand.C_Project_ID")
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId projectId;
+
+	@ApiModelProperty(position = 440, //
 			value = "Translates to C_OLCand.ApplySalesRepFrom. If not specified default value is `CandidateFirst`")
 	@JsonInclude(Include.NON_NULL)
 	JsonApplySalesRepFrom applySalesRepFrom;
 
-	@ApiModelProperty(position = 440)
+	@ApiModelProperty(position = 450)
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
 	
@@ -321,6 +325,7 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
 			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
+			@JsonProperty("projectId") final @Nullable JsonMetasfreshId projectId,
 			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom)
 	{
 		this.orgCode = orgCode;
@@ -368,6 +373,7 @@ public class JsonOLCandCreateRequest
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
 		this.qtyShipped = qtyShipped;
+		this.projectId = projectId;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
 	}
 

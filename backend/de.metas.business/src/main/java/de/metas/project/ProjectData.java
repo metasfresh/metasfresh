@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,56 +20,78 @@
  * #L%
  */
 
-package de.metas.project.service;
+package de.metas.project;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.product.ProductId;
-import de.metas.project.ProjectCategory;
-import de.metas.quantity.Quantity;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.time.LocalDate;
 
 @Value
-@Builder
-public class CreateProjectRequest
+@Builder(toBuilder = true)
+public class ProjectData
 {
 	@NonNull
 	OrgId orgId;
 
 	@NonNull
-	ProjectCategory projectCategory;
+	CurrencyId currencyId;
 
-	@NonNull
-	BPartnerLocationId bpartnerAndLocationId;
+	@Nullable
+	String name;
+
+	@Nullable
+	String value;
+
+	@Builder.Default
+	boolean active = true;
+
+	@Nullable
+	BPartnerLocationId bPartnerLocationId;
+
+	@Nullable
+	PriceListVersionId priceListVersionId;
+
+	@Nullable
+	WarehouseId warehouseId;
+
 	@Nullable
 	BPartnerContactId contactId;
 
-	@NonNull
-	CurrencyId currencyId;
-	@NonNull
-	PriceListVersionId priceListVersionId;
+	@Nullable
+	String description;
 
-	@NonNull
-	WarehouseId warehouseId;
+	@Nullable
+	ProjectId projectParentId;
 
-	@Singular
-	@NonNull List<ProjectLine> lines;
+	@Nullable
+	ProjectTypeId projectTypeId;
 
-	@Value
-	@Builder
-	public static class ProjectLine
-	{
-		@NonNull ProductId productId;
-		@NonNull Quantity plannedQty;
-	}
+	@Nullable
+	ProjectCategory projectCategory;
+
+	@Nullable
+	RStatusId projectStatusId;
+
+	@Nullable
+	BPartnerId bPartnerId;
+
+	@Nullable
+	UserId salesRepId;
+
+	@Nullable
+	LocalDate dateContract;
+
+	@Nullable
+	LocalDate dateFinish;
 }

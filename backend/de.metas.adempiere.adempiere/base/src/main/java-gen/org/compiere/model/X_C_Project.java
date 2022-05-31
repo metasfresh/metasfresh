@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1725670829L;
+	private static final long serialVersionUID = 107991095L;
 
     /** Standard Constructor */
     public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)
@@ -219,6 +219,33 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public int getC_Project_Label_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_Label_ID);
+	}
+
+	@Override
+	public void setC_Project_Parent_ID (final int C_Project_Parent_ID)
+	{
+		if (C_Project_Parent_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_Parent_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_Parent_ID, C_Project_Parent_ID);
+	}
+
+	@Override
+	public int getC_Project_Parent_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_Parent_ID);
+	}
+
+	@Override
+	public void setC_Project_Reference_Ext (final @Nullable java.lang.String C_Project_Reference_Ext)
+	{
+		set_Value (COLUMNNAME_C_Project_Reference_Ext, C_Project_Reference_Ext);
+	}
+
+	@Override
+	public java.lang.String getC_Project_Reference_Ext() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_Project_Reference_Ext);
 	}
 
 	@Override
