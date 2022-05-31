@@ -211,7 +211,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return asyncBatchRecord.isProcessed();
 	}
 
-	
 	@Override
 	@NonNull
 	public Duration getTimeUntilProcessedRecheck(@NonNull final I_C_Async_Batch asyncBatch)

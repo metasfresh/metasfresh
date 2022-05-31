@@ -1,20 +1,17 @@
 package de.metas.ui.web;
 
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.text.MapFormat;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * #%L

@@ -1,23 +1,20 @@
 package de.metas.bpartner;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_BPartner;
+
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_BPartner;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import lombok.Getter;
-import lombok.NonNull;
 
 /*
  * #%L
