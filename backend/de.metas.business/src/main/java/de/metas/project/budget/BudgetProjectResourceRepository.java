@@ -65,15 +65,21 @@ public class BudgetProjectResourceRepository
 
 	public void updateAllByProjectId(
 			@NonNull final ProjectId projectId,
-			@NonNull final OrgId orgId,
-			@NonNull final CurrencyId currencyId)
+			@NonNull final OrgId newOrgId,
+			@NonNull final CurrencyId newCurrencyId)
 	{
 		queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
 				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
-				.forEach(record -> {
-					record.setAD_Org_ID(orgId.getRepoId());
-					record.setC_Currency_ID(currencyId.getRepoId());
-					InterfaceWrapperHelper.save(record);
-				});
+				.forEach(record -> updateRecord(record, newOrgId, newCurrencyId));
+	}
+
+	private static void updateRecord(
+			@NonNull final I_C_Project_Resource_Budget record,
+			@NonNull final OrgId newOrgId,
+			@NonNull final CurrencyId newCurrencyId)
+	{
+		record.setAD_Org_ID(newOrgId.getRepoId());
+		record.setC_Currency_ID(newCurrencyId.getRepoId());
+		InterfaceWrapperHelper.save(record);
 	}
 }
