@@ -121,9 +121,11 @@ import java.util.Set;
 				)
 				.orElseGet(orderFactory::newOrderLine)
 				.productId(purchaseOrderItem.getProductId())
-				.asiId(purchaseOrderItem.getAttributeSetInstanceId());
+				.asiId(purchaseOrderItem.getAttributeSetInstanceId())
+				.productDescription(purchaseOrderItem.getProductDescription())
+				.activityId(purchaseOrderItem.getActivityId());
 
-		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty()); 
+		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 		if (purchaseOrderItem.getDiscount() != null)

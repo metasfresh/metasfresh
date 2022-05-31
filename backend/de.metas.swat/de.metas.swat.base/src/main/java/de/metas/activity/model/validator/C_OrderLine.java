@@ -33,6 +33,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,9 +59,7 @@ public class C_OrderLine
 			return;
 		}
 
-		final ActivityId groupActivityId = getGroupActivityId(orderLine);
-
-		orderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
+		setActivityFromCompensationGroup(orderLine);
 
 		if (orderLine.getC_Activity_ID() > 0)
 		{
@@ -118,5 +117,21 @@ public class C_OrderLine
 		}
 
 		return group.getActivityId();
+	}
+
+	private void setActivityFromCompensationGroup(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_OrderLine old = InterfaceWrapperHelper.createOld(orderLine, I_C_OrderLine.class);
+
+		final boolean isCompensationGroupChanged = old.getC_Order_CompensationGroup_ID() != orderLine.getC_Order_CompensationGroup_ID();
+
+		if (!isCompensationGroupChanged)
+		{
+			return;
+		}
+
+		final ActivityId groupActivityId = getGroupActivityId(orderLine);
+
+		orderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
 	}
 }

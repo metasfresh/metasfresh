@@ -209,6 +209,9 @@ public class C_Order_StepDef
 		
 		final String poReference = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_POReference);
 		assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference);
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord);
 	}
 
 	@And("validate created order")

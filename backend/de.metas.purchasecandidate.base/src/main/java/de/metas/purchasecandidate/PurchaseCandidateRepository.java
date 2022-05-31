@@ -23,6 +23,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
@@ -418,6 +419,10 @@ public class PurchaseCandidateRepository
 		}
 		record.setExternalPurchaseOrderURL(purchaseCandidate.getExternalPurchaseOrderUrl());
 
+		record.setProductDescription(purchaseCandidate.getProductDescription());
+
+		record.setC_Activity_ID(ActivityId.toRepoId(purchaseCandidate.getActivityId()));
+
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
@@ -536,6 +541,8 @@ public class PurchaseCandidateRepository
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
 				.currencyId(CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()))
 				.externalPurchaseOrderUrl(record.getExternalPurchaseOrderURL())
+				.productDescription(record.getProductDescription())
+				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				//
 				.build();
 

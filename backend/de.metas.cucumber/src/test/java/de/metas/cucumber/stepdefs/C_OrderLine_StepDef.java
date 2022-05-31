@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -32,6 +34,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -55,15 +58,18 @@ public class C_OrderLine_StepDef
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_OrderLine> orderLineTable;
+	private final StepDefData<I_C_Activity> activityTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
 			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
+			@NonNull final StepDefData<I_C_Activity> activityTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
+		this.activityTable = activityTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -168,7 +174,7 @@ public class C_OrderLine_StepDef
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
-		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
+		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampOrNullForColumnName(row, "dateordered");
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
 		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, "qtyordered");
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
@@ -179,7 +185,6 @@ public class C_OrderLine_StepDef
 		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
 
 		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
-		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
 		assertThat(orderLine.getQtyDelivered()).isEqualTo(qtyDelivered);
 		assertThat(orderLine.getPriceEntered()).isEqualTo(price);
 		assertThat(orderLine.getDiscount()).isEqualTo(discount);
@@ -188,7 +193,25 @@ public class C_OrderLine_StepDef
 		assertThat(orderLine.getQtyOrdered()).isEqualTo(qtyordered);
 		assertThat(orderLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 
+		if(dateOrdered != null)
+		{
+			assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
+		}
+
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+
+		final String productDescription = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_ProductDescription);
+		if (Check.isNotBlank(productDescription))
+		{
+			assertThat(orderLine.getProductDescription()).isEqualTo(productDescription);
+		}
+
+		final String activityIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Activity.COLUMNNAME_C_Activity_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(activityIdentifier))
+		{
+			final I_C_Activity activity = activityTable.get(activityIdentifier);
+			assertThat(orderLine.getC_Activity_ID()).isEqualTo(activity.getC_Activity_ID());
+		}
 	}
 }

@@ -73,4 +73,8 @@ public class SwaggerDocConstants
 			+ "* or something like `val-<M_Shipper.value>`\n";
 
 	public static final String AD_SEQ_NO_ID_DOC = "AD_SeqNo_ID for the seqNo to be retrieved";
+
+	public static final String ACTIVITY_IDENTIFIER_DOC = "Identifier of the activity in question. Can be\n"
+			+ "* a plain `<C_Activity_ID>`\n"
+			+ "* or something like `val-<C_Activity.Value>`";
 }
