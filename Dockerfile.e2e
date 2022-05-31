@@ -1,0 +1,22 @@
+# this docker image contains electron; 
+# running the docker image with electron fails, probably due to one of these reasons: https://github.com/cypress-io/cypress/issues/1235
+# FROM cypress/base:10
+
+# See the available Docker images here: https://github.com/cypress-io/cypress-docker-images/tree/master/browsers
+FROM cypress/browsers:node14.16.0-chrome90-ff88
+
+WORKDIR /e2e
+
+RUN npm install -g cypress
+
+COPY e2e/package.json .
+RUN npm install
+
+COPY e2e/ .
+
+RUN cypress verify
+
+ENV CYPRESS_baseUrl=http://webui:80
+
+# --browser chrome
+CMD cypress run --reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json

@@ -8,6 +8,7 @@ docker build -f Dockerfile.backend -t metas-mvn-backend:latest . || @goto error
 docker build -f Dockerfile.camel -t metas-mvn-camel:latest . || @goto error
 
 docker build -f Dockerfile.cucumber -t metas-cucumber:latest . || @goto error
+docker build -f Dockerfile.e2e -t metas-e2e:latest . || @goto error
 	
 @echo.
 @echo --------------------------
