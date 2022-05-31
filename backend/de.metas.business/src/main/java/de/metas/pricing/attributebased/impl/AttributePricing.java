@@ -2,10 +2,12 @@ package de.metas.pricing.attributebased.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.IPackingMaterialAware;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -17,6 +19,7 @@ import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -30,6 +33,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -47,17 +51,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class AttributePricing implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(AttributePricing.class);
+	
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+	
+	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
 
 	/**
 	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
-	 *
-	 * @param matcher
 	 */
-	public static final void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
+	public static void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
 	{
 		Check.assumeNotNull(matcher, "Parameter matcher is not null");
 		_defaultMatchers.addIfAbsent(matcher);
@@ -78,28 +83,28 @@ public class AttributePricing implements IPricingRule
 	{
 		if (result.isCalculated())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.applies - Not applying because already calculated: {}", result);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("applies - Not applying because already calculated: {}", result);
 			return false;
 		}
 
 		if (pricingCtx.getProductId() == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.applies - Not applying because no product: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("applies - Not applying because no product: {}", pricingCtx);
 			return false;
 		}
 
 		if (!pricingCtx.getAttributeSetInstanceAware().isPresent())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.applies - Not applying because not ASI aware: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("applies - Not applying because not ASI aware: {}", pricingCtx);
 			return false;
 		}
 
 		//
 		// Gets the "attributed" "product price, if any.
 		// If nothing found, this pricing rule does not apply.
-		if (!getProductPrice(pricingCtx).isPresent())
+		if (!getProductPriceAttribute(pricingCtx).isPresent())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.applies - Not applying because no product price with an attribute found: {}" + pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("applies - Not applying because no product price with an attribute found: {}" + pricingCtx);
 			return false;
 		}
 
@@ -111,17 +116,13 @@ public class AttributePricing implements IPricingRule
 	{
 		// Get the product price attribute to use
 		// NOTE: at this point it shall not be null because we just validate it in "applies".
-		final I_M_ProductPrice productPrice = getProductPrice(pricingCtx).get();
+		final I_M_ProductPrice productPrice = getProductPriceAttribute(pricingCtx).get();
 
 		setResultForProductPriceAttribute(pricingCtx, result, productPrice);
 	}
 
 	/**
 	 * Updates the {@link IPricingResult} using the given <code>productPrice</code>.
-	 *
-	 * @param pricingCtx
-	 * @param result
-	 * @param productPrice
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void setResultForProductPriceAttribute(
@@ -134,9 +135,16 @@ public class AttributePricing implements IPricingRule
 		final I_M_PriceList_Version pricelistVersion = loadOutOfTrx(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
 		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
 
-		result.setPriceStd(productPrice.getPriceStd());
-		result.setPriceList(productPrice.getPriceList());
-		result.setPriceLimit(productPrice.getPriceLimit());
+		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
+		if (productPriceSettings == null)
+		{
+			logger.trace("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
+			return;
+		}
+
+		result.setPriceStd(productPriceSettings.getPriceStd());
+		result.setPriceList(productPriceSettings.getPriceList());
+		result.setPriceLimit(productPriceSettings.getPriceLimit());
 		result.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
@@ -153,6 +161,9 @@ public class AttributePricing implements IPricingRule
 
 		// 08803: store the information about the price relevant attributes
 		result.addPricingAttributes(attributePricingBL.extractPricingAttributes(productPrice));
+
+		InterfaceWrapperHelper.getRepoIdOptional(productPrice, IPackingMaterialAware.COLUMNNAME_M_HU_PI_Item_Product_ID, HUPIItemProductId::ofRepoId)
+				.ifPresent(result::setPackingMaterialId);
 	}
 
 	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
@@ -170,10 +181,8 @@ public class AttributePricing implements IPricingRule
 	 * It checks if the referenced object from the given {@code pricingCtx} references a {@link I_M_ProductPrice} and explicitly demands a particular product price attribute.
 	 * If that's the case, if returns that product price (if valid!).
 	 * If that's not the case it tries to search for the best matching one, if any.
-	 *
-	 * @param pricingCtx
 	 */
-	private final Optional<? extends I_M_ProductPrice> getProductPrice(@NonNull final IPricingContext pricingCtx)
+	private Optional<? extends I_M_ProductPrice> getProductPriceAttribute(@NonNull final IPricingContext pricingCtx)
 	{
 		//
 		// Use the explicit Product Price Attribute, if set and if it's valid.
@@ -181,14 +190,12 @@ public class AttributePricing implements IPricingRule
 		final IProductPriceAware explicitProductPriceAttributeAware = getProductPriceAttributeAware(pricingCtx).orElse(null);
 		if (explicitProductPriceAttributeAware != null && explicitProductPriceAttributeAware.isExplicitProductPriceAttribute())
 		{
-			final Optional<I_M_ProductPrice> explicitProductPrice = retrieveProductPriceAttributeIfValid(pricingCtx, explicitProductPriceAttributeAware.getM_ProductPrice_ID());
-			return explicitProductPrice;
+			return retrieveProductPriceAttributeIfValid(pricingCtx, explicitProductPriceAttributeAware.getM_ProductPrice_ID());
 		}
 
 		//
 		// Find best matching product price attribute
-		final Optional<? extends I_M_ProductPrice> productPriceAttribute = findMatchingProductPrice(pricingCtx);
-		return productPriceAttribute;
+		return findMatchingProductPriceAttribute(pricingCtx);
 	}
 
 	private Optional<IProductPriceAware> getProductPriceAttributeAware(final IPricingContext pricingCtx)
@@ -206,8 +213,7 @@ public class AttributePricing implements IPricingRule
 		final IAttributeSetInstanceAware attributeSetInstanceAware = pricingCtx.getAttributeSetInstanceAware().orElse(null);
 		if (attributeSetInstanceAware != null)
 		{
-			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware);
-			return explicitProductPriceAware;
+			return attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware);
 		}
 		return Optional.empty();
 	}
@@ -217,60 +223,59 @@ public class AttributePricing implements IPricingRule
 	 *
 	 * @return product price attribute if exists and it's valid
 	 */
-	private static Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
+	private Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
 	{
 		if (productPriceId <= 0)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - Returning null because M_ProductPrice_ID is not set: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - Return empty because M_ProductPrice_ID is not set: {}", pricingCtx);
 			return Optional.empty();
 		}
 
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.create(pricingCtx.getCtx(), productPriceId, I_M_ProductPrice.class, pricingCtx.getTrxName());
 		if (productPrice == null || productPrice.getM_ProductPrice_ID() <= 0)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - Returning null because M_ProductPrice_ID={} was not found", productPriceId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - Return empty because M_ProductPrice_ID={} was not found", productPriceId);
 			return Optional.empty();
 		}
 
 		// Make sure the product price attribute is still active.
 		if (!productPrice.isActive())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - Returning null because M_ProductPrice_ID={} is not active", productPriceId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - Return empty because M_ProductPrice_ID={} is not active: {}", productPriceId);
 			return Optional.empty();
 		}
 
 		// Make sure if the product price matches our pricing context
 		if (productPrice.getM_Product_ID() != ProductId.toRepoId(pricingCtx.getProductId()))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - Returning null because M_ProductPrice.M_Product_ID is not matching pricing context product: {}", productPrice);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - Return empty because M_ProductPrice.M_Product_ID is not matching pricing context product: {}", productPrice);
 			return Optional.empty();
 		}
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.retrieveProductPriceAttributeIfValid - M_ProductPrice_ID={} is valid", productPriceId);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - M_ProductPrice_ID={} is valid", productPriceId);
 		return Optional.of(productPrice);
 	}
 
 	/**
 	 * Finds the best matching {@link I_M_ProductPrice} to be used.
-	 *
+	 * <p>
 	 * NOTE: this method can be overridden entirely by extending classes.
 	 *
-	 * @param pricingCtx
 	 * @return best matching {@link I_M_ProductPrice}
 	 */
-	protected Optional<? extends I_M_ProductPrice> findMatchingProductPrice(final IPricingContext pricingCtx)
+	protected Optional<? extends I_M_ProductPrice> findMatchingProductPriceAttribute(final IPricingContext pricingCtx)
 	{
 		final I_M_AttributeSetInstance attributeSetInstance = getM_AttributeSetInstance(pricingCtx);
 		if (attributeSetInstance == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.findMatchingProductPrice - No M_AttributeSetInstance_ID found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - Return empty because no M_AttributeSetInstance_ID found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
 		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
 		if (ctxPriceListVersion == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.findMatchingProductPrice - No M_PriceList_Version found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - Return empty because no M_PriceList_Version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
@@ -287,7 +292,7 @@ public class AttributePricing implements IPricingRule
 
 		if (productPrice == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("AttributePricing.findMatchingProductPrice - No product price found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - Return empty because no product price found: {}", pricingCtx);
 			return Optional.empty(); // no matching
 		}
 
