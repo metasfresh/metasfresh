@@ -33,7 +33,6 @@ import java.util.Optional;
  * That way this class can reuse a lot of stuff like the {@link #applies(IPricingContext, IPricingResult)} method from its superclass.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUPricing extends AttributePricing
 {
@@ -143,7 +142,7 @@ public class HUPricing extends AttributePricing
 	 * <li>there is a proper UOM-conversion for QtyEntered => QtyEnteredInPriceUOM</li>
 	 * <li>LineNetAmt is computed from QtyEnteredInPriceUOM x PriceActual</li>
 	 * </ul>
-	 *
+	 * <p>
 	 * task 08147
 	 */
 	@Override
@@ -197,7 +196,7 @@ public class HUPricing extends AttributePricing
 
 	/**
 	 * @return true if product prices is matching the packing material from pricing context
-	 *         or the pricing context does not have a packing material set
+	 * or the pricing context does not have a packing material set
 	 */
 	private boolean isProductPriceMatchingContextPackingMaterial(final I_M_ProductPrice productPrice, final IPricingContext pricingCtx)
 	{
@@ -209,7 +208,7 @@ public class HUPricing extends AttributePricing
 			return true;
 		}
 
-		final HUPIItemProductId productPricePackingMaterialId = HUPIItemProductId.ofRepoIdOrNull(productPrice.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId productPricePackingMaterialId = HUPIItemProductId.ofRepoIdOrNone(productPrice.getM_HU_PI_Item_Product_ID());
 		return HUPIItemProductId.equals(productPricePackingMaterialId, ctxPackingMaterialId);
 	}
 
