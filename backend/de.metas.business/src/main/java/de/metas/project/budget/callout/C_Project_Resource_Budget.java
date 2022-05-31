@@ -41,6 +41,7 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.TabCallout;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project_Resource_Budget;
 import org.springframework.stereotype.Component;
 
@@ -74,12 +75,12 @@ public class C_Project_Resource_Budget implements ITabCallout
 	@Override
 	public void onNew(@NonNull final ICalloutRecord calloutRecord)
 	{
-		final I_C_Project_Resource_Budget resourceBudget = calloutRecord.getModel(I_C_Project_Resource_Budget.class);
-
-		final ProjectId projectId = ProjectId.ofRepoId(resourceBudget.getC_Project_ID());
-		final BudgetProject project = budgetProjectRepository.getById(projectId);
-		resourceBudget.setAD_Org_ID(project.getOrgId().getRepoId());
-		resourceBudget.setC_Currency_ID(project.getCurrencyId().getRepoId());
+		final I_C_Project_Resource_Budget budgetRecord = calloutRecord.getModel(I_C_Project_Resource_Budget.class);
+		final ProjectId budgetProjectId = ProjectId.ofRepoId(budgetRecord.getC_Project_ID());
+		final BudgetProject budgetProject = budgetProjectRepository.getById(budgetProjectId)
+				.orElseThrow(() -> new AdempiereException("Not a valid budget project"));
+		budgetRecord.setAD_Org_ID(budgetProject.getOrgId().getRepoId());
+		budgetRecord.setC_Currency_ID(budgetProject.getCurrencyId().getRepoId());
 	}
 
 	@CalloutMethod(columnNames = I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_Group_ID)

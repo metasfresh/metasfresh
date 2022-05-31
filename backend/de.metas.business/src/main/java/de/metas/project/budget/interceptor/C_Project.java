@@ -29,6 +29,7 @@ import de.metas.project.budget.BudgetProjectResourceRepository;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.ModelValidator;
@@ -48,15 +49,15 @@ public class C_Project
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_Project record)
 	{
-		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory());
-		if (!projectCategory.isBudget())
+		if (!ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory()).isBudget())
 		{
 			return;
 		}
 
 		if (InterfaceWrapperHelper.isValueChanged(record, I_C_Project.COLUMNNAME_AD_Org_ID, I_C_Project.COLUMNNAME_C_Currency_ID))
 		{
-			final BudgetProject project = BudgetProjectRepository.fromRecord(record);
+			final BudgetProject project = BudgetProjectRepository.fromRecord(record)
+					.orElseThrow(() -> new AdempiereException("Not a valid budget project"));
 			budgetProjectResourceRepository.updateAllByProjectId(project.getProjectId(), project.getOrgId(), project.getCurrencyId());
 		}
 	}

@@ -22,6 +22,7 @@
 
 package de.metas.project.budget;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -44,6 +45,19 @@ public class BudgetProjectResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public BudgetProjectResources getByProjectId(@NonNull final ProjectId projectId)
+	{
+		final ImmutableList<BudgetProjectResource> budgets = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
+				.stream()
+				.map(BudgetProjectResourceRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		return BudgetProjectResources.builder()
+				.projectId(projectId)
+				.budgets(budgets)
+				.build();
+	}
 	public static BudgetProjectResource fromRecord(@NonNull final I_C_Project_Resource_Budget record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());

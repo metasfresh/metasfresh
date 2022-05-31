@@ -20,10 +20,8 @@
  * #L%
  */
 
-package de.metas.project.budget;
+package de.metas.project.workorder;
 
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
@@ -32,31 +30,25 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
-public class BudgetProjectRepository
+public class WOProjectRepository
 {
-	public Optional<BudgetProject> getById(@NonNull final ProjectId projectId)
+	public WOProject getById(@NonNull final ProjectId projectId)
 	{
 		final I_C_Project record = InterfaceWrapperHelper.load(projectId, I_C_Project.class);
 		return fromRecord(record);
 	}
 
-	public static Optional<BudgetProject> fromRecord(final I_C_Project record)
+	private static WOProject fromRecord(@NonNull final I_C_Project record)
 	{
-		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory());
-		if (!projectCategory.isBudget())
+		if (!ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory()).isWorkOrder())
 		{
-			//throw new AdempiereException("Project " + record + " is not budget project");
-			return Optional.empty();
+			throw new AdempiereException("Not a Work Order project: " + record);
 		}
 
-		return Optional.of(
-				BudgetProject.builder()
-						.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
-						.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-						.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
-						.build());
+		return WOProject.builder()
+				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.parentProjectId(ProjectId.ofRepoIdOrNull(record.getC_Project_Parent_ID()))
+				.build();
 	}
 }
