@@ -77,7 +77,7 @@ public class UserId implements RepoIdAware
 	@Nullable
 	public static UserId ofIntegerOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null ? ofRepoIdOrNull(repoId) : null;
+		return repoId != null && repoId > 0 ? ofRepoIdOrNull(repoId) : null;
 	}
 
 	public static UserId ofRepoIdOrSystem(final int repoId)

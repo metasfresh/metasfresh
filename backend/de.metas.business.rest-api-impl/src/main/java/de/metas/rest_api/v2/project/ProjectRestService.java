@@ -23,12 +23,15 @@
 package de.metas.rest_api.v2.project;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.project.JsonRequestProjectUpsert;
 import de.metas.common.rest_api.v2.project.JsonRequestProjectUpsertItem;
+import de.metas.common.rest_api.v2.project.JsonResponseProject;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsert;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsertItem;
 import de.metas.currency.CurrencyCode;
@@ -36,6 +39,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.project.Project;
 import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
@@ -47,10 +51,12 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProjectRestService
@@ -85,6 +91,47 @@ public class ProjectRestService
 
 		return JsonResponseProjectUpsert.builder()
 				.responseItems(responseList)
+				.build();
+	}
+
+	@NonNull
+	public Optional<JsonResponseProject> retrieveProject(@NonNull final ProjectId projectId)
+	{
+		return projectRepository.getOptionalById(projectId)
+				.map(this::toJsonResponseProject);
+	}
+
+	@NonNull
+	private JsonResponseProject toJsonResponseProject(@NonNull final Project project)
+	{
+		final ProjectData projectData = project.getProjectData();
+
+		final CurrencyCode currencyCode = currenciesRepo.getCurrencyCodeById(projectData.getCurrencyId());
+
+		final String projectCategory = projectData.getProjectCategory() != null ?
+				projectData.getProjectCategory().getCode() :
+				null;
+
+		return JsonResponseProject.builder()
+				.id(JsonMetasfreshId.of(project.getId().getRepoId()))
+				.orgId(JsonMetasfreshId.of(projectData.getOrgId().getRepoId()))
+				.currencyCode(currencyCode.toThreeLetterCode())
+				.name(projectData.getName())
+				.value(projectData.getValue())
+				.active(projectData.isActive())
+				.bpartnerLocationId(JsonMetasfreshId.ofOrNull(BPartnerLocationId.toRepoId(projectData.getBPartnerLocationId())))
+				.priceListVersionId(JsonMetasfreshId.ofOrNull(PriceListVersionId.toRepoId(projectData.getPriceListVersionId())))
+				.warehouseId(JsonMetasfreshId.ofOrNull(WarehouseId.toRepoId(projectData.getWarehouseId())))
+				.contactId(JsonMetasfreshId.ofOrNull(BPartnerContactId.toRepoId(projectData.getContactId())))
+				.description(projectData.getDescription())
+				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(projectData.getProjectParentId())))
+				.projectTypeId(JsonMetasfreshId.ofOrNull(ProjectTypeId.toRepoId(projectData.getProjectTypeId())))
+				.projectCategory(projectCategory)
+				.projectStatusId(JsonMetasfreshId.ofOrNull(RStatusId.toRepoId(projectData.getProjectStatusId())))
+				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(projectData.getBPartnerId())))
+				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(projectData.getSalesRepId())))
+				.dateContract(projectData.getDateContract())
+				.dateFinish(projectData.getDateFinish())
 				.build();
 	}
 

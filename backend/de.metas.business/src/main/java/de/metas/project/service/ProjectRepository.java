@@ -264,7 +264,7 @@ public class ProjectRepository
 				.projectCategory(ProjectCategory.ofNullableCode(projectRecord.getProjectCategory()))
 				.projectStatusId(RStatusId.ofRepoIdOrNull(projectRecord.getR_Project_Status_ID()))
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(projectRecord.getC_BPartner_ID()))
-				.salesRepId(UserId.ofRepoIdOrNull(projectRecord.getSalesRep_ID()))
+				.salesRepId(UserId.ofIntegerOrNull(projectRecord.getSalesRep_ID()))
 				.dateContract(TimeUtil.asLocalDate(projectRecord.getDateContract(), projectOrgId))
 				.dateFinish(TimeUtil.asLocalDate(projectRecord.getDateFinish(), projectOrgId))
 				.build();
