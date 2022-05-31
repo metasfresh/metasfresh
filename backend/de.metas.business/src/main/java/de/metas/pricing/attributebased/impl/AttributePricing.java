@@ -2,10 +2,12 @@ package de.metas.pricing.attributebased.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.IPackingMaterialAware;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -17,6 +19,7 @@ import de.metas.pricing.attributebased.ProductPriceAware;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -30,6 +33,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -47,10 +51,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class AttributePricing implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(AttributePricing.class);
-	
+
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
-	
+
+	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
+
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
 
 	/**
@@ -129,9 +135,16 @@ public class AttributePricing implements IPricingRule
 		final I_M_PriceList_Version pricelistVersion = loadOutOfTrx(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
 		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
 
-		result.setPriceStd(productPrice.getPriceStd());
-		result.setPriceList(productPrice.getPriceList());
-		result.setPriceLimit(productPrice.getPriceLimit());
+		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
+		if (productPriceSettings == null)
+		{
+			logger.trace("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
+			return;
+		}
+
+		result.setPriceStd(productPriceSettings.getPriceStd());
+		result.setPriceList(productPriceSettings.getPriceList());
+		result.setPriceLimit(productPriceSettings.getPriceLimit());
 		result.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
@@ -148,6 +161,9 @@ public class AttributePricing implements IPricingRule
 
 		// 08803: store the information about the price relevant attributes
 		result.addPricingAttributes(attributePricingBL.extractPricingAttributes(productPrice));
+
+		InterfaceWrapperHelper.getRepoIdOptional(productPrice, IPackingMaterialAware.COLUMNNAME_M_HU_PI_Item_Product_ID, HUPIItemProductId::ofRepoId)
+				.ifPresent(result::setPackingMaterialId);
 	}
 
 	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
@@ -242,7 +258,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Finds the best matching {@link I_M_ProductPrice} to be used.
-	 *
+	 * <p>
 	 * NOTE: this method can be overridden entirely by extending classes.
 	 *
 	 * @return best matching {@link I_M_ProductPrice}
