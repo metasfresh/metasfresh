@@ -147,6 +147,8 @@ public class API_Request_Audit_StepDef
 		
 		final String statuses = DataTableUtil.extractStringForColumnName(row, "Status");
 		final String[] allowedStatuses = statuses.split(" *OR *");
+
+		final Integer pInstanceId = DataTableUtil.extractIntegerOrNullForColumnName(row,"OPT." + I_API_Request_Audit.COLUMNNAME_AD_PInstance_ID);
 		
 		if (timeoutSec != null)
 		{
@@ -159,6 +161,11 @@ public class API_Request_Audit_StepDef
 		assertThat(requestAuditRecord.getPath()).contains(path);
 		assertThat(requestAuditRecord.getMethod()).contains(method);
 		assertThat(requestAuditRecord.getStatus()).isIn((Object[])allowedStatuses);
+
+		if (pInstanceId != null)
+		{
+			assertThat(requestAuditRecord.getAD_PInstance_ID()).isEqualTo(pInstanceId);
+		}
 
 		final I_AD_User adUserRecord = InterfaceWrapperHelper.load(requestAuditRecord.getAD_User_ID(), I_AD_User.class);
 

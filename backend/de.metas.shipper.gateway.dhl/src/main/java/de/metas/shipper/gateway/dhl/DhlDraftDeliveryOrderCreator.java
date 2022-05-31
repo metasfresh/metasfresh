@@ -58,6 +58,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -110,7 +111,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
+		final BigDecimal grossWeightInKg = CoalesceUtil.firstGreaterThanZero(request.getAllPackagesGrossWeightInKg(), BigDecimal.ONE);
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
@@ -196,7 +197,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final DhlShipperProduct serviceType,
-			final int grossWeightKg,
+			final BigDecimal grossWeightKg,
 			final ShipperId shipperId,
 			final String customerReference,
 			final ShipperTransportationId shipperTransportationId,

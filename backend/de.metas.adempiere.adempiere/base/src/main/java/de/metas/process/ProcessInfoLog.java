@@ -17,7 +17,10 @@
 package de.metas.process;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.error.AdIssueId;
+import org.adempiere.util.lang.ITableRecordReference;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -36,35 +39,67 @@ public final class ProcessInfoLog implements Serializable
 	{
 		final Timestamp date = SystemTime.asTimestamp();
 		final BigDecimal number = null;
-		return new ProcessInfoLog(date, number, message);
+		final ITableRecordReference recordReference = null;
+		final AdIssueId adIssueId = null;
+		final String trxName = null;
+
+		return new ProcessInfoLog(date, number, message, recordReference, adIssueId, trxName);
+	}
+
+	public static ProcessInfoLog ofMessageAndTableReference(final String message, @Nullable final ITableRecordReference tableRecordReference, @Nullable final String trxName)
+	{
+		final Timestamp date = SystemTime.asTimestamp();
+		final BigDecimal number = null;
+		final AdIssueId adIssueId = null;
+		return new ProcessInfoLog(date, number, message, tableRecordReference, adIssueId, trxName);
 	}
 
 	/**
 	 * Create Process Info Log.
 	 *
-	 * @param P_Date Process Date
-	 * @param P_Number Process Number
-	 * @param P_Msg Process Messagre
+	 * @param P_Date               Process Date
+	 * @param P_Number             Process Number
+	 * @param P_Msg                Process Messagre
+	 * @param tableRecordReference record reference of a record "altered" during process execution
+	 * @param issueId              reference of an issue created during process execution
 	 */
-	ProcessInfoLog(final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	ProcessInfoLog(
+			final Timestamp P_Date,
+			final BigDecimal P_Number,
+			final String P_Msg,
+			final ITableRecordReference tableRecordReference,
+			final AdIssueId issueId,
+			final String trxName)
 	{
-		this(nextLogId.getAndIncrement(), P_Date, P_Number, P_Msg);
-	}	// ProcessInfoLog
+		this(nextLogId.getAndIncrement(), P_Date, P_Number, P_Msg, tableRecordReference, issueId, trxName);
+	}    // ProcessInfoLog
 
 	/**
 	 * Create Process Info Log.
 	 *
-	 * @param Log_ID Log ID
-	 * @param P_Date Process Date
-	 * @param P_Number Process Number
-	 * @param P_Msg Process message
+	 * @param Log_ID               Log ID
+	 * @param P_Date               Process Date
+	 * @param P_Number             Process Number
+	 * @param P_Msg                Process message
+	 * @param tableRecordReference record reference of a record "altered" during process execution
+	 * @param ad_Issue_ID          reference of an issue created during process execution
 	 */
-	public ProcessInfoLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
+	public ProcessInfoLog(
+			final int Log_ID,
+			final Timestamp P_Date,
+			final BigDecimal P_Number,
+			final String P_Msg,
+			@Nullable final ITableRecordReference tableRecordReference,
+			@Nullable final AdIssueId ad_Issue_ID,
+			@Nullable final String trxName)
 	{
 		m_Log_ID = Log_ID;
 		m_P_Date = P_Date;
 		m_P_Number = P_Number;
 		m_P_Msg = P_Msg;
+		m_Table_Record_Ref = tableRecordReference;
+		m_Ad_Issue_ID = ad_Issue_ID;
+		this.trxName = trxName;
 	}
 
 	private static final AtomicInteger nextLogId = new AtomicInteger(1);
@@ -74,6 +109,15 @@ public final class ProcessInfoLog implements Serializable
 	private final BigDecimal m_P_Number;
 	private final String m_P_Msg;
 	private boolean savedInDB = false;
+
+	@Nullable
+	private final AdIssueId m_Ad_Issue_ID;
+
+	@Nullable
+	private final ITableRecordReference m_Table_Record_Ref;
+
+	@Nullable
+	private final String trxName;
 
 	public int getLog_ID()
 	{
@@ -98,6 +142,24 @@ public final class ProcessInfoLog implements Serializable
 	public void markAsSavedInDB()
 	{
 		savedInDB = true;
+	}
+
+	@Nullable
+	public ITableRecordReference getTableRecordReference()
+	{
+		return m_Table_Record_Ref;
+	}
+
+	@Nullable
+	public AdIssueId getAdIssueId()
+	{
+		return m_Ad_Issue_ID;
+	}
+
+	@Nullable
+	public String getTrxName()
+	{
+		return trxName;
 	}
 
 	public boolean isSavedInDB()

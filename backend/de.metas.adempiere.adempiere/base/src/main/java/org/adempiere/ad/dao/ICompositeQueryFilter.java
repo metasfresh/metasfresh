@@ -23,6 +23,7 @@
 package org.adempiere.ad.dao;
 
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -33,6 +34,7 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -403,4 +405,10 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	ICompositeQueryFilter<T> addCompositeQueryFilter();
 
 	ICompositeQueryFilter<T> allowSqlFilters(boolean allowSqlFilters);
+
+	ICompositeQueryFilter<T> addIntervalIntersection(
+			@NonNull String lowerBoundColumnName,
+			@NonNull String upperBoundColumnName,
+			@Nullable ZonedDateTime lowerBoundValue,
+			@Nullable ZonedDateTime upperBoundValue);
 }

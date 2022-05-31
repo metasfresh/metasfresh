@@ -28,6 +28,8 @@ import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.resource.ResourceAssignmentId;
+import de.metas.resource.ResourceAssignmentRepository;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -46,6 +48,7 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
@@ -975,10 +978,12 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			return success;
 		}
-		if (getS_ResourceAssignment_ID() != 0)
+
+		final ResourceAssignmentId resourceAssignmentId = ResourceAssignmentId.ofRepoIdOrNull(getS_ResourceAssignment_ID());
+		if (resourceAssignmentId != null)
 		{
-			MResourceAssignment ra = new MResourceAssignment(getCtx(), getS_ResourceAssignment_ID(), get_TrxName());
-			ra.delete(true);
+			final ResourceAssignmentRepository resourceAssignmentRepository = SpringContextHolder.instance.getBean(ResourceAssignmentRepository.class);
+			resourceAssignmentRepository.deleteById(resourceAssignmentId);
 		}
 
 		return updateHeaderTax();

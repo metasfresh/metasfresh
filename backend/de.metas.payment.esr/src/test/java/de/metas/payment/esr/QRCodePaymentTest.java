@@ -39,7 +39,6 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -51,7 +50,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-@Disabled
 class QRCodePaymentTest
 {
 	private static final String expectedIBAN = "CH1589144626811245431";
@@ -80,7 +78,7 @@ class QRCodePaymentTest
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/payment/spi/impl/QRR_PurchaseInvoice.txt");
 		assertThat(inputStream).isNotNull();
 
-		String qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+		final String qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setValue("123");
@@ -116,7 +114,7 @@ class QRCodePaymentTest
 		
 	}
 	
-	private IPaymentStringDataProvider getDataProvider(@NonNull String qrCode)
+	private IPaymentStringDataProvider getDataProvider(@NonNull final String qrCode)
 	{
 		return paymentStringProcessService.parseQRPaymentString(qrCode);
 	}

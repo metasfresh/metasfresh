@@ -346,8 +346,8 @@ public class ImportOrdersRouteContext
 				.orElse("");
 
 		final String locationBPartnerName =
-				// prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n") + not having the company name in this rendered string, because that info is already given elsewhere
-				prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
+				prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n")
+						+ prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
 						+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
 						+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
 						+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")

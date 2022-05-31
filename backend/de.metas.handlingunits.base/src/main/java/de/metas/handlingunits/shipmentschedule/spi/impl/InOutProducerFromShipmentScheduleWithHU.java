@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -51,6 +52,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -67,6 +70,7 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
@@ -111,6 +115,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+	final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
 	private final InOutGenerateResult result;
 	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
@@ -188,7 +194,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 		catch (final Exception ex)
 		{
 			final String sourceInfo = extractSourceInfo(candidates);
-			shipmentGeneratedNotifications.notifyShipmentError(sourceInfo, ex.getLocalizedMessage());
+			shipmentGeneratedNotifications.notifyShipmentError(
+					sourceInfo,
+					CoalesceUtil.coalesceSuppliersNotNull(
+							() -> ex.getLocalizedMessage(),
+							() -> ex.getClass().getName()));
 
 			// propagate
 			throw AdempiereException.wrapIfNeeded(ex)
@@ -197,6 +207,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	}
 
+	@NonNull
 	private static String extractSourceInfo(final List<ShipmentScheduleWithHU> candidates)
 	{
 		return candidates.stream()
@@ -373,7 +384,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setDeliveryViaRule(order.getDeliveryViaRule());
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
-				shipment.setEMail(order.getEMail());
+
+
+				if (orderEmailPropagationSysConfigRepo.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())))
+				{
+					shipment.setEMail(order.getEMail());
+				}
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
 			}

@@ -38,6 +38,8 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -107,6 +109,7 @@ class C_InvoiceFacadeServiceTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		final HierarchyCommissionConfigFactory hierarchyCommissionConfigFactory =
 				new HierarchyCommissionConfigFactory(new CommissionConfigStagingDataService(), new CommissionProductService());

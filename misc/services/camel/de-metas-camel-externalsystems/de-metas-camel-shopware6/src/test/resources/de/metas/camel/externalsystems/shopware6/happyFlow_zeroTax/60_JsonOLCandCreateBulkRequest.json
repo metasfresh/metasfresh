@@ -36,7 +36,8 @@
       "paymentTerm": "val-paymentTermValue",
       "orderLineGroup": {
         "groupKey": "externalLineId2",
-        "groupMainItem": true
+        "groupMainItem": true,
+        "ordering": "GroupFirst"
       },
       "dateCandidate": "2021-01-11",
       "line": 10,
@@ -46,7 +47,7 @@
       "deliveryViaRule": "S",
       "deliveryRule": "A",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -91,7 +92,7 @@
       "deliveryViaRule": "S",
       "deliveryRule": "A",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     }
