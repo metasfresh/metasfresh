@@ -30,6 +30,7 @@ import org.compiere.model.X_C_ProjectType;
 
 import javax.annotation.Nullable;
 
+@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public enum ProjectCategory implements ReferenceListAwareEnum
 {
 	General(X_C_ProjectType.PROJECTCATEGORY_General),
@@ -67,4 +68,9 @@ public enum ProjectCategory implements ReferenceListAwareEnum
 	}
 
 	public boolean isBudget() {return Budget.equals(this);}
+
+	public boolean isWorkOrder()
+	{
+		return WorkOrderJob.equals(this);
+	}
 }
