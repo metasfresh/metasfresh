@@ -143,7 +143,7 @@ public class JSONLookupValuesList
 
 	@JsonProperty("defaultValue")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	private String defaultValue;
+	private String defaultValue; // TODO rename to defaultId in a separate commit
 
 	private LinkedHashMap<String, Object> otherProperties;
 
