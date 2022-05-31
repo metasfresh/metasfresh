@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.FilterSql;
@@ -138,6 +139,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
+	@Monitor(type = PerformanceMonitoringService.Type.VIEW)
 	public SqlViewRowsWhereClause getSqlWhereClause(
 			@NonNull final ViewId viewId,
 			@NonNull final DocumentFilterList filters,
@@ -163,12 +165,14 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
+	@Monitor(type = PerformanceMonitoringService.Type.VIEW)
 	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
 		return widgetTypesByFieldName;
 	}
 
 	@Override
+	@Monitor(type = PerformanceMonitoringService.Type.VIEW)
 	public ViewRowIdsOrderedSelection createOrderedSelection(
 			final ViewEvaluationCtx viewEvalCtx,
 			final ViewId viewId,
@@ -185,6 +189,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
+	@Monitor(type = PerformanceMonitoringService.Type.VIEW)
 	public ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(
 			final ViewEvaluationCtx viewEvalCtx,
 			final ViewRowIdsOrderedSelection fromSelection,
@@ -196,34 +201,22 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
+	@Monitor(type = PerformanceMonitoringService.Type.VIEW)
 	public void deleteSelection(@NonNull final String selectionId)
 	{
 		viewRowIdsOrderedSelectionFactory.deleteSelection(selectionId);
 	}
 
 	@Override
+	@Monitor(type = PerformanceMonitoringService.Type.VIEW)
 	public void scheduleDeleteSelections(final Set<String> viewIds)
 	{
 		viewRowIdsOrderedSelectionFactory.scheduleDeleteSelections(viewIds);
 	}
 
 	@Override
+	@Monitor(type = PerformanceMonitoringService.Type.VIEW)
 	public IViewRow retrieveById(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> retrieveById0(viewEvalCtx, viewId, rowId),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("SqlViewDataRepository")
-						.type(PerformanceMonitoringService.Type.VIEW)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
-	}
-
-	private IViewRow retrieveById0(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
 	{
 		final SqlAndParams sqlAndParams = sqlViewSelect.selectById()
 				.viewEvalCtx(viewEvalCtx)

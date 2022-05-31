@@ -34,7 +34,6 @@ import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.PInstanceId;
@@ -72,7 +71,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
 import org.compiere.util.DisplayType;
@@ -2868,22 +2866,8 @@ public abstract class PO
 	 * @throws AdempiereException
 	 * @see #save()
 	 */
+	@Monitor(type = PerformanceMonitoringService.Type.PO)
 	public final void saveEx() throws AdempiereException
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-
-		service.monitor(
-				() -> saveEx0(),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("PO")
-						.type(PerformanceMonitoringService.Type.PO)
-						.action("saveEx")
-						.build());
-	}
-	private final void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving

@@ -6,8 +6,8 @@ import de.metas.document.references.related_documents.RelatedDocumentsPermission
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.ui.web.document.references.WebuiDocumentReference;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceCandidate;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
@@ -25,7 +25,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -116,27 +115,9 @@ public class DocumentReferencesRestController
 		return JSONOptions.prepareFrom(userSession).build();
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{windowId}/{documentId}/references/sse")
 	public SseEmitter streamRootDocumentReferences(
-			@PathVariable("windowId") final String windowIdStr,
-			@PathVariable("documentId") final String documentId)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> streamRootDocumentReferences0(windowIdStr, documentId),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("DocumentReferencesRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("streamRootDocumentReferences")
-						.label("uri", "/rest/api/window/{windowId}/{documentId}/references/sse")
-						.label("windowId", windowIdStr)
-						.build());
-	}
-
-	private SseEmitter streamRootDocumentReferences0(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentId)
 	{
@@ -147,6 +128,7 @@ public class DocumentReferencesRestController
 		return streamRootDocumentReferences(documentPath);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/references/sse")
 	public SseEmitter streamIncludedDocumentReferences(
 			@PathVariable("windowId") final String windowIdStr,

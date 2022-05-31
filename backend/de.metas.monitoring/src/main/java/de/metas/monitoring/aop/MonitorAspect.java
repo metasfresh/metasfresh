@@ -45,6 +45,7 @@ import java.util.concurrent.Callable;
 public class MonitorAspect
 {
 	private final MicrometerPerformanceMonitoringService service;
+
 	public MonitorAspect(@NonNull final MicrometerPerformanceMonitoringService service)
 	{
 		this.service = service;

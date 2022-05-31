@@ -25,7 +25,6 @@ package de.metas.ui.web.view;
 import com.google.common.collect.ImmutableList;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -63,7 +62,6 @@ import io.swagger.annotations.ApiParam;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.MimeType;
@@ -142,28 +140,9 @@ public class ViewRestController
 		return JSONDocumentLayoutOptions.of(userSession);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PostMapping
 	public JSONViewResult createView(
-			@PathVariable(PARAM_WindowId) final String windowIdStr //
-			, @RequestBody final JSONCreateViewRequest jsonRequest //
-	)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> createView0(windowIdStr, jsonRequest),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("ViewRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("createView")
-						.windowIdStr(windowIdStr)
-						.label("uri", "/rest/api/documentView/{windowId}")
-						.build());
-	}
-
-	private JSONViewResult createView0(
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @RequestBody final JSONCreateViewRequest jsonRequest //
 	)
@@ -227,29 +206,9 @@ public class ViewRestController
 	/**
 	 * Creates a new view by filtering the given one.
 	 */
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PostMapping("/{viewId}/filter")
 	public JSONViewResult filterView( //
-			@PathVariable(PARAM_WindowId) final String windowIdStr //
-			, @PathVariable(PARAM_ViewId) final String viewIdStr //
-			, @RequestBody final JSONFilterViewRequest jsonRequest //
-	)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> filterView0(windowIdStr, viewIdStr, jsonRequest),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("ViewRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("filterView")
-						.windowIdStr(windowIdStr)
-						.label("uri", "/rest/api/documentView/{windowId}/{viewId}/filter")
-						.build());
-	}
-
-	private JSONViewResult filterView0( //
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @RequestBody final JSONFilterViewRequest jsonRequest //
@@ -267,6 +226,7 @@ public class ViewRestController
 		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, viewRowCommentsSummary);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
 	public JSONViewResult deleteStickyFilter(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
@@ -285,6 +245,7 @@ public class ViewRestController
 		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, viewRowCommentsSummary);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@DeleteMapping("/{viewId}")
 	public void closeView(
 			@PathVariable(PARAM_WindowId) final String windowId,
@@ -298,30 +259,9 @@ public class ViewRestController
 		viewsRepo.closeView(viewId, closeAction);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{viewId}")
 	public JSONViewResult getViewData(
-			@PathVariable(PARAM_WindowId) final String windowIdStr,
-			@PathVariable(PARAM_ViewId) final String viewIdStr,
-			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
-			@RequestParam(name = PARAM_PageLength) final int pageLength,
-			@RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getViewData0(windowIdStr, viewIdStr, firstRow, pageLength, orderBysListStr),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("ViewRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.windowIdStr(windowIdStr)
-						.label("uri", "/rest/api/documentView/{windowId}/{viewId}")
-						.build());
-	}
-
-	private JSONViewResult getViewData0(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
@@ -365,6 +305,7 @@ public class ViewRestController
 				.toLayoutJson(JSONViewLayout::of);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/availableProfiles")
 	public JSONViewProfilesList getAvailableViewProfiles(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
@@ -375,6 +316,7 @@ public class ViewRestController
 		return JSONViewProfilesList.of(availableProfiles, userSession.getAD_Language());
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{viewId}/headerProperties")
 	public JSONViewHeaderProperties getHeaderProperties(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -390,6 +332,7 @@ public class ViewRestController
 		return JSONViewHeaderProperties.of(headerProperties, jsonOpts.getAdLanguage());
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{viewId}/byIds")
 	public List<JSONViewRow> getByIds(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -430,6 +373,7 @@ public class ViewRestController
 		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesPage getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -450,6 +394,7 @@ public class ViewRestController
 				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
 	public JSONLookupValuesList getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -498,6 +443,7 @@ public class ViewRestController
 				.build();
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PostMapping("/{viewId}/actions")
 	public JSONDocumentActionsList getRowsActions(
 			@PathVariable(PARAM_WindowId) final String windowId,
@@ -523,28 +469,9 @@ public class ViewRestController
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PostMapping("/{viewId}/quickActions")
 	public JSONDocumentActionsList getRowsQuickActions(
-			@PathVariable(PARAM_WindowId) final String windowId,
-			@PathVariable(PARAM_ViewId) final String viewIdStr,
-			@RequestBody final JSONGetViewActionsRequest request)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getRowsQuickActions0(windowId, viewIdStr, request),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("ViewRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("getRowsQuickActions")
-						.label("uri", "/rest/api/documentView/{windowId}/{viewId}/quickActions")
-						.label("windowId", windowId)
-						.build());
-	}
-
-	private JSONDocumentActionsList getRowsQuickActions0(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@RequestBody final JSONGetViewActionsRequest request)
@@ -569,6 +496,7 @@ public class ViewRestController
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{viewId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getRowFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr,
@@ -585,6 +513,7 @@ public class ViewRestController
 		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{viewId}/export/excel")
 	public ResponseEntity<Resource> exportToExcel(
 			@PathVariable("windowId") final String windowIdStr,

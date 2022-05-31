@@ -84,6 +84,16 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			isInitiatorLabelActive.set(true);
 			initiator.set(metadata.getName() + " - " + metadata.getAction());
 			initiatorWindowId.set(metadata.getWindowIdStr());
+
+		}
+		else if(depth.get() == 0
+				&& metadata.getType() == Type.REST_API_PROCESSING
+				&& metadata.getAction() != null
+				&& metadata.getWindowIdStr() != null)
+		{
+			isInitiatorLabelActive.set(true);
+			initiator.set("CreatOrderLineCandidatesBulk");
+			initiatorWindowId.set(null);
 		}
 		else if(depth.get() == 0)
 		{
