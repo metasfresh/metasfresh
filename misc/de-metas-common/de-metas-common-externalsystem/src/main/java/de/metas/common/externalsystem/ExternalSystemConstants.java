@@ -79,6 +79,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_API_MODE  = "ApiMode";
 	public static final String PARAM_API_USER_REFRESH_TOKEN  = "RefreshToken";
 
+	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
 	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "RoutingKey";
 	public static final String PARAM_EXTERNAL_SYSTEM_HTTP_URL = "RemoteURL";
 	public static final String PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN = "AuthToken";
