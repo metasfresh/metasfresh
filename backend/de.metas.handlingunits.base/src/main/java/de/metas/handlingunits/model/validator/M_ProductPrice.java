@@ -83,15 +83,14 @@ public class M_ProductPrice
 		if (uomDAO.isUOMForTUs(uomId))
 		{
 			validateTuUom(productPrice);
-
 			productPrice.setIsHUPrice(true);
 		}
 		else
 		{
 			productPrice.setIsHUPrice(false);
+			validatePriceUOM(productPrice);
 		}
 
-		validatePriceUOM(productPrice);
 	}
 
 	private void validateTuUom(@NonNull final I_M_ProductPrice productPrice)
