@@ -5,7 +5,7 @@ jobs:
   init:
     runs-on: ubuntu-latest
     outputs:
-      sanitized-refname: ${{ steps.sanitize.outputs.sanitized-ref-name }}
+      sanitized-refname: ${{ steps.sanitize.outputs.refname }}
     steps:
       - name: print-vars
         run: env
