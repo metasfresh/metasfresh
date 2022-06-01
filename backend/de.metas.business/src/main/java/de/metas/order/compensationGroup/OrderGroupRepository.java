@@ -626,7 +626,7 @@ public class OrderGroupRepository implements GroupRepository
 		//dev-note: needed to make sure `de.metas.activity.model.validator.C_OrderLine.updateActivity` doesn't fail
 		final List<I_C_OrderLine> sortedOrderLines = orderLines.stream()
 				.sorted(Comparator.comparing(I_C_OrderLine::isGroupCompensationLine))
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 		for (final I_C_OrderLine regularLinePO : sortedOrderLines)
 		{
 			if (groupId != null)

@@ -1,13 +1,12 @@
 package de.metas.externalsystem.ebay;
 
-import javax.annotation.Nullable;
-
 import de.metas.document.DocTypeId;
-import de.metas.externalsystem.shopware6.BPartnerLookup;
 import de.metas.payment.paymentterm.PaymentTermId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ExternalSystemEbayConfigMapping {
@@ -61,9 +60,7 @@ public class ExternalSystemEbayConfigMapping {
 			@Nullable final Boolean isInvoiceEmailEnabled,
 			@Nullable final String ebayCustomerGroup,
 			@Nullable final String ebayPaymentMethod,
-			@Nullable final String description,
-			@Nullable final String bPartnerIdJSONPath,
-			@Nullable final BPartnerLookup bPartnerlookup)
+			@Nullable final String description)
 	{
 		this.seqNo = seqNo;
 		this.docTypeOrderId = DocTypeId.ofRepoIdOrNull(docTypeOrderId);
