@@ -53,6 +53,8 @@ public class JsonPurchaseCandidateCreateItemTest
 							 .qty(BigDecimal.TEN)
 							 .uomCode("uomCode")
 							 .build())
+				.productDescription("productDescription")
+				.activityIdentifier("123123")
 				.build();
 
 		final String string = mapper.writeValueAsString(jsonPurchaseCandidateCreateItem);
