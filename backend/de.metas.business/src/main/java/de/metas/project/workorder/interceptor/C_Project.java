@@ -36,7 +36,7 @@ public class C_Project
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_Project project)
 	{
-		if(!ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isWorkOrder())
+		if (!ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isWorkOrder())
 		{
 			return;
 		}

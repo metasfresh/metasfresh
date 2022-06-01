@@ -162,7 +162,7 @@ public class C_Project_Resource_Budget implements ITabCallout
 			return Optional.of(BigDecimal.ZERO);
 		}
 
-		BigDecimal plannedAmt = record.getPlannedAmt();
+		final BigDecimal plannedAmt = record.getPlannedAmt();
 		if (plannedAmt.signum() == 0)
 		{
 			return Optional.of(BigDecimal.ZERO);

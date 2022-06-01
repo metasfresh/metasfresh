@@ -77,7 +77,7 @@ public class C_Project_WO_Resource implements ITabCallout
 	}
 
 	@CalloutMethod(columnNames = I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID)
-	public void onS_Resource_ID(@NonNull I_C_Project_WO_Resource woResource)
+	public void onS_Resource_ID(@NonNull final I_C_Project_WO_Resource woResource)
 	{
 		final ResourceId resourceId = ResourceId.ofRepoIdOrNull(woResource.getS_Resource_ID());
 		if (resourceId != null)
@@ -91,7 +91,7 @@ public class C_Project_WO_Resource implements ITabCallout
 	}
 
 	@CalloutMethod(columnNames = { I_C_Project_WO_Resource.COLUMNNAME_AssignDateFrom, I_C_Project_WO_Resource.COLUMNNAME_AssignDateTo })
-	public void onAssignDateFromOrTo(@NonNull I_C_Project_WO_Resource woResource)
+	public void onAssignDateFromOrTo(@NonNull final I_C_Project_WO_Resource woResource)
 	{
 		updateDuration(woResource);
 	}
@@ -103,7 +103,7 @@ public class C_Project_WO_Resource implements ITabCallout
 
 	private BigDecimal computeDuration(final I_C_Project_WO_Resource woResource)
 	{
-		ZonedDateTime dateFrom = TimeUtil.asZonedDateTime(woResource.getAssignDateFrom());
+		final ZonedDateTime dateFrom = TimeUtil.asZonedDateTime(woResource.getAssignDateFrom());
 		if (dateFrom == null)
 		{
 			return BigDecimal.ZERO;

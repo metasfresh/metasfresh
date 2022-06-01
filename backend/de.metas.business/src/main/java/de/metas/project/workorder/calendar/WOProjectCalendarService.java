@@ -197,7 +197,7 @@ public class WOProjectCalendarService implements CalendarService
 		return result.stream();
 	}
 
-	private static CalendarEntry toCalendarEntry(@NonNull BudgetProjectResource budget, @NonNull BudgetProject project)
+	private static CalendarEntry toCalendarEntry(@NonNull final BudgetProjectResource budget, @NonNull final BudgetProject project)
 	{
 		return CalendarEntry.builder()
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, budget.getId()))
@@ -212,7 +212,7 @@ public class WOProjectCalendarService implements CalendarService
 				.build();
 	}
 
-	private static CalendarEntry toCalendarEntry(@NonNull WOProjectResource resource, @NonNull WOProject project)
+	private static CalendarEntry toCalendarEntry(@NonNull final WOProjectResource resource, @NonNull final WOProject project)
 	{
 		return CalendarEntry.builder()
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resource.getId()))
