@@ -1,0 +1,132 @@
+name: cicd-2
+on: [push]
+jobs:
+
+  init:
+    runs-on: ubuntu-latest
+    outputs:
+      sanitized-refname: ${{ steps.sanitize.outputs.sanitized-ref-name }}
+    steps:
+      - name: print-vars
+        run: env
+      - name: sanitize-ref-name
+        id: sanitize
+        run: 'echo "::set-output name=refname::$(echo $GITHUB_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')"'
+      - name: print-sanitizef-ref-name
+        run: echo ${{ steps.sanitize.outputs.refname }}
+  
+  java:
+    runs-on: ubuntu-latest
+    needs: init
+    steps:
+      - uses: actions/checkout@v3
+      - name: build-commons
+        run: docker buildx build -f Dockerfile.common -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+      - name: build-backend
+        env:
+          mysecret: ${{ secrets.TESTMO_TOKEN }}
+        run: docker buildx build -f Dockerfile.backend --secret id=mysecret --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+      - name: build-camel
+        run: docker buildx build -f Dockerfile.camel -t mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+      - name: push-images
+        run: |
+          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
+          docker push mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
+          docker push mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
+          docker push mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
+          docker push mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }}
+          docker logout
+
+  frontend:
+    runs-on: ubuntu-latest
+    needs: init
+    steps:
+      - uses: actions/checkout@v3
+      - name: build-frontend
+        run: docker buildx build -f Dockerfile.frontend -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+      - name: build-mobile
+        run: docker buildx build -f Dockerfile.mobile -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+      - name: push-images
+        run: |
+          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
+          docker push mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
+          docker push mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
+          docker push mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }}
+          docker logout
+
+  backend:
+    runs-on: ubuntu-latest
+    needs: java
+    steps:
+      - uses: actions/checkout@v3
+      - name: build-api
+        run: docker buildx build -f Dockerfile.backend.api --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+      - name: build-app
+        run: docker buildx build -f Dockerfile.backend.app --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+      - name: build-externalsystems
+        run: docker buildx build -f Dockerfile.camel.externalsystems --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-externalsystems:${{ needs.init.outputs.sanitized-refname }} .
+      - name: build-db
+        run: docker buildx build -f Dockerfile.db-standalone --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-db:latest -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+      - name: build-db-preloaded
+        run: docker buildx build -f Dockerfile.db-preloaded -t metas-db:preloaded -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT-preloaded .
+      - name: push-images
+        run: |
+          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
+          docker push mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
+          docker push mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
+          docker push mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
+          docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT-preloaded
+          docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded
+          docker logout
+
+  cucumber:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v3
+      - name: build-cucumber
+        run: docker buildx build -f Dockerfile.cucumber --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-cucumber:latest .
+      - name: run-cucumber-tests
+        env:
+          mysecret: ${{ secrets.TESTMO_TOKEN }}
+        timeout-minutes: 60
+        run: |
+          cd cucumber
+          echo "$mysecret" > mysecret
+          docker-compose up --abort-on-container-exit --exit-code-from cucumber
+          docker-compose down
+
+  cypress:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v3
+      - name: build-e2e
+        run: docker buildx build -f Dockerfile.e2e --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-e2e:latest .
+      - name: run-cypress-tests
+        env:
+          mysecret: ${{ secrets.TESTMO_TOKEN }}
+        timeout-minutes: 120
+        run: |
+          cd docker-builds/e2e
+          echo "$mysecret" > mysecret
+          docker-compose up --abort-on-container-exit --exit-code-from e2e
+          docker-compose down
+
+  redeploy:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/mzorn/wip-local-dockerbuilds'
+    steps:
+      - name: remove-running-pods
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
+        with:
+          args: delete -n dev --all pods

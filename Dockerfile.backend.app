@@ -4,8 +4,10 @@ WORKDIR /opt/metasfresh
 
 COPY --chmod=700 docker-builds/app/start.sh .
 
-COPY --from=metas-mvn-backend:latest /backend/metasfresh-dist/dist/target/docker/app/metasfresh_server.jar ./metasfresh-app.jar
-COPY --from=metas-mvn-backend:latest /backend/metasfresh-dist/dist/target/docker/app/configs/* ./
-COPY --from=metas-mvn-backend:latest /backend/metasfresh-dist/dist/target/docker/app/reports/ reports/
+ARG REFNAME=local
+
+COPY --from=mazorn/metas-mvn-backend:$REFNAME /backend/metasfresh-dist/dist/target/docker/app/metasfresh_server.jar ./metasfresh-app.jar
+COPY --from=mazorn/metas-mvn-backend:$REFNAME /backend/metasfresh-dist/dist/target/docker/app/configs/* ./
+COPY --from=mazorn/metas-mvn-backend:$REFNAME /backend/metasfresh-dist/dist/target/docker/app/reports/ reports/
 
 CMD ["/opt/metasfresh/start.sh"]
