@@ -32,6 +32,7 @@ import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,6 +47,8 @@ import org.compiere.model.I_C_Project_Resource_Budget;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 @Component
 @Callout(I_C_Project_Resource_Budget.class)
@@ -95,6 +98,24 @@ public class C_Project_Resource_Budget implements ITabCallout
 		updateFromResourceOrResourceGroup(record);
 	}
 
+	@CalloutMethod(columnNames = I_C_Project_Resource_Budget.COLUMNNAME_PlannedAmt)
+	public void onPlannedAmount(final I_C_Project_Resource_Budget record)
+	{
+		updatePlannedDuration(record);
+	}
+
+	@CalloutMethod(columnNames = I_C_Project_Resource_Budget.COLUMNNAME_PricePerTimeUOM)
+	public void onPricePerTimeUOM(final I_C_Project_Resource_Budget record)
+	{
+		updatePlannedDuration(record);
+	}
+
+	@CalloutMethod(columnNames = I_C_Project_Resource_Budget.COLUMNNAME_C_UOM_Time_ID)
+	public void onC_UOM_Time_ID(final I_C_Project_Resource_Budget record)
+	{
+		updatePlannedDuration(record);
+	}
+
 	private void updateFromResourceOrResourceGroup(final I_C_Project_Resource_Budget record)
 	{
 		final ResourceId resourceId = ResourceId.ofRepoIdOrNull(record.getS_Resource_ID());
@@ -122,4 +143,33 @@ public class C_Project_Resource_Budget implements ITabCallout
 		record.setC_UOM_Time_ID(durationUomId.getRepoId());
 	}
 
+	private void updatePlannedDuration(final I_C_Project_Resource_Budget record)
+	{
+		computePlannedDuration(record).ifPresent(record::setPlannedDuration);
+	}
+
+	private Optional<BigDecimal> computePlannedDuration(final I_C_Project_Resource_Budget record)
+	{
+		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_Time_ID());
+		if (uomId == null)
+		{
+			return Optional.empty();
+		}
+
+		final BigDecimal pricePerTimeUOM = record.getPricePerTimeUOM();
+		if (pricePerTimeUOM.signum() == 0)
+		{
+			return Optional.of(BigDecimal.ZERO);
+		}
+
+		BigDecimal plannedAmt = record.getPlannedAmt();
+		if (plannedAmt.signum() == 0)
+		{
+			return Optional.of(BigDecimal.ZERO);
+		}
+
+		final UOMPrecision uomPrecision = uomDAO.getStandardPrecision(uomId);
+		final BigDecimal plannedDuration = plannedAmt.divide(pricePerTimeUOM, uomPrecision.toInt(), uomPrecision.getRoundingMode());
+		return Optional.of(plannedDuration);
+	}
 }
