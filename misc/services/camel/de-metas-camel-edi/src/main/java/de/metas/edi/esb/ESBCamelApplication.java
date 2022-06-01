@@ -22,11 +22,12 @@ package de.metas.edi.esb;
  * #L%
  */
 
+import com.ctc.wstx.stax.WstxInputFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import com.ctc.wstx.stax.WstxInputFactory;
-
+@EnableWebMvc // thx to https://stackoverflow.com/questions/70178343/springfox-3-0-0-is-not-working-with-spring-boot-2-6-0
 @SpringBootApplication
 public class ESBCamelApplication
 {
@@ -34,7 +35,7 @@ public class ESBCamelApplication
 	/**
 	 * Main method to start this application.
 	 */
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
 		// get http://camel.465427.n5.nabble.com/Seeing-Info-message-all-over-log-file-related-to-Woodstox-td5749044.html
 		System.setProperty("javax.xml.stream.XMLInputFactory", WstxInputFactory.class.getName());
