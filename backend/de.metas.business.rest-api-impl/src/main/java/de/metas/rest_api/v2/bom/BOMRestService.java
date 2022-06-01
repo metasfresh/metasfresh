@@ -33,6 +33,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.rest_api.v2.product.ProductRestService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -40,6 +41,7 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -61,13 +63,16 @@ public class BOMRestService
 
 	private final ProductBOMService bomService;
 	private final ProductRestService productRestService;
+	private final JsonAttributeService jsonAttributeService;
 
 	public BOMRestService(
 			@NonNull final ProductRestService productRestService,
-			@NonNull final ProductBOMService bomService)
+			@NonNull final ProductBOMService bomService,
+			@NonNull final JsonAttributeService jsonAttributeService)
 	{
 		this.productRestService = productRestService;
 		this.bomService = bomService;
+		this.jsonAttributeService = jsonAttributeService;
 	}
 
 	@NonNull
@@ -92,6 +97,9 @@ public class BOMRestService
 				.map(line -> buildBOMLine(line, orgId))
 				.collect(ImmutableList.toImmutableList());
 
+		final AttributeSetInstanceId attributeSetInstanceId = jsonAttributeService.computeAttributeSetInstanceFromJson(request.getAttributeSetInstance())
+				.orElse(null);
+
 		final BOMCreateRequest bomRequest = BOMCreateRequest.builder()
 				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))
 				.productId(finishedProductId)
@@ -100,6 +108,7 @@ public class BOMRestService
 				.uomId(bomUOMId)
 				.isActive(request.getIsActive())
 				.validFrom(request.getValidFrom())
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.lines(bomLines)
 				.build();
 
@@ -121,12 +130,16 @@ public class BOMRestService
 		final X12DE355 uomCode = X12DE355.ofCode(lineRequest.getQtyBom().getUomCode());
 		final I_C_UOM uom = uomDAO.getByX12DE355(uomCode);
 
+		final AttributeSetInstanceId attributeSetInstanceId = jsonAttributeService.computeAttributeSetInstanceFromJson(lineRequest.getAttributeSetInstance())
+				.orElse(null);
+
 		return BOMCreateRequest.BOMLine.builder()
 				.productId(productId)
 				.line(lineRequest.getLine())
 				.scrap(lineRequest.getScrap())
 				.isQtyPercentage(lineRequest.getIsQtyPercentage())
 				.qty(Quantity.of(lineRequest.getQtyBom().getQty(), uom))
+				.attributeSetInstanceId(attributeSetInstanceId)
 				.build();
 	}
 }

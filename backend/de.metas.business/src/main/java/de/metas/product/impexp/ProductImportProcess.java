@@ -112,6 +112,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 				.ctx(getCtx())
 				.tableName(getImportTableName())
 				.valueName(I_I_Product.COLUMNNAME_Value)
+				.build()
 				.updateIProduct();
 	}
 
@@ -188,7 +189,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			}
 			catch (final SQLException ex)
 			{
-				throw new DBException("Update Product: " + ex.toString(), ex);
+				throw new DBException("Update Product: " + ex, ex);
 			}
 			finally
 			{
@@ -208,7 +209,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
-	private final void createUpdateProductPrice(final I_I_Product imp)
+	private void createUpdateProductPrice(final I_I_Product imp)
 	{
 		//
 		// Get M_PriceList_Version_ID

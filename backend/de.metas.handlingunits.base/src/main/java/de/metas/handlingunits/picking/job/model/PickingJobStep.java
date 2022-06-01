@@ -25,8 +25,8 @@ package de.metas.handlingunits.picking.job.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
@@ -132,9 +132,9 @@ public class PickingJobStep
 		return pickFroms.getPickFrom(key);
 	}
 
-	public PickingJobStepPickFrom getPickFromByHUBarcode(@NonNull final HUBarcode huBarcode)
+	public PickingJobStepPickFrom getPickFromByHUQRCode(@NonNull final HUQRCode qrCode)
 	{
-		return pickFroms.getPickFromByHUBarcode(huBarcode);
+		return pickFroms.getPickFromByHUQRCode(qrCode);
 	}
 
 }

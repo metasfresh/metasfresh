@@ -1,11 +1,56 @@
-.application-container {
+.app-container {
+  .app-header {
+    top: 0;
     width: 100%;
-    .card {
-        justify-content: center;
-        align-content: center;
-        flex-direction: column;
-        height: 9.5em;
+    position: fixed;
+    z-index: 1000;
+
+    padding: 0.50rem;
+    box-shadow: rgba(0, 0, 0, 0.133) 0 0.15em 0.35em 0;
+
+    color: $white;
+    background: $base-mf-green;
+
+    .app-icon {
+      text-align: right;
+
+      .icon {
         vertical-align: middle;
-        cursor: pointer;
+      }
     }
+
+    .app-caption {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .app-content {
+    padding-top: 4rem;
+    padding-bottom: 6rem;
+  }
+
+  .app-footer {
+    bottom: 0;
+    width: 100%;
+    position: fixed;
+    z-index: 1000;
+
+    box-shadow: rgba(0, 0, 0, 0.133) 0 -0.15em 0.35em 0;
+
+    background: $white;
+
+    .columns {
+      margin: 0;
+
+      .column {
+        padding: 0;
+      }
+    }
+  }
+
+  .app-toaster {
+    bottom: 4rem !important;
+  }
 }

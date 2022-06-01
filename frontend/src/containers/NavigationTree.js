@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import DebounceInput from 'react-debounce-input';
 import { connect } from 'react-redux';
-
+import SpinnerOverlay from '../components/app/SpinnerOverlay';
 import history from '../services/History';
 import { nodePathsRequest, queryPathsRequest, rootRequest } from '../api';
 import { openModal } from '../actions/WindowActions';
@@ -107,30 +107,26 @@ class NavigationTree extends Component {
   };
 
   queryRequest = async (value) => {
-    try {
-      const response = await queryPathsRequest(value, '', true);
-
-      await new Promise((resolve) =>
-        this.setState(
-          {
-            queriedResults: response.data.children,
-          },
-          resolve
-        )
-      );
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        await new Promise((resolve) =>
-          this.setState(
-            {
-              queriedResults: [],
-              rootResults: {},
-            },
-            resolve
-          )
-        );
-      }
-    }
+    this.setState({ pendingQuery: true, query: value });
+    const { query } = this.state;
+    await queryPathsRequest(value, '', true)
+      .then((res) => {
+        this.setState({
+          queriedResults: query === value ? res.data.children : [],
+          pendingQuery: false,
+          query,
+        });
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          this.setState({
+            queriedResults: [],
+            rootResults: {},
+            pendingQuery: false,
+            query,
+          });
+        }
+      });
   };
 
   clearValue = () => {
@@ -149,7 +145,7 @@ class NavigationTree extends Component {
     const input = document.getElementById('search-input');
     const firstMenuItem = document.getElementsByClassName('js-menu-item')[0];
     let prevParentSibling = document.activeElement.previousSibling;
-
+    const elementToEnter = document.activeElement.childNodes[0];
     switch (e.key) {
       case 'ArrowDown':
         if (document.activeElement === input) {
@@ -179,7 +175,7 @@ class NavigationTree extends Component {
         break;
       case 'Enter':
         e.preventDefault();
-        document.activeElement.childNodes[0].childNodes[0].click();
+        elementToEnter.childNodes[0] && elementToEnter.childNodes[0].click();
         break;
     }
   };
@@ -318,7 +314,7 @@ class NavigationTree extends Component {
   };
 
   renderTree = () => {
-    const { queriedResults, query } = this.state;
+    const { queriedResults, query, pendingQuery } = this.state;
 
     let sitemapLeftColItems = queriedResults.filter(
       (colItem, i) => i % 2 === 0
@@ -353,24 +349,33 @@ class NavigationTree extends Component {
         </div>
 
         {/* sitemap items are listed using this */}
-        <div className="column-wrapper">
-          <div className="sitemap-column-left">
-            {sitemapLeftColItems &&
-              sitemapLeftColItems.map((subitem, subindex) =>
-                this.renderMenuOverlayContainer(subitem, subindex)
-              )}
-          </div>
-          <div className="sitemap-column-right">
-            {sitemapRightColItems &&
-              sitemapRightColItems.map((subitem, subindex) =>
-                this.renderMenuOverlayContainer(subitem, subindex)
-              )}
-          </div>
+        {!pendingQuery && (
+          <div className="column-wrapper">
+            <div className="sitemap-column-left">
+              {sitemapLeftColItems &&
+                sitemapLeftColItems.map((subitem, subindex) =>
+                  this.renderMenuOverlayContainer(subitem, subindex)
+                )}
+            </div>
+            <div className="sitemap-column-right">
+              {sitemapRightColItems &&
+                sitemapRightColItems.map((subitem, subindex) =>
+                  this.renderMenuOverlayContainer(subitem, subindex)
+                )}
+            </div>
 
-          {queriedResults.length === 0 && query !== '' && (
-            <span>There are no results</span>
-          )}
-        </div>
+            {queriedResults.length === 0 && query !== '' && (
+              <span>{counterpart.translate('window.noResults.caption')}</span>
+            )}
+          </div>
+        )}
+
+        {/* display the spinner while loading */}
+        {pendingQuery && (
+          <div className="sitemap-spinner">
+            <SpinnerOverlay iconSize={50} />
+          </div>
+        )}
       </div>
     );
   };

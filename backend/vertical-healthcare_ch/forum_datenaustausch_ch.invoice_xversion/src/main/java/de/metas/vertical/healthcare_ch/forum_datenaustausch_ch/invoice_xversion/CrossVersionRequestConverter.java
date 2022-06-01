@@ -1,10 +1,11 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /*
  * #%L
@@ -30,11 +31,16 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 
 public interface CrossVersionRequestConverter
 {
-	public void fromCrossVersionRequest(XmlRequest xRequest, OutputStream outputStream);
+	void fromCrossVersionRequest(XmlRequest xRequest, OutputStream outputStream);
 
-	public XmlRequest toCrossVersionRequest(InputStream xmlInput);
+	XmlRequest toCrossVersionRequest(InputStream xmlInput);
 
-	public String getXsdName();
+	String getXsdName();
 
-	public XmlVersion getVersion();
+	XmlVersion getVersion();
+
+	default XmlRequest augmentRequest(final XmlRequest xAugmentedRequest, final BPartnerId bPartnerId)
+	{
+		return xAugmentedRequest;
+	}
 }

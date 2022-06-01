@@ -25,6 +25,8 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
 import java.util.Iterator;
 import java.util.List;
 
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -125,9 +127,9 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	 * @return all PP_Orders which are suitable for invoices and there are no invoice candidates created yet.
 	 */
 	@Override
-	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_PP_Order> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
-		return dao.retrievePPOrdersWithMissingICs(Env.getCtx(), limit, ITrx.TRXNAME_ThreadInherited);
+		return dao.retrievePPOrdersWithMissingICs(limit);
 	}
 
 	/**

@@ -16,11 +16,11 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | bpartner_2 | ProcurementPartner2    | Y            | N              | en_US           |
       | bpartner_3 | NotAProcurementPartner | N            | Y              | en_US           |
     And metasfresh contains AD_Users:
-      | C_BPartner_ID.Identifier | Name         | OPT.EMail     | OPT.Password | OPT.AD_Language | OPT.IsMFProcurementUser | OPT.ProcurementPassword |
-      | bpartner_1               | user1_1_name | user1_1@email | password1_1  | de_DE           | Y                       | procurementPW1_1        |
-      | bpartner_1               | user1_2_name | user1_2@email | password1_2  | de_DE           | Y                       | procurementPW1_2        |
-      | bpartner_2               | user2_1_name | user2_1@email | password2_1  | de_DE           | Y                       | procurementPW2_1        |
-      | bpartner_3               | user3_1_name | user3_1@email | password3_1  | de_DE           | Y                       | procurementPW3_1        |
+      | AD_User_ID.Identifier | OPT.C_BPartner_ID.Identifier | Name         | OPT.EMail     | OPT.Password | OPT.AD_Language | OPT.IsMFProcurementUser | OPT.ProcurementPassword |
+      | user_1                | bpartner_1                   | user1_1_name | user1_1@email | password1_1  | de_DE           | Y                       | procurementPW1_1        |
+      | user_2                | bpartner_1                   | user1_2_name | user1_2@email | password1_2  | de_DE           | Y                       | procurementPW1_2        |
+      | user_3                | bpartner_2                   | user2_1_name | user2_1@email | password2_1  | de_DE           | Y                       | procurementPW2_1        |
+      | user_4                | bpartner_3                   | user3_1_name | user3_1@email | password3_1  | de_DE           | Y                       | procurementPW3_1        |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name             | Type_Conditions |
       | procurement_1                       | Procurement-Test | Procuremnt      |

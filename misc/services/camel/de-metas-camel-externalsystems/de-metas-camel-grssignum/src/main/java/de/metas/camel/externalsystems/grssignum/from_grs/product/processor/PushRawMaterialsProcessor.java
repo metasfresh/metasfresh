@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +22,14 @@
 
 package de.metas.camel.externalsystems.grssignum.from_grs.product.processor;
 
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
+import de.metas.camel.externalsystems.grssignum.from_grs.product.PushRawMaterialsRouteContext;
 import de.metas.camel.externalsystems.grssignum.to_grs.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonBPartnerProduct;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonProduct;
-import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
@@ -43,12 +45,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.EXCLUSION_FROM_PURCHASE_REASON;
+import static de.metas.camel.externalsystems.grssignum.GRSSignumConstants.ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT;
+
 public class PushRawMaterialsProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
-		final JsonProduct jsonProduct = exchange.getIn().getBody(JsonProduct.class);
+		final PushRawMaterialsRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
+																							 ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT,
+																							 PushRawMaterialsRouteContext.class);
+
+		final JsonProduct jsonProduct = context.getJsonProduct();
 
 		final ProductUpsertCamelRequest productUpsertCamelRequest = getProductUpsertCamelRequest(jsonProduct);
 
@@ -99,9 +108,13 @@ public class PushRawMaterialsProcessor implements Processor
 	private static JsonRequestBPartnerProductUpsert getJsonRequestBPartnerProductUpsert(@NonNull final JsonBPartnerProduct grsBPartnerProductItem)
 	{
 		final JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert = new JsonRequestBPartnerProductUpsert();
-		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(ExternalIdentifierFormat.asExternalIdentifier(grsBPartnerProductItem.getBpartnerId()));
+
+		jsonRequestBPartnerProductUpsert.setBpartnerIdentifier(computeBPartnerIdentifier(grsBPartnerProductItem));
 		jsonRequestBPartnerProductUpsert.setUsedForVendor(true);
 		jsonRequestBPartnerProductUpsert.setCurrentVendor(grsBPartnerProductItem.isCurrentVendor());
+		jsonRequestBPartnerProductUpsert.setExcludedFromPurchase(grsBPartnerProductItem.isExcludedFromPurchase());
+		jsonRequestBPartnerProductUpsert.setExclusionFromPurchaseReason(grsBPartnerProductItem.isExcludedFromPurchase() ? EXCLUSION_FROM_PURCHASE_REASON : null);
+		jsonRequestBPartnerProductUpsert.setActive(grsBPartnerProductItem.isActive());
 
 		return jsonRequestBPartnerProductUpsert;
 	}
@@ -119,5 +132,16 @@ public class PushRawMaterialsProcessor implements Processor
 		}
 
 		return name;
+	}
+
+	@NonNull
+	private static String computeBPartnerIdentifier(@NonNull final JsonBPartnerProduct jsonBPartnerProduct)
+	{
+		if (jsonBPartnerProduct.getBPartnerMetasfreshId() != null && Check.isNotBlank(jsonBPartnerProduct.getBPartnerMetasfreshId()))
+		{
+			return jsonBPartnerProduct.getBPartnerMetasfreshId();
+		}
+
+		throw new RuntimeException("Missing mandatory METASFRESHID! see JsonBPartnerProduct: " + jsonBPartnerProduct);
 	}
 }

@@ -1,41 +1,45 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
+import { useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { push } from 'connected-react-router';
 
-import ButtonWithIndicator from '../../../components/ButtonWithIndicator';
-import ButtonQuantityProp from '../../../components/ButtonQuantityProp';
 import { distributionLineScreenLocation } from '../../../routes/distribution';
-import { connect } from 'react-redux';
 
-class DistributionLineButton extends PureComponent {
-  handleClick = () => {
-    const { dispatch, wfProcessId, activityId, lineId } = this.props;
-    const location = distributionLineScreenLocation({ wfProcessId, activityId, lineId });
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 
-    dispatch(push(location));
+const DistributionLineButton = ({
+  applicationId,
+  wfProcessId,
+  activityId,
+  lineId,
+  caption,
+  uom,
+  qtyPicked,
+  qtyToMove,
+  completeStatus,
+  isUserEditable,
+}) => {
+  const history = useHistory();
+  const handleClick = () => {
+    history.push(distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
-  render() {
-    const { caption, uom, qtyPicked, qtyToMove, completeStatus, lineId, isUserEditable } = this.props;
-
-    return (
-      <button
-        key={lineId}
-        className="button is-outlined complete-btn"
-        disabled={!isUserEditable}
-        onClick={this.handleClick}
-      >
-        <ButtonWithIndicator caption={caption} completeStatus={completeStatus}>
-          <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} appId="distribution" />
-        </ButtonWithIndicator>
-      </button>
-    );
-  }
-}
+  return (
+    <ButtonWithIndicator
+      caption={caption}
+      completeStatus={completeStatus}
+      disabled={!isUserEditable}
+      onClick={handleClick}
+    >
+      <ButtonQuantityProp qtyCurrent={qtyPicked} qtyTarget={qtyToMove} uom={uom} applicationId="distribution" />
+    </ButtonWithIndicator>
+  );
+};
 
 DistributionLineButton.propTypes = {
   //
   // Props
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
@@ -45,9 +49,6 @@ DistributionLineButton.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyToMove: PropTypes.number.isRequired,
   qtyPicked: PropTypes.number.isRequired,
-  //
-  // Actions
-  dispatch: PropTypes.func.isRequired,
 };
 
-export default connect()(DistributionLineButton);
+export default DistributionLineButton;

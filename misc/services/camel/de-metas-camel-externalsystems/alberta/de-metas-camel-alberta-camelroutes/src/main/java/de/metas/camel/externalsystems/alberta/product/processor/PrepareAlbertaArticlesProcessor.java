@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.alberta.product.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.product.PurchaseRatingEnum;
 import de.metas.camel.externalsystems.alberta.product.UpsertArticleRequest;
 import de.metas.common.product.v2.response.JsonProduct;
@@ -82,8 +83,7 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 				.unavailableFrom(fromJavaLocalDate(product.getDiscontinuedFrom()));
 
 		final JsonAlbertaProductInfo albertaProductInfo = product.getAlbertaProductInfo();
-	
-		
+
 		article.additionalDescription(albertaProductInfo.getAdditionalDescription())
 				.size(albertaProductInfo.getSize())
 				.purchaseRating(PurchaseRatingEnum.getValueByCodeOrNull(albertaProductInfo.getPurchaseRating()))
@@ -94,8 +94,8 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 				.assortmentType(albertaProductInfo.getAssortmentType() != null ? new BigDecimal(albertaProductInfo.getAssortmentType()) : null)
 				.pharmacyPrice(albertaProductInfo.getPharmacyPrice() != null ? String.valueOf(albertaProductInfo.getPharmacyPrice()) : null)
 				.fixedPrice(albertaProductInfo.getFixedPrice() != null ? String.valueOf(albertaProductInfo.getFixedPrice()) : null)
-				.therapyIds(albertaProductInfo.getTherapyIds())
-				.billableTherapies(albertaProductInfo.getBillableTherapies())
+				.therapyIds(AlbertaUtil.asBigDecimalIds(albertaProductInfo.getTherapyIds()))
+				.billableTherapies(AlbertaUtil.asBigDecimalIds(albertaProductInfo.getBillableTherapies()))
 				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits(), pcn))
 				.productGroupId(albertaProductInfo.getProductGroupId());
 

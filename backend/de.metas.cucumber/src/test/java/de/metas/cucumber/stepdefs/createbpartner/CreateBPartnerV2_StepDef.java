@@ -22,32 +22,48 @@
 
 package de.metas.cucumber.stepdefs.createbpartner;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 
 public class CreateBPartnerV2_StepDef
 {
 	private final BPartnerEndpointService bpartnerEndpointService;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final AD_User_StepDefData userTable;
 
-	public CreateBPartnerV2_StepDef()
+	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+	public CreateBPartnerV2_StepDef(
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
+		this.bPartnerTable = bPartnerTable;
+		this.userTable = userTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 	}
 
@@ -79,12 +95,30 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedBPartner.getLanguage()).contains(language);
 			assertThat(persistedBPartner.getCode()).isEqualTo(code);
 			assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
-			assertThat(persistedBPartner.getGroup()).isEqualTo(group);
+
+			if (Check.isNotBlank(group))
+			{
+				assertThat(persistedBPartner.getGroup()).isEqualTo(group);
+			}
 
 			if (Check.isNotBlank(parentId))
 			{
 				assertThat(persistedBPartner.getParentId().getValue()).isEqualTo(Integer.parseInt(parentId));
 			}
+
+			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(persistedBPartner.getMetasfreshId().getValue());
+
+			final String createdByIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_CreatedBy);
+			if (Check.isNotBlank(createdByIdentifier))
+			{
+				final I_AD_User userRecord = userTable.get(createdByIdentifier);
+
+				assertThat(userRecord).isNotNull();
+				assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
+			}
+
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
 		}
 	}
 

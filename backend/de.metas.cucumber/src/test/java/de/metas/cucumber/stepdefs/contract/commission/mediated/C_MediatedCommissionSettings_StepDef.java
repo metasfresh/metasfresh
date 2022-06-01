@@ -26,7 +26,6 @@ import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -49,13 +48,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class C_MediatedCommissionSettings_StepDef
 {
-	private final StepDefData<I_C_MediatedCommissionSettings> mediatedCommissionSettingsTable;
-	private final StepDefData<I_C_MediatedCommissionSettingsLine> mediatedCommissionSettingsLineTable;
+	private final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable;
+	private final C_MediatedCommissionSettingsLine_StepDefData mediatedCommissionSettingsLineTable;
 	private final M_Product_StepDefData productTable;
 
 	public C_MediatedCommissionSettings_StepDef(
-			@NonNull final StepDefData<I_C_MediatedCommissionSettings> mediatedCommissionSettingsTable,
-			@NonNull final StepDefData<I_C_MediatedCommissionSettingsLine> mediatedCommissionSettingsLineTable,
+			@NonNull final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable,
+			@NonNull final C_MediatedCommissionSettingsLine_StepDefData mediatedCommissionSettingsLineTable,
 			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.mediatedCommissionSettingsTable = mediatedCommissionSettingsTable;

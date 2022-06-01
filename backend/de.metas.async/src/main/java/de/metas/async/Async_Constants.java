@@ -62,12 +62,15 @@ public final class Async_Constants
 
 	public static final int C_OlCandProcessor_ID_Default = 1000003;
 
+	public static final String C_Async_Batch_InternalName_Default = "Default";
+
 	public static final String C_Async_Batch_InternalName_OLCand_Processing = "OLCand_Processing";
 	public static final String C_Async_Batch_InternalName_ShipmentSchedule = "ShipmentSchedule_Processing";
 	public static final String C_Async_Batch_InternalName_InvoiceCandidate_Processing = "InvoiceCandidate_Processing";
 	public static final String C_Async_Batch_InternalName_EnqueueScheduleForOrder = "EnqueueScheduleForOrder";
 	public static final String C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation = "EnqueueInvoiceCandidateCreation";
 	public static final String C_Async_Batch_InternalName_ProcessOLCands = "ProcessOLCands";
+	public static final String C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting = "AutomaticallyInvoicePdfPrinting";
 
 	public static final String SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION = "SKIP_WP_PROCESSOR_FOR_AUTOMATION";
 	public static final String SYS_Config_WaitTimeOutMS = "de.metas.async.AsyncBatchObserver.WaitTimeOutMS";

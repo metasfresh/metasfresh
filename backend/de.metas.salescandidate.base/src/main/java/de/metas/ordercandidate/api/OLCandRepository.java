@@ -114,6 +114,11 @@ public class OLCandRepository
 		final OrgId orgId = OrgId.ofRepoIdOrAny(olCandPO.getAD_Org_ID());
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
+		// if email and phone are blank, they might be set from the location a few lines down the road.
+		olCandPO.setEMail(request.getEmail());
+		olCandPO.setPhone(request.getPhone());
+		
+		// set the "normal" (buyer) bpartner's data
 		{
 			final BPartnerInfo bpartner = request.getBpartner();
 			final BPartnerLocationId bpartnerLocationId = bpartner.getBpartnerLocationId();
@@ -129,13 +134,24 @@ public class OLCandRepository
 			olCandPO.setC_BPartner_Location_Value_ID(LocationId.toRepoId(bpartner.getLocationId()));
 			olCandPO.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 
+			olCandPO.setBPartnerName(request.getBpartnerName());
+
 			final I_C_BPartner_Location bPartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bpartnerLocationId);
 
 			if (bPartnerLocation != null)
 			{
-				olCandPO.setBPartnerName(bPartnerLocation.getBPartnerName());
-				olCandPO.setPhone(bPartnerLocation.getPhone());
-				olCandPO.setEMail(bPartnerLocation.getEMail());
+				if (Check.isBlank(request.getBpartnerName()))
+				{
+					olCandPO.setBPartnerName(bPartnerLocation.getBPartnerName());
+				}
+				if (Check.isBlank(olCandPO.getEMail()))
+				{
+					olCandPO.setEMail(bPartnerLocation.getEMail());
+				}
+				if (Check.isBlank(olCandPO.getPhone()))
+				{
+					olCandPO.setPhone(bPartnerLocation.getPhone());
+				}
 			}
 		}
 
@@ -171,7 +187,7 @@ public class OLCandRepository
 			olCandPO.setPOReference(request.getPoReference());
 		}
 
-		olCandPO.setDateCandidate(CoalesceUtil.coalesce(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
+		olCandPO.setDateCandidate(CoalesceUtil.coalesceNotNull(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
 															  .atTime(LocalTime.MAX)
@@ -298,6 +314,11 @@ public class OLCandRepository
 
 		olCandPO.setApplySalesRepFrom(request.getAssignSalesRepRule().getCode());
 		olCandPO.setC_BPartner_SalesRep_Internal_ID(BPartnerId.toRepoId(request.getSalesRepInternalId()));
+
+		if (request.getQtyItemCapacity() != null)
+		{
+			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
+		}
 
 		saveRecord(olCandWithIssuesInterface);
 

@@ -1,17 +1,9 @@
-import React, { Component } from 'react';
-import { DragSource, DropTarget } from 'react-dnd';
+import React from 'react';
+import { useDrop, useDrag } from 'react-dnd';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-const cardSource = {
-  beginDrag(props) {
-    return {
-      id: props.id,
-      index: props.index,
-      isNew: props.isNew,
-    };
-  },
-};
+import ItemTypes from '../../constants/ItemTypes';
 
 const cardTarget = {
   hover(props, monitor) {
@@ -35,66 +27,52 @@ const cardTarget = {
   },
 };
 
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging(),
-  };
-}
+const DndWidget = (props) => {
+  const {
+    children,
+    className,
+    transparent,
+    removeCard,
+    entity,
+    id,
+    placeholder,
+    index,
+    isNew,
+  } = props;
 
-function connect(connect) {
-  return {
-    connectDropTarget: connect.dropTarget(),
-  };
-}
+  const [{ isDragging }, connectDragSource] = useDrag({
+    type: ItemTypes.WIDGET,
+    item: { id, index, isNew },
+  });
+  const [, connectDropTarget] = useDrop({
+    ...cardTarget,
+    accept: ItemTypes.WIDGET,
+  });
 
-export class DndWidget extends Component {
-  constructor(props) {
-    super(props);
-  }
+  if (transparent) return <div {...{ className }}>{children}</div>;
 
-  render() {
-    const {
-      children,
-      connectDragSource,
-      connectDropTarget,
-      isDragging,
-      className,
-      transparent,
-      removeCard,
-      entity,
-      id,
-      placeholder,
-      index,
-    } = this.props;
-
-    if (transparent) return <div {...{ className }}>{children}</div>;
-
-    return connectDragSource(
-      connectDropTarget(
-        <div
-          className={classnames(className, 'dnd-widget', {
-            dragging: isDragging,
-            'dnd-placeholder': placeholder,
-          })}
-        >
-          {!placeholder && removeCard && (
-            <i
-              className="meta-icon-trash draggable-icon-remove pointer"
-              onClick={() => removeCard(entity, index, id)}
-            />
-          )}
-          {children}
-        </div>
-      )
-    );
-  }
-}
+  return connectDragSource(
+    connectDropTarget(
+      <div
+        className={classnames(className, 'dnd-widget', {
+          dragging: isDragging,
+          'dnd-placeholder': placeholder,
+        })}
+      >
+        {!placeholder && removeCard && (
+          <i
+            className="meta-icon-trash draggable-icon-remove pointer"
+            onClick={() => removeCard(entity, index, id)}
+          />
+        )}
+        {children}
+      </div>
+    )
+  );
+};
 
 DndWidget.propTypes = {
   children: PropTypes.any,
-  connectDragSource: PropTypes.func,
-  connectDropTarget: PropTypes.func,
   className: PropTypes.string,
   transparent: PropTypes.bool,
   removeCard: PropTypes.func,
@@ -103,10 +81,7 @@ DndWidget.propTypes = {
   placeholder: PropTypes.string,
   index: PropTypes.number,
   isDragging: PropTypes.any,
+  isNew: PropTypes.bool,
 };
 
-export default DragSource(
-  (props) => props.entity,
-  cardSource,
-  collect
-)(DropTarget((props) => props.entity, cardTarget, connect)(DndWidget));
+export default DndWidget;

@@ -1,8 +1,3 @@
-export function getBaseUrl() {
-  let getUrl = window.location;
-  return getUrl.protocol + '//' + getUrl.host + '/' + getUrl.pathname.split('/')[1];
-}
-
 export const unboxAxiosResponse = (axiosResponse) => {
   //
   // Case: server is using API Audit feature
@@ -14,16 +9,4 @@ export const unboxAxiosResponse = (axiosResponse) => {
   else {
     return axiosResponse.data;
   }
-};
-
-export const getLocation = (params, scanner) => {
-  const { wfProcessId, activityId, lineId, stepId, appId, altStepId } = params;
-
-  const location = `/workflow/${wfProcessId}${activityId ? `/activityId/${activityId}` : ``}${
-    lineId ? `/lineId/${lineId}` : ``
-  }${stepId ? `/stepId/${stepId}` : ``}${altStepId ? `/altStepId/${altStepId}` : ``}${
-    scanner ? `/scanner/${appId}` : ``
-  }`;
-
-  return location;
 };

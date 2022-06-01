@@ -3,7 +3,6 @@ package de.metas.handlingunits.picking.job.service.commands;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.picking.PickFrom;
@@ -17,6 +16,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -24,6 +24,7 @@ import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -42,11 +43,13 @@ class PickingJob_Scenarios_Test
 		helper = new PickingJobTestHelper();
 	}
 
+	@Disabled("Disabled because splitting of a part of top level VHU leads to something which is not physically identifiable (no QR code)")
 	@Test
 	void pickCU_QtyToPick_LessThan_HUQty()
 	{
 		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
 		final HuId vhu1 = helper.createVHU(productId, "130");
+		helper.createQRCode(vhu1, "QR-VHU1");
 		System.out.println("VHU1: " + vhu1);
 
 		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrder001");
@@ -73,7 +76,7 @@ class PickingJob_Scenarios_Test
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.PICK)
-				.huBarcode(HUBarcode.ofHuId(vhu1))
+				.huQRCode(helper.getQRCode(vhu1))
 				.qtyPicked(new BigDecimal("100"))
 				.qtyRejectedReasonCode(null)
 				.build());
@@ -108,11 +111,12 @@ class PickingJob_Scenarios_Test
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.UNPICK)
-				.huBarcode(HUBarcode.ofHuId(vhu1))
+				.huQRCode(helper.getQRCode(vhu1))
 				.build());
 		{
 			System.out.println("After unpick: " + pickingJob);
-			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(HUInfo.ofHuId(pickFromHUId));
+			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU())
+					.isEqualTo(HUInfo.builder().id(pickFromHUId).qrCode(helper.getQRCode(pickFromHUId)).build());
 			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo()).isNull();
 			HUStorageExpectation.newExpectation().product(productId).qty("100").assertExpected(pickFromHUId);
 		}
@@ -123,6 +127,7 @@ class PickingJob_Scenarios_Test
 	{
 		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
 		final HuId vhu1 = helper.createVHU(productId, "100");
+		final HUQRCode vhu1_qrCode = helper.createQRCode(vhu1, "QR-VHU1");
 
 		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrder002");
 		helper.packageable()
@@ -144,14 +149,15 @@ class PickingJob_Scenarios_Test
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.PICK)
-				.huBarcode(HUBarcode.ofHuId(vhu1))
+				.huQRCode(vhu1_qrCode)
 				.qtyPicked(new BigDecimal("100"))
 				.qtyRejectedReasonCode(null)
 				.build());
 		{
 			System.out.println("After pick: " + pickingJob);
 
-			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(HUInfo.ofHuId(vhu1));
+			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU())
+					.isEqualTo(HUInfo.builder().id(vhu1).qrCode(vhu1_qrCode).build());
 
 			final PickingJobStepPickedTo pickedTo = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo();
 			assertThat(pickedTo)
@@ -171,11 +177,12 @@ class PickingJob_Scenarios_Test
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.UNPICK)
-				.huBarcode(HUBarcode.ofHuId(vhu1))
+				.huQRCode(vhu1_qrCode)
 				.build());
 		{
 			System.out.println("After unpick: " + pickingJob);
-			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(HUInfo.ofHuId(vhu1));
+			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU())
+					.isEqualTo(HUInfo.builder().id(vhu1).qrCode(vhu1_qrCode).build());
 			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo()).isNull();
 		}
 	}

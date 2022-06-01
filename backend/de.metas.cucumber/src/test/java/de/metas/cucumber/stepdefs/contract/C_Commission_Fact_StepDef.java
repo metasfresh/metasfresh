@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.contract;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -53,12 +53,12 @@ public class C_Commission_Fact_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-	private final StepDefData<I_C_Invoice_Candidate> invoiceCandTable;
-	private final StepDefData<I_C_Commission_Share> commissionShareTable;
+	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
+	private final C_Commission_Share_StepDefData commissionShareTable;
 
 	public C_Commission_Fact_StepDef(
-			@NonNull final StepDefData<I_C_Invoice_Candidate> invoiceCandTable,
-			@NonNull final StepDefData<I_C_Commission_Share> commissionShareTable)
+			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
+			@NonNull final C_Commission_Share_StepDefData commissionShareTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.commissionShareTable = commissionShareTable;

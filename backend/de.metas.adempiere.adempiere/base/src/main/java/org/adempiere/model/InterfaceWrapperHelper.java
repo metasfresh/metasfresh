@@ -489,7 +489,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Reload given model from database.
 	 *
-	 * @param model
 	 * @param discardChanges hint for actual handler to tell that if there are any unsaved changes, it's ok to discard them.
 	 */
 	public static void refresh(final Object model, final boolean discardChanges)
@@ -599,6 +598,24 @@ public class InterfaceWrapperHelper
 			final AdempiereException ex = new AdempiereException("Model not handled: " + modelToSave + "(class=" + modelToSave.getClass() + "). Ignored.");
 			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
 			logger.warn("Could not save the given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issueId);
+		}
+	}
+
+	public static void setCtx(@NonNull final Object model, @NonNull final Properties ctx)
+	{
+		if (POWrapper.isHandled(model))
+		{
+			POWrapper.setCtx(model, ctx);
+		}
+		else if (POJOWrapper.isHandled(model))
+		{
+			POJOWrapper.setCtx(model, ctx);
+		}
+		else
+		{
+			final AdempiereException ex = new AdempiereException("Model not handled: " + model + "(class=" + model.getClass() + "). Ignored.");
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+			logger.warn("Could not set ctx to given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issueId);
 		}
 	}
 
@@ -814,17 +831,17 @@ public class InterfaceWrapperHelper
 	/* package */@SuppressWarnings("serial")
 	static class MissingTableNameException extends AdempiereException
 	{
-		private static final MissingTableNameException notFound(final Class<?> modelClass)
+		private static MissingTableNameException notFound(final Class<?> modelClass)
 		{
 			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ")");
 		}
 
-		private static final MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
+		private static MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
 		{
 			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ", fallbackTableName=" + fallbackTableName + ")");
 		}
 
-		private static final MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
+		private static MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
 		{
 			return new MissingTableNameException("modelClass's table name is not matching the expected table name:"
 					+ "\n modelClass=" + modelClass
@@ -838,7 +855,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	private static final IModelClassInfo getModelClassInfoOrNull(@Nullable final Class<?> clazz)
+	private static IModelClassInfo getModelClassInfoOrNull(@Nullable final Class<?> clazz)
 	{
 		return ModelClassIntrospector
 				.getInstance()
@@ -883,8 +900,6 @@ public class InterfaceWrapperHelper
 	 * If the modelClass has a table name but it's not matching the expectedTableName (if not null) an exception will be thrown.
 	 * If the modelClass does not hava a table name and <code>expectedTableName</code> is null an exception will be thrown.
 	 *
-	 * @param modelClass
-	 * @param expectedTableName
 	 * @return model table name; never returns null
 	 */
 	public static String getTableName(final Class<?> modelClass, @Nullable final String expectedTableName)
@@ -923,7 +938,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final boolean isModelInterface(@Nullable final Class<?> modelClass)
+	public static boolean isModelInterface(@Nullable final Class<?> modelClass)
 	{
 		if (modelClass == null)
 		{
@@ -949,10 +964,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param clazz
 	 * @return AD_Table_ID or <code>-1</code>.
 	 */
-	public static final int getTableIdOrNull(final Class<?> clazz)
+	public static int getTableIdOrNull(final Class<?> clazz)
 	{
 		final String tableName = getTableNameOrNull(clazz);
 		if (tableName == null)
@@ -963,7 +977,7 @@ public class InterfaceWrapperHelper
 
 	}
 
-	public static final String getKeyColumnName(final Class<?> clazz)
+	public static String getKeyColumnName(final Class<?> clazz)
 	{
 		final String tableName = getTableName(clazz);
 		return getKeyColumnName(tableName);
@@ -973,11 +987,8 @@ public class InterfaceWrapperHelper
 	 * Returns <code>tableName + "_ID"</code>.
 	 * <p>
 	 * Hint: if you need a method that does not just assume, but actually verifies the key column name, use {@link de.metas.adempiere.service.IColumnBL#getSingleKeyColumn(String)}.
-	 *
-	 * @param tableName
-	 * @return
 	 */
-	public static final String getKeyColumnName(final String tableName)
+	public static String getKeyColumnName(final String tableName)
 	{
 		// NOTE: we assume the key column name is <TableName>_ID
 		final String keyColumnName = tableName + "_ID"; // TODO: hardcoded
@@ -1242,7 +1253,7 @@ public class InterfaceWrapperHelper
 		return value;
 	}
 
-	private static final <T> T getValue(final Object model,
+	private static <T> T getValue(final Object model,
 			final String columnName,
 			final boolean throwExIfColumnNotFound,
 			final boolean useOverrideColumnIfAvailable)

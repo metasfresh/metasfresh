@@ -87,8 +87,8 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	{
 		final org.compiere.model.I_AD_User userRecord = createUserRecord("userRecord.EMail");
 
-		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(userRecord);
-		final I_C_Invoice invoiceRecord2 = createInvoiceRecord(userRecord);
+		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(userRecord, null);
+		final I_C_Invoice invoiceRecord2 = createInvoiceRecord(userRecord, null);
 
 		final I_C_Dunning_Candidate candidateRecord1 = createCandidateRecord(invoiceRecord1);
 		final I_C_Dunning_Candidate candidateRecord2 = createCandidateRecord(invoiceRecord2);
@@ -115,6 +115,38 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	}
 
 	@Test
+	public void provideMailRecipient_dunned_invoices_with_common_email()
+	{
+		final org.compiere.model.I_AD_User userRecord = createUserRecord("userRecord.EMail");
+
+		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(userRecord, "test@test.test");
+		final I_C_Invoice invoiceRecord2 = createInvoiceRecord(userRecord, "test@test.test");
+
+		final I_C_Dunning_Candidate candidateRecord1 = createCandidateRecord(invoiceRecord1);
+		final I_C_Dunning_Candidate candidateRecord2 = createCandidateRecord(invoiceRecord2);
+
+		final I_C_DunningDoc dunningDocRecord = createDunningDocRecord();
+
+		final I_C_DunningDoc_Line docLineRecord1 = createDocLineRecord(dunningDocRecord);
+		final I_C_DunningDoc_Line docLineRecord2 = createDocLineRecord(dunningDocRecord);
+
+		createDocLineSourceRecord(candidateRecord1, docLineRecord1);
+		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
+
+		// invoke the method under test
+		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+				DocOutboundLogMailRecipientRequest.builder()
+						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
+						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(dunningDocRecord.getAD_Org_ID()))
+						.build());
+
+		assertThat(result).isPresent();
+		assertThat(result.get().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
+		assertThat(result.get().getEmailAddress()).isEqualTo("test@test.test");
+	}
+
+	@Test
 	public void provideMailRecipient_dunned_invoices_without_common_emailuser()
 	{
 		final org.compiere.model.I_AD_User invoiceUserRecord = createUserRecord("userRecord.EMail");
@@ -125,8 +157,48 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		bPartnerUserRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		saveRecord(bPartnerUserRecord);
 
-		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(invoiceUserRecord);
-		final I_C_Invoice invoiceRecord2 = createInvoiceRecord(null);
+		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(invoiceUserRecord, null);
+		final I_C_Invoice invoiceRecord2 = createInvoiceRecord(null, null);
+
+		final I_C_Dunning_Candidate candidateRecord1 = createCandidateRecord(invoiceRecord1);
+		final I_C_Dunning_Candidate candidateRecord2 = createCandidateRecord(invoiceRecord2);
+
+		final I_C_DunningDoc dunningDocRecord = createDunningDocRecord();
+
+		final I_C_DunningDoc_Line docLineRecord1 = createDocLineRecord(dunningDocRecord);
+		final I_C_DunningDoc_Line docLineRecord2 = createDocLineRecord(dunningDocRecord);
+
+		createDocLineSourceRecord(candidateRecord1, docLineRecord1);
+		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
+
+		// invoke the method under test
+		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+				DocOutboundLogMailRecipientRequest.builder()
+						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
+						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(dunningDocRecord.getAD_Org_ID()))
+						.build());
+
+		assertThat(result).isPresent();
+		assertThat(result.get().getId().getRepoId()).isEqualTo(bPartnerUserRecord.getAD_User_ID());
+		assertThat(result.get().getEmailAddress()).isEqualTo("bPartnerUserRecord.EMail");
+	}
+
+
+
+	@Test
+	public void provideMailRecipient_dunned_invoices_without_common_email()
+	{
+		final org.compiere.model.I_AD_User invoiceUserRecord = createUserRecord("userRecord.EMail");
+
+		final org.compiere.model.I_AD_User bPartnerUserRecord = newInstance(I_AD_User.class);
+		bPartnerUserRecord.setName("bPartnerUserRecord");
+		bPartnerUserRecord.setEMail("bPartnerUserRecord.EMail");
+		bPartnerUserRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		saveRecord(bPartnerUserRecord);
+
+		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(invoiceUserRecord, "test@test1.test");
+		final I_C_Invoice invoiceRecord2 = createInvoiceRecord(bPartnerUserRecord, "test@test2.test");
 
 		final I_C_Dunning_Candidate candidateRecord1 = createCandidateRecord(invoiceRecord1);
 		final I_C_Dunning_Candidate candidateRecord2 = createCandidateRecord(invoiceRecord2);
@@ -163,10 +235,11 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		return userRecord;
 	}
 
-	private I_C_Invoice createInvoiceRecord(@Nullable final org.compiere.model.I_AD_User userRecord)
+	private I_C_Invoice createInvoiceRecord(@Nullable final org.compiere.model.I_AD_User userRecord, @Nullable final String invoiceEmail)
 	{
 		final I_C_Invoice invoiceRecord2 = newInstance(I_C_Invoice.class);
 		invoiceRecord2.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		invoiceRecord2.setEMail(invoiceEmail);
 		if (userRecord != null)
 		{
 			invoiceRecord2.setAD_User_ID(userRecord.getAD_User_ID());

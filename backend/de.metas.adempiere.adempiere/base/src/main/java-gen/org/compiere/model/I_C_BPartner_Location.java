@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -506,6 +507,27 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_ISDN = "ISDN";
 
 	/**
+	 * Set Ephemeral.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEphemeral (boolean IsEphemeral);
+
+	/**
+	 * Get Ephemeral.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEphemeral();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsEphemeral = new ModelColumn<>(I_C_BPartner_Location.class, "IsEphemeral", null);
+	String COLUMNNAME_IsEphemeral = "IsEphemeral";
+
+	/**
 	 * Set Handover Location.
 	 *
 	 * <br>Type: YesNo
@@ -525,6 +547,29 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsHandOverLocation = new ModelColumn<>(I_C_BPartner_Location.class, "IsHandOverLocation", null);
 	String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
+
+	/**
+	 * Set Name editable.
+	 * If unticked, then the address name is maintained by metasfresh
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNameReadWrite (boolean IsNameReadWrite);
+
+	/**
+	 * Get Name editable.
+	 * If unticked, then the address name is maintained by metasfresh
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNameReadWrite();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsNameReadWrite = new ModelColumn<>(I_C_BPartner_Location.class, "IsNameReadWrite", null);
+	String COLUMNNAME_IsNameReadWrite = "IsNameReadWrite";
 
 	/**
 	 * Set Zahlungs-Adresse.

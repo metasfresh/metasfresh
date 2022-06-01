@@ -1392,7 +1392,6 @@ public interface I_I_Product
 	ModelColumn<I_I_Product, Object> COLUMN_Qty = new ModelColumn<>(I_I_Product.class, "Qty", null);
 	String COLUMNNAME_Qty = "Qty";
 
-
 	/**
 	 * Set PZN.
 	 *

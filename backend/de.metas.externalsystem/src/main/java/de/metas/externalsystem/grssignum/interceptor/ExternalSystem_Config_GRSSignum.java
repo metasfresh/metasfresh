@@ -27,6 +27,7 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -81,4 +82,34 @@ public class ExternalSystem_Config_GRSSignum
 		externalServices.initializeServiceInstancesIfRequired(parentConfigId);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncBPartnersToRestEndpoint)
+	public void updateIsAutoFlag(final I_ExternalSystem_Config_GRSSignum grsConfig)
+	{
+		if (!grsConfig.isSyncBPartnersToRestEndpoint())
+		{
+			grsConfig.setIsAutoSendVendors(false);
+			grsConfig.setIsAutoSendCustomers(false);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = {
+					I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsCreateBPartnerFolders,
+					I_ExternalSystem_Config_GRSSignum.COLUMNNAME_BasePathForExportDirectories,
+					I_ExternalSystem_Config_GRSSignum.COLUMNNAME_BPartnerExportDirectories })
+	public void checkIsCreateBPartnerFoldersFlag(final I_ExternalSystem_Config_GRSSignum grsConfig)
+	{
+		if (!grsConfig.isCreateBPartnerFolders())
+		{
+			return;
+		}
+
+		if (Check.isBlank(grsConfig.getBPartnerExportDirectories())
+				|| Check.isBlank(grsConfig.getBasePathForExportDirectories()))
+		{
+			throw new AdempiereException("BPartnerExportDirectories and BasePathForExportDirectories must be set!")
+					.appendParametersToMessage()
+					.setParameter("ExternalSystem_Config_GRSSignum_ID", grsConfig.getExternalSystem_Config_GRSSignum_ID());
+		}
+	}
 }

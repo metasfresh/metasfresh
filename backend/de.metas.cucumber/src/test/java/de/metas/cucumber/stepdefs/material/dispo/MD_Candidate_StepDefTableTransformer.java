@@ -24,22 +24,28 @@ package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.product.ProductId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.datatable.TableTransformer;
 import io.cucumber.java.DataTableType;
 import lombok.NonNull;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
@@ -60,14 +66,30 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
-			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, "MD_Candidate");
-			final CandidateType type = CandidateType.ofCode(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type));
-			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
+			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, "MD_Candidate");
+
+			final String candidateTypeStr = dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type);
+			Assertions.assertThat(candidateTypeStr).as("Missing value for %s in dataTableRow=%s",I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, dataTableRow).isNotBlank();
+			final CandidateType type = CandidateType.ofCode(candidateTypeStr);
+
+			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_M_Product.COLUMNNAME_M_Product_ID + ".Identifier");
 			final int productId = StepDefUtil.extractId(productIdentifier, productTable);
 
-			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
+			final Instant time;
+			final String timeInLocalTimeZone = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.DateProjected_LocalTimeZone");
+
+			if (timeInLocalTimeZone != null)
+			{
+				final LocalDateTime localDateTime = LocalDateTime.parse(timeInLocalTimeZone);
+				time = localDateTime.toInstant(ZonedDateTime.now().getOffset());
+			}
+			else
+			{
+				time = DataTableUtil.extractInstantForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_DateProjected);
+			}
+
 			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_Qty);
 
 			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN))
@@ -77,15 +99,20 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_Qty_AvailableToPromise);
 
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final boolean simulated = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated, false);
+
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)
 					.businessCase(businessCase)
-					.productIdentifier(productIdentifier)
 					.productId(ProductId.ofRepoId(productId))
 					.time(time)
 					.qty(qty)
 					.atp(atp)
+					.attributeSetInstanceId(attributeSetInstanceIdentifier)
+					.simulated(simulated)
 					.build();
 			materialDispoTableBuilder.row(identifier, tableRow);
 		}

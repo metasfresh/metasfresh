@@ -24,7 +24,6 @@ package org.eevolution.productioncandidate.async;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -81,14 +80,11 @@ public class PPOrderCandidateEnqueuer
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, GeneratePPOrderFromPPOrderCandidate.class);
 
-		final IWorkPackageBlockBuilder blockBuilder = queue
-				.newBlock();
-
-		final I_C_Queue_WorkPackage workPackage = blockBuilder
-				.newWorkpackage()
+		final I_C_Queue_WorkPackage workPackage = queue
+				.newWorkPackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
 				.setElementsLocker(elementsLocker)
-				.build();
+				.buildAndEnqueue();
 
 		final Result result = new Result();
 		result.addEnqueuedWorkPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()));

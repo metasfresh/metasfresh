@@ -303,6 +303,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.marketing</groupId>
@@ -512,13 +519,6 @@
         </dependency>
 
         <!-- Elasticsearch -->
-        <dependency>
-            <groupId>de.metas.elasticsearch</groupId>
-            <artifactId>de.metas.elasticsearch</artifactId>
-            <version>${metasfresh.version}</version>
-            <classifier>migration-postgres-sql</classifier>
-            <type>zip</type>
-        </dependency>
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>
             <artifactId>de.metas.elasticsearch</artifactId>

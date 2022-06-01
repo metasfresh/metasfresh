@@ -7,9 +7,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.LocationId;
+import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -65,6 +67,7 @@ public class BPartnerLocation
 	public static final String DISTRICT = "district";
 	public static final String REGION = "region";
 	public static final String COUNTRYCODE = "countryCode";
+	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
 
@@ -128,6 +131,8 @@ public class BPartnerLocation
 	@Nullable
 	private OrgMappingId orgMappingId;
 
+	private boolean ephemeral;
+
 	@Nullable
 	private String mobile;
 
@@ -176,6 +181,7 @@ public class BPartnerLocation
 			@Nullable final BPartnerLocationType locationType,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final Boolean ephemeral,
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
@@ -210,6 +216,8 @@ public class BPartnerLocation
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
+
+		this.ephemeral = CoalesceUtil.coalesceNotNull(ephemeral, false);
 
 		this.phone = phone;
 
@@ -316,5 +324,14 @@ public class BPartnerLocation
 		setPostal(address.getPostal());
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
+	}
+
+	/**
+	 * Can be used if this instance's ID is known to be not null.
+	 */
+	@NonNull
+	public BPartnerLocationId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "id may not be null at this point");
 	}
 }

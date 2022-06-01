@@ -39,17 +39,12 @@ public interface IReceiptScheduleProducer
 	 * Sets factory who instantiated this producer.
 	 * 
 	 * NOTE: don't call it directly, it will be called by API on instantiation
-	 * 
-	 * @param factory
 	 */
 	void setReceiptScheduleProducerFactory(final IReceiptScheduleProducerFactory factory);
 
 	IReceiptScheduleProducerFactory getReceiptScheduleProducerFactory();
 
 	/**
-	 * 
-	 * @param model
-	 * @param previousSchedules
 	 * @return receipt schedules which were created by this method; If implementations of this method are not creating any new receipt schedules but only update <code>previousSchedules</code> this
 	 *         method will return an empty list
 	 */
@@ -59,15 +54,11 @@ public interface IReceiptScheduleProducer
 	 * Called by API when underlying document(line) was changed.
 	 * 
 	 * Compared with {@link #createOrUpdateReceiptSchedules(Object, List)} this method is just updating existing receipt schedules. Will never create new ones.
-	 * 
-	 * @param model
 	 */
 	void updateReceiptSchedules(Object model);
 
 	/**
 	 * Called by API when underlying document was deleted or re-activated.
-	 * 
-	 * @param model
 	 */
 	void inactivateReceiptSchedules(Object model);
 }

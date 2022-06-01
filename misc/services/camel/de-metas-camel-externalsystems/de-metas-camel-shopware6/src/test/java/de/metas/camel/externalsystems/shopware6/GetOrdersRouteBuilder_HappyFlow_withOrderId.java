@@ -55,8 +55,9 @@ import static org.assertj.core.api.Assertions.*;
 
 public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteBuilder_HappyFlow_Tests
 {
+	@Override
 	@Test
-	void happyFlow_withOrderId() throws Exception
+	void happyFlow() throws Exception
 	{
 		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor(JSON_UPSERT_BPARTNER_RESPONSE);
 		final MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new MockSuccessfullyCreatedOLCandProcessor();
@@ -112,7 +113,7 @@ public class GetOrdersRouteBuilder_HappyFlow_withOrderId extends GetOrdersRouteB
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
 		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
-		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
+		assertThat(runtimeParamsProcessor.called).isEqualTo(0);
 		assertMockEndpointsSatisfied();
 	}
 

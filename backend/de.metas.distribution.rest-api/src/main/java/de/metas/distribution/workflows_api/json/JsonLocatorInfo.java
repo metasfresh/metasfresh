@@ -11,14 +11,14 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonLocatorInfo
 {
-	@NonNull String barcode;
 	@NonNull String caption;
+	@NonNull String qrCode;
 
 	public static JsonLocatorInfo of(@NonNull final LocatorInfo locatorInfo)
 	{
 		return builder()
-				.barcode(locatorInfo.getBarcode().getAsString())
 				.caption(locatorInfo.getCaption())
+				.qrCode(locatorInfo.getQrCode().toGlobalQRCodeJsonString())
 				.build();
 	}
 }

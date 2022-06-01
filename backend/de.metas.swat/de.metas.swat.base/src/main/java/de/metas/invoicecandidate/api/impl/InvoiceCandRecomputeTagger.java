@@ -56,10 +56,8 @@ import java.util.Properties;
 	// State
 	private InvoiceCandRecomputeTag _recomputeTag;
 
-	public InvoiceCandRecomputeTagger(final InvoiceCandDAO invoiceCandDAO)
+	public InvoiceCandRecomputeTagger(@NonNull final InvoiceCandDAO invoiceCandDAO)
 	{
-		super();
-		Check.assumeNotNull(invoiceCandDAO, "invoiceCandDAO not null");
 		this.invoiceCandDAO = invoiceCandDAO;
 	}
 

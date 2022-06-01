@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,4 +29,8 @@ import org.compiere.model.I_M_Product;
  */
 public class M_Product_StepDefData extends StepDefData<I_M_Product>
 {
+	public M_Product_StepDefData()
+	{
+		super(I_M_Product.class);
+	}
 }

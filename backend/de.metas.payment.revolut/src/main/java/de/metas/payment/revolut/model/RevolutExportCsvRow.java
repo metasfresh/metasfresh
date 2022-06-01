@@ -76,7 +76,7 @@ public class RevolutExportCsvRow
 						 row.getAccountNo(),
 						 row.getRoutingNo(),
 						 row.getIBAN(),
-						 row.getBIC(),
+						 row.getSwiftCode(),
 						 recipientBankCountryName,
 						 row.getAmount().getCurrencyCode().toThreeLetterCode(),
 						 String.valueOf(row.getAmount().getAsBigDecimal()),

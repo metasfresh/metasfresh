@@ -30,6 +30,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @JsonDeserialize(builder = JsonSalutationItem.JsonSalutationItemBuilder.class)
@@ -39,6 +41,10 @@ public class JsonSalutationItem
 	@JsonProperty("id")
 	String id;
 
+	@Nullable // i guess it'S always set, but i don't know for shure
+	@JsonProperty("salutationKey")
+	String salutationKey;
+	
 	@NonNull
 	@JsonProperty("displayName")
 	String displayName;

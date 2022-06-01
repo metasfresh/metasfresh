@@ -30,6 +30,7 @@ export const initialTableState = {
   collapsible: false,
   indentSupported: false,
   supportAttribute: false,
+  navigationActive: true,
 };
 
 // we store the length of the tables structure for the sake of testing and debugging
@@ -111,6 +112,7 @@ const reducer = produce((draftState, action) => {
 
     case types.UPDATE_TABLE: {
       const { id, data } = action.payload;
+      const { pending } = data;
 
       const prevTableStruct = draftState[id]
         ? draftState[id]
@@ -118,7 +120,7 @@ const reducer = produce((draftState, action) => {
       let updatedSelected = {};
       let selectionValid = false;
 
-      if (data.rows && data.rows.length) {
+      if (!pending && data.rows && data.rows.length) {
         const currentSelected = original(prevTableStruct.selected);
 
         if (currentSelected.length) {
@@ -313,6 +315,21 @@ const reducer = produce((draftState, action) => {
       const { id, active } = action.payload;
 
       draftState[id].activeSort = active;
+
+      return;
+    }
+
+    case types.SET_TABLE_NAVIGATION: {
+      const { id, active } = action.payload;
+      if (draftState[id]) {
+        draftState[id].navigationActive = active;
+      } else {
+        console.error(
+          `Table with ID ${id} is not present in state. Skip setting navigationActive=${active}`
+        );
+      }
+
+      return;
     }
   }
 }, initialState);

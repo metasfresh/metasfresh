@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.externlasystem;
 
 import de.metas.Profiles;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.status.JsonExternalStatusResponse;
 import de.metas.common.externalsystem.status.JsonStatusRequest;
@@ -200,6 +201,29 @@ public class ExternalSystemRestController
 
 		final JsonExternalStatusResponse statusInfo = externalSystemService.getStatusInfo(externalSystemType);
 		return ResponseEntity.ok().body(statusInfo);
+	}
+
+
+	@ApiOperation("Get external system info.\n Note, only externalSystemConfigType=GRSSignum is supported at the moment.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved external system info"),
+			@ApiResponse(code = 401, message = "You are not authorized to retrieve external system info"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request could not be processed")
+	})
+	@GetMapping(path = "/{externalSystemConfigType}/{externalSystemChildConfigValue}/info")
+	public ResponseEntity<?> getExternalSystemInfo(
+			@PathVariable @NonNull final String externalSystemConfigType,
+			@PathVariable @NonNull final String externalSystemChildConfigValue)
+	{
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		if (externalSystemType == null)
+		{
+			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
+		}
+
+		final JsonExternalSystemInfo systemInfo = externalSystemService.getExternalSystemInfo(externalSystemType, externalSystemChildConfigValue);
+		return ResponseEntity.ok().body(systemInfo);
 	}
 
 	private ResponseEntity<?> getResponse(@NonNull final ProcessExecutionResult processExecutionResult)

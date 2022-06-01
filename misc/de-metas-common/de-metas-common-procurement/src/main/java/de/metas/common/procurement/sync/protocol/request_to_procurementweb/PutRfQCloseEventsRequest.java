@@ -22,19 +22,21 @@
 
 package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Value
+@Builder
+@Jacksonized
 public class PutRfQCloseEventsRequest extends RequestToProcurementWeb
 {
 	public static PutRfQCloseEventsRequest of(@NonNull final List<SyncRfQCloseEvent> syncRfQCloseEvents)
@@ -42,14 +44,12 @@ public class PutRfQCloseEventsRequest extends RequestToProcurementWeb
 		return PutRfQCloseEventsRequest.builder().syncRfQCloseEvents(syncRfQCloseEvents).build();
 	}
 
-	List<SyncRfQCloseEvent> syncRfQCloseEvents;
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
+	String relatedEventId;
 
-	@Builder
-	@JsonCreator
-	public PutRfQCloseEventsRequest(@JsonProperty("syncRfQCloseEvents") @Singular final List<SyncRfQCloseEvent> syncRfQCloseEvents)
-	{
-		this.syncRfQCloseEvents = syncRfQCloseEvents;
-	}
+	@Singular
+	List<SyncRfQCloseEvent> syncRfQCloseEvents;
 
 	@JsonIgnore
 	public boolean isEmpty()

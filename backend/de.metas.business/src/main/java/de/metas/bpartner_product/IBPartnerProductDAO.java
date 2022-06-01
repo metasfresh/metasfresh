@@ -25,20 +25,20 @@ package de.metas.bpartner_product;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_Product;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_M_Product;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
 
 /**
  * @author cg
@@ -74,13 +74,15 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 *
 	 * @return first entry, order by BP vendor and org_ID, nulls last
 	 */
-	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, OrgId orgId);
+	I_C_BPartner_Product retrieveBPProductForCustomer(@NonNull I_C_BPartner customerPartner, @NonNull I_M_Product product, @NonNull OrgId orgId);
 
 	List<I_C_BPartner_Product> retrieveForProductIds(Set<ProductId> productIds);
 
 	List<ProductExclude> retrieveAllProductSalesExcludes();
 
 	Optional<ProductExclude> getExcludedFromSaleToCustomer(ProductId productId, BPartnerId partnerId);
+
+	Optional<ProductExclude> getExcludedFromPurchaseFromVendor(ProductId productId, BPartnerId partnerId);
 
 	Map<BPartnerId, I_C_BPartner_Product> retrieveByVendorIds(Set<BPartnerId> vendorIds, ProductId productId, OrgId orgId);
 
@@ -91,4 +93,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	Optional<ProductId> getProductIdByCustomerProductNo(BPartnerId customerId, String customerProductNo);
 
 	Optional<ProductId> getProductIdByCustomerProductName(BPartnerId customerId, String customerProductName);
+
+	List<I_C_BPartner_Product> retrieveByBPartnerId(BPartnerId bPartnerId);
 }

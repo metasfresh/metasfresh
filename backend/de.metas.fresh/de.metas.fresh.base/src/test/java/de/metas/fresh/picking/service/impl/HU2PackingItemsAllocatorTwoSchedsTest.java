@@ -13,12 +13,14 @@ import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemParts;
 import de.metas.picking.service.PackingItems;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.picking.service.impl.ShipmentSchedulesSupplier;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -99,6 +101,13 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		huDefPalet = createHuDefPalet(helper, huDefIFCOWithTen);
 
 		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
+	}
+
+	private ShipmentSchedulesSupplier newShipmentScheduleSupplier()
+	{
+		return ShipmentSchedulesSupplier.builder()
+				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
+				.build();
 	}
 
 	@Override
@@ -273,6 +282,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 		final PackingItemsMap packingItems = PackingItemsMap.ofUnpackedItem(itemToPack);
 		HU2PackingItemsAllocator.builder()
+				.shipmentSchedulesSupplier(newShipmentScheduleSupplier())
 				.itemToPack(itemToPack)
 				.packingItems(packingItems)
 				.onOverDelivery(OnOverDelivery.FAIL)

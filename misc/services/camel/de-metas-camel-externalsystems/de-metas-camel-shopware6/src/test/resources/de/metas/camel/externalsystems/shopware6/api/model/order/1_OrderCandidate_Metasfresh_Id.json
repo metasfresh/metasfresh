@@ -10,7 +10,7 @@
       "firstName": "firstName",
       "lastName": "lastName",
       "customerNumber": "customerNumber",
-      "email": "someEamil@web.de"
+      "email": "orderCustomer@example.com"
     },
     "currencyId": "currencyId",
     "orderNumber": "poReference",
@@ -31,7 +31,7 @@
       "firstName": "firstName",
       "lastName": "lastName",
       "customerNumber": "customerNumber",
-      "email": "someEamil@web.de",
+      "email": "orderNodeEmail@example.com",
       "customFields": {
         "metasfreshId": "metasfreshId"
       }

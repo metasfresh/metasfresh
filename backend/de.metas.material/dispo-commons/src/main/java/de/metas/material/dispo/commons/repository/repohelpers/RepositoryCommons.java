@@ -17,6 +17,7 @@ import de.metas.material.dispo.commons.repository.query.StockChangeDetailQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -28,6 +29,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
@@ -148,6 +150,8 @@ public class RepositoryCommons
 		addTransactionDetailToFilter(query, builder);
 
 		addStockChangeDetailToFilter(query, builder);
+
+		addSimulatedConstraints(query, builder);
 
 		return builder;
 	}
@@ -444,6 +448,25 @@ public class RepositoryCommons
 		if (stockChangeDetail != null)
 		{
 			stockChangeDetail.augmentQueryBuilder(builder);
+		}
+	}
+
+	private static void addSimulatedConstraints(@NonNull final CandidatesQuery query, @NonNull final IQueryBuilder<I_MD_Candidate> builder)
+	{
+		switch (query.getSimulatedQueryQualifier())
+		{
+			case ONLY_SIMULATED:
+				builder.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated);
+				break;
+			case EXCLUDE_SIMULATED:
+				builder.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated);
+				break;
+			case INCLUDE_SIMULATED:
+				break;
+			default:
+				throw new AdempiereException("Unknown SimulatedQueryQualifier!")
+						.appendParametersToMessage()
+						.setParameter("SimulatedQueryQualifier", query.getSimulatedQueryQualifier());
 		}
 	}
 }

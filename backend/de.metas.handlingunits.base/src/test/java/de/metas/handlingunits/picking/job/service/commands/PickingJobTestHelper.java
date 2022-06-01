@@ -7,6 +7,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
@@ -20,6 +21,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_Warehouse;
@@ -27,8 +29,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.handlingunits.picking.job.model.PickingJobStep;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -37,6 +38,13 @@ import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.TestRecorder;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeProductInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
@@ -48,6 +56,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.model.I_M_Picking_Config_V2;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -56,7 +65,6 @@ import de.metas.test.SnapshotFunctionFactory;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -71,15 +79,18 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PickingJobTestHelper
@@ -90,8 +101,10 @@ public class PickingJobTestHelper
 	// Services
 	private final HUTestHelper huTestHelper;
 	public final HUReservationService huReservationService;
+	public final HUQRCodesRepository huQRCodesRepository;
 	public final IProductBL productBL;
 	public final PickingCandidateRepository pickingCandidateRepository;
+	public final PickingConfigRepositoryV2 pickingConfigRepo;
 	public final PickingJobService pickingJobService;
 	public final HUTracerInstance huTracer;
 
@@ -113,9 +126,12 @@ public class PickingJobTestHelper
 
 		productBL = Services.get(IProductBL.class);
 		huReservationService = new HUReservationService(new HUReservationRepository());
+		huQRCodesRepository = new HUQRCodesRepository();
 
 		pickingCandidateRepository = new PickingCandidateRepository();
 		SpringContextHolder.registerJUnitBean(pickingCandidateRepository); // needed for HUPickingSlotBL
+
+		pickingConfigRepo = new PickingConfigRepositoryV2();
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
@@ -133,9 +149,13 @@ public class PickingJobTestHelper
 						bpartnerBL
 				),
 				new PickingJobHUReservationService(huReservationService),
+				pickingConfigRepo,
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
-						bpartnerBL));
+						bpartnerBL,
+						new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
+				)
+		);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
@@ -148,6 +168,7 @@ public class PickingJobTestHelper
 		uomEach = huTestHelper.uomEach;
 		shipToBPLocationId = createBPartnerAndLocationId("BPartner1");
 		shipFromLocatorId = createLocatorId(createWarehouseId("warehouse"), "wh_loc");
+		createPickingConfigV2(true);
 	}
 
 	@NonNull
@@ -184,7 +205,7 @@ public class PickingJobTestHelper
 		final I_M_PickingSlot record = newInstance(I_M_PickingSlot.class);
 		record.setPickingSlot(pickingSlot);
 		record.setIsDynamic(true);
-		InterfaceWrapperHelper.save(record);
+		save(record);
 		return PickingSlotId.ofRepoId(record.getM_PickingSlot_ID());
 	}
 
@@ -192,13 +213,20 @@ public class PickingJobTestHelper
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setDocumentNo(documentNo);
-		InterfaceWrapperHelper.save(order);
+		save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
-		InterfaceWrapperHelper.save(orderLine);
+		save(orderLine);
 
 		return OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
+	}
+
+	private void createPickingConfigV2(final boolean considerAttributes)
+	{
+		final I_M_Picking_Config_V2 pickingConfigV2 = newInstance(I_M_Picking_Config_V2.class);
+		pickingConfigV2.setIsConsiderAttributes(considerAttributes);
+		save(pickingConfigV2);
 	}
 
 	@Builder(builderMethodName = "packageable", builderClassName = "$PackageableBuilder")
@@ -225,7 +253,7 @@ public class PickingJobTestHelper
 		sched.setC_OrderLine_ID(orderAndLineId.getOrderLineRepoId());
 		sched.setDeliveryDate(Timestamp.from(dateEffective));
 		sched.setPreparationDate(Timestamp.from(dateEffective));
-		InterfaceWrapperHelper.save(sched);
+		save(sched);
 
 		createPackageableFromShipmentSchedule(sched);
 
@@ -255,7 +283,7 @@ public class PickingJobTestHelper
 		item.setC_OrderLineSO_ID(sched.getC_OrderLine_ID());
 		item.setDeliveryDate(sched.getDeliveryDate());
 		item.setPreparationDate(sched.getPreparationDate());
-		InterfaceWrapperHelper.save(item);
+		save(item);
 	}
 
 	public HUPIItemProductId createTUPackingInstructionsId(final String name, final ProductId productId, final Quantity cusPerTU)
@@ -305,13 +333,13 @@ public class PickingJobTestHelper
 						.setHUStatus(X_M_HU.HUSTATUS_Active)
 						.setLocatorId(shipFromLocatorId))
 				.load(AllocationUtils.builder()
-						.setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
-						.setProduct(productId)
-						.setQuantity(qty)
-						.setDate(SystemTime.asZonedDateTime())
-						.setFromReferencedModel(huTestHelper.createDummyReferenceModel())
-						.setForceQtyAllocation(true)
-						.create());
+							  .setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
+							  .setProduct(productId)
+							  .setQuantity(qty)
+							  .setDate(SystemTime.asZonedDateTime())
+							  .setFromReferencedModel(huTestHelper.createDummyReferenceModel())
+							  .setForceQtyAllocation(true)
+							  .create());
 
 		final I_M_HU hu = destination.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("Failed creating HU"));
 		return HuId.ofRepoId(hu.getM_HU_ID());
@@ -335,9 +363,48 @@ public class PickingJobTestHelper
 		return HuId.ofRepoId(lu.getM_HU_ID());
 	}
 
-	public PickingJobStep extractSingleStep(final PickingJob pickingJob)
+	public HUQRCode getQRCode(final HuId huId)
 	{
-		return CollectionUtils.singleElement(pickingJob.streamSteps().collect(ImmutableList.toImmutableList()));
+		return huQRCodesRepository.getFirstQRCodeByHuId(huId).orElseThrow(() -> new AdempiereException("No QRCode found for HU " + huId));
+	}
+
+	public HUQRCode createQRCode(@NonNull final HuId huId, @NonNull String qrCodeId)
+	{
+		return createQRCode(huId, HUQRCodeUniqueId.ofJson(qrCodeId));
+	}
+
+	private HUQRCode createQRCode(@NonNull final HuId huId, @NonNull HUQRCodeUniqueId qrCodeId)
+	{
+		final I_M_HU hu = huTestHelper.handlingUnitsBL().getById(huId);
+		final I_M_HU_PI_Version piVersion = huTestHelper.handlingUnitsBL().getPIVersion(hu);
+		final I_M_HU_PI pi = huTestHelper.handlingUnitsBL().getPI(piVersion);
+
+		final ProductId productId = huTestHelper.handlingUnitsBL().getStorageFactory().getStorage(hu).getSingleProductIdOrNull();
+		if (productId == null)
+		{
+			throw new AdempiereException("Only single product storages are supported");
+		}
+
+		final I_M_Product product = productBL.getById(productId);
+
+		final HUQRCode huQRCode = HUQRCode.builder()
+				.id(qrCodeId)
+				.packingInfo(HUQRCodePackingInfo.builder()
+									 .huUnitType(HUQRCodeUnitType.ofCode(Objects.requireNonNull(piVersion.getHU_UnitType())))
+									 .packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
+									 .caption(pi.getName())
+									 .build())
+				.product(HUQRCodeProductInfo.builder()
+								 .id(productId)
+								 .code(product.getValue())
+								 .name(product.getName())
+								 .build())
+				.attributes(ImmutableList.of())
+				.build();
+
+		huQRCodesRepository.createNew(huQRCode, huId);
+
+		return huQRCode;
 	}
 
 	public TestRecorder newTestRecorder()

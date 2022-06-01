@@ -62,10 +62,13 @@ public final class BPartnerComposite
 
 	private BPartner bpartner;
 
+	@NonNull
 	private final List<BPartnerLocation> locations;
 
+	@NonNull
 	private final List<BPartnerContact> contacts;
 
+	@NonNull
 	private final List<BPartnerBankAccount> bankAccounts;
 
 	@Builder(toBuilder = true)
@@ -319,5 +322,17 @@ public final class BPartnerComposite
 		return bankAccounts.stream()
 				.filter(bankAccount -> iban.equals(bankAccount.getIban()))
 				.findFirst();
+	}
+
+	@NonNull
+	public Stream<BPartnerContactId> streamContactIds()
+	{
+		return this.getContacts().stream().map(BPartnerContact::getId);
+	}
+
+	@NonNull
+	public Stream<BPartnerLocationId> streamBPartnerLocationIds()
+	{
+		return this.getLocations().stream().map(BPartnerLocation::getId);
 	}
 }

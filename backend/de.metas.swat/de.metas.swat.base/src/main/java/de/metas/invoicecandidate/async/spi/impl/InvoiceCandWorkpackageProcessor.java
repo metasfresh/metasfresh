@@ -95,7 +95,7 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// use the workpackge's ctx. It contains the client, org and user that created the queu-block this package belongs to
 		final Properties localCtx = InterfaceWrapperHelper.getCtx(workPackage);
 
-		final List<I_C_Invoice_Candidate> candidatesOfPackage = queueDAO.retrieveItems(workPackage, I_C_Invoice_Candidate.class, localTrxName);
+		final List<I_C_Invoice_Candidate> candidatesOfPackage = queueDAO.retrieveAllItems(workPackage, I_C_Invoice_Candidate.class);
 
 		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{

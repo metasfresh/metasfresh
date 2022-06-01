@@ -49,6 +49,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -107,7 +108,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
-	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return createShareWithMissingICsQuery()
 				.iterate(I_C_Commission_Share.class);
@@ -203,7 +204,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, soTrx);
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-		
+
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
 						orgId,

@@ -25,9 +25,11 @@ package de.metas.handlingunits.movement.api;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
+import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -56,6 +58,8 @@ public interface IHUMovementBL extends ISingletonService
 	 * Create movements to move given HUs to warehouseTo
 	 */
 	HUMovementGeneratorResult moveHUsToWarehouse(List<I_M_HU> hus, WarehouseId warehouseToId);
+
+	HUMovementGeneratorResult moveHUs(@NonNull HUMovementGenerateRequest request);
 
 	HUMovementGeneratorResult moveHUsToLocator(List<I_M_HU> hus, LocatorId locatorToId);
 

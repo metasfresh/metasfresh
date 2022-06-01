@@ -1,7 +1,8 @@
 {
   "FLAG": 100,
   "MID": "HOM",
-  "MKREDID": "101",
+  "MKREDID": "BPartnerValue",
   "KURZBEZEICHNUNG": "BPartnerName",
-  "INAKTIV": 0
+  "INAKTIV": 0,
+  "METASFRESHID": "101"
 }

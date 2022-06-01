@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Job;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromMap;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -462,7 +462,7 @@ class PickingJobLoaderAndSaver
 						.build())
 				.pickFromHU(HUInfo.builder()
 						.id(pickFromHUId)
-						.barcode(HUBarcode.ofHuId(pickFromHUId))
+						.qrCode(getQRCode(pickFromHUId))
 						.build())
 				.pickedTo(loadPickedTo(record))
 				.build();
@@ -481,9 +481,17 @@ class PickingJobLoaderAndSaver
 						.id(pickFromLocatorId)
 						.caption(loadingSupportingServices().getLocatorName(pickFromLocatorId))
 						.build())
-				.pickFromHU(HUInfo.ofHuId(pickFromHUId))
+				.pickFromHU(HUInfo.builder()
+						.id(pickFromHUId)
+						.qrCode(getQRCode(pickFromHUId))
+						.build())
 				.pickedTo(loadPickedTo(record))
 				.build();
+	}
+
+	private HUQRCode getQRCode(final HuId huId)
+	{
+		return loadingSupportingServices().getQRCodeByHUId(huId);
 	}
 
 	@NonNull
@@ -667,7 +675,7 @@ class PickingJobLoaderAndSaver
 						.build())
 				.pickFromHU(HUInfo.builder()
 						.id(pickFromHUId)
-						.barcode(HUBarcode.ofHuId(pickFromHUId))
+						.qrCode(getQRCode(pickFromHUId))
 						.build())
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyAvailable(Quantitys.create(record.getQtyAvailable(), UomId.ofRepoId(record.getC_UOM_ID())))

@@ -24,6 +24,7 @@ package de.metas.common.rest_api.v2.bom;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -58,6 +59,9 @@ public class JsonCreateBOMLine
 	@ApiModelProperty(position = 60, value = "Corresponding to 'PP_Product_BOMLine.IssueMethod")
 	String issueMethod;
 
+	@ApiModelProperty(position = 70, value = "Corresponding to `M_AttributeSetInstance`")
+	JsonAttributeSetInstance attributeSetInstance;
+
 	@Builder
 	@JsonCreator
 	public JsonCreateBOMLine(
@@ -66,7 +70,8 @@ public class JsonCreateBOMLine
 			@JsonProperty("line") @Nullable final Integer line,
 			@JsonProperty("isQtyPercentage") @Nullable final Boolean isQtyPercentage,
 			@JsonProperty("scrap") final BigDecimal scrap,
-			@JsonProperty("issueMethod") @Nullable final String issueMethod)
+			@JsonProperty("issueMethod") @Nullable final String issueMethod,
+			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance)
 	{
 
 		this.productIdentifier = productIdentifier;
@@ -75,5 +80,6 @@ public class JsonCreateBOMLine
 		this.isQtyPercentage = isQtyPercentage;
 		this.scrap = scrap;
 		this.issueMethod = issueMethod;
+		this.attributeSetInstance = attributeSetInstance;
 	}
 }

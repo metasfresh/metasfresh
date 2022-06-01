@@ -38,6 +38,8 @@ import java.util.List;
 
 	private String poReference;
 
+	private String eMail;
+
 	private LocalDate dateInvoiced;
 
 	private LocalDate dateAcct;
@@ -83,9 +85,13 @@ import java.util.List;
 
 	private PaymentTermId paymentTermId;
 
+	private String paymentRule;
+
 	private int C_Async_Batch_ID;
 
 	private int C_Incoterms_ID;
+
+	private String incotermLocation;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -137,6 +143,12 @@ import java.util.List;
 	}
 
 	@Override
+	public String getEMail()
+	{
+		return eMail;
+	}
+
+	@Override
 	public LocalDate getDateInvoiced()
 	{
 		return dateInvoiced;
@@ -173,6 +185,11 @@ import java.util.List;
 	public void setPOReference(final String poReference)
 	{
 		this.poReference = poReference;
+	}
+
+	public void setEMail(final String eMail)
+	{
+		this.eMail = eMail;
 	}
 
 	public void setDateInvoiced(final LocalDate dateInvoiced)
@@ -306,6 +323,17 @@ import java.util.List;
 		return paymentTermId;
 	}
 
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	@Override
+	public String getPaymentRule()
+	{
+		return paymentRule;
+	}
+
 	@Override
 	public String getExternalId()
 	{
@@ -337,6 +365,17 @@ import java.util.List;
 	public void setC_Incoterms_ID(final int C_Incoterms_ID)
 	{
 		this.C_Incoterms_ID = C_Incoterms_ID;
+	}
+
+	@Override
+	public String getIncotermLocation()
+	{
+		return incotermLocation;
+	}
+
+	public void setIncotermLocation(final String incotermLocation)
+	{
+		this.incotermLocation = incotermLocation;
 	}
 
 }

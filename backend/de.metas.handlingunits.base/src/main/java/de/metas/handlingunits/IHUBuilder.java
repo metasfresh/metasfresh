@@ -1,10 +1,5 @@
 package de.metas.handlingunits;
 
-import java.time.ZonedDateTime;
-
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.warehouse.LocatorId;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -14,8 +9,11 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /**
  * Handling Unit Builder Helper
@@ -61,8 +59,6 @@ public interface IHUBuilder extends IHUIterator
 	 * <p>
 	 * Otherwise, if the item type of the given {@code parentItem} is {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} (or if the given parent item is {@code null}),
 	 * then {@link #create(I_M_HU_PI_Version)} shall create a "normal" HU.
-	 *
-	 * @param parentItem
 	 */
 	IHUBuilder setM_HU_Item_Parent(@Nullable I_M_HU_Item parentItem);
 
@@ -99,4 +95,6 @@ public interface IHUBuilder extends IHUIterator
 	 * @return true if the HU's owner is "us". See {@link I_M_HU#isHUPlanningReceiptOwnerPM()}
 	 */
 	boolean isHUPlanningReceiptOwnerPM();
+
+	IHUBuilder setHUClearanceStatusInfo(ClearanceStatusInfo huClearanceStatusInfo);
 }

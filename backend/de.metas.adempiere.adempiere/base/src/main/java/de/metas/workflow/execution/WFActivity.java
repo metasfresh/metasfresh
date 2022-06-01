@@ -41,6 +41,7 @@ import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.reflist.ReferenceId;
+import de.metas.report.ReportResultData;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.DocumentApprovalConstraint;
 import de.metas.user.UserId;
@@ -69,7 +70,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
-import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
@@ -794,13 +794,13 @@ public class WFActivity
 			throw new IllegalStateException("Not a Report AD_Process_ID=" + pi);
 		}
 
-		// Report
-		final ReportEngine re = ReportEngine.get(Env.getCtx(), pi);
-		if (re == null)
+		final ReportResultData reportData = pi.getResult().getReportData();
+		if (reportData == null)
 		{
 			throw new AdempiereException("Cannot create Report AD_Process_ID=" + wfNode.getProcessId());
 		}
-		final File report = re.getPDF();
+
+		final File report = reportData.writeToTemporaryFile("report_");
 		// Notice
 		final int AD_Message_ID = 753;        // HARDCODED WorkflowResult
 		final MNote note = new MNote(Env.getCtx(), AD_Message_ID, getUserId().getRepoId(), ITrx.TRXNAME_ThreadInherited);

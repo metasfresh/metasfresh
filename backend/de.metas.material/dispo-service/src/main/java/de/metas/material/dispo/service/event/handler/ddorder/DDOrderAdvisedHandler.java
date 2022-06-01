@@ -120,7 +120,7 @@ public class DDOrderAdvisedHandler
 
 		for (final MaterialDispoGroupId groupId : groupIds)
 		{
-			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId);
+			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor().getTraceId());
 		}
 	}
 

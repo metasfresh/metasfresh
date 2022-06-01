@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.handlingunits.HUBarcode;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
@@ -31,7 +31,7 @@ public class PickingJobStepPickFromMap
 	@Getter
 	private final PickingJobProgress progress;
 
-	public static PickingJobStepPickFromMap ofList(@NonNull List<PickingJobStepPickFrom> pickFroms)
+	public static PickingJobStepPickFromMap ofList(@NonNull final List<PickingJobStepPickFrom> pickFroms)
 	{
 		return new PickingJobStepPickFromMap(Maps.uniqueIndex(pickFroms, PickingJobStepPickFrom::getPickFromKey));
 	}
@@ -80,13 +80,13 @@ public class PickingJobStepPickFromMap
 		return pickFrom;
 	}
 
-	public PickingJobStepPickFrom getPickFromByHUBarcode(@NonNull final HUBarcode huBarcode)
+	public PickingJobStepPickFrom getPickFromByHUQRCode(@NonNull final HUQRCode qrCode)
 	{
 		return map.values()
 				.stream()
-				.filter(pickFrom -> pickFrom.getPickFromHU().getBarcode().equals(huBarcode))
+				.filter(pickFrom -> HUQRCode.equals(pickFrom.getPickFromHU().getQrCode(), qrCode))
 				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No HU found for " + huBarcode));
+				.orElseThrow(() -> new AdempiereException("No HU found for " + qrCode));
 	}
 
 	public PickingJobStepPickFromMap reduceWithPickedEvent(

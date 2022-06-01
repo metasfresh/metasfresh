@@ -1,0 +1,19 @@
+.view-header {
+  width: 100%;
+
+  tbody {
+    tr {
+      th {
+        white-space: nowrap;
+        max-width: 40vw !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      td {
+        text-align: right;
+        white-space: pre-wrap;
+      }
+    }
+  }
+}

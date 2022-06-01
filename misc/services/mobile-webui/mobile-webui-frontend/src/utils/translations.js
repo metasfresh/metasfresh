@@ -4,6 +4,11 @@ import translations_de from './translations_de';
 
 import { getApplicationMessages } from '../apps';
 
+/** Just a shortcut & abstraction of counterpart's translate function */
+export const trl = (key, ...args) => {
+  return counterpart.translate(key, ...args);
+};
+
 export const setupCounterpart = () => {
   console.log('Setting up counterpart defaults...');
 
@@ -17,7 +22,7 @@ export const setupCounterpart = () => {
     console.log(`Registered apps messages ${locale}`, applicationsMessages[locale]);
   });
 
-  //setLanguage('de_DE');
+  //setLanguage('de_DE'); // used only for debugging
 };
 
 const generateMissingTranslation = (key) => {

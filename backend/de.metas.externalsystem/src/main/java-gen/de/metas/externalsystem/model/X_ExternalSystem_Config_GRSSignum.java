@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_GRSSignum
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO implements I_ExternalSystem_Config_GRSSignum, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -195605805L;
+	private static final long serialVersionUID = -1896949101L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_GRSSignum (final Properties ctx, final int ExternalSystem_Config_GRSSignum_ID, @Nullable final String trxName)
@@ -47,6 +47,18 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	}
 
 	@Override
+	public void setBasePathForExportDirectories (final @Nullable java.lang.String BasePathForExportDirectories)
+	{
+		set_Value (COLUMNNAME_BasePathForExportDirectories, BasePathForExportDirectories);
+	}
+
+	@Override
+	public java.lang.String getBasePathForExportDirectories() 
+	{
+		return get_ValueAsString(COLUMNNAME_BasePathForExportDirectories);
+	}
+
+	@Override
 	public void setBaseURL (final java.lang.String BaseURL)
 	{
 		set_Value (COLUMNNAME_BaseURL, BaseURL);
@@ -56,6 +68,18 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	public java.lang.String getBaseURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_BaseURL);
+	}
+
+	@Override
+	public void setBPartnerExportDirectories (final @Nullable java.lang.String BPartnerExportDirectories)
+	{
+		set_Value (COLUMNNAME_BPartnerExportDirectories, BPartnerExportDirectories);
+	}
+
+	@Override
+	public java.lang.String getBPartnerExportDirectories() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerExportDirectories);
 	}
 
 	@Override
@@ -125,6 +149,42 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	}
 
 	@Override
+	public void setIsAutoSendCustomers (final boolean IsAutoSendCustomers)
+	{
+		set_Value (COLUMNNAME_IsAutoSendCustomers, IsAutoSendCustomers);
+	}
+
+	@Override
+	public boolean isAutoSendCustomers() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendCustomers);
+	}
+
+	@Override
+	public void setIsAutoSendVendors (final boolean IsAutoSendVendors)
+	{
+		set_Value (COLUMNNAME_IsAutoSendVendors, IsAutoSendVendors);
+	}
+
+	@Override
+	public boolean isAutoSendVendors() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendVendors);
+	}
+
+	@Override
+	public void setIsCreateBPartnerFolders (final boolean IsCreateBPartnerFolders)
+	{
+		set_Value (COLUMNNAME_IsCreateBPartnerFolders, IsCreateBPartnerFolders);
+	}
+
+	@Override
+	public boolean isCreateBPartnerFolders() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateBPartnerFolders);
+	}
+
+	@Override
 	public void setIsSyncBPartnersToRestEndpoint (final boolean IsSyncBPartnersToRestEndpoint)
 	{
 		set_Value (COLUMNNAME_IsSyncBPartnersToRestEndpoint, IsSyncBPartnersToRestEndpoint);
@@ -134,6 +194,30 @@ public class X_ExternalSystem_Config_GRSSignum extends org.compiere.model.PO imp
 	public boolean isSyncBPartnersToRestEndpoint() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSyncBPartnersToRestEndpoint);
+	}
+
+	@Override
+	public void setIsSyncHUsOnMaterialReceipt (final boolean IsSyncHUsOnMaterialReceipt)
+	{
+		set_Value (COLUMNNAME_IsSyncHUsOnMaterialReceipt, IsSyncHUsOnMaterialReceipt);
+	}
+
+	@Override
+	public boolean isSyncHUsOnMaterialReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncHUsOnMaterialReceipt);
+	}
+
+	@Override
+	public void setIsSyncHUsOnProductionReceipt (final boolean IsSyncHUsOnProductionReceipt)
+	{
+		set_Value (COLUMNNAME_IsSyncHUsOnProductionReceipt, IsSyncHUsOnProductionReceipt);
+	}
+
+	@Override
+	public boolean isSyncHUsOnProductionReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncHUsOnProductionReceipt);
 	}
 
 	/** 

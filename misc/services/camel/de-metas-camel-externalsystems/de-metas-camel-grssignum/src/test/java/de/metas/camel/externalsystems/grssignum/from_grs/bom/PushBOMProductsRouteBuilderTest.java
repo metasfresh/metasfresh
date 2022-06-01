@@ -27,7 +27,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.BOMUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.common.v2.RetrieveExternalSystemInfoCamelRequest;
+import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -52,8 +55,11 @@ import java.time.Instant;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_EXTERNAL_SYSTEM_INFO;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BOM_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMProductsRouteBuilder.ATTACH_FILE_TO_BOM_PRODUCT_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMProductsRouteBuilder.PUSH_BOM_PRODUCTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMProductsRouteBuilder.PUSH_BOM_PRODUCTS_ROUTE_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.grssignum.from_grs.bom.PushBOMProductsRouteBuilder.PUSH_PRODUCT_ROUTE_PROCESSOR_ID;
@@ -63,10 +69,17 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_PUSH_BOM_PRODUCTS = "mock:pushBOMProductsRoute";
 	private static final String MOCK_UPSERT_PRODUCTS = "mock:upsertProductsRoute";
+	private static final String MOCK_RETRIEVE_EXTERNAL_SYSTEM_INFO = "mock:retrieveExternalSysInfo";
+	private static final String MOCK_ATTACH_FILE = "mock:attachFile";
 
 	private static final String JSON_BOM = "0_JsonBOM.json";
 	private static final String JSON_UPSERT_CAMEL_PRODUCT_REQ = "10_ProductUpsertCamelRequest.json";
 	private static final String JSON_BOM_UPSERT_CAMEL_REQ = "20_BOMUpsertCamelRequest.json";
+
+	private static final String JSON_RETRIEVE_EXTERNAL_SYSTEM_INFO_CAMEL_REQ_BOMs = "30_RetrieveExternalSystemInfoCamelRequestBOMs.json";
+	private static final String JSON_EXTERNAL_SYSTEM_INFO_RES_BOMs = "30_JsonExternalSystemInfo.json";
+	private static final String JSON_ATTACHMENT_REQ_BOMs = "40_JsonAttachmentRequestBOMs.json";
+
 
 	private Authentication authentication;
 	private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -118,19 +131,30 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 		final TokenCredentials tokenCredentials = TokenCredentials.builder()
 				.orgCode("orgCode")
 				.pInstance(JsonMetasfreshId.of(1))
+				.externalSystemValue("childConfigValue")
 				.build();
 
 		Mockito.when(authentication.getCredentials()).thenReturn(tokenCredentials);
 
 		final PushBOMProductsRouteBuilderTest.MockPushBOMsEP mockPushBOMsEP = new PushBOMProductsRouteBuilderTest.MockPushBOMsEP();
 		final PushBOMProductsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP = new PushBOMProductsRouteBuilderTest.MockUpsertProductsEP();
-		preparePushRouteForTesting(mockPushBOMsEP, mockUpsertProductsEP);
+		final PushBOMProductsRouteBuilderTest.MockRetrieveExternalSysInfoEP mockRetrieveExternalSysInfoEP = new PushBOMProductsRouteBuilderTest.MockRetrieveExternalSysInfoEP();
+		final PushBOMProductsRouteBuilderTest.MockAttachFileEP mockAttachFileEP = new PushBOMProductsRouteBuilderTest.MockAttachFileEP();
+		preparePushRouteForTesting(mockPushBOMsEP, mockUpsertProductsEP, mockRetrieveExternalSysInfoEP, mockAttachFileEP);
 
 		context.start();
 
 		final MockEndpoint pushProductsMockEP = getMockEndpoint(MOCK_UPSERT_PRODUCTS);
 		final InputStream upsertCamelProductsReq = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_UPSERT_CAMEL_PRODUCT_REQ);
 		pushProductsMockEP.expectedBodiesReceived(objectMapper.readValue(upsertCamelProductsReq, ProductUpsertCamelRequest.class));
+
+		final MockEndpoint retrieveExternalSysInfoMockEP = getMockEndpoint(MOCK_RETRIEVE_EXTERNAL_SYSTEM_INFO);
+		final InputStream retrieveExternalSysInfoCamelReq = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_RETRIEVE_EXTERNAL_SYSTEM_INFO_CAMEL_REQ_BOMs);
+		retrieveExternalSysInfoMockEP.expectedBodiesReceived(objectMapper.readValue(retrieveExternalSysInfoCamelReq, RetrieveExternalSystemInfoCamelRequest.class));
+
+		final MockEndpoint attachFileMockEP = getMockEndpoint(MOCK_ATTACH_FILE);
+		final InputStream jsonAttachmentReq = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_ATTACHMENT_REQ_BOMs);
+		attachFileMockEP.expectedBodiesReceived(objectMapper.readValue(jsonAttachmentReq, JsonAttachmentRequest.class));
 
 		final MockEndpoint pushBOMProductsMockEP = getMockEndpoint(MOCK_PUSH_BOM_PRODUCTS);
 		final InputStream bomUpsertCamelReq = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_BOM_UPSERT_CAMEL_REQ);
@@ -145,10 +169,15 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 		assertThat(mockPushBOMsEP.called).isEqualTo(1);
 		assertThat(mockUpsertProductsEP.called).isEqualTo(1);
+		assertThat(mockRetrieveExternalSysInfoEP.called).isEqualTo(1);
+		assertThat(mockAttachFileEP.called).isEqualTo(1);
 	}
 
-	private void preparePushRouteForTesting(@NonNull final PushBOMProductsRouteBuilderTest.MockPushBOMsEP mockPushBOMsEP,
-			@NonNull final PushBOMProductsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP) throws Exception
+	private void preparePushRouteForTesting(
+			@NonNull final PushBOMProductsRouteBuilderTest.MockPushBOMsEP mockPushBOMsEP,
+			@NonNull final PushBOMProductsRouteBuilderTest.MockUpsertProductsEP mockUpsertProductsEP,
+			@NonNull final PushBOMProductsRouteBuilderTest.MockRetrieveExternalSysInfoEP mockRetrieveExternalSysInfoEP,
+			@NonNull final PushBOMProductsRouteBuilderTest.MockAttachFileEP mockAttachFileEP) throws Exception
 	{
 		AdviceWith.adviceWith(context, PUSH_BOM_PRODUCTS_ROUTE_ID,
 							  advice -> {
@@ -168,9 +197,46 @@ public class PushBOMProductsRouteBuilderTest extends CamelTestSupport
 										  .skipSendToOriginalEndpoint()
 										  .process(mockPushBOMsEP);
 							  });
+
+		AdviceWith.adviceWith(context, ATTACH_FILE_TO_BOM_PRODUCT_ROUTE_ID,
+							  advice -> {
+								  advice.interceptSendToEndpoint("{{" + MF_GET_EXTERNAL_SYSTEM_INFO + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_RETRIEVE_EXTERNAL_SYSTEM_INFO)
+										  .process(mockRetrieveExternalSysInfoEP);
+
+								  advice.interceptSendToEndpoint("direct:" + MF_ATTACHMENT_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_ATTACH_FILE)
+										  .process(mockAttachFileEP);
+							  });
 	}
 
 	private static class MockPushBOMsEP implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockRetrieveExternalSysInfoEP implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			final InputStream jsonExternalSystemInfo = PushBOMProductsRouteBuilderTest.class.getResourceAsStream(JSON_EXTERNAL_SYSTEM_INFO_RES_BOMs);
+			exchange.getIn().setBody(jsonExternalSystemInfo, JsonExternalSystemInfo.class);
+			called++;
+		}
+	}
+
+	private static class MockAttachFileEP implements Processor
 	{
 		private int called = 0;
 

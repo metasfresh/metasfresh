@@ -1,16 +1,5 @@
 package de.metas.product.impexp;
 
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
-
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_I_Product;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
@@ -18,7 +7,16 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_I_Product;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Properties;
+
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 /*
  * #%L
@@ -48,27 +46,37 @@ import lombok.experimental.UtilityClass;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@UtilityClass
 public class MProductImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
 
-	private String targetTableName = I_I_Product.Table_Name;
-	private String valueColumnName = I_I_Product.COLUMNNAME_Value;
+	private final ImportRecordsSelection selection;
+	private final Properties ctx;
+	private final String targetTableName;
+	private final String valueColumnName;
 
-	final private String priceName_KAEP = "KAEP";
-	final private String priceName_APU = "APU";
-	final private String priceName_AEP = "AEP";
-	final private String priceName_AVP = "AVP";
-	final private String priceName_UVP = "UVP";
-	final private String priceName_ZBV = "ZBV";
+	private static final String priceName_KAEP = "KAEP";
+	private static final String priceName_APU = "APU";
+	private static final String priceName_AEP = "AEP";
+	private static final String priceName_AVP = "AVP";
+	private static final String priceName_UVP = "UVP";
+	private static final String priceName_ZBV = "ZBV";
 
-	@Builder(buildMethodName = "updateIProduct")
-	private void updateMProductImportTable(@NonNull final ImportRecordsSelection selection, @NonNull final Properties ctx)
+	@Builder
+	private MProductImportTableSqlUpdater(
+			@NonNull final ImportRecordsSelection selection,
+			@NonNull final Properties ctx,
+			@NonNull final String tableName,
+			@NonNull final String valueName)
 	{
-		targetTableName = I_I_Product.Table_Name;
-		valueColumnName = I_I_Product.COLUMNNAME_Value;
+		this.selection = selection;
+		this.ctx = ctx;
+		this.targetTableName = tableName;
+		this.valueColumnName = valueName;
+	}
 
+	public void updateIProduct()
+	{
 		dbUpdateBPartners(selection);
 
 		dbUpdateManufacturers(selection);
@@ -108,12 +116,8 @@ public class MProductImportTableSqlUpdater
 		dbUpdateErrorMessages(selection);
 	}
 
-	@Builder(buildMethodName = "updateIPharmaProduct")
-	private void updatePharmaProductImportTable(@NonNull final ImportRecordsSelection selection, @NonNull final Properties ctx, @NonNull final String tableName, @NonNull final String valueName)
+	public void updateIPharmaProduct()
 	{
-		targetTableName = tableName;
-		valueColumnName = valueName;
-
 		dbUpdateProductsByValue(selection);
 		dbUpdateProductsByExternalId(selection);
 		dbUpdateProductCategoryForIFAProduct(selection);
@@ -263,11 +267,11 @@ public class MProductImportTableSqlUpdater
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i SET ")
 					.append(strField).append(" = (SELECT ").append(strField).append(" FROM M_Product p"
-																							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-																							+ "WHERE M_Product_ID IS NOT NULL"
-																							+ " AND ")
+							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
+							+ "WHERE M_Product_ID IS NOT NULL"
+							+ " AND ")
 					.append(strField).append(" IS NULL"
-													 + " AND " + COLUMNNAME_I_IsImported + "='N'")
+							+ " AND " + COLUMNNAME_I_IsImported + "='N'")
 					.append(selection.toSqlWhereClause("i"));
 			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
@@ -282,11 +286,11 @@ public class MProductImportTableSqlUpdater
 			sql = new StringBuilder("UPDATE ")
 					.append(targetTableName + " i SET ")
 					.append(numField).append(" = (SELECT ").append(numField).append(" FROM M_Product p"
-																							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
-																							+ "WHERE M_Product_ID IS NOT NULL"
-																							+ " AND (")
+							+ " WHERE i.M_Product_ID=p.M_Product_ID AND i.AD_Client_ID=p.AD_Client_ID) "
+							+ "WHERE M_Product_ID IS NOT NULL"
+							+ " AND (")
 					.append(numField).append(" IS NULL OR ").append(numField).append("=0)"
-																							 + " AND " + COLUMNNAME_I_IsImported + "='N'")
+							+ " AND " + COLUMNNAME_I_IsImported + "='N'")
 					.append(selection.toSqlWhereClause("i"));
 			no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 			if (no != 0)
@@ -572,27 +576,27 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(" AND ").append(I_I_Product.COLUMNNAME_IsScalePrice).append(" ='Y'")
 				.append(" AND ").append(I_I_Product.COLUMNNAME_Qty).append(" IN (SELECT "
-																				   + I_I_Product.COLUMNNAME_Qty
-																				   + " FROM "
-																				   + I_I_Product.Table_Name
-																				   + " ii WHERE ii."
-																				   + I_I_Product.COLUMNNAME_Value
-																				   + " = i."
-																				   + I_I_Product.COLUMNNAME_Value
-																				   + " AND i."
-																				   + I_I_Product.COLUMNNAME_AD_Client_ID
-																				   + "=ii."
-																				   + I_I_Product.COLUMNNAME_AD_Client_ID
-																				   + " AND ii."
-																				   + I_I_Product.COLUMNNAME_IsScalePrice
-																				   + " = 'Y' AND ii."
-																				   + I_I_Product.COLUMNNAME_I_IsImported
-																				   + " <>'Y'"
-																				   + " AND ii."
-																				   + I_I_Product.COLUMNNAME_I_Product_ID
-																				   + " <> i."
-																				   + I_I_Product.COLUMNNAME_I_Product_ID
-																				   + ")"
+						+ I_I_Product.COLUMNNAME_Qty
+						+ " FROM "
+						+ I_I_Product.Table_Name
+						+ " ii WHERE ii."
+						+ I_I_Product.COLUMNNAME_Value
+						+ " = i."
+						+ I_I_Product.COLUMNNAME_Value
+						+ " AND i."
+						+ I_I_Product.COLUMNNAME_AD_Client_ID
+						+ "=ii."
+						+ I_I_Product.COLUMNNAME_AD_Client_ID
+						+ " AND ii."
+						+ I_I_Product.COLUMNNAME_IsScalePrice
+						+ " = 'Y' AND ii."
+						+ I_I_Product.COLUMNNAME_I_IsImported
+						+ " <>'Y'"
+						+ " AND ii."
+						+ I_I_Product.COLUMNNAME_I_Product_ID
+						+ " <> i."
+						+ I_I_Product.COLUMNNAME_I_Product_ID
+						+ ")"
 				)
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -670,14 +674,13 @@ public class MProductImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	public void dbUpdateIsPriceCopiedToYes(@NonNull final String whereClause, @NonNull final String columnname)
+	public static void dbUpdateIsPriceCopiedToYes(@NonNull final String targetTableName, @NonNull final String columnName)
 	{
 		StringBuilder sql;
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
-				.append(" SET " + columnname + " = 'Y' ")
-				.append(" WHERE 1=1 AND ")
-				.append(whereClause);
+				.append(" SET " + columnName + " = 'Y' ")
+				.append(" WHERE coalesce(" + columnName + ", 'N') != 'Y'");
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 

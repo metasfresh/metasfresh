@@ -37,6 +37,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 			.build();
 
 	@Override
+	@NonNull
 	public UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
 	{
 		return productConversionsCache.getOrLoad(productId, this::retrieveProductConversions);
@@ -56,8 +57,11 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
+		final boolean hasRatesForNonStockingUOMs = !rates.isEmpty();
+		
 		return UOMConversionsMap.builder()
 				.productId(productId)
+				.hasRatesForNonStockingUOMs(hasRatesForNonStockingUOMs)
 				.rates(ImmutableList.<UOMConversionRate> builder()
 						.add(UOMConversionRate.one(productStockingUomId)) // default conversion
 						.addAll(rates)

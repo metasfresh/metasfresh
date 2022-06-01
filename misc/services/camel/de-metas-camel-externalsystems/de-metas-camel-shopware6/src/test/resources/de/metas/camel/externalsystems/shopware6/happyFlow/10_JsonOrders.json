@@ -11,9 +11,10 @@
         "firstName": "firstName",
         "lastName": "lastName",
         "customerNumber": "customerNumber",
-        "email": "someEamil@web.de",
+        "email": "orderCustomerEmail@example.com",
         "customFields": {
-          "externalReference": "customerId"
+          "externalReference": "customerId",
+          "customUserId": "userId1"
           }
         },
       "currencyId": "currencyId",
@@ -35,7 +36,7 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de",
+        "email": "orderCustomerEmail@example.com",
         "customFields": {
           "externalReference": "customerId"
         }
@@ -60,7 +61,7 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de",
+        "email": "orderCustomerEmail@example.com",
         "customFields": {
           "externalReference": "customerId"
         }
@@ -84,7 +85,7 @@
         "firstName": "willNotBeImportedDueToStateMachineState",
         "lastName": "willNotBeImportedDueToStateMachineState",
         "customerNumber": "willNotBeImportedDueToStateMachineState",
-        "email": "someEamil@web.de",
+        "email": "orderCustomerEmail@example.com",
         "customFields": {
           "externalReference": "customerId"
         }

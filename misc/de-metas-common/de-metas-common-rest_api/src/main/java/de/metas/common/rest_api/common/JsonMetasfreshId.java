@@ -116,4 +116,14 @@ public class JsonMetasfreshId
 	public static <T> T mapToOrNull(@Nullable final JsonMetasfreshId externalId, @NonNull final Function<Integer, T> mapper) {
 		return toValueOptional(externalId).map(mapper).orElse(null);
 	}
+
+	@Nullable
+	public static String toValueStrOrNull(@Nullable final JsonMetasfreshId externalId)
+	{
+		if (externalId == null)
+		{
+			return null;
+		}
+		return String.valueOf(externalId.getValue());
+	}
 }

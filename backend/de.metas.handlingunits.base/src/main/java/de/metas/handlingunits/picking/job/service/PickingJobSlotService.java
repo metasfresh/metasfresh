@@ -7,9 +7,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -27,9 +27,9 @@ public class PickingJobSlotService
 		this.pickingJobRepository = pickingJobRepository;
 	}
 
-	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotBarcode pickingSlotBarcode)
+	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotQRCode pickingSlotQRCode)
 	{
-		return pickingSlotBL.getPickingSlotIdAndCaption(pickingSlotBarcode.getPickingSlotId());
+		return pickingSlotBL.getPickingSlotIdAndCaption(pickingSlotQRCode.getPickingSlotId());
 	}
 
 	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)

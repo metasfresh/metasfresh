@@ -3,7 +3,7 @@ package de.metas.manufacturing.workflows_api.rest_api.json;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
-import de.metas.manufacturing.workflows_api.activity_handlers.json.JsonAggregateToLU;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToLU;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -27,7 +27,7 @@ public class JsonManufacturingOrderEvent
 	public static class IssueTo
 	{
 		@NonNull String issueStepId;
-		@NonNull String huBarcode;
+		@NonNull String huQRCode;
 		@NonNull BigDecimal qtyIssued;
 		@Nullable BigDecimal qtyRejected;
 		@Nullable String qtyRejectedReasonCode;

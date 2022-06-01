@@ -84,15 +84,24 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			//
 			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
 			+ "\n CASE WHEN EXISTS(SELECT 1"
-			+ "\n                  FROM PP_Order ppo" 
-			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID" 
-			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=ppoq.M_HU_ID" 
-			+ "\n                  WHERE ppo.C_OrderLine_ID = M_ShipmentSchedule.C_OrderLine_ID" 
-			+ "\n                        AND ppoq.IsActive = 'Y'" 
+			+ "\n                  FROM PP_Order ppo"
+			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID"
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=ppoq.M_HU_ID"
+			+ "\n                  WHERE ppo.C_OrderLine_ID = M_ShipmentSchedule.C_OrderLine_ID"
+			+ "\n                        AND ppoq.IsActive = 'Y'"
 			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
-			+ "\n THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such an HU
+			+ "\n THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such a PP_Order
 			//
-			// Reservation - look at scheds for whose bpartners there are *dedicated* HUs.
+			// Reservation 1 - look at scheds for which there is a reservation
+			+ "\n CASE WHEN EXISTS(SELECT 1"
+			+ "\n                  FROM M_HU_Reservation res"
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"			
+			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
+			+ "\n                        AND res.IsActive = 'Y'"
+			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
+			+ "\n THEN FALSE ELSE TRUE END,"
+			//
+			// Reservation 2 - look at scheds for whose bpartners there are *dedicated* HUs.
 			+ "\n CASE WHEN EXISTS(SELECT 1"
 			+ "\n                  FROM M_HU hu"
 			+ "\n                  WHERE hu.C_BPartner_ID = COALESCE(M_ShipmentSchedule.C_BPartner_Override_ID, M_ShipmentSchedule.C_BPartner_ID)"
@@ -101,11 +110,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ "\n THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such an HU
 			//
 			// Preparation Date
-			+ "\n   " + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate + ","
+			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override + ", " +
+			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate + "),"
 			//
 			// Delivery Date
-			// NOTE: stuff that shall be deivered first shall have a higher prio
-			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override + ", " + I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate + ")," // stuff that shall be deivered first shall have
+			// NOTE: stuff that shall be delivered first shall have a higher prio
+			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override + ", " + I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate + ")," // stuff that shall be delivered first shall have
 			// a higher prio
 			//
 			// Date Ordered

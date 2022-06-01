@@ -106,7 +106,7 @@ public class ManufacturingJobCreateCommand
 				.execute();
 	}
 
-	private void createIssueSchedules(final PPOrderIssuePlan plan)
+	private void createIssueSchedules(@NonNull final PPOrderIssuePlan plan)
 	{
 		final ArrayList<PPOrderIssueSchedule> schedules = new ArrayList<>();
 

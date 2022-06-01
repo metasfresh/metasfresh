@@ -28,6 +28,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
@@ -107,5 +108,16 @@ public class PPOrderCandidateDAO
 				.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableList<I_PP_Order_Candidate> getByProductBOMId(@NonNull final ProductBOMId productBOMId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
+				.create()
+				.listImmutable(I_PP_Order_Candidate.class);
 	}
 }
