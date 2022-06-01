@@ -39,6 +39,8 @@ import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 // TODO merge IResourceDAO into this repository
 @Repository
@@ -53,6 +55,16 @@ class ResourceRepository
 	public Resource getById(@NonNull final ResourceId id)
 	{
 		return getResourcesMap().getById(id);
+	}
+
+	public List<Resource> getByIds(@NonNull final Set<ResourceId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return getResourcesMap().getByIds(ids);
 	}
 
 	/**
@@ -149,6 +161,14 @@ class ResourceRepository
 					.filter(resource -> ResourceTypeId.equals(resource.getResourceTypeId(), resourceTypeId))
 					.map(Resource::getResourceId)
 					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		public List<Resource> getByIds(final Set<ResourceId> ids)
+		{
+			return ids.stream()
+					.map(byId::get)
+					.filter(Objects::nonNull)
+					.collect(ImmutableList.toImmutableList());
 		}
 	}
 }

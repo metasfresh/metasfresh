@@ -46,12 +46,11 @@ import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
-@Component
+// @Component
 public class ResourceGroupAssignmentCalendarService implements CalendarService
 {
 	private static final CalendarServiceId ID = CalendarServiceId.ofString("ResourceGroupAssignment");

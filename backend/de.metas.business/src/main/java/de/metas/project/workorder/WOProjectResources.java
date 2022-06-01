@@ -20,40 +20,37 @@
  * #L%
  */
 
-package de.metas.project.budget;
+package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.resource.ResourceGroupAndResourceId;
-import de.metas.resource.ResourceGroupId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Value
-public class BudgetProjectResources
+public class WOProjectResources
 {
 	ProjectId projectId;
-	ImmutableList<BudgetProjectResource> budgets;
+	ImmutableList<WOProjectResource> resources;
 
 	@Builder
-	private BudgetProjectResources(
+	private WOProjectResources(
 			@NonNull final ProjectId projectId,
-			@NonNull final List<BudgetProjectResource> budgets)
+			@NonNull final List<WOProjectResource> resources)
 	{
 		this.projectId = projectId;
-		this.budgets = ImmutableList.copyOf(budgets);
+		this.resources = ImmutableList.copyOf(resources);
 
-		if (!budgets.isEmpty())
+		if (!resources.isEmpty())
 		{
-			final ImmutableList<BudgetProjectResource> resourcesFromOtherProjects = budgets.stream()
+			final ImmutableList<WOProjectResource> resourcesFromOtherProjects = resources.stream()
 					.filter(resource -> !ProjectId.equals(resource.getProjectId(), projectId))
 					.collect(ImmutableList.toImmutableList());
 			if (!resourcesFromOtherProjects.isEmpty())
@@ -63,33 +60,8 @@ public class BudgetProjectResources
 		}
 	}
 
-	public Optional<BudgetProjectResource> findBudgetForResource(@NonNull final ResourceGroupAndResourceId groupAndResourceId)
+	public Set<ResourceId> getResourceIds()
 	{
-		BudgetProjectResource matchedByResourceGroup = null;
-		for (final BudgetProjectResource budget : budgets)
-		{
-			if (budget.getResourceId() != null)
-			{
-				if (ResourceId.equals(budget.getResourceId(), groupAndResourceId.getResourceId()))
-				{
-					return Optional.of(budget);
-				}
-			}
-			else
-			{
-				if (matchedByResourceGroup == null
-						&& ResourceGroupId.equals(budget.getResourceGroupId(), groupAndResourceId.getResourceGroupId()))
-				{
-					matchedByResourceGroup = budget;
-				}
-			}
-		}
-
-		return Optional.ofNullable(matchedByResourceGroup);
-	}
-
-	public Set<ResourceGroupId> getResourceGroupIds()
-	{
-		return budgets.stream().map(BudgetProjectResource::getResourceGroupId).collect(ImmutableSet.toImmutableSet());
+		return resources.stream().map(WOProjectResource::getResourceId).collect(ImmutableSet.toImmutableSet());
 	}
 }

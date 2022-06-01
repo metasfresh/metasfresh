@@ -30,7 +30,10 @@ import de.metas.resource.ResourceService;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class BudgetProjectService
@@ -47,6 +50,16 @@ public class BudgetProjectService
 		this.resourceService = resourceService;
 		this.projectRepository = projectRepository;
 		this.resourceBudgetRepository = resourceBudgetRepository;
+	}
+
+	public List<BudgetProject> getAllActiveProjects()
+	{
+		return projectRepository.getAllActive();
+	}
+
+	public Map<ProjectId, BudgetProjectResources> getBudgetsByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	{
+		return resourceBudgetRepository.getByProjectIds(projectIds);
 	}
 
 	public Optional<BudgetProjectResource> findBudgetForResource(

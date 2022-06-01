@@ -23,6 +23,8 @@
 package de.metas.project.budget;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.StringUtils;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -39,6 +41,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_Resource_Budget;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 @Repository
 public class BudgetProjectResourceRepository
@@ -58,6 +65,28 @@ public class BudgetProjectResourceRepository
 				.budgets(budgets)
 				.build();
 	}
+
+	public Map<ProjectId, BudgetProjectResources> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	{
+		if (projectIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableListMultimap<ProjectId, BudgetProjectResource> budgetsByProjectId = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectIds)
+				.stream()
+				.map(BudgetProjectResourceRepository::fromRecord)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(BudgetProjectResource::getProjectId, Function.identity()));
+
+		return projectIds.stream()
+				.map(projectId -> BudgetProjectResources.builder()
+						.projectId(projectId)
+						.budgets(budgetsByProjectId.get(projectId))
+						.build())
+				.collect(ImmutableMap.toImmutableMap(BudgetProjectResources::getProjectId, Function.identity()));
+	}
+
 	public static BudgetProjectResource fromRecord(@NonNull final I_C_Project_Resource_Budget record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());

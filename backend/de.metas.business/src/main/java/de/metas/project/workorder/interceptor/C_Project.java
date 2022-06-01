@@ -20,30 +20,25 @@
  * #L%
  */
 
-package de.metas.project.budget;
+package de.metas.project.workorder.interceptor;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.project.ProjectId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.project.ProjectCategory;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_C_Project;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Set;
-
-@Value
-@Builder
-public class BudgetProject
+@Interceptor(I_C_Project.class)
+@Component
+public class C_Project
 {
-	@NonNull ProjectId projectId;
-	@NonNull String name;
-	@NonNull OrgId orgId;
-	@NonNull CurrencyId currencyId;
-
-	public static Set<ProjectId> extractProjectIds(final List<BudgetProject> projects)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(final I_C_Project project)
 	{
-		return projects.stream().map(BudgetProject::getProjectId).collect(ImmutableSet.toImmutableSet());
+		if(!ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory()).isWorkOrder())
+		{
+			return;
+		}
 	}
 }

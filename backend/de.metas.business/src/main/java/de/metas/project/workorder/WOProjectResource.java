@@ -20,30 +20,28 @@
  * #L%
  */
 
-package de.metas.project.budget;
+package de.metas.project.workorder;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
+import de.metas.calendar.util.CalendarDateRange;
+import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
-import java.util.Set;
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class BudgetProject
+public class WOProjectResource
 {
-	@NonNull ProjectId projectId;
-	@NonNull String name;
-	@NonNull OrgId orgId;
-	@NonNull CurrencyId currencyId;
+	@NonNull WOProjectResourceId id;
 
-	public static Set<ProjectId> extractProjectIds(final List<BudgetProject> projects)
-	{
-		return projects.stream().map(BudgetProject::getProjectId).collect(ImmutableSet.toImmutableSet());
-	}
+	@NonNull ProjectId projectId;
+	@NonNull WOProjectStepId stepId;
+
+	@NonNull ResourceId resourceId;
+	@NonNull CalendarDateRange dateRange;
+
+	@Nullable String description;
 }

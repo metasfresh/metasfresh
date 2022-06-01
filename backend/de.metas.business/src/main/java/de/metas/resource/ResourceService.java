@@ -41,6 +41,7 @@ import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.I_S_Resource_Group;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -84,6 +85,11 @@ public class ResourceService
 	public Resource getResourceById(@NonNull final ResourceId resourceId)
 	{
 		return resourceRepository.getById(resourceId);
+	}
+
+	public List<Resource> getResourcesByIds(@NonNull final Set<ResourceId> resourceIds)
+	{
+		return resourceRepository.getByIds(resourceIds);
 	}
 
 	public ImmutableList<Resource> getAllActiveResources()
