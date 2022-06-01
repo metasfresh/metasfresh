@@ -38,7 +38,9 @@ import de.metas.calendar.CalendarService;
 import de.metas.calendar.CalendarServiceId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
@@ -48,21 +50,34 @@ import de.metas.project.workorder.WOProject;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectResources;
 import de.metas.project.workorder.WOProjectService;
+import de.metas.project.workorder.WOProjectStep;
+import de.metas.project.workorder.WOProjectStepId;
+import de.metas.project.workorder.WOProjectSteps;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceGroup;
 import de.metas.resource.ResourceService;
+import de.metas.ui.web.WebuiURLs;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Project;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
 public class WOProjectCalendarService implements CalendarService
 {
+	private static final Logger logger = LogManager.getLogger(WOProjectCalendarService.class);
 	private static final CalendarServiceId ID = CalendarServiceId.ofString("WOProject");
 
 	private static final CalendarGlobalId CALENDAR_ID = CalendarGlobalId.of(ID, "default");
@@ -163,6 +178,8 @@ public class WOProjectCalendarService implements CalendarService
 
 		// TODO consider date range
 
+		final FrontendURLs frontendURLs = new FrontendURLs();
+
 		final ArrayList<CalendarEntry> result = new ArrayList<>();
 
 		//
@@ -174,7 +191,11 @@ public class WOProjectCalendarService implements CalendarService
 			budgetsByProjectId.values()
 					.stream()
 					.flatMap(budgets -> budgets.getBudgets().stream())
-					.map(budget -> toCalendarEntry(budget, budgetProjects.get(budget.getProjectId())))
+					.map(budget -> toCalendarEntry(
+							budget,
+							budgetProjects.get(budget.getProjectId()),
+							frontendURLs)
+					)
 					.forEach(result::add);
 		}
 
@@ -183,11 +204,21 @@ public class WOProjectCalendarService implements CalendarService
 		{
 			final ImmutableMap<ProjectId, WOProject> woProjects = Maps.uniqueIndex(woProjectService.getAllActiveProjects(), WOProject::getProjectId);
 			final Map<ProjectId, WOProjectResources> resourcesByProjectId = woProjectService.getResourcesByProjectIds(woProjects.keySet());
+			final ImmutableMap<WOProjectStepId, WOProjectStep> stepsById = woProjectService.getStepsByProjectIds(woProjects.keySet())
+					.values()
+					.stream()
+					.flatMap(WOProjectSteps::stream)
+					.collect(ImmutableMap.toImmutableMap(WOProjectStep::getId, step -> step));
 
 			resourcesByProjectId.values()
 					.stream()
 					.flatMap(resources -> resources.getResources().stream())
-					.map(resource -> toCalendarEntry(resource, woProjects.get(resource.getProjectId())))
+					.map(resource -> toCalendarEntry(
+							resource,
+							stepsById.get(resource.getStepId()),
+							woProjects.get(resource.getProjectId()),
+							frontendURLs)
+					)
 					.forEach(result::add);
 		}
 
@@ -197,7 +228,10 @@ public class WOProjectCalendarService implements CalendarService
 		return result.stream();
 	}
 
-	private static CalendarEntry toCalendarEntry(@NonNull final BudgetProjectResource budget, @NonNull final BudgetProject project)
+	private static CalendarEntry toCalendarEntry(
+			@NonNull final BudgetProjectResource budget,
+			@NonNull final BudgetProject project,
+			@NonNull final FrontendURLs frontendURLs)
 	{
 		return CalendarEntry.builder()
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, budget.getId()))
@@ -209,18 +243,26 @@ public class WOProjectCalendarService implements CalendarService
 						.startDate(budget.getStartDate())
 						.endDate(budget.getEndDate())
 						.build())
+				.color("#89D72D") // metasfresh green
+				.url(frontendURLs.getFrontendURL(budget.getProjectId()).orElse(null))
 				.build();
 	}
 
-	private static CalendarEntry toCalendarEntry(@NonNull final WOProjectResource resource, @NonNull final WOProject project)
+	private static CalendarEntry toCalendarEntry(
+			@NonNull final WOProjectResource resource,
+			@NonNull final WOProjectStep step,
+			@NonNull final WOProject project,
+			@NonNull final FrontendURLs frontendURLs)
 	{
 		return CalendarEntry.builder()
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resource.getId()))
 				.calendarId(CALENDAR_ID)
 				.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
-				.title(project.getName())
+				.title(project.getName() + " - " + step.getSeqNo() + "_" + step.getName())
 				.description(resource.getDescription())
 				.dateRange(resource.getDateRange())
+				.color("#FFCF60") // orange-ish
+				.url(frontendURLs.getFrontendURL(resource.getProjectId()).orElse(null))
 				.build();
 	}
 
@@ -240,5 +282,51 @@ public class WOProjectCalendarService implements CalendarService
 	public void deleteEntryById(final CalendarEntryId entryId)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	private static class FrontendURLs
+	{
+		private final WebuiURLs webuiURLs = WebuiURLs.newInstance();
+
+		private final HashMap<ProjectId, Optional<URI>> cache = new HashMap<>();
+
+		private Optional<URI> getFrontendURL(final ProjectId projectId)
+		{
+			return cache.computeIfAbsent(projectId, this::computeFrontendURL);
+		}
+
+		private Optional<URI> computeFrontendURL(@NonNull final ProjectId projectId)
+		{
+			final AdWindowId adWindowId = RecordWindowFinder.newInstance(TableRecordReference.of(I_C_Project.Table_Name, projectId))
+					.checkRecordPresentInWindow() // IMPORTANT: make sure the right Project window is picked
+					.findAdWindowId()
+					.orElse(null);
+			if (adWindowId == null)
+			{
+				return Optional.empty();
+			}
+
+			final String url = webuiURLs.getDocumentUrl(adWindowId, projectId.getRepoId());
+			if (url == null)
+			{
+				return Optional.empty();
+			}
+
+			try
+			{
+				return Optional.of(new URI(url));
+			}
+			catch (final URISyntaxException e)
+			{
+				logger.warn("Failed converting `{}` to URI", url, e);
+				return Optional.empty();
+			}
+		}
 	}
 }

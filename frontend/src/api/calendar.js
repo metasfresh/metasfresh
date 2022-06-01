@@ -104,6 +104,9 @@ const converters = {
       start: apiEntry.startDate,
       end: apiEntry.endDate,
       allDay: apiEntry.allDay,
+      editable: false,
+      color: apiEntry.color,
+      url: apiEntry.url,
     }),
   },
 };

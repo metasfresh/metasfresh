@@ -35,13 +35,15 @@ public class WOProjectService
 {
 	private final WOProjectRepository woProjectRepository;
 	private final WOProjectResourceRepository woProjectResourceRepository;
+	private final WOProjectStepRepository woProjectStepRepository;
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
-			final WOProjectResourceRepository woProjectResourceRepository)
+			final WOProjectResourceRepository woProjectResourceRepository, final WOProjectStepRepository woProjectStepRepository)
 	{
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;
+		this.woProjectStepRepository = woProjectStepRepository;
 	}
 
 	public WOProject getById(@NonNull final ProjectId projectId)
@@ -57,5 +59,10 @@ public class WOProjectService
 	public Map<ProjectId, WOProjectResources> getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		return woProjectResourceRepository.getByProjectIds(projectIds);
+	}
+
+	public Map<ProjectId, WOProjectSteps> getStepsByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	{
+		return woProjectStepRepository.getByProjectIds(projectIds);
 	}
 }

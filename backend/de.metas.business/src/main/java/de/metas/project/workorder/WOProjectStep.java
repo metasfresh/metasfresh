@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,30 +20,19 @@
  * #L%
  */
 
-package de.metas.calendar;
+package de.metas.project.workorder;
 
-import de.metas.calendar.util.CalendarDateRange;
+import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.net.URI;
-
 @Value
 @Builder
-public class CalendarEntry
+public class WOProjectStep
 {
-	@NonNull CalendarEntryId entryId;
-
-	@NonNull CalendarGlobalId calendarId;
-	@NonNull CalendarResourceId resourceId;
-
-	@Nullable String title;
-	@Nullable String description;
-
-	@NonNull CalendarDateRange dateRange;
-
-	@Nullable String color;
-	@Nullable URI url;
+	@NonNull WOProjectStepId id;
+	@NonNull ProjectId projectId;
+	int seqNo;
+	@NonNull String name;
 }

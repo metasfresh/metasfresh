@@ -126,13 +126,17 @@ const Calendar = ({ className = 'container' }) => {
     }
   };
 
-  const handleCreateNewEvent = (params) => {
-    //console.log('handleCreateNewEvent', { params });
+  const handleDateClick = (params) => {
+    //console.log('handleDateClick', { params });
+
+    // FIXME for now, consider the calendar not editable
+    if (true) return;
+
     const { calendarId, resourceId } = suggestCalendarIdAndResourceId(
       availableCalendars,
       params?.resource?.id
     );
-    //console.log('handleCreateNewEvent', { calendarId, resourceId });
+    //console.log('handleDateClick', { calendarId, resourceId });
 
     setEditingEvent({
       calendarId,
@@ -143,10 +147,16 @@ const Calendar = ({ className = 'container' }) => {
     });
   };
 
-  const handleEditEvent = (params) => {
-    const eventId = params.event.id;
-    const event = calendarEvents.events.find((event) => event.id === eventId);
-    setEditingEvent(event);
+  const handleEventClick = (params) => {
+    if (params.event.url) {
+      params.jsEvent.preventDefault();
+      window.open(params.event.url, '_blank');
+    } else {
+      const eventId = params.event.id;
+      const event = calendarEvents.events.find((event) => event.id === eventId);
+      console.log('handleEventClick', { params, event });
+      setEditingEvent(event);
+    }
   };
 
   const handleEventEditOK = (event) => {
@@ -193,7 +203,7 @@ const Calendar = ({ className = 'container' }) => {
       )}
       <FullCalendar
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
-        initialView="resourceTimeline"
+        initialView="resourceTimelineMonth"
         plugins={[
           dayGridPlugin,
           timeGridPlugin,
@@ -211,8 +221,8 @@ const Calendar = ({ className = 'container' }) => {
         resourceAreaHeaderContent="Resources"
         resources={extractResourcesFromCalendarsArray(availableCalendars)}
         events={fetchCalendarEvents}
-        dateClick={handleCreateNewEvent}
-        eventClick={handleEditEvent}
+        dateClick={handleDateClick}
+        eventClick={handleEventClick}
         eventDragStart={(event) => {
           console.log('eventDragStart', { event });
         }}

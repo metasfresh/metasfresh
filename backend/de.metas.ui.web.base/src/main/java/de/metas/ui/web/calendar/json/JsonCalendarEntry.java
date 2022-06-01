@@ -50,6 +50,8 @@ public class JsonCalendarEntry
 	@NonNull JsonDateTime endDate;
 	boolean allDay;
 
+	@Nullable String color;
+	@Nullable String url;
 
 	public static JsonCalendarEntry of(@NonNull final CalendarEntry entry, @NonNull final ZoneId timeZone)
 	{
@@ -62,6 +64,8 @@ public class JsonCalendarEntry
 				.startDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getStartDate(), timeZone))
 				.endDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getEndDate(), timeZone))
 				.allDay(entry.getDateRange().isAllDay())
+				.color(entry.getColor())
+				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
 				.build();
 	}
 }

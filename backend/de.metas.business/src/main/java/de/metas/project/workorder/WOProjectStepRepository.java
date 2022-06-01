@@ -22,12 +22,17 @@
 
 package de.metas.project.workorder;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Project_WO_Step;
 import org.springframework.stereotype.Repository;
+
+import java.util.Map;
+import java.util.Set;
 
 @Repository
 public class WOProjectStepRepository
@@ -38,11 +43,45 @@ public class WOProjectStepRepository
 	{
 		final int lastSeqNo = queryBL.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_ID, projectId)
 				.create()
 				.maxInt(I_C_Project_WO_Step.COLUMNNAME_SeqNo);
 
 		return lastSeqNo > 0
 				? lastSeqNo / 10 * 10 + 10
 				: 10;
+	}
+
+	public Map<ProjectId, WOProjectSteps> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	{
+		if (projectIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableListMultimap<ProjectId, WOProjectStep> stepsByProjectId = queryBL
+				.createQueryBuilder(I_C_Project_WO_Step.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_ID, projectIds)
+				.stream()
+				.map(WOProjectStepRepository::fromRecord)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(WOProjectStep::getProjectId, step -> step));
+
+		return projectIds.stream()
+				.map(projectId -> WOProjectSteps.builder()
+						.projectId(projectId)
+						.steps(stepsByProjectId.get(projectId))
+						.build())
+				.collect(ImmutableMap.toImmutableMap(WOProjectSteps::getProjectId, steps -> steps));
+	}
+
+	private static WOProjectStep fromRecord(@NonNull final I_C_Project_WO_Step record)
+	{
+		return WOProjectStep.builder()
+				.id(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
+				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.seqNo(record.getSeqNo())
+				.name(record.getName())
+				.build();
 	}
 }
