@@ -46,6 +46,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalUnit;
@@ -90,9 +91,35 @@ public class C_Project_WO_Resource implements ITabCallout
 		updateBudget(woResource);
 	}
 
-	@CalloutMethod(columnNames = { I_C_Project_WO_Resource.COLUMNNAME_AssignDateFrom, I_C_Project_WO_Resource.COLUMNNAME_AssignDateTo })
-	public void onAssignDateFromOrTo(@NonNull final I_C_Project_WO_Resource woResource)
+	@CalloutMethod(columnNames = I_C_Project_WO_Resource.COLUMNNAME_AssignDateFrom)
+	public void onAssignDateFrom(@NonNull final I_C_Project_WO_Resource woResource)
 	{
+		final Timestamp assignDateFrom = woResource.getAssignDateFrom();
+		if (assignDateFrom != null)
+		{
+			final Timestamp assignDateTo = woResource.getAssignDateTo();
+			if (assignDateTo == null || assignDateTo.before(assignDateFrom))
+			{
+				woResource.setAssignDateTo(assignDateFrom);
+			}
+		}
+
+		updateDuration(woResource);
+	}
+
+	@CalloutMethod(columnNames = I_C_Project_WO_Resource.COLUMNNAME_AssignDateTo)
+	public void onAssignDateTo(@NonNull final I_C_Project_WO_Resource woResource)
+	{
+		final Timestamp assignDateTo = woResource.getAssignDateTo();
+		if (assignDateTo != null)
+		{
+			final Timestamp assignDateFrom = woResource.getAssignDateFrom();
+			if (assignDateFrom == null || assignDateFrom.after(assignDateTo))
+			{
+				woResource.setAssignDateFrom(assignDateTo);
+			}
+		}
+
 		updateDuration(woResource);
 	}
 
