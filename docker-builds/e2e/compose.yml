@@ -1,7 +1,7 @@
 services:
 
   db:
-    image: metas-db:preloaded
+    image: mazorn/metas-db:$refname-preloaded
     ports:
       - "15432:5432"
     healthcheck:
@@ -41,7 +41,7 @@ services:
       replicas: 1
 
   webapi:
-    image: metas-api:latest
+    image: mazorn/metas-api:$refname
     ports:
       - "8080:8080"
       - "8789:8789"
@@ -61,7 +61,7 @@ services:
       replicas: 1
 
   app:
-    image: metas-app:latest
+    image: mazorn/metas-app:$refname
     ports:
       - "8282:8282"
       - "61616:61616"
@@ -82,7 +82,7 @@ services:
       replicas: 1
 
   webui:
-    image: metas-frontend:latest
+    image: mazorn/metas-frontend:$refname
     ports:
       - "80:80"
     environment:

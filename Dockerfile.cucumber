@@ -1,3 +1,6 @@
+ARG REFNAME=local
+FROM mazorn/metas-mvn-backend:$REFNAME as backend
+
 FROM maven:3.8.4-jdk-8
 
 RUN apt-get update && apt-get install -y locales npm && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
@@ -5,7 +8,7 @@ RUN npm install -g @testmo/testmo-cli
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
-COPY --from=metas-mvn-backend:latest /root/.m2 /root/.m2/
+COPY --from=backend /root/.m2 /root/.m2/
 
 WORKDIR /cucumber
 COPY backend/de.metas.cucumber/ .
@@ -14,7 +17,6 @@ RUN mvn clean test-compile
 
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
 
-ARG REFNAME=local
 ENV REFNAME=$REFNAME
 SHELL ["/bin/bash", "-c"]
 

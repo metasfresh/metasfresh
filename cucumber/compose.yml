@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: metas-db:preloaded
+    image: mazorn/metas-db:$refname-preloaded
     ports:
       - "15432:5432"
     healthcheck:

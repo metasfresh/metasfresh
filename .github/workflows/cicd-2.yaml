@@ -95,6 +95,7 @@ jobs:
       - name: run-cucumber-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
+          refname: ${{ needs.init.outputs.sanitized-refname }}
         timeout-minutes: 60
         run: |
           cd cucumber
@@ -112,6 +113,7 @@ jobs:
       - name: run-cypress-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
+          refname: ${{ needs.init.outputs.sanitized-refname }}
         timeout-minutes: 120
         run: |
           cd docker-builds/e2e
