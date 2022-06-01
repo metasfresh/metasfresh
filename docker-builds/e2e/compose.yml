@@ -45,6 +45,12 @@ services:
     ports:
       - "8080:8080"
       - "8789:8789"
+    healthcheck:
+      test: curl -m 1 http://127.0.0.1:8080/health
+      interval: 5s
+      timeout: 2s
+      start_period: 10s
+      retries: 60
     environment:
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
     depends_on:
@@ -60,6 +66,12 @@ services:
       - "8282:8282"
       - "61616:61616"
       - "8788:8788"
+    healthcheck:
+      test: curl -m 1 http://127.0.0.1:8282/health
+      interval: 5s
+      timeout: 2s
+      start_period: 10s
+      retries: 60
     environment:
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
     depends_on:
@@ -86,20 +98,20 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      
-  delay:
-    image: busybox
-    depends_on:
-      - webui
-    command: sleep 60
 
   e2e:
     image: metas-e2e:latest
     ports: []
     depends_on:
-      delay:
-        condition: service_completed_successfully
+      webapi:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    secrets:
+      - mysecret
 
 volumes: {}
 configs: {}
-secrets: {}
+secrets:
+  mysecret:
+    file: mysecret

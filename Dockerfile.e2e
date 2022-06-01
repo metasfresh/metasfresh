@@ -14,9 +14,22 @@ RUN npm install
 
 COPY e2e/ .
 
-RUN cypress verify
-
 ENV CYPRESS_baseUrl=http://webui:80
 
-# --browser chrome
-CMD cypress run --reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json
+ARG REFNAME=local
+ENV REFNAME=$REFNAME
+
+CMD if [[ -f "/run/secrets/mysecret" ]] ;\
+    then \
+        TESTMO_TOKEN="$(cat /run/secrets/mysecret)" \
+        testmo automation:run:submit \
+        --instance https://metasfresh.testmo.net \
+        --project-id 1 \
+        --name "New test run" \
+        --source "cypress-tests-github" \
+		--tags $REFNAME \
+        --results cypress/results/*.xml \
+        -- cypress run --reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json ;\
+    else \
+        cypress run --reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json ;\
+    fi

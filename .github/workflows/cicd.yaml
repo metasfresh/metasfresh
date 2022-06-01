@@ -20,9 +20,12 @@ jobs:
         run: docker buildx build -f Dockerfile.backend --secret id=mysecret --build-arg REFNAME=${{ steps.sanitize.outputs.sanitized-ref-name }} -t metas-mvn-backend:latest .
       - name: build-camel
         run: docker buildx build -f Dockerfile.camel -t metas-mvn-camel:latest .
+      
       - name: build-cucumber
         run: docker buildx build -f Dockerfile.cucumber --build-arg REFNAME=${{ steps.sanitize.outputs.sanitized-ref-name }} -t metas-cucumber:latest .
-
+      - name: build-e2e
+        run: docker buildx build -f Dockerfile.e2e --build-arg REFNAME=${{ steps.sanitize.outputs.sanitized-ref-name }} -t metas-e2e:latest .
+        
       - name: build-api
         run: docker buildx build -f Dockerfile.backend.api -t mazorn/metas-api:${{ steps.sanitize.outputs.sanitized-ref-name }} -t mazorn/metas-api:${{ steps.sanitize.outputs.sanitized-ref-name }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
       - name: build-app
@@ -41,12 +44,23 @@ jobs:
       - name: run-cucumber-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
+        timeout-minutes: 60
         run: |
           cd cucumber
           echo "$mysecret" > mysecret
-          docker-compose up --abort-on-container-exit
+          docker-compose up --abort-on-container-exit --exit-code-from cucumber
           docker-compose down
-        
+
+      - name: run-cypress-tests
+        env:
+          mysecret: ${{ secrets.TESTMO_TOKEN }}
+        timeout-minutes: 120
+        run: |
+          cd docker-builds/e2e
+          echo "$mysecret" > mysecret
+          docker-compose up --abort-on-container-exit --exit-code-from e2e
+          docker-compose down
+          
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
