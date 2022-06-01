@@ -682,11 +682,6 @@ public final class HUEditorRow implements IViewRow
 		private String locatorCaption;
 		private BPartnerId bpartnerId;
 
-		private String projectCaption;
-
-		@Nullable
-		private ProjectId projectId = null;
-
 		private List<HUEditorRow> includedRows = null;
 		@Nullable
 		private OrderLineId orderLineReservation = null;
@@ -861,21 +856,9 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
-		public Builder setProjectId(final ProjectId projectId)
-		{
-			this.projectId = projectId;
-			return this;
-		}
-
 		private BPartnerId getBPartnerId()
 		{
 			return bpartnerId;
-		}
-
-
-		private ProjectId getProjectId()
-		{
-			return projectId;
 		}
 
 		@Nullable
