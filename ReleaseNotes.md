@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13054](https://github.com/metasfresh/metasfresh/issues/13054) Optimize `Fresh_Account_Info_Report` 
+  * [#13074](https://github.com/metasfresh/metasfresh/issues/13074) externalsystems - document timestamp-usage
   * [#13017](https://github.com/metasfresh/metasfresh/issues/13017) EDI - Extend INVOIC export format
   * [#13038](https://github.com/metasfresh/metasfresh/issues/13038) Campaign price where m_pricingsystem_id is set not used in orderline
   * [#12931](https://github.com/metasfresh/metasfresh/issues/12931) API - Export PP_Orders with extended informations
@@ -32,6 +34,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13046](https://github.com/metasfresh/metasfresh/issues/13046) Fix DatePicker format in custom windows
+  * [#13062](https://github.com/metasfresh/metasfresh/issues/13062) Pricing issue
   * [#13043](https://github.com/metasfresh/metasfresh/issues/13043) Fix disabled unit tests from `de.metas.manufacturing`
   * [#12997](https://github.com/metasfresh/metasfresh/issues/12997) Open amt incorrect after vendor credit memo is created for a vendor invoice
   * [#12980](https://github.com/metasfresh/metasfresh/issues/12980) Scale Price not used despite usescaleprice=S
