@@ -26,8 +26,10 @@ import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -77,6 +79,7 @@ public class M_PriceList_StepDef
 	private final M_PriceList_StepDefData priceListTable;
 	private final M_PriceList_Version_StepDefData priceListVersionTable;
 	private final M_ProductPrice_StepDefData productPriceTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -89,7 +92,8 @@ public class M_PriceList_StepDef
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
 			@NonNull final M_PriceList_StepDefData priceListTable,
 			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
-			@NonNull final M_ProductPrice_StepDefData productPriceTable)
+			@NonNull final M_ProductPrice_StepDefData productPriceTable,
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable)
 	{
 		this.currencyRepository = currencyRepository;
 		this.productTable = productTable;
@@ -97,6 +101,7 @@ public class M_PriceList_StepDef
 		this.priceListTable = priceListTable;
 		this.priceListVersionTable = priceListVersionTable;
 		this.productPriceTable = productPriceTable;
+		this.huPiItemProductTable = huPiItemProductTable;
 	}
 
 	@And("metasfresh contains M_PricingSystems")
@@ -338,7 +343,9 @@ public class M_PriceList_StepDef
 
 		final String useScalePrice = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_UseScalePrice);
 
-		final I_M_ProductPrice productPrice = existingProductPrice == null ? InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class) : existingProductPrice;
+		final de.metas.handlingunits.model.I_M_ProductPrice productPrice = existingProductPrice == null
+				? InterfaceWrapperHelper.newInstance(de.metas.handlingunits.model.I_M_ProductPrice.class)
+				: InterfaceWrapperHelper.load(existingProductPrice.getM_ProductPrice_ID(), de.metas.handlingunits.model.I_M_ProductPrice.class);
 
 		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 
@@ -355,6 +362,14 @@ public class M_PriceList_StepDef
 		if (Check.isNotBlank(invoiceableQtyBasedOn))
 		{
 			productPrice.setInvoicableQtyBasedOn(invoiceableQtyBasedOn);
+		}
+
+		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(huPiItemProductIdentifier))
+		{
+			final I_M_HU_PI_Item_Product packingItem = huPiItemProductTable.get(huPiItemProductIdentifier);
+
+			productPrice.setM_HU_PI_Item_Product(packingItem);
 		}
 
 		saveRecord(productPrice);

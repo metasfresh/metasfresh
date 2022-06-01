@@ -226,8 +226,8 @@ Feature: desadv and invoic
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
       | 4010002                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_2 x 10 PCE | false                   |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        |
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        | hu_pi_item_product_1                   |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
