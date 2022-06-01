@@ -1,3 +1,6 @@
+ARG REFNAME=local
+FROM mazorn/metas-mvn-backend:$REFNAME as backend
+
 FROM postgres:10
 
 RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
@@ -18,9 +21,7 @@ COPY docker-builds/db/adjust-config.sql /docker-entrypoint-initdb.d/adjust-confi
 # COPY docker-builds/db/metasfresh_latest.pgdump .
 ADD --chown=postgres https://www.metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump .
 
-ARG REFNAME=local
-
-COPY --from=mazorn/metas-mvn-backend:$REFNAME /backend/metasfresh-dist/dist/target/dist/sql /tmp/sql
+COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql /tmp/sql
 
 RUN cd /tmp/sql \
 	&& find -mindepth 3 -type f -delete \

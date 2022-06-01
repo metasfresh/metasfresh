@@ -1,3 +1,6 @@
+ARG REFNAME=local
+FROM mazorn/metas-mvn-backend:$REFNAME as backend
+
 FROM openjdk:8-jdk-oraclelinux7
 
 RUN yum update -y && yum -y install nc && yum -y clean all && rm -rf /var/cache
@@ -6,9 +9,9 @@ WORKDIR /opt/metasfresh/metasfresh-webui-api
 
 COPY --chmod=700 docker-builds/api/start.sh .
 
-ARG REFNAME=local
 
-COPY --from=mazorn/metas-mvn-backend:$REFNAME /backend/metasfresh-webui-api/target/docker/metasfresh-webui-api.jar .
-COPY --from=mazorn/metas-mvn-backend:$REFNAME /backend/metasfresh-webui-api/target/docker/configs/metasfresh.properties .
+
+COPY --from=backend /backend/metasfresh-webui-api/target/docker/metasfresh-webui-api.jar .
+COPY --from=backend /backend/metasfresh-webui-api/target/docker/configs/metasfresh.properties .
 
 CMD ["/opt/metasfresh/metasfresh-webui-api/start.sh"]
