@@ -50,6 +50,7 @@ public class JsonCalendarEntry
 	@NonNull JsonDateTime endDate;
 	boolean allDay;
 
+	boolean editable;
 	@Nullable String color;
 	@Nullable String url;
 
@@ -64,6 +65,7 @@ public class JsonCalendarEntry
 				.startDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getStartDate(), timeZone))
 				.endDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getEndDate(), timeZone))
 				.allDay(entry.getDateRange().isAllDay())
+				.editable(entry.isEditable())
 				.color(entry.getColor())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
 				.build();

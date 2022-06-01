@@ -44,6 +44,7 @@ public class CalendarEntry
 
 	@NonNull CalendarDateRange dateRange;
 
+	boolean editable;
 	@Nullable String color;
 	@Nullable URI url;
 }

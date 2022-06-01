@@ -104,7 +104,7 @@ const converters = {
       start: apiEntry.startDate,
       end: apiEntry.endDate,
       allDay: apiEntry.allDay,
-      editable: false,
+      editable: apiEntry.editable,
       color: apiEntry.color,
       url: apiEntry.url,
     }),

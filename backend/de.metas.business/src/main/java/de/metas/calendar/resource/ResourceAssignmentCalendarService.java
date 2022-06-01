@@ -170,6 +170,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 				.title(resourceAssignment.getName())
 				.description(resourceAssignment.getDescription())
 				.dateRange(resourceAssignment.getDateRange())
+				.editable(true)
 				.build();
 	}
 

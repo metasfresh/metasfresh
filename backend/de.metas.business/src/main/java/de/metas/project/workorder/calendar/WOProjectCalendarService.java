@@ -243,6 +243,7 @@ public class WOProjectCalendarService implements CalendarService
 						.startDate(budget.getStartDate())
 						.endDate(budget.getEndDate())
 						.build())
+				.editable(false)
 				.color("#89D72D") // metasfresh green
 				.url(frontendURLs.getFrontendURL(budget.getProjectId()).orElse(null))
 				.build();
@@ -261,6 +262,7 @@ public class WOProjectCalendarService implements CalendarService
 				.title(project.getName() + " - " + step.getSeqNo() + "_" + step.getName())
 				.description(resource.getDescription())
 				.dateRange(resource.getDateRange())
+				.editable(false)
 				.color("#FFCF60") // orange-ish
 				.url(frontendURLs.getFrontendURL(resource.getProjectId()).orElse(null))
 				.build();
