@@ -22,6 +22,7 @@ import org.adempiere.ad.ui.spi.impl.CompositeTabCallout;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -52,6 +53,12 @@ public class TabCalloutFactory implements ITabCalloutFactory
 
 	private static ImmutableSetMultimap<TableName, ITabCallout> computeSpringBeansByTableName()
 	{
+		if (Adempiere.isUnitTestMode() && !SpringContextHolder.instance.isApplicationContextSet())
+		{
+			logger.info("Skip fetching tab callouts from spring context because context is not set");
+			return ImmutableSetMultimap.of();
+		}
+
 		final ImmutableSetMultimap.Builder<TableName, ITabCallout> result = ImmutableSetMultimap.builder();
 		for (final ITabCallout tabCallout : SpringContextHolder.instance.getBeansOfType(ITabCallout.class))
 		{
