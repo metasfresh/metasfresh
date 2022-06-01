@@ -341,11 +341,11 @@ public class InvoiceHeaderImplBuilder
 		{
 			this.inputDataSourceId = inputDataSourceId;
 		}
-		else if (this.inputDataSourceId == inputDataSourceId)
+		if (this.inputDataSourceId == inputDataSourceId)
 		{
 			this.inputDataSourceId = inputDataSourceId;
 		}
-		else if (this.inputDataSourceId != inputDataSourceId)
+		if (this.inputDataSourceId != inputDataSourceId)
 		{
 			this.inputDataSourceId = null;
 		}

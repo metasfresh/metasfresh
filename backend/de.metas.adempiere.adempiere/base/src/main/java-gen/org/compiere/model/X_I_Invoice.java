@@ -23,8 +23,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.util.Env;
 
-import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
-
 /** Generated Model for I_Invoice
  *  @author Adempiere (generated) 
  *  @version Release 3.5.4a - $Id$ */
@@ -216,29 +214,6 @@ public class X_I_Invoice extends PO implements I_I_Invoice, I_Persistent
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
 		if (ii == null)
 			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set DataSource.
-	 @param inputDataSourceId
-	 Business DataSource
-	 */
-	public void setAD_InputDataSource_ID (int inputDataSourceId)
-	{
-		if (inputDataSourceId < 1)
-			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
-		else
-			set_Value (COLUMNNAME_AD_InputDataSource_ID, Integer.valueOf(inputDataSourceId));
-	}
-
-	/** Get DataSource.
-	 @return Business DataSource
-	 */
-	public int getAD_InputDataSource_ID ()
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_InputDataSource_ID);
-		if (ii == null)
-			return 0;
 		return ii.intValue();
 	}
 
