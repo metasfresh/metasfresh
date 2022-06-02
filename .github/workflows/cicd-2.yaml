@@ -70,9 +70,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build-frontend
-        run: docker buildx build -f Dockerfile.frontend -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+        run: |
+          docker buildx build \
+          -f Dockerfile.frontend \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          .
       - name: build-mobile
-        run: docker buildx build -f Dockerfile.mobile -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+        run: |
+          docker buildx build \
+          -f Dockerfile.mobile \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          .
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
@@ -88,15 +102,52 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build-api
-        run: docker buildx build -f Dockerfile.backend.api --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+        run: |
+          docker buildx build \
+          -f Dockerfile.backend.api \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }} \
+          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          .
       - name: build-app
-        run: docker buildx build -f Dockerfile.backend.app --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+        run: |
+          docker buildx build \
+          -f Dockerfile.backend.app \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }} \
+          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          .
       - name: build-externalsystems
-        run: docker buildx build -f Dockerfile.camel.externalsystems --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-externalsystems:${{ needs.init.outputs.sanitized-refname }} .
+        run: |
+          docker buildx build \
+          -f Dockerfile.camel.externalsystems \
+          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          -t metas-externalsystems:${{ needs.init.outputs.sanitized-refname }} \
+          .
       - name: build-db
-        run: docker buildx build -f Dockerfile.db-standalone --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-db:latest -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+        run: |
+          docker buildx build \
+          -f Dockerfile.db-standalone \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }} \
+          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          -t metas-db:latest -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          .
       - name: build-db-preloaded
-        run: docker buildx build -f Dockerfile.db-preloaded -t metas-db:preloaded -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT-preloaded .
+        run: |
+          docker buildx build \
+          -f Dockerfile.db-preloaded \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded \
+          -t metas-db:preloaded \
+          -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded \
+          -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT-preloaded \
+          .
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
@@ -116,7 +167,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build-cucumber
-        run: docker buildx build -f Dockerfile.cucumber --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-cucumber:latest .
+        run: |
+          docker buildx build \
+          -f Dockerfile.cucumber \
+          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          -t metas-cucumber:latest \
+          .
       - name: run-cucumber-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
@@ -134,7 +190,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build-e2e
-        run: docker buildx build -f Dockerfile.e2e --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-e2e:latest .
+        run: |
+          docker buildx build \
+          -f Dockerfile.e2e \
+          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          -t metas-e2e:latest \
+          .
       - name: run-cypress-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
