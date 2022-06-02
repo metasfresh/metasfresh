@@ -192,7 +192,8 @@ jobs:
       - name: build-e2e
         run: |
           pwd
-          ls -al
+          ls -al e2e
+          ls -al e2e/cypress
           cat e2e/cypress/config.js
           docker buildx build \
           -f Dockerfile.e2e \
