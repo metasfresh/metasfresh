@@ -12,7 +12,7 @@ import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 
 import * as api from '../../api/calendar';
-import { convertToMoment, normalizeDateTime } from './calendarUtils';
+import { normalizeDateTime } from './calendarUtils';
 
 import CalendarEventEditor from '../../components/calendar/CalendarEventEditor';
 
@@ -58,30 +58,30 @@ const mergeCalendarEventToArray = (eventsArray, eventToAdd) => {
   return result;
 };
 
-const suggestCalendarIdAndResourceId = (calendars, preferredResourceId) => {
-  if (!calendars || calendars.length === 0) {
-    return {};
-  }
-
-  if (preferredResourceId) {
-    for (const calendar of calendars) {
-      for (const resource of calendar.resources) {
-        if (resource.id === preferredResourceId) {
-          return {
-            calendarId: calendar.calendarId,
-            resourceId: resource.id,
-          };
-        }
-      }
-    }
-  }
-
-  const firstCalendar = calendars[0];
-  return {
-    calendarId: firstCalendar.calendarId,
-    resourceId: firstCalendar.resources?.[0].id,
-  };
-};
+// const suggestCalendarIdAndResourceId = (calendars, preferredResourceId) => {
+//   if (!calendars || calendars.length === 0) {
+//     return {};
+//   }
+//
+//   if (preferredResourceId) {
+//     for (const calendar of calendars) {
+//       for (const resource of calendar.resources) {
+//         if (resource.id === preferredResourceId) {
+//           return {
+//             calendarId: calendar.calendarId,
+//             resourceId: resource.id,
+//           };
+//         }
+//       }
+//     }
+//   }
+//
+//   const firstCalendar = calendars[0];
+//   return {
+//     calendarId: firstCalendar.calendarId,
+//     resourceId: firstCalendar.resources?.[0].id,
+//   };
+// };
 
 const Calendar = ({ className = 'container' }) => {
   //console.log('Calendar ctor------------------');
@@ -127,24 +127,21 @@ const Calendar = ({ className = 'container' }) => {
   };
 
   const handleDateClick = (params) => {
-    //console.log('handleDateClick', { params });
-
-    // FIXME for now, consider the calendar not editable
-    if (true) return;
-
-    const { calendarId, resourceId } = suggestCalendarIdAndResourceId(
-      availableCalendars,
-      params?.resource?.id
-    );
-    //console.log('handleDateClick', { calendarId, resourceId });
-
-    setEditingEvent({
-      calendarId,
-      resourceId,
-      start: convertToMoment(params.date),
-      end: convertToMoment(params.date),
-      allDay: params.allDay,
-    });
+    console.log('handleDateClick', { params });
+    // FIXME for now, consider the calendar not editable, i.e. do nothing
+    // const { calendarId, resourceId } = suggestCalendarIdAndResourceId(
+    //   availableCalendars,
+    //   params?.resource?.id
+    // );
+    // //console.log('handleDateClick', { calendarId, resourceId });
+    //
+    // setEditingEvent({
+    //   calendarId,
+    //   resourceId,
+    //   start: convertToMoment(params.date),
+    //   end: convertToMoment(params.date),
+    //   allDay: params.allDay,
+    // });
   };
 
   const handleEventClick = (params) => {
