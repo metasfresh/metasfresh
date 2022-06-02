@@ -181,9 +181,12 @@ public final class TranslatableStringBuilder
 
 	public TranslatableStringBuilder appendQty(@NonNull final BigDecimal qty, @NonNull final String uom)
 	{
-		return append(NumberTranslatableString.of(qty, DisplayType.Quantity))
-				.append(" ")
-				.append(uom);
+		return append(NumberTranslatableString.of(qty, DisplayType.Quantity)).append(" ").append(uom);
+	}
+
+	public TranslatableStringBuilder appendQty(final long qty, @NonNull final String uom)
+	{
+		return append(NumberTranslatableString.of(qty)).append(" ").append(uom);
 	}
 
 	public TranslatableStringBuilder append(@NonNull final Amount amount)
