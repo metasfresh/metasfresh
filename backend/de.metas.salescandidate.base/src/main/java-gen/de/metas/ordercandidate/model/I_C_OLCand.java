@@ -209,7 +209,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setApplySalesRepFrom (String ApplySalesRepFrom);
+	void setApplySalesRepFrom (java.lang.String ApplySalesRepFrom);
 
 	/**
 	 * Get Sales rep from.
@@ -218,7 +218,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getApplySalesRepFrom();
+	java.lang.String getApplySalesRepFrom();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ApplySalesRepFrom = new ModelColumn<>(I_C_OLCand.class, "ApplySalesRepFrom", null);
 	String COLUMNNAME_ApplySalesRepFrom = "ApplySalesRepFrom";
@@ -575,79 +575,6 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BPartner_SalesRep_Internal_ID = "C_BPartner_SalesRep_Internal_ID";
 
 	/**
-	 * Set Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
-
-	/**
-	 * Get Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	int getC_BP_Location_Effective_ID();
-
-	String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
-
-	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
-
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Location_Override_ID();
-
-	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
-
-	/**
-	 * Set Standort abw..
-	 *
-	 * <br>Type: Location
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Location_Override_Value_ID (int C_BP_Location_Override_Value_ID);
-
-	/**
-	 * Get Standort abw..
-	 *
-	 * <br>Type: Location
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Location_Override_Value_ID();
-
-	@Nullable org.compiere.model.I_C_Location getC_BP_Location_Override_Value();
-
-	void setC_BP_Location_Override_Value(@Nullable org.compiere.model.I_C_Location C_BP_Location_Override_Value);
-
-	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_C_BP_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "C_BP_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
-	String COLUMNNAME_C_BP_Location_Override_Value_ID = "C_BP_Location_Override_Value_ID";
-
-	/**
 	 * Set Kosten.
 	 * Zusätzliche Kosten
 	 *
@@ -892,7 +819,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCompensationGroupKey (@Nullable String CompensationGroupKey);
+	void setCompensationGroupKey (@Nullable java.lang.String CompensationGroupKey);
 
 	/**
 	 * Get Grouping key.
@@ -901,7 +828,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getCompensationGroupKey();
+	@Nullable java.lang.String getCompensationGroupKey();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupKey = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupKey", null);
 	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
@@ -1073,7 +1000,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDeliveryRule (String DeliveryRule);
+	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
 	 * Get Lieferart.
@@ -1083,7 +1010,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDeliveryRule();
+	java.lang.String getDeliveryRule();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_DeliveryRule = new ModelColumn<>(I_C_OLCand.class, "DeliveryRule", null);
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
@@ -1096,7 +1023,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDeliveryViaRule (String DeliveryViaRule);
+	void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
 	/**
 	 * Get Delivery Via.
@@ -1106,7 +1033,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDeliveryViaRule();
+	java.lang.String getDeliveryViaRule();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_DeliveryViaRule = new ModelColumn<>(I_C_OLCand.class, "DeliveryViaRule", null);
 	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
@@ -1118,7 +1045,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -1127,7 +1054,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_Description = new ModelColumn<>(I_C_OLCand.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -1139,7 +1066,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescriptionBottom (@Nullable String DescriptionBottom);
+	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
 
 	/**
 	 * Get Schlusstext.
@@ -1148,7 +1075,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescriptionBottom();
+	@Nullable java.lang.String getDescriptionBottom();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_DescriptionBottom = new ModelColumn<>(I_C_OLCand.class, "DescriptionBottom", null);
 	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
@@ -1160,7 +1087,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescriptionHeader (@Nullable String DescriptionHeader);
+	void setDescriptionHeader (@Nullable java.lang.String DescriptionHeader);
 
 	/**
 	 * Get Description Header.
@@ -1169,7 +1096,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescriptionHeader();
+	@Nullable java.lang.String getDescriptionHeader();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_DescriptionHeader = new ModelColumn<>(I_C_OLCand.class, "DescriptionHeader", null);
 	String COLUMNNAME_DescriptionHeader = "DescriptionHeader";
@@ -1423,7 +1350,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setErrorMsg (@Nullable String ErrorMsg);
+	void setErrorMsg (@Nullable java.lang.String ErrorMsg);
 
 	/**
 	 * Get Error Message.
@@ -1432,7 +1359,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getErrorMsg();
+	@Nullable java.lang.String getErrorMsg();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ErrorMsg = new ModelColumn<>(I_C_OLCand.class, "ErrorMsg", null);
 	String COLUMNNAME_ErrorMsg = "ErrorMsg";
@@ -1444,7 +1371,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalHeaderId (@Nullable String ExternalHeaderId);
+	void setExternalHeaderId (@Nullable java.lang.String ExternalHeaderId);
 
 	/**
 	 * Get External Header ID.
@@ -1453,7 +1380,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExternalHeaderId();
+	@Nullable java.lang.String getExternalHeaderId();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_C_OLCand.class, "ExternalHeaderId", null);
 	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
@@ -1465,7 +1392,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalLineId (@Nullable String ExternalLineId);
+	void setExternalLineId (@Nullable java.lang.String ExternalLineId);
 
 	/**
 	 * Get External Line ID.
@@ -1474,7 +1401,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExternalLineId();
+	@Nullable java.lang.String getExternalLineId();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_C_OLCand.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
@@ -1507,7 +1434,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGroupingErrorMessage (@Nullable String GroupingErrorMessage);
+	void setGroupingErrorMessage (@Nullable java.lang.String GroupingErrorMessage);
 
 	/**
 	 * Get Grouping error message.
@@ -1516,7 +1443,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getGroupingErrorMessage();
+	@Nullable java.lang.String getGroupingErrorMessage();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_GroupingErrorMessage = new ModelColumn<>(I_C_OLCand.class, "GroupingErrorMessage", null);
 	String COLUMNNAME_GroupingErrorMessage = "GroupingErrorMessage";
@@ -1749,7 +1676,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setImportWarningMessage (@Nullable String ImportWarningMessage);
+	void setImportWarningMessage (@Nullable java.lang.String ImportWarningMessage);
 
 	/**
 	 * Get Import warning message.
@@ -1758,7 +1685,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getImportWarningMessage();
+	@Nullable java.lang.String getImportWarningMessage();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ImportWarningMessage = new ModelColumn<>(I_C_OLCand.class, "ImportWarningMessage", null);
 	String COLUMNNAME_ImportWarningMessage = "ImportWarningMessage";
@@ -1770,7 +1697,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInvoicableQtyBasedOn (String InvoicableQtyBasedOn);
+	void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn);
 
 	/**
 	 * Get Invoicable Quantity per.
@@ -1779,7 +1706,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getInvoicableQtyBasedOn();
+	java.lang.String getInvoicableQtyBasedOn();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_InvoicableQtyBasedOn = new ModelColumn<>(I_C_OLCand.class, "InvoicableQtyBasedOn", null);
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
@@ -2309,7 +2236,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPaymentRule (@Nullable String PaymentRule);
+	void setPaymentRule (@Nullable java.lang.String PaymentRule);
 
 	/**
 	 * Get Payment Rule.
@@ -2319,7 +2246,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPaymentRule();
+	@Nullable java.lang.String getPaymentRule();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_OLCand.class, "PaymentRule", null);
 	String COLUMNNAME_PaymentRule = "PaymentRule";
@@ -2355,7 +2282,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPOReference (@Nullable String POReference);
+	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -2365,7 +2292,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPOReference();
+	@Nullable java.lang.String getPOReference();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_POReference = new ModelColumn<>(I_C_OLCand.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
@@ -2411,6 +2338,28 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_PresetDateShipped = new ModelColumn<>(I_C_OLCand.class, "PresetDateShipped", null);
 	String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
+
+	/**
+	 * Set Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
+
+	/**
+	 * Get Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_Internal_ID();
+
+	String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
 
 	/**
 	 * Set Price Actual.
@@ -2501,28 +2450,6 @@ public interface I_C_OLCand
 	String COLUMNNAME_PriceInternal = "PriceInternal";
 
 	/**
-	 * Set Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
-
-	/**
-	 * Get Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPrice_UOM_Internal_ID();
-
-	String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
-
-	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -2551,7 +2478,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductDescription (@Nullable String ProductDescription);
+	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
 	 * Get Produktbeschreibung.
@@ -2561,7 +2488,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getProductDescription();
+	@Nullable java.lang.String getProductDescription();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ProductDescription = new ModelColumn<>(I_C_OLCand.class, "ProductDescription", null);
 	String COLUMNNAME_ProductDescription = "ProductDescription";
@@ -2701,6 +2628,4 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-
 }

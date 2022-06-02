@@ -26,4 +26,8 @@ import org.compiere.model.I_C_ProjectType;
 
 public class C_ProjectType_StepDefData extends StepDefData<I_C_ProjectType>
 {
+	public C_ProjectType_StepDefData()
+	{
+		super(I_C_ProjectType.class);
+	}
 }

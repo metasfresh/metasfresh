@@ -26,4 +26,8 @@ import org.compiere.model.I_R_Status;
 
 public class R_Status_StepDefData extends StepDefData<I_R_Status>
 {
+	public R_Status_StepDefData()
+	{
+		super(I_R_Status.class);
+	}
 }
