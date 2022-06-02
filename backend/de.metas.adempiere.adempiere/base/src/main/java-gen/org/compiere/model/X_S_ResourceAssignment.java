@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_ResourceAssignment extends org.compiere.model.PO implements I_S_ResourceAssignment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 235750605L;
+	private static final long serialVersionUID = -749641729L;
 
     /** Standard Constructor */
     public X_S_ResourceAssignment (final Properties ctx, final int S_ResourceAssignment_ID, @Nullable final String trxName)
@@ -118,18 +118,6 @@ public class X_S_ResourceAssignment extends org.compiere.model.PO implements I_S
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
 	@Override

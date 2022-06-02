@@ -40,8 +40,10 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.ResourceId;
 import de.metas.product.UpdateProductRequest;
+import de.metas.resource.ResourceGroupId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -427,7 +429,7 @@ public class ProductDAO implements IProductDAO
 	{
 		final ProductId productId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
@@ -441,12 +443,7 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public void updateProductsByResourceIds(@NonNull final Set<ResourceId> resourceIds, @NonNull final Consumer<I_M_Product> productUpdater)
 	{
-		updateProductsByResourceIds(resourceIds, (resourceId, product) -> {
-			if (product != null)
-			{
-				productUpdater.accept(product);
-			}
-		});
+		updateProductsByResourceIds(resourceIds, (resourceId, product) -> productUpdater.accept(product));
 	}
 
 	@Override
@@ -454,22 +451,22 @@ public class ProductDAO implements IProductDAO
 	{
 		Check.assumeNotEmpty(resourceIds, "resourceIds is not empty");
 
-		final Set<ProductId> productIds = queryBL
+		final Set<ProductId> existingProductIds = queryBL
 				.createQueryBuilder(I_M_Product.class) // in trx!
-				.addInArrayFilter(I_M_Product.COLUMN_S_Resource_ID, resourceIds)
+				.addInArrayFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceIds)
 				.create()
 				.listIds(ProductId::ofRepoId);
-		if (productIds.isEmpty())
-		{
-			return;
-		}
 
-		final Map<ResourceId, I_M_Product> productsByResourceId = Maps.uniqueIndex(
-				loadByRepoIdAwares(productIds, I_M_Product.class),
+		final Map<ResourceId, I_M_Product> existingProductsByResourceId = Maps.uniqueIndex(
+				loadByRepoIdAwares(existingProductIds, I_M_Product.class),
 				product -> ResourceId.ofRepoId(product.getS_Resource_ID()));
 
 		resourceIds.forEach(resourceId -> {
-			final I_M_Product product = productsByResourceId.get(resourceId); // might be null
+			I_M_Product product = existingProductsByResourceId.get(resourceId); // might be null
+			if (product == null)
+			{
+				product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			}
 			productUpdater.accept(resourceId, product);
 			saveRecord(product);
 		});
@@ -480,11 +477,46 @@ public class ProductDAO implements IProductDAO
 	{
 		queryBL
 				.createQueryBuilder(I_M_Product.class) // in trx
-				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
+				.forEach(product -> {
+					// have to unset it because if not, the beforeSave interceptor will fail
+					product.setS_Resource_ID(-1);
+					InterfaceWrapperHelper.save(product);
+				});
+	}
+
+	@Override
+	public void updateProductByResourceGroupId(@NonNull final ResourceGroupId resourceGroupId, @NonNull final Consumer<I_M_Product> productUpdater)
+	{
+		final Set<ProductId> existingProductIds = queryBL.createQueryBuilder(I_M_Product.class) // in trx!
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_Group_ID, resourceGroupId)
 				.create()
-				.delete();
+				.listIds(ProductId::ofRepoId);
+
+		final Map<ResourceGroupId, I_M_Product> existingProductsByResourceGroupId = Maps.uniqueIndex(
+				loadByRepoIdAwares(existingProductIds, I_M_Product.class),
+				product -> ResourceGroupId.ofRepoId(product.getS_Resource_Group_ID()));
+
+		I_M_Product product = existingProductsByResourceGroupId.get(resourceGroupId);
+		if (product == null)
+		{
+			product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		}
+
+		productUpdater.accept(product);
+		InterfaceWrapperHelper.save(product);
+	}
+
+	@Override
+	public void deleteProductByResourceGroupId(@NonNull final ResourceGroupId resourceGroupId)
+	{
+		queryBL.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_Group_ID, resourceGroupId)
+				.forEach(product -> {
+					// have to unset it because if not, the beforeSave interceptor will fail
+					product.setS_Resource_Group_ID(-1);
+					InterfaceWrapperHelper.save(product);
+				});
 	}
 
 	@Override
@@ -520,7 +552,7 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public void updateProduct(@NonNull final UpdateProductRequest request)
 	{
-		final I_M_Product product = load(request.getProductId(), I_M_Product.class); // in-trx
+		final I_M_Product product = getByIdInTrx(request.getProductId());
 
 		if (request.getIsBOM() != null)
 		{
@@ -558,23 +590,25 @@ public class ProductDAO implements IProductDAO
 	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		if (product != null && Check.isNotBlank(product.getGuaranteeMonths()))
+		final String guaranteeMonths = product != null ? StringUtils.trimBlankToNull(product.getGuaranteeMonths()) : null;
+		if (guaranteeMonths == null)
 		{
-			switch (product.getGuaranteeMonths())
-			{
-				case X_M_Product.GUARANTEEMONTHS_12:
-					return ONE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_24:
-					return TWO_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_36:
-					return THREE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_60:
-					return FIVE_YEAR_DAYS;
-				default:
-					return 0;
-			}
+			return 0;
 		}
-		return 0;
+
+		switch (guaranteeMonths)
+		{
+			case X_M_Product.GUARANTEEMONTHS_12:
+				return ONE_YEAR_DAYS;
+			case X_M_Product.GUARANTEEMONTHS_24:
+				return TWO_YEAR_DAYS;
+			case X_M_Product.GUARANTEEMONTHS_36:
+				return THREE_YEAR_DAYS;
+			case X_M_Product.GUARANTEEMONTHS_60:
+				return FIVE_YEAR_DAYS;
+			default:
+				return 0;
+		}
 	}
 
 	@Override
@@ -584,9 +618,9 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-								.setJoinOr()
-								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
