@@ -29,13 +29,19 @@ import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
@@ -44,12 +50,16 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	final C_Invoice_StepDefData invoiceTable;
 	final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -66,6 +76,16 @@ public class C_InvoiceLine_StepDef
 		this.invoiceLineTable = invoiceLineTable;
 		this.productTable = productTable;
 		this.taxTable = taxTable;
+	}
+
+	@And("metasfresh contains C_InvoiceLines")
+	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			create_C_InvoiceLine(dataTableRow);
+		}
 	}
 
 	@And("validate created invoice lines")
@@ -179,6 +199,38 @@ public class C_InvoiceLine_StepDef
 		}
 
 		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
+	}
+
+	private void create_C_InvoiceLine(@NonNull final Map<String, String> row)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer productId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+		final BigDecimal qtyInvoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyInvoiced);
+
+		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(row, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
+
+		invoiceLine.setM_Product_ID(productId);
+		invoiceLine.setQtyInvoiced(qtyInvoiced);
+		invoiceLine.setQtyEntered(qtyInvoiced);
+		invoiceLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceLine.setPrice_UOM_ID(productPriceUomId.getRepoId());
+
+		invoiceLineBL.updatePrices(invoiceLine);
+		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyInvoiced);
+
+		InterfaceWrapperHelper.save(invoiceLine);
+
+		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
 	}
 }
