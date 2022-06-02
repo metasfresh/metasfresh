@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.activity;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -42,9 +41,9 @@ public class C_Activity_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_Activity> activityTable;
+	private final C_Activity_StepDefData activityTable;
 
-	public C_Activity_StepDef(@NonNull final StepDefData<I_C_Activity> activityTable)
+	public C_Activity_StepDef(@NonNull final C_Activity_StepDefData activityTable)
 	{
 		this.activityTable = activityTable;
 	}

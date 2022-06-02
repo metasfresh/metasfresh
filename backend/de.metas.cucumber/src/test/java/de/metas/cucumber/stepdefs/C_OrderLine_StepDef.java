@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
@@ -38,7 +39,6 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -48,8 +48,8 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -85,7 +85,7 @@ public class C_OrderLine_StepDef
 	private final C_Flatrate_Term_StepDefData contractTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
-	private final StepDefData<I_C_Activity> activityTable;
+	private final C_Activity_StepDefData activityTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -96,7 +96,8 @@ public class C_OrderLine_StepDef
 			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable, final StepDefData<I_C_Activity> activityTable)
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final C_Activity_StepDefData activityTable)
 	{
 		this.productTable = productTable;
 		this.partnerTable = partnerTable;
