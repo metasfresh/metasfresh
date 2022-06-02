@@ -17,6 +17,7 @@ RUN mvn clean test-compile
 
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
 
+ARG REFNAME
 ENV REFNAME=$REFNAME
 SHELL ["/bin/bash", "-c"]
 

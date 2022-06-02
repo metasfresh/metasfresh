@@ -3,11 +3,13 @@
 # FROM cypress/base:10
 
 # See the available Docker images here: https://github.com/cypress-io/cypress-docker-images/tree/master/browsers
-FROM cypress/browsers:node14.16.0-chrome90-ff88
+# FROM cypress/browsers:node14.16.0-chrome90-ff88
+
+FROM cypress/included:9.7.0
 
 WORKDIR /e2e
 
-RUN npm install -g cypress
+# RUN npm install -g cypress
 
 COPY e2e/package.json .
 RUN npm install
