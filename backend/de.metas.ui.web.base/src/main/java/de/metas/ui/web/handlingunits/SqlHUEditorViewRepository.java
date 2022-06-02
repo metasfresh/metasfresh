@@ -252,6 +252,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final boolean processed = rowProcessedPredicate.isProcessed(hu);
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final HUEditorRowId rowId = HUEditorRowId.ofHU(huId, topLevelHUId);
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(hu.getC_Project_ID());
 
 		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
 				.setRowId(rowId)
@@ -268,7 +269,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUStatus(hu.getHUStatus())
 				.setReservedForOrderLine(orderLineIdWithReservation.orElse(null))
 
-				.setPackingInfo(extractPackingInfo(hu, huRecordType));
+				.setPackingInfo(extractPackingInfo(hu, huRecordType))
+				//
+				.setProject(createProjectLookupValue(projectId));
 
 		//
 		// Acquire Best Before Date if required
