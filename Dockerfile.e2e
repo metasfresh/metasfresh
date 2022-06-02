@@ -20,6 +20,7 @@ ENV CYPRESS_baseUrl=http://webui:80
 
 ARG REFNAME=local
 ENV REFNAME=$REFNAME
+SHELL ["/bin/bash", "-c"]
 
 ENTRYPOINT if [[ -f "/run/secrets/mysecret" ]] ;\
     then \
