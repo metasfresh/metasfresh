@@ -2,7 +2,6 @@
 @paymentAlloc
 Feature: invoice payment allocation
 
-  ## todo mi: add stepdef for checking allocation lines.. use it onlu where the testcase in github requires us to do so
   Background:
 
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
