@@ -191,6 +191,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: build-e2e
         run: |
+          cat e2e/cypress/config.js
           docker buildx build \
           -f Dockerfile.e2e \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
