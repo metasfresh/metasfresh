@@ -53,7 +53,7 @@ public interface I_S_ResourceAssignment
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Zuordnung von.
+	 * Set Assign From.
 	 * Assign resource from
 	 *
 	 * <br>Type: DateTime
@@ -63,7 +63,7 @@ public interface I_S_ResourceAssignment
 	void setAssignDateFrom (java.sql.Timestamp AssignDateFrom);
 
 	/**
-	 * Get Zuordnung von.
+	 * Get Assign From.
 	 * Assign resource from
 	 *
 	 * <br>Type: DateTime
@@ -76,7 +76,7 @@ public interface I_S_ResourceAssignment
 	String COLUMNNAME_AssignDateFrom = "AssignDateFrom";
 
 	/**
-	 * Set Zuordnung bis.
+	 * Set Assign To.
 	 * Assign resource until
 	 *
 	 * <br>Type: DateTime
@@ -86,7 +86,7 @@ public interface I_S_ResourceAssignment
 	void setAssignDateTo (@Nullable java.sql.Timestamp AssignDateTo);
 
 	/**
-	 * Get Zuordnung bis.
+	 * Get Assign To.
 	 * Assign resource until
 	 *
 	 * <br>Type: DateTime
@@ -189,7 +189,7 @@ public interface I_S_ResourceAssignment
 	String COLUMNNAME_IsAllDay = "IsAllDay";
 
 	/**
-	 * Set bestätigt.
+	 * Set Confirmed.
 	 * Assignment is confirmed
 	 *
 	 * <br>Type: YesNo
@@ -199,7 +199,7 @@ public interface I_S_ResourceAssignment
 	void setIsConfirmed (boolean IsConfirmed);
 
 	/**
-	 * Get bestätigt.
+	 * Get Confirmed.
 	 * Assignment is confirmed
 	 *
 	 * <br>Type: YesNo
@@ -275,11 +275,6 @@ public interface I_S_ResourceAssignment
 	 */
 	int getS_Resource_ID();
 
-	org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_S_ResourceAssignment, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_S_ResourceAssignment.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**

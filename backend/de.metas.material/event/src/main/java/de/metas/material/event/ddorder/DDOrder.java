@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.compiere.model.I_S_Resource;
 
 import java.time.Instant;
 import java.util.List;
@@ -48,7 +47,7 @@ public class DDOrder
 	OrgId orgId;
 
 	/**
-	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
+	 * The {@link de.metas.product.ResourceId} of the plant, as specified by the respective product planning record.
 	 */
 	int plantId;
 

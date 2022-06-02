@@ -11,7 +11,6 @@ import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_Planning;
 
@@ -19,11 +18,12 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IProductPlanningDAO extends ISingletonService
 {
 	@Value
-	public static class ProductPlanningQuery
+	class ProductPlanningQuery
 	{
 		OrgId orgId;
 		WarehouseId warehouseId;
@@ -62,11 +62,18 @@ public interface IProductPlanningDAO extends ISingletonService
 	Optional<I_PP_Product_Planning> find(ProductPlanningQuery productPlanningQuery);
 
 	/**
-	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.
+	 * Search product plannings to find out which is the plant for given Org/Warehouse/Product.
 	 *
 	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
 	 */
-	I_S_Resource findPlant(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
+	ResourceId findPlantId(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
+
+	Stream<I_PP_Product_Planning> query(
+			OrgId orgId,
+			WarehouseId warehouseId,
+			ResourceId resourceId,
+			ProductId productId,
+			AttributeSetInstanceId attributeSetInstanceId);
 
 	void save(I_PP_Product_Planning productPlanningRecord);
 

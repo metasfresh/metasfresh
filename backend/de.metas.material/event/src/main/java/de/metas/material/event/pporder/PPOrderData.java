@@ -36,7 +36,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_S_Resource;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -51,7 +50,7 @@ public class PPOrderData
 	ClientAndOrgId clientAndOrgId;
 
 	/**
-	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
+	 * The {@link ResourceId} of the plant, as specified by the respective product planning record.
 	 */
 	ResourceId plantId;
 

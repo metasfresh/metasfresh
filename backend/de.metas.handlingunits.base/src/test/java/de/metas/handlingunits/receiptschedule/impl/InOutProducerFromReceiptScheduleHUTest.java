@@ -51,6 +51,7 @@ import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.resource.ResourceService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -98,7 +99,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 
 		final LotNumberQuarantineRepository lotNumberQuarantineRepository = new LotNumberQuarantineRepository();
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
-		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
 		final DDOrderService ddOrderService = new DDOrderService(
 				ddOrderLowLevelDAO,

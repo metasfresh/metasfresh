@@ -21,7 +21,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.resource.ResourceAssignmentId;
-import de.metas.resource.ResourceAssignmentRepository;
+import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import org.adempiere.exceptions.AdempiereException;
@@ -282,15 +282,15 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 					//	Changed Assignment
 					if (!ResourceAssignmentId.equals(old_S_ResourceAssignment_ID, S_ResourceAssignment_ID) && old_S_ResourceAssignment_ID != null)
 					{
-						final ResourceAssignmentRepository resourceAssignmentRepository = SpringContextHolder.instance.getBean(ResourceAssignmentRepository.class);
-						resourceAssignmentRepository.deleteById(old_S_ResourceAssignment_ID);
+						final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+						resourceService.deleteResourceAssignment(old_S_ResourceAssignment_ID);
 					}
 				}
 				//	Sync Assignment
 				if (S_ResourceAssignment_ID != null)
 				{
-					final ResourceAssignmentRepository resourceAssignmentRepository = SpringContextHolder.instance.getBean(ResourceAssignmentRepository.class);
-					resourceAssignmentRepository.changeById(
+					final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+					resourceService.changeResourceAssignment(
 							S_ResourceAssignment_ID,
 							resourceAssignment -> resourceAssignment.toBuilder()
 									.description(StringUtils.trimBlankToOptional(getDescription()).orElse(resourceAssignment.getDescription()))
@@ -318,8 +318,8 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 			//	Deleted Assignment
 			if (old_S_ResourceAssignment_ID != null)
 			{
-				final ResourceAssignmentRepository resourceAssignmentRepository = SpringContextHolder.instance.getBean(ResourceAssignmentRepository.class);
-				resourceAssignmentRepository.deleteById(old_S_ResourceAssignment_ID);
+				final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+				resourceService.deleteResourceAssignment(old_S_ResourceAssignment_ID);
 			}
 		}
 		return success;
