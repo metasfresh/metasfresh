@@ -7,7 +7,6 @@ npm-debug.log*
 cypress-git-repo
 debug.log
 .metadata
-cypress/config.js
 /cypress/config.js.remote
 /cypress/config.js.local
 /metasfresh-e2e.iml
