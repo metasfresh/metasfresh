@@ -21,6 +21,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -64,6 +65,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -393,6 +395,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final I_M_HU hu = huStorage.getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final ProductId productId = huStorage.getProductId();
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(hu.getC_Project_ID());
 		final HUEditorRowAttributesProvider attributesProviderEffective = !huId.equals(parentHUId) ? attributesProvider : null;
 
 		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getOrderLineIdByReservedVhuId(huId);
@@ -415,6 +418,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty().toBigDecimal())
 				//
+				.setProject(createProjectLookupValue(projectId))
+				//
 				.build();
 	}
 
@@ -428,6 +433,19 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		final String displayName = productBL.getProductValueAndName(productId);
 		return JSONLookupValue.of(productId.getRepoId(), displayName);
+	}
+
+	@Nullable
+	public JSONLookupValue createProjectLookupValue(@Nullable final ProjectId projectId)
+	{
+		if (projectId == null)
+		{
+			return null;
+		}
+
+		final I_C_Project project =  InterfaceWrapperHelper.load(projectId, I_C_Project.class);
+		final String displayName = String.format("%s-%s", project.getValue(), project.getName());
+		return JSONLookupValue.of(projectId.getRepoId(), displayName);
 	}
 
 	@Nullable
