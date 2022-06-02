@@ -102,8 +102,8 @@ public class TransactionEventFactoryForInOutLine
 		final boolean isReversal = shipmentLine.getReversalLine_ID() > 0;
 
 		final InOutAndLineId shipmentLineId = isReversal
-				? InOutAndLineId.ofRepoId(shipmentLine.getM_InOut_ID(), shipmentLine.getM_InOutLine_ID())
-				: getReversalShipmentLine(shipmentLine);
+				? getReversalShipmentLine(shipmentLine)
+				: InOutAndLineId.ofRepoId(shipmentLine.getM_InOut_ID(), shipmentLine.getM_InOutLine_ID());
 
 		final List<HUDescriptor> huDescriptors;
 
