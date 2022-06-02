@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.purchasecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_PurchaseCandidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_PurchaseCandidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1934139498L;
+	private static final long serialVersionUID = 863199146L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (final Properties ctx, final int C_PurchaseCandidate_ID, @Nullable final String trxName)
@@ -549,6 +549,18 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
+	{
+		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
+	}
+
+	@Override
+	public java.lang.String getProductDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
 
 	@Override

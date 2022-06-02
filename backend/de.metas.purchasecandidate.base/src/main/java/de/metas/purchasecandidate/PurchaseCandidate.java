@@ -9,6 +9,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
@@ -127,6 +128,10 @@ public class PurchaseCandidate
 	private TaxCategoryId taxCategoryId;
 	@Nullable
 	private CurrencyId currencyId;
+	@Nullable
+	private String productDescription;
+	@Nullable
+	private ActivityId activityId;
 
 	@Builder
 	private PurchaseCandidate(
@@ -173,7 +178,9 @@ public class PurchaseCandidate
 			final boolean isManualPrice,
 			final boolean isTaxIncluded,
 			@Nullable final TaxCategoryId taxCategoryId,
-			@Nullable final CurrencyId currencyId)
+			@Nullable final CurrencyId currencyId,
+			@Nullable final String productDescription,
+			@Nullable final ActivityId activityId)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -234,6 +241,10 @@ public class PurchaseCandidate
 				.filter(purchaseItem -> purchaseItem instanceof PurchaseErrorItem)
 				.map(PurchaseErrorItem::cast)
 				.collect(toCollection(ArrayList::new));
+
+		this.productDescription = productDescription;
+
+		this.activityId = activityId;
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
@@ -404,9 +415,8 @@ public class PurchaseCandidate
 		return getImmutableFields().getPoReference();
 	}
 
-
 	public @Nullable
-	String getExternalPurchaseOrderUrl()	
+	String getExternalPurchaseOrderUrl()
 	{
 		return getImmutableFields().getExternalPurchaseOrderUrl();
 	}

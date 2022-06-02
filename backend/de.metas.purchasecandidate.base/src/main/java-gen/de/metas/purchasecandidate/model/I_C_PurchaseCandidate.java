@@ -1,8 +1,9 @@
 package de.metas.purchasecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_PurchaseCandidate
  *  @author metasfresh (generated) 
@@ -850,6 +851,29 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Processed = new ModelColumn<>(I_C_PurchaseCandidate.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductDescription (@Nullable java.lang.String ProductDescription);
+
+	/**
+	 * Get Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductDescription();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProductDescription = new ModelColumn<>(I_C_PurchaseCandidate.class, "ProductDescription", null);
+	String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
 	 * Set Purchase net.
