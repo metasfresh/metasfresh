@@ -220,6 +220,10 @@ const Calendar = ({ className = 'container' }) => {
         events={fetchCalendarEvents}
         dateClick={handleDateClick}
         eventClick={handleEventClick}
+        eventContent={(params) => {
+          //console.log('eventContent', { params });
+          return <div>{params.event.title}</div>;
+        }}
         eventDragStart={(event) => {
           console.log('eventDragStart', { event });
         }}
