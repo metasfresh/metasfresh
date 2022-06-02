@@ -89,14 +89,15 @@ public class BudgetProjectResourceRepository
 	public static BudgetProjectResource fromRecord(@NonNull final I_C_Project_Resource_Budget record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_Time_ID());
 
 		return BudgetProjectResource.builder()
 				.id(BudgetProjectResourceId.ofRepoId(record.getC_Project_Resource_Budget_ID()))
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
 				.resourceGroupId(ResourceGroupId.ofRepoId(record.getS_Resource_Group_ID()))
 				.resourceId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
-				.durationUomId(UomId.ofRepoId(record.getC_UOM_Time_ID()))
-				.plannedDuration(Quantitys.create(record.getPlannedDuration(), UomId.ofRepoId(record.getC_UOM_Time_ID())))
+				.durationUomId(durationUomId)
+				.plannedDuration(Quantitys.create(record.getPlannedDuration(), durationUomId))
 				.plannedAmount(Money.of(record.getPlannedAmt(), currencyId))
 				.pricePerDurationUnit(Money.of(record.getPricePerTimeUOM(), currencyId))
 				.startDate(TimeUtil.asZonedDateTime(record.getDateStartPlan()))

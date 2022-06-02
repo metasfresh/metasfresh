@@ -30,6 +30,8 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 
 @Value
 @Builder
@@ -42,6 +44,9 @@ public class WOProjectResource
 
 	@NonNull ResourceId resourceId;
 	@NonNull CalendarDateRange dateRange;
+
+	@NonNull TemporalUnit durationUnit;
+	@NonNull Duration duration;
 
 	@Nullable String description;
 }

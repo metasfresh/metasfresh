@@ -23,6 +23,8 @@
 package de.metas.calendar;
 
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,8 +41,10 @@ public class CalendarEntry
 	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;
 
-	@Nullable String title;
-	@Nullable String description;
+	@Builder.Default
+	@NonNull ITranslatableString title = TranslatableStrings.empty();
+	@Builder.Default
+	@NonNull ITranslatableString description = TranslatableStrings.empty();
 
 	@NonNull CalendarDateRange dateRange;
 

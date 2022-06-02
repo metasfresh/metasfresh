@@ -167,8 +167,8 @@ public class ResourceAssignmentCalendarService implements CalendarService
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resourceAssignment.getId()))
 				.calendarId(CALENDAR_ID)
 				.resourceId(CalendarResourceId.ofRepoId(resourceAssignment.getResourceId()))
-				.title(resourceAssignment.getName())
-				.description(resourceAssignment.getDescription())
+				.title(TranslatableStrings.anyLanguage(resourceAssignment.getName()))
+				.description(TranslatableStrings.anyLanguage(resourceAssignment.getDescription()))
 				.dateRange(resourceAssignment.getDateRange())
 				.editable(true)
 				.build();

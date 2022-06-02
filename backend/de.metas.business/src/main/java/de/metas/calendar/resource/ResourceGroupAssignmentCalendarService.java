@@ -145,8 +145,8 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resourceGroupAssignment.getId()))
 				.calendarId(CALENDAR_ID)
 				.resourceId(CalendarResourceId.ofRepoId(resourceGroupAssignment.getResourceGroupId()))
-				.title(resourceGroupAssignment.getName())
-				.description(resourceGroupAssignment.getDescription())
+				.title(TranslatableStrings.anyLanguage(resourceGroupAssignment.getName()))
+				.description(TranslatableStrings.anyLanguage(resourceGroupAssignment.getDescription()))
 				.dateRange(resourceGroupAssignment.getDateRange())
 				.editable(true)
 				.build();

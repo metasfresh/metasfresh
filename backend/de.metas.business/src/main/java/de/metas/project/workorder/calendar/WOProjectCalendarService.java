@@ -57,16 +57,21 @@ import de.metas.resource.Resource;
 import de.metas.resource.ResourceGroup;
 import de.metas.resource.ResourceService;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
+import de.metas.util.Services;
+import de.metas.util.time.DurationUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.I_C_Project;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,6 +87,7 @@ public class WOProjectCalendarService implements CalendarService
 
 	private static final CalendarGlobalId CALENDAR_ID = CalendarGlobalId.of(ID, "default");
 
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ResourceService resourceService;
 	private final WOProjectService woProjectService;
 	private final BudgetProjectService budgetProjectService;
@@ -159,7 +165,7 @@ public class WOProjectCalendarService implements CalendarService
 			return Stream.empty();
 		}
 
-		// TODO consider onltResourceIds
+		// TODO consider onlyResourceIds
 		// final ImmutableSet<ResourceId> onlyResourceIds;
 		// if (!calendarQuery.getOnlyResourceIds().isEmpty())
 		// {
@@ -228,7 +234,7 @@ public class WOProjectCalendarService implements CalendarService
 		return result.stream();
 	}
 
-	private static CalendarEntry toCalendarEntry(
+	private CalendarEntry toCalendarEntry(
 			@NonNull final BudgetProjectResource budget,
 			@NonNull final BudgetProject project,
 			@NonNull final FrontendURLs frontendURLs)
@@ -237,8 +243,12 @@ public class WOProjectCalendarService implements CalendarService
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, budget.getId()))
 				.calendarId(CALENDAR_ID)
 				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(), budget.getResourceGroupId())))
-				.title(project.getName())
-				.description(budget.getDescription())
+				.title(TranslatableStrings.builder()
+						.append(project.getName())
+						.append(" - ")
+						.appendQty(budget.getPlannedDuration().toBigDecimal(), budget.getPlannedDuration().getUOMSymbol())
+						.build())
+				.description(TranslatableStrings.anyLanguage(budget.getDescription()))
 				.dateRange(CalendarDateRange.builder()
 						.startDate(budget.getStartDate())
 						.endDate(budget.getEndDate())
@@ -249,23 +259,46 @@ public class WOProjectCalendarService implements CalendarService
 				.build();
 	}
 
-	private static CalendarEntry toCalendarEntry(
+	private CalendarEntry toCalendarEntry(
 			@NonNull final WOProjectResource resource,
 			@NonNull final WOProjectStep step,
 			@NonNull final WOProject project,
 			@NonNull final FrontendURLs frontendURLs)
 	{
+		final int durationInt = DurationUtils.toInt(resource.getDuration(), resource.getDurationUnit());
+		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(resource.getDurationUnit());
+
 		return CalendarEntry.builder()
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resource.getId()))
 				.calendarId(CALENDAR_ID)
 				.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
-				.title(project.getName() + " - " + step.getSeqNo() + "_" + step.getName())
-				.description(resource.getDescription())
+				.title(TranslatableStrings.builder()
+						.append(project.getName())
+						.append(" - ")
+						.append(step.getSeqNo() + "_" + step.getName())
+						.append(" - ")
+						.appendQty(durationInt, durationUomSymbol)
+						.build()
+				)
+				.description(TranslatableStrings.anyLanguage(resource.getDescription()))
 				.dateRange(resource.getDateRange())
 				.editable(false)
 				.color("#FFCF60") // orange-ish
 				.url(frontendURLs.getFrontendURL(resource.getProjectId()).orElse(null))
 				.build();
+	}
+
+	private String getTemporalUnitSymbolOrEmpty(final @NonNull TemporalUnit temporalUnit)
+	{
+		try
+		{
+			return StringUtils.trimToEmpty(uomDAO.getByTemporalUnit(temporalUnit).getUOMSymbol());
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed to get UOM Symbol for TemporalUnit: {}", temporalUnit, ex);
+			return "";
+		}
 	}
 
 	@Override

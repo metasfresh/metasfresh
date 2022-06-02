@@ -29,12 +29,15 @@ import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -67,6 +70,8 @@ public class WOProjectResourceRepository
 
 	private static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)
 	{
+		final TemporalUnit durationUnit = WFDurationUnit.ofCode(record.getDurationUnit()).getTemporalUnit();
+
 		return WOProjectResource.builder()
 				.id(WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID()))
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
@@ -77,6 +82,8 @@ public class WOProjectResourceRepository
 						.endDate(TimeUtil.asZonedDateTime(record.getAssignDateTo()))
 						.allDay(record.isAllDay())
 						.build())
+				.durationUnit(durationUnit)
+				.duration(Duration.of(record.getDuration().longValue(), durationUnit))
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.build();
 	}

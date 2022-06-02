@@ -54,14 +54,17 @@ public class JsonCalendarEntry
 	@Nullable String color;
 	@Nullable String url;
 
-	public static JsonCalendarEntry of(@NonNull final CalendarEntry entry, @NonNull final ZoneId timeZone)
+	public static JsonCalendarEntry of(
+			@NonNull final CalendarEntry entry,
+			@NonNull final ZoneId timeZone,
+			@NonNull final String adLanguage)
 	{
 		return builder()
 				.entryId(entry.getEntryId())
 				.calendarId(entry.getCalendarId())
 				.resourceId(entry.getResourceId())
-				.title(entry.getTitle())
-				.description(entry.getDescription())
+				.title(entry.getTitle().translate(adLanguage))
+				.description(entry.getDescription().translate(adLanguage))
 				.startDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getStartDate(), timeZone))
 				.endDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getEndDate(), timeZone))
 				.allDay(entry.getDateRange().isAllDay())
