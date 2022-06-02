@@ -13,6 +13,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
@@ -124,6 +125,8 @@ public class OLCandCreateRequest
 
 	BigDecimal qtyShipped;
 
+	ProjectId projectId;
+
 	AssignSalesRepRule assignSalesRepRule;
 
 	BPartnerId salesRepInternalId;
@@ -173,6 +176,7 @@ public class OLCandCreateRequest
 			@Nullable final String importWarningMessage,
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
+			@Nullable final ProjectId projectId,
 			@Nullable final AssignSalesRepRule assignSalesRepRule,
 			@Nullable final BPartnerId salesRepInternalId)
 	{
@@ -232,6 +236,7 @@ public class OLCandCreateRequest
 		this.importWarningMessage = importWarningMessage;
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;
+		this.projectId = projectId;
 
 		this.assignSalesRepRule = CoalesceUtil.coalesceNotNull(assignSalesRepRule, AssignSalesRepRule.CandidateFirst);
 		this.salesRepInternalId = salesRepInternalId;

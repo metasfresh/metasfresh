@@ -16,6 +16,7 @@ import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -118,6 +119,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
 		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
 		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(olCandRecord.getC_Project_ID());
 
 		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
 				? null
@@ -147,6 +149,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.salesRepInternalId(salesRepInternalId)
 				.assignSalesRepRule(assignSalesRepRule)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
+				.projectId(projectId)
 				.build();
 	}
 }

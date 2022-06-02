@@ -59,6 +59,12 @@ public enum ProjectCategory implements ReferenceListAwareEnum
 		return type != null ? type : ProjectCategory.General;
 	}
 
+	@Nullable
+	public static ProjectCategory ofNullableCode(@Nullable final String code)
+	{
+		return index.ofNullableCode(code);
+	}
+
 	public boolean isServiceOrRepair()
 	{
 		return ServiceOrRepair.equals(this);

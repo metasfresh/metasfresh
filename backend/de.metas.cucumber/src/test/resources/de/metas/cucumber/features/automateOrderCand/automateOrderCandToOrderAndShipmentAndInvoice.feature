@@ -11,6 +11,42 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   Scenario: Order candidate to shipment and invoice flow and closed order
+    Given metasfresh contains C_Project
+      | C_Project_ID | Name     | C_Currency_ID.ISO_Code |
+      | 1000000      | testName | EUR                    |
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project' and fulfills with '200' status code
+    """
+{
+"requestItems":[
+    {
+        "projectId": 1000000,
+        "orgId": 1000000,
+        "name": "nameFromTest",
+        "projectTypeId": 540004,
+        "description": "descriptionFromTest",
+        "bpartnerId": 2156425,
+        "currencyCode": "EUR",
+        "projectStatusId": 540030,
+        "dateContract": "2021-05-11",
+        "dateFinish": "2021-05-12",
+        "active": true
+    }
+],
+"syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"UPDATE_MERGE"
+   }
+}
+"""
+
+    And process metasfresh project upsert response
+      | C_Project_ID.Identifier |
+      | project_1               |
+
+    And validate the created projects
+      | C_Project_ID.Identifier | OPT.C_Project_ID | OPT.Name     | OPT.Description     | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.ISO_Code | OPT.C_ProjectType_ID.Identifier | OPT.R_Project_Status_ID.Identifier | OPT.IsActive |
+      | project_1               | 1000000          | nameFromTest | descriptionFromTest | 2156425                      | EUR                        | 540004                          | 540030                             | true         |
+
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
 {
@@ -34,7 +70,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "discount": 0,
     "poReference": "po_ref_mock",
     "deliveryViaRule": "S",
-    "deliveryRule": "F"
+    "deliveryRule": "F",
+    "projectId": 1000000
 }
 """
 
@@ -54,28 +91,28 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 1444       | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        |
+      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.C_Project_ID.Identifier |
+      | order_1               | 1444       | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | 1000000                     |
 
     And validate the created order lines
-      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
-      | order_1               | 2021-07-20  | 2005577                 | 10           | 10         | 10          | 5     | 0        | EUR          | true      |
+      | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Project_ID.Identifier |
+      | order_1               | 2021-07-20  | 2005577                 | 10           | 10         | 10          | 5     | 0        | EUR          | true      | project_1                   |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | c_bpartner_id | c_bpartner_location_id | dateordered | poreference | processed | docStatus |
       | shipment_1            | 2156425       | 2205175                | 2021-07-20  | po_ref_mock | true      | CO        |
 
     And validate the created shipment lines
-      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipment_1            | 2005577                 | 10          | true      |
+      | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_Project_ID.Identifier |
+      | shipment_1            | 2005577                 | 10          | true      | project_1                   |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
       | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | 2005577                 | 10          | true      |
+      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_Project_ID.Identifier |
+      | invoice_1               | 2005577                 | 10          | true      | project_1                   |
 
 
   @from:cucumber
@@ -583,5 +620,5 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1          | 2005577                 | 8           | true      |
+      | invoice_1               | 2005577                 | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE

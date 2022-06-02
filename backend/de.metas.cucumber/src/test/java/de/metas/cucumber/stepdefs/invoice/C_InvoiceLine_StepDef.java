@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs.invoice;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -32,12 +34,12 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -45,15 +47,18 @@ public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	final StepDefData<I_C_Invoice> invoiceTable;
-	final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final StepDefData<I_M_Product> productTable;
+	private final C_Project_StepDefData projectTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final C_Project_StepDefData projectTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.productTable = productTable;
+		this.projectTable = projectTable;
 	}
 
 	@And("validate created invoice lines")
@@ -93,12 +98,22 @@ public class C_InvoiceLine_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-
 		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
 		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final Integer projectId = projectTable.getOptional(projectIdentifier)
+					.map(I_C_Project::getC_Project_ID)
+					.orElseGet(() -> Integer.parseInt(projectIdentifier));
+
+			assertThat(invoiceLine.getC_Project_ID()).isEqualTo(projectId);
+		}
 	}
 }

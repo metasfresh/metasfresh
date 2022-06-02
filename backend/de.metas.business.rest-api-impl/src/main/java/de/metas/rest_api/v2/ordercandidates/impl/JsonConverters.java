@@ -32,6 +32,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
+import de.metas.project.ProjectId;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
@@ -243,6 +244,7 @@ public class JsonConverters
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
+				.projectId(ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectId())))
 				//
 				.assignSalesRepRule(assignSalesRepRule)
 				.salesRepInternalId(salesRepInternalId)
