@@ -191,6 +191,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: build-e2e
         run: |
+          pwd
+          ls -al
           cat e2e/cypress/config.js
           docker buildx build \
           -f Dockerfile.e2e \
