@@ -15,7 +15,7 @@ const webpackPre = require('@cypress/webpack-preprocessor');
 const webpack = require('webpack');
 // const { initPlugin } = require('cypress-plugin-snapshots/plugin');
 const task = require('cypress-skip-and-only-ui/task');
-const ourConfig = require('../config.js');
+const ourConfig = require('/e2e/cypress/config.js');
 const { startDevServer } = require('@cypress/webpack-dev-server');
 
 module.exports = (on, config) => {
