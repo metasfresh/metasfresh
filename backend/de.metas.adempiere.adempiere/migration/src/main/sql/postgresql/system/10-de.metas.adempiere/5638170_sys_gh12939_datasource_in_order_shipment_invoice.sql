@@ -92,3 +92,105 @@ UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2022-05-06 11:12:48','
 UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2022-05-06 11:15:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=582931
 ;
 
+-- Column: C_Order.AD_InputDataSource_ID
+-- 2022-06-02T12:47:12.745Z
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2022-06-02 14:47:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552597
+;
+
+-- UI Element: Auftrag -> Auftrag.Eingabequelle
+-- Column: C_Order.AD_InputDataSource_ID
+-- 2022-06-02T12:50:31.597Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,556234,0,186,1000001,608973,'F',TO_TIMESTAMP('2022-06-02 14:50:31','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Eingabequelle',50,0,0,TO_TIMESTAMP('2022-06-02 14:50:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Field: Lieferung -> Lieferung -> Eingabequelle
+-- Column: M_InOut.AD_InputDataSource_ID
+-- 2022-06-02T12:52:17.781Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,582931,698904,0,257,0,TO_TIMESTAMP('2022-06-02 14:52:17','YYYY-MM-DD HH24:MI:SS'),100,0,'U',0,'Y','Y','Y','N','N','N','N','N','Eingabequelle',0,530,0,1,1,TO_TIMESTAMP('2022-06-02 14:52:17','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-06-02T12:52:17.785Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=698904 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-06-02T12:52:17.827Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(541291)
+;
+
+-- 2022-06-02T12:52:17.847Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=698904
+;
+
+-- 2022-06-02T12:52:17.851Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(698904)
+;
+
+-- UI Element: Lieferung -> Lieferung.Eingabequelle
+-- Column: M_InOut.AD_InputDataSource_ID
+-- 2022-06-02T12:53:00.839Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,698904,0,257,1000029,608974,'F',TO_TIMESTAMP('2022-06-02 14:53:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Eingabequelle',65,0,0,TO_TIMESTAMP('2022-06-02 14:53:00','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Field: Rechnung -> Rechnung -> Eingabequelle
+-- Column: C_Invoice.AD_InputDataSource_ID
+-- 2022-06-02T12:53:31.522Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,582929,698905,0,263,0,TO_TIMESTAMP('2022-06-02 14:53:31','YYYY-MM-DD HH24:MI:SS'),100,0,'U',0,'Y','Y','Y','N','N','N','N','N','Eingabequelle',0,510,0,1,1,TO_TIMESTAMP('2022-06-02 14:53:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-06-02T12:53:31.524Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=698905 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-06-02T12:53:31.529Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(541291)
+;
+
+-- 2022-06-02T12:53:31.537Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=698905
+;
+
+-- 2022-06-02T12:53:31.539Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(698905)
+;
+
+-- UI Element: Rechnung -> Rechnung.Eingabequelle
+-- Column: C_Invoice.AD_InputDataSource_ID
+-- 2022-06-02T12:54:04.047Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,698905,0,263,540027,608975,'F',TO_TIMESTAMP('2022-06-02 14:54:03','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Eingabequelle',35,0,0,TO_TIMESTAMP('2022-06-02 14:54:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Field: Auftrag -> Auftrag -> Eingabequelle
+-- Column: C_Order.AD_InputDataSource_ID
+-- 2022-06-02T13:04:04.634Z
+UPDATE AD_Field SET IsReadOnly='N',Updated=TO_TIMESTAMP('2022-06-02 15:04:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556234
+;
+
+-- Field: Lieferdisposition -> Auslieferplan -> Eingabequelle
+-- Column: M_ShipmentSchedule.AD_InputDataSource_ID
+-- 2022-06-02T13:08:36.738Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,582928,698906,0,500221,0,TO_TIMESTAMP('2022-06-02 15:08:36','YYYY-MM-DD HH24:MI:SS'),100,0,'U',0,'Y','Y','Y','N','N','N','N','N','Eingabequelle',0,720,0,1,1,TO_TIMESTAMP('2022-06-02 15:08:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-06-02T13:08:36.740Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=698906 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-06-02T13:08:36.770Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(541291)
+;
+
+-- 2022-06-02T13:08:36.784Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=698906
+;
+
+-- 2022-06-02T13:08:36.786Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(698906)
+;
+
+-- UI Element: Lieferdisposition -> Auslieferplan.Eingabequelle
+-- Column: M_ShipmentSchedule.AD_InputDataSource_ID
+-- 2022-06-02T13:09:19.803Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,698906,0,500221,540048,608976,'F',TO_TIMESTAMP('2022-06-02 15:09:19','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Eingabequelle',25,0,0,TO_TIMESTAMP('2022-06-02 15:09:19','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
