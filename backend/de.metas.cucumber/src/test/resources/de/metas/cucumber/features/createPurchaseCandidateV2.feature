@@ -34,8 +34,8 @@ Feature: create or update Purchase Candidate
       | OPT.C_Order_ID.Identifier | ExternalPurchaseOrderURL     | POReference |
       | po_1                      | www.ExternalReferenceURL.com | poRef1      |
     And validate the created order lines
-      | Order.Identifier | productIdentifier.m_product_id | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.ProductDescription      | OPT.C_Activity_ID.Identifier |
-      | po_1             | 2005577                        | 0            | 3          | 0           | 1     | 0        | EUR          | true      | productDescription_31052022 | poActivity_31052022          |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.ProductDescription      | OPT.C_Activity_ID.Identifier |
+      | po_line_1                 | po_1                  | 2005577                 | 0            | 3          | 0           | 1     | 0        | EUR          | true      | productDescription_31052022 | poActivity_31052022          |
 
     Given the purchase candidate enqueue-status request is set in context
     When the metasfresh REST-API endpoint path 'api/v2/order/purchase/status' receives a 'PUT' request with the payload from context and responds with '200' status code
