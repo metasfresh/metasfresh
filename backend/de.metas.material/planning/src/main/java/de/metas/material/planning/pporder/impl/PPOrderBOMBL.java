@@ -167,6 +167,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		// orderBOMLine.setM_AttributeSetInstance_ID(bomLine.getM_AttributeSetInstance_ID()); // see below
 		orderBOMLine.setM_Product_ID(bomLine.getM_Product_ID());
 		orderBOMLine.setScrap(bomLine.getScrap());
+		orderBOMLine.setIsEnforceTolerance(bomLine.isEnforceTolerance());
+		orderBOMLine.setTolerance_Perc(bomLine.getTolerance_Perc());
 		orderBOMLine.setValidFrom(bomLine.getValidFrom());
 		orderBOMLine.setValidTo(bomLine.getValidTo());
 		orderBOMLine.setBackflushGroup(bomLine.getBackflushGroup());

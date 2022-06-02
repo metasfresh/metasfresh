@@ -1,20 +1,22 @@
 package de.metas.async.api.impl;
 
-import java.util.Optional;
-
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.async.api.IWorkPackageBL;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+
+import java.util.Optional;
 
 public class WorkPackageBL implements IWorkPackageBL
 {
+	private final QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+
 	@Override
 	public Optional<UserId> getUserIdInCharge(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
@@ -23,12 +25,9 @@ public class WorkPackageBL implements IWorkPackageBL
 			return UserId.optionalOfRepoId(workPackage.getAD_User_InCharge_ID());
 		}
 
-		final I_C_Queue_Block block = workPackage.getC_Queue_Block();
-		Check.assumeNotNull(block, "C_Queue_Block is not null for param 'workPackage'={}", workPackage);
-
-		final I_C_Queue_PackageProcessor packageProcessor = block.getC_Queue_PackageProcessor();
-		Check.assumeNotNull(packageProcessor, "C_Queue_PackageProcessor is not null for block={} of param 'workPackage'={}",
-				block, workPackage);
+		final QueuePackageProcessorId queuePackageProcessorId = QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID());
+		final I_C_Queue_PackageProcessor packageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(queuePackageProcessorId);
+		Check.assumeNotNull(packageProcessor, "C_Queue_PackageProcessor is not null for 'workPackage'={}", workPackage);
 
 		if (Check.isEmpty(packageProcessor.getInternalName()))
 		{

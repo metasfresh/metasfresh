@@ -41,11 +41,11 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.InOutLineId;
-import de.metas.inout.event.InOutUserNotificationsProducer;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -369,9 +369,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setC_Order_ID(order.getC_Order_ID()); // TODO change if partner allow consolidation too
 				shipment.setPOReference(order.getPOReference());
 				shipment.setC_Incoterms_ID(order.getC_Incoterms_ID());
+				shipment.setIncotermLocation(order.getIncotermLocation());
 				shipment.setDeliveryViaRule(order.getDeliveryViaRule());
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
+				shipment.setEMail(order.getEMail());
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
 			}

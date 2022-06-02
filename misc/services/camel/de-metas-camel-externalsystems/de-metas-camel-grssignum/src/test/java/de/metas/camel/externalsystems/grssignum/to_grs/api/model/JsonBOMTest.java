@@ -48,10 +48,12 @@ public class JsonBOMTest
 				+ "    	\"INAKTIV\": 0,\n"
 				+ " 	\"VERLUST\":15,\n"
 				+ "		\"GTIN\":\"gtin\",\n"
+				+ "     \"METASFRESHID\":\"12345\",\n"
 				+ "		\"DETAIL\": [\n "
 				+ "        {\n"
 				+ "				\"ARTNR\": \"productValue1\",\n"
 				+ "				\"ARTNRID\": \"productId1\",\n"
+				+ "				\"HERKUNFTSLAND\": \"countryCode\",\n"
 				+ "				\"POS\": 1,\n"
 				+ "				\"ANTEIL\": 20,\n"
 				+ "				\"UOM\": \"KGM\" \n"
@@ -67,6 +69,7 @@ public class JsonBOMTest
 				.line(1)
 				.productId("productId1")
 				.productValue("productValue1")
+				.countryCode("countryCode")
 				.uom("KGM")
 				.qtyBOM(BigDecimal.valueOf(20))
 				.build();
@@ -80,6 +83,7 @@ public class JsonBOMTest
 				.inactive(0)
 				.scrap(BigDecimal.valueOf(15))
 				.gtin("gtin")
+				.bPartnerMetasfreshId("12345")
 				.bomLines(ImmutableList.of(expectedBOMLine))
 				.build();
 

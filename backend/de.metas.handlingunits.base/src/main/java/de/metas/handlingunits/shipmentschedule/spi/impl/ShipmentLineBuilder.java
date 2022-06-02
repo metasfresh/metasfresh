@@ -2,6 +2,7 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -66,6 +67,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -106,6 +108,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	// Shipment Line attributes
 	private IHUContext huContext;
 	private ProductId productId = null;
+	@Nullable
+	private FlatrateTermId flatrateTermId = null;
 
 	private Object attributesAggregationKey = null;
 	private OrderAndLineId orderLineId = null;
@@ -259,6 +263,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		//
 		// Order Line Link (retrieved from current Shipment)
 		orderLineId = candidate.getOrderLineId();
+
+		flatrateTermId = FlatrateTermId.ofRepoIdOrNull(candidate.getM_ShipmentSchedule().getC_Flatrate_Term_ID());
 	}
 
 	private void append(@NonNull final ShipmentScheduleWithHU candidate)
@@ -502,6 +508,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 					.addLog("Not setting the shipment line's M_HU_PI_Item_Product, because the added ShipmentScheduleWithHUs have different ones; huPIItemProducts={}",
 							packingMaterial_huPIItemProducts);
 		}
+
+		//C_Flatrate_Term_ID
+		Optional.ofNullable(flatrateTermId)
+				.map(FlatrateTermId::getRepoId)
+				.ifPresent(shipmentLine::setC_Flatrate_Term_ID);
 
 		// Save Shipment Line
 		save(shipmentLine);

@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
@@ -67,7 +68,7 @@ public class ContractsDAOTest
 		term1.setStartDate(TimeUtil.getDay(2013, 5, 27)); // yesterday
 		save(term1);
 
-		final List<I_C_Flatrate_Term> termsWithMissingCandidates = new ContractsDAO().retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, 50);
+		final List<I_C_Flatrate_Term> termsWithMissingCandidates = new ContractsDAO().retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, QueryLimit.ofInt(50));
 
 		assertThat(termsWithMissingCandidates).hasSize(1);
 		assertThat(termsWithMissingCandidates.get(0)).isInstanceOf(I_C_Flatrate_Term.class);

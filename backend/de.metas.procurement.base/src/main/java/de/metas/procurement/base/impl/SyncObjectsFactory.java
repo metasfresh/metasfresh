@@ -236,7 +236,8 @@ public class SyncObjectsFactory
 		return createSyncBPartnerWithoutContracts(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()));
 	}
 
-	private SyncBPartner createSyncBPartnerWithoutContracts(final BPartnerId bpartnerId)
+	@NonNull
+	private SyncBPartner createSyncBPartnerWithoutContracts(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartner = getC_BPartnerById(bpartnerId);
 

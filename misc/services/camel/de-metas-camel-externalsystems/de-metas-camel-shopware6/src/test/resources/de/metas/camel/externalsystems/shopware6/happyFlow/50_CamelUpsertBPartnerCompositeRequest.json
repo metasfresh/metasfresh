@@ -3,7 +3,7 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-Shopware6-customerId",
+        "bpartnerIdentifier": "customerId",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
@@ -30,9 +30,9 @@
                   "countryCode": "DE",
                   "shipTo": false,
                   "billTo": true,
-                  "bpartnerName": "billingCompany\nbillingDepartment\nbillingSalutationDisplayName firstName lastName",
+                  "bpartnerName": "company, firstName lastName",
                   "phone": "phoneNumber",
-                  "email": "billingEmailAddress"
+                  "email": "billingEmailAddress@example.com"
                 }
               },
               {
@@ -46,9 +46,9 @@
                   "countryCode": "DE",
                   "shipTo": true,
                   "billTo": false,
-                  "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+                  "bpartnerName": "company, firstName lastName",
                   "phone": "phoneNumber",
-                  "email": "emailAddress"
+                  "email": "shippingOrderAddress@example.com"
                 }
               }
             ],
@@ -64,7 +64,7 @@
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
-                  "email": "someEamil@web.de",
+                  "email": "orderCustomerEmail@example.com",
                   "invoiceEmailEnabled": true,
                   "shipToDefault": true,
                   "billToDefault": true

@@ -181,7 +181,7 @@ export const TBL_CONTEXT_MENU_MAX_Y = 706;
  * @constant
  * @type {integer} Used to indicate the debounce time when performing a search
  */
-export const DEBOUNCE_TIME_SEARCH = 150;
+export const DEBOUNCE_TIME_SEARCH = 450;
 
 /**
  * @constant

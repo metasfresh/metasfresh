@@ -2,7 +2,6 @@ package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -11,9 +10,11 @@ import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.service.TestRecorder;
 import de.metas.handlingunits.picking.job.service.commands.LUPackingInstructions;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobTestHelper;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.i18n.Language;
 import de.metas.order.OrderAndLineId;
-import de.metas.picking.api.PickingSlotBarcode;
-import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.rest_api.PickingRestController;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
@@ -69,7 +70,7 @@ class PickingMobileApplicationTest
 	private HuId lu2;
 
 	private TestRecorder recorder;
-	private PickingSlotId pickingSlotId;
+	private PickingSlotIdAndCaption pickingSlot;
 
 	@BeforeAll
 	static void beforeAll()
@@ -83,7 +84,12 @@ class PickingMobileApplicationTest
 		helper = new PickingJobTestHelper();
 		recorder = helper.newTestRecorder();
 
+		// Needed because we take snapshots of date/time translatable strings,
+		// and it seems the date/time formats differs from OS to OS or from JVM impl to JVM impl
+		Language.setUseJUnitFixedFormats(true);
+
 		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
+		Env.setAD_Language(Env.getCtx(), "de_DE");
 
 		final PickingJobRestService pickingJobRestService = new PickingJobRestService(helper.pickingJobService);
 		final PickingMobileApplication pickingMobileApplication = new PickingMobileApplication(pickingJobRestService);
@@ -104,7 +110,7 @@ class PickingMobileApplicationTest
 
 	private void createMasterdata()
 	{
-		pickingSlotId = helper.createPickingSlot("1");
+		pickingSlot = PickingSlotIdAndCaption.of(helper.createPickingSlot("1"), "1");
 
 		final I_C_UOM uomKg = BusinessTestHelper.createUomKg();
 		final ProductId productId = BusinessTestHelper.createProductId("P1", uomKg);
@@ -115,9 +121,11 @@ class PickingMobileApplicationTest
 		// Masterdata: HUs
 		{
 			lu1 = helper.createLU(luPackingInstructions, "75");
+			helper.createQRCode(lu1, "QR-LU1");
 			helper.dumpHU("LU1", lu1);
 
 			lu2 = helper.createLU(luPackingInstructions, "250");
+			helper.createQRCode(lu2, "QR-LU2");
 			helper.dumpHU("LU2", lu2);
 		}
 
@@ -182,6 +190,12 @@ class PickingMobileApplicationTest
 		recorder.reportStepWithAllHUs(when + " - HUs");
 	}
 
+	private String toQRCodeString(@NonNull final HuId huId)
+	{
+		final HUQRCode qrCode = helper.getQRCode(huId);
+		return qrCode.toRenderedJson().getCode();
+	}
+
 	@Test
 	void createJobAndGet()
 	{
@@ -194,6 +208,8 @@ class PickingMobileApplicationTest
 	@Test
 	void abortJob()
 	{
+		recorder.reportStep("AD_Language", Env.getAD_Language());
+
 		JsonWFProcess wfProcess = startWFProcess();
 
 		workflowRestController.abort(wfProcess.getId());
@@ -213,9 +229,9 @@ class PickingMobileApplicationTest
 		{
 			wfProcess = workflowRestController.setScannedBarcode(
 					wfProcess.getId(),
-					getFirstActivityByComponentType(wfProcess, SetPickingSlotWFActivityHandler.COMPONENTTYPE).getActivityId(),
+					getFirstActivityByComponentType(wfProcess, UIComponentType.SCAN_BARCODE).getActivityId(),
 					JsonSetScannedBarcodeRequest.builder()
-							.barcode(PickingSlotBarcode.ofPickingSlotId(pickingSlotId).getAsString())
+							.barcode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlot).toGlobalQRCodeJsonString())
 							.build()
 			);
 			assertEqualsToDatabaseVersion(wfProcess);
@@ -239,7 +255,7 @@ class PickingMobileApplicationTest
 												.wfActivityId(pickingActivity.getActivityId())
 												.pickingStepId(steps.get(0).getId().getAsString())
 												.type(JsonPickingStepEvent.EventType.PICK)
-												.huBarcode(HUBarcode.ofHuId(lu1).getAsString())
+												.huQRCode(toQRCodeString(lu1))
 												.qtyPicked(new BigDecimal("75"))
 												.build()))
 								.build());
@@ -260,7 +276,7 @@ class PickingMobileApplicationTest
 												.wfActivityId(pickingActivity.getActivityId())
 												.pickingStepId(steps.get(1).getId().getAsString())
 												.type(JsonPickingStepEvent.EventType.PICK)
-												.huBarcode(HUBarcode.ofHuId(lu2).getAsString())
+												.huQRCode(toQRCodeString(lu2))
 												.qtyPicked(new BigDecimal("25"))
 												.build()
 								))
@@ -307,7 +323,7 @@ class PickingMobileApplicationTest
 										.wfActivityId(pickingActivity.getActivityId())
 										.pickingStepId(steps.get(0).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
-										.huBarcode(HUBarcode.ofHuId(lu1).getAsString())
+										.huQRCode(toQRCodeString(lu1))
 										.qtyPicked(new BigDecimal("25"))
 										.qtyRejected(new BigDecimal("50"))
 										.qtyRejectedReasonCode("damaged")
@@ -317,7 +333,7 @@ class PickingMobileApplicationTest
 										.wfActivityId(pickingActivity.getActivityId())
 										.pickingStepId(steps.get(0).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
-										.huBarcode(HUBarcode.ofHuId(lu2).getAsString())
+										.huQRCode(toQRCodeString(lu2))
 										.qtyPicked(new BigDecimal("25"))
 										.qtyRejected(new BigDecimal("25"))
 										.qtyRejectedReasonCode("damaged")
@@ -329,7 +345,7 @@ class PickingMobileApplicationTest
 										.wfActivityId(pickingActivity.getActivityId())
 										.pickingStepId(steps.get(1).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
-										.huBarcode(HUBarcode.ofHuId(lu2).getAsString())
+										.huQRCode(toQRCodeString(lu2))
 										.qtyPicked(new BigDecimal("25"))
 										.build()
 						))
@@ -354,9 +370,9 @@ class PickingMobileApplicationTest
 		{
 			wfProcess = workflowRestController.setScannedBarcode(
 					wfProcess.getId(),
-					getFirstActivityByComponentType(wfProcess, SetPickingSlotWFActivityHandler.COMPONENTTYPE).getActivityId(),
+					getFirstActivityByComponentType(wfProcess, UIComponentType.SCAN_BARCODE).getActivityId(),
 					JsonSetScannedBarcodeRequest.builder()
-							.barcode(PickingSlotBarcode.ofPickingSlotId(pickingSlotId).getAsString())
+							.barcode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlot).toGlobalQRCodeJsonString())
 							.build()
 			);
 			assertEqualsToDatabaseVersion(wfProcess);
@@ -380,7 +396,7 @@ class PickingMobileApplicationTest
 											.wfActivityId(pickingActivity.getActivityId())
 											.pickingStepId(steps.get(0).getId().getAsString())
 											.type(JsonPickingStepEvent.EventType.PICK)
-											.huBarcode(HUBarcode.ofHuId(lu1).getAsString())
+											.huQRCode(toQRCodeString(lu1))
 											.qtyPicked(new BigDecimal("75"))
 											.build()))
 							.build());
@@ -397,7 +413,7 @@ class PickingMobileApplicationTest
 											.wfActivityId(pickingActivity.getActivityId())
 											.pickingStepId(steps.get(0).getId().getAsString())
 											.type(JsonPickingStepEvent.EventType.UNPICK)
-											.huBarcode(HUBarcode.ofHuId(lu1).getAsString())
+											.huQRCode(toQRCodeString(lu1))
 											.build()))
 							.build());
 			wfProcess = workflowRestController.getWFProcessById(wfProcess.getId());

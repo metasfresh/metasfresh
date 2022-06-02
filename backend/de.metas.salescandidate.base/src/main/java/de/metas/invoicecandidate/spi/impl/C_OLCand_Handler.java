@@ -88,10 +88,10 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		return dao.retrieveMissingCandidatesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setLimit(QueryLimit.ofInt(limit))
+				.setLimit(limit)
 				.create()
 				.iterate(I_C_OLCand.class);
 	}
@@ -183,8 +183,15 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setIsSOTrx(true);
 
 		ic.setPresetDateInvoiced(olcRecord.getPresetDateInvoiced());
-		ic.setC_DocTypeInvoice_ID(olcRecord.getC_DocTypeInvoice_ID());
-
+		if (olcRecord.getC_DocTypeInvoice_ID() > 0)
+		{
+			ic.setC_DocTypeInvoice_ID(olcRecord.getC_DocTypeInvoice_ID());
+		}
+		else
+		{
+			setDefaultInvoiceDocType(ic);
+		}
+		
 		// 07442 activity and tax
 		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(olcRecord.getAD_Client_ID()),

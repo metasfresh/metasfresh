@@ -110,4 +110,6 @@ public interface IPrintingQueueBL extends ISingletonService
 	void setPrintoutForOtherUsers(I_C_Printing_Queue item, Set<Integer> userToPrintIds);
 
 	PrinterRoutingsQuery createPrinterRoutingsQueryForItem(I_C_Printing_Queue item);
+
+	void setProcessedAndSave(@NonNull I_C_Printing_Queue item);
 }

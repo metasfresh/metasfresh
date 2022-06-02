@@ -478,7 +478,10 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		BigDecimal approval = BigDecimal.ZERO;
 		for (final MAllocationLine line : lines)
 		{
-			approval = approval.add(line.getWriteOffAmt()).add(line.getDiscountAmt());
+			approval = approval.add(line.getWriteOffAmt())
+					.add(line.getDiscountAmt())
+					.add(line.getPaymentWriteOffAmt());
+
 			// Make sure there is BP
 			if (line.getC_BPartner_ID() <= 0)
 			{

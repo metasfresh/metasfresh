@@ -11,6 +11,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -48,20 +49,20 @@ public final class PPOrderHandlerUtils
 	 * Supply candidates that are about *another* product that the required one (i.e. co- and by-products) may not have that demand detail.
 	 * (Otherwise, their stock candidate would be connected to the resp. demand record)
 	 */
-	@Nullable
-	public static DemandDetail computeDemandDetailOrNull(
+	@NonNull
+	public static Optional<DemandDetail> computeDemandDetail(
 			@NonNull final CandidateType lineCandidateType,
 			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialDescriptor materialDescriptor)
 	{
 		if (supplyRequiredDescriptor == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		if (lineCandidateType == CandidateType.DEMAND)
 		{
-			return DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
+			return Optional.of(DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor));
 		}
 
 		final MaterialDescriptor requiredMaterialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor();
@@ -69,10 +70,10 @@ public final class PPOrderHandlerUtils
 				&& requiredMaterialDescriptor.getProductId() == materialDescriptor.getProductId()
 				&& requiredMaterialDescriptor.getStorageAttributesKey().equals(materialDescriptor.getStorageAttributesKey()))
 		{
-			return DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
+			return Optional.of(DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor));
 		}
 
-		return null;
+		return Optional.empty();
 	}
 	
 	public static MaterialDescriptorQuery createMaterialDescriptorQuery(@NonNull final ProductDescriptor productDescriptor)

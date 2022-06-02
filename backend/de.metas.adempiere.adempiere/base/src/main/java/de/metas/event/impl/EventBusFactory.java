@@ -221,18 +221,18 @@ public class EventBusFactory implements IEventBusFactory
 			@NonNull final Topic topic,
 			@NonNull final IEventListener listener)
 	{
-		//
-		// Add the listener to our global listeners multimap.
+		// Register the listener to EventBus
+		getEventBus(topic).subscribe(listener);
+
+		// Add the listener to our global listeners-multimap.
+		// Note that getEventBus(topic) creates the bus on the fly if needed **and subscribes all global listeners to it**
+		// Therefore we need to add this listener to the global map *after* having gotten and possibly on-the-fly-created the event bus.
 		if (!globalEventListeners.put(topic, listener))
 		{
 			// listener already exists => do nothing
 			return;
 		}
 		logger.info("Registered global listener to {}: {}", topic, listener);
-
-		//
-		// Also register the listener to EventBus
-		getEventBus(topic).subscribe(listener);
 	}
 
 	@Override

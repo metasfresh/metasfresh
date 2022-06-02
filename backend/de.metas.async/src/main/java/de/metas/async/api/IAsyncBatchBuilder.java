@@ -25,6 +25,7 @@ package de.metas.async.api;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 
 import javax.annotation.Nullable;
@@ -58,4 +59,6 @@ public interface IAsyncBatchBuilder
 	IAsyncBatchBuilder setAD_PInstance_Creator_ID(PInstanceId adPInstanceId);
 	
 	IAsyncBatchBuilder setParentAsyncBatchId(@Nullable AsyncBatchId parentAsyncBatchId);
+
+	 IAsyncBatchBuilder setOrgId(@Nullable final OrgId orgId);
 }

@@ -23,7 +23,7 @@
 package de.metas.externalsystem.rabbitmqhttp.interceptor;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.externalsystem.rabbitmqhttp.ExportToRabbitMQService;
+import de.metas.externalsystem.rabbitmqhttp.ExportBPartnerToRabbitMQService;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -42,9 +42,9 @@ public class C_User_Assigned_Role
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	private final ExportToRabbitMQService exportToRabbitMQService;
+	private final ExportBPartnerToRabbitMQService exportToRabbitMQService;
 
-	public C_User_Assigned_Role(@NonNull final ExportToRabbitMQService exportToRabbitMQService)
+	public C_User_Assigned_Role(@NonNull final ExportBPartnerToRabbitMQService exportToRabbitMQService)
 	{
 		this.exportToRabbitMQService = exportToRabbitMQService;
 	}

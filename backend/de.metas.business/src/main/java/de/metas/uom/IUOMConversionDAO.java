@@ -6,7 +6,8 @@ import lombok.NonNull;
 
 public interface IUOMConversionDAO extends ISingletonService
 {
-	UOMConversionsMap getProductConversions(ProductId productId);
+	@NonNull
+	UOMConversionsMap getProductConversions(@NonNull ProductId productId);
 
 	UOMConversionsMap getGenericConversions();
 	

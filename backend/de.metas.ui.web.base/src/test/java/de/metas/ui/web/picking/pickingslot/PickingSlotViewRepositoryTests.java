@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,7 +78,7 @@ public class PickingSlotViewRepositoryTests
 	{
 		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule();
 
-		createPickingSlot(pickingSlot -> {
+		final PickingSlotId pickingSlotId = createPickingSlot(pickingSlot -> {
 			pickingSlot.setIsPickingRackSystem(true);
 		});
 
@@ -85,6 +86,7 @@ public class PickingSlotViewRepositoryTests
 				PickingCandidatesQuery.builder()
 						.shipmentScheduleId(shipmentScheduleId)
 						.onlyNotClosedOrNotRackSystem(true)
+						.onlyPickingSlotIds(ImmutableSet.of(pickingSlotId))
 						.build()))
 				.thenReturn(ImmutableListMultimap.of());
 
@@ -130,6 +132,7 @@ public class PickingSlotViewRepositoryTests
 					PickingCandidatesQuery.builder()
 							.shipmentScheduleId(shipmentScheduleId)
 							.onlyNotClosedOrNotRackSystem(true)
+							.onlyPickingSlotIds(ImmutableSet.of(pickingSlotId))
 							.build()))
 					.thenReturn(husIndexedByPickingSlotId);
 		}

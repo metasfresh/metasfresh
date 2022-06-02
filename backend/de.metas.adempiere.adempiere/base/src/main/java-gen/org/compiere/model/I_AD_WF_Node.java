@@ -108,7 +108,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
 
 	/**
-	 * Set Bild.
+	 * Set Image.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -118,7 +118,7 @@ public interface I_AD_WF_Node
 	void setAD_Image_ID (int AD_Image_ID);
 
 	/**
-	 * Get Bild.
+	 * Get Image.
 	 * Image or Icon
 	 *
 	 * <br>Type: TableDir
@@ -326,7 +326,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Set Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -336,7 +336,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Get Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -980,7 +980,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
-	 * Set Ressource.
+	 * Set Resource.
 	 * Resource
 	 *
 	 * <br>Type: TableDir
@@ -990,7 +990,7 @@ public interface I_AD_WF_Node
 	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Ressource.
+	 * Get Resource.
 	 * Resource
 	 *
 	 * <br>Type: TableDir

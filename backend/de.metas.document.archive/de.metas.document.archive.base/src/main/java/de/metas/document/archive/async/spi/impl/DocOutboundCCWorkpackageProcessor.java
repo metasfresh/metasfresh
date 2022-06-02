@@ -80,7 +80,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 			return Result.SUCCESS;
 		}
 
-		final List<I_AD_Archive> archives = queueDAO.retrieveItems(workpackage, I_AD_Archive.class, localTrxName);
+		final List<I_AD_Archive> archives = queueDAO.retrieveAllItems(workpackage, I_AD_Archive.class);
 		for (final I_AD_Archive archive : archives)
 		{
 			writeCCFile(archive);

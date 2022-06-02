@@ -69,6 +69,12 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	@NonNull
 	ProductLookup productLookup;
 
+	@Nullable
+	String metasfreshIdJSONPath;
+
+	@Nullable
+	String shopwareIdJSONPath;
+
 	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
 			final @NonNull ExternalSystemParentConfigId parentId,
@@ -85,7 +91,9 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @Nullable PriceListId priceListId,
 			final @NonNull Boolean isActive,
 			final @NonNull String value,
-			final @NonNull ProductLookup productLookup)
+			final @NonNull ProductLookup productLookup,
+			final @Nullable String metasfreshIdJSONPath,
+			final @Nullable String shopwareIdJSONPath)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -103,6 +111,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.isActive = isActive;
 		this.value = value;
 		this.productLookup = productLookup;
+		this.metasfreshIdJSONPath = metasfreshIdJSONPath;
+		this.shopwareIdJSONPath = shopwareIdJSONPath;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

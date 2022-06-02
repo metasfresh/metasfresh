@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-{{ .Release.Name }}-rabbitmq
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-rabbitmq
+spec:
+  selector:
+    app: metasfresh-{{ .Release.Name }}-rabbitmq
+  ports:
+  - name: rabbitmq-broker
+    port: {{ .Values.rabbitmq.port.broker }}
+    protocol: TCP
+    targetPort: {{ .Values.rabbitmq.port.broker }}
+  - name: rabbitmq-management
+    port: {{ .Values.rabbitmq.port.management }}
+    protocol: TCP
+    targetPort: {{ .Values.rabbitmq.port.management }}
+  sessionAffinity: None
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metasfresh-{{ .Release.Name }}-rabbitmq
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-rabbitmq
+spec:
+  selector:
+    matchLabels:
+      app: metasfresh-{{ .Release.Name }}-rabbitmq
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: metasfresh-{{ .Release.Name }}-rabbitmq
+    spec:
+      containers:
+      - name: metasfresh-{{ .Release.Name }}-rabbitmq
+        image: {{ .Values.rabbitmq.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: {{ .Values.rabbitmq.port.broker }}
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-rabbitmq-secret
+              key: username
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-rabbitmq-secret
+              key: password
+        - name: RABBITMQ_DEFAULT_VHOST
+          value: /
+        volumeMounts:
+        - mountPath: /var/log/rabbitmq/log
+          name: log
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      volumes:
+      - name: log
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/rabbitmq/log
+          type: DirectoryOrCreate
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone
+          

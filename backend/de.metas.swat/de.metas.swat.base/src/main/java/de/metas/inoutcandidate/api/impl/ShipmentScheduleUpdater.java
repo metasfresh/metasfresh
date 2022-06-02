@@ -263,9 +263,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 
 		//
-		// Briefly update our shipment schedules:
-		// * set BPartnerAddress_Override if was not set before
-		// * update HeaderAggregationKey
+		// first update those shipment schedule properties that don't need two passes
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
@@ -782,8 +780,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 		final boolean noQtyOverride = sched.getQtyToDeliver_Override().signum() <= 0;
 		final boolean noQtyReserved = sched.getQtyReserved().signum() <= 0;
+		final boolean noQtyPickedAndNotDelivered = sched.getQtyPickList().signum() <= 0;
 
-		sched.setProcessed(noQtyOverride && noQtyReserved);
+		sched.setProcessed(noQtyOverride && noQtyReserved && noQtyPickedAndNotDelivered);
 	}
 
 	private void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)

@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Product_BOMLine
  *  @author metasfresh (generated) 
@@ -346,6 +347,27 @@ public interface I_PP_Product_BOMLine
 	String COLUMNNAME_IsCritical = "IsCritical";
 
 	/**
+	 * Set Enforce Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEnforceTolerance (boolean IsEnforceTolerance);
+
+	/**
+	 * Get Enforce Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEnforceTolerance();
+
+	ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_IsEnforceTolerance = new ModelColumn<>(I_PP_Product_BOMLine.class, "IsEnforceTolerance", null);
+	String COLUMNNAME_IsEnforceTolerance = "IsEnforceTolerance";
+
+	/**
 	 * Set Is Qty Percentage.
 	 * Indicate that this component is based in % Quantity
 	 *
@@ -535,7 +557,7 @@ public interface I_PP_Product_BOMLine
 	String COLUMNNAME_oldScrap = "oldScrap";
 
 	/**
-	 * Set BOM & Formula.
+	 * Set BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -545,7 +567,7 @@ public interface I_PP_Product_BOMLine
 	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
-	 * Get BOM & Formula.
+	 * Get BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -693,6 +715,27 @@ public interface I_PP_Product_BOMLine
 
 	ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_ShowSubBOMIngredients = new ModelColumn<>(I_PP_Product_BOMLine.class, "ShowSubBOMIngredients", null);
 	String COLUMNNAME_ShowSubBOMIngredients = "ShowSubBOMIngredients";
+
+	/**
+	 * Set Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTolerance_Perc (@Nullable BigDecimal Tolerance_Perc);
+
+	/**
+	 * Get Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTolerance_Perc();
+
+	ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_Tolerance_Perc = new ModelColumn<>(I_PP_Product_BOMLine.class, "Tolerance_Perc", null);
+	String COLUMNNAME_Tolerance_Perc = "Tolerance_Perc";
 
 	/**
 	 * Get Updated.

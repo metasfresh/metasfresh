@@ -37,7 +37,7 @@ Feature: material-dispo updates on shipment-schedule events
       | ol_1       | o_1                   | p_1                     | 10           |
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Candidate data
-      | Identifier | MD_Candidate_Type     | MD_Candidate_BusinessCase  | M_Product_ID.Identifier  | DateProjected           | Qty      | Qty_AvailableToPromise   |
+      | Identifier | MD_Candidate_Type     | OPT.MD_Candidate_BusinessCase  | M_Product_ID.Identifier  | DateProjected           | Qty      | Qty_AvailableToPromise   |
       | c_1        | DEMAND                | SHIPMENT                   | p_1                      | 2021-12-12T10:00:00.00Z | -10      | -10                      |
       | c_2        | SUPPLY                |                            | p_1                      | 2021-12-12T10:00:00.00Z | 10       | 0                        |
     And metasfresh generates this MD_Candidate_Demand_Detail data
@@ -48,7 +48,7 @@ Feature: material-dispo updates on shipment-schedule events
   @topic:materialdispo
   Scenario: shipment-schedule with quantity in stock
     Given metasfresh initially has this MD_Candidate data
-      | Identifier | MD_Candidate_Type         | MD_Candidate_BusinessCase | M_Product_ID.Identifier  | DateProjected           | Qty      | Qty_AvailableToPromise |
+      | Identifier | MD_Candidate_Type         | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier  | DateProjected           | Qty      | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP              |                           | p_1                      | 2021-04-01T10:00:00.00Z | 100      | 100                    |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -58,7 +58,7 @@ Feature: material-dispo updates on shipment-schedule events
       | ol_1       | o_1                   | p_1                     | 20           |
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Candidate data
-      | Identifier | MD_Candidate_Type         | MD_Candidate_BusinessCase | M_Product_ID.Identifier  | DateProjected           | Qty      | Qty_AvailableToPromise |
+      | Identifier | MD_Candidate_Type         | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier  | DateProjected           | Qty      | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP              |                           | p_1                      | 2021-04-01T10:00:00.00Z | 100      | 100                    |
       | c_2        | DEMAND                    | SHIPMENT                  | p_1                      | 2022-12-08T10:00:00.00Z | -20      | 80                     |
     And metasfresh generates this MD_Candidate_Demand_Detail data

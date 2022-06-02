@@ -33,9 +33,25 @@ public interface GRSSignumConstants
 
 	String ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT = "ExportBPartnerRouteContext";
 
+	String ROUTE_PROPERTY_EXPORT_HU_CONTEXT = "ExportHURouteContext";
+
 	String ROUTE_PROPERTY_GRS_REST_API_CONTEXT = "GRSRestAPIRouteContext";
 
 	String EXPORT_BPARTNER_RETRY_COUNT = "export.bpartner.retry.count";
 
 	String EXPORT_BPARTNER_RETRY_DELAY = "export.bpartner.retry.delay.ms";
+
+	String EXCLUSION_FROM_PURCHASE_REASON = "Imported setting";
+
+	String EXTERNAL_REF_TYPE_PRODUCT = "Product";
+
+	String EXTERNAL_REF_TYPE_BPARTNER = "BPartner";
+
+	String ROUTE_PROPERTY_ATTACH_FILE_CONTEXT = "AttachFileRouteContext";
+
+	String ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT = "PushRawMaterialsRouteContext";
+
+	String HERKUNFT_ATTRIBUTE_CODE = "1000001";
+
+	int CUSTOMER_FLAG = 500;
 }

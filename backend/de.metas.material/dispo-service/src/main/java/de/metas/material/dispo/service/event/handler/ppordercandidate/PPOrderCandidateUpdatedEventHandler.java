@@ -24,11 +24,13 @@ package de.metas.material.dispo.service.event.handler.ppordercandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import lombok.NonNull;
@@ -57,13 +59,17 @@ public class PPOrderCandidateUpdatedEventHandler extends PPOrderCandidateEventHa
 	@Override
 	public void handleEvent(@NonNull final PPOrderCandidateUpdatedEvent event)
 	{
-		final CandidatesQuery preExistingSupplyQuery = createPreExistingSupplyCandidateQuery(event);
+		final CandidatesQuery preExistingHeaderSupplyQuery = createPreExistingHeaderSupplyCandidateQuery(event);
 
-		createHeaderCandidate(event, preExistingSupplyQuery);
+		final Candidate headerCandidate = createHeaderCandidate(event, preExistingHeaderSupplyQuery);
+
+		final MaterialDispoGroupId groupId = event.getPpOrderCandidate().getPpOrderData().getMaterialDispoGroupId();
+
+		createLineCandidates(event, groupId, headerCandidate);
 	}
 
 	@NonNull
-	private CandidatesQuery createPreExistingSupplyCandidateQuery(@NonNull final PPOrderCandidateUpdatedEvent ppOrderCandidateUpdatedEvent)
+	private CandidatesQuery createPreExistingHeaderSupplyCandidateQuery(@NonNull final PPOrderCandidateUpdatedEvent ppOrderCandidateUpdatedEvent)
 	{
 		final PPOrderCandidate ppOrderCandidate = ppOrderCandidateUpdatedEvent.getPpOrderCandidate();
 

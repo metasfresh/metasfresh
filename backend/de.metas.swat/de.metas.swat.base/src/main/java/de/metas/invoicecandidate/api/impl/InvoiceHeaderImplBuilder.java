@@ -34,6 +34,8 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<String> POReferences = new HashSet<>();
 
+	private final Set<String> eMails = new HashSet<>();
+
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
 
@@ -44,6 +46,8 @@ public class InvoiceHeaderImplBuilder
 	private final Set<Integer> M_PriceList_IDs = new LinkedHashSet<>();
 
 	private BPartnerInfo billTo;
+
+	private String paymentRule;
 
 	private int Sales_BPartner_ID;
 
@@ -68,6 +72,8 @@ public class InvoiceHeaderImplBuilder
 	private int C_Async_Batch_ID;
 
 	private int C_Incoterms_ID;
+
+	private String incotermLocation;
 
 	/* package */ InvoiceHeaderImplBuilder()
 	{
@@ -116,9 +122,13 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setM_InOut_ID(getM_InOut_ID());
 		invoiceHeader.setPOReference(getPOReference());
 		invoiceHeader.setExternalId(getExternalId());
+		invoiceHeader.setEMail(getEmail());
+
+		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
+		invoiceHeader.setIncotermLocation(getIncotermLocation());
 
 		return invoiceHeader;
 	}
@@ -148,6 +158,16 @@ public class InvoiceHeaderImplBuilder
 		C_Incoterms_ID = checkOverrideID("C_Incoterms_ID", C_Incoterms_ID, incoterms_id);
 	}
 
+	public String getIncotermLocation()
+	{
+		return incotermLocation;
+	}
+
+	public void setIncotermLocation(final String incotermLocation)
+	{
+		this.incotermLocation = checkOverride("IncotermLocation", this.incotermLocation, incotermLocation);
+	}
+
 	public I_C_DocType getC_DocTypeInvoice()
 	{
 		return docTypeInvoice;
@@ -166,6 +186,16 @@ public class InvoiceHeaderImplBuilder
 	public void setPOReference(final String poReference)
 	{
 		normalizeAndAddIfNotNull(POReferences, poReference);
+	}
+
+	public String getEmail()
+	{
+		return CollectionUtils.singleElementOrNull(eMails);
+	}
+
+	public void setEmail(final String eMail)
+	{
+		normalizeAndAddIfNotNull(eMails, eMail);
 	}
 
 	public LocalDate getDateInvoiced()
@@ -188,6 +218,16 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		return _dateAcct;
+	}
+
+	public void setPaymentRule(@Nullable final String paymentRule)
+	{
+		this.paymentRule = paymentRule;
+	}
+
+	public String getPaymentRule()
+	{
+		return paymentRule;
 	}
 
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
@@ -462,4 +502,5 @@ public class InvoiceHeaderImplBuilder
 	{
 		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
+
 }

@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-{{ .Release.Name }}-rabbitmq
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-rabbitmq
+spec:
+  selector:
+    app: metasfresh-{{ .Release.Name }}-rabbitmq
+  ports:
+  - name: rabbitmq-broker
+    port: {{ .Values.rabbitmq.port.broker }}
+    protocol: TCP
+    targetPort: {{ .Values.rabbitmq.port.broker }}
+  - name: rabbitmq-management
+    port: {{ .Values.rabbitmq.port.management }}
+    protocol: TCP
+    targetPort: {{ .Values.rabbitmq.port.management }}
+  sessionAffinity: None
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: metasfresh-{{ .Release.Name }}-rabbitmq
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-rabbitmq
+spec:
+  selector:
+    matchLabels:
+      app: metasfresh-{{ .Release.Name }}-rabbitmq
+  serviceName: metasfresh-{{ .Release.Name }}-rabbitmq
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: metasfresh-{{ .Release.Name }}-rabbitmq
+    spec:
+      containers:
+      - name: metasfresh-{{ .Release.Name }}-rabbitmq
+        image: {{ .Values.rabbitmq.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: {{ .Values.rabbitmq.port.broker }}
+          - containerPort: {{ .Values.rabbitmq.port.management }}
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-rabbitmq-secret
+              key: username
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-{{ .Release.Name }}-rabbitmq-secret
+              key: password
+        - name: RABBITMQ_DEFAULT_VHOST
+          value: /
+        - name: RABBITMQ_MNESIA_DIR
+          value: /rabbitmq/data
+        - name: RABBITMQ_LOGS
+          value: /rabbitmq/logs
+        volumeMounts:
+        - name: host-localtime
+          mountPath: /etc/localtime 
+          readOnly: true
+        - name: host-timezone
+          mountPath: /etc/timezone          
+          readOnly: true
+        - name: data
+          mountPath: rabbitmq
+      initContainers:
+      - name: take-data-dir-ownership
+        image: busybox
+        command: ['sh', '-c', 'chown 999:999 -R /rabbitmq']
+        volumeMounts:
+        - name: data
+          mountPath: rabbitmq
+      volumes:
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      namespace: {{ .Release.Namespace }}
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.rabbitmq.dataStorageSize }}
+      storageClassName: {{ .Values.storageClassName }}
+          

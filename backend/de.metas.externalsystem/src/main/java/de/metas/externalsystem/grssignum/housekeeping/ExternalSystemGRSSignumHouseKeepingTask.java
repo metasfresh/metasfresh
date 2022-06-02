@@ -69,7 +69,7 @@ public class ExternalSystemGRSSignumHouseKeepingTask implements IStartupHouseKee
 
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getAllByType(ExternalSystemType.GRSSignum);
+		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(ExternalSystemType.GRSSignum);
 
 		parentConfigList
 				.stream()

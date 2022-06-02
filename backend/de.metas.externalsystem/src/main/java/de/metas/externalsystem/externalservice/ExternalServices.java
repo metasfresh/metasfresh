@@ -101,7 +101,7 @@ public class ExternalServices
 	@NonNull
 	public List<JsonExternalStatusResponseItem> getStatusInfo(@NonNull final ExternalSystemType externalSystemType)
 	{
-		final List<ExternalSystemParentConfig> externalSystemConfigs = externalSystemConfigRepo.getAllByType(externalSystemType);
+		final List<ExternalSystemParentConfig> externalSystemConfigs = externalSystemConfigRepo.getActiveByType(externalSystemType);
 
 		final Map<ExternalSystemParentConfigId, String> configId2ChildValue = externalSystemConfigs.stream()
 				.collect(ImmutableMap.toImmutableMap(ExternalSystemParentConfig::getId,

@@ -16,18 +16,17 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.awt.Color;
+import de.metas.logging.LogManager;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
-
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
 
 /**
  * Mutable Tree Node (not a PO).
@@ -42,19 +41,6 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	 */
 	private static final long serialVersionUID = -6046137020835035816L;
 
-	/**
-	 * Construct Model TreeNode
-	 *
-	 * @param node_ID node
-	 * @param seqNo sequence
-	 * @param name name
-	 * @param description description
-	 * @param parent_ID parent
-	 * @param isSummary summary
-	 * @param imageIndicator image indicator
-	 * @param onBar on bar
-	 * @param color color
-	 */
 	public MTreeNode(
 			final int node_ID,
 			final int seqNo,
@@ -62,12 +48,10 @@ public final class MTreeNode extends DefaultMutableTreeNode
 			final String description,
 			final int parent_ID,
 			final boolean isSummary,
-			final String imageIndicator,
+			@Nullable final String imageIndicator,
 			final boolean onBar,
-			final Color color)
+			@Nullable final Color color)
 	{
-		super();
-		// log.debug( "MTreeNode Node_ID=" + node_ID + ", Parent_ID=" + parent_ID + " - " + name);
 		m_node_ID = node_ID;
 		m_seqNo = seqNo;
 		m_name = name;
@@ -81,67 +65,111 @@ public final class MTreeNode extends DefaultMutableTreeNode
 		setImageIndicator(imageIndicator);
 		m_onBar = onBar;
 		m_color = color;
-	}   // MTreeNode
+	}
 
-	/** Node ID */
+	/**
+	 * Node ID
+	 */
 	private final int m_node_ID;
-	/** SeqNo */
+	/**
+	 * SeqNo
+	 */
 	private int m_seqNo;
-	/** Name */
+	/**
+	 * Name
+	 */
 	private String m_name;
-	/** Description */
+	/**
+	 * Description
+	 */
 	private String m_description;
-	/** Parent ID */
+	/**
+	 * Parent ID
+	 */
 	private int m_parent_ID;
-	/** Summary */
+	/**
+	 * Summary
+	 */
 	private boolean m_isSummary;
-	/** Image Indicator */
-	private String m_imageIndicator;
-	/** Index to Icon */
+	/**
+	 * Image Indicator
+	 */
+	@Nullable private String m_imageIndicator;
+	/**
+	 * Index to Icon
+	 */
 	private int m_imageIndex = 0;
-	/** On Bar */
+	/**
+	 * On Bar
+	 */
 	private boolean m_onBar;
-	/** Color */
-	private Color m_color;
-	/** AD_Tree_ID */
+	/**
+	 * Color
+	 */
+	@Nullable private Color m_color;
+	/**
+	 * AD_Tree_ID
+	 */
 	private int m_AD_Tree_ID = -1;
-	/** Table */
+	/**
+	 * Table
+	 */
 	private int m_AD_Table_ID = -1;
 
-	/** Logger */
-	private static Logger log = LogManager.getLogger(MTreeNode.class);
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LogManager.getLogger(MTreeNode.class);
 
 	/*************************************************************************/
 
-	/** Window - 1 */
+	/**
+	 * Window - 1
+	 */
 	public static int TYPE_WINDOW = 1;
-	/** Report - 2 */
+	/**
+	 * Report - 2
+	 */
 	public static int TYPE_REPORT = 2;
-	/** Process - 3 */
+	/**
+	 * Process - 3
+	 */
 	public static int TYPE_PROCESS = 3;
-	/** Workflow - 4 */
+	/**
+	 * Workflow - 4
+	 */
 	public static int TYPE_WORKFLOW = 4;
-	/** Workbench - 5 */
+	/**
+	 * Workbench - 5
+	 */
 	public static int TYPE_WORKBENCH = 5;
-	/** Variable - 6 */
+	/**
+	 * Variable - 6
+	 */
 	public static int TYPE_SETVARIABLE = 6;
-	/** Choice - 7 */
+	/**
+	 * Choice - 7
+	 */
 	public static int TYPE_USERCHOICE = 7;
-	/** Action - 8 */
+	/**
+	 * Action - 8
+	 */
 	public static int TYPE_DOCACTION = 8;
 
-	/** 16* 16 Icons */
+	/**
+	 * 16* 16 Icons
+	 */
 	private static String[] IMAGES = new String[]
 			{
-		null,
-		"mWindow",
-		"mReport",
-		"mProcess",
-		"mWorkFlow",
-		"mWorkbench",
-		"mSetVariable",
-		"mUserChoice",
-		"mDocAction"
+					null,
+					"mWindow",
+					"mReport",
+					"mProcess",
+					"mWorkFlow",
+					"mWorkbench",
+					"mSetVariable",
+					"mUserChoice",
+					"mDocAction"
 			};
 
 	/**************************************************************************
@@ -188,17 +216,17 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	 */
 	public String getSeqNo()
 	{
-		String retValue = "0000" + m_seqNo;	// not more than 100,000 nodes
+		String retValue = "0000" + m_seqNo;    // not more than 100,000 nodes
 		if (m_seqNo > 99999)
 		{
 			log.error("MTreeNode.getIndex - TreeNode Index is higher than 99999");
 		}
 		if (retValue.length() > 5)
 		{
-			retValue = retValue.substring(retValue.length() - 5);	// last 5
+			retValue = retValue.substring(retValue.length() - 5);    // last 5
 		}
 		return retValue;
-	}	// getSeqNo
+	}    // getSeqNo
 
 	public void setSeqNo(final int seqNo)
 	{
@@ -213,7 +241,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public int getParent_ID()
 	{
 		return m_parent_ID;
-	}	// getParent
+	}    // getParent
 
 	public void setParent_ID(final int parent_ID)
 	{
@@ -242,7 +270,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public String getDescription()
 	{
 		return m_description;
-	}	// getDescription
+	}    // getDescription
 
 	/**************************************************************************
 	 * Set Summary (allow children)
@@ -290,7 +318,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 		{
 			;
 		}
-		else if (imageIndicator.equals(X_AD_WF_Node.ACTION_UserWindow)		// Window
+		else if (imageIndicator.equals(X_AD_WF_Node.ACTION_UserWindow)        // Window
 				|| imageIndicator.equals(X_AD_WF_Node.ACTION_UserForm))
 		{
 			imageIndex = TYPE_WINDOW;
@@ -299,7 +327,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 		{
 			imageIndex = TYPE_REPORT;
 		}
-		else if (imageIndicator.equals(X_AD_WF_Node.ACTION_AppsProcess)		// Process
+		else if (imageIndicator.equals(X_AD_WF_Node.ACTION_AppsProcess)        // Process
 				|| imageIndicator.equals(X_AD_WF_Node.ACTION_AppsTask))
 		{
 			imageIndex = TYPE_PROCESS;
@@ -332,7 +360,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	 *
 	 * @param imageIndicator image indicator (W/X/R/P/F/T/B) MWFNode.ACTION_
 	 */
-	public void setImageIndicator(final String imageIndicator)
+	public void setImageIndicator(@Nullable final String imageIndicator)
 	{
 		if (imageIndicator != null)
 		{
@@ -364,7 +392,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 			return null;
 		}
 		return IMAGES[index];
-	}	// getIcon
+	}    // getIcon
 
 	public static final boolean isValidIconType(final int type)
 	{
@@ -379,7 +407,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public String getIconName()
 	{
 		return getIconName(m_imageIndex);
-	}	// getIcon
+	}    // getIcon
 
 	/**
 	 * Get Shortcut Bar info
@@ -399,7 +427,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public boolean isProcess()
 	{
 		return X_AD_Menu.ACTION_Process.equals(m_imageIndicator);
-	}	// isProcess
+	}    // isProcess
 
 	/**
 	 * Is Report
@@ -409,7 +437,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public boolean isReport()
 	{
 		return X_AD_Menu.ACTION_Report.equals(m_imageIndicator);
-	}	// isReport
+	}    // isReport
 
 	/**
 	 * Is Window
@@ -419,7 +447,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public boolean isWindow()
 	{
 		return X_AD_Menu.ACTION_Window.equals(m_imageIndicator);
-	}	// isWindow
+	}    // isWindow
 
 	/**
 	 * Is Workbench
@@ -429,7 +457,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public boolean isWorkbench()
 	{
 		return X_AD_Menu.ACTION_Workbench.equals(m_imageIndicator);
-	}	// isWorkbench
+	}    // isWorkbench
 
 	/**
 	 * Is Workflow
@@ -439,7 +467,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public boolean isWorkFlow()
 	{
 		return X_AD_Menu.ACTION_WorkFlow.equals(m_imageIndicator);
-	}	// isWorkFlow
+	}    // isWorkFlow
 
 	/**
 	 * Is Form
@@ -449,7 +477,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public boolean isForm()
 	{
 		return X_AD_Menu.ACTION_Form.equals(m_imageIndicator);
-	}	// isForm
+	}    // isForm
 
 	/**
 	 * Is Task
@@ -459,7 +487,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public boolean isTask()
 	{
 		return X_AD_Menu.ACTION_Task.equals(m_imageIndicator);
-	}	// isTask
+	}    // isTask
 
 	/**
 	 * Get Color
@@ -473,13 +501,17 @@ public final class MTreeNode extends DefaultMutableTreeNode
 			return m_color;
 		}
 		return Color.black;
-	}	// getColor
+	}    // getColor
 
 	/*************************************************************************/
 
-	/** Last found ID */
+	/**
+	 * Last found ID
+	 */
 	private int m_lastID = -1;
-	/** Last found Node */
+	/**
+	 * Last found Node
+	 */
 	private MTreeNode m_lastNode = null;
 
 	/**
@@ -714,7 +746,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 				null, // imageIndicator,
 				false, // onBar,
 				null // color
-				);
+		);
 		ph.setIsPlaceholder(true);
 		ph.setParent(this);
 		return ph;
@@ -756,9 +788,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	}
 
 	/**
-	 *
 	 * @return <code>true</code> if at least one of this node's children is not displayed. If the given node has no children at all, then the method returns the result of {@link #isDisplayed()}.
-	 *
 	 * @see #isDisplayed()
 	 */
 	public boolean isFiltered()
@@ -883,12 +913,12 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	{
 		AD_Task_ID = aD_Task_ID;
 	}
-	
+
 	public int getWEBUI_Board_ID()
 	{
 		return WEBUI_Board_ID;
 	}
-	
+
 	public void setWEBUI_Board_ID(final int WEBUI_Board_ID)
 	{
 		this.WEBUI_Board_ID = WEBUI_Board_ID;
@@ -898,38 +928,38 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	{
 		this.isCreateNewRecord = isCreateNewRecord;
 	}
-	
+
 	public boolean isCreateNewRecord()
 	{
 		return isCreateNewRecord;
 	}
-	
-	public void setWEBUI_NameBrowse (final String webuiNameBrowse)
+
+	public void setWEBUI_NameBrowse(final String webuiNameBrowse)
 	{
 		this.webuiNameBrowse = webuiNameBrowse;
 	}
 
-	public String getWEBUI_NameBrowse() 
+	public String getWEBUI_NameBrowse()
 	{
 		return webuiNameBrowse;
 	}
-	
-	public void setWEBUI_NameNew (final String webuiNameNew)
+
+	public void setWEBUI_NameNew(final String webuiNameNew)
 	{
 		this.webuiNameNew = webuiNameNew;
 	}
 
-	public String getWEBUI_NameNew() 
+	public String getWEBUI_NameNew()
 	{
 		return webuiNameNew;
 	}
 
-	public void setWEBUI_NameNewBreadcrumb (final String webuiNameNewBreadcrumb)
+	public void setWEBUI_NameNewBreadcrumb(final String webuiNameNewBreadcrumb)
 	{
 		this.webuiNameNewBreadcrumb = webuiNameNewBreadcrumb;
 	}
 
-	public String getWEBUI_NameNewBreadcrumb() 
+	public String getWEBUI_NameNewBreadcrumb()
 	{
 		return webuiNameNewBreadcrumb;
 	}
@@ -941,8 +971,10 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	{
 		this.mainTableName = mainTableName;
 	}
-	
-	/** @return table name of main tab or null */
+
+	/**
+	 * @return table name of main tab or null
+	 */
 	public String getMainTableName()
 	{
 		return mainTableName;

@@ -25,17 +25,23 @@ package de.metas.cucumber.stepdefs.productionorder;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMLine_StepDefData;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
@@ -46,28 +52,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_OrderLine_Candidate_StepDef
 {
 	private final M_Product_StepDefData productTable;
-	private final StepDefData<I_PP_Product_BOMLine> productBOMLineTable;
-	private final StepDefData<I_PP_OrderLine_Candidate> ppOrderLineCandidateTable;
-	private final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable;
+	private final PP_Product_BOMLine_StepDefData productBOMLineTable;
+	private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
+	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public PP_OrderLine_Candidate_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData<I_PP_Product_BOMLine> productBOMLineTable,
-			@NonNull final StepDefData<I_PP_OrderLine_Candidate> ppOrderLineCandidateTable,
-			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable)
+			@NonNull final PP_Product_BOMLine_StepDefData productBOMLineTable,
+			@NonNull final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable,
+			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
 	{
 		this.productTable = productTable;
 		this.productBOMLineTable = productBOMLineTable;
 		this.ppOrderLineCandidateTable = ppOrderLineCandidateTable;
 		this.ppOrderCandidateTable = ppOrderCandidateTable;
+		this.attributeSetInstanceTable = attributeSetInstanceTable;
 	}
 
 	@And("^after not more than (.*)s, PP_OrderLine_Candidates are found$")
@@ -127,5 +138,24 @@ public class PP_OrderLine_Candidate_StepDef
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderLineCandidateQueryExecutor);
+
+		final I_PP_OrderLine_Candidate ppOrderLineCandidate = ppOrderLineCandidateTable.get(orderLineCandidateRecordIdentifier);
+
+		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
+		{
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+			assertThat(expectedASI).isNotNull();
+
+			final AttributesKey expectedASIKey = AttributesKeys
+					.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			final AttributesKey ppOrderLineCandAttributesKeys = AttributesKeys
+					.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(ppOrderLineCandidate.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			assertThat(ppOrderLineCandAttributesKeys).isEqualTo(expectedASIKey);
+		}
 	}
 }

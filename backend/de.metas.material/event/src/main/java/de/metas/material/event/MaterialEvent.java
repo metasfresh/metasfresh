@@ -32,12 +32,15 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
+import de.metas.material.event.simulation.SimulatedDemandCreatedEvent;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
 import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.material.event.tracking.AllEventsProcessedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 
@@ -102,7 +105,11 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = TransactionDeletedEvent.TYPE, value = TransactionDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = StockCandidateChangedEvent.TYPE, value = StockCandidateChangedEvent.class),
-		@JsonSubTypes.Type(name = MaterialCandidateChangedEvent.TYPE, value = MaterialCandidateChangedEvent.class)
+		@JsonSubTypes.Type(name = MaterialCandidateChangedEvent.TYPE, value = MaterialCandidateChangedEvent.class),
+
+		@JsonSubTypes.Type(name = SimulatedDemandCreatedEvent.TYPE, value = SimulatedDemandCreatedEvent.class),
+		@JsonSubTypes.Type(name = DeactivateAllSimulatedCandidatesEvent.TYPE, value = DeactivateAllSimulatedCandidatesEvent.class),
+		@JsonSubTypes.Type(name = AllEventsProcessedEvent.TYPE, value = AllEventsProcessedEvent.class)
 })
 public interface MaterialEvent
 {

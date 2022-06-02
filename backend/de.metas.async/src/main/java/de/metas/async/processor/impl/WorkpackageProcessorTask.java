@@ -34,11 +34,11 @@ import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.event.WorkpackageProcessedEvent;
 import de.metas.async.event.WorkpackageProcessedEvent.Status;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkpackageSkipRequest;
+import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.async.spi.IWorkpackageProcessor2;
@@ -87,7 +87,6 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -115,6 +114,8 @@ class WorkpackageProcessorTask implements Runnable
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final transient QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+
 	private final IWorkpackageLogsRepository logsRepository;
 
 	private final IQueueProcessor queueProcessor;
@@ -388,14 +389,14 @@ class WorkpackageProcessorTask implements Runnable
 	}
 
 	private RuntimeException handleServiceConnectionException(
-			@Nullable final String trxName, 
+			@Nullable final String trxName,
 			@NonNull final ServiceConnectionException e)
 	{
 		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
 		if (retryAdvisedInMillis > 0)
 		{
 			Loggables.addLog("Caught a {} with an advise to retry in {}ms; ServiceURL={}",
-					e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
+							 e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
 
 			final WorkpackageSkipRequestException //
 					workpackageSkipRequestException = WorkpackageSkipRequestException
@@ -546,20 +547,20 @@ class WorkpackageProcessorTask implements Runnable
 		queueDAO.save(workPackage);
 
 		final String processorName;
-		final I_C_Queue_Block queueBlock = workPackage.getC_Queue_Block();
-		if (queueBlock == null)
+		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoIdOrNull(workPackage.getC_Queue_PackageProcessor_ID());
+		if (packageProcessorId == null)
 		{
 			processorName = "<null>"; // might happen in unit tests.
 		}
 		else
 		{
-			final I_C_Queue_PackageProcessor packageProcessor = queueBlock.getC_Queue_PackageProcessor();
+			final I_C_Queue_PackageProcessor packageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(packageProcessorId);
 			processorName = CoalesceUtil.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
 		}
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
 
 		// log error to console (for later audit):
-		Loggables.withLogger(logger,Level.DEBUG).addLog(msg, skipException);
+		Loggables.withLogger(logger, Level.DEBUG).addLog(msg, skipException);
 
 		createAndFireEventWithStatus(workPackage, SKIPPED);
 	}
@@ -638,13 +639,13 @@ class WorkpackageProcessorTask implements Runnable
 
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
 		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
-				.topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
-				.recipientUserId(userInChargeId)
-				.contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
-				.contentADMessageParam(workpackageId)
-				.contentADMessageParam(errorMsg)
-				.targetAction(TargetRecordAction.of(I_C_Queue_WorkPackage.Table_Name, workpackageId))
-				.build());
+											   .topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
+											   .recipientUserId(userInChargeId)
+											   .contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
+											   .contentADMessageParam(workpackageId)
+											   .contentADMessageParam(errorMsg)
+											   .targetAction(TargetRecordAction.of(I_C_Queue_WorkPackage.Table_Name, workpackageId))
+											   .build());
 	}
 
 	/**

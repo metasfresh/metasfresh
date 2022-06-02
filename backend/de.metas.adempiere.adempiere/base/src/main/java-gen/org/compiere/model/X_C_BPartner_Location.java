@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -41,7 +41,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getAddress() 
+	public java.lang.String getAddress()
 	{
 		return get_ValueAsString(COLUMNNAME_Address);
 	}
@@ -302,6 +302,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsEphemeral (final boolean IsEphemeral)
+	{
+		set_Value (COLUMNNAME_IsEphemeral, IsEphemeral);
+	}
+
+	@Override
+	public boolean isEphemeral()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEphemeral);
+	}
+
+	@Override
 	public void setIsHandOverLocation (final boolean IsHandOverLocation)
 	{
 		set_Value (COLUMNNAME_IsHandOverLocation, IsHandOverLocation);
@@ -311,6 +323,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isHandOverLocation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHandOverLocation);
+	}
+
+	@Override
+	public void setIsNameReadWrite (final boolean IsNameReadWrite)
+	{
+		set_Value (COLUMNNAME_IsNameReadWrite, IsNameReadWrite);
+	}
+
+	@Override
+	public boolean isNameReadWrite() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNameReadWrite);
 	}
 
 	@Override

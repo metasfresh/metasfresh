@@ -8,13 +8,15 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedulePro
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
-import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
-import de.metas.manufacturing.workflows_api.activity_handlers.ConfirmationActivityHandler;
-import de.metas.manufacturing.workflows_api.activity_handlers.MaterialReceiptActivityHandler;
-import de.metas.manufacturing.workflows_api.activity_handlers.RawMaterialsIssueActivityHandler;
-import de.metas.manufacturing.workflows_api.activity_handlers.WorkReportActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.ConfirmationActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueAdjustmentActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
@@ -71,12 +73,18 @@ public class ManufacturingRestService
 		{
 			case RawMaterialsIssue:
 				return builder.wfActivityType(RawMaterialsIssueActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case RawMaterialsIssueAdjustment:
+				return builder.wfActivityType(RawMaterialsIssueAdjustmentActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case MaterialReceipt:
 				return builder.wfActivityType(MaterialReceiptActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case WorkReport:
 				return builder.wfActivityType(WorkReportActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case ActivityConfirmation:
 				return builder.wfActivityType(ConfirmationActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case GenerateHUQRCodes:
+				return builder.wfActivityType(GenerateHUQRCodesActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case ScanScaleDevice:
+				return builder.wfActivityType(ScanScaleDeviceActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			default:
 				throw new AdempiereException("Unknown type: " + jobActivity);
 		}
@@ -95,8 +103,6 @@ public class ManufacturingRestService
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
-
-	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId) {return manufacturingJobService.withActivityCompleted(job, jobActivityId);}
 
 	public ManufacturingJob processEvent(final ManufacturingJob job, final JsonManufacturingOrderEvent event)
 	{

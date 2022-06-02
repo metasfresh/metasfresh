@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import de.metas.banking.BankId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -31,6 +32,7 @@ import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.job.JobId;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
@@ -45,7 +47,9 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.title.TitleId;
 import de.metas.user.UserId;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -75,6 +79,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 import static org.compiere.util.TimeUtil.asLocalDate;
@@ -337,6 +342,9 @@ final class BPartnerCompositesLoader
 				//
 				.changeLog(recordChangeLog)
 				//
+				.creditorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getCreditorId()))
+				.debtorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getDebtorId()))
+				//
 				.build();
 	}
 
@@ -370,6 +378,7 @@ final class BPartnerCompositesLoader
 				.locationType(extractBPartnerLocationType(bPartnerLocationRecord))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bPartnerLocationRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
 				.build();
@@ -386,6 +395,7 @@ final class BPartnerCompositesLoader
 				.billToDefault(bpartnerLocationRecord.isBillToDefault())
 				.shipTo(bpartnerLocationRecord.isShipTo())
 				.shipToDefault(bpartnerLocationRecord.isShipToDefault())
+				.visitorsAddress(bpartnerLocationRecord.isVisitorsAddress())
 				.build();
 	}
 
@@ -482,15 +492,21 @@ final class BPartnerCompositesLoader
 				.subjectMatterContact(contactRecord.isSubjectMatterContact())
 				.invoiceEmailEnabled(StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), null))
 				.phone(trimBlankToNull(contactRecord.getPhone()))
+				.phone2(trimBlankToNull(contactRecord.getPhone2()))
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
 				.description(trimBlankToNull(contactRecord.getDescription()))
 				.fax(trimBlankToNull(contactRecord.getFax()))
 				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
+				.titleId(TitleId.ofRepoIdOrNull(contactRecord.getC_Title_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(contactRecord.getAD_Org_Mapping_ID()))
 				.roles(roles)
 				.changeLog(changeLog)
 				.birthday(TimeUtil.asLocalDate(contactRecord.getBirthday(), SystemTime.zoneId()))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID(), contactRecord.getC_BPartner_Location_ID()))
+				.email2(trimBlankToNull(contactRecord.getEMail2()))
+				.email3(trimBlankToNull(contactRecord.getEMail3()))
+				.title(trimBlankToNull(contactRecord.getTitle()))
+				.jobId(JobId.ofRepoIdOrNull(contactRecord.getC_Job_ID()))
 				.build();
 	}
 
@@ -541,6 +557,7 @@ final class BPartnerCompositesLoader
 
 		final RecordChangeLog changeLog = ChangeLogUtil.createBankAccountChangeLog(bankAccountRecord, relatedRecords);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bankAccountRecord.getC_BPartner_ID());
+		final BankId bankId = BankId.ofRepoIdOrNull(bankAccountRecord.getC_Bank_ID());
 
 		return BPartnerBankAccount.builder()
 				.id(BPartnerBankAccountId.ofRepoId(bpartnerId, bankAccountRecord.getC_BP_BankAccount_ID()))
@@ -549,6 +566,7 @@ final class BPartnerCompositesLoader
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.bankId(bankId)
 				.build();
 	}
 

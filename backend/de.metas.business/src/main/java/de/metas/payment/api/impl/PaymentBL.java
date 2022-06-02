@@ -61,15 +61,14 @@ import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -78,7 +77,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -88,7 +86,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -183,19 +180,17 @@ public class PaymentBL implements IPaymentBL
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
 
-		// Get Currency Rate
-		BigDecimal CurrencyRate = BigDecimal.ONE;
 		if (currencyId != null
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			CurrencyRate = currencyBL.getCurrencyRate(
-					invoiceCurrencyId,
-					currencyId,
-					ConvDate,
-					conversionTypeId,
-					clientId,
-					orgId)
+			final BigDecimal CurrencyRate = currencyBL.getCurrencyRate(
+							invoiceCurrencyId,
+							currencyId,
+							ConvDate,
+							conversionTypeId,
+							clientId,
+							orgId)
 					.getConversionRate();
 
 			//
@@ -311,12 +306,12 @@ public class PaymentBL implements IPaymentBL
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
 			currencyRate = currencyBL.getCurrencyRate(
-					invoiceCurrencyId,
-					currencyId,
-					convDate,
-					conversionTypeId,
-					clientId,
-					orgId)
+							invoiceCurrencyId,
+							currencyId,
+							convDate,
+							conversionTypeId,
+							clientId,
+							orgId)
 					.getConversionRate();
 		}
 
@@ -595,54 +590,53 @@ public class PaymentBL implements IPaymentBL
 	private void fullyWriteOffPayment(@NonNull final I_C_Payment payment, final @NonNull Instant writeOffDate)
 	{
 		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+		final Money writeOffAmt = Money.of(paymentDAO.getAvailableAmount(paymentId), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
 
-		final Money moneyToWriteOff = Money.of(paymentDAO.getAvailableAmount(paymentId),
-											   CurrencyId.ofRepoId(payment.getC_Currency_ID()));
-
-		logger.debug("Writing off {} for the payment{}",
-					 moneyToWriteOff,
-					 payment);
-
-		final I_C_AllocationHdr allocationHdr = paymentWriteOff(payment, moneyToWriteOff.toBigDecimal(), TimeUtil.asDate(writeOffDate) );
+		logger.debug("Writing off {} for the payment {}", writeOffAmt, payment);
+		final I_C_AllocationHdr allocationHdr = paymentWriteOff(payment, writeOffAmt, writeOffDate, null);
 
 		logger.debug("C_AllocationHdr {} created for the payment {}", allocationHdr, payment);
 	}
 
 	@Override
-	public I_C_AllocationHdr paymentWriteOff(final I_C_Payment payment, final BigDecimal writeOffAmt, final Date date)
+	public void paymentWriteOff(
+			final @NonNull PaymentId paymentId,
+			final @NonNull Money writeOffAmt,
+			final @NonNull Instant writeOffDate,
+			@Nullable final String description)
 	{
-		Check.assumeNotNull(payment, "payment not null");
-		Check.assume(writeOffAmt != null && writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
-		Check.assumeNotNull(date, "date not null");
+		final I_C_Payment payment = getById(paymentId);
+		paymentWriteOff(payment, writeOffAmt, writeOffDate, description);
+	}
 
-		final Timestamp dateTS = TimeUtil.asTimestamp(date);
+	@Override
+	public I_C_AllocationHdr paymentWriteOff(
+			@NonNull final I_C_Payment payment,
+			@NonNull final Money writeOffAmt,
+			@NonNull final Instant writeOffDate,
+			@Nullable String description)
+	{
+		Check.assume(writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
 
-		final Mutable<I_C_AllocationHdr> allocHdrRef = new Mutable<>();
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
-		{
+		final Timestamp writeOffDateTS = TimeUtil.asTimestamp(writeOffDate);
 
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final I_C_AllocationHdr allocHdr = allocationBL.newBuilder()
+		return trxManager.callInThreadInheritedTrx(
+				() -> allocationBL.newBuilder()
 						.orgId(payment.getAD_Org_ID())
-						.currencyId(payment.getC_Currency_ID())
-						.dateAcct(dateTS)
-						.dateTrx(dateTS)
+						.currencyId(writeOffAmt.getCurrencyId())
+						.dateAcct(writeOffDateTS)
+						.dateTrx(writeOffDateTS)
+						.description(StringUtils.trimBlankToNull(description))
 						//
 						.addLine()
 						.orgId(payment.getAD_Org_ID())
 						.bpartnerId(payment.getC_BPartner_ID())
 						.paymentId(payment.getC_Payment_ID())
-						.paymentWriteOffAmt(writeOffAmt)
+						.paymentWriteOffAmt(writeOffAmt.toBigDecimal())
 						.lineDone()
 						//
-						.createAndComplete();
-				allocHdrRef.setValue(allocHdr);
-			}
-		});
-
-		return allocHdrRef.getValue();
+						.createAndComplete()
+		);
 	}
 
 	@Override
@@ -839,8 +833,8 @@ public class PaymentBL implements IPaymentBL
 			@NonNull final ExternalId externalId,
 			@NonNull final OrgId orgId)
 	{
-		final Optional<I_C_Payment> payment = paymentDAO.getByExternalId(externalId, orgId);
-		return Optional.ofNullable(payment.isPresent() ? PaymentId.ofRepoId(payment.get().getC_Payment_ID()) : null);
+		return paymentDAO.getByExternalId(externalId, orgId)
+				.map(payment -> PaymentId.ofRepoId(payment.getC_Payment_ID()));
 	}
 
 	@Override

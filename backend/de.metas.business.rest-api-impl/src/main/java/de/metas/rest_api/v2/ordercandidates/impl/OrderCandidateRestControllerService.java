@@ -263,19 +263,19 @@ public class OrderCandidateRestControllerService
 
 		responseBuilder.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build());
 
-		if (request.getShip())
+		if (CoalesceUtil.coalesceNotNull(request.getShip(), false))
 		{
 			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponseFromOLCands(validOlCandIds));
 		}
 
-		if (request.getInvoice())
+		if (CoalesceUtil.coalesceNotNull(request.getInvoice(), false))
 		{
 			responseBuilder.invoiceInfoResponse(jsonInvoiceService.buildInvoiceInfoResponseFromOrderIds(orderIds));
 		}
 
 		return responseBuilder.build();
 	}
-	
+
 	@Nullable
 	private BPartnerId resolveExternalBPartnerIdentifier(
 			@Nullable final String orgCode,

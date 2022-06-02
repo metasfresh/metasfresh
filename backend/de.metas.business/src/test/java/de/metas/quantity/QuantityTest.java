@@ -41,7 +41,6 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import static java.math.BigDecimal.ONE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -277,26 +276,12 @@ public class QuantityTest
 	}
 
 	@Test
-	public void compare_same_uom_different_amout()
-	{
-		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
-		final BigDecimal qtyAmount = new BigDecimal("123");
-
-		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
-		final Quantity qtyToCompare = Quantity.of(qtyAmount.add(ONE), qty_uom);
-
-		assertThat(qtyToCompare).isGreaterThan(qty);
-		assertThat(qty).isLessThan(qtyToCompare);
-	}
-
-	@Test
 	public void min()
 	{
-		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
-		final BigDecimal qtyAmount = new BigDecimal("123");
+		final I_C_UOM uom = uomHelper.createUOM("uom", 2);
 
-		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
-		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
+		final Quantity qty = Quantity.of("123", uom);
+		final Quantity qtyPlusOne = Quantity.of("124", uom);
 
 		assertThat(qty.min(qtyPlusOne)).isSameAs(qty);
 		assertThat(qtyPlusOne.min(qty)).isSameAs(qty);
@@ -305,41 +290,67 @@ public class QuantityTest
 	@Test
 	public void max()
 	{
-		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
-		final BigDecimal qtyAmount = new BigDecimal("123");
+		final I_C_UOM uom = uomHelper.createUOM("uom", 2);
 
-		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
-		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
+		final Quantity qty = Quantity.of("123", uom);
+		final Quantity qtyPlusOne = Quantity.of("124", uom);
 
 		assertThat(qty.max(qtyPlusOne)).isSameAs(qtyPlusOne);
 		assertThat(qtyPlusOne.max(qty)).isSameAs(qtyPlusOne);
 	}
 
-	@Test
-	public void compare()
+	@Nested
+	class compare
 	{
-		final I_C_UOM qty_uom = uomHelper.createUOM("qty_uom", 2);
-		final BigDecimal qtyAmount = new BigDecimal("123");
+		@Test
+		public void misc()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("uom", 2);
 
-		final Quantity qty = Quantity.of(qtyAmount, qty_uom);
-		final Quantity otherQty = Quantity.of(qtyAmount, qty_uom);
-		final Quantity qtyPlusOne = Quantity.of(qtyAmount.add(ONE), qty_uom);
-
-		assertThat(qty.compareTo(qtyPlusOne)).isLessThan(0);
-		assertThat(qtyPlusOne.compareTo(qty)).isGreaterThan(0);
-		assertThat(otherQty.compareTo(qty)).isEqualTo(0);
+			assertThat(Quantity.of("123", uom)).isLessThan(Quantity.of("124", uom));
+			assertThat(Quantity.of("124", uom)).isGreaterThan(Quantity.of("123", uom));
+			assertThat(Quantity.of("123", uom)).isEqualByComparingTo(Quantity.of("123", uom));
+		}
 	}
 
-	@Test
-	public void addPercent_100_plus_30perc()
+	@Nested
+	class addPercent
 	{
-		final I_C_UOM uom2 = uomHelper.createUOM("uom2", 2);
-		assertThat(Quantity.of(100, uom2).add(Percent.of(33)).toBigDecimal())
-				.isEqualTo("133.00");
+		@Test
+		public void qty100_plus_33perc_uomPrecision2()
+		{
+			final I_C_UOM uom2 = uomHelper.createUOM("uom2", 2);
+			assertThat(Quantity.of(100, uom2).add(Percent.of(33)).toBigDecimal())
+					.isEqualTo("133.00");
+		}
 
-		final I_C_UOM uom5 = uomHelper.createUOM("uom5", 5);
-		assertThat(Quantity.of(100, uom5).add(Percent.of(33)).toBigDecimal())
-				.isEqualTo("133.00000");
+		@Test
+		public void qty100_plus_33perc_uomPrecision5()
+		{
+			final I_C_UOM uom5 = uomHelper.createUOM("uom5", 5);
+			assertThat(Quantity.of(100, uom5).add(Percent.of(33)).toBigDecimal())
+					.isEqualTo("133.00000");
+		}
+	}
+
+	@Nested
+	class subtractPercent
+	{
+		@Test
+		public void qty100_subtract_33perc_uomPrecision2()
+		{
+			final I_C_UOM uom2 = uomHelper.createUOM("uom2", 2);
+			assertThat(Quantity.of(100, uom2).subtract(Percent.of(33)).toBigDecimal())
+					.isEqualTo("67.00");
+		}
+
+		@Test
+		public void qty100_subtract_33perc_uomPrecision5()
+		{
+			final I_C_UOM uom5 = uomHelper.createUOM("uom5", 5);
+			assertThat(Quantity.of(100, uom5).subtract(Percent.of(33)).toBigDecimal())
+					.isEqualTo("67.00000");
+		}
 	}
 
 	@Test
@@ -356,7 +367,7 @@ public class QuantityTest
 	public void test_ToString_SameUOMs()
 	{
 		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
-		assertThat(Quantity.of(5, uom).toString()).isEqualTo("5 UOM");
+		assertThat(Quantity.of(5, uom)).hasToString("5 UOM");
 	}
 
 	@Test
@@ -365,7 +376,7 @@ public class QuantityTest
 		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
 		final I_C_UOM sourceUOM = uomHelper.createUOM("SOURCE_UOM", 2);
 		final Quantity qty = new Quantity(BigDecimal.valueOf(5), uom, BigDecimal.valueOf(4), sourceUOM);
-		assertThat(qty.toString()).isEqualTo("5 UOM (source: 4 SOURCE_UOM)");
+		assertThat(qty).hasToString("5 UOM (source: 4 SOURCE_UOM)");
 	}
 
 	@Test

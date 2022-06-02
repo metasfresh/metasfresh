@@ -149,6 +149,8 @@ public class GetOrdersProcessor implements Processor
 				.taxProductIdProvider(getTaxProductIdProvider(request))
 				.skipNextImportStartingTimestamp(skipNextImportStartingTimestamp)
 				.jsonProductLookup(JsonProductLookup.valueOf(productLookup))
+				.metasfreshIdJsonPath(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_METASFRESH_ID))
+				.shopwareIdJsonPath(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID))
 				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 				.build();
 	}

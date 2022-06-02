@@ -42,8 +42,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
+import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
+
 @RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bom/version" })
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/bom/version" })
 @RestController
 public class ProductBOMRestController
 {

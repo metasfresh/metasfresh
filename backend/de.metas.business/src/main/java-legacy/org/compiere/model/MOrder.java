@@ -461,11 +461,15 @@ public class MOrder extends X_C_Order implements IDocument
 			setInvoiceRule(invoiceRule.getCode());
 		}
 
-		ss = bp.getPaymentRule();
-		if (!Check.isEmpty(ss, true))
+		if (isSOTrx() && Check.isNotBlank(bp.getPaymentRule()))
 		{
-			setPaymentRule(ss);
+			setPaymentRule(bp.getPaymentRule());
 		}
+		else if (!isSOTrx() && Check.isNotBlank(bp.getPaymentRulePO()))
+		{
+			setPaymentRule(bp.getPaymentRulePO());
+		}
+
 		// Sales Rep
 		final int salesRepId = bp.getSalesRep_ID();
 		if (salesRepId > 0)
