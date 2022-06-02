@@ -96,8 +96,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.C_Project_ID.Identifier |
-      | order_1               | 1444       | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | 1000000                     |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.C_Project_ID.Identifier |
+      | order_1               | 1444       | 2156425                  | 2205175                           | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | 1000000                     |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Project_ID.Identifier |
