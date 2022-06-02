@@ -34,6 +34,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13086](https://github.com/metasfresh/metasfresh/issues/13086) Windows adjustments & fixing Trls 
   * [#13046](https://github.com/metasfresh/metasfresh/issues/13046) Fix DatePicker format in custom windows
   * [#13062](https://github.com/metasfresh/metasfresh/issues/13062) Pricing issue
   * [#13043](https://github.com/metasfresh/metasfresh/issues/13043) Fix disabled unit tests from `de.metas.manufacturing`
