@@ -29,7 +29,7 @@ CMD if [[ -f "/run/secrets/mysecret" ]] ;\
         --project-id 1 \
         --name "New test run" \
         --source "cucumber-tests-github" \
-		--tags $REFNAME \
+        --tags $REFNAME \
         --results target/*.xml \
         -- mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true ;\
     else \

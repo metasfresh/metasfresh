@@ -10,6 +10,7 @@ FROM cypress/included:9.7.0
 WORKDIR /e2e
 
 # RUN npm install -g cypress
+RUN npm install -g @testmo/testmo-cli
 
 COPY e2e/package.json .
 RUN npm install
@@ -30,7 +31,7 @@ ENTRYPOINT if [[ -f "/run/secrets/mysecret" ]] ;\
         --project-id 1 \
         --name "New test run" \
         --source "cypress-tests-github" \
-		--tags $REFNAME \
+        --tags $REFNAME \
         --results cypress/results/*.xml \
         -- cypress run --reporter mocha-multi-reporters --reporter-options configFile=reporter-config.json ;\
     else \
