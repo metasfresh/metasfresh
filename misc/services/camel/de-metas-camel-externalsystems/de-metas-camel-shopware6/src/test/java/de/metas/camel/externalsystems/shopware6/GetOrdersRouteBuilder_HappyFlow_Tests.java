@@ -122,10 +122,9 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_IS_TAX_INCLUDED;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_METASFRESH_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_IS_TAX_INCLUDED;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_EMAIL;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;

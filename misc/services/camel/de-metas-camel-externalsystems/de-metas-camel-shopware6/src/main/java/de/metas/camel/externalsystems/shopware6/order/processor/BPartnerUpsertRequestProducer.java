@@ -28,8 +28,8 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderCustomer;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderAddressDetails;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
-import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
+import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;

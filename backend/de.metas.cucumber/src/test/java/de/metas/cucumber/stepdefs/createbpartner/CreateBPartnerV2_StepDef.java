@@ -39,7 +39,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
