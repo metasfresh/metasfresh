@@ -21,7 +21,7 @@ ENV CYPRESS_baseUrl=http://webui:80
 ARG REFNAME=local
 ENV REFNAME=$REFNAME
 
-CMD if [[ -f "/run/secrets/mysecret" ]] ;\
+ENTRYPOINT if [[ -f "/run/secrets/mysecret" ]] ;\
     then \
         TESTMO_TOKEN="$(cat /run/secrets/mysecret)" \
         testmo automation:run:submit \

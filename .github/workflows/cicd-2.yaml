@@ -21,13 +21,38 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: build-commons
-        run: docker buildx build -f Dockerfile.common -t metas-mvn-common:latest -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+        run: |
+          docker buildx build \
+          -f Dockerfile.common \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }} \
+          -t metas-mvn-common:latest \
+          -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          .
       - name: build-backend
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
-        run: docker buildx build -f Dockerfile.backend --secret id=mysecret --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} -t metas-mvn-backend:latest -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+        run: |
+          docker buildx build \
+          -f Dockerfile.backend \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          --cache-from mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} \
+          --secret id=mysecret \
+          -t metas-mvn-backend:latest \
+          -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          .
       - name: build-camel
-        run: docker buildx build -f Dockerfile.camel -t mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }} -t mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT .
+        run: |
+          docker buildx build \
+          -f Dockerfile.camel \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --cache-from mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          .
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
