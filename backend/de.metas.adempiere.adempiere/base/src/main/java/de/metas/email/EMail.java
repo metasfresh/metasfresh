@@ -1106,6 +1106,9 @@ public final class EMail implements Serializable
 		return ImmutableList.copyOf(_attachments);
 	}
 
+	/**
+	   *  Do send the mail to the respective mail address, even if the {@code DebugMailTo} SysConfig is set.
+	   */
 	public void forceRealEmailRecipients()
 	{
 		_forceRealEmailRecipients = true;
