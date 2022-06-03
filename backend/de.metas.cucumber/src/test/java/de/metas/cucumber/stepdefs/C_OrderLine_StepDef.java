@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -53,6 +54,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -66,7 +68,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 
@@ -80,6 +82,7 @@ public class C_OrderLine_StepDef
 	private final C_BPartner_StepDefData partnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_Project_StepDefData projectTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
@@ -92,6 +95,7 @@ public class C_OrderLine_StepDef
 			@NonNull final C_BPartner_StepDefData partnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
@@ -103,6 +107,7 @@ public class C_OrderLine_StepDef
 		this.partnerTable = partnerTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
+		this.projectTable = projectTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.flatrateConditionsTable = flatrateConditionsTable;
 		this.contractTable = contractTable;
@@ -450,5 +455,16 @@ public class C_OrderLine_StepDef
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		orderLineTable.putOrReplace(orderLineIdentifier, orderLine);
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final Integer projectId = projectTable.getOptional(projectIdentifier)
+					.map(I_C_Project::getC_Project_ID)
+					.orElseGet(() -> Integer.parseInt(projectIdentifier));
+
+			assertThat(orderLine.getC_Project_ID()).isEqualTo(projectId);
+		}
 	}
 }

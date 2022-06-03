@@ -18,6 +18,7 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
@@ -133,6 +134,8 @@ public final class OLCand implements IProductPriceAware
 	private final BigDecimal qtyShipped;
 
 	@Getter
+	private final ProjectId projectId;
+	@Getter
 	private final AssignSalesRepRule assignSalesRepRule;
 
 	@Getter
@@ -172,6 +175,7 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
 			@Nullable final Quantity qtyItemCapacityEff,
+			@Nullable final ProjectId projectId,
 			@NonNull final AssignSalesRepRule assignSalesRepRule,
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
@@ -217,6 +221,7 @@ public final class OLCand implements IProductPriceAware
 
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;
+		this.projectId = projectId;
 
 		this.assignSalesRepRule = assignSalesRepRule;
 		this.salesRepInternalId = salesRepInternalId;

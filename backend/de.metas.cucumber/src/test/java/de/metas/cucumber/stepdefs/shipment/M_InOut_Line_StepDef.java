@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs.shipment;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -36,6 +38,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -45,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Product_ID;
 
 public class M_InOut_Line_StepDef
@@ -57,17 +60,20 @@ public class M_InOut_Line_StepDef
 	private final M_InOutLine_StepDefData shipmentLineTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Product_StepDefData productTable;
+	private final C_Project_StepDefData projectTable;
 
 	public M_InOut_Line_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
 			@NonNull final M_InOutLine_StepDefData shipmentLineTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_Product_StepDefData productTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Project_StepDefData projectTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
 		this.orderLineTable = orderLineTable;
 		this.productTable = productTable;
+		this.projectTable = projectTable;
 	}
 
 	@And("^validate the created (shipment|material receipt) lines$")
@@ -129,5 +135,16 @@ public class M_InOut_Line_StepDef
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final Integer projectId = projectTable.getOptional(projectIdentifier)
+					.map(I_C_Project::getC_Project_ID)
+					.orElseGet(() -> Integer.parseInt(projectIdentifier));
+
+			assertThat(shipmentLine.getC_Project_ID()).isEqualTo(projectId);
+		}
 	}
 }
