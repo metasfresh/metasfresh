@@ -43,6 +43,7 @@ public class InvoiceHeaderImplBuilder
 	private int AD_Org_ID;
 
 	private InputDataSourceId inputDataSourceId;
+	private boolean inputDataSourceIdset;
 
 	private final Set<Integer> C_Order_IDs = new LinkedHashSet<>();
 
@@ -337,17 +338,15 @@ public class InvoiceHeaderImplBuilder
 
 	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId)
 	{
-		if (this.inputDataSourceId == null)
+		if (this.inputDataSourceId == null && !inputDataSourceIdset)
 		{
 			this.inputDataSourceId = inputDataSourceId;
+			inputDataSourceIdset = true;
 		}
 		else if (this.inputDataSourceId != inputDataSourceId)
 		{
 			this.inputDataSourceId = null;
-		}
-		else if (this.inputDataSourceId == inputDataSourceId)
-		{
-			this.inputDataSourceId = inputDataSourceId;
+			inputDataSourceIdset = true;
 		}
 	}
 
