@@ -1,15 +1,26 @@
-FROM maven:3.8.4-jdk-8
+FROM alpine as poms
+
+WORKDIR /backend
+COPY backend . 
+RUN find . -type f ! -name "pom.xml" -exec rm -r {} \;
+
+
+FROM maven:3.8.4-jdk-8 as build
 
 RUN apt-get update && apt-get install -y locales npm && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 RUN npm install -g @testmo/testmo-cli
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
+WORKDIR /backend
+
 COPY --from=metas-mvn-common:latest /root/.m2 /root/.m2/
 
-WORKDIR /backend
+COPY --from=poms /backend .
+RUN mvn de.qaware.maven:go-offline-maven-plugin:1.2.8:resolve-dependencies
+
 COPY backend .
-RUN mvn clean install -Dmaven.gitcommitid.skip=true -DskipTests
+RUN mvn clean install -o -Dmaven.gitcommitid.skip=true -DskipTests
 
 ARG REFNAME=local
 ENV REFNAME=$REFNAME
