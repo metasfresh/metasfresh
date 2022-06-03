@@ -30,6 +30,27 @@ public interface I_C_Invoice
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_Invoice.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -426,7 +447,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Zielbelegart.
+	 * Set Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -436,7 +457,7 @@ public interface I_C_Invoice
 	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
-	 * Get Zielbelegart.
+	 * Get Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -1127,29 +1148,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
-	 * Set Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIncoterm (@Nullable java.lang.String Incoterm);
-
-	/**
-	 * Get Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIncoterm();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_Incoterm = new ModelColumn<>(I_C_Invoice.class, "Incoterm", null);
-	String COLUMNNAME_Incoterm = "Incoterm";
-
-	/**
 	 * Set IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
@@ -1512,7 +1510,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
-	 * Set Preisliste.
+	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -1522,7 +1520,7 @@ public interface I_C_Invoice
 	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Preisliste.
+	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -1766,6 +1764,31 @@ public interface I_C_Invoice
 	String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
+	 * Set Debtor invoice count.
+	 * Number of associated debtor invoices
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setSales_Invoice_Count (int Sales_Invoice_Count);
+
+	/**
+	 * Get Debtor invoice count.
+	 * Number of associated debtor invoices
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getSales_Invoice_Count();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_Sales_Invoice_Count = new ModelColumn<>(I_C_Invoice.class, "Sales_Invoice_Count", null);
+	String COLUMNNAME_Sales_Invoice_Count = "Sales_Invoice_Count";
+
+	/**
 	 * Set Sales partner code.
 	 *
 	 * <br>Type: String
@@ -1953,25 +1976,4 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_UserFlag = new ModelColumn<>(I_C_Invoice.class, "UserFlag", null);
 	String COLUMNNAME_UserFlag = "UserFlag";
-
-	/**
-	 * Set Inputsource.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_InputDataSource_ID (int inputDataSourceId);
-
-	/**
-	 * Get Inputsource.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_InputDataSource_ID();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_Invoice.class, "AD_InputDataSource_ID", null);
-	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 }
