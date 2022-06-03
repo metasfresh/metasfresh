@@ -418,8 +418,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					invoice.setEMail(inout.getEMail());
 				}
-
-				invoice.setAD_InputDataSource_ID(inout.getAD_InputDataSource_ID());
 			}
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
