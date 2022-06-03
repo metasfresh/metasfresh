@@ -15,8 +15,7 @@ RUN npm install -g @testmo/testmo-cli
 COPY e2e/package.json .
 RUN npm install
 
-COPY e2e/ ./
-RUN cat /e2e/cypress/config.js
+COPY e2e/ .
 
 ENV CYPRESS_baseUrl=http://webui:80
 

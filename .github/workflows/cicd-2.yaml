@@ -187,14 +187,11 @@ jobs:
   cypress:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
+    environment: 'test'
     steps:
       - uses: actions/checkout@v3
       - name: build-e2e
         run: |
-          pwd
-          ls -al e2e
-          ls -al e2e/cypress
-          cat e2e/cypress/config.js
           docker buildx build \
           -f Dockerfile.e2e \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -214,6 +211,7 @@ jobs:
   redeploy:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
+    environment: 'test'
     if: github.ref == 'refs/heads/mzorn/wip-local-dockerbuilds'
     steps:
       - name: remove-running-pods
