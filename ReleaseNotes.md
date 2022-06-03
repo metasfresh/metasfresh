@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13084](https://github.com/metasfresh/metasfresh/issues/13084) Create REST Endpoint to read and write C_Projects
   * [#12938](https://github.com/metasfresh/metasfresh/issues/12938) Shopware - set pricing system on created business partners
   * [#12824](https://github.com/metasfresh/metasfresh/issues/12824) Clarify and document externalsystems multithreading behavior
   * [#13054](https://github.com/metasfresh/metasfresh/issues/13054) Optimize `Fresh_Account_Info_Report` 
