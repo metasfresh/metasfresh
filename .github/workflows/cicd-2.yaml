@@ -164,6 +164,7 @@ jobs:
   cucumber:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
+    environment: 'test'
     steps:
       - uses: actions/checkout@v3
       - name: build-cucumber
@@ -211,7 +212,6 @@ jobs:
   redeploy:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
-    environment: 'test'
     if: github.ref == 'refs/heads/mzorn/wip-local-dockerbuilds'
     steps:
       - name: remove-running-pods
