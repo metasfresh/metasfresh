@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#12824](https://github.com/metasfresh/metasfresh/issues/12824) Clarify and document externalsystems multithreading behavior 
   * [#13054](https://github.com/metasfresh/metasfresh/issues/13054) Optimize `Fresh_Account_Info_Report` 
   * [#13074](https://github.com/metasfresh/metasfresh/issues/13074) externalsystems - document timestamp-usage
   * [#13017](https://github.com/metasfresh/metasfresh/issues/13017) EDI - Extend INVOIC export format
