@@ -93,6 +93,7 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 				.bPartnerLocationIdentifierCustomMetasfreshPath(bPartnerLocationMetasfreshIdJSONPath)
 				.emailCustomPath(importOrdersRouteContext.getEmailJsonPath())
 				.matchingShopware6Mapping(importOrdersRouteContext.getMatchingShopware6Mapping())
+				.priceListBasicInfo(importOrdersRouteContext.getPriceListBasicInfo())
 				.build();
 
 		final BPartnerRequestProducerResult bPartnerRequestProducerResult = bPartnerUpsertRequestProducer.run();

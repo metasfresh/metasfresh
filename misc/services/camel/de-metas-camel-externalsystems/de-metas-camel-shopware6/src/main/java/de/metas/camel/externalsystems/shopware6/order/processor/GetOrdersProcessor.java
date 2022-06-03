@@ -35,6 +35,7 @@ import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
+import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
 import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -150,6 +151,7 @@ public class GetOrdersProcessor implements Processor
 				.jsonProductLookup(JsonProductLookup.valueOf(productLookup))
 				.metasfreshIdJsonPath(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_METASFRESH_ID))
 				.shopwareIdJsonPath(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID))
+				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 				.build();
 	}
 

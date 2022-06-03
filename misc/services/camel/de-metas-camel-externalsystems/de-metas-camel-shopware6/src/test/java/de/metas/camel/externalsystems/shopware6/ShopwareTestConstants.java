@@ -48,6 +48,8 @@ public interface ShopwareTestConstants
 
 	String MOCK_JSON_METASFRESH_ID_PATH = "/orderCustomer/customFields/externalReference";
 	String MOCK_JSON_SHOPWARE_ID_PATH = "/orderCustomer/customFields/userId";
+	String MOCK_TARGET_PRICE_LIST_ID = "121";
+	String MOCK_IS_TAX_INCLUDED = "true";
 	String MOCK_BILLING_ADDRESS_HTTP_URL = "https://www.matter.com/api/order-address/billingAddressId";
 
 	String MOCK_BPARTNER_UPSERT = "mock:bPartnerUpsert";

@@ -82,6 +82,7 @@ import de.metas.job.JobRepository;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -150,6 +151,7 @@ public class JsonRetrieverService
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
 			.put(BPartner.CREDITOR_ID, JsonResponseBPartner.CREDITOR_ID)
 			.put(BPartner.DEBTOR_ID, JsonResponseBPartner.DEBTOR_ID)
+			.put(BPartner.CUSTOMER_PRICING_SYSTEM_ID, JsonResponseBPartner.PRICING_SYSTEM_ID)
 			.build();
 
 	/**
@@ -347,6 +349,7 @@ public class JsonRetrieverService
 				.customer(bpartner.isCustomer())
 				.company(bpartner.isCompany())
 				.salesPartnerCode(bpartner.getSalesPartnerCode())
+				.pricingSystemId(JsonMetasfreshId.ofOrNull(PricingSystemId.toRepoId(bpartner.getCustomerPricingSystemId())))
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
 				.paymentRule(Optional.ofNullable(bpartner.getPaymentRule())
 									 .map(PaymentRule::getCode)
