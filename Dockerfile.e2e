@@ -1,26 +1,18 @@
-# this docker image contains electron; 
-# running the docker image with electron fails, probably due to one of these reasons: https://github.com/cypress-io/cypress/issues/1235
-# FROM cypress/base:10
-
-# See the available Docker images here: https://github.com/cypress-io/cypress-docker-images/tree/master/browsers
-# FROM cypress/browsers:node14.16.0-chrome90-ff88
-
+# see https://github.com/cypress-io/cypress-docker-images
 FROM cypress/included:9.7.0
 
-WORKDIR /e2e
-
-# RUN npm install -g cypress
 RUN npm install -g @testmo/testmo-cli
 
+WORKDIR /e2e
 COPY e2e/package.json .
 RUN npm install
 
 COPY e2e/ .
 
-ENV CYPRESS_baseUrl=http://webui:80
-
 ARG REFNAME=local
 ENV REFNAME=$REFNAME
+ENV CYPRESS_baseUrl=http://webui:80
+
 SHELL ["/bin/bash", "-c"]
 
 ENTRYPOINT if [[ -f "/run/secrets/mysecret" ]] ;\

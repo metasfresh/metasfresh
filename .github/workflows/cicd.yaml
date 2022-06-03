@@ -1,4 +1,4 @@
-name: cicd-2
+name: cicd
 on: [push]
 jobs:
 
@@ -212,6 +212,7 @@ jobs:
   redeploy:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
+    environment: 'dev'
     if: github.ref == 'refs/heads/mzorn/wip-local-dockerbuilds'
     steps:
       - name: remove-running-pods
