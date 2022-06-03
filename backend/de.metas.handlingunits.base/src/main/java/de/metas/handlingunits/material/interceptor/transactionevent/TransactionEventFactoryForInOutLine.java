@@ -245,7 +245,7 @@ public class TransactionEventFactoryForInOutLine
 	private InOutAndLineId getReversalShipmentLine(@NonNull final I_M_InOutLine shipmentLine)
 	{
 		return inoutsRepo.getReversalLineForLineId(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()))
-				.map(reversalLine -> InOutAndLineId.ofRepoId(reversalLine.getM_InOut_ID(), reversalLine.getReversalLine_ID()))
+				.map(reversalLine -> InOutAndLineId.ofRepoId(reversalLine.getM_InOut_ID(), reversalLine.getM_InOutLine_ID()))
 				.orElseThrow(() -> new AdempiereException("Missing reversalLine although M_InOutLine.getReversalLine_ID() > 0")
 						.appendParametersToMessage()
 						.setParameter("ReversalLine_ID", shipmentLine.getReversalLine_ID()));
