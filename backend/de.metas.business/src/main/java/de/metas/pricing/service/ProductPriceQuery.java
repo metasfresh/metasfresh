@@ -174,10 +174,10 @@ public class ProductPriceQuery
 
 			if (asiId == null)
 			{
-				return -1;
+				return 1;
 			}
 
-			return attributeDAO.retrieveAttributeInstances(asiId).size();
+			return -1 * attributeDAO.retrieveAttributeInstances(asiId).size();
 		};
 
 		final Comparator<T> orderByNumberOfMatchingAttributes = Comparator.comparing(orderByNumberOfMatchedAttributes)
@@ -186,7 +186,7 @@ public class ProductPriceQuery
 
 		return matchingProductPrices
 				.stream()
-				.max(orderByNumberOfMatchingAttributes)
+				.min(orderByNumberOfMatchingAttributes)
 				.orElse(null);
 	}
 

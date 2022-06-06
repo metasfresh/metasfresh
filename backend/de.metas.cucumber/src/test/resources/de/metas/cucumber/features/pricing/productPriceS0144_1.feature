@@ -44,7 +44,7 @@ Feature: Product price validation
       | Identifier       | Name             | OPT.M_Product_Category_ID.Identifier |
       | product_02062022 | product_02062022 | standard_category                    |
 
-     # add CU-TU allocation for `product_02062022`
+    # add CU-TU allocation for `product_02062022`
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name        |
       | huPackingTU           | huPackingTU |
@@ -192,6 +192,21 @@ Feature: Product price validation
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_S0144.1_100 | order_S0144.1_100     | product_02062022        | 1          | null                                   |
+    And metasfresh contains M_AttributeSetInstance with identifier "ol_S0144.1_100ASI":
+  """
+  {
+    "attributeInstances":[
+      {
+        "attributeCode":"1000002",
+          "valueStr":"null"
+      }
+    ]
+  }
+  """
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ol_S0144.1_100            | ol_S0144.1_100ASI                        |
+
     # validate that Age attribute propagated from productCategory on order line has null value
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Age |
@@ -378,9 +393,24 @@ Feature: Product price validation
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_S0144.1_170 | order_S0144.1_170     | product_02062022        | 7          | huProductTU_Y                          |
 
+    And metasfresh contains M_AttributeSetInstance with identifier "ol_S0144.1_170ASI":
+  """
+  {
+    "attributeInstances":[
+      {
+        "attributeCode":"1000002",
+          "valueStr":"null"
+      }
+    ]
+  }
+  """
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ol_S0144.1_170            | ol_S0144.1_170ASI                        |
+
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | ol_S0144.1_170            | order_S0144.1_170     | 2022-06-01      | product_02062022        | 7          | 0            | 0           | 170   | 0        | EUR          | false     | null                                   |
+      | ol_S0144.1_170            | order_S0144.1_170     | 2022-06-01      | product_02062022        | 7          | 0            | 0           | 170   | 0        | EUR          | false     | huProductTU_Y                          |
 
 
   @from:cucumber
@@ -390,8 +420,23 @@ Feature: Product price validation
       | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
       | order_S0144.1_180 | true    | bpartner_02062022        | 2022-06-01  | po_S0144.1_180  |
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | ol_S0144.1_180 | order_S0144.1_180     | product_02062022        | 8          |
+      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ol_S0144.1_180 | order_S0144.1_180     | product_02062022        | 8          | huProductTU_X                          |
+
+    And metasfresh contains M_AttributeSetInstance with identifier "ol_S0144.1_180ASI":
+  """
+  {
+    "attributeInstances":[
+      {
+        "attributeCode":"1000002",
+          "valueStr":"null"
+      }
+    ]
+  }
+  """
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
+      | ol_S0144.1_180            | ol_S0144.1_180ASI                        |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |

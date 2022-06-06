@@ -30,6 +30,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -57,6 +58,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -205,12 +207,15 @@ public class C_OrderLine_StepDef
 
 			final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 
-			final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID.Identifier");
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final Integer expectedProductId = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 			//dev-note: we assume the tests are not using the same product on different lines
 			final I_C_OrderLine orderLineRecord = queryBL.createQueryBuilder(I_C_OrderLine.class)
 					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
-					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId)
+					.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, expectedProductId)
 					.create()
 					.firstOnlyNotNull(I_C_OrderLine.class);
 
@@ -234,6 +239,37 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	@And("update C_OrderLine:")
+	public void updateC_OrderLine(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+			assertThat(orderLine).isNotNull();
+
+			final String attributeSetInstanceIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(attributeSetInstanceIdentifier))
+			{
+				final String asiIdentifierValue = DataTableUtil.nullToken2Null(attributeSetInstanceIdentifier);
+				if (asiIdentifierValue == null)
+				{
+					orderLine.setM_AttributeSetInstance_ID(-1);
+				}
+				else
+				{
+					final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+					assertThat(attributeSetInstance).isNotNull();
+
+					orderLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+				}
+			}
+
+			save(orderLine);
+			orderLineTable.putOrReplace(orderLineIdentifier, orderLine);
+		}
+	}
+
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
@@ -252,7 +288,11 @@ public class C_OrderLine_StepDef
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
 		assertThat(orderLine.getC_Order_ID()).isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
-		assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
+
+		if (dateOrdered != null)
+		{
+			assertThat(orderLine.getDateOrdered()).isEqualTo(dateOrdered);
+		}
 		assertThat(orderLine.getQtyDelivered()).isEqualTo(qtyDelivered);
 		assertThat(orderLine.getPriceEntered()).isEqualTo(price);
 		assertThat(orderLine.getDiscount()).isEqualTo(discount);
@@ -319,8 +359,16 @@ public class C_OrderLine_StepDef
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstanceId)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeInstance.class);
+
 		assertThat(attributeInstance).isNotNull();
 
-		assertThat(attributeInstance.getValue()).isEqualTo(value);
+		if (value == null)
+		{
+			assertThat(attributeInstance.getValue()).isNull();
+		}
+		else
+		{
+			assertThat(attributeInstance.getValue()).isEqualTo(value);
+		}
 	}
 }

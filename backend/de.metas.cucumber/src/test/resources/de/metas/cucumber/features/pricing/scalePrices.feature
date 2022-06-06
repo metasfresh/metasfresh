@@ -50,16 +50,16 @@ Feature: scale prices
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | bpartner_1               | 2022-05-17  |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier  | QtyEntered |
-      | ol_1       | o_1                   | salesProduct_180520225_1 | 8          |
-      | ol_2       | o_1                   | salesProduct_180520225_1 | 15         |
-      | ol_3       | o_1                   | salesProduct_180520225_1 | 150        |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier  | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | ol_1       | o_1                   | salesProduct_180520225_1 | 8          | huPIItemProduct_180520225_1            |
+      | ol_2       | o_1                   | salesProduct_180520225_1 | 15         | huPIItemProduct_180520225_1            |
+      | ol_3       | o_1                   | salesProduct_180520225_1 | 150        | huPIItemProduct_180520225_1            |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier  | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_1                      | o_1                   | 2022-05-17      | salesProduct_180520225_1 | 8          | 0            | 0           | 5     | 0        | EUR          | false     | huPIItemProduct_180520225_1            |
-      | ol_2                      | o_1                   | 2022-05-17      | salesProduct_180520225_1 | 15         | 0            | 0           | 4.5   | 0        | EUR          | false     |                                        |
-      | ol_3                      | o_1                   | 2022-05-17      | salesProduct_180520225_1 | 150        | 0            | 0           | 4     | 0        | EUR          | false     |                                        |
+      | ol_2                      | o_1                   | 2022-05-17      | salesProduct_180520225_1 | 15         | 0            | 0           | 4.5   | 0        | EUR          | false     | huPIItemProduct_180520225_1            |
+      | ol_3                      | o_1                   | 2022-05-17      | salesProduct_180520225_1 | 150        | 0            | 0           | 4     | 0        | EUR          | false     | huPIItemProduct_180520225_1            |
 
   @from:cucumber
   Scenario: scale price with 'Don't use scale price' set on product price
