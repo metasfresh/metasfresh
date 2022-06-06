@@ -8,7 +8,7 @@ import org.compiere.util.Evaluatees;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SqlOrderByValueTest
 {
@@ -83,6 +83,24 @@ class SqlOrderByValueTest
 					.isEqualTo("master.ProductName");
 			assertThat(sqlOrderByValue.toSourceSqlExpression().evaluate(Evaluatees.empty(), IExpressionEvaluator.OnVariableNotFound.Fail))
 					.isEqualTo("(SELECT Name FROM M_Product WHERE M_Product.M_Product_ID=master.M_Product_ID)");
+		}
+
+		@Test
+		void virtualColumn_with_JoinTableNameOrAliasIncludingDot_in_subquery()
+		{
+			final SqlOrderByValue sqlOrderByValue = SqlOrderByValue.builder()
+					.sqlSelectValue(SqlSelectValue.builder()
+							.virtualColumnSql(ColumnSql.ofSql("SELECT Name FROM M_Product WHERE M_Product.M_Product_ID=@JoinTableNameOrAliasIncludingDot@Parent_Product_ID", "C_OrderLine"))
+							.columnNameAlias("ParentProductName")
+							.build())
+					.joinOnTableNameOrAlias("master")
+					.build();
+
+			assertThat(sqlOrderByValue.isNull()).isFalse();
+			assertThat(sqlOrderByValue.toSqlUsingColumnNameAlias())
+					.isEqualTo("master.ParentProductName");
+			assertThat(sqlOrderByValue.toSourceSqlExpression().evaluate(Evaluatees.empty(), IExpressionEvaluator.OnVariableNotFound.Fail))
+					.isEqualTo("(SELECT Name FROM M_Product WHERE M_Product.M_Product_ID=master.Parent_Product_ID)");
 		}
 	}
 

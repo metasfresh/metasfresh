@@ -73,6 +73,24 @@ public class SqlDefaultDocumentFilterConverterTest
 			assertThat(converter.replaceTableNameWithTableAliasIfNeeded(columnSql, sqlOpts).toSqlString())
 					.isEqualTo("(SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla)");
 		}
+
+		@Test
+		public void usingFullTableName_with_JoinTableNameOrAliasIncludingDot_in_subquery()
+		{
+			final SqlEntityBinding entityBinding = Mockito.mock(SqlEntityBinding.class);
+			Mockito.doReturn("MasterTableName").when(entityBinding).getTableName();
+
+			final SqlDefaultDocumentFilterConverter converter = SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
+			final SqlSelectValue columnSql = SqlSelectValue.builder()
+					.columnNameAlias("columnAlias")
+					.virtualColumnSql(ColumnSql.ofSql("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=@JoinTableNameOrAliasIncludingDot@bla", "MasterTableName"))
+					.build();
+
+			final SqlOptions sqlOpts = SqlOptions.usingTableName("should_be_MasterTableName_but_DoesNotMatter");
+
+			assertThat(converter.replaceTableNameWithTableAliasIfNeeded(columnSql, sqlOpts).toSqlString())
+					.isEqualTo("(SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla)");
+		}
 	}
 
 	@Nested
