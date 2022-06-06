@@ -492,8 +492,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		if(gridFieldVO.isVirtualColumn())
 		{
-			final String sql = gridFieldVO.getColumnSQL(false);
-			return ColumnSql.ofSql(sql, contextTableName);
+			return gridFieldVO.getColumnSql(contextTableName);
 		}
 		else
 		{
