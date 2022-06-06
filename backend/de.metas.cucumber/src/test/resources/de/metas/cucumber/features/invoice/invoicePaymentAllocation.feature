@@ -643,8 +643,8 @@ Feature: invoice payment allocation
       | inv_210_2               | bpartner_1               | bpartner_location_1               | 30 Tage netto | true      | CO        | false      | 2.9         |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt |
-      | inv_210_1                   | payment_130                 | -5.95      | 0                |
-      | inv_210_2                   | payment_130                 | -3.05      | -2.9             |
+      | inv_210_1                   | payment_210                 | -5.95      | 0                |
+      | inv_210_2                   | payment_210                 | -3.05      | -2.9             |
 
     And apply DISCOUNT to invoices
       | C_Invoice_ID.Identifier | Amount |
