@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.window.descriptor.sql;
 
+import org.adempiere.ad.column.ColumnSql;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;

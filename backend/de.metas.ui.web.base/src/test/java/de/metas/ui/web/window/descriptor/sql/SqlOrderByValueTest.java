@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;

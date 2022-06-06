@@ -1,15 +1,15 @@
 package de.metas.ui.web.document.filter.sql;
 
 import de.metas.ui.web.view.descriptor.SqlAndParams;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import org.adempiere.ad.column.ColumnSql;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
