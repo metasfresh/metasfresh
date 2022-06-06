@@ -33,7 +33,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -47,12 +46,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
@@ -69,7 +68,6 @@ public class C_Payment_StepDef
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Payment_StepDefData paymentTable;
 	private final CurrencyRepository currencyRepository;
@@ -105,7 +103,7 @@ public class C_Payment_StepDef
 		switch (StepDefDocAction.valueOf(action))
 		{
 			case reversed:
-				payment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInvoice.completeIt() won't complete it
+				payment.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
 			case completed:
@@ -125,21 +123,18 @@ public class C_Payment_StepDef
 		final List<Map<String, String>> rows = table.asMaps();
 		for (final Map<String, String> dataTableRow : rows)
 		{
-			final Boolean paymentIsAllocated = DataTableUtil.extractBooleanForColumnName(dataTableRow, COLUMNNAME_C_Payment_ID + "." + COLUMNNAME_IsAllocated);
 			final String paymentIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Payment_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Boolean paymentIsAllocated = DataTableUtil.extractBooleanForColumnName(dataTableRow, COLUMNNAME_C_Payment_ID + "." + COLUMNNAME_IsAllocated);
 			final BigDecimal expectedAvailableAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT.OpenAmt");
-			final Optional<I_C_Payment> tablePaymentOpt = paymentTable.getOptional(paymentIdentifier);
+			final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+			InterfaceWrapperHelper.refresh(payment);
 
-			if (tablePaymentOpt.isPresent())
+			final BigDecimal paymentAvailableAmt = paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID()));
+
+			assertThat(payment.isAllocated()).isEqualTo(paymentIsAllocated);
+			if (expectedAvailableAmt != null)
 			{
-				final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(tablePaymentOpt.get().getC_Payment_ID()));
-				final BigDecimal paymentAvailableAmt = paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID()));
-
-				assertThat(payment.isAllocated()).isEqualTo(paymentIsAllocated);
-				if (expectedAvailableAmt != null)
-				{
-					assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
-				}
+				assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
 			}
 		}
 	}
@@ -159,6 +154,7 @@ public class C_Payment_StepDef
 		final String docTypeName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_DocType_ID + ".Name");
 		final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTypeName)
+				.orderBy(I_C_DocType.COLUMNNAME_Name)
 				.create()
 				.firstId(DocTypeId::ofRepoIdOrNull);
 
@@ -173,7 +169,7 @@ public class C_Payment_StepDef
 		payment.setPayAmt(paymentAmount);
 		payment.setC_Currency_ID(currencyId.getRepoId());
 		payment.setC_DocType_ID(docTypeId.getRepoId());
-		payment.setDateTrx(new Timestamp(System.currentTimeMillis()));
+		payment.setDateTrx(TimeUtil.asTimestamp(LocalDate.now()));
 		payment.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		payment.setIsReceipt(isReceipt);
 		payment.setIsAutoAllocateAvailableAmt(false);

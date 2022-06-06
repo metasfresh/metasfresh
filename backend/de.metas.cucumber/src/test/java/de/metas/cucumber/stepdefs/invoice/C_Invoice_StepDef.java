@@ -24,17 +24,9 @@ package de.metas.cucumber.stepdefs.invoice;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.allocation.api.IAllocationBL;
-import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
-import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
-import de.metas.banking.payment.paymentallocation.service.PayableDocument;
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
-import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
-import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
-import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -44,16 +36,13 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
-import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceCreditContext;
-import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
@@ -64,17 +53,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.payment.PaymentCurrencyContext;
-import de.metas.payment.PaymentDirection;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
@@ -88,10 +69,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AllocationLine;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
@@ -101,18 +81,13 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -123,15 +98,12 @@ import java.util.function.Supplier;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID;
 import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_C_AllocationLine.COLUMNNAME_DiscountAmt;
-import static org.compiere.model.I_C_AllocationLine.COLUMNNAME_WriteOffAmt;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_ConversionType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
-import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsPaid;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
@@ -141,8 +113,6 @@ import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
 
 public class C_Invoice_StepDef
 {
-	private final static transient Logger logger = LogManager.getLogger(C_Invoice_StepDef.class);
-
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -151,10 +121,10 @@ public class C_Invoice_StepDef
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
+	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
+	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
+
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -163,13 +133,6 @@ public class C_Invoice_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-	private final C_Payment_StepDefData paymentTable;
-	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
-	private final CurrencyRepository currencyRepository;
-	private final PaymentAllocationRepository paymentAllocationRepository;
-
-	private static final String WRITE_OFF_PROCESS = "WRITEOFF";
-	private static final String DISCOUNT_PROCESS = "DISCOUNT";
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -178,11 +141,7 @@ public class C_Invoice_StepDef
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final C_Payment_StepDefData paymentTable,
-			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final PaymentAllocationRepository paymentAllocationRepository)
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceCandTable = invoiceCandTable;
@@ -191,10 +150,6 @@ public class C_Invoice_StepDef
 		this.bpartnerTable = bpartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.orderLineTable = orderLineTable;
-		this.paymentTable = paymentTable;
-		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
-		this.currencyRepository = currencyRepository;
-		this.paymentAllocationRepository = paymentAllocationRepository;
 	}
 
 	@And("validate created invoices")
@@ -337,7 +292,7 @@ public class C_Invoice_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
 	}
 
-	@And("metasfresh contains C_Invoices")
+	@And("metasfresh contains C_Invoice:")
 	public void addC_Invoices(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
@@ -359,8 +314,10 @@ public class C_Invoice_StepDef
 			final BigDecimal creditMemoLineAmt = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "CreditMemo." + COLUMNNAME_PriceEntered);
 
 			final String creditMemoDocType = DataTableUtil.extractStringForColumnName(dataTableRow, "CreditMemo." + COLUMNNAME_C_DocType_ID + ".Name");
+
 			final DocTypeId creditMemoDocTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
 					.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, creditMemoDocType)
+					.orderBy(I_C_DocType.COLUMNNAME_Name)
 					.create()
 					.firstId(DocTypeId::ofRepoIdOrNull);
 
@@ -386,182 +343,6 @@ public class C_Invoice_StepDef
 
 			final String creditMemoIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "CreditMemo." + TABLECOLUMN_IDENTIFIER);
 			invoiceTable.putOrReplace(creditMemoIdentifier, creditMemo);
-		}
-	}
-
-	@And("allocate payments to invoices")
-	public void allocate_payment_to_invoice(@NonNull final DataTable table)
-	{
-		final List<Map<String, String>> rows = table.asMaps();
-
-		final ArrayList<PayableDocument> invoicesList = new ArrayList<>();
-		final ArrayList<PaymentDocument> paymentsList = new ArrayList<>();
-
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			if (invoiceIdentifier != null)
-			{
-				final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
-				final I_C_DocType invoiceDocType = queryBL.createQueryBuilder(I_C_DocType.class)
-						.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, invoice.getC_DocTypeTarget_ID())
-						.create()
-						.firstOnlyNotNull(I_C_DocType.class);
-
-				final InvoiceDocBaseType invoiceBaseDocType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
-
-				final BigDecimal invoiceOpenAmt = paymentAllocationRepository
-						.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-															.evaluationDate(ZonedDateTime.now())
-															.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-															.build())
-						.get(0).getOpenAmountConverted().getAsBigDecimal();
-
-				final Money invoiceOpenMoneyAmt = Money.of(invoiceOpenAmt, CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-
-				final InvoiceAmtMultiplier invoiceAmtMultiplier = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(SOTrx.ofBoolean(invoice.isSOTrx()), invoiceBaseDocType.isCreditMemo());
-
-				final PayableDocument invoiceDocument = PayableDocument.builder()
-						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-						.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
-						.documentNo(invoice.getDocumentNo())
-						.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
-						.creditMemo(InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType()).isCreditMemo())
-						.openAmt(invoiceOpenMoneyAmt.negateIf(!invoice.isSOTrx()))
-						.amountsToAllocate(AllocationAmounts.builder()
-												   .payAmt(invoiceOpenMoneyAmt)
-												   .build()
-												   .convertToRealAmounts(invoiceAmtMultiplier))
-						.date(invoice.getDateInvoiced().toLocalDateTime().toLocalDate())
-						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(invoice.getAD_Client_ID(), invoice.getAD_Org_ID()))
-						.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoId(invoice.getC_ConversionType_ID()))
-						.build();
-
-				invoicesList.add(invoiceDocument);
-			}
-
-			final String paymentIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Payment_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			if (paymentIdentifier != null)
-			{
-				final I_C_Payment payment = paymentTable.get(paymentIdentifier);
-
-				final Money paymentAvailableAmt = Money.of(paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID())), CurrencyId.ofRepoId(payment.getC_Currency_ID()));
-
-				final PaymentDocument paymentDocument = PaymentDocument.builder()
-						.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
-						.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
-						.documentNo(payment.getDocumentNo())
-						.paymentDirection(PaymentDirection.ofReceiptFlag(payment.isReceipt()))
-						.openAmt(paymentAvailableAmt)
-						.amountToAllocate(paymentAvailableAmt)
-						.dateTrx(payment.getDateTrx().toLocalDateTime().toLocalDate())
-						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(payment.getAD_Client_ID(), payment.getAD_Org_ID()))
-						.paymentCurrencyContext(PaymentCurrencyContext.NONE)
-						.build();
-
-				paymentsList.add(paymentDocument);
-			}
-		}
-
-		PaymentAllocationBuilder.newBuilder()
-				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
-				//
-				.defaultDateTrx(LocalDate.now()) //
-				.paymentDocuments(ImmutableList.copyOf(paymentsList)) //
-				.payableDocuments(ImmutableList.copyOf(invoicesList)) //
-				.allowPartialAllocations(true) //
-				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
-				.allowPurchaseSalesInvoiceCompensation(paymentsList.isEmpty() && invoicesList.size() > 1)
-				.build();
-	}
-
-	@And("^apply (.*) to invoices$")
-	public void apply_write_off_or_discount_to_invoice(final String processToApply, @NonNull final DataTable table)
-	{
-		final List<Map<String, String>> rows = table.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
-			final BigDecimal invoiceOpenAmt = paymentAllocationRepository
-					.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-														.evaluationDate(ZonedDateTime.now())
-														.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-														.build())
-					.get(0).getOpenAmountConverted().getAsBigDecimal();
-
-			final Money invoiceMoneyOpenAmt = Money.of(invoice.isSOTrx() ? invoiceOpenAmt : invoiceOpenAmt.negate(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-
-			trxManager.runInThreadInheritedTrx(() -> allocationBL.invoiceDiscountAndWriteOff(
-					IAllocationBL.InvoiceDiscountAndWriteOffRequest.builder()
-							.invoice(invoice)
-							.dateTrx(Instant.now())
-							.discountAmt(processToApply.equals(DISCOUNT_PROCESS) ? invoiceMoneyOpenAmt : null)
-							.writeOffAmt(processToApply.equals(WRITE_OFF_PROCESS) ? invoiceMoneyOpenAmt : null)
-							.build()));
-		}
-	}
-
-	@And("invoices are not allocated")
-	public void invoices_are_not_allocated(@NonNull final DataTable table)
-	{
-		final List<Map<String, String>> rows = table.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
-			final List<I_C_AllocationLine> allocationLines = allocationDAO.retrieveAllocationLines(invoice);
-
-			assertThat(allocationLines.isEmpty()).isEqualTo(true);
-		}
-	}
-
-	private void validateInvoiceAllocatedToPayment(@NonNull final Map<String, String> dataTableRow, @NonNull final I_C_Invoice invoice)
-	{
-		final Boolean invoiceIsPaid = DataTableUtil.extractBooleanForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Invoice_ID + "." + COLUMNNAME_IsPaid);
-
-		final BigDecimal invoiceOpenAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT.OpenAmt");
-
-		final BigDecimal invoiceWriteOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_WriteOffAmt);
-
-		final BigDecimal invoiceDiscountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_DiscountAmt);
-
-		assertThat(invoice.isPaid()).isEqualTo(invoiceIsPaid);
-
-		if (invoiceOpenAmt != null)
-		{
-			final InvoiceToAllocate invoiceToAllocate = paymentAllocationRepository
-					.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-														.evaluationDate(ZonedDateTime.now())
-														.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-														.build()).get(0);
-			assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).isEqualTo(invoiceOpenAmt);
-		}
-
-		final Optional<I_C_AllocationLine> noPaymentAllocationLineOpt = allocationDAO.retrieveAllocationLines(invoice).stream()
-				.filter(allocation -> PaymentId.ofRepoIdOrNull(allocation.getC_Payment_ID()) == null)
-				.findFirst();
-
-		if (invoiceWriteOffAmt != null)
-		{
-			noPaymentAllocationLineOpt.ifPresent(allocationLine ->
-												 {
-													 final BigDecimal allocLineWriteOffAmt = allocationLine.getWriteOffAmt();
-													 assertThat(invoice.isSOTrx() ? allocLineWriteOffAmt : allocLineWriteOffAmt.negate()).isEqualTo(invoiceWriteOffAmt);
-												 });
-		}
-		else if (invoiceDiscountAmt != null)
-		{
-			noPaymentAllocationLineOpt.ifPresent(allocationLine ->
-												 {
-													 final BigDecimal allocLineDiscountAmt = allocationLine.getDiscountAmt();
-													 assertThat(invoice.isSOTrx() ? allocLineDiscountAmt : allocLineDiscountAmt.negate()).isEqualTo(invoiceDiscountAmt);
-												 });
 		}
 	}
 
@@ -642,7 +423,26 @@ public class C_Invoice_StepDef
 		assertThat(paymentTermId).isNotNull();
 		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
 
-		validateInvoiceAllocatedToPayment(row, invoice);
+		{// payment related
+			final Boolean invoiceIsPaid = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsPaid, null);
+
+			final BigDecimal invoiceOpenAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT.OpenAmt");
+
+			if (invoiceIsPaid != null)
+			{
+				assertThat(invoice.isPaid()).isEqualTo(invoiceIsPaid);
+			}
+
+			if (invoiceOpenAmt != null)
+			{
+				final InvoiceToAllocate invoiceToAllocate = paymentAllocationRepository
+						.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
+															.evaluationDate(ZonedDateTime.now())
+															.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+															.build()).get(0);
+				assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).isEqualTo(invoiceOpenAmt);
+			}
+		}
 	}
 
 	public Boolean loadInvoice(@NonNull final Map<String, String> row)

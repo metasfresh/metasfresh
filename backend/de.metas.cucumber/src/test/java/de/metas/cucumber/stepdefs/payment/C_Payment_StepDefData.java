@@ -25,9 +25,6 @@ package de.metas.cucumber.stepdefs.payment;
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_C_Payment;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
 public class C_Payment_StepDefData extends StepDefData<I_C_Payment>
 {
 	public C_Payment_StepDefData()

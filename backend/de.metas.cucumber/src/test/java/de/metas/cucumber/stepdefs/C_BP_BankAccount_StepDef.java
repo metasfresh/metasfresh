@@ -85,7 +85,7 @@ public class C_BP_BankAccount_StepDef
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 
-		final String paymentIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
-		bpBankAccountTable.putOrReplace(paymentIdentifier, bpBankAccount);
+		final String bankAccountIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
+		bpBankAccountTable.putOrReplace(bankAccountIdentifier, bpBankAccount);
 	}
 }

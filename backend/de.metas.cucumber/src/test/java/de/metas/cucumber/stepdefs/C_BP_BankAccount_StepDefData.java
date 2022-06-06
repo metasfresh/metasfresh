@@ -24,9 +24,6 @@ package de.metas.cucumber.stepdefs;
 
 import org.compiere.model.I_C_BP_BankAccount;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
 public class C_BP_BankAccount_StepDefData extends StepDefData<I_C_BP_BankAccount>
 {
 	public C_BP_BankAccount_StepDefData()
