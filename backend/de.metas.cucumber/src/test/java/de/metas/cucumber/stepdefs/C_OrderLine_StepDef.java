@@ -345,9 +345,9 @@ public class C_OrderLine_StepDef
 	private void validateAttributeValue(@NonNull final I_C_OrderLine orderLine, @NonNull final String value)
 	{
 		final List<String> expectedAttrValuePair = StepDefUtil.splitByColon(value);
-		if (expectedAttrValuePair.isEmpty())
+		if (expectedAttrValuePair.size() != 2)
 		{
-			return;
+			throw new RuntimeException("AttributeValue argument in wrong format! value=" + value);
 		}
 
 		final String attributeIdentifier = expectedAttrValuePair.get(0);
@@ -364,23 +364,15 @@ public class C_OrderLine_StepDef
 					.setParameter("C_OrderLine_ID", orderLine.getC_OrderLine_ID());
 		}
 
-		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-		assertThat(attributeSetInstance).isNotNull();
-
 		final I_M_AttributeInstance attributeInstance = queryBL.createQueryBuilder(I_M_AttributeInstance.class)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, attributeSetInstanceId)
 				.addEqualsFilter(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
 				.create()
 				.firstOnlyOptional(I_M_AttributeInstance.class)
-				.orElse(null);
-
-		if (attributeInstance == null)
-		{
-			throw new AdempiereException("No M_AttributeInstance found for M_Attribute_ID and ASI")
-					.appendParametersToMessage()
-					.setParameter("M_Attribute_ID", attribute.getM_Attribute_ID())
-					.setParameter("M_AttributeSetInstance_ID", attributeSetInstanceId);
-		}
+				.orElseThrow(() -> new AdempiereException("No M_AttributeInstance found for M_Attribute_ID and ASI")
+						.appendParametersToMessage()
+						.setParameter("M_Attribute_ID", attribute.getM_Attribute_ID())
+						.setParameter("M_AttributeSetInstance_ID", attributeSetInstanceId));
 
 		if (expectedAttrValue == null)
 		{
