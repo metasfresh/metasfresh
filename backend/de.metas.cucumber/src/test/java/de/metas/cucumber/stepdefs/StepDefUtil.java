@@ -76,4 +76,9 @@ public class StepDefUtil
 	{
 		return Arrays.asList(identifiers.split(","));
 	}
+
+	public List<String> splitByColon(@NonNull final String s)
+	{
+		return Arrays.asList(s.split(":"));
+	}
 }
