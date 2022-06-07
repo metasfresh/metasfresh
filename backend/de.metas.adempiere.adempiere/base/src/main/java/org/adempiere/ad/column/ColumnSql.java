@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.window.descriptor.sql;
+package org.adempiere.ad.column;
 
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
