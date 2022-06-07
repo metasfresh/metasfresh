@@ -1,24 +1,14 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.model.I_M_InOut;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -26,9 +16,20 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOut;
+import org.springframework.context.annotation.Profile;
+
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -56,15 +57,14 @@ import de.metas.util.lang.RepoIdAwares;
  * Reverse the receipts which contain the selected HUs.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Profile(value = Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implements IProcessPrecondition
 {
-	@Autowired
-	private IViewsRepository viewsRepo;
-	@Autowired
-	private DocumentCollection documentsCollection;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	private final DocumentCollection documentsCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
 
 	/**
 	 * Only allows rows whose HUs are in the "active" status.
@@ -76,19 +76,18 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only active HUs can be reversed");
 		}
-		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
-		if(receiptSchedules.isEmpty())
+		if (getReceiptScheduleIds().isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Thre are no receipt schedules");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("There are no receipt schedules");
 		}
 		return null;
 	}
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
+		final Collection<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
 		final List<HuId> huIdsToReverse = retrieveHUsToReverse();
 
 		boolean hasChanges = false;
@@ -143,12 +142,20 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 		return getView(HUEditorView.class);
 	}
 
-	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()
+	private Collection<I_M_ReceiptSchedule> getM_ReceiptSchedules()
+	{
+		final ImmutableSet<ReceiptScheduleId> receiptScheduleIds = getReceiptScheduleIds();
+		return receiptScheduleDAO.getByIds(receiptScheduleIds, I_M_ReceiptSchedule.class).values();
+	}
+
+	private ImmutableSet<ReceiptScheduleId> getReceiptScheduleIds()
 	{
 		return getView()
 				.getReferencingDocumentPaths().stream()
-				.map(referencingDocumentPath -> documentsCollection.getTableRecordReference(referencingDocumentPath).getModel(this, I_M_ReceiptSchedule.class))
-				.collect(GuavaCollectors.toImmutableList());
+				.map(documentsCollection::getTableRecordReference)
+				.filter(recordRef -> I_M_ReceiptSchedule.Table_Name.equals(recordRef.getTableName()))
+				.map(recordRef -> ReceiptScheduleId.ofRepoId(recordRef.getRecord_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private List<HuId> retrieveHUsToReverse()
@@ -156,7 +163,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 		// gh #1955: prevent an OutOfMemoryError
 		final IQueryFilter<I_M_HU> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, this)
+		return queryBL.createQueryBuilder(I_M_HU.class, this)
 				.filter(processFilter)
 				.addOnlyActiveRecordsFilter()
 				.create()
