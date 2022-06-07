@@ -59,12 +59,6 @@ Feature: Product price validation
       | huProductTU_X                      | huPiItemTU                 | product_02062022        | 8   | 2022-05-10 |
       | huProductTU_Y                      | huPiItemTU                 | product_02062022        | 10  | 2022-05-10 |
 
-    # add product prices
-    # @Id:S0144.1_100
-    And metasfresh contains M_ProductPrices
-      | Identifier     | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.IsAttributeDependant | OPT.SeqNo |
-      | pp_S0144.1_100 | plv_SO_02062022                   | product_02062022        | 100      | PCE               | Normal                        | false                    | 10        |
-
     # @Id:S0144.1_110
     And metasfresh contains M_AttributeSetInstance with identifier "ppASI_S0144.1_110":
   """
@@ -175,42 +169,6 @@ Feature: Product price validation
     And metasfresh contains C_BPartners:
       | Identifier        | Name             | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier |
       | bpartner_02062022 | BPartner02062022 | Y              | Y            | ps_02062022                   |
-
-
-  @from:cucumber
-  @Id:S0144.1_100
-  Scenario: Validate that Age attribute set on productCategory.ASI has no default value on order line if configured so (M_AttributeValue.IsNullFieldValue=N)
-    # disable all default values for attributes
-    Given update all M_AttributeValue records for column `IsNullFieldValue`
-      | M_Attribute_ID.Identifier | IsNullFieldValue |
-      | attr_age                  | false            |
-      | attr_Label                | false            |
-
-    And metasfresh contains C_Orders:
-      | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
-      | order_S0144.1_100 | true    | bpartner_02062022        | 2022-06-01  | po_S0144.1_100  |
-    And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | ol_S0144.1_100 | order_S0144.1_100     | product_02062022        | 1          | null                                   |
-    And metasfresh contains M_AttributeSetInstance with identifier "ol_S0144.1_100ASI":
-  """
-  {
-    "attributeInstances":[
-      {
-        "attributeCode":"1000002",
-          "valueStr":"null"
-      }
-    ]
-  }
-  """
-    And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ol_S0144.1_100            | ol_S0144.1_100ASI                        |
-
-    # validate that Age attribute propagated from productCategory on order line has null value
-    And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Age |
-      | ol_S0144.1_100            | order_S0144.1_100     | 2022-06-01      | product_02062022        | 1          | 0            | 0           | 100   | 0        | EUR          | false     | null                              |
 
 
   @from:cucumber

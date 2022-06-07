@@ -53,7 +53,7 @@ public class M_AttributeValue_StepDef
 		this.attributeValueTable = attributeValueTable;
 	}
 
-	@And("update all M_AttributeValue records for column `IsNullFieldValue`")
+	@And("update all M_AttributeValue records by M_Attribute_ID")
 	public void update_all_M_AttributeValue(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())

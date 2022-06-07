@@ -1,5 +1,5 @@
 @from:cucumber
-Feature: Product price with product category ASI settings validation
+Feature: Product price validation
 
   Background:
 #  Prerequisite:
@@ -55,7 +55,7 @@ Feature: Product price with product category ASI settings validation
   @Id:S0144.2_100
   Scenario: Validate that productCategory.ASI is propagated on order line with default value if configured so (M_AttributeValue.IsNullFieldValue=Y)
     # disable all default values for attributes
-    Given update all M_AttributeValue records for column `IsNullFieldValue`
+    Given update all M_AttributeValue records by M_Attribute_ID
       | M_Attribute_ID.Identifier | IsNullFieldValue |
       | attr_age                  | false            |
       | attr_Label                | false            |
@@ -84,15 +84,15 @@ Feature: Product price with product category ASI settings validation
       | ol_SO144.2_100 | order_S0144.2_100     | product_S0144.2_100     | 1          |
     # validate that `Age` attribute is propagated from productCategory with default value
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Age |
-      | ol_SO144.2_100            | order_S0144.2_100     | 2022-06-02      | product_S0144.2_100     | 1          | 0            | 0           | 100   | 0        | EUR          | false     | 24                                |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_Attribute_ID:M_AttributeInstance.Value |
+      | ol_SO144.2_100            | order_S0144.2_100     | 2022-06-02      | product_S0144.2_100     | 1          | 0            | 0           | 100   | 0        | EUR          | false     | attr_age:24                                  |
 
 
   @from:cucumber
   @Id:S0144.2_110
   Scenario: Validate that productPrice attributes are preserved on order line prior to productCategory attributes
     # disable all default values for attributes
-    Given update all M_AttributeValue records for column `IsNullFieldValue`
+    Given update all M_AttributeValue records by M_Attribute_ID
       | M_Attribute_ID.Identifier | IsNullFieldValue |
       | attr_age                  | false            |
       | attr_Label                | false            |
@@ -210,13 +210,13 @@ Feature: Product price with product category ASI settings validation
       | order_S0144.2_120     | 89676577   | bpartner_03062022        | bpLocation_03062022               | 2022-06-05  | SOO         | EUR          | F            | S               | po_S0144.2_120 | true      | CO        |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | ol_SO144.2_120            | order_S0144.2_120     | product_S0144.2_120     | 0            | 0          | 10          | 120   | 0        | EUR          | true      | ppASI_S0144.2_120                        | huProductTU                            |
+      | ol_SO144.2_120            | order_S0144.2_120     | product_S0144.2_120     | 0            | 10         | 0           | 120   | 0        | EUR          | true      | ppASI_S0144.2_120                        | huProductTU                            |
 
   @from:cucumber
   @Id:S0144.2_140
   Scenario: Validate that Age attribute set on productCategory.ASI has default value on order line if configured so (M_AttributeValue.IsNullFieldValue=Y)
     # disable all default values for attributes
-    Given update all M_AttributeValue records for column `IsNullFieldValue`
+    Given update all M_AttributeValue records by M_Attribute_ID
       | M_Attribute_ID.Identifier | IsNullFieldValue |
       | attr_age                  | false            |
       | attr_Label                | false            |
@@ -250,14 +250,14 @@ Feature: Product price with product category ASI settings validation
       | ol_SO144.2_140 | order_S0144.2_140     | product_S0144.2_140     | 4          | huProductTU                            |
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Age |
-      | ol_SO144.2_140            | order_S0144.2_140     | 2022-06-02      | product_S0144.2_140     | 4          | 0            | 0           | 140   | 0        | EUR          | false     | 24                                |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_Attribute_ID:M_AttributeInstance.Value |
+      | ol_SO144.2_140            | order_S0144.2_140     | 2022-06-02      | product_S0144.2_140     | 4          | 0            | 0           | 140   | 0        | EUR          | false     | attr_age:24                                  |
 
   @from:cucumber
   @Id:S0144.2_150
   Scenario: Validate that Age attribute set on productCategory.ASI doesn't have default value on order line if configured so (M_AttributeValue.IsNullFieldValue=N)
     # disable all default values for attributes
-    Given update all M_AttributeValue records for column `IsNullFieldValue`
+    Given update all M_AttributeValue records by M_Attribute_ID
       | M_Attribute_ID.Identifier | IsNullFieldValue |
       | attr_age                  | false            |
       | attr_Label                | false            |
@@ -287,5 +287,5 @@ Feature: Product price with product category ASI settings validation
 
     # validate that `Age` attribute is propagated from productCategory with default value
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Age |
-      | ol_SO144.2_150            | order_S0144.2_150     | 2022-06-02      | product_S0144.2_150     | 5          | 0            | 0           | 150   | 0        | EUR          | false     | null                              |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_Attribute_ID:M_AttributeInstance.Value |
+      | ol_SO144.2_150            | order_S0144.2_150     | 2022-06-02      | product_S0144.2_150     | 5          | 0            | 0           | 150   | 0        | EUR          | false     | attr_age:null                                |
