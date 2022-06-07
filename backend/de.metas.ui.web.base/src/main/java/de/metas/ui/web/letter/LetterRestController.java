@@ -342,7 +342,7 @@ public class LetterRestController
 				.stream()
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
 				.collect(JSONLookupValuesList.collect())
-				.setDefaultValue(defaultBoilerPlateId == null ? null : String.valueOf(defaultBoilerPlateId.getRepoId()));
+				.setDefaultId(defaultBoilerPlateId == null ? null : String.valueOf(defaultBoilerPlateId.getRepoId()));
 	}
 
 	private void applyTemplate(final WebuiLetter letter, final WebuiLetterBuilder newLetterBuilder, final LookupValue templateLookupValue)
