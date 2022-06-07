@@ -1,3 +1,6 @@
+ARG REFNAME=local
+FROM mazorn/metas-mvn-common:$REFNAME as common
+
 FROM openjdk:14-jdk
 
 ARG MAVEN_VERSION=3.8.5
@@ -16,8 +19,7 @@ ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
 
 COPY docker-builds/java-mvn/mvn-entrypoint.sh /usr/local/bin/mvn-entrypoint.sh
 COPY docker-builds/java-mvn/settings-docker.xml /usr/share/maven/ref/
-
-COPY --from=metas-mvn-common:latest /root/.m2 /root/.m2/
+COPY --from=common /root/.m2 /root/.m2/
 
 WORKDIR /camel
 COPY misc/services/camel .

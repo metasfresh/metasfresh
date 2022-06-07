@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: metas-db:preloaded
+    image: mazorn/metas-db:$mfversion-preloaded
     ports:
       - "15432:5432"
     healthcheck:
@@ -43,7 +43,7 @@ services:
       replicas: 1
 
   webapi:
-    image: metas-api:latest
+    image: mazorn/metas-api:$mfversion
     ports:
       - "8080:8080"
       - "8789:8789"
@@ -57,7 +57,7 @@ services:
       replicas: 1
 
   app:
-    image: metas-app:latest
+    image: mazorn/metas-app:$mfversion
     ports:
       - "8282:8282"
       - "61616:61616"
@@ -72,7 +72,7 @@ services:
       replicas: 1
 
   webui:
-    image: metas-frontend:latest
+    image: mazorn/metas-frontend:$mfversion
     ports:
       - "80:80"
       - "443:443"
@@ -84,7 +84,7 @@ services:
       replicas: 1
 
   mobile:
-    image: metas-mobile:latest
+    image: mazorn/metas-mobile:$mfversion
     ports:
       - "8880:80"
     depends_on:
