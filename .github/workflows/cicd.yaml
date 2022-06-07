@@ -36,7 +36,6 @@ jobs:
           -f Dockerfile.backend \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           --cache-from mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} \
-          --secret id=mysecret \
           -t metas-mvn-backend:latest \
           -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} \
           -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
