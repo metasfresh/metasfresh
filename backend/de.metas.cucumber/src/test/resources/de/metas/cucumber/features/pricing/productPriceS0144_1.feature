@@ -369,33 +369,3 @@ Feature: Product price validation
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_S0144.1_170            | order_S0144.1_170     | 2022-06-01      | product_02062022        | 7          | 0            | 0           | 170   | 0        | EUR          | false     | huProductTU_Y                          |
-
-
-  @from:cucumber
-  @Id:S0144.1_180
-  Scenario: Product price is matched with accordingly
-    Given metasfresh contains C_Orders:
-      | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
-      | order_S0144.1_180 | true    | bpartner_02062022        | 2022-06-01  | po_S0144.1_180  |
-    And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | ol_S0144.1_180 | order_S0144.1_180     | product_02062022        | 8          | huProductTU_X                          |
-
-    And metasfresh contains M_AttributeSetInstance with identifier "ol_S0144.1_180ASI":
-  """
-  {
-    "attributeInstances":[
-      {
-        "attributeCode":"1000002",
-          "valueStr":"null"
-      }
-    ]
-  }
-  """
-    And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
-      | ol_S0144.1_180            | ol_S0144.1_180ASI                        |
-
-    And validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_S0144.1_180            | order_S0144.1_180     | 2022-06-01      | product_02062022        | 8          | 0            | 0           | 100   | 0        | EUR          | false     |
