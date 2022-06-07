@@ -389,7 +389,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setStickyFilters(stickyFilters)
 					.setFilters(userFilters)
 					.setFilterDescriptors(filterDescriptors)
-					.setReferencingDocumentPaths(referencingTableName, request.getReferencingDocumentPaths())
+					.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
 					.orderBys(sqlViewBinding.getDefaultOrderBys())
 					.setActions(request.getActions())
 					.addAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
