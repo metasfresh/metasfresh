@@ -173,7 +173,7 @@ jobs:
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
           --cache-from mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }} \
           --secret id=mysecret \
-          -t mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }}
+          -t mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }} \
           .
       - name: push-result-iamge
         run: |
