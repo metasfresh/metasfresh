@@ -1,0 +1,24 @@
+ARG REFNAME=local
+FROM mazorn/metas-mvn-backend:$REFNAME as backend
+
+WORKDIR /backend
+
+ENV REFNAME=$REFNAME
+SHELL ["/bin/bash", "-c"]
+
+RUN --mount=type=secret,id=mysecret \
+    if [[ -f "/run/secrets/mysecret" ]] ;\
+    then \
+        shopt -s globstar \
+        && TESTMO_TOKEN="$(cat /run/secrets/mysecret)" \
+        testmo automation:run:submit \
+        --instance https://metasfresh.testmo.net \
+        --project-id 1 \
+        --name "New test run" \
+        --source "unit-tests-github" \
+		--tags $REFNAME \
+        --results **/TEST-*.xml \
+        -- mvn test ;\
+    else \
+        mvn test ;\
+    fi

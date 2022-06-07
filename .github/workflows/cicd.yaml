@@ -31,13 +31,10 @@ jobs:
           -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
           .
       - name: build-backend
-        env:
-          mysecret: ${{ secrets.TESTMO_TOKEN }}
         run: |
           docker buildx build \
           -f Dockerfile.backend \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
           --cache-from mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} \
           --secret id=mysecret \
           -t metas-mvn-backend:latest \
@@ -161,10 +158,35 @@ jobs:
           docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded
           docker logout
 
+  junit:
+    runs-on: ubuntu-latest
+    needs: [init, java]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: run-junit-tests
+        env:
+          mysecret: ${{ secrets.TESTMO_TOKEN }}
+        run: |
+          docker buildx build \
+          -f Dockerfile.junit \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          --cache-from mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }} \
+          --secret id=mysecret \
+          -t mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }}
+          .
+      - name: push-result-iamge
+        run: |
+          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
+          docker push mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }}
+          docker logout
+
   cucumber:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
     environment: 'test'
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
       - name: build-cucumber
@@ -189,6 +211,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
     environment: 'test'
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
       - name: build-e2e
