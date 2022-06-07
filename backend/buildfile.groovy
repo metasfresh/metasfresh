@@ -132,6 +132,7 @@ Map build(
     return dockerImages
 }
 
+
 void testSQLMigrationScripts(
         final String sqlSeedDumpURL,
         final String metasfreshDistSQLOnlyURL,
