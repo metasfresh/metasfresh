@@ -165,7 +165,7 @@ INSERT INTO WEBUI_KPI_Field_Trl (AD_Language,WEBUI_KPI_Field_ID, Name,OffsetName
 ;
 
 -- 2022-04-11T08:49:28.347Z
-INSERT INTO WEBUI_DashboardItem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,WEBUI_Dashboard_ID,WEBUI_DashboardItem_ID,WEBUI_DashboardWidgetType,WEBUI_KPI_ID) VALUES (1000000,1000000,TO_TIMESTAMP('2022-04-11 10:49:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','PURCHASE ORDER NET AMOUNT TODAY',20,TO_TIMESTAMP('2022-04-11 10:49:28','YYYY-MM-DD HH24:MI:SS'),100,540000,540032,'T',540038)
+INSERT INTO WEBUI_DashboardItem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,WEBUI_Dashboard_ID,WEBUI_DashboardItem_ID,WEBUI_DashboardWidgetType,WEBUI_KPI_ID) VALUES (1000000,1000000,TO_TIMESTAMP('2022-04-11 10:49:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','Nettosumme der Bestellungen für heute.',20,TO_TIMESTAMP('2022-04-11 10:49:28','YYYY-MM-DD HH24:MI:SS'),100,540000,540032,'T',540038)
 ;
 
 -- 2022-04-11T08:49:28.368Z
@@ -173,7 +173,7 @@ INSERT INTO WEBUI_DashboardItem_Trl (AD_Language,WEBUI_DashboardItem_ID, Name, I
 ;
 
 -- 2022-04-11T08:49:57.225Z
-INSERT INTO WEBUI_DashboardItem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,WEBUI_Dashboard_ID,WEBUI_DashboardItem_ID,WEBUI_DashboardWidgetType,WEBUI_KPI_ID) VALUES (1000000,1000000,TO_TIMESTAMP('2022-04-11 10:49:57','YYYY-MM-DD HH24:MI:SS'),100,'Y','PURCHASE ORDER NET AMT LAST WEEK',30,TO_TIMESTAMP('2022-04-11 10:49:57','YYYY-MM-DD HH24:MI:SS'),100,540000,540033,'T',540040)
+INSERT INTO WEBUI_DashboardItem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,WEBUI_Dashboard_ID,WEBUI_DashboardItem_ID,WEBUI_DashboardWidgetType,WEBUI_KPI_ID) VALUES (1000000,1000000,TO_TIMESTAMP('2022-04-11 10:49:57','YYYY-MM-DD HH24:MI:SS'),100,'Y','Nettosumme der Bestellungen für diese Woche.',30,TO_TIMESTAMP('2022-04-11 10:49:57','YYYY-MM-DD HH24:MI:SS'),100,540000,540033,'T',540040)
 ;
 
 -- 2022-04-11T08:49:57.227Z
@@ -181,7 +181,7 @@ INSERT INTO WEBUI_DashboardItem_Trl (AD_Language,WEBUI_DashboardItem_ID, Name, I
 ;
 
 -- 2022-04-11T08:50:15.870Z
-INSERT INTO WEBUI_DashboardItem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,WEBUI_Dashboard_ID,WEBUI_DashboardItem_ID,WEBUI_DashboardWidgetType,WEBUI_KPI_ID) VALUES (1000000,1000000,TO_TIMESTAMP('2022-04-11 10:50:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','SALES ORDER NET AMOUNT TODAY',40,TO_TIMESTAMP('2022-04-11 10:50:15','YYYY-MM-DD HH24:MI:SS'),100,540000,540034,'T',540036)
+INSERT INTO WEBUI_DashboardItem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,WEBUI_Dashboard_ID,WEBUI_DashboardItem_ID,WEBUI_DashboardWidgetType,WEBUI_KPI_ID) VALUES (1000000,1000000,TO_TIMESTAMP('2022-04-11 10:50:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','Nettosumme der Kundenaufträge für heute.',40,TO_TIMESTAMP('2022-04-11 10:50:15','YYYY-MM-DD HH24:MI:SS'),100,540000,540034,'T',540036)
 ;
 
 -- 2022-04-11T08:50:15.878Z
@@ -189,7 +189,7 @@ INSERT INTO WEBUI_DashboardItem_Trl (AD_Language,WEBUI_DashboardItem_ID, Name, I
 ;
 
 -- 2022-04-11T08:50:38.385Z
-INSERT INTO WEBUI_DashboardItem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,WEBUI_Dashboard_ID,WEBUI_DashboardItem_ID,WEBUI_DashboardWidgetType,WEBUI_KPI_ID) VALUES (1000000,1000000,TO_TIMESTAMP('2022-04-11 10:50:38','YYYY-MM-DD HH24:MI:SS'),100,'Y','SALES ORDER NET AMOUNT THIS WEEK',50,TO_TIMESTAMP('2022-04-11 10:50:38','YYYY-MM-DD HH24:MI:SS'),100,540000,540035,'T',540037)
+INSERT INTO WEBUI_DashboardItem (AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,WEBUI_Dashboard_ID,WEBUI_DashboardItem_ID,WEBUI_DashboardWidgetType,WEBUI_KPI_ID) VALUES (1000000,1000000,TO_TIMESTAMP('2022-04-11 10:50:38','YYYY-MM-DD HH24:MI:SS'),100,'Y','Nettosumme der Kundenaufträge für diese Woche.',50,TO_TIMESTAMP('2022-04-11 10:50:38','YYYY-MM-DD HH24:MI:SS'),100,540000,540035,'T',540037)
 ;
 
 -- 2022-04-11T08:50:38.394Z
@@ -209,7 +209,7 @@ UPDATE WEBUI_KPI_Field SET SQL_Select='IsoCode',Updated=TO_TIMESTAMP('2022-04-14
 ;
 
 -- 2022-04-14T06:49:11.457Z
-UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(true, (NOW() - INTERVAL ''7 days'')::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540037
+UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(true, (DATE_PART(''dow'', NOW()) * ''1 day''::interval)::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540037
 ;
 
 -- 2022-04-14T06:49:21.143Z
@@ -233,7 +233,7 @@ UPDATE WEBUI_KPI_Field SET SQL_Select='IsoCode',Updated=TO_TIMESTAMP('2022-04-14
 ;
 
 -- 2022-04-14T06:50:06.884Z
-UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(false, (NOW() - INTERVAL ''7 days'')::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:50:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540040
+UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(false, (DATE_PART(''dow'', NOW()) * ''1 day''::interval)::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:50:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540040
 ;
 
 -- 2022-04-14T06:50:22.315Z
@@ -244,6 +244,7 @@ UPDATE WEBUI_KPI_Field SET SQL_Select='TotalOrderAmt',Updated=TO_TIMESTAMP('2022
 UPDATE WEBUI_KPI_Field SET SQL_Select='IsoCode',Updated=TO_TIMESTAMP('2022-04-14 08:50:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_Field_ID=540066
 ;
 
+-- Index on C_Order.DateOrdered for active & closed orders
 -- 2022-06-06T14:55:28.163Z
 INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540698,0,259,TO_TIMESTAMP('2022-06-06 17:55:27','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_Order_DateOrdered','N',TO_TIMESTAMP('2022-06-06 17:55:27','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -268,3 +269,15 @@ CREATE INDEX C_Order_DateOrdered ON C_Order (DateOrdered) WHERE DocStatus IN ('C
 UPDATE AD_Index_Table SET Description='DateOrdered index for active & completed orders',Updated=TO_TIMESTAMP('2022-06-06 17:58:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540698
 ;
 
+--TRLs
+UPDATE WEBUI_DashboardItem_Trl SET Name = 'Net total of purchase orders for today.',Updated=TO_TIMESTAMP('2022-06-06 10:58:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' and WEBUI_DashboardItem_id=540032
+;
+
+UPDATE WEBUI_DashboardItem_Trl SET Name = 'Net total of purchase orders for this week.',Updated=TO_TIMESTAMP('2022-06-06 10:58:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' and WEBUI_DashboardItem_id=540033
+;
+
+UPDATE WEBUI_DashboardItem_Trl SET Name = 'Net total of sales orders for today.',Updated=TO_TIMESTAMP('2022-06-06 10:58:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' and WEBUI_DashboardItem_id=540034
+;
+
+UPDATE WEBUI_DashboardItem_Trl SET Name = 'Net total of sales orders for this week.',Updated=TO_TIMESTAMP('2022-06-06 10:58:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' and WEBUI_DashboardItem_id=540035
+;
