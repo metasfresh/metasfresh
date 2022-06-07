@@ -29,6 +29,7 @@ public class PickingJobCreateRepoRequest
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId pickerId;
+	boolean isPickingReviewRequired;
 
 	@Singular @NonNull ImmutableList<Line> lines;
 

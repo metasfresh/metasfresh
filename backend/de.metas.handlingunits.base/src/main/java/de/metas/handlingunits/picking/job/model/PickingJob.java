@@ -69,6 +69,11 @@ public final class PickingJob
 	private final PickingJobDocStatus docStatus;
 
 	@Getter
+	private final boolean isReadyToReview;
+	@Getter
+	private final boolean isApproved;
+
+	@Getter
 	private final PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
@@ -78,7 +83,9 @@ public final class PickingJob
 			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
 			final @NonNull ImmutableList<PickingJobLine> lines,
 			final @NonNull ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives,
-			final @NonNull PickingJobDocStatus docStatus)
+			final @NonNull PickingJobDocStatus docStatus,
+			boolean isReadyToReview,
+			boolean isApproved)
 	{
 		Check.assumeNotEmpty(lines, "lines not empty");
 
@@ -89,6 +96,8 @@ public final class PickingJob
 		this.lines = lines;
 		this.pickFromAlternatives = pickFromAlternatives;
 		this.docStatus = docStatus;
+		this.isReadyToReview = isReadyToReview;
+		this.isApproved = isApproved;
 
 		this.progress = computeProgress(lines);
 	}
@@ -171,8 +180,13 @@ public final class PickingJob
 		return withChangedLines(line -> line.withChangedSteps(stepIds, stepMapper));
 	}
 
-	public PickingJob withChangedSteps(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
+	public PickingJob withIsReadyToReview() {return isReadyToReview ? this : toBuilder().isReadyToReview(true).build();}
+
+	public PickingJob withApproved()
 	{
-		return withChangedLines(line -> line.withChangedSteps(stepMapper));
+		return toBuilder()
+				.isReadyToReview(false)
+				.isApproved(true)
+				.build();
 	}
 }

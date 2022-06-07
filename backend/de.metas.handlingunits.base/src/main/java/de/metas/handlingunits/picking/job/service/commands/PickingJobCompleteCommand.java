@@ -21,6 +21,7 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
 
 	private final PickingJob initialPickingJob;
+	private final boolean approveIfReadyToReview;
 
 	@Builder
 	private PickingJobCompleteCommand(
@@ -29,7 +30,8 @@ public class PickingJobCompleteCommand
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
 			//
-			final @NonNull PickingJob pickingJob)
+			final @NonNull PickingJob pickingJob,
+			final boolean approveIfReadyToReview)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
@@ -37,9 +39,15 @@ public class PickingJobCompleteCommand
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 
 		this.initialPickingJob = pickingJob;
+		this.approveIfReadyToReview = approveIfReadyToReview;
 	}
 
 	public PickingJob execute()
+	{
+		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
+	}
+
+	private PickingJob executeInTrx()
 	{
 		initialPickingJob.assertNotProcessed();
 		if (!initialPickingJob.getProgress().isDone())
@@ -47,17 +55,20 @@ public class PickingJobCompleteCommand
 			throw new AdempiereException("Picking shall be DONE on all steps in order to complete the job");
 		}
 
-		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
-	}
-
-	private PickingJob executeInTrx()
-	{
-		if (!initialPickingJob.getProgress().isDone())
+		PickingJob pickingJob = initialPickingJob;
+		if (approveIfReadyToReview
+				&& !pickingJob.isApproved()
+				&& pickingJob.isReadyToReview())
 		{
-			throw new AdempiereException("All steps shall be picked");
+			pickingJob = pickingJob.withApproved();
 		}
 
-		final PickingJob pickingJob = initialPickingJob.withDocStatus(PickingJobDocStatus.Completed);
+		if (pickingJob.isPickingReviewRequired() && !pickingJob.isApproved())
+		{
+			throw new AdempiereException("Not approved"); // TODO trl
+		}
+
+		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
 		initialPickingJob.getPickingSlotId()
