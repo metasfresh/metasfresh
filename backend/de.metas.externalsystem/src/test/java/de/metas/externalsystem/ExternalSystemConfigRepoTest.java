@@ -24,10 +24,16 @@ package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.ebay.ApiMode;
+import de.metas.externalsystem.ebay.ExternalSystemEbayConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
@@ -432,6 +438,143 @@ class ExternalSystemConfigRepoTest
 	}
 
 	@Test
+	void externalSystem_Config_Ebay_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
+		saveRecord(parentRecord);
+
+		final String value = "testEbayValue";
+
+		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setAppId("appId");
+		childRecord.setDevId("devId");
+		childRecord.setCertId("certId");
+		childRecord.setRefreshToken("refreshToken");
+		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setExternalSystemValue(value);
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemEbayConfigId id = ExternalSystemEbayConfigId.ofRepoId(childRecord.getExternalSystem_Config_Ebay_ID());
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Ebay_getByTypeAndParent()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
+		saveRecord(parentRecord);
+
+		final String value = "testEbayValue";
+
+		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setAppId("appId");
+		childRecord.setDevId("devId");
+		childRecord.setCertId("certId");
+		childRecord.setRefreshToken("refreshToken");
+		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+
+		final I_ExternalSystem_Config_Ebay_Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Ebay_Mapping.class);
+		childMappingRecord.setC_PaymentTerm_ID(10000);
+		childMappingRecord.setC_DocTypeOrder_ID(10000);
+		childMappingRecord.setPaymentRule("K");
+		childMappingRecord.setSeqNo(10);
+		childMappingRecord.setEBayCustomerGroup("testWithAnä");
+		childMappingRecord.setEBayPaymentMethod("test");
+		childMappingRecord.setDescription("test");
+		childMappingRecord.setExternalSystem_Config_Ebay_ID(childRecord.getExternalSystem_Config_Ebay_ID());
+		childMappingRecord.setIsInvoiceEmailEnabled(true);
+		childMappingRecord.setBPartner_IfExists("UPDATE_MERGE");
+		childMappingRecord.setBPartner_IfNotExists("FAIL");
+		childMappingRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
+		childMappingRecord.setBPartnerLocation_IfNotExists("CREATE");
+		saveRecord(childMappingRecord);
+
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+		// when
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Ebay)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Ebay_ID());
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Ebay_getByTypeAndValue()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
+		saveRecord(parentRecord);
+
+		final String value = "testEbayValue";
+
+		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setIsActive(true);
+		childRecord.setAppId("appId");
+		childRecord.setDevId("devId");
+		childRecord.setCertId("certId");
+		childRecord.setRefreshToken("refreshToken");
+		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Ebay, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Ebay_getByTypeAndValue_wrongType()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
+		saveRecord(parentRecord);
+
+		final String value = "testEbayValue";
+
+		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setAppId("appId");
+		childRecord.setDevId("devId");
+		childRecord.setCertId("certId");
+		childRecord.setRefreshToken("refreshToken");
+		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Alberta, value);
+
+		assertThat(externalSystemParentConfig).isEmpty();
+	}
+
+	@Test
 	void externalSystem_Config_Woocommerce_getById()
 	{
 		// given
@@ -707,7 +850,6 @@ class ExternalSystemConfigRepoTest
 		assertThat(shopware6Config.getValue()).isEqualTo(value);
 	}
 
-
 	@Test
 	void externalSystem_Config_getActiveByType_RabbitMQ()
 	{
@@ -746,5 +888,161 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void externalSystem_LeichMehl_Config_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
+				.build();
+
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = ExternalSystemTestUtil.createLeichMehlConfigBuilder()
+				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("LeichMehl")
+				.ftpPort(1111)
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
+				.ftpHost("hostname")
+				.ftpDirectory("directory")
+				.build();
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_LeichMehl_getTypeAndValue()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
+				.build();
+
+		final String value = "testLeichMehlValue";
+
+		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
+				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value(value)
+				.ftpHost("hostname")
+				.ftpPort(1111)
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
+				.ftpDirectory("directory")
+				.build();
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.LeichUndMehl, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_LeichMehl_getByTypeAndValue_wrongType()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
+				.build();
+
+		final String value = "testLeichMehlValue";
+
+		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
+				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value(value)
+				.ftpPort(1111)
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
+				.ftpHost("hostname")
+				.ftpDirectory("directory")
+				.build();
+
+		// when
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+
+		//then
+		assertThat(externalSystemParentConfig).isEmpty();
+	}
+
+	@Test
+	void externalSystem_Config_LeichMehl_getByTypeAndParent()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
+				.build();
+
+		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
+				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("testLeichMehlValue")
+				.ftpPort(1111)
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
+				.ftpHost("hostname")
+				.ftpDirectory("directory")
+				.build();
+
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+
+		// when
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.LeichUndMehl)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_LeichMehl_getActiveByType()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecordActive = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
+				.build();
+
+		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
+				.externalSystemParentConfigId(parentRecordActive.getExternalSystem_Config_ID())
+				.value("testLeichMehlValue")
+				.ftpPort(1111)
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
+				.ftpHost("hostname")
+				.ftpDirectory("directory")
+				.build();
+
+		// given
+		final I_ExternalSystem_Config parentRecordInactive = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
+				.active(false)
+				.build();
+
+		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
+				.externalSystemParentConfigId(parentRecordInactive.getExternalSystem_Config_ID())
+				.value("testLeichMehlValueInactive")
+				.ftpPort(1111)
+				.ftpUsername("ftpUsername")
+				.ftpPassword("ftpPassword")
+				.ftpHost("hostname")
+				.ftpDirectory("directory")
+				.build();
+
+		// when
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.LeichUndMehl);
+
+		// then
+		assertThat(result).isNotEmpty();
+		assertThat(result.size()).isEqualTo(1);
+		expect(result).toMatchSnapshot();
 	}
 }

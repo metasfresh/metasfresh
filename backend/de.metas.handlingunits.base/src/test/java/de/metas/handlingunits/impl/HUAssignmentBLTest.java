@@ -21,6 +21,9 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -28,11 +31,13 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -41,11 +46,11 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUAssignmentBLTest
 {
-	private String trxName;
+	@Nullable private String trxName;
 	private IContextAware contextProvider;
 
 	private IHUAssignmentBL huAssignmentBL;
@@ -62,7 +67,8 @@ public class HUAssignmentBLTest
 
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
-		
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+
 		//
 		// Make sure Main handling units interceptor is registered
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
@@ -71,7 +77,7 @@ public class HUAssignmentBLTest
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				huReservationService);
-		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,

@@ -40,12 +40,10 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.impl.PPOrderCostsTestHelper;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-@Disabled
 class OrderBOMCostCalculatorRepositoryTest
 {
 	private PPOrderCostsTestHelper helper;
@@ -88,8 +86,12 @@ class OrderBOMCostCalculatorRepositoryTest
 		// Manufacturing order
 		// IMPORTANT: remark that the finished good and component UOMs are different from their stocking UOM!
 		final I_PP_Order ppOrder = helper.order()
-				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("100").finishedGoodsUOM(helper.uomEach)
-				.componentId(componentId).componentQtyRequired("200").componentUOM(helper.uomKg) // i.e. we need 2 Kg for one finished good
+				.finishedGoodsProductId(finishedGoodsProductId)
+				.finishedGoodsQty("100")
+				.finishedGoodsUOM(helper.uomEach)
+				.componentId(componentId)
+				.componentQtyRequired("200")
+				.componentUOM(helper.uomKg) // i.e. we need 2 Kg for one finished good
 				.build();
 		ppOrderCostBL.createOrderCosts(ppOrder);
 

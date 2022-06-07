@@ -38,7 +38,9 @@ import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -83,6 +85,7 @@ import java.util.Properties;
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -203,6 +206,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
+		// task 13022 : set order's project if no dimension is already set one
+		if(icRecord.getC_Project_ID() <= 0)
+		{
+			icRecord.setC_Project_ID(order.getC_Project_ID());
+		}
+
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
@@ -223,7 +232,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
 
-		icRecord.setEMail(order.getEMail());
+		if(orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
+		{
+			icRecord.setEMail(order.getEMail());
+		}
 
 		icRecord.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
 
@@ -443,26 +455,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(icRecord.getC_OrderLine(), I_C_OrderLine.class);
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 
-		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-				.deliveryLocationAdapter(order)
-				.toDocumentLocation();
-		if (orderDeliveryLocation.getBpartnerLocationId() == null)
-		{
-			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
-					.locationAdapter(order)
-					.toDocumentLocation();
-		}
-
-		// Tax
-		final TaxId taxId = taxBL.getTaxNotNull(
-				icRecord,
-				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
-				orderLine.getM_Product_ID(),
-				order.getDatePromised(), // shipDate
-				OrgId.ofRepoId(order.getAD_Org_ID()),
-				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
-				SOTrx.ofBoolean(order.isSOTrx()));
+		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
 		// ts: we *must* use the order line's data
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()

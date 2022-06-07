@@ -32,6 +32,7 @@ import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
+import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
@@ -156,6 +157,9 @@ public class ImportOrdersRouteContext
 	private int ordersResponsePageIndex;
 
 	private boolean moreOrdersAvailable;
+
+	@Nullable
+	private PriceListBasicInfo priceListBasicInfo;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -346,8 +350,8 @@ public class ImportOrdersRouteContext
 				.orElse("");
 
 		final String locationBPartnerName =
-				// prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n") + not having the company name in this rendered string, because that info is already given elsewhere
-				prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
+				prepareNameSegment.apply(orderShippingAddress.getCompany(), "\n")
+						+ prepareNameSegment.apply(orderShippingAddress.getDepartment(), "\n")
 						+ prepareNameSegment.apply(getSalutationDisplayNameById(orderShippingAddress.getSalutationId()), " ")
 						+ prepareNameSegment.apply(orderShippingAddress.getTitle(), " ")
 						+ prepareNameSegment.apply(orderShippingAddress.getFirstName(), " ")

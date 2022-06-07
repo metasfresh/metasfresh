@@ -13,11 +13,13 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.location.LocationId;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -203,6 +205,8 @@ public class OLCandRepository
 		olCandPO.setC_UOM_ID(request.getUomId().getRepoId());
 		olCandPO.setM_HU_PI_Item_Product_ID(request.getHuPIItemProductId());
 
+		olCandPO.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
+
 		if (request.getPricingSystemId() != null)
 		{
 			olCandPO.setM_PricingSystem_ID(request.getPricingSystemId().getRepoId());
@@ -272,6 +276,10 @@ public class OLCandRepository
 			Optional.ofNullable(orderLineGroup.getDiscount())
 					.map(Percent::toBigDecimal)
 					.ifPresent(olCandPO::setGroupCompensationDiscountPercentage);
+
+			Optional.ofNullable(orderLineGroup.getGroupCompensationOrderBy())
+					.map(GroupCompensationOrderBy::getCode)
+					.ifPresent(olCandPO::setCompensationGroupOrderBy);
 		}
 
 		olCandPO.setDescription(request.getDescription());

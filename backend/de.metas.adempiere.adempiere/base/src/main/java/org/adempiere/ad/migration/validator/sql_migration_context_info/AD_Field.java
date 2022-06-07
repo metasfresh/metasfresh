@@ -66,7 +66,7 @@ public class AD_Field
 				.orElseGet(() -> "<" + adTabId + ">");
 	}
 
-	private static String retrieveColumnNameFQ(final AdColumnId adColumnId)
+	static String retrieveColumnNameFQ(final AdColumnId adColumnId)
 	{
 		final String columnNameFQ = DB.getSQLValueStringEx(
 				ITrx.TRXNAME_ThreadInherited,

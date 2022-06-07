@@ -3,6 +3,7 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.util.Services;
@@ -53,14 +54,14 @@ import static de.metas.util.Check.assumeNotNull;
 public class CountingSubRowBucket
 {
 
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	public static CountingSubRowBucket create(final int plantId)
 	{
 		return new CountingSubRowBucket(plantId);
 	}
 
-	private final int plantId;
+	private final ResourceId plantId;
 
 	// Zaehlbestand
 	private Quantity qtyStockEstimateCount;
@@ -81,9 +82,9 @@ public class CountingSubRowBucket
 
 	private final Set<Integer> stockRecordIds = new HashSet<>();
 
-	public CountingSubRowBucket(final int plantId)
+	public CountingSubRowBucket(final int plantIdInt)
 	{
-		this.plantId = plantId;
+		this.plantId = ResourceId.ofRepoIdOrNull(plantIdInt);
 	}
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)

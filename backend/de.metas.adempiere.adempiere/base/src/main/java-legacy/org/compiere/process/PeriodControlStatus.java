@@ -16,16 +16,15 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.cache.CacheMgt;
+import de.metas.calendar.standard.IPeriodBL;
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 import org.compiere.model.X_C_PeriodControl;
-
-import de.metas.cache.CacheMgt;
-import de.metas.calendar.IPeriodBL;
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
 /**
  * Open/Close Period Control

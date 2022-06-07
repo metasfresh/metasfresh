@@ -71,6 +71,14 @@ public class ExternalSystemConstants
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
+
+	public static final String PARAM_APP_ID = "AppId";
+	public static final String PARAM_CERT_ID = "CertId";
+	public static final String PARAM_DEV_ID = "DevId";
+	public static final String PARAM_REDIRECT_URL = "RedirectURL";
+	public static final String PARAM_API_MODE  = "ApiMode";
+	public static final String PARAM_API_USER_REFRESH_TOKEN  = "RefreshToken";
+
 	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
 	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "RoutingKey";
 	public static final String PARAM_EXTERNAL_SYSTEM_HTTP_URL = "RemoteURL";
@@ -81,8 +89,17 @@ public class ExternalSystemConstants
 	public static final String PARAM_RABBIT_MQ_AUTH_TOKEN = "RabbitMQAuthToken";
 	public static final String PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "JsonExternalReferenceLookupRequest";
 
+	public static final String PARAM_PP_ORDER_ID = "PP_Order_ID";
+	public static final String PARAM_FTP_HOST = "FTP_Host";
+	public static final String PARAM_FTP_PORT = "FTP_Port";
+	public static final String PARAM_FTP_USERNAME = "FTP_Username";
+	public static final String PARAM_FTP_PASSWORD = "FTP_Password";
+	public static final String PARAM_FTP_DIRECTORY = "FTP_Directory";
+
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
 
 	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
+
+	public static final String API_REQUEST_AUDIT_TABLE_NAME = "API_Request_Audit";
 }

@@ -24,6 +24,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -46,6 +47,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.process.PInstanceId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
@@ -516,6 +518,7 @@ public class OLCandBL implements IOLCandBL
 				.isGroupingError(olCandRecord.isGroupingError())
 				.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
 				.discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
+				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(olCandRecord.getCompensationGroupOrderBy()))
 				.build();
 
 		return OLCand.builder()
@@ -540,6 +543,7 @@ public class OLCandBL implements IOLCandBL
 				.bpartnerName(olCandRecord.getBPartnerName())
 				.email(olCandRecord.getEMail())
 				.phone(olCandRecord.getPhone())
+				.projectId(ProjectId.ofRepoIdOrNull(olCandRecord.getC_Project_ID()))
 				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
 				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
 				.build();

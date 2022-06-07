@@ -33,6 +33,7 @@ import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
+import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
 import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -147,6 +148,7 @@ public class BuildOrdersContextProcessor implements Processor
 				.shopwareIdJsonPath(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID))
 				.ordersResponsePageIndex(1)
 				.pageLimit(pageLimit)
+				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 				.build();
 	}
 

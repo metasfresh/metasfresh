@@ -33,6 +33,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandlerTest;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.resource.ResourceService;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -51,7 +52,7 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				huReservationService);
-		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,

@@ -24,10 +24,12 @@ package de.metas.material.planning.pporder;
 
 import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
@@ -46,10 +48,11 @@ public class PPOrderCandidateDemandMatcher implements IMaterialDemandMatcher
 			return true;
 		}
 
-		final I_M_Product product = mrpContext.getM_Product();
+		final ProductId productId = mrpContext.getProductId();
+		final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
 		Loggables.addLog(
-				"Product {}_{} is not set to be manufactured; PPOrderCandidateDemandMatcher returns false; productPlanning={}; product={}",
-				product.getValue(), product.getName(), productPlanning, product);
+				"Product {} is not set to be manufactured; PPOrderCandidateDemandMatcher returns false; productPlanning={}; product={}",
+				productName, productPlanning, productId);
 		return false;
 	}
 }

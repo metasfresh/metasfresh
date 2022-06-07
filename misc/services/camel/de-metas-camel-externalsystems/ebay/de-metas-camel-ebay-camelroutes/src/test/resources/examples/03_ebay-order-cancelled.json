@@ -1,0 +1,178 @@
+{
+	"href": "https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B2021-06-04T08:25:43.511Z..%5D&limit=50&offset=0",
+	"total": 1,
+	"limit": 50,
+	"offset": 0,
+	"orders": [
+		{
+			"orderId": "07-07160-44920343",
+			"legacyOrderId": "124145389616-2415984552002",
+			"creationDate": "2021-06-04T08:51:06.000Z",
+			"lastModifiedDate": "2021-06-09T12:47:54.000Z",
+			"orderFulfillmentStatus": "FULFILLED",
+			"orderPaymentStatus": "FULLY_REFUNDED",
+			"sellerId": "nfctagshop",
+			"buyer": {
+				"username": "nfc21-consumer-01",
+				"taxAddress": {
+					"postalCode": "45481",
+					"countryCode": "DE"
+				}
+			},
+			"pricingSummary": {
+				"priceSubtotal": {
+					"value": "10.63",
+					"currency": "USD",
+					"convertedFromValue": "8.9",
+					"convertedFromCurrency": "EUR"
+				},
+				"deliveryCost": {
+					"value": "0.0",
+					"currency": "USD",
+					"convertedFromValue": "0.0",
+					"convertedFromCurrency": "EUR"
+				},
+				"total": {
+					"value": "10.63",
+					"currency": "USD",
+					"convertedFromValue": "8.9",
+					"convertedFromCurrency": "EUR"
+				}
+			},
+			"cancelStatus": {
+				"cancelState": "CANCELED",
+				"cancelledDate": "2021-06-09T12:47:54.000Z",
+				"cancelRequests": [
+					{
+						"cancelRequestedDate": "2021-06-09T12:43:54.805Z",
+						"cancelCompletedDate": "2021-06-09T12:47:54.000Z",
+						"cancelInitiator": "SELLER",
+						"cancelRequestId": "5244299502",
+						"cancelRequestState": "COMPLETED"
+					}
+				]
+			},
+			"paymentSummary": {
+				"totalDueSeller": {
+					"value": "7.2",
+					"currency": "USD",
+					"convertedFromValue": "6.03",
+					"convertedFromCurrency": "EUR"
+				},
+				"refunds": [
+					{
+						"refundDate": "2021-06-09T12:45:16.000Z",
+						"amount": {
+							"value": "1.53",
+							"currency": "USD",
+							"convertedFromValue": "1.28",
+							"convertedFromCurrency": "EUR"
+						},
+						"refundStatus": "REFUNDED",
+						"refundReferenceId": "5244299502"
+					}
+				],
+				"payments": [
+					{
+						"paymentMethod": "EBAY",
+						"paymentReferenceId": "420004_S",
+						"paymentDate": "2021-06-08T05:57:49.000Z",
+						"amount": {
+							"value": "8.73",
+							"currency": "USD",
+							"convertedFromValue": "7.31",
+							"convertedFromCurrency": "EUR"
+						},
+						"paymentStatus": "PAID"
+					}
+				]
+			},
+			"fulfillmentStartInstructions": [
+				{
+					"fulfillmentInstructionsType": "SHIP_TO",
+					"minEstimatedDeliveryDate": "2021-06-07T22:00:00.000Z",
+					"maxEstimatedDeliveryDate": "2021-06-08T22:00:00.000Z",
+					"ebaySupportedFulfillment": false,
+					"shippingStep": {
+						"shipTo": {
+							"fullName": "Carl Consumer",
+							"contactAddress": {
+								"addressLine1": "Consumer Str. 42",
+								"city": "Mülheim",
+								"postalCode": "45481",
+								"countryCode": "DE"
+							},
+							"primaryPhone": {
+								
+							}
+						},
+						"shippingCarrierCode": "Deutsche Post",
+						"shippingServiceCode": "DE_DeutschePostBrief"
+					}
+				}
+			],
+			"fulfillmentHrefs": [
+				"https://api.ebay.com/sell/fulfillment/v1/order/07-07160-44920343/shipping_fulfillment/999"
+			],
+			"lineItems": [
+				{
+					"lineItemId": "10042355857307",
+					"legacyItemId": "124145389616",
+					"sku": "68929",
+					"title": "2 NFC Anhänger Polyamid, blau & schwarz",
+					"lineItemCost": {
+						"value": "10.63",
+						"currency": "USD",
+						"convertedFromValue": "8.9",
+						"convertedFromCurrency": "EUR"
+					},
+					"quantity": 1,
+					"soldFormat": "FIXED_PRICE",
+					"listingMarketplaceId": "EBAY_DE",
+					"purchaseMarketplaceId": "EBAY_DE",
+					"lineItemFulfillmentStatus": "FULFILLED",
+					"total": {
+						"value": "10.63",
+						"currency": "USD",
+						"convertedFromValue": "8.9",
+						"convertedFromCurrency": "EUR"
+					},
+					"deliveryCost": {
+						"shippingCost": {
+							"value": "0.0",
+							"currency": "USD",
+							"convertedFromValue": "0.0",
+							"convertedFromCurrency": "EUR"
+						}
+					},
+					"appliedPromotions": [],
+					"taxes": [],
+					"refunds": [
+						{
+							"refundDate": "2021-06-09T12:45:16.000Z"
+						}
+					],
+					"lineItemFulfillmentInstructions": {
+						"minEstimatedDeliveryDate": "2021-06-07T22:00:00.000Z",
+						"maxEstimatedDeliveryDate": "2021-06-08T22:00:00.000Z",
+						"shipByDate": "2021-06-07T21:59:59.000Z",
+						"guaranteedDelivery": false
+					}
+				}
+			],
+			"salesRecordReference": "10269",
+			"totalFeeBasisAmount": {
+				"value": "10.63",
+				"currency": "USD",
+				"convertedFromValue": "8.9",
+				"convertedFromCurrency": "EUR"
+			},
+			"totalMarketplaceFee": {
+				"value": "1.9",
+				"currency": "USD",
+				"convertedFromValue": "1.59",
+				"convertedFromCurrency": "EUR"
+			}
+		}
+	]
+}

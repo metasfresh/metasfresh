@@ -116,8 +116,8 @@ Feature: desadv and invoic
       | o_1                   | externalHeaderId_29042022_1 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_29042022_1 | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
-      | ol_1                      | o_1                   | 2021-04-15  | p_1                     | 0            | 100        | 0           | 10    | 0        | EUR          | true      | TU                             | false             | 5                            | 10                          | 10             | TU                    | 10                  |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
+      | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 100        | 0           | 10    | 0        | EUR          | true      | TU                             | false             | 5                            | 10                          | 10             | TU                    | 10                  |
 
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
@@ -226,8 +226,8 @@ Feature: desadv and invoic
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
       | 4010002                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2021-04-01 | false                  | false                 | IFCO_Test_2 x 10 PCE | false                   |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        |
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | pp_1       | 2002141                           | p_1                     | 10.0     | TU                | Normal                        | hu_pi_item_product_1                   |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.IsEdiInvoicRecipient |
@@ -284,8 +284,8 @@ Feature: desadv and invoic
       | o_1                   | externalHeaderId02052022_2 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_02052022_2 | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
-      | ol_1                      | o_1                   | 2021-04-15  | p_1                     | 0            | 100        | 0           | 10    | 0        | EUR          | true      | PCE                            | false             | 5                            | 10                          | 10             | TU                    | 10                  |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
+      | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 100        | 0           | 10    | 0        | EUR          | true      | PCE                            | false             | 5                            | 10                          | 10             | TU                    | 10                  |
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -447,8 +447,8 @@ Feature: desadv and invoic
       | o_1                   | externalHeaderId03052022_3 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_3 | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
-      | ol_1                      | o_1                   | 2021-04-15  | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                            | true              | 5                            | 10                          | 10             | PCE                   | 10                  |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
+      | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                            | true              | 5                            | 10                          | 10             | PCE                   | 10                  |
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -612,8 +612,8 @@ Feature: desadv and invoic
       | o_1                   | externalHeaderId03052022_4 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_4 | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
-      | ol_1                      | o_1                   | 2021-04-15  | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                            | false             | 5                            | 10                          | 10             | PCE                   | 5                   |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
+      | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                            | false             | 5                            | 10                          | 10             | PCE                   | 5                   |
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -782,8 +782,8 @@ Feature: desadv and invoic
       | o_1                   | externalHeaderId03052022_5 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_5 | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
-      | ol_1                      | o_1                   | 2021-04-15  | p_1                     | 0            | 40         | 0           | 50    | 0        | EUR          | true      | KGM                            | true              | 5                            | 10                          | 10             | KGM                   | 10                  |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
+      | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 40         | 0           | 50    | 0        | EUR          | true      | KGM                            | true              | 5                            | 10                          | 10             | KGM                   | 10                  |
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -951,8 +951,8 @@ Feature: desadv and invoic
       | o_1                   | externalHeaderId04052022_6 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_04052022_6 | true      | CO        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
-      | ol_1                      | o_1                   | 2021-04-15  | p_1                     | 0            | 50         | 0           | 10    | 0        | EUR          | true      | TU                             | true              | 5                            | 10                          | 10             | TU                    | 5                   |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
+      | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 50         | 0           | 10    | 0        | EUR          | true      | TU                             | true              | 5                            | 10                          | 10             | TU                    | 5                   |
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |

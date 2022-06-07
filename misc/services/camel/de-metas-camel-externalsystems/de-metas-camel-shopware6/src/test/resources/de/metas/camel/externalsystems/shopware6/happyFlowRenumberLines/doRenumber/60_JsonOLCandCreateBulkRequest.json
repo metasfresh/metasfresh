@@ -43,109 +43,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
-      "email": "orderCustomerEmail@example.com",
-      "phone": "phoneNumber"
-    },
-    {
-      "orgCode": "orgCode",
-      "externalLineId": "externalLineId5",
-      "externalHeaderId": "externalHeaderId",
-      "dataSource": "int-Shopware",
-      "dataDest": null,
-      "bpartner": {
-        "bpartnerIdentifier": "1",
-        "bpartnerLocationIdentifier": "3",
-        "contactIdentifier": "4"
-      },
-      "billBPartner": {
-        "bpartnerIdentifier": "1",
-        "bpartnerLocationIdentifier": "2",
-        "contactIdentifier": "4"
-      },
-      "dateOrdered": "2021-01-12",
-      "dateRequired": "2021-03-03",
-      "flatrateConditionsId": 0,
-      "productIdentifier": "val-productNumber5",
-      "qty": 40,
-      "price": 100,
-      "currencyCode": "EUR",
-      "discount": 0,
-      "poReference": "poReference",
-      "warehouseCode": null,
-      "warehouseDestCode": null,
-      "orderDocType": "SalesOrder",
-      "paymentRule": "Paypal",
-      "salesPartner": {
-        "salesPartnerCode": "mockSalesRepIdentifier"
-      },
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "paymentTerm": "val-paymentTermValue",
-      "orderLineGroup": {
-        "groupKey": "externalLineId2",
-        "groupMainItem": false
-      },
-      "dateCandidate": "2021-01-11",
-      "line": 20,
-      "description": "lineDescription5",
-      "isManualPrice": true,
-      "isImportedWithIssues": true,
-      "deliveryViaRule": "S",
-      "deliveryRule": "A",
-      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
-      "email": "orderCustomerEmail@example.com",
-      "phone": "phoneNumber"
-    },
-    {
-      "orgCode": "orgCode",
-      "externalLineId": "externalLineId6",
-      "externalHeaderId": "externalHeaderId",
-      "dataSource": "int-Shopware",
-      "dataDest": null,
-      "bpartner": {
-        "bpartnerIdentifier": "1",
-        "bpartnerLocationIdentifier": "3",
-        "contactIdentifier": "4"
-      },
-      "billBPartner": {
-        "bpartnerIdentifier": "1",
-        "bpartnerLocationIdentifier": "2",
-        "contactIdentifier": "4"
-      },
-      "dateOrdered": "2021-01-12",
-      "dateRequired": "2021-03-03",
-      "flatrateConditionsId": 0,
-      "productIdentifier": "val-productNumber6",
-      "qty": 50,
-      "price": 100,
-      "currencyCode": "EUR",
-      "discount": 0,
-      "poReference": "poReference",
-      "warehouseCode": null,
-      "warehouseDestCode": null,
-      "orderDocType": "SalesOrder",
-      "paymentRule": "Paypal",
-      "salesPartner": {
-        "salesPartnerCode": "mockSalesRepIdentifier"
-      },
-      "shipper": "ext-Shopware6-shippingMethodId",
-      "paymentTerm": "val-paymentTermValue",
-      "orderLineGroup": {
-        "groupKey": "externalLineId2",
-        "groupMainItem": false
-      },
-      "dateCandidate": "2021-01-11",
-      "line": 30,
-      "description": "lineDescription6",
-      "isManualPrice": true,
-      "isImportedWithIssues": true,
-      "deliveryViaRule": "S",
-      "deliveryRule": "A",
-      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
-      "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -185,10 +83,11 @@
       "paymentTerm": "val-paymentTermValue",
       "orderLineGroup": {
         "groupKey": "externalLineId2",
-        "groupMainItem": true
+        "groupMainItem": true,
+        "ordering": "GroupFirst"
       },
       "dateCandidate": "2021-01-11",
-      "line": 40,
+      "line": 20,
       "description": "lineDescription2",
       "isManualPrice": true,
       "isImportedWithIssues": true,
@@ -196,7 +95,111 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
+    },
+    {
+      "orgCode": "orgCode",
+      "externalLineId": "externalLineId5",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Shopware",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "3",
+        "contactIdentifier": "4"
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": "4"
+      },
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "val-productNumber5",
+      "qty": 40,
+      "price": 100,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "poReference",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "orderLineGroup": {
+        "groupKey": "externalLineId2",
+        "groupMainItem": false,
+        "ordering": "GroupFirst"
+      },
+      "dateCandidate": "2021-01-11",
+      "line": 30,
+      "description": "lineDescription5",
+      "isManualPrice": true,
+      "isImportedWithIssues": true,
+      "deliveryViaRule": "S",
+      "deliveryRule": "A",
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
+      "email": "orderCustomerEmail@example.com",
+      "phone": "phoneNumber"
+    },
+    {
+      "orgCode": "orgCode",
+      "externalLineId": "externalLineId6",
+      "externalHeaderId": "externalHeaderId",
+      "dataSource": "int-Shopware",
+      "dataDest": null,
+      "bpartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "3",
+        "contactIdentifier": "4"
+      },
+      "billBPartner": {
+        "bpartnerIdentifier": "1",
+        "bpartnerLocationIdentifier": "2",
+        "contactIdentifier": "4"
+      },
+      "dateOrdered": "2021-01-12",
+      "dateRequired": "2021-03-03",
+      "flatrateConditionsId": 0,
+      "productIdentifier": "val-productNumber6",
+      "qty": 50,
+      "price": 100,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "poReference",
+      "warehouseCode": null,
+      "warehouseDestCode": null,
+      "orderDocType": "SalesOrder",
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode": "mockSalesRepIdentifier"
+      },
+      "shipper": "ext-Shopware6-shippingMethodId",
+      "paymentTerm": "val-paymentTermValue",
+      "orderLineGroup": {
+        "groupKey": "externalLineId2",
+        "groupMainItem": false,
+        "ordering": "GroupFirst"
+      },
+      "dateCandidate": "2021-01-11",
+      "line": 40,
+      "description": "lineDescription6",
+      "isManualPrice": true,
+      "isImportedWithIssues": true,
+      "deliveryViaRule": "S",
+      "deliveryRule": "A",
+      "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
+      "applySalesRepFrom": "CandidateFirst",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -243,7 +246,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -290,7 +293,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -336,7 +339,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     },
@@ -382,7 +385,7 @@
       "deliveryRule": "A",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
-      "bpartnerName": "department\nsalutationDisplayName title firstName lastName",
+      "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
       "email": "orderCustomerEmail@example.com",
       "phone": "phoneNumber"
     }

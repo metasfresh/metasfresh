@@ -6,16 +6,16 @@ SELECT CASE
        (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id)
                                                                                         AS Currency,
        CASE
-           WHEN fa.amtacctdr <> 0::numeric THEN ev.value
-                                           ELSE ev2.value
+           WHEN fa.amtsourcedr <> 0::numeric THEN ev.value
+                                             ELSE ev2.value
        END                                                                              AS dr_account,
        CASE
-           WHEN fa.amtacctdr <> 0::numeric THEN ev2.value
-                                           ELSE ev.value
+           WHEN fa.amtsourcedr <> 0::numeric THEN ev2.value
+                                             ELSE ev.value
        END                                                                              AS cr_account,
        CASE
-           WHEN fa.amtacctdr <> 0::numeric THEN fa.amtacctdr
-                                           ELSE fa.amtacctcr
+           WHEN fa.amtsourcedr <> 0::numeric THEN fa.amtsourcedr
+                                             ELSE fa.amtsourcecr
        END                                                                              AS amt,
        a.name                                                                           AS activityname,
        a.c_activity_id,
