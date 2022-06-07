@@ -3,6 +3,7 @@ FROM mazorn/metas-mvn-backend:$REFNAME as backend
 
 WORKDIR /backend
 
+ARG REFNAME
 ENV REFNAME=$REFNAME
 SHELL ["/bin/bash", "-c"]
 
