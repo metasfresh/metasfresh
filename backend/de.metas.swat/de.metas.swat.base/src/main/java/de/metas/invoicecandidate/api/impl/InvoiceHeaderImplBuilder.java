@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -343,7 +344,7 @@ public class InvoiceHeaderImplBuilder
 			this.inputDataSourceId = inputDataSourceId;
 			inputDataSourceIdset = true;
 		}
-		else if (this.inputDataSourceId != inputDataSourceId)
+		else if (!Objects.equals(this.inputDataSourceId, inputDataSourceId))
 		{
 			this.inputDataSourceId = null;
 			inputDataSourceIdset = true;
