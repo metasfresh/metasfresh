@@ -50,7 +50,7 @@ class NewLetter extends Component {
       });
 
       try {
-        await this.getTemplates();
+        await this.loadTemplates();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
@@ -60,25 +60,25 @@ class NewLetter extends Component {
     }
   }
 
-  /**
-   * @method getTemplates
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  getTemplates = async () => {
-    const res = await getTemplates();
+  loadTemplates = async () => {
+    const axiosResponse = await getTemplates();
+    const { values, defaultValue } = axiosResponse.data;
+
+    let defaultTemplate;
+    if (values && values.length > 0 && defaultValue) {
+      defaultTemplate = values.find(
+        (template) => template.key === defaultValue
+      );
+    } else {
+      defaultTemplate = null;
+    }
 
     this.setState({
-      templates: res.data.values,
+      templates: values,
+      template: defaultTemplate,
     });
   };
 
-  /**
-   * @method handleTemplate
-   * @summary ToDo: Describe the method
-   * @param {*} option
-   * @todo Write the documentation
-   */
   handleTemplate = async (option) => {
     const { letterId, template } = this.state;
 
