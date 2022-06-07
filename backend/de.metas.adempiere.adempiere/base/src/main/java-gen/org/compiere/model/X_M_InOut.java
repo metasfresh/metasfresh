@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 228606393L;
+	private static final long serialVersionUID = -1093045251L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1) 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
 
 	@Override
@@ -228,7 +243,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public BigDecimal getChargeAmt()
+	public BigDecimal getChargeAmt() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -249,14 +264,14 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	@Override
 	public void setC_Incoterms_ID (final int C_Incoterms_ID)
 	{
-		if (C_Incoterms_ID < 1)
+		if (C_Incoterms_ID < 1) 
 			set_Value (COLUMNNAME_C_Incoterms_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
 	}
 
 	@Override
-	public int getC_Incoterms_ID()
+	public int getC_Incoterms_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
 	}
@@ -686,7 +701,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public java.lang.String getEMail()
+	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
 	}
@@ -933,12 +948,12 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getMovementDate()
+	public java.sql.Timestamp getMovementDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
 	}
 
-	/**
+	/** 
 	 * MovementType AD_Reference_ID=189
 	 * Reference name: M_Transaction Movement Type
 	 */
@@ -974,7 +989,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public java.lang.String getMovementType()
+	public java.lang.String getMovementType() 
 	{
 		return get_ValueAsString(COLUMNNAME_MovementType);
 	}
@@ -1312,20 +1327,5 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setAD_InputDataSource_ID (final int inputDataSourceId)
-	{
-		if (inputDataSourceId < 1)
-			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
-		else
-			set_Value (COLUMNNAME_AD_InputDataSource_ID, inputDataSourceId);
-	}
-
-	@Override
-	public int getAD_InputDataSource_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
 }
