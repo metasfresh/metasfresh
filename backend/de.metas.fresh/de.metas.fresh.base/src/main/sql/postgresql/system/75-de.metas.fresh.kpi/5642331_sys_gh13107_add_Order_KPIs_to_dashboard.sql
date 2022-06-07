@@ -209,7 +209,7 @@ UPDATE WEBUI_KPI_Field SET SQL_Select='IsoCode',Updated=TO_TIMESTAMP('2022-04-14
 ;
 
 -- 2022-04-14T06:49:11.457Z
-UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(true, (DATE_PART(''dow'', NOW()) * ''1 day''::interval)::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540037
+UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(true, (NOW() - (DATE_PART(''dow'', NOW()) - 1) * ''1 day''::interval)::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540037
 ;
 
 -- 2022-04-14T06:49:21.143Z
@@ -221,7 +221,7 @@ UPDATE WEBUI_KPI_Field SET SQL_Select='IsoCode',Updated=TO_TIMESTAMP('2022-04-14
 ;
 
 -- 2022-04-14T06:49:33.860Z
-UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(false, (NOW() - INTERVAL ''1 days'')::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540038
+UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(false, (NOW() - (DATE_PART(''dow'', NOW()) - 1) * ''1 day''::interval)::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540038
 ;
 
 -- 2022-04-14T06:49:43.920Z
