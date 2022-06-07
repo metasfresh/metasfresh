@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
@@ -143,52 +142,10 @@ public class DocumentFilterList
 		return filter != null ? mergeWith(filter) : this;
 	}
 
-	public DocumentFilterList retainOnlyNonFacetFilters()
-	{
-		return filtering(filter -> !filter.isFacetFilter());
-	}
-
-	public DocumentFilterList retainOnlyFacetFilters()
-	{
-		return filtering(DocumentFilter::isFacetFilter);
-	}
-
-	private DocumentFilterList filtering(final Predicate<DocumentFilter> predicate)
-	{
-		if (isEmpty())
-		{
-			return this;
-		}
-
-		final ImmutableMap<String, DocumentFilter> newFiltersById = filtersById.entrySet()
-				.stream()
-				.filter(entry -> predicate.test(entry.getValue()))
-				.collect(GuavaCollectors.toImmutableMap());
-
-		if (newFiltersById.isEmpty())
-		{
-			return EMPTY;
-		}
-		else if (newFiltersById.size() == filtersById.size())
-		{
-			return this;
-		}
-		else
-		{
-			return new DocumentFilterList(newFiltersById);
-		}
-
-	}
-
 	public Optional<DocumentFilter> getFilterById(@NonNull final String filterId)
 	{
 		final DocumentFilter filter = getFilterByIdOrNull(filterId);
 		return Optional.ofNullable(filter);
-	}
-
-	public boolean containsFilterById(final String filterId)
-	{
-		return getFilterByIdOrNull(filterId) != null;
 	}
 
 	private DocumentFilter getFilterByIdOrNull(@NonNull final String filterId)
