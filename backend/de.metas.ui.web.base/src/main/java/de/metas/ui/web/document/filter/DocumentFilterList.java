@@ -1,5 +1,14 @@
 package de.metas.ui.web.document.filter;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.util.GuavaCollectors;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -10,17 +19,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-import de.metas.util.GuavaCollectors;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -138,6 +136,11 @@ public class DocumentFilterList
 
 			return ofMap(filtersByIdNew);
 		}
+	}
+
+	public DocumentFilterList mergeWithNullable(@Nullable final DocumentFilter filter)
+	{
+		return filter != null ? mergeWith(filter) : this;
 	}
 
 	public DocumentFilterList retainOnlyNonFacetFilters()
