@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -14,7 +15,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
-import de.metas.impex.InputDataSourceId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -43,7 +43,9 @@ public class InvoiceHeaderImplBuilder
 
 	private int AD_Org_ID;
 
+	@Nullable
 	private InputDataSourceId inputDataSourceId;
+
 	private boolean inputDataSourceIdset;
 
 	private final Set<Integer> C_Order_IDs = new LinkedHashSet<>();
@@ -337,7 +339,7 @@ public class InvoiceHeaderImplBuilder
 		return inputDataSourceId;
 	}
 
-	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId)
+	public void setAD_InputDataSource_ID(@Nullable final InputDataSourceId inputDataSourceId)
 	{
 		if (this.inputDataSourceId == null && !inputDataSourceIdset)
 		{
