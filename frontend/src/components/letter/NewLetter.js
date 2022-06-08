@@ -31,12 +31,6 @@ class NewLetter extends Component {
     };
   }
 
-  /**
-   * @async
-   * @method UNSAFE_componentWillMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   async UNSAFE_componentWillMount() {
     const { windowId, docId, handleCloseLetter } = this.props;
 
@@ -64,19 +58,18 @@ class NewLetter extends Component {
     const axiosResponse = await getTemplates();
     const { values, defaultValue } = axiosResponse.data;
 
-    let defaultTemplate;
+    this.setState({ templates: values });
+
+    //
+    // Apply default template if any
     if (values && values.length > 0 && defaultValue) {
-      defaultTemplate = values.find(
+      const defaultTemplate = values.find(
         (template) => template.key === defaultValue
       );
-    } else {
-      defaultTemplate = null;
+      if (defaultTemplate != null) {
+        this.handleTemplate(defaultTemplate);
+      }
     }
-
-    this.setState({
-      templates: values,
-      template: defaultTemplate,
-    });
   };
 
   handleTemplate = async (option) => {
@@ -99,25 +92,12 @@ class NewLetter extends Component {
     });
   };
 
-  /**
-   * @method handleChange
-   * @summary ToDo: Describe the method
-   * @param {object} target
-   * @todo Write the documentation
-   */
   handleChange = ({ target: { value: message } }) => {
     this.setState({
       message,
     });
   };
 
-  /**
-   * @async
-   * @method handleBlur
-   * @summary ToDo: Describe the method
-   * @param {object} target
-   * @todo Write the documentation
-   */
   handleBlur = async ({ target: { value: message } }) => {
     const { letterId } = this.state;
 
@@ -139,56 +119,30 @@ class NewLetter extends Component {
     });
   };
 
-  /**
-   * @method handleListFocus
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   handleListFocus = () => {
     this.setState({
       listFocused: true,
     });
   };
 
-  /**
-   * @method handleListBlur
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   handleListBlur = () => {
     this.setState({
       listFocused: false,
     });
   };
 
-  /**
-   * @method closeTemplatesList
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   closeTemplatesList = () => {
     this.setState({
       listToggled: false,
     });
   };
 
-  /**
-   * @method openTemplatesList
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   openTemplatesList = () => {
     this.setState({
       listToggled: true,
     });
   };
 
-  /**
-   * @async
-   * @method renderCancelButton
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   complete = async () => {
     const { letterId } = this.state;
     const { handleCloseLetter, dispatch } = this.props;
@@ -202,11 +156,6 @@ class NewLetter extends Component {
     );
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const { handleCloseLetter } = this.props;
     const {
@@ -290,11 +239,10 @@ class NewLetter extends Component {
  * @prop {func} dispatch
  * @prop {string} windowId
  * @prop {string} docId
- * @todo Check props. Which proptype? Required or optional?
  */
 NewLetter.propTypes = {
-  handleCloseLetter: PropTypes.any,
-  dispatch: PropTypes.func,
+  handleCloseLetter: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired,
   windowId: PropTypes.string,
   docId: PropTypes.string,
 };
