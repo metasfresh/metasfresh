@@ -8,6 +8,7 @@ COPY e2e/package.json .
 RUN npm install
 
 COPY e2e/ .
+RUN mv cypress/config.js_template_compose cypress/config.js
 
 ARG REFNAME=local
 ENV REFNAME=$REFNAME
