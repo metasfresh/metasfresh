@@ -82,9 +82,9 @@ CREATE FUNCTION report.fresh_statistics_kg_week
   RETURNS SETOF report.fresh_statistics_kg_week AS
 $$
 SELECT
-	pc.Name AS pc_name, 
-	p.Name AS P_name,
-	p.value AS P_value,
+	pc_value, 
+	P_name,
+	P_value,
 	uom.UOMSymbol,
 	Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
 	Week1Sum, Week2Sum, Week3Sum, Week4Sum, Week5Sum, Week6Sum, Week7Sum, Week8Sum, Week9Sum, Week10Sum, Week11Sum, Week12Sum,
