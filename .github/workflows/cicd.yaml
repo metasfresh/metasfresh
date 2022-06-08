@@ -23,7 +23,7 @@ jobs:
       - name: build-commons
         run: |
           docker buildx build \
-          -f Dockerfile.common \
+          -f docker-builds/Dockerfile.common \
           --cache-to type=inline \
           --cache-from mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }} \
           -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }} \
@@ -32,7 +32,7 @@ jobs:
       - name: build-backend
         run: |
           docker buildx build \
-          -f Dockerfile.backend \
+          -f docker-builds/Dockerfile.backend \
           --cache-to type=inline \
           --cache-from mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -42,7 +42,7 @@ jobs:
       - name: build-camel
         run: |
           docker buildx build \
-          -f Dockerfile.camel \
+          -f docker-builds/Dockerfile.camel \
           --cache-to type=inline \
           --cache-from mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }} \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -68,7 +68,7 @@ jobs:
       - name: build-frontend
         run: |
           docker buildx build \
-          -f Dockerfile.frontend \
+          -f docker-builds/Dockerfile.frontend \
           --cache-to type=inline \
           --cache-from mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }} \
           -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }} \
@@ -77,7 +77,7 @@ jobs:
       - name: build-mobile
         run: |
           docker buildx build \
-          -f Dockerfile.mobile \
+          -f docker-builds/Dockerfile.mobile \
           --cache-to type=inline \
           --cache-from mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }} \
           -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }} \
@@ -100,7 +100,7 @@ jobs:
       - name: build-api
         run: |
           docker buildx build \
-          -f Dockerfile.backend.api \
+          -f docker-builds/Dockerfile.backend.api \
           --cache-to type=inline \
           --cache-from mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }} \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -110,7 +110,7 @@ jobs:
       - name: build-app
         run: |
           docker buildx build \
-          -f Dockerfile.backend.app \
+          -f docker-builds/Dockerfile.backend.app \
           --cache-to type=inline \
           --cache-from mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }} \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -120,7 +120,7 @@ jobs:
       - name: build-externalsystems
         run: |
           docker buildx build \
-          -f Dockerfile.camel.externalsystems \
+          -f docker-builds/Dockerfile.camel.externalsystems \
           --cache-to type=inline \
           --cache-from mazorn/metas-externalsystems:${{ needs.init.outputs.sanitized-refname }} \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -130,7 +130,7 @@ jobs:
       - name: build-db
         run: |
           docker buildx build \
-          -f Dockerfile.db-standalone \
+          -f docker-builds/Dockerfile.db-standalone \
           --cache-to type=inline \
           --cache-from mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }} \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -140,7 +140,7 @@ jobs:
       - name: build-db-preloaded
         run: |
           docker buildx build \
-          -f Dockerfile.db-preloaded \
+          -f docker-builds/Dockerfile.db-preloaded \
           --cache-to type=inline \
           --cache-from mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -173,7 +173,7 @@ jobs:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
         run: |
           docker buildx build \
-          -f Dockerfile.junit \
+          -f docker-builds/Dockerfile.junit \
           --cache-to type=inline \
           --cache-from mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }} \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
@@ -197,7 +197,7 @@ jobs:
       - name: build-cucumber
         run: |
           docker buildx build \
-          -f Dockerfile.cucumber \
+          -f docker-builds/Dockerfile.cucumber \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
           -t metas-cucumber:latest \
           .
@@ -223,7 +223,7 @@ jobs:
       - name: build-e2e
         run: |
           docker buildx build \
-          -f Dockerfile.e2e \
+          -f docker-builds/Dockerfile.e2e \
           --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
           -t metas-e2e:latest \
           .
