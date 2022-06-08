@@ -13,10 +13,8 @@ ENV LC_CTYPE="en_US.UTF-8"
 # thx to https://stackoverflow.com/a/48311129/1012103
 RUN echo en_US.UTF-8 UTF-8 > /etc/locale.gen && locale-gen en_US.UTF-8
 
-
-COPY docker-builds/db/init.sh /docker-entrypoint-initdb.d/
-COPY docker-builds/db/mark-migration-as-applied.sql /docker-entrypoint-initdb.d/mark-migration-as-applied
-COPY docker-builds/db/adjust-config.sql /docker-entrypoint-initdb.d/adjust-config
+COPY docker-builds/db/init/ /docker-entrypoint-initdb.d/
+COPY docker-builds/db/scripts/ /tmp/scripts/
 
 # COPY docker-builds/db/metasfresh_latest.pgdump .
 ADD --chown=postgres https://www.metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump .

@@ -55,7 +55,7 @@ find /docker-entrypoint-initdb.d/migrations -type f -printf '%f\n' | sort | whil
           exit 1            
         };
         
-        cat /docker-entrypoint-initdb.d/mark-migration-as-applied | awk "{gsub(\"##project##\",\"${parts[1]%.sql}\");gsub(\"##file##\",\"${parts[0]}\");print}" | psql -v ON_ERROR_STOP=ON -q1 --username=metasfresh || {
+        cat /tmp/scripts/mark-migration-as-applied.sql | awk "{gsub(\"##project##\",\"${parts[1]%.sql}\");gsub(\"##file##\",\"${parts[0]}\");print}" | psql -v ON_ERROR_STOP=ON -q1 --username=metasfresh || {
           echo "failed marking";
           exit 1
         };
@@ -75,7 +75,7 @@ echo ""
 echo "==================="
 echo "adjusting configuration"
 echo "==================="
-psql -U metasfresh -d metasfresh ON_ERROR_STOP=ON -q1f /docker-entrypoint-initdb.d/adjust-config
+psql -U metasfresh -d metasfresh ON_ERROR_STOP=ON -q1f /tmp/scripts/adjust-config.sql
 echo "=========="
 echo " ...done!"
 echo "=========="
