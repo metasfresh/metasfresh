@@ -17,6 +17,27 @@ public interface I_AD_User
 
 
 	/**
+	 * Set Default Boiler Plate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_BoilerPlate_Default_ID (int AD_BoilerPlate_Default_ID);
+
+	/**
+	 * Get Default Boiler Plate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_BoilerPlate_Default_ID();
+
+	ModelColumn<I_AD_User, Object> COLUMN_AD_BoilerPlate_Default_ID = new ModelColumn<>(I_AD_User.class, "AD_BoilerPlate_Default_ID", null);
+	String COLUMNNAME_AD_BoilerPlate_Default_ID = "AD_BoilerPlate_Default_ID";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -164,6 +185,29 @@ public interface I_AD_User
 	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
+	 * Set Geschlecht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAlberta_Gender (@Nullable java.lang.String Alberta_Gender);
+
+	/**
+	 * Get Geschlecht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getAlberta_Gender();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Alberta_Gender = new ModelColumn<>(I_AD_User.class, "Alberta_Gender", null);
+	String COLUMNNAME_Alberta_Gender = "Alberta_Gender";
+
+	/**
 	 * Set Title.
 	 *
 	 * <br>Type: List
@@ -212,7 +256,7 @@ public interface I_AD_User
 	String COLUMNNAME_Avatar_ID = "Avatar_ID";
 
 	/**
-	 * Set Geburtstag.
+	 * Set Birthday.
 	 * Birthday or Anniversary day
 	 *
 	 * <br>Type: Date
@@ -222,7 +266,7 @@ public interface I_AD_User
 	void setBirthday (@Nullable java.sql.Timestamp Birthday);
 
 	/**
-	 * Get Geburtstag.
+	 * Get Birthday.
 	 * Birthday or Anniversary day
 	 *
 	 * <br>Type: Date
@@ -293,6 +337,27 @@ public interface I_AD_User
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Default Flatrate Conditions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Conditions_Default_ID (int C_Flatrate_Conditions_Default_ID);
+
+	/**
+	 * Get Default Flatrate Conditions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Conditions_Default_ID();
+
+	ModelColumn<I_AD_User, Object> COLUMN_C_Flatrate_Conditions_Default_ID = new ModelColumn<>(I_AD_User.class, "C_Flatrate_Conditions_Default_ID", null);
+	String COLUMNNAME_C_Flatrate_Conditions_Default_ID = "C_Flatrate_Conditions_Default_ID";
 
 	/**
 	 * Set Greeting (ID).
@@ -748,29 +813,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Fresh_xmas_Gift = new ModelColumn<>(I_AD_User.class, "Fresh_xmas_Gift", null);
 	String COLUMNNAME_Fresh_xmas_Gift = "Fresh_xmas_Gift";
-
-	/**
-	 * Set Gender.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setGender (@Nullable java.lang.String Gender);
-
-	/**
-	 * Get Gender.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	@Nullable java.lang.String getGender();
-
-	ModelColumn<I_AD_User, Object> COLUMN_Gender = new ModelColumn<>(I_AD_User.class, "Gender", null);
-	String COLUMNNAME_Gender = "Gender";
 
 	/**
 	 * Set Included Tab.

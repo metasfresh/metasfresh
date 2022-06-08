@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 966411405L;
+	private static final long serialVersionUID = 2121363189L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -32,6 +32,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_BoilerPlate_Default_ID (final int AD_BoilerPlate_Default_ID)
+	{
+		if (AD_BoilerPlate_Default_ID < 1) 
+			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, AD_BoilerPlate_Default_ID);
+	}
+
+	@Override
+	public int getAD_BoilerPlate_Default_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_BoilerPlate_Default_ID);
 	}
 
 	/** 
@@ -121,6 +136,30 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getAD_User_InCharge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
+	}
+
+	/** 
+	 * Alberta_Gender AD_Reference_ID=541317
+	 * Reference name: Gender_List
+	 */
+	public static final int ALBERTA_GENDER_AD_Reference_ID=541317;
+	/** Unbekannt = 0 */
+	public static final String ALBERTA_GENDER_Unbekannt = "0";
+	/** Weiblich = 1 */
+	public static final String ALBERTA_GENDER_Weiblich = "1";
+	/** Männlich = 2 */
+	public static final String ALBERTA_GENDER_Maennlich = "2";
+	/** Divers = 3 */
+	public static final String ALBERTA_GENDER_Divers = "3";
+	@Override
+	public void setAlberta_Gender (final @Nullable java.lang.String Alberta_Gender)
+	{
+		throw new IllegalArgumentException ("Alberta_Gender is virtual column");	}
+
+	@Override
+	public java.lang.String getAlberta_Gender() 
+	{
+		return get_ValueAsString(COLUMNNAME_Alberta_Gender);
 	}
 
 	/** 
@@ -249,6 +288,21 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setC_Flatrate_Conditions_Default_ID (final int C_Flatrate_Conditions_Default_ID)
+	{
+		if (C_Flatrate_Conditions_Default_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, C_Flatrate_Conditions_Default_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Conditions_Default_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_Default_ID);
 	}
 
 	@Override
@@ -544,30 +598,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getFresh_xmas_Gift() 
 	{
 		return get_ValueAsString(COLUMNNAME_Fresh_xmas_Gift);
-	}
-
-	/** 
-	 * Gender AD_Reference_ID=541317
-	 * Reference name: Gender_List
-	 */
-	public static final int GENDER_AD_Reference_ID=541317;
-	/** Unbekannt = 0 */
-	public static final String GENDER_Unbekannt = "0";
-	/** Weiblich = 1 */
-	public static final String GENDER_Weiblich = "1";
-	/** Männlich = 2 */
-	public static final String GENDER_Maennlich = "2";
-	/** Divers = 3 */
-	public static final String GENDER_Divers = "3";
-	@Override
-	public void setGender (final @Nullable java.lang.String Gender)
-	{
-		throw new IllegalArgumentException ("Gender is virtual column");	}
-
-	@Override
-	public java.lang.String getGender() 
-	{
-		return get_ValueAsString(COLUMNNAME_Gender);
 	}
 
 	@Override

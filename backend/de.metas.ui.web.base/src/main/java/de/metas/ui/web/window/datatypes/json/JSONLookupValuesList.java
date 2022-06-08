@@ -143,7 +143,7 @@ public class JSONLookupValuesList
 
 	@JsonProperty("defaultValue")
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
-	private String defaultValue;
+	private String defaultId;
 
 	private LinkedHashMap<String, Object> otherProperties;
 
@@ -194,14 +194,14 @@ public class JSONLookupValuesList
 	}
 
 	@JsonSetter
-	public JSONLookupValuesList setDefaultValue(final String defaultValue)
+	public JSONLookupValuesList setDefaultId(final String defaultId)
 	{
-		this.defaultValue = defaultValue;
+		this.defaultId = defaultId;
 		return this;
 	}
 
-	public String getDefaultValue()
+	public String getDefaultId()
 	{
-		return defaultValue;
+		return defaultId;
 	}
 }
