@@ -1,7 +1,7 @@
-import counterpart from 'counterpart';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import counterpart from 'counterpart';
 
 import { addNotification } from '../../actions/AppActions';
 import {
@@ -11,14 +11,10 @@ import {
   applyTemplate,
   patchMessage,
 } from '../../actions/LetterActions';
+
 import RawList from '../widget/List/RawList';
 
-/**
- * @file Class based component.
- * @module NewLetter
- * @extends Component
- */
-class NewLetter extends Component {
+class NewLetter extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -68,7 +64,7 @@ class NewLetter extends Component {
         (template) => template.key === defaultValue
       );
       if (defaultTemplate != null) {
-        this.handleTemplate(defaultTemplate);
+        await this.handleTemplate(defaultTemplate);
       }
     }
   };
