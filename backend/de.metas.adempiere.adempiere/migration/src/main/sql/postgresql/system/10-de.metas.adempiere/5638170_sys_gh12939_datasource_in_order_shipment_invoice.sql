@@ -194,3 +194,4 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 
+update ad_column set entitytype='D', updated='2022-06-08 07:00' where columnname ilike '%AD_InputDataSource_ID%' and ad_table_id=get_table_id('c_order');

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1602886101L;
+	private static final long serialVersionUID = 1272209807L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1) 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
 
 	@Override
