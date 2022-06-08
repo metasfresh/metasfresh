@@ -119,21 +119,6 @@ INSERT INTO WEBUI_KPI_Field (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Reference_I
 INSERT INTO WEBUI_KPI_Field_Trl (AD_Language,WEBUI_KPI_Field_ID, Name,OffsetName,UOMSymbol, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.WEBUI_KPI_Field_ID, t.Name,t.OffsetName,t.UOMSymbol, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, WEBUI_KPI_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.WEBUI_KPI_Field_ID=540062 AND NOT EXISTS (SELECT 1 FROM WEBUI_KPI_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.WEBUI_KPI_Field_ID=t.WEBUI_KPI_Field_ID)
 ;
 
--- 2022-04-11T11:14:30.934Z
-UPDATE WEBUI_KPI SET SQL_WhereClause='cdt.name LIKE ''Bestellung''and co.created > now()::date - INTERVAL ''1 day'' ',Updated=TO_TIMESTAMP('2022-04-11 13:14:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540038
-;
-
--- 2022-04-11T11:19:08.038Z
-UPDATE WEBUI_KPI_Field SET SQL_Select='SELECT SUM(x.grandtotal)
-FROM (SELECT grandtotal
-      FROM c_order co
-               LEFT OUTER JOIN c_doctype cdt ON co.c_doctype_id = cdt.c_doctype_id
-               LEFT OUTER JOIN ad_clientinfo ci ON co.ad_client_id = ci.ad_client_id
-               LEFT OUTER JOIN c_acctschema cas ON cas.c_acctschema_id = ci.c_acctschema1_id
-               LEFT OUTER JOIN c_currency cy ON cy.c_currency_id = cas.c_currency_id
-      WHERE cdt.name LIKE ''Bestellung''and co.created > now()::date - INTERVAL ''1 day'') AS x',Updated=TO_TIMESTAMP('2022-04-11 13:19:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_Field_ID=540061
-;
-
 -- 2022-04-11T08:42:40.068Z
 INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 10:42:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','PURCHASE ORDER NET AMT LAST WEEK',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id
              left outer JOIN ad_clientinfo ci on co.ad_client_id = ci.ad_client_id
@@ -197,7 +182,7 @@ INSERT INTO WEBUI_DashboardItem_Trl (AD_Language,WEBUI_DashboardItem_ID, Name, I
 ;
 
 -- 2022-04-14T06:48:42.485Z
-UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(true, (NOW() - INTERVAL ''1 days'')::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:48:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540036
+UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(true,  NOW()::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:48:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540036
 ;
 
 -- 2022-04-14T06:48:56.948Z
@@ -209,7 +194,7 @@ UPDATE WEBUI_KPI_Field SET SQL_Select='IsoCode',Updated=TO_TIMESTAMP('2022-04-14
 ;
 
 -- 2022-04-14T06:49:11.457Z
-UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(true, (NOW() - (DATE_PART(''dow'', NOW()) - 1) * ''1 day''::interval)::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540037
+UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_For_Current_Week(true, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540037
 ;
 
 -- 2022-04-14T06:49:21.143Z
@@ -221,7 +206,7 @@ UPDATE WEBUI_KPI_Field SET SQL_Select='IsoCode',Updated=TO_TIMESTAMP('2022-04-14
 ;
 
 -- 2022-04-14T06:49:33.860Z
-UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(false, (NOW() - (DATE_PART(''dow'', NOW()) - 1) * ''1 day''::interval)::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540038
+UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(false,  NOW()::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:49:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540038
 ;
 
 -- 2022-04-14T06:49:43.920Z
@@ -233,7 +218,7 @@ UPDATE WEBUI_KPI_Field SET SQL_Select='IsoCode',Updated=TO_TIMESTAMP('2022-04-14
 ;
 
 -- 2022-04-14T06:50:06.884Z
-UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_Between_Dates(false, (DATE_PART(''dow'', NOW()) * ''1 day''::interval)::date, NOW()::Date, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:50:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540040
+UPDATE WEBUI_KPI SET IsActive='N', SQL_WhereClause=null, SQL_From='de_metas_fresh_kpi.KPI_Order_Total_Amounts_For_Current_Week(false, @AD_Client_ID/-1@, @AD_Org_ID/0@)',Updated=TO_TIMESTAMP('2022-04-14 08:50:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540040
 ;
 
 -- 2022-04-14T06:50:22.315Z
@@ -280,4 +265,21 @@ UPDATE WEBUI_DashboardItem_Trl SET Name = 'Net total of sales orders for today.'
 ;
 
 UPDATE WEBUI_DashboardItem_Trl SET Name = 'Net total of sales orders for this week.',Updated=TO_TIMESTAMP('2022-06-06 10:58:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' and WEBUI_DashboardItem_id=540035
+;
+
+-- Increase staleTime to 1 minute, fix details filter criteria
+-- 2022-06-08T07:03:48.080Z
+UPDATE WEBUI_KPI SET KPI_AllowedStaledTimeInSec=60, SQL_Details_WhereClause='isSoTrx = ''Y'' AND DateOrdered >= NOW()::DATE AND DocStatus IN (''CO'', ''CL'') AND IsActive = ''Y'' AND ad_org_id = @AD_Org_ID / 0@ AND ad_client_id = @AD_Client_ID / -1@',Updated=TO_TIMESTAMP('2022-06-08 10:03:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540036
+;
+
+-- 2022-06-08T07:04:18.327Z
+UPDATE WEBUI_KPI SET KPI_AllowedStaledTimeInSec=60, SQL_Details_WhereClause='isSoTrx = ''Y'' AND DateOrdered >= (NOW() - (DATE_PART(''dow'', NOW()) - 1) * ''1 day''::interval)::date AND DocStatus IN (''CO'', ''CL'')  AND IsActive = ''Y'' AND ad_org_id = @AD_Org_ID / 0@ AND ad_client_id = @AD_Client_ID / -1@',Updated=TO_TIMESTAMP('2022-06-08 10:04:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540037
+;
+
+-- 2022-06-08T07:04:30.115Z
+UPDATE WEBUI_KPI SET KPI_AllowedStaledTimeInSec=60, SQL_Details_WhereClause='isSoTrx = ''N'' AND DateOrdered >= NOW()::DATE AND DocStatus IN (''CO'', ''CL'') AND IsActive = ''Y'' AND ad_org_id = @AD_Org_ID / 0@ AND ad_client_id = @AD_Client_ID / -1@',Updated=TO_TIMESTAMP('2022-06-08 10:04:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540038
+;
+
+-- 2022-06-08T07:04:41.926Z
+UPDATE WEBUI_KPI SET KPI_AllowedStaledTimeInSec=60, SQL_Details_WhereClause='isSoTrx = ''N'' AND DateOrdered >= (NOW() - (DATE_PART(''dow'', NOW()) - 1) * ''1 day''::interval)::date AND DocStatus IN (''CO'', ''CL'') AND IsActive = ''Y'' AND ad_org_id = @AD_Org_ID / 0@ AND ad_client_id = @AD_Client_ID / -1@',Updated=TO_TIMESTAMP('2022-06-08 10:04:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540040
 ;
