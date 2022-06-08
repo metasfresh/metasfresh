@@ -16,6 +16,7 @@ import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -79,7 +80,8 @@ import java.util.Set;
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
 			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
-			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper)
+			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper,
+			@NonNull final UserSession userSession)
 	{
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
 		this.availableForSaleAdapter = availableForSaleAdapter;
@@ -88,6 +90,7 @@ import java.util.Set;
 		callout = OrderLineQuickInputCallout.builder()
 				.bpartnersService(bpartnersService)
 				.packingItemProductFieldHelper(packingItemProductFieldHelper)
+				.userSession(userSession)
 				.build();
 	}
 
@@ -193,11 +196,11 @@ import java.util.Set;
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setCtxTableName(null) // ctxTableName
-						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540365)// FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
-						.buildProvider())
+													 .setCtxTableName(null) // ctxTableName
+													 .setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+													 .setDisplayType(DisplayType.TableDir)
+													 .setAD_Val_Rule_ID(540365)// FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
+													 .buildProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
