@@ -109,9 +109,17 @@ public class HUPricing extends AttributePricing
 				.setProductId(productId);
 
 		//match packing material if we have a real packing material
-		if(packingMaterialId != null && packingMaterialId.isRegular())
+		if (packingMaterialId != null)
 		{
-			productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+			if (packingMaterialId.isRegular())
+			{
+				productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+			}
+			else
+			{
+				productPriceQuery.matching(HUPIItemProductMatcher_None);
+			}
+
 			noAttributeRelatedConditionSet = false;
 		}
 
