@@ -60,7 +60,7 @@ DELETE FROM WEBUI_DashboardItem WHERE WEBUI_DashboardItem_ID=1000019
 
 
 -- 2022-04-11T07:43:01.014Z
-INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 09:43:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','SALES ORDER NET AMOUNT TODAY',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id left outer JOIN ad_clientinfo ci on co.ad_client_id = ci.ad_client_id left outer JOIN c_acctschema cas ON cas.c_acctschema_id = ci.c_acctschema1_id left outer JOIN c_currency cy ON cy.c_currency_id = cas.c_currency_id','docbasetype = ''SOO'' and co.created > now()::date - INTERVAL ''1 day''',TO_TIMESTAMP('2022-04-11 09:43:00','YYYY-MM-DD HH24:MI:SS'),100,540036)
+INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 09:43:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','Nettosumme der Kundenaufträge für heute.',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id left outer JOIN ad_clientinfo ci on co.ad_client_id = ci.ad_client_id left outer JOIN c_acctschema cas ON cas.c_acctschema_id = ci.c_acctschema1_id left outer JOIN c_currency cy ON cy.c_currency_id = cas.c_currency_id','docbasetype = ''SOO'' and co.created > now()::date - INTERVAL ''1 day''',TO_TIMESTAMP('2022-04-11 09:43:00','YYYY-MM-DD HH24:MI:SS'),100,540036)
 ;
 
 -- 2022-04-11T07:44:03.560Z
@@ -80,7 +80,7 @@ INSERT INTO WEBUI_KPI_Field_Trl (AD_Language,WEBUI_KPI_Field_ID, Name,OffsetName
 ;
 
 -- 2022-04-11T07:48:32.180Z
-INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 09:48:32','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','SALES ORDER NET AMOUNT THIS WEEK',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id left outer JOIN ad_clientinfo ci on co.ad_client_id = ci.ad_client_id left outer JOIN c_acctschema cas ON cas.c_acctschema_id = ci.c_acctschema1_id left outer JOIN c_currency cy ON cy.c_currency_id = cas.c_currency_id','docbasetype = ''SOO'' AND co.created > now()::date - INTERVAL ''7 day''',TO_TIMESTAMP('2022-04-11 09:48:32','YYYY-MM-DD HH24:MI:SS'),100,540037)
+INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 09:48:32','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','Nettosumme der Kundenaufträge der vergangenen Woche.',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id left outer JOIN ad_clientinfo ci on co.ad_client_id = ci.ad_client_id left outer JOIN c_acctschema cas ON cas.c_acctschema_id = ci.c_acctschema1_id left outer JOIN c_currency cy ON cy.c_currency_id = cas.c_currency_id','docbasetype = ''SOO'' AND co.created > now()::date - INTERVAL ''7 day''',TO_TIMESTAMP('2022-04-11 09:48:32','YYYY-MM-DD HH24:MI:SS'),100,540037)
 ;
 
 -- 2022-04-11T07:49:31.451Z
@@ -100,7 +100,7 @@ INSERT INTO WEBUI_KPI_Field_Trl (AD_Language,WEBUI_KPI_Field_ID, Name,OffsetName
 ;
 
 -- 2022-04-11T07:53:41.630Z
-INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 09:53:41','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','PURCHASE ORDER NET AMOUNT TODAY',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id left outer JOIN ad_clientinfo ci on co.ad_client_id = ci.ad_client_id left outer JOIN c_acctschema cas ON cas.c_acctschema_id = ci.c_acctschema1_id left outer JOIN c_currency cy ON cy.c_currency_id = cas.c_currency_id','cdt.name LIKE ''Bestellung''',TO_TIMESTAMP('2022-04-11 09:53:41','YYYY-MM-DD HH24:MI:SS'),100,540038)
+INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 09:53:41','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','Nettobetrag der Bestellung für heute.',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id left outer JOIN ad_clientinfo ci on co.ad_client_id = ci.ad_client_id left outer JOIN c_acctschema cas ON cas.c_acctschema_id = ci.c_acctschema1_id left outer JOIN c_currency cy ON cy.c_currency_id = cas.c_currency_id','cdt.name LIKE ''Bestellung''',TO_TIMESTAMP('2022-04-11 09:53:41','YYYY-MM-DD HH24:MI:SS'),100,540038)
 ;
 
 -- 2022-04-11T07:54:54.566Z
@@ -120,7 +120,7 @@ INSERT INTO WEBUI_KPI_Field_Trl (AD_Language,WEBUI_KPI_Field_ID, Name,OffsetName
 ;
 
 -- 2022-04-11T08:42:40.068Z
-INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 10:42:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','PURCHASE ORDER NET AMT LAST WEEK',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id
+INSERT INTO WEBUI_KPI (AD_Client_ID,AD_Org_ID,ChartType,Created,CreatedBy,IsActive,IsApplySecuritySettings,IsGenerateComparation,KPI_AllowedStaledTimeInSec,KPI_DataSource_Type,Name,Source_Table_ID,SQL_Details_WhereClause,SQL_From,SQL_WhereClause,Updated,UpdatedBy,WEBUI_KPI_ID) VALUES (0,0,'M',TO_TIMESTAMP('2022-04-11 10:42:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N',1,'S','Nettosumme der Bestellungen für diese Woche.',259,'c_order.AD_Client_ID = @AD_Client_ID@ AND c_order.AD_Org_ID=@AD_Org_ID@','c_order co left outer join c_doctype cdt on co.c_doctype_id = cdt.c_doctype_id
              left outer JOIN ad_clientinfo ci on co.ad_client_id = ci.ad_client_id
              left outer JOIN c_acctschema cas ON cas.c_acctschema_id = ci.c_acctschema1_id
              left outer JOIN c_currency cy ON cy.c_currency_id = cas.c_currency_id','cdt.name LIKE ''Bestellung''and co.created >= NOW()::DATE-EXTRACT(DOW FROM NOW())::INTEGER-7 AND co.created <  NOW()::DATE-EXTRACT(DOW from NOW())::INTEGER',TO_TIMESTAMP('2022-04-11 10:42:40','YYYY-MM-DD HH24:MI:SS'),100,540040)
@@ -282,4 +282,10 @@ UPDATE WEBUI_KPI SET KPI_AllowedStaledTimeInSec=60, SQL_Details_WhereClause='isS
 
 -- 2022-06-08T07:04:41.926Z
 UPDATE WEBUI_KPI SET KPI_AllowedStaledTimeInSec=60, SQL_Details_WhereClause='isSoTrx = ''N'' AND DateOrdered >= (NOW() - (DATE_PART(''dow'', NOW()) - 1) * ''1 day''::interval)::date AND DocStatus IN (''CO'', ''CL'') AND IsActive = ''Y'' AND ad_org_id = @AD_Org_ID / 0@ AND ad_client_id = @AD_Client_ID / -1@',Updated=TO_TIMESTAMP('2022-06-08 10:04:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540040
+;
+
+Update WEBUI_KPI SET AD_Window_ID = 181,Updated=TO_TIMESTAMP('2022-06-08 12:04:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540038
+;
+
+Update WEBUI_KPI SET AD_Window_ID = 181,Updated=TO_TIMESTAMP('2022-06-08 12:04:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE WEBUI_KPI_ID=540040
 ;
