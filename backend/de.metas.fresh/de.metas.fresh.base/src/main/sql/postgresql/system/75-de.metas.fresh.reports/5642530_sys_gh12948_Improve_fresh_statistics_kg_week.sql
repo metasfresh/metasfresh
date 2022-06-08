@@ -87,7 +87,7 @@ CREATE INDEX fresh_statistics_kg_week_p_name_pc_name ON fresh_statistics_kg_week
 
 ----------- recreate function fresh_statistics_kg_week -------------
 
-CREATE FUNCTION report.fresh_statistics_kg_week
+CREATE OR REPLACE FUNCTION report.fresh_statistics_kg_week
 	(
 		IN C_Year_ID numeric, 
 		IN week integer,
