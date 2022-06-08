@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.util.Services;
