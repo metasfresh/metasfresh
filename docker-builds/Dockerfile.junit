@@ -19,7 +19,7 @@ RUN --mount=type=secret,id=mysecret \
         --source "unit-tests-github" \
 		--tags $REFNAME \
         --results **/TEST-*.xml \
-        -- mvn test ;\
+        -- mvn test -Dmaven.test.failure.ignore=true ;\
     else \
-        mvn test ;\
+        mvn test -Dmaven.test.failure.ignore=true ;\
     fi
