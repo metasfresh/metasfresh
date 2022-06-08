@@ -51,6 +51,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -111,6 +113,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final InOutGenerateResult result;
 	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
@@ -362,7 +366,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// C_Order reference
 		{
-			final I_C_Order order = shipmentSchedule.getC_Order();
+			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 			if (order != null && order.getC_Order_ID() > 0)
 			{
 				shipment.setDateOrdered(order.getDateOrdered());
@@ -374,6 +378,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
 				shipment.setEMail(order.getEMail());
+				shipment.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
 			}

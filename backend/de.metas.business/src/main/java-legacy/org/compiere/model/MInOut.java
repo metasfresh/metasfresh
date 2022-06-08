@@ -398,6 +398,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser2_ID(order.getUser2_ID());
 		setPriorityRule(order.getPriorityRule());
 		setEMail(order.getEMail());
+		setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+
 		// Drop shipment
 		// metas start: cg: 01717
 		if (order.isSOTrx())
@@ -497,6 +499,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser1_ID(invoice.getUser1_ID());
 		setUser2_ID(invoice.getUser2_ID());
 		setEMail(invoice.getEMail());
+		setAD_InputDataSource_ID(invoice.getAD_InputDataSource_ID());
 
 		// metas
 		copyAdditionalCols(order);
