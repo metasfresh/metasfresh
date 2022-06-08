@@ -82,8 +82,16 @@ WHERE fa.AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'
   AND p.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
 ;
 
+CREATE TABLE fresh_statistics_kg_week_MV
+AS
+SELECT *
+FROM fresh_statistics_kg_week_view
+ORDER BY pc_value, P_name
+;
 
-
+-- indices that shall improve ordering and filtering
+CREATE INDEX fresh_statistics_kg_week_year_Index ON fresh_statistics_kg_week_MV (C_Year_ID, issotrx);
+CREATE INDEX fresh_statistics_kg_week_p_name_pc_name ON fresh_statistics_kg_week_MV (pc_value, P_name, C_Year_ID, issotrx);
 
 
  return true;
