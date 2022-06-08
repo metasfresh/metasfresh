@@ -4,11 +4,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { addNotification } from '../../actions/AppActions';
-import { patchRequest } from '../../api';
 import {
   completeLetter,
   createLetter,
   getTemplates,
+  applyTemplate,
+  patchMessage,
 } from '../../actions/LetterActions';
 import RawList from '../widget/List/RawList';
 
@@ -79,15 +80,10 @@ class NewLetter extends Component {
       return;
     }
 
-    const response = await patchRequest({
-      entity: 'letter',
-      docType: letterId,
-      property: 'templateId',
-      value: option,
-    });
+    const letter = await applyTemplate(letterId, option);
 
     this.setState({
-      ...response.data,
+      ...letter,
       template: option,
     });
   };
@@ -105,43 +101,22 @@ class NewLetter extends Component {
       return;
     }
 
-    const response = await patchRequest({
-      entity: 'letter',
-      docType: letterId,
-      property: 'message',
-      value: message,
-    });
+    const letter = await patchMessage(letterId, message);
 
     this.setState({
-      ...response.data,
-      cached: response.data,
+      ...letter,
+      cached: letter,
       listFocused: false,
     });
   };
 
-  handleListFocus = () => {
-    this.setState({
-      listFocused: true,
-    });
-  };
+  handleListFocus = () => this.setState({ listFocused: true });
 
-  handleListBlur = () => {
-    this.setState({
-      listFocused: false,
-    });
-  };
+  handleListBlur = () => this.setState({ listFocused: false });
 
-  closeTemplatesList = () => {
-    this.setState({
-      listToggled: false,
-    });
-  };
+  closeTemplatesList = () => this.setState({ listToggled: false });
 
-  openTemplatesList = () => {
-    this.setState({
-      listToggled: true,
-    });
-  };
+  openTemplatesList = () => this.setState({ listToggled: true });
 
   complete = async () => {
     const { letterId } = this.state;
@@ -233,13 +208,6 @@ class NewLetter extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} handleCloseLetter
- * @prop {func} dispatch
- * @prop {string} windowId
- * @prop {string} docId
- */
 NewLetter.propTypes = {
   handleCloseLetter: PropTypes.func.isRequired,
   dispatch: PropTypes.func.isRequired,
