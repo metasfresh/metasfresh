@@ -10,6 +10,15 @@ Feature: invoice payment allocation
       | Identifier                | Name                      | Value                     |
       | paymentAllocPricingSystem | paymentAllocPricingSystem | paymentAllocPricingSystem |
 
+    And metasfresh contains M_PriceLists
+      | Identifier                 | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList      | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | paymentAllocPriceListNotSO | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName2 | false | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier           | M_PriceList_ID.Identifier  | ValidFrom  |
+      | paymentAllocPLV      | paymentAllocPriceList      | 2022-05-01 |
+      | paymentAllocPLVNotSO | paymentAllocPriceListNotSO | 2022-05-01 |
+
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name                  | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | bpartner_1 | BPartnerTest_06062022 | Y              | paymentAllocPricingSystem     |
@@ -26,14 +35,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to sales invoice for the full amount
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_100 | product_100 |
     And metasfresh contains M_ProductPrices
@@ -71,14 +73,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to multiple sales invoices with payment open amount left
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_110 | product_110 |
     And metasfresh contains M_ProductPrices
@@ -122,14 +117,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to multiple sales invoices with invoice open amount left and then apply write off
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_120 | product_120 |
     And metasfresh contains M_ProductPrices
@@ -184,14 +172,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to multiple sales invoices with invoice open amount left and then apply discount
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_130 | product_130 |
     And metasfresh contains M_ProductPrices
@@ -246,14 +227,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to multiple sales invoices with payment open amount left and not matching on currency
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_140 | product_140 |
     And metasfresh contains M_ProductPrices
@@ -297,16 +271,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate sales one invoice and one purchase invoice to each other
 
-    Given metasfresh contains M_PriceLists
-      | Identifier                 | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList      | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-      | paymentAllocPriceListNotSO | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName2 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier           | M_PriceList_ID.Identifier  | Name                                | ValidFrom  |
-      | paymentAllocPLV      | paymentAllocPriceList      | paymentAllocPriceList_01052022      | 2022-05-01 |
-      | paymentAllocPLVNotSO | paymentAllocPriceListNotSO | paymentAllocPriceListNotSO_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier    | Name          |
       | product_150_1 | product_150_1 |
       | product_150_2 | product_150_2 |
@@ -344,14 +309,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to sales invoice that has a credit memo created
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_160 | product_160 |
     And metasfresh contains M_ProductPrices
@@ -400,14 +358,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate outbound payment to sales invoice
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_170 | product_170 |
     And metasfresh contains M_ProductPrices
@@ -442,14 +393,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to purchase invoice for the full amount
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_180 | product_180 |
     And metasfresh contains M_ProductPrices
@@ -487,14 +431,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to multiple purchase invoices with payment open amount left
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_190 | product_190 |
     And metasfresh contains M_ProductPrices
@@ -539,14 +476,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to multiple purchase invoices with invoice open amount left and then apply write off
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_200 | product_200 |
     And metasfresh contains M_ProductPrices
@@ -602,14 +532,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to multiple purchase invoices with invoice open amount left and then apply discount
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_210 | product_210 |
     And metasfresh contains M_ProductPrices
@@ -664,14 +587,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate payment to purchase invoice that has a credit memo created
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_220 | product_220 |
     And metasfresh contains M_ProductPrices
@@ -720,14 +636,7 @@ Feature: invoice payment allocation
   @from:cucumber
   Scenario: allocate inbound payment to purchase invoice
 
-    Given metasfresh contains M_PriceLists
-      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_230 | product_230 |
     And metasfresh contains M_ProductPrices
