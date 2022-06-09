@@ -7,12 +7,12 @@ Feature: invoice payment allocation
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     And metasfresh contains M_PricingSystems
-      | Identifier           | Name                 | Value                |
-      | defaultPricingSystem | defaultPricingSystem | defaultPricingSystem |
+      | Identifier                | Name                      | Value                     |
+      | paymentAllocPricingSystem | paymentAllocPricingSystem | paymentAllocPricingSystem |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name                  | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerTest_06062022 | Y              | defaultPricingSystem          |
+      | bpartner_1 | BPartnerTest_06062022 | Y              | paymentAllocPricingSystem     |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
@@ -27,18 +27,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to sales invoice for the full amount
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_100 | product_100 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_100     | defaultPLV                        | product_100             | 5.00     | PCE               | Normal                        |
+      | pp_100     | paymentAllocPLV                   | product_100             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -72,18 +72,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to multiple sales invoices with payment open amount left
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_110 | product_110 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_110     | defaultPLV                        | product_110             | 5.00     | PCE               | Normal                        |
+      | pp_110     | paymentAllocPLV                   | product_110             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -123,18 +123,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to multiple sales invoices with invoice open amount left and then apply write off
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_120 | product_120 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_120     | defaultPLV                        | product_120             | 5.00     | PCE               | Normal                        |
+      | pp_120     | paymentAllocPLV                   | product_120             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -185,18 +185,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to multiple sales invoices with invoice open amount left and then apply discount
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_130 | product_130 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_130     | defaultPLV                        | product_130             | 5.00     | PCE               | Normal                        |
+      | pp_130     | paymentAllocPLV                   | product_130             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -247,18 +247,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to multiple sales invoices with payment open amount left and not matching on currency
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_140 | product_140 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_140     | defaultPLV                        | product_140             | 5.00     | PCE               | Normal                        |
+      | pp_140     | paymentAllocPLV                   | product_140             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -298,13 +298,13 @@ Feature: invoice payment allocation
   Scenario: allocate sales one invoice and one purchase invoice to each other
 
     Given metasfresh contains M_PriceLists
-      | Identifier        | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList  | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
-      | defaultPriceList1 | defaultPricingSystem          | DE                        | EUR                 | PriceListName2 | false | false         | 2              |
+      | Identifier                 | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList      | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | paymentAllocPriceListNotSO | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName2 | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier  | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV  | defaultPriceList          | PLVName1 | 2022-05-01 |
-      | defaultPLV1 | defaultPriceList1         | PLVName2 | 2022-05-01 |
+      | Identifier           | M_PriceList_ID.Identifier  | Name                                | ValidFrom  |
+      | paymentAllocPLV      | paymentAllocPriceList      | paymentAllocPriceList_01052022      | 2022-05-01 |
+      | paymentAllocPLVNotSO | paymentAllocPriceListNotSO | paymentAllocPriceListNotSO_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier    | Name          |
@@ -312,8 +312,8 @@ Feature: invoice payment allocation
       | product_150_2 | product_150_2 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_150_1   | defaultPLV                        | product_150_1           | 5.00     | PCE               | Normal                        |
-      | pp_150_2   | defaultPLV1                       | product_150_2           | 5.00     | PCE               | Normal                        |
+      | pp_150_1   | paymentAllocPLV                   | product_150_1           | 5.00     | PCE               | Normal                        |
+      | pp_150_2   | paymentAllocPLVNotSO              | product_150_2           | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -345,18 +345,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to sales invoice that has a credit memo created
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_160 | product_160 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_160     | defaultPLV                        | product_160             | 5.00     | PCE               | Normal                        |
+      | pp_160     | paymentAllocPLV                   | product_160             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -401,18 +401,18 @@ Feature: invoice payment allocation
   Scenario: allocate outbound payment to sales invoice
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_170 | product_170 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_170     | defaultPLV                        | product_170             | 5.00     | PCE               | Normal                        |
+      | pp_170     | paymentAllocPLV                   | product_170             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -443,18 +443,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to purchase invoice for the full amount
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_180 | product_180 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_180     | defaultPLV                        | product_180             | 5.00     | PCE               | Normal                        |
+      | pp_180     | paymentAllocPLV                   | product_180             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -488,18 +488,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to multiple purchase invoices with payment open amount left
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_190 | product_190 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_190     | defaultPLV                        | product_190             | 5.00     | PCE               | Normal                        |
+      | pp_190     | paymentAllocPLV                   | product_190             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -540,18 +540,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to multiple purchase invoices with invoice open amount left and then apply write off
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_200 | product_200 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_200     | defaultPLV                        | product_200             | 5.00     | PCE               | Normal                        |
+      | pp_200     | paymentAllocPLV                   | product_200             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -603,18 +603,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to multiple purchase invoices with invoice open amount left and then apply discount
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_210 | product_210 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_210     | defaultPLV                        | product_210             | 5.00     | PCE               | Normal                        |
+      | pp_210     | paymentAllocPLV                   | product_210             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -665,18 +665,18 @@ Feature: invoice payment allocation
   Scenario: allocate payment to purchase invoice that has a credit memo created
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_220 | product_220 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_220     | defaultPLV                        | product_220             | 5.00     | PCE               | Normal                        |
+      | pp_220     | paymentAllocPLV                   | product_220             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -721,18 +721,18 @@ Feature: invoice payment allocation
   Scenario: allocate inbound payment to purchase invoice
 
     Given metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
-      | defaultPriceList | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
+      | Identifier            | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | paymentAllocPriceList | paymentAllocPricingSystem     | DE                        | EUR                 | PriceListName1 | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name     | ValidFrom  |
-      | defaultPLV | defaultPriceList          | PLVName1 | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | paymentAllocPLV | paymentAllocPriceList     | paymentAllocPriceList_01052022 | 2022-05-01 |
 
     And metasfresh contains M_Products:
       | Identifier  | Name        |
       | product_230 | product_230 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_230     | defaultPLV                        | product_230             | 5.00     | PCE               | Normal                        |
+      | pp_230     | paymentAllocPLV                   | product_230             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
