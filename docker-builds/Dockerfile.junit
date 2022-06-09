@@ -1,7 +1,17 @@
 ARG REFNAME=local
+FROM mazorn/metas-mvn-common:$REFNAME as common
 FROM mazorn/metas-mvn-backend:$REFNAME as backend
 
-WORKDIR /backend
+FROM maven:3.8.4-jdk-8 as junit
+
+WORKDIR /java
+
+COPY --from=backend /root/.m2 /root/.m2/
+COPY --from=common /commons commons
+COPY --from=backend /backend backend
+
+RUN cd /java/commons && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee junit.log
+RUN cd /java/backend && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a junit.log
 
 ARG REFNAME
 ENV REFNAME=$REFNAME
@@ -19,7 +29,5 @@ RUN --mount=type=secret,id=mysecret \
         --source "unit-tests-github" \
 		--tags $REFNAME \
         --results **/TEST-*.xml \
-        -- mvn test -Dmaven.test.failure.ignore=true ;\
-    else \
-        mvn test -Dmaven.test.failure.ignore=true ;\
+        -- cat junit.log ;\
     fi
