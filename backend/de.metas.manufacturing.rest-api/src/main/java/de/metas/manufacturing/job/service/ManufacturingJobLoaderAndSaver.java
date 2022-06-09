@@ -10,7 +10,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
-import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.HUInfo;
@@ -21,6 +20,7 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.RawMaterialsIssue;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
+import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.InstantAndOrgId;
@@ -259,31 +259,35 @@ public class ManufacturingJobLoaderAndSaver
 				.qtyToReceive(orderQuantities.getQtyRequiredToProduce())
 				.qtyReceived(orderQuantities.getQtyReceived())
 				.coProductBOMLineId(null)
-				.currentReceivingHU(extractCurrentReceivingHU(ppOrder))
+				.receivingTarget(extractReceivingTarget(ppOrder))
 				.build();
 
 	}
 
-	private static CurrentReceivingHU extractCurrentReceivingHU(final I_PP_Order ppOrder)
+	@Nullable
+	public static ReceivingTarget extractReceivingTarget(final I_PP_Order ppOrder)
 	{
 		final HuId luId = HuId.ofRepoIdOrNull(ppOrder.getCurrent_Receiving_LU_HU_ID());
-		if (luId != null)
-		{
-			return CurrentReceivingHU.builder()
-					.aggregateToLUId(luId)
-					.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNone(ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID()))
-					.build();
-		}
-		else
+		if (luId == null)
 		{
 			return null;
 		}
+
+		return ReceivingTarget.builder()
+				.luId(luId)
+				// TODO .tuId()
+				.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNone(ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID()))
+				.build();
 	}
 
-	public static void updateRecordFromCurrentReceivingHU(@NonNull final I_PP_Order record, @NonNull final CurrentReceivingHU currentReceivingHU)
+	public static void updateRecordFromReceivingTarget(@NonNull final I_PP_Order record, @Nullable final ReceivingTarget from)
 	{
-		record.setCurrent_Receiving_LU_HU_ID(currentReceivingHU.getAggregateToLUId().getRepoId());
-		record.setCurrent_Receiving_TU_PI_Item_Product_ID(currentReceivingHU.getTuPIItemProductId().getRepoId());
+		final HuId luId = from != null ? from.getLuId() : null;
+		final HUPIItemProductId tuPIItemProductId = from != null ? from.getTuPIItemProductId() : null;
+
+		record.setCurrent_Receiving_LU_HU_ID(HuId.toRepoId(luId));
+		// TODO record.setCurrent_Receiving_TU_HU_ID(HuId.toRepoId(from.getTuId()));
+		record.setCurrent_Receiving_TU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(tuPIItemProductId));
 	}
 
 	@Nullable
@@ -305,30 +309,34 @@ public class ManufacturingJobLoaderAndSaver
 				.qtyToReceive(bomLineQuantities.getQtyRequired().negate())
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())
 				.coProductBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))
-				.currentReceivingHU(extractCurrentReceivingHU(orderBOMLine))
+				.receivingTarget(extractReceivingTarget(orderBOMLine))
 				.build();
 	}
 
-	private static CurrentReceivingHU extractCurrentReceivingHU(final I_PP_Order_BOMLine ppOrderBOMLine)
+	@Nullable
+	public static ReceivingTarget extractReceivingTarget(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
 		final HuId luId = HuId.ofRepoIdOrNull(ppOrderBOMLine.getCurrent_Receiving_LU_HU_ID());
-		if (luId != null)
-		{
-			return CurrentReceivingHU.builder()
-					.aggregateToLUId(luId)
-					.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNone(ppOrderBOMLine.getCurrent_Receiving_TU_PI_Item_Product_ID()))
-					.build();
-		}
-		else
+		if (luId == null)
 		{
 			return null;
 		}
+
+		return ReceivingTarget.builder()
+				.luId(luId)
+				// TODO .tuId()
+				.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNone(ppOrderBOMLine.getCurrent_Receiving_TU_PI_Item_Product_ID()))
+				.build();
 	}
 
-	public static void updateRecordFromCurrentReceivingHU(@NonNull final I_PP_Order_BOMLine record, @NonNull final CurrentReceivingHU currentReceivingHU)
+	public static void updateRecordFromReceivingTarget(@NonNull final I_PP_Order_BOMLine record, @Nullable final ReceivingTarget from)
 	{
-		record.setCurrent_Receiving_LU_HU_ID(currentReceivingHU.getAggregateToLUId().getRepoId());
-		record.setCurrent_Receiving_TU_PI_Item_Product_ID(currentReceivingHU.getTuPIItemProductId().getRepoId());
+		final HuId luId = from != null ? from.getLuId() : null;
+		final HUPIItemProductId tuPIItemProductId = from != null ? from.getTuPIItemProductId() : null;
+
+		record.setCurrent_Receiving_LU_HU_ID(HuId.toRepoId(luId));
+		// TODO record.setCurrent_Receiving_TU_HU_ID(HuId.toRepoId(from.getTuId()));
+		record.setCurrent_Receiving_TU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(tuPIItemProductId));
 	}
 
 	public void saveActivityStatuses(final ManufacturingJob job)
