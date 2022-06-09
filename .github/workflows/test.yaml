@@ -4,7 +4,12 @@ on:
     workflows: [cicd]
     types:
       - completed
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      make-it-so:
+        description: 'Shall we make it so?'
+        required: false 
+        type: boolean
 
 jobs:
 
