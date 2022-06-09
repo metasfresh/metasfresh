@@ -15,12 +15,20 @@ jobs:
 
   init:
     runs-on: ubuntu-latest
+    outputs:
+      sanitized-refname: ${{ steps.sanitize.outputs.refname }}
+    env:
+      MF_REF_NAME: ${{ github.event_name == 'workflow_run' && 'github.event.workflow_run.head_branch' || 'github.ref_name' }}
     steps:
       - name: print-vars
         run: env
       - name: print-github-context
         run: echo '${{ toJSON(github) }}'
-        
+      - name: sanitize-ref-name
+        id: sanitize
+        run: 'echo "::set-output name=refname::$(echo $MF_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')"'
+      - name: print-sanitizef-ref-name
+        run: echo ${{ steps.sanitize.outputs.refname }}
 
   cucumber:
     if: ${{ false }}  # disable for now
