@@ -23,7 +23,7 @@ jobs:
   cucumber:
     if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
-    needs: [init, backend, frontend]
+    needs: [init]
     environment: 'test'
     continue-on-error: true
     steps:
@@ -49,7 +49,7 @@ jobs:
   cypress:
     if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
-    needs: [init, backend, frontend]
+    needs: [init]
     environment: 'test'
     continue-on-error: true
     steps:
