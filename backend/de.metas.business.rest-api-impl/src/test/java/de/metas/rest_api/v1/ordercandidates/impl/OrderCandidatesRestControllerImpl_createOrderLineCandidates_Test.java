@@ -53,6 +53,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -195,6 +196,8 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+
+		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
 
 		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
