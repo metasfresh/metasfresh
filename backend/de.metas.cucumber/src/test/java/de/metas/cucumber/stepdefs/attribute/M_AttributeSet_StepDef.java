@@ -22,12 +22,14 @@
 
 package de.metas.cucumber.stepdefs.attribute;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSet;
 
 import java.util.List;
@@ -66,7 +68,36 @@ public class M_AttributeSet_StepDef
 
 			final String attributeSetIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_AttributeSet_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			attributeSetTable.put(attributeSetIdentifier, attributeSetRecord);
+			attributeSetTable.putOrReplace(attributeSetIdentifier, attributeSetRecord);
+		}
+	}
+
+	@And("add M_AttributeSet:")
+	public void add_M_AttributeSet(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String name = DataTableUtil.extractStringForColumnName(row, I_M_AttributeSet.COLUMNNAME_Name);
+
+			final I_M_AttributeSet attributeSet = CoalesceUtil.coalesceSuppliers(
+					() -> queryBL.createQueryBuilder(I_M_AttributeSet.class)
+							.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, name)
+							.create()
+							.firstOnly(I_M_AttributeSet.class),
+					() -> InterfaceWrapperHelper.newInstance(I_M_AttributeSet.class));
+
+			assertThat(attributeSet).isNotNull();
+
+			attributeSet.setName(name);
+
+			// dev-note: values for COLUMNNAME_MandatoryType should obey AD_Reference_ID=324
+			final String mandatoryType = DataTableUtil.extractStringForColumnName(row, I_M_AttributeSet.COLUMNNAME_MandatoryType);
+			attributeSet.setName(mandatoryType);
+
+			InterfaceWrapperHelper.saveRecord(attributeSet);
+
+			final String attributeSetIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_AttributeSet_ID + "." + TABLECOLUMN_IDENTIFIER);
+			attributeSetTable.putOrReplace(attributeSetIdentifier, attributeSet);
 		}
 	}
 }
