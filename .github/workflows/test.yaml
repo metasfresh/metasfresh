@@ -13,11 +13,13 @@ jobs:
     outputs:
       sanitized-refname: ${{ steps.sanitize.outputs.refname }}
       tag: ${{ steps.sanitize.outputs.refname }}${{ env.MF_RUN_NUMBER_SUFFIX }}
-      rofl:  tag-${{ job.outputs.tag }}
+      rofl:  ${{ env.XYZ }}
 
     env:
       MF_REF_NAME: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref_name }}
       MF_RUN_NUMBER_SUFFIX: ${{ github.event_name == 'workflow_run' && format('-{0}', github.event.workflow_run.run_number) || '' }}
+      XYZ: tag-${{ env.MF_REF_NAME }}
+      
     steps:
       - name: print-vars
         run: env
