@@ -85,9 +85,10 @@ public class ReceiveGoodsCommand
 		this.date = date;
 	}
 
+	@Nullable
 	public ReceivingTarget execute()
 	{
-		ReceivingTarget receivingTarget;
+		@Nullable ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getNewLU() != null)
 		{
 			receivingTarget = receiveToNewLU(this.receivingTarget.getNewLU());
