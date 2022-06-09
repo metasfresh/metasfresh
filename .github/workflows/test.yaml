@@ -13,13 +13,15 @@ on:
 
 jobs:
 
-  init:   
+  init:
     runs-on: ubuntu-latest
     steps:
       - name: print-vars
         run: env
-      - name: show-me-the-money
-        run: echo ${{ github.event.workflow_run.head_branch }}
+      - name: print-github-context
+        run: echo '${{ toJSON(github) }}'
+        
+
   cucumber:
     if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
