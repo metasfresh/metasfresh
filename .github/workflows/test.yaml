@@ -14,8 +14,7 @@ jobs:
       - name: print-vars
         run: env
       - name: show-me-the-money
-        run: echo "branch: ${{ github.event.workflow_run.head_branch }}"
-
+        run: echo ${{ github.event.workflow_run.head_branch }}
   cucumber:
     if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
