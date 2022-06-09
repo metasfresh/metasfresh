@@ -15,8 +15,8 @@ COPY --from=backend /root/.m2 /root/.m2/
 COPY --from=common /commons commons
 COPY --from=backend /backend backend
 
-RUN cd /java/commons && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee junit.log
-RUN cd /java/backend && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a junit.log
+RUN cd /java/commons && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee /java/junit.log
+RUN cd /java/backend && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
 
 ARG REFNAME
 ENV REFNAME=$REFNAME
@@ -34,5 +34,5 @@ RUN --mount=type=secret,id=mysecret \
         --source "unit-tests-github" \
 		--tags $REFNAME \
         --results **/TEST-*.xml \
-        -- cat junit.log ;\
+        -- cat /java/junit.log ;\
     fi
