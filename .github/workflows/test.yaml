@@ -4,12 +4,7 @@ on:
     workflows: [cicd]
     types:
       - completed
-  workflow_dispatch:
-    inputs:
-      make-it-so:
-        description: 'Shall we make it so?'
-        required: false 
-        type: boolean
+  workflow_dispatch: {}
 
 jobs:
 
@@ -18,7 +13,7 @@ jobs:
     outputs:
       sanitized-refname: ${{ steps.sanitize.outputs.refname }}
     env:
-      MF_REF_NAME: ${{ github.event_name == 'workflow_run' && 'github.event.workflow_run.head_branch' || 'github.ref_name' }}
+      MF_REF_NAME: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref_name }}
     steps:
       - name: print-vars
         run: env
