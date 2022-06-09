@@ -1,0 +1,17 @@
+name: test
+on:
+  workflow_run:
+    workflows: [cicd]
+    types:
+      - completed
+  workflow_dispatch: {}
+
+jobs:
+
+  init:   
+    runs-on: ubuntu-latest
+    steps:
+      - name: print-vars
+        run: env
+      - name: show-me-the-money
+        run: echo ${{ github.event.workflow_run.head_branch }}
