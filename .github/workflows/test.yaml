@@ -13,7 +13,7 @@ jobs:
     outputs:
       sanitized-refname: ${{ steps.sanitize.outputs.refname }}
       tag: ${{ steps.sanitize.outputs.refname }}${{ env.MF_RUN_NUMBER_SUFFIX }}
-      rofl:  tag-${{ outputs.tag }}
+      rofl:  tag-${{ job.outputs.tag }}
 
     env:
       MF_REF_NAME: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref_name }}
