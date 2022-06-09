@@ -12,8 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       sanitized-refname: ${{ steps.sanitize.outputs.refname }}
+      tag: ${{ steps.sanitize.outputs.refname }}${{ env.MF_RUN_NUMBER_SUFFIX }}
+
     env:
       MF_REF_NAME: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref_name }}
+      MF_RUN_NUMBER_SUFFIX: ${{ github.event_name == 'workflow_run' && format('-{0}', github.event.workflow_run.run_number) || format('-not-{0}', github.event.workflow_run.run_number) }}
     steps:
       - name: print-vars
         run: env
@@ -24,6 +27,13 @@ jobs:
         run: 'echo "::set-output name=refname::$(echo $MF_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')"'
       - name: print-sanitizef-ref-name
         run: echo ${{ steps.sanitize.outputs.refname }}
+        
+  post-init:
+    runs-on: ubuntu-latest
+    needs: [init]
+    steps:
+      - name: print-tag
+        run: echo ${{ needs.init.outputs.tag }}
 
   cucumber:
     if: ${{ false }}  # disable for now
@@ -37,13 +47,13 @@ jobs:
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.cucumber \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag }} \
           -t metas-cucumber:latest \
           .
       - name: run-cucumber-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
-          refname: ${{ needs.init.outputs.sanitized-refname }}
+          refname: ${{ needs.init.outputs.tag }}
         timeout-minutes: 60
         run: |
           cd cucumber
@@ -63,13 +73,13 @@ jobs:
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.e2e \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag }} \
           -t metas-e2e:latest \
           .
       - name: run-cypress-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
-          refname: ${{ needs.init.outputs.sanitized-refname }}
+          refname: ${{ needs.init.outputs.tag }}
         timeout-minutes: 120
         run: |
           cd docker-builds/e2e
