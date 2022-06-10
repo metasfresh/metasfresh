@@ -15,6 +15,7 @@ COPY backend/de.metas.cucumber/ .
 
 RUN mvn clean test-compile
 
+COPY docker-builds/cucumber/compose.yml /compose.yml
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
 
 ARG REFNAME

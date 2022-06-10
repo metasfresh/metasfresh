@@ -200,14 +200,6 @@ jobs:
           -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
           -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: build-cucumber-run
-        run: |
-          docker buildx build \
-          -f docker-builds/Dockerfile.cucumber.run \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}-run \
-          -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}-run \
-          .
       - name: build-e2e
         run: |
           docker buildx build \
@@ -216,25 +208,13 @@ jobs:
           -t mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }} \
           -t mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: build-e2e-run
-        run: |
-          docker buildx build \
-          -f docker-builds/Dockerfile.e2e.run \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }}-run \
-          -t mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }}-run \
-          .
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
           docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}-run
-          docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}-run
           docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }}
           docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }}-run
-          docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }}-run
           docker logout
 
   redeploy:

@@ -10,6 +10,8 @@ RUN npm install
 COPY e2e/ .
 RUN mv cypress/config.js_template_compose cypress/config.js
 
+COPY docker-builds/e2e/compose.yml /compose.yml
+
 ARG REFNAME=local
 ENV REFNAME=$REFNAME
 ENV CYPRESS_baseUrl=http://webui:80
