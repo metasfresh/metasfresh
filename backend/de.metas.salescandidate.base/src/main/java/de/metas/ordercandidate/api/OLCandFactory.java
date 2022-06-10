@@ -13,6 +13,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
+import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -78,6 +79,7 @@ final class OLCandFactory
 				.qtyItemCapacityEff(qtyItemCapacity)
 				.salesRepInternalId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_Internal_ID()))
 				.assignSalesRepRule(AssignSalesRepRule.ofCode(record.getApplySalesRepFrom()))
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.bpartnerName(record.getBPartnerName())
 				.email(record.getEMail())
 				.phone(record.getPhone())

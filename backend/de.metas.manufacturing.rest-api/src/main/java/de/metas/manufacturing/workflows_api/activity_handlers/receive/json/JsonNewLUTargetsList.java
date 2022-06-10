@@ -11,24 +11,24 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-public class JsonAggregateToNewLUList
+public class JsonNewLUTargetsList
 {
-	@NonNull List<JsonAggregateToNewLU> values;
+	@NonNull List<JsonNewLUTarget> values;
 	@Nullable String emptyReason;
 	@Nullable List<String> debugMessages;
 
-	public static JsonAggregateToNewLUList ofList(@NonNull List<JsonAggregateToNewLU> values, @Nullable final List<String> debugMessages)
+	public static JsonNewLUTargetsList ofList(@NonNull List<JsonNewLUTarget> values, @Nullable final List<String> debugMessages)
 	{
 		Check.assumeNotEmpty(values, "values");
 		return builder().values(values).debugMessages(debugMessages).build();
 	}
 
-	public static JsonAggregateToNewLUList emptyBecause(@NonNull String emptyReason)
+	public static JsonNewLUTargetsList emptyBecause(@NonNull String emptyReason)
 	{
 		return emptyBecause(emptyReason, null);
 	}
 
-	public static JsonAggregateToNewLUList emptyBecause(@NonNull String emptyReason, @Nullable final List<String> debugMessages)
+	public static JsonNewLUTargetsList emptyBecause(@NonNull String emptyReason, @Nullable final List<String> debugMessages)
 	{
 		Check.assumeNotEmpty(emptyReason, "emptyReason");
 		return builder().emptyReason(emptyReason).debugMessages(debugMessages).build();
@@ -36,8 +36,8 @@ public class JsonAggregateToNewLUList
 
 	@Builder
 	@Jacksonized
-	private JsonAggregateToNewLUList(
-			@Nullable final List<JsonAggregateToNewLU> values,
+	private JsonNewLUTargetsList(
+			@Nullable final List<JsonNewLUTarget> values,
 			@Nullable final String emptyReason,
 			@Nullable final List<String> debugMessages)
 	{
