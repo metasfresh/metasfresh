@@ -10,7 +10,8 @@ jobs:
   init:   
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.sanitize.outputs.refname }}-${{ github.event.workflow_run.run_number }}.${{ github.event.workflow_run.run_attempt }}
+      tag-floating: ${{ steps.sanitize.outputs.refname }}
+      tag-fixed: ${{ steps.sanitize.outputs.refname }}-${{ github.event.workflow_run.run_number }}.${{ github.event.workflow_run.run_attempt }}
     env:
       MF_REF_NAME: ${{ github.event.workflow_run.head_branch }}
     steps:
@@ -33,10 +34,16 @@ jobs:
       - name: run-cucumber-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
-          refname: ${{ needs.init.outputs.tag }}
+          refname: ${{ needs.init.outputs.tag-fixed }}
         timeout-minutes: 60
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -e "refname=$refname" mazorn/metas-cucumber:$refname-run 
+          echo "$mysecret" > mysecret
+          docker run \
+          --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "$(pwd)/mysecret:/run/secrets/mysecret:ro" \
+          -e "refname=$refname" \
+          mazorn/metas-cucumber:$refname-run
 
   cypress:
     if: ${{ false }}  # disable for now
@@ -45,20 +52,16 @@ jobs:
     environment: 'test'
     continue-on-error: true
     steps:
-      - name: build-e2e
-        run: |
-          docker buildx build \
-          -f docker-builds/Dockerfile.e2e \
-          --build-arg REFNAME=${{ needs.init.outputs.tag }} \
-          -t metas-e2e:latest \
-          .
       - name: run-cypress-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
-          refname: ${{ needs.init.outputs.tag }}
-        timeout-minutes: 120
+          refname: ${{ needs.init.outputs.tag-fixed }}
+        timeout-minutes: 240
         run: |
-          cd docker-builds/e2e
           echo "$mysecret" > mysecret
-          docker-compose up --abort-on-container-exit --exit-code-from e2e
-          docker-compose down
+          docker run \
+          --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "$(pwd)/mysecret:/run/secrets/mysecret:ro" \
+          -e "refname=$refname" \
+          mazorn/metas-e2e:$refname-run
