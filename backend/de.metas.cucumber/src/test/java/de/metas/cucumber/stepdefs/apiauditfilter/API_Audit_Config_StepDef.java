@@ -37,9 +37,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class API_Audit_Config_StepDef
 {
-	private final StepDefData<I_API_Audit_Config> apiAuditConfigTable;
+	private final API_Audit_Config_StepDefData apiAuditConfigTable;
 
-	public API_Audit_Config_StepDef(@NonNull final StepDefData<I_API_Audit_Config> apiAuditConfigTable)
+	public API_Audit_Config_StepDef(@NonNull final API_Audit_Config_StepDefData apiAuditConfigTable)
 	{
 		this.apiAuditConfigTable = apiAuditConfigTable;
 	}

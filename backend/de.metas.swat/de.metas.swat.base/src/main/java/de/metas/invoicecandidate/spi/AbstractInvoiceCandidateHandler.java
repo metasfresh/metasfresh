@@ -24,6 +24,10 @@ package de.metas.invoicecandidate.spi;
 
 import java.math.BigDecimal;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
+import de.metas.invoice.InvoiceDocBaseType;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -51,10 +55,11 @@ import javax.annotation.Nullable;
 
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
- *
  */
 public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandidateHandler
 {
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	private I_C_ILCandHandler record;
 
 	@Override
@@ -154,7 +159,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	/**
 	 * Sets delivery data from first shipment/receipt that was created for this invoice candidate.
 	 *
-	 * @param ic invoice candidate
+	 * @param ic         invoice candidate
 	 * @param firstInOut first shipment/receipt or <code>null</code>
 	 */
 	protected final void setDeliveredDataFromFirstInOut(@NonNull final I_C_Invoice_Candidate ic, @Nullable final I_M_InOut firstInOut)
@@ -170,6 +175,26 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		{
 			ic.setDeliveryDate(firstInOut.getMovementDate());
 			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID());
+		}
+	}
+
+	/**
+	 * Assumes that the given {@code icRecord}'s {@code AD_Client_ID}, {@code AD_Org_ID} and {@code IsSOTrx} are already set at this point
+	 */
+	protected final void setDefaultInvoiceDocType(final @NonNull I_C_Invoice_Candidate icRecord)
+	{
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.adClientId(icRecord.getAD_Client_ID())
+				.adOrgId(icRecord.getAD_Org_ID())
+				.isSOTrx(icRecord.isSOTrx())
+				.docBaseType(icRecord.isSOTrx()
+									 ? InvoiceDocBaseType.CustomerInvoice.getCode()
+									 : InvoiceDocBaseType.VendorInvoice.getCode())
+				.build();
+		final DocTypeId docTypeIdOrNull = docTypeBL.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeIdOrNull != null)
+		{
+			icRecord.setC_DocTypeInvoice_ID(docTypeIdOrNull.getRepoId());
 		}
 	}
 

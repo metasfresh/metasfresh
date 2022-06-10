@@ -49,7 +49,7 @@ public class CctopInvoice500V implements Serializable
 	private String taxfree;
 	private String upc;
 	private String value;
-	private String vendorProductNo;
+	private String customerProductNo;
 	private String leergut;
 	private String productDescription;
 	private String orderPOReference;
@@ -216,14 +216,14 @@ public class CctopInvoice500V implements Serializable
 		this.value = value;
 	}
 
-	public String getVendorProductNo()
+	public String getCustomerProductNo()
 	{
-		return vendorProductNo;
+		return customerProductNo;
 	}
 
-	public void setVendorProductNo(final String vendorProductNo)
+	public void setCustomerProductNo(final String customerProductNo)
 	{
-		this.vendorProductNo = vendorProductNo;
+		this.customerProductNo = customerProductNo;
 	}
 
 	public String getLeergut()
@@ -302,7 +302,7 @@ public class CctopInvoice500V implements Serializable
 		result = prime * result + ((taxfree == null) ? 0 : taxfree.hashCode());
 		result = prime * result + ((upc == null) ? 0 : upc.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		result = prime * result + ((vendorProductNo == null) ? 0 : vendorProductNo.hashCode());
+		result = prime * result + ((customerProductNo == null) ? 0 : customerProductNo.hashCode());
 		return result;
 	}
 
@@ -463,12 +463,12 @@ public class CctopInvoice500V implements Serializable
 		}
 		else if (!value.equals(other.value))
 			return false;
-		if (vendorProductNo == null)
+		if (customerProductNo == null)
 		{
-			if (other.vendorProductNo != null)
+			if (other.customerProductNo != null)
 				return false;
 		}
-		else if (!vendorProductNo.equals(other.vendorProductNo))
+		else if (!customerProductNo.equals(other.customerProductNo))
 			return false;
 		return true;
 	}
@@ -478,7 +478,7 @@ public class CctopInvoice500V implements Serializable
 	{
 		return "CctopInvoice500V [cInvoiceID=" + cInvoiceID + ", eancomUom=" + eancomUom + ", isoCode=" + isoCode + ", line=" + line + ", lineNetAmt=" + lineNetAmt + ", name=" + name + ", name2="
 				+ name2 + ", priceActual=" + priceActual + ", priceList=" + priceList + ", qtyInvoiced=" + qtyInvoiced + ", rate=" + rate + ", lineGrossAmt=" + lineGrossAmt + ", taxfree=" + taxfree
-				+ ", upc=" + upc + ", value=" + value + ", vendorProductNo=" + vendorProductNo + ", leergut=" + leergut + ", productDescription=" + productDescription + ", orderLine=" + orderLine
+				+ ", upc=" + upc + ", value=" + value + ", customerProductNo=" + customerProductNo + ", leergut=" + leergut + ", productDescription=" + productDescription + ", orderLine=" + orderLine
 				+ ", taxAmtInfo=" + taxAmount + "]";
 	}
 

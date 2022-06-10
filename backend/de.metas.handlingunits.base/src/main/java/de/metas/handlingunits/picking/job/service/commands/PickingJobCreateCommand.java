@@ -10,6 +10,8 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.config.PickingConfigV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.repository.PickingJobCreateRepoRequest;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
@@ -55,9 +57,9 @@ public class PickingJobCreateCommand
 	private final PickingJobLockService pickingJobLockService;
 	private final PickingCandidateService pickingCandidateService;
 	private final PickingJobHUReservationService pickingJobHUReservationService;
+	private final PickingConfigRepositoryV2 pickingConfigRepo;
 
 	private final PickingJobCreateRequest request;
-	private static final boolean considerAttributes = false; // TODO make it configurable
 
 	private final PickingJobLoaderSupportingServices loadingSupportServices;
 
@@ -69,6 +71,7 @@ public class PickingJobCreateCommand
 			@NonNull final PickingCandidateService pickingCandidateService,
 			@NonNull final PickingJobHUReservationService pickingJobHUReservationService,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
+			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
 			//
 			@NonNull PickingJobCreateRequest request)
 	{
@@ -77,11 +80,15 @@ public class PickingJobCreateCommand
 		this.pickingCandidateService = pickingCandidateService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.loadingSupportServices = loadingSupportServices;
+		this.pickingConfigRepo = pickingConfigRepo;
 
 		this.request = request;
 	}
 
-	public PickingJob execute() {return trxManager.callInThreadInheritedTrx(this::executeInTrx);}
+	public PickingJob execute()
+	{
+		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
+	}
 
 	private PickingJob executeInTrx()
 	{
@@ -199,16 +206,21 @@ public class PickingJobCreateCommand
 		ProductId productId;
 	}
 
-	private static PickingJobLineKey extractPickingJobLineKey(@NonNull Packageable item) {return PickingJobLineKey.builder().productId(item.getProductId()).build();}
+	private static PickingJobLineKey extractPickingJobLineKey(@NonNull Packageable item)
+	{
+		return PickingJobLineKey.builder().productId(item.getProductId()).build();
+	}
 
 	private PickingJobCreateRepoRequest.Line createLineRequest(@NonNull final Collection<Packageable> itemsForProduct)
 	{
 		Check.assumeNotEmpty(itemsForProduct, "itemsForProduct");
 
+		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
+
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-				.packageables(itemsForProduct)
-				.considerAttributes(considerAttributes)
-				.build());
+																			.packageables(itemsForProduct)
+																			.considerAttributes(pickingConfig.isConsiderAttributes())
+																			.build());
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
 		if (lines.isEmpty())
@@ -223,12 +235,12 @@ public class PickingJobCreateCommand
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(plan.getSingleProductId())
 				.steps(lines.stream()
-						.map(this::createStepRequest)
-						.collect(ImmutableList.toImmutableList()))
+							   .map(this::createStepRequest)
+							   .collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
-						.stream()
-						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
-						.collect(ImmutableSet.toImmutableSet()))
+											  .stream()
+											  .map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
+											  .collect(ImmutableSet.toImmutableSet()))
 				.build();
 	}
 
@@ -322,12 +334,12 @@ public class PickingJobCreateCommand
 
 		final I_M_HU extractedCU = HUTransformService.newInstance()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-						.sourceHU(pickFromHU)
-						.productId(productId)
-						.qtyCU(qtyToPick)
-						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-						.build());
+										 .sourceHU(pickFromHU)
+										 .productId(productId)
+										 .qtyCU(qtyToPick)
+										 //.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
+										 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+										 .build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
 	}

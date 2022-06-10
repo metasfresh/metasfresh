@@ -38,7 +38,7 @@ import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
-import org.milyn.payload.JavaSource;
+import org.smooks.io.payload.JavaSource;
 import org.springframework.lang.Nullable;
 
 import java.math.BigDecimal;

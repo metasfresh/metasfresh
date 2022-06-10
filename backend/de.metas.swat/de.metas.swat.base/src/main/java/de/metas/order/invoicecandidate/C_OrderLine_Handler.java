@@ -189,7 +189,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		// 05265
-		icRecord.setIsSOTrx(orderLine.getC_Order().isSOTrx());
+		icRecord.setIsSOTrx(order.isSOTrx());
 
 		icRecord.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
@@ -211,6 +211,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		if (invoiceDocTypeId != null)
 		{
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+		}
+		else
+		{
+			setDefaultInvoiceDocType(icRecord);
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());

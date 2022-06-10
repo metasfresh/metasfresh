@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.stock;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.util.Services;
@@ -45,9 +46,9 @@ public class MD_Stock_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 
-	public MD_Stock_StepDef(final StepDefData<I_M_Product> productTable)
+	public MD_Stock_StepDef(final M_Product_StepDefData productTable)
 	{
 		this.productTable = productTable;
 	}

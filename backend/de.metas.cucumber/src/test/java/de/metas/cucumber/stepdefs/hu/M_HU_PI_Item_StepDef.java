@@ -55,14 +55,14 @@ public class M_HU_PI_Item_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_HU_PI> huPiTable;
-	private final StepDefData<I_M_HU_PI_Version> huPiVersionTable;
-	private final StepDefData<I_M_HU_PI_Item> huPiItemTable;
+	private final M_HU_PI_StepDefData huPiTable;
+	private final M_HU_PI_Version_StepDefData huPiVersionTable;
+	private final M_HU_PI_Item_StepDefData huPiItemTable;
 
 	public M_HU_PI_Item_StepDef(
-			@NonNull final StepDefData<I_M_HU_PI> huPiTable,
-			@NonNull final StepDefData<I_M_HU_PI_Version> huPiVersionTable,
-			@NonNull final StepDefData<I_M_HU_PI_Item> huPiItemTable)
+			@NonNull final M_HU_PI_StepDefData huPiTable,
+			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
+			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable)
 	{
 		this.huPiTable = huPiTable;
 		this.huPiVersionTable = huPiVersionTable;

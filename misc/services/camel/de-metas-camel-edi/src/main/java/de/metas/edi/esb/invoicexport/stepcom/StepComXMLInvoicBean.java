@@ -283,8 +283,8 @@ public class StepComXMLInvoicBean
 
 			if (settings.isInvoicLineBUYRRequired())
 			{
-				final String buyr = ValidationHelper.validateString(xmlCctopInvoic500V.getVendorProductNo(),
-						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getVendorProductNo() + " @VendorProductNo@");
+				final String buyr = ValidationHelper.validateString(xmlCctopInvoic500V.getCustomerProductNo(),
+						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getCustomerProductNo() + " @CustomerProductNo@");
 
 				final DPRIN1 productInfo = INVOIC_objectFactory.createDPRIN1();
 				productInfo.setDOCUMENTID(documentId);
