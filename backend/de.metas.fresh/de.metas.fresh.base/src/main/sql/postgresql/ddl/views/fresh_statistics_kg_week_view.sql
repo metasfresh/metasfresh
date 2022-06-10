@@ -19,6 +19,7 @@ SELECT fa.M_Product_ID,
        fa.convQty,
        i.IsSOtrx,
        pc.value AS pc_value,
+	   pc.name AS pc_name,
        p.Name AS P_name,
        p.value AS P_value
 FROM C_Year Y
