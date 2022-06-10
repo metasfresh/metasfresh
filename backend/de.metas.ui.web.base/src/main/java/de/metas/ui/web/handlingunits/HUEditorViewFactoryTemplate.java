@@ -73,6 +73,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
+import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -82,7 +83,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -461,11 +461,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 
 		return webuiDocumentReferencesService.getDocumentReferenceFilter(
-				referencedDocumentPath,
-				targetWindowId,
-				documentReferenceId,
-				RelatedDocumentsPermissionsFactory.allowAll());
+						referencedDocumentPath,
+						targetWindowId,
+						documentReferenceId,
+						RelatedDocumentsPermissionsFactory.allowAll())
+				.orElse(null);
 	}
+
 	/**
 	 * @param filterOnlyIds {@code null} means "no restriction". Empty means "select none"
 	 */
