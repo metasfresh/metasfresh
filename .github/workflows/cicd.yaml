@@ -6,6 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       sanitized-refname: ${{ steps.sanitize.outputs.refname }}
+      tag-floating: ${{ steps.sanitize.outputs.refname }}
+      tag-fixed: ${{ steps.sanitize.outputs.refname }}-${{ github.event.workflow_run.run_number }}.${{ github.event.workflow_run.run_attempt }}
     steps:
       - name: print-vars
         run: env
@@ -25,39 +27,39 @@ jobs:
           docker buildx build \
           -f docker-builds/Dockerfile.common \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-backend
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.backend \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-camel
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.camel \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }} \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-mvn-common:${{ needs.init.outputs.sanitized-refname }}
-          docker push mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-mvn-backend:${{ needs.init.outputs.sanitized-refname }}
-          docker push mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-mvn-camel:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
+          docker push mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
+          docker push mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
           docker logout
 
   frontend:
@@ -70,26 +72,26 @@ jobs:
           docker buildx build \
           -f docker-builds/Dockerfile.frontend \
           --cache-to type=inline \
-          --cache-from mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-mobile
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.mobile \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-frontend:${{ needs.init.outputs.sanitized-refname }}
-          docker push mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-mobile:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-frontend:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }}
+          docker push mazorn/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }}
           docker logout
 
   backend:
@@ -102,64 +104,64 @@ jobs:
           docker buildx build \
           -f docker-builds/Dockerfile.backend.api \
           --cache-to type=inline \
-          --cache-from mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }} \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-api:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-api:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-api:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-app
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.backend.app \
           --cache-to type=inline \
-          --cache-from mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }} \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-app:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-app:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-app:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-externalsystems
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.camel.externalsystems \
           --cache-to type=inline \
-          --cache-from mazorn/metas-externalsystems:${{ needs.init.outputs.sanitized-refname }} \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-externalsystems:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-externalsystems:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-db
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.db-standalone \
           --cache-to type=inline \
-          --cache-from mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }} \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT \
+          --cache-from mazorn/metas-db:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-db:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-db-preloaded
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.db-preloaded \
           --cache-to type=inline \
-          --cache-from mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
-          -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded \
-          -t mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT-preloaded \
+          --cache-from mazorn/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          -t mazorn/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
           .
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-api:${{ needs.init.outputs.sanitized-refname }}
-          docker push mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-app:${{ needs.init.outputs.sanitized-refname }}
-          docker push mazorn/metas-externalsystems:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-externalsystems:${{ needs.init.outputs.sanitized-refname }}
-          docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT
-          docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}
-          docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT-preloaded
-          docker push mazorn/metas-db:${{ needs.init.outputs.sanitized-refname }}-preloaded
+          docker push mazorn/metas-api:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-api:${{ needs.init.outputs.tag-floating }}
+          docker push mazorn/metas-app:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-app:${{ needs.init.outputs.tag-floating }}
+          docker push mazorn/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
+          docker push mazorn/metas-db:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-db:${{ needs.init.outputs.tag-floating }}
+          docker push mazorn/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          docker push mazorn/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker logout
 
   junit:
@@ -175,15 +177,45 @@ jobs:
           docker buildx build \
           -f docker-builds/Dockerfile.junit \
           --cache-to type=inline \
-          --cache-from mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }} \
-          --build-arg REFNAME=${{ needs.init.outputs.sanitized-refname }} \
+          --cache-from mazorn/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --secret id=mysecret \
-          -t mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }} \
+          -t mazorn/metas-junit:${{ needs.init.outputs.tag-floating }} \
           .
       - name: push-result-image
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-junit:${{ needs.init.outputs.sanitized-refname }}
+          docker push mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
+          docker logout
+
+  create-integration-tests:
+    runs-on: ubuntu-latest
+    needs: [init, backend, frontend]
+    steps:
+      - uses: actions/checkout@v3
+      - name: build-cucumber
+        run: |
+          docker buildx build \
+          -f docker-builds/Dockerfile.cucumber \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-cucumber-run
+        run: |
+          docker buildx build \
+          -f docker-builds/Dockerfile.cucumber.run \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}-run \
+          -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}-run \
+          .
+      - name: push-images
+        run: |
+          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
+          docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+          docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}
+          docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}-run
+          docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}-run
           docker logout
 
   redeploy:

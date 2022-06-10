@@ -30,18 +30,18 @@ services:
       replicas: 1
 
   cucumber:
-    image: metas-cucumber:latest
+    image: mazorn/metas-cucumber:$refname
     depends_on:
       db:
         condition: service_healthy
-    secrets:
-      - mysecret
+#    secrets:
+#      - mysecret
     deploy:
       mode: replicated
       replicas: 1
 
 volumes: {}
 configs: {}
-secrets:
-  mysecret:
-    file: mysecret
+#secrets:
+#  mysecret:
+#    file: mysecret
