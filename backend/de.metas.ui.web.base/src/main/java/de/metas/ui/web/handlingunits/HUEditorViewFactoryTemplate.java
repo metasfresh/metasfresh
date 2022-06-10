@@ -461,11 +461,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 
 		return webuiDocumentReferencesService.getDocumentReferenceFilter(
-				referencedDocumentPath,
-				targetWindowId,
-				documentReferenceId,
-				RelatedDocumentsPermissionsFactory.allowAll());
+						referencedDocumentPath,
+						targetWindowId,
+						documentReferenceId,
+						RelatedDocumentsPermissionsFactory.allowAll())
+				.orElse(null);
 	}
+
 	/**
 	 * @param filterOnlyIds {@code null} means "no restriction". Empty means "select none"
 	 */
