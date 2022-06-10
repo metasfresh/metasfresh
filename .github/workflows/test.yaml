@@ -38,12 +38,9 @@ jobs:
         timeout-minutes: 60
         run: |
           echo "$mysecret" > mysecret
-          docker run \
-          --rm \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          -v "$(pwd)/mysecret:/cucumber/mysecret:ro" \
-          -e "refname=$refname" \
-          mazorn/metas-cucumber:$refname-run
+          docker cp "$(docker create --name tempcopytainer mazorn/metas-cucumber:$refname):/compose.yml" . && docker rm tempcopytainer
+          docker-compose up --abort-on-container-exit --exit-code-from cucumber
+          docker-compose down
 
   cypress:
     if: ${{ false }}  # disable for now
@@ -59,9 +56,7 @@ jobs:
         timeout-minutes: 240
         run: |
           echo "$mysecret" > mysecret
-          docker run \
-          --rm \
-          -v /var/run/docker.sock:/var/run/docker.sock \
-          -v "$(pwd)/mysecret:/e2e/mysecret:ro" \
-          -e "refname=$refname" \
-          mazorn/metas-e2e:$refname-run
+          docker cp "$(docker create --name tempcopytainer mazorn/metas-e2e:$refname):/compose.yml" . && docker rm tempcopytainer
+          docker-compose up --abort-on-container-exit --exit-code-from cucumber
+          docker-compose down
+
