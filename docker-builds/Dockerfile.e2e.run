@@ -1,0 +1,6 @@
+FROM docker/compose:1.29.2
+
+WORKDIR /e2e
+COPY docker-builds/e2e/compose.yml .
+
+CMD docker-compose up --abort-on-container-exit --exit-code-from e2e
