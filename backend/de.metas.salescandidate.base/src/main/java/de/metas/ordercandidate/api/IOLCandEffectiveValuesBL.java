@@ -176,7 +176,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 */
 	@NonNull
 	Quantity getQtyItemCapacity_Effective(@NonNull I_C_OLCand olCandRecord);
-	
+
 	/**
 	 * Like {@link #getEffectiveUomId(I_C_OLCand)} , but return the actual uom.
 	 */
