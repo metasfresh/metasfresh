@@ -55,9 +55,6 @@ DELETE FROM AD_Field WHERE AD_Field_ID=565315
 /* DDL */ SELECT public.db_alter_table('M_ProductPrice','ALTER TABLE M_ProductPrice DROP COLUMN IF EXISTS IsInfiniteCapacity')
 ;
 
-delete from ad_ui_element where ad_field_id in (select ad_field_id  from ad_field where AD_Column_ID=556082);
-delete from ad_field where AD_Column_ID=556082;
-
 -- 2022-05-27T08:42:52.371Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=556082
