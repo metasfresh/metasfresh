@@ -34,8 +34,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-  secrets:
-    - mysecret
+    secrets:
+      - mysecret
     deploy:
       mode: replicated
       replicas: 1
