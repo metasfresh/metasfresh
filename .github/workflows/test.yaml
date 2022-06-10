@@ -30,24 +30,13 @@ jobs:
     environment: 'test'
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v3
-      - name: build-cucumber
-        run: |
-          docker buildx build \
-          -f docker-builds/Dockerfile.cucumber \
-          --build-arg REFNAME=${{ needs.init.outputs.tag }} \
-          -t metas-cucumber:latest \
-          .
       - name: run-cucumber-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
           refname: ${{ needs.init.outputs.tag }}
         timeout-minutes: 60
         run: |
-          cd cucumber
-          echo "$mysecret" > mysecret
-          docker-compose up --abort-on-container-exit --exit-code-from cucumber
-          docker-compose down
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -e "refname=$refname" mazorn/metas-cucumber:$refname-run 
 
   cypress:
     if: ${{ false }}  # disable for now
@@ -56,7 +45,6 @@ jobs:
     environment: 'test'
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v3
       - name: build-e2e
         run: |
           docker buildx build \
