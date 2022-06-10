@@ -218,6 +218,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
 
+	final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
+
 	/**
 	 * Blueprint for a cache that is used by {@link #isAllOtherICsInHeaderAggregationGroupDelivered(I_C_Invoice_Candidate)}.
 	 * It will be created and used per-transaction.
@@ -2067,6 +2069,35 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
 		closeInvoiceCandidates(invoiceCandidates.iterator());
+	}
+
+	@Override
+	public void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		udpateIsDeliveryClosedForInvoiceCandidates(invoiceCandidates.iterator());
+	}
+
+	public void udpateIsDeliveryClosedForInvoiceCandidates(
+			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose)
+	{
+		while (candidatesToClose.hasNext())
+		{
+			udpateIsDeliveryClosedForInvoiceCandidate(candidatesToClose.next());
+		}
+	}
+
+	public void udpateIsDeliveryClosedForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
+	{
+		candidate.setIsDeliveryClosed(true);
+
+		if (!InterfaceWrapperHelper.hasChanges(candidate))
+		{
+			return; // https://github.com/metasfresh/metasfresh/issues/3216
+		}
+
+		invoiceCandDAO.invalidateCand(candidate);
+		InterfaceWrapperHelper.save(candidate);
 	}
 
 	@Override
