@@ -22,8 +22,41 @@
 
 package de.metas.cucumber.stepdefs.workflow;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.distributionorder.DD_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.distribution.rest_api.JsonDistributionEvent;
+import de.metas.distribution.workflows_api.DistributionMobileApplication;
+import de.metas.handlingunits.model.I_DD_Order_MoveSchedule;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
+import de.metas.picking.rest_api.json.JsonPickingEventsList;
+import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFDistributionLine;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFManufacturingLine;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFPickingLine;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -32,13 +65,69 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Movement;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.I_PP_Order;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.handlingunits.model.I_M_HU.COLUMNNAME_M_HU_ID;
+import static de.metas.handlingunits.model.I_M_Picking_Candidate.COLUMNNAME_QtyPicked;
+import static org.assertj.core.api.Assertions.*;
 
 public class AD_Workflow_StepDef
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper()
+			.registerModule(new JavaTimeModule());
+
+	private final C_Order_StepDefData orderTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final PP_Order_StepDefData ppOrderTable;
+	private final DD_Order_StepDefData ddOrderTable;
+	private final DD_OrderLine_StepDefData ddOrderLineTable;
+	private final M_HU_StepDefData huTable;
+	private final M_Locator_StepDefData locatorTable;
+	private final TestContext testContext;
+
+	public AD_Workflow_StepDef(
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final PP_Order_StepDefData ppOrderTable,
+			@NonNull final DD_Order_StepDefData ddOrderTable,
+			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_Locator_StepDefData locatorTable,
+			@NonNull final TestContext testContext
+	)
+	{
+		this.orderTable = orderTable;
+		this.bPartnerLocationTable = bPartnerLocationTable;
+		this.bPartnerTable = bPartnerTable;
+		this.testContext = testContext;
+		this.orderLineTable = orderLineTable;
+		this.ppOrderTable = ppOrderTable;
+		this.ddOrderTable = ddOrderTable;
+		this.ddOrderLineTable = ddOrderLineTable;
+		this.huTable = huTable;
+		this.locatorTable = locatorTable;
+	}
 
 	@And("update duration for AD_Workflow nodes")
 	public void update_AD_Workflow_nodes(@NonNull final DataTable dataTable)
@@ -47,6 +136,276 @@ public class AD_Workflow_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			updateADWorkflowNodes(tableRow);
+		}
+	}
+
+	@And("create JsonWFProcessStartRequest for picking and store it as the request payload in the test context")
+	public void wf_picking_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+
+		final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bPartnerLocationIdentifier);
+
+		final String salesOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_Order salesOrder = orderTable.get(salesOrderIdentifier);
+
+		final Map<String, Object> wfParams = new HashMap<>();
+		wfParams.put("applicationId", PickingMobileApplication.HANDLER_ID.getAsString());
+		wfParams.put("salesOrderId", salesOrder.getC_Order_ID());
+		wfParams.put("customerId", bPartner.getC_BPartner_ID());
+		wfParams.put("customerLocationId", bPartnerLocation.getC_BPartner_Location_ID());
+
+		final JsonWFProcessStartRequest request = JsonWFProcessStartRequest.builder().wfParameters(wfParams).build();
+
+		testContext.setRequestPayload(objectMapper.writeValueAsString(request));
+	}
+
+	@And("create JsonWFProcessStartRequest for manufacturing and store it as the request payload in the test context")
+	public void wf_manufacturing_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+
+		final Map<String, Object> wfParams = new HashMap<>();
+		wfParams.put("applicationId", ManufacturingMobileApplication.HANDLER_ID.getAsString());
+		wfParams.put("ppOrderId", ppOrder.getPP_Order_ID());
+
+		final JsonWFProcessStartRequest request = JsonWFProcessStartRequest.builder().wfParameters(wfParams).build();
+
+		testContext.setRequestPayload(objectMapper.writeValueAsString(request));
+	}
+
+	@And("create JsonWFProcessStartRequest for distribution and store it as the request payload in the test context")
+	public void wf_distribution_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final String ddOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_Order.COLUMNNAME_DD_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_DD_Order ddOrder = ddOrderTable.get(ddOrderIdentifier);
+
+		final Map<String, Object> wfParams = new HashMap<>();
+		wfParams.put("applicationId", DistributionMobileApplication.HANDLER_ID.getAsString());
+		wfParams.put("ddOrderId", ddOrder.getDD_Order_ID());
+
+		final JsonWFProcessStartRequest request = JsonWFProcessStartRequest.builder().wfParameters(wfParams).build();
+
+		testContext.setRequestPayload(objectMapper.writeValueAsString(request));
+	}
+
+	@And("create JsonPickingEventsList from JsonWFProcess that comes back from previous request and store it as the request payload in the test context")
+	public void picking_events_request_payload(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyPicked);
+
+		final String content = testContext.getApiResponse().getContent();
+
+		final JsonWFProcess wfProcessResponse = objectMapper.readValue(content, JsonWFProcess.class);
+
+		final JsonWFActivity wfPickActivity = wfProcessResponse.getActivities().stream()
+				.filter(jsonWFActivity -> jsonWFActivity.getCaption().equals("Pick"))
+				.collect(Collectors.toList()).get(0);
+
+		final ArrayList activityLines = (ArrayList)wfPickActivity.getComponentProps().get("lines");
+
+		final JsonWFPickingLine wfLine = objectMapper.readValue(objectMapper.writeValueAsString(activityLines.get(0)), JsonWFPickingLine.class);
+
+		final JsonPickingStepEvent pickingStepEvent = JsonPickingStepEvent.builder()
+				.wfProcessId(wfProcessResponse.getId())
+				.wfActivityId(wfPickActivity.getActivityId())
+				.type(JsonPickingStepEvent.EventType.PICK)
+				.pickingStepId(wfLine.getSteps().get(0).getPickingStepId())
+				.huQRCode(wfLine.getSteps().get(0).getMainPickFrom().getHuQRCode().getCode())
+				.qtyPicked(qtyPicked)
+				.build();
+
+		final List<JsonPickingStepEvent> pickingStepEvents = new ArrayList<>();
+		pickingStepEvents.add(pickingStepEvent);
+
+		final JsonPickingEventsList pickingEventsList = JsonPickingEventsList.builder().events(pickingStepEvents).build();
+
+		testContext.setRequestPayload(objectMapper.writeValueAsString(pickingEventsList));
+	}
+
+	@And("create JsonManufacturingOrderEvent from JsonWFProcess that comes back from previous request and store it as the request payload in the test context")
+	public void manufacturing_event_request_payload(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final String event = DataTableUtil.extractStringForColumnName(tableRow, "Event");
+
+		final String content = testContext.getApiResponse().getContent();
+
+		final JsonWFProcess wfProcessResponse = objectMapper.readValue(content, JsonWFProcess.class);
+
+		final JsonWFActivity wfManufacturingIssueToActivity = wfProcessResponse.getActivities().stream()
+				.filter(jsonWFActivity -> jsonWFActivity.getComponentType().equals("manufacturing/rawMaterialsIssue"))
+				.collect(Collectors.toList()).get(0);
+
+		final ArrayList activityLines = (ArrayList)wfManufacturingIssueToActivity.getComponentProps().get("lines");
+
+		final JsonWFManufacturingLine wfLine = objectMapper.readValue(objectMapper.writeValueAsString(activityLines.get(0)), JsonWFManufacturingLine.class);
+
+		final JsonManufacturingOrderEvent.JsonManufacturingOrderEventBuilder manufacturingOrderEventBuilder = JsonManufacturingOrderEvent.builder()
+				.wfProcessId(wfProcessResponse.getId())
+				.wfActivityId(wfManufacturingIssueToActivity.getActivityId());
+
+		if (event.equals("IssueTo"))
+		{
+			manufacturingOrderEventBuilder.issueTo(JsonManufacturingOrderEvent.IssueTo.builder()
+													.issueStepId(wfLine.getSteps().get(0).getId())
+													.qtyIssued(wfLine.getSteps().get(0).getQtyToIssue())
+													.huQRCode(wfLine.getSteps().get(0).getHuQRCode().getCode())
+													.build());
+		}
+		else if (event.equals("ReceiveFrom"))
+		{
+
+		}
+
+
+		testContext.setRequestPayload(objectMapper.writeValueAsString(manufacturingOrderEventBuilder.build()));
+	}
+
+	@And("create JsonDistributionEvent from JsonWFProcess that comes back from previous request and store it as the request payload in the test context")
+	public void distribution_event_request_payload(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final String event = DataTableUtil.extractStringForColumnName(tableRow, "Event");
+
+		final String content = testContext.getApiResponse().getContent();
+
+		final JsonWFProcess wfProcessResponse = objectMapper.readValue(content, JsonWFProcess.class);
+
+		final JsonWFActivity wfDistributionActivity = wfProcessResponse.getActivities().stream()
+				.filter(jsonWFActivity -> jsonWFActivity.getCaption().equals("Move"))
+				.collect(Collectors.toList()).get(0);
+
+		final ArrayList activityLines = (ArrayList)wfDistributionActivity.getComponentProps().get("lines");
+
+		final JsonWFDistributionLine wfLine = objectMapper.readValue(objectMapper.writeValueAsString(activityLines.get(0)), JsonWFDistributionLine.class);
+
+		final JsonDistributionEvent.JsonDistributionEventBuilder distributionEventBuilder = JsonDistributionEvent.builder()
+				.wfProcessId(wfProcessResponse.getId())
+				.wfActivityId(wfDistributionActivity.getActivityId())
+				.distributionStepId(wfLine.getSteps().get(0).getId());
+
+		if(event.equals("PickFrom"))
+		{
+			distributionEventBuilder.pickFrom(JsonDistributionEvent.PickFrom.builder().qrCode(wfLine.getSteps().get(0).getPickFromHU().getQrCode().getCode()).build());
+		}
+		else if (event.equals("DropTo"))
+		{
+			distributionEventBuilder.dropTo(JsonDistributionEvent.DropTo.builder().build());
+		}
+
+		testContext.setRequestPayload(objectMapper.writeValueAsString(distributionEventBuilder.build()));
+	}
+
+	@And("validate picking candidate and shipment schedule after picking workflow")
+	public void validate_after_picking_workflow(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+
+			final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyPicked);
+
+			final I_M_ShipmentSchedule shipmentSchedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
+					.orderBy(I_M_ShipmentSchedule.COLUMNNAME_Created)
+					.create()
+					.first(I_M_ShipmentSchedule.class);
+
+			assertThat(shipmentSchedule).isNotNull();
+			assertThat(shipmentSchedule.getQtyOrdered_Calculated()).isEqualTo(qtyPicked);
+
+			final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+					.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.orderBy(I_M_Picking_Candidate.COLUMNNAME_Created)
+					.create()
+					.first(I_M_ShipmentSchedule_QtyPicked.class);
+
+			assertThat(shipmentScheduleQtyPicked).isNotNull();
+			assertThat(shipmentScheduleQtyPicked.getQtyPicked()).isEqualTo(qtyPicked);
+
+			final I_M_Picking_Candidate pickingCandidate = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+					.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.orderBy(I_M_Picking_Candidate.COLUMNNAME_Created)
+					.create()
+					.first(I_M_Picking_Candidate.class);
+
+			assertThat(pickingCandidate).isNotNull();
+			assertThat(pickingCandidate.getQtyPicked()).isEqualTo(qtyPicked);
+
+			final I_M_HU hu = queryBL.createQueryBuilder(I_M_HU.class)
+					.addEqualsFilter(I_M_HU.COLUMN_M_HU_ID, pickingCandidate.getM_HU_ID())
+					.orderBy(I_M_Picking_Candidate.COLUMNNAME_Created)
+					.create()
+					.firstOnly(I_M_HU.class);
+
+			assertThat(hu).isNotNull();
+			assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Picked);
+		}
+	}
+
+	@And("validate order move schedule and movement after distribution workflow")
+	public void validate_after_distribution_workflow(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_DD_OrderLine orderLine = ddOrderLineTable.get(orderLineIdentifier);
+
+			final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_DD_Order_MoveSchedule.COLUMNNAME_QtyPicked);
+
+			final I_DD_Order_MoveSchedule moveSchedule = queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
+					.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID, orderLine.getDD_OrderLine_ID())
+					.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_Created)
+					.create()
+					.first();
+
+			assertThat(moveSchedule).isNotNull();
+			assertThat(moveSchedule.getQtyToPick()).isEqualTo(qtyPicked);
+
+			final I_M_Movement movement = queryBL.createQueryBuilder(I_M_Movement.class)
+					.addEqualsFilter(I_M_Movement.COLUMNNAME_DD_Order_ID, orderLine.getDD_Order_ID())
+					.orderBy(I_M_Movement.COLUMN_Created)
+					.create()
+					.first();
+
+			assertThat(movement).isNotNull();
+
+			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU.COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+
+			final I_M_HU_Assignment huAssignment = queryBL.createQueryBuilder(I_M_HU_Assignment.class)
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, movement.getM_Movement_ID())
+					.orderBy(I_M_HU_Assignment.COLUMNNAME_Created)
+					.create()
+					.first();
+
+			assertThat(huAssignment).isNotNull();
+
+			final I_M_HU hu = queryBL.createQueryBuilder(I_M_HU.class)
+					.addEqualsFilter(COLUMNNAME_M_HU_ID, huAssignment.getM_HU_ID())
+					.orderBy(I_M_HU.COLUMNNAME_Created)
+					.create()
+					.first();
+
+			assertThat(hu).isNotNull();
+			assertThat(hu.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
+
 		}
 	}
 

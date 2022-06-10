@@ -2,7 +2,7 @@
  * #%L
  * de.metas.workflow.rest-api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,30 +23,25 @@
 package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
-@Builder
-@Jacksonized
-public class JsonWFProcessHeaderProperty
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class JsonWFPickFrom
 {
-	String caption;
-	String value;
+	@JsonProperty("huQRCode")
+	@NonNull JsonWFHQRCode huQRCode;
 
-	public static JsonWFProcessHeaderProperty of(
-			@NonNull final WFProcessHeaderProperty entry,
-			@NonNull final JsonOpts jsonOpts)
+	@Builder
+	@JsonCreator
+	public JsonWFPickFrom(@JsonProperty("huQRCode") @NonNull final JsonWFHQRCode huQRCode)
 	{
-		final String adLanguage = jsonOpts.getAdLanguage();
-		return builder()
-				.caption(entry.getCaption().translate(adLanguage))
-				.value(entry.getValue().translate(adLanguage))
-				.build();
+		this.huQRCode = huQRCode;
 	}
 }

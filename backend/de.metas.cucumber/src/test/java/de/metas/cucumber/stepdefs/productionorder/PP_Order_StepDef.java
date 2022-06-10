@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
@@ -43,6 +44,7 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workflow.WorkflowId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -83,6 +85,7 @@ public class PP_Order_StepDef
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;
@@ -168,6 +171,8 @@ public class PP_Order_StepDef
 
 			final Boolean completeDocument = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "completeDocument", false);
 
+			final Integer workflowId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_AD_Workflow_ID);
+
 			final PPOrderCreateRequest ppOrderCreateRequest = PPOrderCreateRequest.builder()
 					.docBaseType(docBaseType)
 					.clientAndOrgId(clientAndOrgId)
@@ -179,6 +184,7 @@ public class PP_Order_StepDef
 					.datePromised(datePromised)
 					.dateStartSchedule(dateStartSchedule)
 					.completeDocument(completeDocument)
+					.workflowId(workflowId != null ? WorkflowId.ofRepoId(workflowId) : null)
 					.build();
 
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest);

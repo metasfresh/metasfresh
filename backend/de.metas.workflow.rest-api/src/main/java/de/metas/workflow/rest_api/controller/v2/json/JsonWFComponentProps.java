@@ -2,7 +2,7 @@
  * #%L
  * de.metas.workflow.rest-api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,33 +23,25 @@
 package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.google.common.collect.ImmutableList;
-import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
-@Builder
-@Jacksonized
-public class JsonWFProcessHeaderProperties
+public class JsonWFComponentProps
 {
-	@NonNull List<JsonWFProcessHeaderProperty> entries;
+	@JsonProperty("lines")
+	@NonNull final List<JsonWFPickingLine> lines;
 
-	public static JsonWFProcessHeaderProperties of(
-			@NonNull final WFProcessHeaderProperties properties,
-			@NonNull final JsonOpts jsonOpts)
+	@Builder
+	@JsonCreator
+	public JsonWFComponentProps(@JsonProperty("lines") @NonNull final List<JsonWFPickingLine> lines)
 	{
-		final List<JsonWFProcessHeaderProperty> entries = properties.getEntries()
-				.stream()
-				.map(entry -> JsonWFProcessHeaderProperty.of(entry, jsonOpts))
-				.collect(ImmutableList.toImmutableList());
-
-		return new JsonWFProcessHeaderProperties(entries);
+		this.lines = lines;
 	}
 }

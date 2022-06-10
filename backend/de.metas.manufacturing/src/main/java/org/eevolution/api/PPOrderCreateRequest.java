@@ -15,6 +15,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.workflow.WorkflowId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -76,6 +77,9 @@ public class PPOrderCreateRequest
 
 	@Nullable Boolean completeDocument;
 
+	@Nullable
+	WorkflowId workflowId;
+
 	@Builder(toBuilder = true)
 	PPOrderCreateRequest(
 			@Nullable final PPOrderDocBaseType docBaseType,
@@ -102,7 +106,8 @@ public class PPOrderCreateRequest
 			@Nullable final BPartnerId customerId,
 			@Nullable final ProjectId projectId,
 			//
-			@Nullable final Boolean completeDocument)
+			@Nullable final Boolean completeDocument,
+			@Nullable final WorkflowId workflowId)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -131,6 +136,8 @@ public class PPOrderCreateRequest
 		this.projectId = projectId;
 
 		this.completeDocument = completeDocument;
+
+		this.workflowId = workflowId;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

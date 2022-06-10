@@ -196,7 +196,7 @@ public class M_HU_StepDef
 			final I_M_HU_PI_Version piVersion = huPiVersionTable.get(huPiVersionIdentifier);
 			assertThat(piVersion).isNotNull();
 
-			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (EmptyUtil.isNotBlank(locatorIdentifier))
 			{
 				final I_M_Locator locator = locatorTable.get(locatorIdentifier);
