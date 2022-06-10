@@ -815,14 +815,6 @@ public class OrderBL implements IOrderBL
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
 
-		if (orderLine.getQtyDelivered().compareTo(orderLine.getQtyOrdered()) >= 0) // they delivered at least the ordered qty => nothing to do
-		{
-			return; // Do nothing
-		}
-
-		orderLine.setQtyOrdered(orderLine.getQtyDelivered());
-		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
-
 		final I_C_Order order = orderLine.getC_Order();
 		reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
 	}
