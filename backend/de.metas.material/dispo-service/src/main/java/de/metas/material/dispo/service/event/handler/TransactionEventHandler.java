@@ -275,7 +275,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			candidates = createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
-					createTransactionDetail(event));
+					createTransactionDetail(event),
+					event);
 		}
 		else
 		{
@@ -342,7 +343,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			candidates = createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
-					transactionDetailOfEvent);
+					transactionDetailOfEvent,
+					event);
 		}
 		else
 		{
@@ -396,7 +398,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			candidates = createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
-					transactionDetailOfEvent);
+					transactionDetailOfEvent,
+					event);
 		}
 		else
 		{
@@ -443,7 +446,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			candidates = createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
-					transactionDetailOfEvent);
+					transactionDetailOfEvent,
+					event);
 		}
 		else
 		{
@@ -486,7 +490,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.attributeSetInstanceId(event.getMaterialDescriptor().getAttributeSetInstanceId())
 				.transactionId(event.getTransactionId())
 				.transactionDate(event.getMaterialDescriptor().getDate())
-				.complete(true)
 				.build();
 	}
 
@@ -533,7 +536,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			candidates = createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
 					existingCandidate,
-					transactionDetailOfEvent);
+					transactionDetailOfEvent,
+					event);
 		}
 		else
 		{
@@ -552,7 +556,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@VisibleForTesting
 	List<Candidate> createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(
 			@NonNull final Candidate candidate,
-			@NonNull final TransactionDetail changedTransactionDetail)
+			@NonNull final TransactionDetail changedTransactionDetail,
+			@NonNull final AbstractTransactionEvent event)
 	{
 		final boolean attributesKeysMatch = Objects.equals(
 				candidate.getMaterialDescriptor().getStorageAttributesKey(),
@@ -594,7 +599,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.toBuilder()
 					.id(null)
 					.parentId(null) // important to make sure a supply new candidate gets a stock record
-					.type(computeCounterCandidateType(candidate))
+					.type(computeCounterCandidateType(candidate, event))
 					.materialDescriptor(newMaterialDescriptor)
 					.clearTransactionDetails()
 					.transactionDetail(changedTransactionDetail.withRebookedFromCandidateId(candidate.getId())) // help users by referencing the candidate from which we subtract quantities
@@ -612,16 +617,16 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 	}
 
-	private CandidateType computeCounterCandidateType(@NonNull final Candidate candidate)
+	private CandidateType computeCounterCandidateType(
+			@NonNull final Candidate candidate,
+			@NonNull final AbstractTransactionEvent event)
 	{
 		switch (candidate.getType())
 		{
 			case SUPPLY:
-				return CandidateType.UNEXPECTED_INCREASE;
 			case UNEXPECTED_INCREASE:
-				return CandidateType.UNEXPECTED_INCREASE;
+				return event.getQuantity().signum() < 0 ? CandidateType.UNEXPECTED_DECREASE : CandidateType.UNEXPECTED_INCREASE;
 			case UNEXPECTED_DECREASE:
-				return CandidateType.UNEXPECTED_DECREASE;
 			case DEMAND:
 				return CandidateType.UNEXPECTED_DECREASE;
 			default:

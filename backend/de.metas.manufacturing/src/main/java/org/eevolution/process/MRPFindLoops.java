@@ -22,27 +22,25 @@ package org.eevolution.process;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.resource.ManufacturingResourceType;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -113,7 +111,7 @@ public class MRPFindLoops extends JavaProcess
 		}
 
 		// resources
-		final List<I_S_Resource> resources = new ArrayList<I_S_Resource>();
+		final List<I_S_Resource> resources = new ArrayList<>();
 		if (p_S_Resource_ID > 0)
 		{
 			resources.add(InterfaceWrapperHelper.create(getCtx(), p_S_Resource_ID, I_S_Resource.class, getTrxName()));
@@ -122,7 +120,7 @@ public class MRPFindLoops extends JavaProcess
 		{
 			final IQueryBuilder<I_S_Resource> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_S_Resource.class, getCtx(), getTrxName())
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
+					.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.Plant);
 			queryBuilder.orderBy().addColumn(I_S_Resource.COLUMNNAME_S_Resource_ID);
 
 			resources.addAll(queryBuilder.create().list(I_S_Resource.class));

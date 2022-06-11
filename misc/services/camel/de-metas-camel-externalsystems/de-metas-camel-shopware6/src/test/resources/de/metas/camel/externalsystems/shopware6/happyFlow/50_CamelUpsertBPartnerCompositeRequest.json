@@ -11,6 +11,7 @@
             "name":"firstName lastName",
             "companyName": "company",
             "customer": true,
+            "priceListId": 121,
             "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"

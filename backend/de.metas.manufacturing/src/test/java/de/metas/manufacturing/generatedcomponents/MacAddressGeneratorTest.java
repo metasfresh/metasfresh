@@ -35,7 +35,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -45,7 +44,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.*;
 
-@Disabled
 class MacAddressGeneratorTest
 {
 	@BeforeEach
@@ -151,8 +149,8 @@ class MacAddressGeneratorTest
 		@Builder(builderMethodName = "context", builderClassName = "$contextBuilder")
 		private ComponentGeneratorContext createContext(
 				@NonNull final Integer qty,
-				@Nullable String alreadySetMAC1,
-				@Nullable String alreadySetMAC2)
+				@Nullable final String alreadySetMAC1,
+				@Nullable final String alreadySetMAC2)
 		{
 			final ImmutableAttributeSet.Builder existingAttributes = ImmutableAttributeSet.builder();
 			if (alreadySetMAC1 != null)

@@ -23,6 +23,7 @@
 package org.adempiere.ad.migration.validator.sql_migration_context_info;
 
 import de.metas.util.StringUtils;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -46,7 +47,7 @@ public class AD_Tab
 			return;
 		}
 
-		final String tabNameFQ = retrieveWindowNameFQ(tab.getAD_Window_ID()) + " -> " + tab.getName();
+		final String tabNameFQ = retrieveWindowNameFQ(AdWindowId.ofRepoId(tab.getAD_Window_ID())) + " -> " + tab.getName();
 		MigrationScriptFileLoggerHolder.logComment("Tab: " + tabNameFQ);
 
 		final AdTableId adTableId = AdTableId.ofRepoId(tab.getAD_Table_ID());
@@ -54,7 +55,7 @@ public class AD_Tab
 		MigrationScriptFileLoggerHolder.logComment("Table: " + tableName);
 	}
 
-	private static String retrieveWindowNameFQ(final int adWindowId)
+	static String retrieveWindowNameFQ(final AdWindowId adWindowId)
 	{
 		final String windowName = DB.getSQLValueStringEx(
 				ITrx.TRXNAME_ThreadInherited,

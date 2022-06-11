@@ -62,6 +62,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
@@ -131,6 +132,13 @@ public class M_Product_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
+			final boolean isExcludedFromSale = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromSale, false);
+			final boolean isExcludedFromPurchase = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase, false);
+			final String exclusionFromSaleReason = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_ExclusionFromSaleReason);
+			final String exclusionFromPurchaseReason = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_ExclusionFromPurchaseReason);
+			final String productNumber = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_ProductNo);
+			final String upc = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_UPC);
+
 			final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
 			bPartnerProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			bPartnerProduct.setM_Product_ID(productTable.get(productIdentifier).getM_Product_ID());
@@ -140,6 +148,28 @@ public class M_Product_StepDef
 			bPartnerProduct.setUsedForCustomer(true);
 			bPartnerProduct.setShelfLifeMinPct(0);
 			bPartnerProduct.setShelfLifeMinDays(0);
+			bPartnerProduct.setIsExcludedFromSale(isExcludedFromSale);
+			bPartnerProduct.setIsExcludedFromPurchase(isExcludedFromPurchase);
+
+			if (Check.isNotBlank(exclusionFromSaleReason))
+			{
+				bPartnerProduct.setExclusionFromSaleReason(exclusionFromSaleReason);
+			}
+
+			if (Check.isNotBlank(exclusionFromPurchaseReason))
+			{
+				bPartnerProduct.setExclusionFromPurchaseReason(exclusionFromPurchaseReason);
+			}
+
+			if (Check.isNotBlank(productNumber))
+			{
+				bPartnerProduct.setProductNo(productNumber);
+			}
+
+			if (Check.isNotBlank(upc))
+			{
+				bPartnerProduct.setUPC(upc);
+			}
 
 			InterfaceWrapperHelper.saveRecord(bPartnerProduct);
 		}
@@ -165,6 +195,16 @@ public class M_Product_StepDef
 		}
 	}
 
+	@Given("update M_Product:")
+	public void update_M_Product(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> productTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : productTableList)
+		{
+			updateMProduct(dataTableRow);
+		}
+	}
+
 	@And("taxCategory {string} is updated to work with all productTypes")
 	public void update_tax_category(@NonNull final String taxCategoryInternalName)
 	{
@@ -175,6 +215,16 @@ public class M_Product_StepDef
 		taxCategory.setProductType(null);
 
 		InterfaceWrapperHelper.saveRecord(taxCategory);
+	}
+
+	@Given("load M_Product:")
+	public void load_product(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			loadProduct(tableRow);
+		}
 	}
 
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
@@ -300,5 +350,36 @@ public class M_Product_StepDef
 				throw Check.fail("Unexpected type={}", type);
 		}
 		return productType;
+	}
+
+	private void loadProduct(@NonNull final Map<String, String> tableRow)
+	{
+		final int productId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID);
+
+		final I_M_Product product = productDAO.getById(productId);
+		assertThat(product).isNotNull();
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		productTable.put(productIdentifier, product);
+	}
+
+	private void updateMProduct(@NonNull final Map<String, String> tableRow)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final Integer productId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+		final I_M_Product productRecord = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+
+		final String gtin = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
+
+		if (Check.isNotBlank(gtin))
+		{
+			productRecord.setGTIN(DataTableUtil.nullToken2Null(gtin));
+		}
+
+		saveRecord(productRecord);
 	}
 }

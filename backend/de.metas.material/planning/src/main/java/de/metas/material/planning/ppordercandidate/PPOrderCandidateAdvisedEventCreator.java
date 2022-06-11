@@ -29,7 +29,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent.PPOrderCandidateAdvisedEventBuilder;
-import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
@@ -64,7 +64,7 @@ public class PPOrderCandidateAdvisedEventCreator
 	@NonNull
 	public ImmutableList<PPOrderCandidateAdvisedEvent> createPPOrderCandidateAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMutableMRPContext mrpContext)
+			@NonNull final IMaterialPlanningContext mrpContext)
 	{
 		if (!ppOrderCandidateDemandMatcher.matches(mrpContext))
 		{
@@ -127,7 +127,7 @@ public class PPOrderCandidateAdvisedEventCreator
 
 	@Nullable
 	private Quantity convertQtyToRequestUOM(
-			@NonNull final IMutableMRPContext mrpContext,
+			@NonNull final IMaterialPlanningContext mrpContext,
 			@NonNull final MaterialRequest completeRequest,
 			@Nullable final Quantity maxQtyPerOrder)
 	{

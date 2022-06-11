@@ -47,6 +47,7 @@ import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
@@ -274,6 +275,7 @@ class OLCandOrderFactory
 		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(candidateOfGroup.getPaymentTermId()));
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
+		order.setC_Project_ID(ProjectId.toRepoId(candidateOfGroup.getProjectId()));
 
 		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
 		if (orderDocTypeId != null)
@@ -524,6 +526,7 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice())
 			{
 				currentOrderLine.setPriceEntered(candidate.getPriceActual());
+				currentOrderLine.setPrice_UOM_ID(candidate.getQty().getUomId().getRepoId());
 			}
 			else
 			{

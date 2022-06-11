@@ -25,6 +25,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
@@ -58,8 +59,12 @@ import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -107,6 +112,9 @@ import java.util.Properties;
 public class MInOut extends X_M_InOut implements IDocument
 {
 	private static final long serialVersionUID = 132321718005732306L;
+
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	/**
 	 * Create new Shipment by copying
@@ -409,6 +417,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			setEMail(order.getEMail());
 		}
+		setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+
 		// Drop shipment
 		// metas start: cg: 01717
 		if (order.isSOTrx())
@@ -508,6 +518,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser1_ID(invoice.getUser1_ID());
 		setUser2_ID(invoice.getUser2_ID());
 		setEMail(invoice.getEMail());
+		setAD_InputDataSource_ID(invoice.getAD_InputDataSource_ID());
 
 		// metas
 		copyAdditionalCols(order);
@@ -1210,7 +1221,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			if (product != null)
 			{
 				Volume = Volume.add(product.getVolume().multiply(line.getMovementQty()));
-				Weight = Weight.add(product.getWeight().multiply(line.getMovementQty()));
+				Weight = Weight.add(getProductWeight(product, line));
 			}
 			//
 			if (line.getM_AttributeSetInstance_ID() > 0)
@@ -1243,6 +1254,17 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		return IDocument.STATUS_InProgress;
 	} // prepareIt
+
+	/**
+	  * Use M_Product.Weight or fall back to a KGM-UOM-conversion to the the product's weight.
+	  */
+	private BigDecimal getProductWeight(final @NonNull MProduct product, final @NonNull MInOutLine line)
+	{
+		return CoalesceUtil.firstGreaterThanZeroBigDecimalSupplier(
+				() -> product.getWeight().multiply(line.getMovementQty()),
+				() -> uomConversionBL.convertFromProductUOM(ProductId.ofRepoIdOrNull(product.getM_Product_ID()), uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM), line.getMovementQty()));
+	}
+
 
 	private void checkCreditLimit()
 	{

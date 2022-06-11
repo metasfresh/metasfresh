@@ -23,7 +23,7 @@
 package de.metas.contracts.interceptor;
 
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;

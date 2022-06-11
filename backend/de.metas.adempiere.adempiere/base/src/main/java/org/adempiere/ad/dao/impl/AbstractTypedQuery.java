@@ -32,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
-import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
@@ -97,11 +96,8 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	}
 
 	/**
-	 *
-	 * @param clazz
-	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
+	 * @param throwExIfMoreThenOneFound if true and there more than one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
-	 * @throws DBException
 	 */
 	protected abstract <ET extends T> ET firstOnly(final Class<ET> clazz, final boolean throwExIfMoreThenOneFound) throws DBException;
 
@@ -132,7 +128,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	}
 
 	@Override
-	public final List<Map<String, Object>> listColumns(String... columnNames)
+	public final List<Map<String, Object>> listColumns(final String... columnNames)
 	{
 		final boolean distinct = false;
 		return listColumns(distinct, columnNames);
@@ -149,7 +145,6 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *
 	 * @param distinct true if the value rows shall be district
-	 * @param columnNames
 	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
 	 */
 	protected abstract List<Map<String, Object>> listColumns(final boolean distinct, final String... columnNames);
@@ -159,12 +154,6 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	{
 		final List<ET> list = list(modelClass);
 		return Maps.uniqueIndex(list, keyFunction::apply);
-	}
-
-	@Override
-	public <ET extends T> Map<Integer, ET> mapToId(final Class<ET> modelClass)
-	{
-		return map(modelClass, Model2IdFunction.<ET> getInstance());
 	}
 
 	@Override

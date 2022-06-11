@@ -20,6 +20,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
+import de.metas.impex.InputDataSourceId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -384,12 +385,15 @@ public final class AggregationEngine
 				invoiceHeader.setEmail(icRecord.getEMail());
 			}
 
+			invoiceHeader.setAD_InputDataSource_ID(InputDataSourceId.ofRepoIdOrNull(icRecord.getAD_InputDataSource_ID()));
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{
 				final I_C_Order order = orderDAO.getById(orderId);
 				invoiceHeader.setExternalId(order.getExternalId());
-				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
+
+				// task 12953 : prevent SalesRep_ID from being a header aggregation criteria
+				// invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
 
 			}
 			invoiceHeader.setPaymentRule(icRecord.getPaymentRule());

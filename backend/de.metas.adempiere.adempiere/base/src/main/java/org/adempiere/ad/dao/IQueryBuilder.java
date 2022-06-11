@@ -1,45 +1,26 @@
 package org.adempiere.ad.dao;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.process.PInstanceId;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import de.metas.process.PInstanceId;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Properties;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  * @param <T> model type
  * @author tsa
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface IQueryBuilder<T>
 {
 	/**
@@ -130,6 +111,14 @@ public interface IQueryBuilder<T>
 
 	IQuery<T> create();
 
+	default Stream<T> stream() {return create().stream();}
+
+	default ImmutableList<T> list() {return create().listImmutable(getModelClass());}
+
+	default int delete() {return create().delete();}
+
+	default void forEach(@NonNull final Consumer<T> action) {create().forEach(action);}
+
 	IQueryBuilder<T> addNotEqualsFilter(String columnName, @Nullable Object value);
 
 	IQueryBuilder<T> addNotEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
@@ -152,7 +141,7 @@ public interface IQueryBuilder<T>
 	 * Filters using the given string as a <b>substring</b>.
 	 * If this "substring" behavior is too opinionated for your case, consider using e.g. {@link #addCompareFilter(String, Operator, Object)}.
 	 *
-	 * @param substring will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
+	 * @param substring  will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
 	 * @param ignoreCase if {@code true}, then {@code ILIKE} is used as operator instead of {@code LIKE}
 	 */
 	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
@@ -183,7 +172,7 @@ public interface IQueryBuilder<T>
 	/**
 	 * Filters those rows for whom the columnName's value is in given array.
 	 * If no values were provided the record is rejected.
-	 *
+	 * <p>
 	 * Note that "InArray*Filters" also support {@link RepoIdAware} and {@link de.metas.util.lang.ReferenceListAwareEnum}
 	 */
 	@SuppressWarnings("unchecked")
@@ -250,9 +239,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * @param columnName the key column from the "main" query
+	 * @param columnName         the key column from the "main" query
 	 * @param subQueryColumnName the key column from the "sub" query
-	 * @param subQuery the actual sub query
+	 * @param subQuery           the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
@@ -260,9 +249,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * @param column the key column from the "main" query
+	 * @param column         the key column from the "main" query
 	 * @param subQueryColumn the key column from the "sub" query
-	 * @param subQuery the actual sub query
+	 * @param subQuery       the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
@@ -311,7 +300,7 @@ public interface IQueryBuilder<T>
 	 * </pre>
 	 *
 	 * @param linkColumnNameInChildTable the column in child model which will be used to join the child records to current record's primary key
-	 * @param childType child model to be used
+	 * @param childType                  child model to be used
 	 * @return query build for <code>ChildType</code>
 	 */
 	<ChildType> IQueryBuilder<ChildType> andCollectChildren(String linkColumnNameInChildTable, Class<ChildType> childType);
@@ -390,4 +379,10 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
 
 	String getModelTableName();
+
+	IQueryBuilder<T> addIntervalIntersection(
+			@NonNull String lowerBoundColumnName,
+			@NonNull String upperBoundColumnName,
+			@Nullable ZonedDateTime lowerBoundValue,
+			@Nullable ZonedDateTime upperBoundValue);
 }

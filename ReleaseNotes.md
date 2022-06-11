@@ -12,6 +12,20 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13132](https://github.com/metasfresh/metasfresh/issues/13132) Customizing: Add fr_CH Language as System Language
+  * [#13062](https://github.com/metasfresh/metasfresh/issues/13062) Pricing issue 
+  * [#13107](https://github.com/metasfresh/metasfresh/issues/13107) KPI - Add sum of SO/PO orders today / of last 7 days
+  * [#13084](https://github.com/metasfresh/metasfresh/issues/13084) Create REST Endpoint to read and write C_Projects
+  * [#12938](https://github.com/metasfresh/metasfresh/issues/12938) Shopware - set pricing system on created business partners
+  * [#12824](https://github.com/metasfresh/metasfresh/issues/12824) Clarify and document externalsystems multithreading behavior
+  * [#13054](https://github.com/metasfresh/metasfresh/issues/13054) Optimize `Fresh_Account_Info_Report` 
+  * [#13074](https://github.com/metasfresh/metasfresh/issues/13074) externalsystems - document timestamp-usage
+  * [#13017](https://github.com/metasfresh/metasfresh/issues/13017) EDI - Extend INVOIC export format
+  * [#13038](https://github.com/metasfresh/metasfresh/issues/13038) Campaign price where m_pricingsystem_id is set not used in orderline
+  * [#12931](https://github.com/metasfresh/metasfresh/issues/12931) API - Export PP_Orders with extended informations
+  * [#12982](https://github.com/metasfresh/metasfresh/issues/12982) Korrektur action in material receipt candidates is not considered correctly in Material Dispo
+  * [#12999](https://github.com/metasfresh/metasfresh/issues/12999) Allow Defining Tax-Categories without a M_ProductPrice
+  * [#12974](https://github.com/metasfresh/metasfresh/issues/12974) Default paymentrule for packing item causes >1 invoice for the same order
   * [#13016](https://github.com/metasfresh/metasfresh/issues/13016) Shopware Fix order-item/bundle-sorting - part deux
   * [#13024](https://github.com/metasfresh/metasfresh/issues/13024) Improve API-Errormessage on wrong Headers
   * [#12966](https://github.com/metasfresh/metasfresh/issues/12966) Improve ways of API request troubleshooting
@@ -22,9 +36,16 @@ Here come the actual release notes:
   * [#12826](https://github.com/metasfresh/metasfresh/issues/12826) MetasfreshEventBusService - always post events to rabbitMQ
   * [#12840](https://github.com/metasfresh/metasfresh/issues/12840) Overhaul C_OLcand => C_Order processing
   * [#12837](https://github.com/metasfresh/metasfresh/issues/12837) Shopware Fix order-item/bundle-sorting
+  * [#13045](https://github.com/metasfresh/metasfresh/pull/13045) log to loggables why an attribute based price is not applied
 
 ## Fixes
 * metasfresh
+  * [#13112](https://github.com/metasfresh/metasfresh/issues/13112) Fix Zoom Across HU Editor
+  * [#13105](https://github.com/metasfresh/metasfresh/issues/13104) Exclude Password Reset process from DebugMailTo
+  * [#13086](https://github.com/metasfresh/metasfresh/issues/13086) Windows adjustments & fixing Trls 
+  * [#13046](https://github.com/metasfresh/metasfresh/issues/13046) Fix DatePicker format in custom windows
+  * [#13062](https://github.com/metasfresh/metasfresh/issues/13062) Pricing issue
+  * [#13043](https://github.com/metasfresh/metasfresh/issues/13043) Fix disabled unit tests from `de.metas.manufacturing`
   * [#12997](https://github.com/metasfresh/metasfresh/issues/12997) Open amt incorrect after vendor credit memo is created for a vendor invoice
   * [#12980](https://github.com/metasfresh/metasfresh/issues/12980) Scale Price not used despite usescaleprice=S
   * [#12991](https://github.com/metasfresh/metasfresh/issues/12991) For Picking Profile "Group by Order" the order and bpartner are not displayed in Picking Terminal

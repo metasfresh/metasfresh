@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -1096,6 +1097,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			@Nullable BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
+	}
+
+	@Override
+	public I_M_HU_PI_Item getPackingInstructionItemById(final HuPackingInstructionsItemId piItemId)
+	{
+		return handlingUnitsRepo.getPackingInstructionItemById(piItemId);
 	}
 
 	@Override

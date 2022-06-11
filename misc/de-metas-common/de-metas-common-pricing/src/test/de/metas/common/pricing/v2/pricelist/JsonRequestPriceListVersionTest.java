@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.pricing.v2.pricelist;
+package de.metas.common.pricing.v2.productprice;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;

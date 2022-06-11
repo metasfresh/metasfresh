@@ -1,12 +1,12 @@
 package de.metas.externalsystem.ebay;
 
-import javax.annotation.Nullable;
-
 import de.metas.document.DocTypeId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ExternalSystemEbayConfigMapping {

@@ -26,6 +26,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -61,6 +62,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
@@ -78,7 +80,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
@@ -108,15 +110,19 @@ public class C_Order_StepDef
 	private final AD_User_StepDefData userTable;
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
 
+	private final C_Project_StepDefData projectTable;
+
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.projectTable = projectTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.userTable = userTable;
 		this.pricingSystemDataTable = pricingSystemDataTable;
@@ -129,7 +135,6 @@ public class C_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
 			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
@@ -139,9 +144,13 @@ public class C_Order_StepDef
 			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 
+			final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+					.map(I_C_BPartner::getC_BPartner_ID)
+					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			order.setC_BPartner_ID(bPartnerId);
 			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
@@ -443,20 +452,29 @@ public class C_Order_StepDef
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Order order = orderTable.get(orderIdentifier);
 
-			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
-			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
-			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-					.docBaseType(docBaseType)
-					.docSubType(docSubType)
-					.adClientId(order.getAD_Client_ID())
-					.adOrgId(order.getAD_Org_ID())
-					.build();
+			if (Check.isNotBlank(docBaseType) && Check.isNotBlank(docSubType))
+			{
+				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+						.docBaseType(docBaseType)
+						.docSubType(docSubType)
+						.adClientId(order.getAD_Client_ID())
+						.adOrgId(order.getAD_Org_ID())
+						.build();
 
-			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
+				final DocTypeId docTypeId = docTypeDAO.getDocTypeId(docTypeQuery);
 
-			order.setC_DocType_ID(docTypeId.getRepoId());
-			order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+				order.setC_DocType_ID(docTypeId.getRepoId());
+				order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+			}
+
+			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
+			if (Check.isNotBlank(paymentRule))
+			{
+				order.setPaymentRule(paymentRule);
+			}
 
 			InterfaceWrapperHelper.saveRecord(order);
 
@@ -476,7 +494,7 @@ public class C_Order_StepDef
 
 	private void validateOrder(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + ".Identifier");
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
@@ -594,6 +612,17 @@ public class C_Order_StepDef
 		if (Check.isNotBlank(poReference))
 		{
 			assertThat(order.getPOReference()).isEqualTo(poReference);
+		}
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final Integer projectId = projectTable.getOptional(projectIdentifier)
+					.map(I_C_Project::getC_Project_ID)
+					.orElseGet(() -> Integer.parseInt(projectIdentifier));
+
+			assertThat(order.getC_Project_ID()).isEqualTo(projectId);
 		}
 	}
 
