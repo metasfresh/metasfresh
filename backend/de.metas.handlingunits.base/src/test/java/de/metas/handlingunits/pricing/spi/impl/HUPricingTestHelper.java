@@ -1,15 +1,17 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.pricing.service.impl.PricingTestHelper;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 /*
  * #%L
@@ -55,6 +57,7 @@ public class HUPricingTestHelper extends PricingTestHelper
 		return ImmutableList.of(
 				HUPricing.class.getName(),
 				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
+				de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice.class.getName(),
 				de.metas.pricing.rules.PriceListVersion.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName(),
 				ContractDiscount.class.getName());

@@ -26,13 +26,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -41,22 +38,20 @@ import org.compiere.model.I_M_Product;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_BPartner_Product_StepDef
 {
-	private final M_Product_StepDefData productTable;
-	private final StepDefData_BPartnerProduct bpartnerProductTable;
-	private final C_BPartner_StepDefData bPartnerTable;
+	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<BPartnerProduct> bpartnerProductTable;
+	private final StepDefData<I_C_BPartner> bPartnerTable;
 
 	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 
 	public C_BPartner_Product_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData_BPartnerProduct bpartnerProductTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable)
+			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<BPartnerProduct> bpartnerProductTable,
+			@NonNull final StepDefData<I_C_BPartner> bPartnerTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerProductTable = bpartnerProductTable;
@@ -80,16 +75,6 @@ public class C_BPartner_Product_StepDef
 		for (final Map<String, String> dataTableRow : productTableList)
 		{
 			verifyBPartnerProductInfo(dataTableRow);
-		}
-	}
-
-	@Given("metasfresh contains C_BPartner_Product")
-	public void create_C_BPartner_Product(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			createBPartnerProduct(dataTableRow);
 		}
 	}
 
@@ -140,47 +125,5 @@ public class C_BPartner_Product_StepDef
 		assertThat(bPartnerProduct.getExclusionFromSalesReason()).isEqualTo(exclusionFromSaleReason);
 		assertThat(bPartnerProduct.getIsExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
 		assertThat(bPartnerProduct.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
-	}
-
-	private void createBPartnerProduct(@NonNull final Map<String, String> tableRow)
-	{
-		final String bPartnerProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer bPartnerId = bPartnerTable.getOptional(productIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
-
-		final I_C_BPartner_Product bPartnerProductRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
-
-		bPartnerProductRecord.setM_Product_ID(productId);
-		bPartnerProductRecord.setC_BPartner_ID(bPartnerId);
-
-		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_GTIN);
-
-		if (Check.isNotBlank(gtin))
-		{
-			bPartnerProductRecord.setGTIN(gtin);
-		}
-
-		final String eanCu = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_EAN_CU);
-
-		if (Check.isNotBlank(eanCu))
-		{
-			bPartnerProductRecord.setEAN_CU(eanCu);
-		}
-
-		bPartnerProductRecord.setShelfLifeMinDays(0);
-		bPartnerProductRecord.setShelfLifeMinPct(0);
-
-		saveRecord(bPartnerProductRecord);
-
-		bpartnerProductTable.put(bPartnerProductIdentifier, ProductRepository.ofBPartnerProductRecord(bPartnerProductRecord));
 	}
 }

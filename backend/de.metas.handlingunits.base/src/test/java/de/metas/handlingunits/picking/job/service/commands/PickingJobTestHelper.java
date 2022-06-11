@@ -29,7 +29,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -56,7 +55,6 @@ import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
-import de.metas.picking.model.I_M_Picking_Config_V2;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -90,7 +88,6 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PickingJobTestHelper
@@ -104,7 +101,6 @@ public class PickingJobTestHelper
 	public final HUQRCodesRepository huQRCodesRepository;
 	public final IProductBL productBL;
 	public final PickingCandidateRepository pickingCandidateRepository;
-	public final PickingConfigRepositoryV2 pickingConfigRepo;
 	public final PickingJobService pickingJobService;
 	public final HUTracerInstance huTracer;
 
@@ -131,8 +127,6 @@ public class PickingJobTestHelper
 		pickingCandidateRepository = new PickingCandidateRepository();
 		SpringContextHolder.registerJUnitBean(pickingCandidateRepository); // needed for HUPickingSlotBL
 
-		pickingConfigRepo = new PickingConfigRepositoryV2();
-
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
@@ -149,7 +143,6 @@ public class PickingJobTestHelper
 						bpartnerBL
 				),
 				new PickingJobHUReservationService(huReservationService),
-				pickingConfigRepo,
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
@@ -168,7 +161,6 @@ public class PickingJobTestHelper
 		uomEach = huTestHelper.uomEach;
 		shipToBPLocationId = createBPartnerAndLocationId("BPartner1");
 		shipFromLocatorId = createLocatorId(createWarehouseId("warehouse"), "wh_loc");
-		createPickingConfigV2(true);
 	}
 
 	@NonNull
@@ -205,7 +197,7 @@ public class PickingJobTestHelper
 		final I_M_PickingSlot record = newInstance(I_M_PickingSlot.class);
 		record.setPickingSlot(pickingSlot);
 		record.setIsDynamic(true);
-		save(record);
+		InterfaceWrapperHelper.save(record);
 		return PickingSlotId.ofRepoId(record.getM_PickingSlot_ID());
 	}
 
@@ -213,20 +205,13 @@ public class PickingJobTestHelper
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setDocumentNo(documentNo);
-		save(order);
+		InterfaceWrapperHelper.save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
-		save(orderLine);
+		InterfaceWrapperHelper.save(orderLine);
 
 		return OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
-	}
-
-	private void createPickingConfigV2(final boolean considerAttributes)
-	{
-		final I_M_Picking_Config_V2 pickingConfigV2 = newInstance(I_M_Picking_Config_V2.class);
-		pickingConfigV2.setIsConsiderAttributes(considerAttributes);
-		save(pickingConfigV2);
 	}
 
 	@Builder(builderMethodName = "packageable", builderClassName = "$PackageableBuilder")
@@ -253,7 +238,7 @@ public class PickingJobTestHelper
 		sched.setC_OrderLine_ID(orderAndLineId.getOrderLineRepoId());
 		sched.setDeliveryDate(Timestamp.from(dateEffective));
 		sched.setPreparationDate(Timestamp.from(dateEffective));
-		save(sched);
+		InterfaceWrapperHelper.save(sched);
 
 		createPackageableFromShipmentSchedule(sched);
 
@@ -283,7 +268,7 @@ public class PickingJobTestHelper
 		item.setC_OrderLineSO_ID(sched.getC_OrderLine_ID());
 		item.setDeliveryDate(sched.getDeliveryDate());
 		item.setPreparationDate(sched.getPreparationDate());
-		save(item);
+		InterfaceWrapperHelper.save(item);
 	}
 
 	public HUPIItemProductId createTUPackingInstructionsId(final String name, final ProductId productId, final Quantity cusPerTU)
@@ -333,13 +318,13 @@ public class PickingJobTestHelper
 						.setHUStatus(X_M_HU.HUSTATUS_Active)
 						.setLocatorId(shipFromLocatorId))
 				.load(AllocationUtils.builder()
-							  .setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
-							  .setProduct(productId)
-							  .setQuantity(qty)
-							  .setDate(SystemTime.asZonedDateTime())
-							  .setFromReferencedModel(huTestHelper.createDummyReferenceModel())
-							  .setForceQtyAllocation(true)
-							  .create());
+						.setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
+						.setProduct(productId)
+						.setQuantity(qty)
+						.setDate(SystemTime.asZonedDateTime())
+						.setFromReferencedModel(huTestHelper.createDummyReferenceModel())
+						.setForceQtyAllocation(true)
+						.create());
 
 		final I_M_HU hu = destination.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("Failed creating HU"));
 		return HuId.ofRepoId(hu.getM_HU_ID());
@@ -390,15 +375,15 @@ public class PickingJobTestHelper
 		final HUQRCode huQRCode = HUQRCode.builder()
 				.id(qrCodeId)
 				.packingInfo(HUQRCodePackingInfo.builder()
-									 .huUnitType(HUQRCodeUnitType.ofCode(Objects.requireNonNull(piVersion.getHU_UnitType())))
-									 .packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
-									 .caption(pi.getName())
-									 .build())
+						.huUnitType(HUQRCodeUnitType.ofCode(Objects.requireNonNull(piVersion.getHU_UnitType())))
+						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
+						.caption(pi.getName())
+						.build())
 				.product(HUQRCodeProductInfo.builder()
-								 .id(productId)
-								 .code(product.getValue())
-								 .name(product.getName())
-								 .build())
+						.id(productId)
+						.code(product.getValue())
+						.name(product.getName())
+						.build())
 				.attributes(ImmutableList.of())
 				.build();
 

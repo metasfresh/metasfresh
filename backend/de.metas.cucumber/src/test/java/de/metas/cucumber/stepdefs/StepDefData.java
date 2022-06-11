@@ -32,7 +32,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-public abstract class StepDefData<T>
+public class StepDefData<T>
 {
 	private final Map<String, T> records = new HashMap<>();
 

@@ -57,11 +57,11 @@ public class AllocationAmounts
 		return builder().payAmt(payAmt).build();
 	}
 
-	CurrencyId currencyId;
-	Money payAmt;
-	Money discountAmt;
-	Money writeOffAmt;
-	Money invoiceProcessingFee;
+	private final CurrencyId currencyId;
+	private final Money payAmt;
+	private final Money discountAmt;
+	private final Money writeOffAmt;
+	private final Money invoiceProcessingFee;
 
 	@Builder(toBuilder = true)
 	private AllocationAmounts(
@@ -187,7 +187,7 @@ public class AllocationAmounts
 		}
 	}
 
-	public AllocationAmounts add(@NonNull final AllocationAmounts other)
+	public AllocationAmounts add(AllocationAmounts other)
 	{
 		return toBuilder()
 				.payAmt(this.payAmt.add(other.payAmt))
@@ -197,7 +197,7 @@ public class AllocationAmounts
 				.build();
 	}
 
-	public AllocationAmounts subtract(@NonNull final AllocationAmounts other)
+	public AllocationAmounts subtract(AllocationAmounts other)
 	{
 		return toBuilder()
 				.payAmt(this.payAmt.subtract(other.payAmt))

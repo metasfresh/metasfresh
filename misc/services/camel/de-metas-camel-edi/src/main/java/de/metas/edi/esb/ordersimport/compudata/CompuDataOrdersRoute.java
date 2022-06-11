@@ -35,7 +35,7 @@ import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.support.builder.ValueBuilder;
-import org.smooks.cartridges.camel.dataformat.SmooksDataFormat;
+import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;

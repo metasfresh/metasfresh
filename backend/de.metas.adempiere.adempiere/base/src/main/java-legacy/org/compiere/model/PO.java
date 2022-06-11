@@ -3003,7 +3003,7 @@ public abstract class PO
 	 * @param success success
 	 * @return true if saved
 	 */
-	private boolean saveFinish(final boolean newRecord, boolean success) throws Exception
+	private final boolean saveFinish(final boolean newRecord, boolean success) throws Exception
 	{
 		// Translations
 		if (success)

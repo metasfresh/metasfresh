@@ -116,7 +116,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		sqlColumnName = builder.getColumnName();
 		sqlValueClass = builder.getSqlValueClass();
-		virtualColumn = builder.getVirtualColumnSql() != null;
+		virtualColumn = builder.isVirtualColumn();
 		mandatory = builder.mandatory;
 		keyColumn = builder.keyColumn;
 
@@ -177,9 +177,10 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private String _sqlTableName;
 		private String _sqlTableAlias;
 		private String _sqlColumnName;
-		private ColumnSql _virtualColumnSql;
+		private String _sqlColumnSql;
 		private Class<?> _sqlValueClass;
 
+		private Boolean _virtualColumn;
 		private Boolean mandatory;
 
 		private Class<?> _valueClass;
@@ -235,8 +236,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private SqlSelectValue buildSqlSelectValue()
 		{
+			final String columnSql = getColumnSql();
 			final String columnName = getColumnName();
-			final ColumnSql virtualColumnSql = getVirtualColumnSql();
 
 			//
 			// Case: the SQL binding doesn't have any column set.
@@ -244,17 +245,16 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			if (Check.isBlank(columnName))
 			{
 				return SqlSelectValue.builder()
-						.virtualColumnSql(ColumnSql.SQL_NULL)
+						.virtualColumnSql("NULL")
 						.columnNameAlias(getFieldName())
 						.build();
 			}
 			//
 			// Virtual column
-			else if (virtualColumnSql != null)
+			else if (isVirtualColumn())
 			{
 				return SqlSelectValue.builder()
-						.tableNameOrAlias(getTableName())
-						.virtualColumnSql(virtualColumnSql)
+						.virtualColumnSql(columnSql)
 						.columnNameAlias(columnName)
 						.build();
 			}
@@ -264,7 +264,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			{
 				return SqlSelectValue.builder()
 						.tableNameOrAlias(getTableName())
-						.columnName(columnName)
+						.columnName(columnSql)
 						.columnNameAlias(columnName)
 						.build();
 			}
@@ -416,16 +416,26 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return _sqlColumnName;
 		}
 
-		public Builder setVirtualColumnSql(@Nullable final ColumnSql virtualColumnSql)
+		public Builder setColumnSql(final String columnSql)
 		{
-			this._virtualColumnSql = virtualColumnSql;
+			this._sqlColumnSql = columnSql;
 			return this;
 		}
 
-		@Nullable
-		private ColumnSql getVirtualColumnSql()
+		private String getColumnSql()
 		{
-			return _virtualColumnSql;
+			return _sqlColumnSql;
+		}
+
+		public Builder setVirtualColumn(final boolean virtualColumn)
+		{
+			this._virtualColumn = virtualColumn;
+			return this;
+		}
+
+		private boolean isVirtualColumn()
+		{
+			return _virtualColumn;
 		}
 
 		public Builder setMandatory(final boolean mandatory)

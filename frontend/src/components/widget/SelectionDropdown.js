@@ -32,17 +32,11 @@ export default class SelectionDropdown extends Component {
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
-
-    const { onMount } = this.props;
-    onMount && onMount();
   }
 
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
-
-    const { onUnmount } = this.props;
-    onUnmount && onUnmount();
   }
 
   UNSAFE_componentWillReceiveProps(propsNext) {
@@ -135,7 +129,7 @@ export default class SelectionDropdown extends Component {
 
     const selectedIndex = items.indexOf(selected);
     const itemsSize = items.get ? items.size : items.length;
-    let selectedNew;
+    let selectedNew = null;
 
     if (selectedIndex > -1 && selectedIndex < itemsSize - 1) {
       selectedNew = this.get(items, selectedIndex + 1);
@@ -244,6 +238,11 @@ export default class SelectionDropdown extends Component {
     );
   };
 
+  /**
+   * @method renderOption
+   * @summary ToDo: Describe the method.
+   * @param {*} option
+   */
   renderOption = (option, idx) => {
     const { selected } = this.props;
     const { key, caption, description } = option;
@@ -334,6 +333,4 @@ SelectionDropdown.propTypes = {
   onChange: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   onCancel: PropTypes.func,
-  onMount: PropTypes.func,
-  onUnmount: PropTypes.func,
 };

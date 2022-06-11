@@ -24,7 +24,6 @@ package de.metas.pricing;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -38,6 +37,11 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -181,8 +185,4 @@ public interface IPricingResult
 	IPricingResult setLoggableMessages(ImmutableList<String> singleMessages);
 
 	ImmutableList<String> getLoggableMessages();
-
-	void setPackingMaterialId(HUPIItemProductId packingMaterialId);
-
-	HUPIItemProductId getPackingMaterialId();
 }

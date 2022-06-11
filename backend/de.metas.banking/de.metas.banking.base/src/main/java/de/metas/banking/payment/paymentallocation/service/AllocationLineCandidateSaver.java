@@ -142,8 +142,7 @@ final class AllocationLineCandidateSaver
 		return createAndComplete(allocationBuilder);
 	}
 
-	@Nullable
-	private PaymentAllocationId saveCandidate_InvoiceToInvoice(@NonNull final AllocationLineCandidate candidate)
+	private PaymentAllocationId saveCandidate_InvoiceToInvoice(AllocationLineCandidate candidate)
 	{
 		final Money payAmt = candidate.getAmounts().getPayAmt();
 		final Money discountAmt = candidate.getAmounts().getDiscountAmt();

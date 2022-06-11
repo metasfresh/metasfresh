@@ -3,8 +3,7 @@ package de.metas.ui.web.pattribute;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.pattribute.json.JSONASIDocument;
-import de.metas.ui.web.pattribute.json.JSONCompleteASIRequest;
+import de.metas.ui.web.pattribute.json.JSONASILayout;
 import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IView;
@@ -69,15 +68,12 @@ import java.util.function.Function;
  * #L%
  */
 
-/**
- * @implNote IMPORTANT: Keep the API endpoints/requests/responses in sync with {@link de.metas.ui.web.address.AddressRestController} because on frontend side they are handled by the same code.
- */
 @Api
 @RestController
-@RequestMapping(ASIRestController.ENDPOINT)
+@RequestMapping(value = ASIRestController.ENDPOINT)
 public class ASIRestController
 {
-	static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/pattribute";
+	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/pattribute";
 
 	private static final ReasonSupplier REASON_ProcessASIDocumentChanges = () -> "process ASI document changes";
 
@@ -112,16 +108,12 @@ public class ASIRestController
 	}
 
 	@PostMapping({ "", "/" })
-	public JSONASIDocument createASIDocument(@RequestBody final JSONCreateASIRequest request)
+	public JSONDocument createASIDocument(@RequestBody final JSONCreateASIRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WebuiASIEditingInfo info = createWebuiASIEditingInfo(request);
-		return Execution.callInNewExecution(
-				"createASI",
-				() -> asiRepo.createNewFrom(info)
-						.toJSONASIDocument(newJsonDocumentOpts(), newJsonDocumentLayoutOpts())
-		);
+		return Execution.callInNewExecution("createASI", () -> asiRepo.createNewFrom(info).toJSONDocument(newJsonDocumentOpts()));
 	}
 
 	private WebuiASIEditingInfo createWebuiASIEditingInfo(final JSONCreateASIRequest request)
@@ -184,13 +176,23 @@ public class ASIRestController
 		}
 	}
 
-	@GetMapping("/{asiDocId}")
-	public JSONASIDocument getASIDocument(@PathVariable("asiDocId") final String asiDocIdStr)
+	@GetMapping("/{asiDocId}/layout")
+	public JSONASILayout getLayout(@PathVariable("asiDocId") final String asiDocIdStr)
 	{
 		userSession.assertLoggedIn();
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
-		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.toJSONASIDocument(newJsonDocumentOpts(), newJsonDocumentLayoutOpts()));
+		final ASILayout asiLayout = forASIDocumentReadonly(asiDocId, ASIDocument::getLayout);
+		return JSONASILayout.of(asiLayout, newJsonDocumentLayoutOpts());
+	}
+
+	@GetMapping("/{asiDocId}")
+	public JSONDocument getASIDocument(@PathVariable("asiDocId") final String asiDocIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
+		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.toJSONDocument(newJsonDocumentOpts()));
 	}
 
 	private <R> R forASIDocumentReadonly(@NonNull final DocumentId asiDocId, @NonNull final Function<ASIDocument, R> processor)
@@ -270,31 +272,23 @@ public class ASIRestController
 	}
 
 	@PostMapping(value = "/{asiDocId}/complete")
-	public JSONLookupValue complete(
-			@PathVariable("asiDocId") final String asiDocIdStr,
-			@RequestBody final JSONCompleteASIRequest request)
+	public JSONLookupValue complete(@PathVariable("asiDocId") final String asiDocIdStr)
 	{
 		userSession.assertLoggedIn();
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 
-		return Execution.callInNewExecution("complete", () -> completeInTrx(asiDocId, request))
+		return Execution.callInNewExecution("complete", () -> complete(asiDocId))
 				.transform(this::toJSONLookupValue);
 	}
 
-	private LookupValue completeInTrx(final DocumentId asiDocId, final JSONCompleteASIRequest request)
+	private LookupValue complete(final DocumentId asiDocId)
 	{
 		return asiRepo.forASIDocumentWritable(
 				asiDocId,
 				NullDocumentChangesCollector.instance,
 				documentsCollection,
-				asiDoc -> {
-					final List<JSONDocumentChangedEvent> events = request.getEvents();
-					if (events != null && !events.isEmpty())
-					{
-						asiDoc.processValueChanges(events, REASON_ProcessASIDocumentChanges);
-					}
-					return asiDoc.complete();
-				});
+				ASIDocument::complete);
 	}
+
 }

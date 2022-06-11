@@ -171,11 +171,7 @@ class Image extends Component {
         },
         () => {
           // stop using camera
-          try {
-            stream.getVideoTracks()[0].stop();
-          } catch (error) {
-            console.error('Got error while stopping camera', error);
-          }
+          stream.getVideoTracks()[0].stop();
           resolve();
         }
       );
@@ -225,6 +221,12 @@ class Image extends Component {
     this.uploadBlob(this.imageInput.files[0]);
   }
 
+  /**
+   * @method handleKeyDown
+   * @summary ToDo: Describe the method
+   * @param {object} event
+   * @todo Write the documentation
+   */
   handleKeyDown = (e) => {
     switch (e.key) {
       case 'Escape':

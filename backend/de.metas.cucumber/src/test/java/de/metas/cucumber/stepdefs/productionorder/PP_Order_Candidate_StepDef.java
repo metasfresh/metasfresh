@@ -24,13 +24,9 @@ package de.metas.cucumber.stepdefs.productionorder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
-import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
-import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -72,11 +68,11 @@ import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeS
 
 public class PP_Order_Candidate_StepDef
 {
-	private final M_Product_StepDefData productTable;
-	private final PP_Product_BOM_StepDefData productBOMTable;
-	private final PP_Product_Planning_StepDefData productPlanningTable;
-	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_PP_Product_BOM> productBOMTable;
+	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
+	private final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
 
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
 	private final PPOrderCandidateService ppOrderCandidateService;
@@ -85,11 +81,11 @@ public class PP_Order_Candidate_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public PP_Order_Candidate_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
-			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
+			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
+			@NonNull final StepDefData<I_PP_Order_Candidate> ppOrderCandidateTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
 	{
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
@@ -239,7 +235,8 @@ public class PP_Order_Candidate_StepDef
 			}
 		};
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderCandidateQueryExecutor);
+		final boolean candidateFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderCandidateQueryExecutor);
+		assertThat(candidateFound).isTrue();
 
 		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(orderCandidateRecordIdentifier);
 

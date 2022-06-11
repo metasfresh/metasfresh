@@ -159,7 +159,7 @@ public class SqlDocumentOrderByBuilder
 			final boolean ascending,
 			final boolean nullsLast)
 	{
-		if (orderBy.isNull())
+		if (orderBy.isNullExpression())
 		{
 			return IStringExpression.NULL;
 		}
@@ -167,11 +167,12 @@ public class SqlDocumentOrderByBuilder
 		final CompositeStringExpression.Builder sql = IStringExpression.composer();
 		if (useColumnNameAlias)
 		{
-			sql.append(orderBy.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias).toSqlUsingColumnNameAlias());
+			sql.append(orderBy.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias).toSqlStringUsingColumnAlias());
 		}
 		else
 		{
-			sql.append("(").append(orderBy.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias).toSourceSqlExpression()).append(")");
+			sql.append("(").append(orderBy.withJoinOnTableNameOrAlias(joinOnTableNameOrAlias).toStringExpression()).append(")");
+
 		}
 
 		return sql.append(ascending ? " ASC" : " DESC")

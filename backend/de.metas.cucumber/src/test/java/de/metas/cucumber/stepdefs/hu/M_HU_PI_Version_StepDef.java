@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.util.Services;
@@ -50,12 +51,12 @@ public class M_HU_PI_Version_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final M_HU_PI_StepDefData huPiTable;
-	private final M_HU_PI_Version_StepDefData huPiVersionTable;
+	private final StepDefData<I_M_HU_PI> huPiTable;
+	private final StepDefData<I_M_HU_PI_Version> huPiVersionTable;
 
 	public M_HU_PI_Version_StepDef(
-			@NonNull final M_HU_PI_StepDefData huPiTable,
-			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable)
+			@NonNull final StepDefData<I_M_HU_PI> huPiTable,
+			@NonNull final StepDefData<I_M_HU_PI_Version> huPiVersionTable)
 	{
 		this.huPiTable = huPiTable;
 		this.huPiVersionTable = huPiVersionTable;
@@ -78,11 +79,12 @@ public class M_HU_PI_Version_StepDef
 
 			final I_M_HU_PI_Version existingPiVersion = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_ID, huPi.getM_HU_PI_ID())
-					.addStringLikeFilter(COLUMNNAME_Name, name, true)
+					.addEqualsFilter(COLUMNNAME_Name, name)
 					.addEqualsFilter(COLUMNNAME_HU_UnitType, huUnitType)
+					.addEqualsFilter(COLUMNNAME_IsCurrent, isCurrent)
 					.addEqualsFilter(COLUMNNAME_IsActive, active)
 					.create()
-					.firstOnly(I_M_HU_PI_Version.class);
+					.firstOnlyOrNull(I_M_HU_PI_Version.class);
 
 			final I_M_HU_PI_Version piVersion = CoalesceUtil.coalesceSuppliers(() -> existingPiVersion,
 																			   () -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class));

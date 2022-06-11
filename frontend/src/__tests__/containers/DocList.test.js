@@ -3,19 +3,18 @@ import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
 import nock from 'nock';
 import { Provider } from 'react-redux';
-import { applyMiddleware, combineReducers, createStore } from 'redux';
+import { applyMiddleware, createStore, combineReducers } from 'redux';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import waitForExpect from 'wait-for-expect';
 import { waitFor } from '@testing-library/dom';
 import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
+import promiseMiddleware from 'redux-promise';
 import http from 'http';
 import StompServer from 'stomp-broker-js';
 
-import {
-  ShortcutProvider
-} from '../../components/keyshortcuts/ShortcutProvider';
+import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
 import { ProvideAuth } from '../../hooks/useAuth';
 import { Routes } from '../../routes';
 import { serverTestPort } from '../../../test_setup/jestSetup';
@@ -38,9 +37,10 @@ import listHandler, {
 import viewHandler, {
   initialState as viewHandlerState,
 } from '../../reducers/viewHandler';
-import tables from '../../reducers/tables';
-import filters, {
+import tables, {
   initialState as tablesHandlerState,
+} from '../../reducers/tables';
+import filters, {
   initialState as filtersHandlerState,
 } from '../../reducers/tables';
 import actionsHandler, {
@@ -52,15 +52,13 @@ import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../test_setup/fixtures/keymap.json';
 import propsFixtures from '../../../test_setup/fixtures/doclist.json';
 import dataFixtures from '../../../test_setup/fixtures/grid/doclist_data.json';
-import layoutFixtures
-  from '../../../test_setup/fixtures/grid/doclist_layout.json';
-import rowFixtures
-  from '../../../test_setup/fixtures/grid/doclist_row_data.json';
+import layoutFixtures from '../../../test_setup/fixtures/grid/doclist_layout.json';
+import rowFixtures from '../../../test_setup/fixtures/grid/doclist_row_data.json';
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
-import quickActionsData
-  from '../../../test_setup/fixtures/grid/doclist_quickactions.json';
-import attributesData from '../../../test_setup/fixtures/huAttributes.json';
+import quickActionsData from '../../../test_setup/fixtures/grid/doclist_quickactions.json';
+import attributesData from '../../../test_setup/fixtures/attributes.json';
+
 
 jest.mock(`../../components/app/QuickActions`);
 
@@ -87,7 +85,7 @@ const rootReducer = combineReducers({
 });
 
 const createInitialState = function(state = {}) {
-  return merge(
+  const res = merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: { ...windowHandlerState },
@@ -101,6 +99,8 @@ const createInitialState = function(state = {}) {
     },
     state
   );
+
+  return res;
 };
 
 describe.skip('DocList', () => {
@@ -108,6 +108,7 @@ describe.skip('DocList', () => {
 
   let mockServer;
   let server;
+  let history;
 
   beforeAll(() => {
     server = http.createServer();

@@ -85,7 +85,10 @@ public class AllocatePayment extends de.metas.process.JavaProcess
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(getCtx(), p_C_Invoice_ID, I_C_Invoice.class, get_TrxName());
 		Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
 
-		return MSG_OK;
+		final boolean ignoreProcessed = false;
+		Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
+
+		return "OK";
 	}
 
 }

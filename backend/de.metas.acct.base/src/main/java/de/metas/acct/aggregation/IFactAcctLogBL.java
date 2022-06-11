@@ -2,7 +2,6 @@ package de.metas.acct.aggregation;
 
 import java.util.Properties;
 
-import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.IQuery;
 
 import de.metas.acct.model.I_Fact_Acct_Log;
@@ -38,11 +37,12 @@ import de.metas.util.ISingletonService;
  */
 public interface IFactAcctLogBL extends ISingletonService
 {
+	boolean hasLogsToProcess();
 
 	/**
 	 * Process all pending {@link I_Fact_Acct_Log}s.
 	 * 
 	 * @param limit maximum amount of logs to process or {@link IQuery#NO_LIMIT}.
 	 */
-	FactAcctLogProcessResult processAll(Properties ctx, QueryLimit limit);
+	void processAll(Properties ctx, int limit);
 }

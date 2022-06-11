@@ -70,7 +70,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -238,13 +237,11 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		//
 		// View field: BestBeforeDate
 		{
-			final ColumnSql sqlBestBeforeDate = ColumnSql.ofSql(
-					HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID),
-					sqlViewBinding.getTableAlias());
-
+			final String sqlBestBeforeDate = HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID);
 			sqlViewBinding.field(SqlViewRowFieldBinding.builder()
 					.fieldName(HUEditorRow.FIELDNAME_BestBeforeDate)
 					.widgetType(DocumentFieldWidgetType.LocalDate)
+					// .columnSql(sqlBestBeforeDate)
 					.sqlSelectValue(SqlSelectValue.builder()
 							.virtualColumnSql(sqlBestBeforeDate)
 							.columnNameAlias(HUEditorRow.FIELDNAME_BestBeforeDate)

@@ -35,7 +35,6 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
@@ -81,13 +80,13 @@ public class UpsertPricingAPI_StefDef
 	private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper()
 			.registerModule(new JavaTimeModule());
 
-	private final M_PriceList_StepDefData priceListTable;
-	private final M_Product_StepDefData productTable;
+	private final StepDefData<I_M_PriceList> priceListTable;
+	private final StepDefData<I_M_Product> productTable;
 
 	public UpsertPricingAPI_StefDef(
 			@NonNull final TestContext testContext,
-			@NonNull final M_PriceList_StepDefData priceListTable,
-			@NonNull final M_Product_StepDefData productTable)
+			@NonNull final StepDefData<I_M_PriceList> priceListTable,
+			@NonNull final StepDefData<I_M_Product> productTable)
 	{
 		this.testContext = testContext;
 		this.priceListTable = priceListTable;

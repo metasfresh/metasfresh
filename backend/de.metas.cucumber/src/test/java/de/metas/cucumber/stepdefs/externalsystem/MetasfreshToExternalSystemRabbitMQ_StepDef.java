@@ -35,10 +35,8 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.EmptyUtil;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
@@ -73,14 +71,14 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	private final static Logger logger = LogManager.getLogger(MetasfreshToExternalSystemRabbitMQ_StepDef.class);
 
 	private final ConnectionFactory metasfreshToRabbitMQFactory;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final M_HU_StepDefData huTable;
-	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final StepDefData<I_M_HU> huTable;
+	private final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable;
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable)
+			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
+			@NonNull final StepDefData<I_M_HU> huTable,
+			@NonNull final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.huTable = huTable;

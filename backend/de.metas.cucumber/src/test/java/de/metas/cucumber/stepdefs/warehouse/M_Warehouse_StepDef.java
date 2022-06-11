@@ -42,9 +42,9 @@ public class M_Warehouse_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final M_Warehouse_StepDefData warehouseTable;
+	private final StepDefData<I_M_Warehouse> warehouseTable;
 
-	public M_Warehouse_StepDef(@NonNull final M_Warehouse_StepDefData warehouseTable)
+	public M_Warehouse_StepDef(@NonNull final StepDefData<I_M_Warehouse> warehouseTable)
 	{
 		this.warehouseTable = warehouseTable;
 	}

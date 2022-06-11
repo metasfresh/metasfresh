@@ -19,11 +19,12 @@ public interface IAllocationBL extends ISingletonService
 	 *
 	 * @param invoice the invoice to allocate against.
 	 * @return the created an completed allocation or <code>null</code>, if the invoice is already fully paid, or is a PO-invoice, or is a credit memo.
-	 * task 04193
+	 * @task 04193
 	 */
 	I_C_AllocationHdr autoAllocateAvailablePayments(I_C_Invoice invoice);
 
 	/**
+	 *
 	 * This method creates an allocation between the given invoice and incoming payment that belong to the same C_BPartner, have the {@link I_C_Payment#isAutoAllocateAvailableAmt()} flag set and is
 	 * not yet fully allocated.
 	 *
@@ -31,7 +32,8 @@ public interface IAllocationBL extends ISingletonService
 	 * @param payment to allocate
 	 * @param ignoreIsAutoAllocateAvailableAmt if <code>false</code> then we only create the allocation if the payment has {@link I_C_Payment#COLUMN_IsAutoAllocateAvailableAmt} <code>='Y'</code>.
 	 * @return the created an completed allocation or <code>null</code>, if the invoice is already fully paid, or is a PO-invoice, or is a credit memo or payment and invoice are not matching
-	 * task 07783
+	 * @task 07783
+	 * @return
 	 */
 	I_C_AllocationHdr autoAllocateSpecificPayment(org.compiere.model.I_C_Invoice invoice,
 			I_C_Payment payment,

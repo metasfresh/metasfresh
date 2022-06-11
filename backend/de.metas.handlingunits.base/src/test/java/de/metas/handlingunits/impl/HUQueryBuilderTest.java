@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -95,7 +94,7 @@ public class HUQueryBuilderTest
 				createHU("otherLocator-product", otherLocator, product),
 				createHU("otherLocator-otherProduct", otherLocator, otherProduct));
 
-		huQueryBuilder = new HUQueryBuilder(new HUReservationRepository(), new AgeAttributesService());
+		huQueryBuilder = new HUQueryBuilder(new HUReservationRepository());
 	}
 
 	private static I_M_HU createHU(

@@ -23,7 +23,6 @@
 package de.metas.banking.payment.paymentallocation;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.ClientAndOrgId;
@@ -39,6 +38,7 @@ import java.time.LocalDate;
 
 @Value
 public class PaymentAllocationPayableItem
+
 {
 	Amount openAmt;
 	Amount payAmt;
@@ -46,24 +46,16 @@ public class PaymentAllocationPayableItem
 	Amount serviceFeeAmt;
 	ClientAndOrgId clientAndOrgId;
 	Instant paymentDate;
-
-	/**
-	 * Payment-BPartner
-	 */
+	
+	/** Payment-BPartner */
 	BPartnerId bPartnerId;
-
+	
 	InvoiceId invoiceId;
 	BPartnerId invoiceBPartnerId;
 	
-	boolean invoiceIsCreditMemo;
-	
 	String documentNo;
-	LocalDate dateInvoiced;
-
-	/**
-	 * This property is not about the invoice, but basically about the payment.
-	 */
 	boolean isSOTrx;
+	LocalDate dateInvoiced;
 
 	@Builder
 	private PaymentAllocationPayableItem(
@@ -77,7 +69,6 @@ public class PaymentAllocationPayableItem
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final BPartnerId invoiceBPartnerId,
-			final boolean invoiceIsCreditMemo, 
 			@NonNull final String documentNo,
 			final boolean isSOTrx,
 			@NonNull final LocalDate dateInvoiced)
@@ -86,9 +77,8 @@ public class PaymentAllocationPayableItem
 		this.payAmt = payAmt;
 		this.discountAmt = discountAmt;
 		this.serviceFeeAmt = serviceFeeAmt;
-		this.invoiceIsCreditMemo = invoiceIsCreditMemo;
 		this.clientAndOrgId = ClientAndOrgId.ofClientAndOrg(clientId, orgId);
-		this.paymentDate = CoalesceUtil.coalesce(paymentDate, Instant::now);
+		this.paymentDate = paymentDate == null ? Instant.now() : paymentDate;
 		this.bPartnerId = bPartnerId;
 		this.invoiceId = invoiceId;
 		this.invoiceBPartnerId = invoiceBPartnerId;

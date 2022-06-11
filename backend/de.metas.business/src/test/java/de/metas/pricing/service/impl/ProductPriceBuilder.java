@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 
-import de.metas.pricing.service.ScalePriceUsage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
@@ -68,8 +67,6 @@ public class ProductPriceBuilder
 
 		final int nextMatchSeqNo = Services.get(IPriceListDAO.class).retrieveNextMatchSeqNo(pp);
 		pp.setMatchSeqNo(nextMatchSeqNo);
-
-		pp.setUseScalePrice(ScalePriceUsage.DONT_USE_SCALE_PRICE.getCode());
 
 		saveRecord(pp);
 		return pp;

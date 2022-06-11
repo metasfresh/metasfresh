@@ -68,7 +68,6 @@ public class HUReservationDocumentFilterService
 		return huReservationService.prepareHUQuery()
 				.warehouseId(salesOrderLine.getWarehouseId())
 				.productId(salesOrderLine.getProductId())
-				.bpartnerId(salesOrderLine.getBPartnerId())
 				.asiId(salesOrderLine.getAsiId())
 				.reservedToDocumentOrNotReservedAtAll(reservationDocRef)
 				.build();
@@ -89,7 +88,6 @@ public class HUReservationDocumentFilterService
 		return huReservationService.prepareHUQuery()
 				.warehouseId(packageable.getWarehouseId())
 				.productId(packageable.getProductId())
-				.bpartnerId(packageable.getCustomerId())
 				.asiId(null) // ignore attributes
 				.reservedToDocumentOrNotReservedAtAll(reservationDocRef)
 				.build();

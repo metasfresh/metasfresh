@@ -23,7 +23,6 @@ import {
 } from '../actions/TableActions';
 
 import MasterWindow from '../components/app/MasterWindow';
-import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 
 /**
  * @file Class based component.
@@ -188,8 +187,7 @@ class MasterWindowContainer extends PureComponent {
     });
 
     const tabLayout = getTab(master.layout, activeTabId);
-    const orderBysArray = tabLayout ? tabLayout.orderBy : null;
-    const orderBy = toOrderBysCommaSeparatedString(orderBysArray);
+    const orderBy = tabLayout ? tabLayout.orderBy : null;
 
     updateTabLayout(windowId, activeTabId)
       .then(() => {

@@ -22,20 +22,10 @@
 
 package de.metas.cucumber.stepdefs.productionorder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.JsonObjectMapperHolder;
-import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
-import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
-import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
@@ -69,22 +59,15 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_ComponentType;
-import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_QtyBatch;
+import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Order_StepDef
@@ -95,24 +78,24 @@ public class PP_Order_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
-	private final M_Product_StepDefData productTable;
-	private final PP_Product_BOM_StepDefData productBOMTable;
-	private final PP_Product_Planning_StepDefData productPlanningTable;
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final PP_Order_StepDefData ppOrderTable;
-	private final S_Resource_StepDefData resourceTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
+	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_PP_Product_BOM> productBOMTable;
+	private final StepDefData<I_PP_Product_Planning> productPlanningTable;
+	private final StepDefData<I_C_BPartner> bPartnerTable;
+	private final StepDefData<I_PP_Order> ppOrderTable;
+	private final StepDefData<I_S_Resource> resourceTable;
+	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final StepDefData<I_PP_Order_BOMLine> ppOrderBomLineTable;
 
 	public PP_Order_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
-			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final PP_Order_StepDefData ppOrderTable,
-			@NonNull final S_Resource_StepDefData resourceTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable)
+			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<I_PP_Product_BOM> productBOMTable,
+			@NonNull final StepDefData<I_PP_Product_Planning> productPlanningTable,
+			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
+			@NonNull final StepDefData<I_PP_Order> ppOrderTable,
+			@NonNull final StepDefData<I_S_Resource> resourceTable,
+			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable,
+			@NonNull final StepDefData<I_PP_Order_BOMLine> ppOrderBomLineTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -253,7 +236,8 @@ public class PP_Order_StepDef
 			return true;
 		};
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
+		final boolean bomLineFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
+		assertThat(bomLineFound).isTrue();
 
 		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBomLineTable.get(ppOrderBOMLineIdentifier);
 		assertThat(ppOrderBOMLine).isNotNull();
@@ -326,7 +310,8 @@ public class PP_Order_StepDef
 			}
 		};
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
+		final boolean orderFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
+		assertThat(orderFound).isTrue();
 
 		final I_PP_Order ppOrder = ppOrderTable.get(orderRecordIdentifier);
 		assertThat(ppOrder).isNotNull();

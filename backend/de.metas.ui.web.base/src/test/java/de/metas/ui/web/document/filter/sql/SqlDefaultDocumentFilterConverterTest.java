@@ -1,7 +1,6 @@
 package de.metas.ui.web.document.filter.sql;
 
 import de.metas.ui.web.view.descriptor.SqlAndParams;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -45,14 +44,14 @@ public class SqlDefaultDocumentFilterConverterTest
 			Mockito.doReturn("MasterTableName").when(entityBinding).getTableName();
 
 			final SqlDefaultDocumentFilterConverter converter = SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
-			final SqlSelectValue sqlSelectValue = SqlSelectValue.builder()
+			final SqlSelectValue columnSql = SqlSelectValue.builder()
 					.columnNameAlias("columnAlias")
-					.virtualColumnSql(ColumnSql.ofSql("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla", "MasterTableName"))
+					.virtualColumnSql("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla")
 					.build();
 
 			final SqlOptions sqlOpts = SqlOptions.usingTableAlias("master");
 
-			assertThat(converter.replaceTableNameWithTableAliasIfNeeded(sqlSelectValue, sqlOpts).toSqlString())
+			assertThat(converter.replaceTableNameWithTableAliasIfNeeded(columnSql, sqlOpts).toSqlString())
 					.isEqualTo("(SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=master.bla)");
 		}
 
@@ -65,7 +64,7 @@ public class SqlDefaultDocumentFilterConverterTest
 			final SqlDefaultDocumentFilterConverter converter = SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
 			final SqlSelectValue columnSql = SqlSelectValue.builder()
 					.columnNameAlias("columnAlias")
-					.virtualColumnSql(ColumnSql.ofSql("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla", "MasterTableName"))
+					.virtualColumnSql("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla")
 					.build();
 
 			final SqlOptions sqlOpts = SqlOptions.usingTableName("should_be_MasterTableName_but_DoesNotMatter");

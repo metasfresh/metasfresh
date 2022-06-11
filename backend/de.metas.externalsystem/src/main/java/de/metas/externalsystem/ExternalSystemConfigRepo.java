@@ -30,12 +30,9 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
-import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
-import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
@@ -104,8 +101,6 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemWooCommerceConfigId.cast(id));
 			case GRSSignum:
 				return getById(ExternalSystemGRSSignumConfigId.cast(id));
-			case LeichUndMehl:
-				return getById(ExternalSystemLeichMehlConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -131,9 +126,6 @@ public class ExternalSystemConfigRepo
 			case RabbitMQ:
 				return getRabbitMQConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
-			case LeichUndMehl:
-				return getLeichMehlConfigByValue(value)
-						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -158,8 +150,6 @@ public class ExternalSystemConfigRepo
 				return getWooCommerceConfigByParentId(id);
 			case GRSSignum:
 				return getGRSSignumConfigByParentId(id);
-			case LeichUndMehl:
-				return getLeichMehlConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -194,9 +184,6 @@ public class ExternalSystemConfigRepo
 				break;
 			case GRSSignum:
 				result = getAllByTypeGRS();
-				break;
-			case LeichUndMehl:
-				result = getAllByTypeLeichMehl();
 				break;
 			case Shopware6:
 			case Other:
@@ -758,71 +745,6 @@ public class ExternalSystemConfigRepo
 				.externalSystemShopware6ConfigId(ExternalSystemShopware6ConfigId.ofRepoId(record.getExternalSystem_Config_Shopware6_ID()))
 				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.shopwareCode(record.getShopwareCode())
-				.build();
-	}
-
-	@NonNull
-	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemLeichMehlConfigId id)
-	{
-		final I_ExternalSystem_Config_LeichMehl config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_LeichMehl.class);
-
-		return getExternalSystemParentConfig(config);
-	}
-
-	@NonNull
-	private Optional<I_ExternalSystem_Config_LeichMehl> getLeichMehlConfigByValue(@NonNull final String value)
-	{
-		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystemValue, value)
-				.create()
-				.firstOnlyOptional(I_ExternalSystem_Config_LeichMehl.class);
-	}
-
-	@NonNull
-	private Optional<IExternalSystemChildConfig> getLeichMehlConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
-	{
-		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
-				.create()
-				.firstOnlyOptional(I_ExternalSystem_Config_LeichMehl.class)
-				.map(this::buildExternalSystemLeichMehlConfig);
-	}
-
-	@NonNull
-	private ImmutableList<ExternalSystemParentConfig> getAllByTypeLeichMehl()
-	{
-		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.map(this::getExternalSystemParentConfig)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_LeichMehl config)
-	{
-		final ExternalSystemLeichMehlConfig child = buildExternalSystemLeichMehlConfig(config);
-
-		return getById(child.getParentId())
-				.childConfig(child)
-				.build();
-	}
-
-	@NonNull
-	private ExternalSystemLeichMehlConfig buildExternalSystemLeichMehlConfig(@NonNull final I_ExternalSystem_Config_LeichMehl config)
-	{
-		return ExternalSystemLeichMehlConfig.builder()
-				.id(ExternalSystemLeichMehlConfigId.ofRepoId(config.getExternalSystem_Config_LeichMehl_ID()))
-				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
-				.value(config.getExternalSystemValue())
-				.ftpHost(config.getFTP_Hostname())
-				.ftpPort(config.getFTP_Port())
-				.ftpUsername(config.getFTP_Username())
-				.ftpPassword(config.getFTP_Password())
-				.ftpDirectory(config.getFTP_Directory())
 				.build();
 	}
 }

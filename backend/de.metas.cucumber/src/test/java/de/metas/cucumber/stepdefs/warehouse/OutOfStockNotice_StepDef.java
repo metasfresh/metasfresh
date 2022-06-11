@@ -29,7 +29,6 @@ import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -53,10 +52,10 @@ public class OutOfStockNotice_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final TestContext testContext;
-	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
 
 	public OutOfStockNotice_StepDef(@NonNull final TestContext testContext,
-			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
+			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
 	{
 		this.testContext = testContext;
 		this.shipmentScheduleTable = shipmentScheduleTable;

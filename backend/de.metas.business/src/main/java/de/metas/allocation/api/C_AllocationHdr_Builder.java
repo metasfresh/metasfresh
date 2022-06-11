@@ -49,8 +49,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 
-import javax.annotation.Nullable;
-
 /**
  * Convenient way to create (and maybe complete) and {@link I_C_AllocationHdr} with {@link I_C_AllocationLine}s.
  */
@@ -80,7 +78,6 @@ public class C_AllocationHdr_Builder
 		this.allocHdr = InterfaceWrapperHelper.newInstance(I_C_AllocationHdr.class);
 	}
 
-	@Nullable
 	public I_C_AllocationHdr create(final boolean complete)
 	{
 		markAsBuilt();
@@ -137,13 +134,13 @@ public class C_AllocationHdr_Builder
 		return create(complete);
 	}
 
-	private void markAsBuilt()
+	private final void markAsBuilt()
 	{
 		assertNotBuilt();
 		_built = true;
 	}
 
-	private void assertNotBuilt()
+	private final void assertNotBuilt()
 	{
 		Check.assume(!_built, "Not already built");
 	}

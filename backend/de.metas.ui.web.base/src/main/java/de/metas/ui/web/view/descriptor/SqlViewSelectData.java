@@ -11,7 +11,6 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectDisplayValue;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.util.Check;
@@ -259,7 +258,7 @@ public class SqlViewSelectData
 				if (sqlSelectValueAgg == null)
 				{
 					sqlSelectValueAgg = SqlSelectValue.builder()
-							.virtualColumnSql(ColumnSql.SQL_NULL)
+							.virtualColumnSql("NULL")
 							.columnNameAlias(field.getColumnName())
 							.build();
 				}

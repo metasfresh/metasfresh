@@ -16,10 +16,12 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.common.util.time.SystemTime;
-
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
+
+import de.metas.common.util.time.SystemTime;
+import org.compiere.util.DisplayType;
 
 /**
  * Price List Version Model
@@ -49,6 +51,14 @@ public class MPriceListVersion extends X_M_PriceList_Version
 		{
 			setValidFrom(SystemTime.asDayTimestamp());
 		}
+
+		if (getName() == null)
+		{
+			final SimpleDateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
+			final String name = dateFormat.format(getValidFrom());
+			setName(name);
+		}
+
 		return true;
 	}
 

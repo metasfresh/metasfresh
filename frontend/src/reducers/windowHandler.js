@@ -158,7 +158,6 @@ export const initialState = {
  * @summary getter for master data
  *
  * @param {object} state - redux state
- * @param {boolean} isModal
  */
 export const getData = (state, isModal = false) => {
   const selector = isModal ? 'modal' : 'master';
@@ -244,6 +243,13 @@ export const getElementWidgetData = createCachedSelector(
   (data, layout) => selectWidgetData(data, layout)
 )((_state_, isModal, layoutPath) => layoutPath);
 
+/**
+ * @method getInlineTabWidgetFields
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
 export const getInlineTabWidgetFields = ({ state, inlineTabId }) => {
   const data = state.windowHandler.inlineTab[`${inlineTabId}`].data;
 

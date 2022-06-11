@@ -36,7 +36,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
@@ -98,7 +97,6 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	private final PaymentAllocationService paymentAllocationService = SpringContextHolder.instance.getBean(PaymentAllocationService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -107,7 +105,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(null);
+		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 		if (processFilter == null)
 		{
 			throw new AdempiereException("@NoSelection@");
@@ -251,12 +249,14 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		final BPartnerBankAccountId bPartnerBankAccountId = remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerBankAccountId()
 				: remittanceAdvice.getDestinationBPartnerBankAccountId();
 
+		final Optional<BigDecimal> serviceFeeAmount = Optional.ofNullable(remittanceAdvice.getServiceFeeAmount());
+
 		return paymentBuilder
 				.adOrgId(remittanceAdvice.getOrgId())
 				.bpartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
 				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
-				.payAmt(remittanceAdvice.getRemittedAmountSum())
+				.payAmt(remittanceAdvice.getRemittedAmountSum().add(serviceFeeAmount.orElse(BigDecimal.ZERO)))
 				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.dateTrx(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.tenderType(TenderType.DirectDeposit)
@@ -300,7 +300,6 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.serviceFeeAmt(serviceFeeInREMADVCurrency)
 				.discountAmt(paymentDiscountAmt)
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-				.invoiceIsCreditMemo(invoiceBL.isCreditMemo(invoice))
 				.invoiceBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.orgId(remittanceAdvice.getOrgId())
 				.clientId(remittanceAdvice.getClientId())

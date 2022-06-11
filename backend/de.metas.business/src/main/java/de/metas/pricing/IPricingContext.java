@@ -22,6 +22,15 @@ package de.metas.pricing;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
+
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_M_PriceList_Version;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -29,17 +38,8 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.OptionalBoolean;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_M_PriceList_Version;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Properties;
 
 public interface IPricingContext extends IContextAware
 {
@@ -123,6 +123,4 @@ public interface IPricingContext extends IContextAware
 	boolean isFailIfNotCalculated();
 
 	boolean isSkipCheckingPriceListSOTrxFlag();
-
-	Quantity getQuantity();
 }

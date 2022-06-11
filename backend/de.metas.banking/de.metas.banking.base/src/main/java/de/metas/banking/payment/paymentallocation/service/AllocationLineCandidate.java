@@ -24,7 +24,7 @@ import lombok.Value;
  *
  */
 @Value
-public class AllocationLineCandidate
+public final class AllocationLineCandidate
 {
 	public enum AllocationLineCandidateType
 	{
@@ -36,23 +36,23 @@ public class AllocationLineCandidate
 		InboundPaymentToOutboundPayment, //
 	}
 
-	AllocationLineCandidateType type;
-	OrgId orgId;
-	BPartnerId bpartnerId;
+	private final AllocationLineCandidateType type;
+	private final OrgId orgId;
+	private final BPartnerId bpartnerId;
 
-	TableRecordReference payableDocumentRef;
-	TableRecordReference paymentDocumentRef;
+	private final TableRecordReference payableDocumentRef;
+	private final TableRecordReference paymentDocumentRef;
 
-	LocalDate dateTrx;
-	LocalDate dateAcct;
+	private final LocalDate dateTrx;
+	private final LocalDate dateAcct;
 
 	//
 	// Amounts
-	CurrencyId currencyId;
-	AllocationAmounts amounts;
-	Money payableOverUnderAmt;
-	Money paymentOverUnderAmt;
-	InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+	private final CurrencyId currencyId;
+	private final AllocationAmounts amounts;
+	private final Money payableOverUnderAmt;
+	private final Money paymentOverUnderAmt;
+	private final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
 	@Builder(toBuilder = true)
 	private AllocationLineCandidate(

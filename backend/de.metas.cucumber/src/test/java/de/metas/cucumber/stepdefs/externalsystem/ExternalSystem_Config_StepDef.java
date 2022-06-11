@@ -71,12 +71,12 @@ public class ExternalSystem_Config_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
-	private final ExternalSystem_Config_StepDefData configTable;
+	private final StepDefData<I_ExternalSystem_Config> configTable;
 
 	private final TestContext testContext;
 
 	public ExternalSystem_Config_StepDef(
-			@NonNull final ExternalSystem_Config_StepDefData configTable,
+			@NonNull final StepDefData<I_ExternalSystem_Config> configTable,
 			final TestContext testContext)
 	{
 		this.configTable = configTable;

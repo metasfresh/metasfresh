@@ -1,11 +1,11 @@
 package de.metas.bpartner.product.callout;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -42,8 +42,5 @@ public class C_BPartner_Product
 		}
 		final I_M_Product productRecord = loadOutOfTrx(bpartnerProduct.getM_Product_ID(), I_M_Product.class);
 		bpartnerProduct.setAD_Org_ID(productRecord.getAD_Org_ID());
-
-		bpartnerProduct.setPicking_AgeTolerance_BeforeMonths(productRecord.getPicking_AgeTolerance_BeforeMonths());
-		bpartnerProduct.setPicking_AgeTolerance_AfterMonths(productRecord.getPicking_AgeTolerance_AfterMonths());
 	}
 }

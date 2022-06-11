@@ -113,12 +113,12 @@ public class API_Request_Audit_StepDef
 										   .build());
 	}
 
-	private boolean isApiAuditRequestFound(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String[] allowedStatuses)
+	private boolean isApiAuditRequestFound(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String requestStatus)
 	{
 		return queryBL
 				.createQueryBuilder(I_API_Request_Audit.class)
 				.addEqualsFilter(I_API_Request_Audit.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())
-				.addInArrayFilter(I_API_Request_Audit.COLUMNNAME_Status, allowedStatuses)
+				.addEqualsFilter(I_API_Request_Audit.COLUMNNAME_Status, requestStatus)
 				.create()
 				.firstOnlyOptional(I_API_Request_Audit.class)
 				.isPresent();
@@ -144,13 +144,11 @@ public class API_Request_Audit_StepDef
 		final String method = DataTableUtil.extractStringForColumnName(row, "Method");
 		final String path = DataTableUtil.extractStringForColumnName(row, "Path");
 		final String name = DataTableUtil.extractStringForColumnName(row, "AD_User.Name");
-		
-		final String statuses = DataTableUtil.extractStringForColumnName(row, "Status");
-		final String[] allowedStatuses = statuses.split(" *OR *");
-		
+		final String status = DataTableUtil.extractStringForColumnName(row, "Status");
+
 		if (timeoutSec != null)
 		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isApiAuditRequestFound(requestId, allowedStatuses));
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isApiAuditRequestFound(requestId, status));
 		}
 
 		final I_API_Request_Audit requestAuditRecord = InterfaceWrapperHelper.load(requestId.getValue(), I_API_Request_Audit.class);
@@ -158,7 +156,7 @@ public class API_Request_Audit_StepDef
 		assertThat(requestAuditRecord).isNotNull();
 		assertThat(requestAuditRecord.getPath()).contains(path);
 		assertThat(requestAuditRecord.getMethod()).contains(method);
-		assertThat(requestAuditRecord.getStatus()).isIn((Object[])allowedStatuses);
+		assertThat(requestAuditRecord.getStatus()).contains(status);
 
 		final I_AD_User adUserRecord = InterfaceWrapperHelper.load(requestAuditRecord.getAD_User_ID(), I_AD_User.class);
 

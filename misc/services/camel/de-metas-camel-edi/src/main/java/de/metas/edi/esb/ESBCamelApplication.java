@@ -22,9 +22,10 @@ package de.metas.edi.esb;
  * #L%
  */
 
-import com.ctc.wstx.stax.WstxInputFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.ctc.wstx.stax.WstxInputFactory;
 
 @SpringBootApplication
 public class ESBCamelApplication
@@ -33,7 +34,7 @@ public class ESBCamelApplication
 	/**
 	 * Main method to start this application.
 	 */
-	public static void main(final String[] args)
+	public static void main(String[] args)
 	{
 		// get http://camel.465427.n5.nabble.com/Seeing-Info-message-all-over-log-file-related-to-Woodstox-td5749044.html
 		System.setProperty("javax.xml.stream.XMLInputFactory", WstxInputFactory.class.getName());
