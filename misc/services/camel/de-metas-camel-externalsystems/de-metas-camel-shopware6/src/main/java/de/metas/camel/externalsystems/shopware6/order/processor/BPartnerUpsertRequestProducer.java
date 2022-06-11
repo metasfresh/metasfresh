@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderCustome
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderAddressDetails;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
+import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
@@ -109,6 +110,9 @@ public class BPartnerUpsertRequestProducer
 	@Nullable
 	JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping;
 
+	@Nullable
+	PriceListBasicInfo priceListBasicInfo;
+
 	/**
 	 * @param bPartnerLocationIdentifierCustomShopwarePath   if given, try to get a custom (permanent) shopware6-ID
 	 *                                                       from the shopware-address JSON. Fail if there is no such C_BPartner_Location_ID
@@ -127,7 +131,8 @@ public class BPartnerUpsertRequestProducer
 			@Nullable final String emailCustomPath,
 			@Nullable final ExternalIdentifier metasfreshId,
 			@NonNull final ExternalIdentifier userId,
-			@Nullable final JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping)
+			@Nullable final JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping,
+			@Nullable final PriceListBasicInfo priceListBasicInfo)
 	{
 		this.orgCode = orgCode;
 		this.shopwareClient = shopwareClient;
@@ -143,6 +148,7 @@ public class BPartnerUpsertRequestProducer
 		this.countryIdToISOCode = new HashMap<>();
 		this.resultBuilder = BPartnerRequestProducerResult.builder();
 		this.billingAddress = retrieveBillingAddress(billingAddressId);
+		this.priceListBasicInfo = priceListBasicInfo;
 	}
 
 	public BPartnerRequestProducerResult run()
@@ -180,6 +186,11 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestBPartner.setCompanyName(orderCustomer.getCompany());
 		jsonRequestBPartner.setCode(ExternalIdentifierFormat.formatExternalId(orderCustomer.getCustomerNumber()));
 		jsonRequestBPartner.setCustomer(true);
+
+		if (priceListBasicInfo != null)
+		{
+			jsonRequestBPartner.setPriceListId(priceListBasicInfo.getPriceListId());
+		}
 
 		if (matchingShopware6Mapping != null)
 		{

@@ -46,6 +46,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.IPurchaseCandidateBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -54,6 +55,7 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.RestApiUtilsV2;
+import de.metas.rest_api.v2.activity.ActivityService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.warehouse.WarehouseService;
@@ -100,19 +102,22 @@ public class CreatePurchaseCandidatesService
 	private final CurrencyRepository currencyRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final WarehouseService warehouseService;
+	private final ActivityService activityService;
 
 	public CreatePurchaseCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
-			@NonNull final WarehouseService warehouseService)
+			@NonNull final WarehouseService warehouseService,
+			@NonNull final ActivityService activityService)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.currencyRepository = currencyRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.warehouseService = warehouseService;
+		this.activityService = activityService;
 	}
 
 	public Optional<JsonPurchaseCandidate> createCandidate(@NonNull final JsonPurchaseCandidateCreateItem request)
@@ -158,6 +163,10 @@ public class CreatePurchaseCandidatesService
 
 		final Percent discountPercent = Percent.of(request.isManualDiscount() ? request.getDiscount() : BigDecimal.ZERO);
 
+		final ActivityId activityId = ExternalIdentifier.ofOptional(request.getActivityIdentifier())
+				.map(externalIdentifier -> activityService.resolveExternalIdentifier(orgId,externalIdentifier))
+				.orElse(null);
+
 		final PurchaseCandidate.PurchaseCandidateBuilder purchaseCandidateBuilder = PurchaseCandidate.builder()
 				.orgId(orgId)
 				.externalHeaderId(ExternalId.of(request.getExternalHeaderId()))
@@ -177,7 +186,9 @@ public class CreatePurchaseCandidatesService
 				.isManualPrice(manualPrice)
 				.prepared(request.isPrepared())
 				.attributeSetInstanceId(attributeSetInstanceId)
-				.source(PurchaseCandidateSource.Api);
+				.source(PurchaseCandidateSource.Api)
+				.productDescription(request.getProductDescription())
+				.activityId(activityId);
 
 		if (manualPrice)
 		{

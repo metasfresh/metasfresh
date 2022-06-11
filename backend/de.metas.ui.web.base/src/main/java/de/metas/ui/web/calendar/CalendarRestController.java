@@ -93,9 +93,10 @@ public class CalendarRestController
 
 		final UserId loggedUserId = userSession.getLoggedUserId();
 		final ZoneId timeZone = userSession.getTimeZone();
+		final String adLanguage = userSession.getAD_Language();
 
 		final ImmutableList<JsonCalendarEntry> jsonEntries = calendarService.query(toCalendarQuery(query, loggedUserId))
-				.map(entry -> JsonCalendarEntry.of(entry, timeZone))
+				.map(entry -> JsonCalendarEntry.of(entry, timeZone, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonCalendarEntriesQueryResponse.builder()
@@ -144,7 +145,7 @@ public class CalendarRestController
 						.build())
 				.build());
 
-		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone());
+		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
 	}
 
 	@PostMapping("/entries/{entryId}")
@@ -168,7 +169,7 @@ public class CalendarRestController
 						.build())
 				.build());
 
-		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone());
+		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
 	}
 
 	@DeleteMapping("/entries/{entryId}")

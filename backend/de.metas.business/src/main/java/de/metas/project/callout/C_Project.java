@@ -22,7 +22,7 @@
 
 package de.metas.project.callout;
 
-import de.metas.project.service.ProjectService;
+import de.metas.project.service.ProjectRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -36,12 +36,12 @@ import org.springframework.stereotype.Component;
 @Callout(I_C_Project.class)
 public class C_Project
 {
-	private final ProjectService projectService;
+	private final ProjectRepository projectRepository;
 
 	public C_Project(
-			@NonNull final ProjectService projectService)
+			@NonNull final ProjectRepository projectRepository)
 	{
-		this.projectService = projectService;
+		this.projectRepository = projectRepository;
 
 		// register ourselves
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -52,6 +52,6 @@ public class C_Project
 	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
 	public void onC_ProjectType_ID(@NonNull final I_C_Project projectRecord)
 	{
-		projectService.updateFromProjectType(projectRecord);
+		projectRepository.updateFromProjectType(projectRecord);
 	}
 }

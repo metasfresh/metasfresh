@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -77,7 +77,6 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleUpdater.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL.class, "spring component")
-			.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class, "spring component")
 			.skipServiceInterface(de.metas.notification.INotificationRepository.class, "spring component")
 			.skipServiceInterface(de.metas.ordercandidate.api.IOLCandBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRBPBankAccountBL.class, "spring component")

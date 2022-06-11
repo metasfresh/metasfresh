@@ -29,7 +29,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.resource.ResourceAssignmentId;
-import de.metas.resource.ResourceAssignmentRepository;
+import de.metas.resource.ResourceService;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -982,8 +982,8 @@ public class MOrderLine extends X_C_OrderLine
 		final ResourceAssignmentId resourceAssignmentId = ResourceAssignmentId.ofRepoIdOrNull(getS_ResourceAssignment_ID());
 		if (resourceAssignmentId != null)
 		{
-			final ResourceAssignmentRepository resourceAssignmentRepository = SpringContextHolder.instance.getBean(ResourceAssignmentRepository.class);
-			resourceAssignmentRepository.deleteById(resourceAssignmentId);
+			final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
+			resourceService.deleteResourceAssignment(resourceAssignmentId);
 		}
 
 		return updateHeaderTax();

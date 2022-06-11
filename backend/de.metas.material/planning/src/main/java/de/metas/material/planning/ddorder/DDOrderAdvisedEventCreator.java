@@ -6,7 +6,7 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -58,7 +58,7 @@ public class DDOrderAdvisedEventCreator
 
 	public List<DDOrderAdvisedEvent> createDDOrderAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			final IMutableMRPContext mrpContext)
+			final IMaterialPlanningContext mrpContext)
 	{
 		if(!ddOrderDemandMatcher.matches(mrpContext))
 		{

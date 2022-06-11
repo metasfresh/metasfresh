@@ -122,6 +122,7 @@ public class CalloutInOut extends CalloutEngine
 		{
 			inout.setEMail(order.getEMail());
 		}
+		inout.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 		// Warehouse (05251 begin: we need to use the advisor)
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);

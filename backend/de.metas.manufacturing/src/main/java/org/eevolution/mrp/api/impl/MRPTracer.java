@@ -22,28 +22,16 @@ package org.eevolution.mrp.api.impl;
  * #L%
  */
 
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPDAO;
 
-import de.metas.material.planning.IMRPSegment;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Helper class to help developer tracing shits while debugging.
@@ -60,100 +48,7 @@ public final class MRPTracer
 		super();
 	}
 
-	public static void dumpMRPRecords()
-	{
-		dumpMRPRecords("MRP records");
-	}
-
-	public static void dumpMRPRecords(final String message)
-	{
-		System.out.println(dumpMRPRecordsToString(message));
-	}
-
-	public static String dumpMRPRecordsToString(final String message)
-	{
-		// services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
-
-		final IContextAware contextProvider = new PlainContextAware(Env.getCtx());
-
-		// String writer
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		final PrintStream out = new PrintStream(baos);
-
-		final IQueryBuilder<I_PP_MRP> queryBuilder = queryBL
-				.createQueryBuilder(I_PP_MRP.class, contextProvider);
-
-		queryBuilder.orderBy()
-				.addColumn(I_PP_MRP.COLUMNNAME_M_Product_ID)
-				.addColumn(I_PP_MRP.COLUMNNAME_AD_Org_ID)
-				.addColumn(I_PP_MRP.COLUMNNAME_S_Resource_ID)
-				.addColumn(I_PP_MRP.COLUMNNAME_M_Warehouse_ID)
-				.addColumn(I_PP_MRP.COLUMNNAME_PP_MRP_ID);
-
-		out.println("");
-		out.println("=========[ " + message + " ]===========================================================================");
-		IMRPSegment mrpSegmentPrevious = null;
-		BigDecimal qtyDemand = BigDecimal.ZERO;
-		BigDecimal qtySupply = BigDecimal.ZERO;
-		int mrpCountPerSegment = 0;
-		final List<I_PP_MRP> mrpsAll = queryBuilder.create().list();
-		for (final I_PP_MRP mrp : mrpsAll)
-		{
-			final IMRPSegment mrpSegment = Services.get(IMRPBL.class).createMRPSegment(mrp);
-
-			// Check if segment changed
-			if (mrpSegmentPrevious != null && !mrpSegmentPrevious.equals(mrpSegment))
-			{
-				final BigDecimal qtyOnHand = mrpDAO.getQtyOnHand(contextProvider, mrpSegmentPrevious.getM_Warehouse(), mrpSegmentPrevious.getM_Product());
-				final BigDecimal qtyBalance = qtyDemand.subtract(qtySupply);
-				out.println("=> Totals: QtyDemand=" + qtyDemand + ", QtySupply=" + qtySupply + ", Balance=" + qtyBalance + ", QtyOnHand=" + qtyOnHand);
-
-				// reset
-				qtyDemand = BigDecimal.ZERO;
-				qtySupply = BigDecimal.ZERO;
-				mrpCountPerSegment = 0;
-			}
-
-			// Update Segment Aggregated values:
-			final String typeMRP = mrp.getTypeMRP();
-			final BigDecimal qty = mrp.getQty();
-			if (X_PP_MRP.TYPEMRP_Demand.equals(typeMRP))
-			{
-				qtyDemand = qtyDemand.add(qty);
-			}
-			else if (X_PP_MRP.TYPEMRP_Supply.equals(typeMRP))
-			{
-				qtySupply = qtySupply.add(qty);
-			}
-
-			final String mrpStr = toString(mrp);
-			out.println(mrpStr);
-
-			mrpSegmentPrevious = mrpSegment;
-			mrpCountPerSegment++;
-		}
-
-		// Totals for last segment
-		if (mrpCountPerSegment > 0)
-		{
-			final BigDecimal qtyOnHand = mrpDAO.getQtyOnHand(contextProvider, mrpSegmentPrevious.getM_Warehouse(), mrpSegmentPrevious.getM_Product());
-			final BigDecimal qtyBalance = qtyDemand.subtract(qtySupply);
-			out.println("=> Totals: QtyDemand=" + qtyDemand + ", QtySupply=" + qtySupply + ", Balance=" + qtyBalance + ", QtyOnHand=" + qtyOnHand);
-
-			// reset
-			qtyDemand = BigDecimal.ZERO;
-			qtySupply = BigDecimal.ZERO;
-			mrpCountPerSegment = 0;
-		}
-
-		out.println("======================================================================================================");
-
-		return baos.toString();
-	}
-
-	public static final String toString(final I_PP_MRP mrp)
+	public static String toString(final I_PP_MRP mrp)
 	{
 		final StringBuilder sb = new StringBuilder();
 
@@ -231,7 +126,7 @@ public final class MRPTracer
 		return sb.toString();
 	}
 
-	public static final String toString(final Collection<I_PP_MRP> mrps)
+	public static String toString(final Collection<I_PP_MRP> mrps)
 	{
 		if (mrps == null || mrps.isEmpty())
 		{

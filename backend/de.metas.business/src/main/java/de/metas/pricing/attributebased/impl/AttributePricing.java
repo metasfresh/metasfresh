@@ -51,7 +51,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class AttributePricing implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(AttributePricing.class);
-	
+
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
@@ -139,7 +139,7 @@ public class AttributePricing implements IPricingRule
 		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
 		if (productPriceSettings == null)
 		{
-			logger.trace("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
 			return;
 		}
 
@@ -224,7 +224,7 @@ public class AttributePricing implements IPricingRule
 	 *
 	 * @return product price attribute if exists and it's valid
 	 */
-	private static Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
+	private Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
 	{
 		if (productPriceId <= 0)
 		{
@@ -242,7 +242,7 @@ public class AttributePricing implements IPricingRule
 		// Make sure the product price attribute is still active.
 		if (!productPrice.isActive())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - Return empty because M_ProductPrice_ID={} is not active", productPriceId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - Return empty because M_ProductPrice_ID={} is not active: {}", productPriceId);
 			return Optional.empty();
 		}
 

@@ -22,23 +22,21 @@ public interface ITabCallout
 {
 	ITabCallout NULL = NullTabCallout.instance;
 
-	void onIgnore(ICalloutRecord calloutRecord);
+	default void onIgnore(final ICalloutRecord calloutRecord) {}
 
 	/** Note that this method is <b>not</b> fired if a record is cloned. To do something on a record clone, you can register an {@link Interceptor} or a {@code IOnRecordCopiedListener} */
-	void onNew(ICalloutRecord calloutRecord);
+	default void onNew(final ICalloutRecord calloutRecord) {}
 
-	void onSave(ICalloutRecord calloutRecord);
+	default void onSave(final ICalloutRecord calloutRecord) {}
 
-	void onDelete(ICalloutRecord calloutRecord);
+	default void onDelete(final ICalloutRecord calloutRecord) {}
 
-	void onRefresh(ICalloutRecord calloutRecord);
+	default void onRefresh(final ICalloutRecord calloutRecord) {}
 
-	void onRefreshAll(ICalloutRecord calloutRecord);
+	default void onRefreshAll(final ICalloutRecord calloutRecord) {}
 
 	/**
 	 * Called after {@link ICalloutRecord} was queried.
-	 *
-	 * @param calloutRecord
 	 */
-	void onAfterQuery(ICalloutRecord calloutRecord);
+	default void onAfterQuery(final ICalloutRecord calloutRecord) {}
 }

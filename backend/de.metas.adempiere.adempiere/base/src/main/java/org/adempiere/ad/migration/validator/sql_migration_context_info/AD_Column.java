@@ -27,6 +27,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -47,5 +48,11 @@ public class AD_Column
 		final String tableName = TableIdsCache.instance.getTableNameIfPresent(adTableId).orElseGet(() -> "<" + adTableId + ">");
 		final String columnNameFQ = tableName + "." + adColumn.getColumnName();
 		MigrationScriptFileLoggerHolder.logComment("Column: " + columnNameFQ);
+
+		if (InterfaceWrapperHelper.isValueChanged(adColumn, I_AD_Column.COLUMNNAME_ColumnSQL))
+		{
+			final I_AD_Column adColumnOld = InterfaceWrapperHelper.createOld(adColumn, I_AD_Column.class);
+			MigrationScriptFileLoggerHolder.logComment("Column SQL (old): " + adColumnOld.getColumnSQL());
+		}
 	}
 }
