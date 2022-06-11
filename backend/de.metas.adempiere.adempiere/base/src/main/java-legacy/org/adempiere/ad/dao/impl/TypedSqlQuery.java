@@ -1632,25 +1632,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return DB.executeUpdateEx(sql, params, trxName);
 	}
 
-	@Override
-	public int delete(final boolean failIfProcessed)
-	{
-		final List<T> records = list(modelClass);
-		if (records.isEmpty())
-		{
-			return 0;
-		}
-
-		int countDeleted = 0;
-		for (final Object record : records)
-		{
-			InterfaceWrapperHelper.delete(record, failIfProcessed);
-			countDeleted++;
-		}
-
-		return countDeleted;
-	}
-
 	/**
 	 * Casts given {@link IQuery} object to {@link TypedSqlQuery}.
 	 * <p>

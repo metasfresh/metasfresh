@@ -12,7 +12,9 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.resource.ResourceService;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -40,7 +42,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -453,16 +454,6 @@ public class MaterialCockpitRow implements IViewRow
 		Check.errorIf(notOK, "Some of the given quantities have different UOMs; quantities={}", quantitiesToVerify);
 	}
 
-	private static LocalDate extractDate(@NonNull final List<MaterialCockpitRow> includedRows)
-	{
-		return CollectionUtils.extractSingleElement(includedRows, row -> row.date);
-	}
-
-	private static int extractProductId(@NonNull final List<MaterialCockpitRow> includedRows)
-	{
-		return CollectionUtils.extractSingleElement(includedRows, MaterialCockpitRow::getProductId);
-	}
-
 	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
 	private MaterialCockpitRow(
 			final int productId,
@@ -560,7 +551,7 @@ public class MaterialCockpitRow implements IViewRow
 	private MaterialCockpitRow(
 			final int productId,
 			final LocalDate date,
-			final int plantId,
+			@Nullable final ResourceId plantId,
 			@Nullable final Quantity qtyStockEstimateCount,
 			@Nullable final Instant qtyStockEstimateTime,
 			@Nullable final Integer qtyStockEstimateSeqNo,
@@ -576,10 +567,9 @@ public class MaterialCockpitRow implements IViewRow
 		this.dimensionGroupOrNull = null;
 
 		final String plantName;
-		if (plantId > 0)
+		if (plantId != null)
 		{
-			final I_S_Resource plant = loadOutOfTrx(plantId, I_S_Resource.class);
-			plantName = plant.getName();
+			plantName = ResourceService.Legacy.getResourceName(plantId);
 		}
 		else
 		{

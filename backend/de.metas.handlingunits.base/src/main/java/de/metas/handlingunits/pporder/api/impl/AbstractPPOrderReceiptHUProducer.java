@@ -28,6 +28,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -70,6 +71,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -118,7 +120,9 @@ import java.util.Map;
 	private LocalDate bestBeforeDate;
 	//
 	private boolean processReceiptCandidates;
-	private HUPIItemProductId receiveUsingHUPIItemProductId;
+
+	private TUSpec receiveUsingTUSpec;
+
 	private final LinkedHashSet<PPCostCollectorId> createdCostCollectorIds = new LinkedHashSet<>();
 
 	//
@@ -163,7 +167,7 @@ import java.util.Map;
 	@Override
 	public I_M_HU receiveVHU(@NonNull final Quantity qtyToReceive)
 	{
-		this.receiveUsingHUPIItemProductId = HUPIItemProductId.VIRTUAL_HU;
+		this.receiveUsingTUSpec = HUPIItemProductTUSpec.VIRTUAL;
 		final List<I_M_HU> vhus = receiveHUs(qtyToReceive);
 
 		if (vhus.isEmpty())
@@ -183,8 +187,16 @@ import java.util.Map;
 	@Override
 	public List<I_M_HU> receiveTUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId)
 	{
-		this.receiveUsingHUPIItemProductId = tuPIItemProductId;
+		this.receiveUsingTUSpec = tuPIItemProductId.isVirtualHU() ? HUPIItemProductTUSpec.VIRTUAL : HUPIItemProductTUSpec.of(tuPIItemProductId);
 		return receiveHUs(qtyToReceive);
+	}
+
+	@Override
+	public I_M_HU receiveSingleTU(@NonNull final Quantity qtyToReceive, final @NonNull HuPackingInstructionsId tuPackingInstructionsId)
+	{
+		this.receiveUsingTUSpec = PreciseTUSpec.of(tuPackingInstructionsId, qtyToReceive);
+		final List<I_M_HU> tus = receiveHUs(qtyToReceive);
+		return CollectionUtils.singleElement(tus);
 	}
 
 	private List<I_M_HU> receiveHUs(@NonNull final Quantity qtyToReceive)
@@ -359,29 +371,50 @@ import java.util.Map;
 
 	private IHUProducerAllocationDestination createAllocationDestination()
 	{
-		if (receiveUsingHUPIItemProductId != null)
+		if (receiveUsingTUSpec != null)
 		{
-			if (receiveUsingHUPIItemProductId.isVirtualHU())
+			if (receiveUsingTUSpec instanceof HUPIItemProductTUSpec)
 			{
-				return HUProducerDestination.ofVirtualPI()
-						.setLocatorId(getLocatorId());
-			}
-			else
-			{
-				final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getById(receiveUsingHUPIItemProductId);
-				final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
-				final Capacity tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, getProductId(), uom);
+				final HUPIItemProductId receiveUsingHUPIItemProductId = ((HUPIItemProductTUSpec)receiveUsingTUSpec).getHuPIItemProductId();
+				if (receiveUsingHUPIItemProductId.isVirtualHU())
+				{
+					return HUProducerDestination.ofVirtualPI()
+							.setLocatorId(getLocatorId());
+				}
+				else
+				{
+					final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getById(receiveUsingHUPIItemProductId);
+					final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
+					final Capacity tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, getProductId(), uom);
 
-				final HuPackingInstructionsItemId tuPackingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_ID());
+					final HuPackingInstructionsItemId tuPackingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_ID());
+
+					final LUTUProducerDestination tuProducer = new LUTUProducerDestination();
+					tuProducer.setLocatorId(getLocatorId());
+					tuProducer.setTUPI(handlingUnitsBL.getPI(tuPackingInstructionsItemId));
+					tuProducer.setIsHUPlanningReceiptOwnerPM(true);
+					tuProducer.addCUPerTU(tuCapacity);
+					tuProducer.setNoLU();
+
+					return tuProducer;
+				}
+			}
+			else if (receiveUsingTUSpec instanceof PreciseTUSpec)
+			{
+				final PreciseTUSpec preciseTUSpec = (PreciseTUSpec)receiveUsingTUSpec;
 
 				final LUTUProducerDestination tuProducer = new LUTUProducerDestination();
 				tuProducer.setLocatorId(getLocatorId());
-				tuProducer.setTUPI(handlingUnitsBL.getPI(tuPackingInstructionsItemId));
+				tuProducer.setTUPI(handlingUnitsBL.getPI(preciseTUSpec.getTuPackingInstructionsId()));
 				tuProducer.setIsHUPlanningReceiptOwnerPM(true);
-				tuProducer.addCUPerTU(tuCapacity);
+				tuProducer.addCUPerTU(Capacity.createCapacity(preciseTUSpec.getQtyCUsPerTU(), getProductId()));
 				tuProducer.setNoLU();
 
 				return tuProducer;
+			}
+			else
+			{
+				throw new AdempiereException("Unknown TU spec: " + receiveUsingTUSpec);
 			}
 		}
 		else
@@ -561,4 +594,26 @@ import java.util.Map;
 		}
 	}
 
+	//
+	//
+	//
+	//
+	//
+
+	private interface TUSpec {}
+
+	@Value(staticConstructor = "of")
+	private static class HUPIItemProductTUSpec implements TUSpec
+	{
+		public static final HUPIItemProductTUSpec VIRTUAL = of(HUPIItemProductId.VIRTUAL_HU);
+
+		@NonNull HUPIItemProductId huPIItemProductId;
+	}
+
+	@Value(staticConstructor = "of")
+	private static class PreciseTUSpec implements TUSpec
+	{
+		@NonNull HuPackingInstructionsId tuPackingInstructionsId;
+		@NonNull Quantity qtyCUsPerTU;
+	}
 }

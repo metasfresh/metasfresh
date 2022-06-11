@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_ProjectType
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_ProjectType extends org.compiere.model.PO implements I_C_ProjectType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -596423106L;
+	private static final long serialVersionUID = 985201195L;
 
     /** Standard Constructor */
     public X_C_ProjectType (final Properties ctx, final int C_ProjectType_ID, @Nullable final String trxName)
@@ -127,6 +127,8 @@ public class X_C_ProjectType extends org.compiere.model.PO implements I_C_Projec
 	public static final String PROJECTCATEGORY_ServiceChargeProject = "S";
 	/** ServiceOrRepair = R */
 	public static final String PROJECTCATEGORY_ServiceOrRepair = "R";
+	/** Budget = B */
+	public static final String PROJECTCATEGORY_Budget = "B";
 	@Override
 	public void setProjectCategory (final java.lang.String ProjectCategory)
 	{

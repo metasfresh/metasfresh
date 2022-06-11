@@ -22,13 +22,15 @@ package org.compiere.model;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.util.Services;
+import de.metas.workflow.Workflow;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowDAO;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.util.Services;
+import java.util.Properties;
 
 public class Callout_AD_Menu extends CalloutEngine
 {
@@ -99,15 +101,16 @@ public class Callout_AD_Menu extends CalloutEngine
 	public String onAD_Workflow_ID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value)
 	{
 		final I_AD_Menu menu = InterfaceWrapperHelper.create(mTab, I_AD_Menu.class);
-		if (menu.getAD_Workflow_ID() <= 0)
+		final WorkflowId workflowId = WorkflowId.ofRepoIdOrNull(menu.getAD_Workflow_ID());
+		if (workflowId == null)
 			return "";
 
-		I_AD_Workflow wf = menu.getAD_Workflow();
-		menu.setName(wf.getName());
-		menu.setDescription(wf.getDescription());
-		if (!"D".equals(wf.getEntityType()))
-			menu.setEntityType(wf.getEntityType());
-		menu.setInternalName(wf.getValue());
+		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+		final Workflow wf = workflowDAO.getById(workflowId);
+		menu.setName(wf.getName().getDefaultValue());
+		menu.setDescription(wf.getDescription().getDefaultValue());
+		//menu.setEntityType(wf.getEntityType());
+		//menu.setInternalName(wf.getValue());
 		return "";
 	}
 

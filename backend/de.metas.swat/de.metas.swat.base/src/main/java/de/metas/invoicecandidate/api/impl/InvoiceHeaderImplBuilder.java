@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -20,6 +21,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -41,6 +43,11 @@ public class InvoiceHeaderImplBuilder
 	private LocalDate _dateAcct;
 
 	private int AD_Org_ID;
+
+	@Nullable
+	private InputDataSourceId inputDataSourceId;
+
+	private boolean inputDataSourceIdset;
 
 	private final Set<Integer> C_Order_IDs = new LinkedHashSet<>();
 
@@ -126,6 +133,8 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setEMail(getEmail());
 
 		invoiceHeader.setPaymentRule(getPaymentRule());
+
+		invoiceHeader.setAD_InputDataSource_ID(getAD_InputDataSource_ID());
 
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
@@ -332,6 +341,25 @@ public class InvoiceHeaderImplBuilder
 		C_Currency_ID = checkOverrideID("C_Currency_ID", C_Currency_ID, currencyId);
 	}
 
+	public InputDataSourceId getAD_InputDataSource_ID()
+	{
+		return inputDataSourceId;
+	}
+
+	public void setAD_InputDataSource_ID(@Nullable final InputDataSourceId inputDataSourceId)
+	{
+		if (this.inputDataSourceId == null && !inputDataSourceIdset)
+		{
+			this.inputDataSourceId = inputDataSourceId;
+			inputDataSourceIdset = true;
+		}
+		else if (!Objects.equals(this.inputDataSourceId, inputDataSourceId))
+		{
+			this.inputDataSourceId = null;
+			inputDataSourceIdset = true;
+		}
+	}
+
 	public String getDescription()
 	{
 		return StringUtils.toString(Descriptions, "; ");
@@ -509,5 +537,6 @@ public class InvoiceHeaderImplBuilder
 	{
 		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
+
 
 }

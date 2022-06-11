@@ -12,7 +12,7 @@ import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 
 import * as api from '../../api/calendar';
-import { convertToMoment, normalizeDateTime } from './calendarUtils';
+import { normalizeDateTime } from './calendarUtils';
 
 import CalendarEventEditor from '../../components/calendar/CalendarEventEditor';
 
@@ -24,7 +24,19 @@ const extractResourcesFromCalendarsArray = (calendars) => {
       return accum;
     }, {});
 
-  return Object.values(resourcesById);
+  const resources = Object.values(resourcesById);
+
+  // IMPORTANT: completely remove 'parentId' property if it's not found in our list of resources
+  // Else fullcalendar.io won't render that resource at all.
+  resources.forEach((resource) => {
+    if ('parentId' in resource && !resourcesById[resource.parentId]) {
+      console.log('removing parentId because was not found: ', resource);
+      delete resource.parentId;
+    }
+  });
+  //console.log('extractResourcesFromCalendarsArray', resources);
+
+  return resources;
 };
 
 const mergeCalendarEventToArray = (eventsArray, eventToAdd) => {
@@ -45,6 +57,31 @@ const mergeCalendarEventToArray = (eventsArray, eventToAdd) => {
 
   return result;
 };
+
+// const suggestCalendarIdAndResourceId = (calendars, preferredResourceId) => {
+//   if (!calendars || calendars.length === 0) {
+//     return {};
+//   }
+//
+//   if (preferredResourceId) {
+//     for (const calendar of calendars) {
+//       for (const resource of calendar.resources) {
+//         if (resource.id === preferredResourceId) {
+//           return {
+//             calendarId: calendar.calendarId,
+//             resourceId: resource.id,
+//           };
+//         }
+//       }
+//     }
+//   }
+//
+//   const firstCalendar = calendars[0];
+//   return {
+//     calendarId: firstCalendar.calendarId,
+//     resourceId: firstCalendar.resources?.[0].id,
+//   };
+// };
 
 const Calendar = ({ className = 'container' }) => {
   //console.log('Calendar ctor------------------');
@@ -89,22 +126,34 @@ const Calendar = ({ className = 'container' }) => {
     }
   };
 
-  const handleCreateNewEvent = (params) => {
-    //console.log('handleCreateNewEvent', { params });
-    const calendar = availableCalendars?.[0];
-    setEditingEvent({
-      calendarId: calendar?.calendarId,
-      resourceId: calendar?.resources?.[0].id,
-      start: convertToMoment(params.date),
-      end: convertToMoment(params.date),
-      allDay: params.allDay,
-    });
+  const handleDateClick = (params) => {
+    console.log('handleDateClick', { params });
+    // FIXME for now, consider the calendar not editable, i.e. do nothing
+    // const { calendarId, resourceId } = suggestCalendarIdAndResourceId(
+    //   availableCalendars,
+    //   params?.resource?.id
+    // );
+    // //console.log('handleDateClick', { calendarId, resourceId });
+    //
+    // setEditingEvent({
+    //   calendarId,
+    //   resourceId,
+    //   start: convertToMoment(params.date),
+    //   end: convertToMoment(params.date),
+    //   allDay: params.allDay,
+    // });
   };
 
-  const handleEditEvent = (params) => {
-    const eventId = params.event.id;
-    const event = calendarEvents.events.find((event) => event.id === eventId);
-    setEditingEvent(event);
+  const handleEventClick = (params) => {
+    if (params.event.url) {
+      params.jsEvent.preventDefault();
+      window.open(params.event.url, '_blank');
+    } else {
+      const eventId = params.event.id;
+      const event = calendarEvents.events.find((event) => event.id === eventId);
+      console.log('handleEventClick', { params, event });
+      setEditingEvent(event);
+    }
   };
 
   const handleEventEditOK = (event) => {
@@ -115,6 +164,7 @@ const Calendar = ({ className = 'container' }) => {
         resourceId: event.resourceId,
         startDate: event.start,
         endDate: event.end,
+        allDay: event.allDay,
         title: event.title,
       })
       .then((eventFromBackend) => {
@@ -150,7 +200,7 @@ const Calendar = ({ className = 'container' }) => {
       )}
       <FullCalendar
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
-        initialView="resourceTimeline"
+        initialView="resourceTimelineMonth"
         plugins={[
           dayGridPlugin,
           timeGridPlugin,
@@ -168,23 +218,39 @@ const Calendar = ({ className = 'container' }) => {
         resourceAreaHeaderContent="Resources"
         resources={extractResourcesFromCalendarsArray(availableCalendars)}
         events={fetchCalendarEvents}
-        dateClick={handleCreateNewEvent}
-        eventClick={handleEditEvent}
+        dateClick={handleDateClick}
+        eventClick={handleEventClick}
+        eventContent={(params) => {
+          //console.log('eventContent', { params });
+          return <div>{params.event.title}</div>;
+        }}
+        eventDragStart={(event) => {
+          console.log('eventDragStart', { event });
+        }}
         eventDragStop={(event) => {
           console.log('eventDragStop', { event });
         }}
         eventDrop={(event) => {
           console.log('eventDrop', { event });
         }}
-        //   eventDragStart: Identity<(arg: EventDragStartArg) => void>;
-        // eventDragStop: Identity<(arg: EventDragStopArg) => void>;
-        // eventDrop: Identity<(arg: EventDropArg) => void>;
-        // eventResizeStart: Identity<(arg: EventResizeStartArg) => void>;
-        // eventResizeStop: Identity<(arg: EventResizeStopArg) => void>;
-        // eventResize: Identity<(arg: EventResizeDoneArg) => void>;
-        // drop: Identity<(arg: DropArg) => void>;
-        // eventReceive: Identity<(arg: EventReceiveArg) => void>;
-        // eventLeave: Identity<(arg: EventLeaveArg) => void>;
+        drop={(event) => {
+          console.log('drop', { event });
+        }}
+        eventResizeStart={(event) => {
+          console.log('eventResizeStart', { event });
+        }}
+        eventResizeStop={(event) => {
+          console.log('eventResizeStop', { event });
+        }}
+        eventResize={(event) => {
+          console.log('eventResize', { event });
+        }}
+        eventReceive={(event) => {
+          console.log('eventReceive', { event });
+        }}
+        eventLeave={(event) => {
+          console.log('eventLeave', { event });
+        }}
       />
     </div>
   );

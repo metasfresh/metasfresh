@@ -12,6 +12,12 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13132](https://github.com/metasfresh/metasfresh/issues/13132) Customizing: Add fr_CH Language as System Language
+  * [#13062](https://github.com/metasfresh/metasfresh/issues/13062) Pricing issue 
+  * [#13107](https://github.com/metasfresh/metasfresh/issues/13107) KPI - Add sum of SO/PO orders today / of last 7 days
+  * [#13084](https://github.com/metasfresh/metasfresh/issues/13084) Create REST Endpoint to read and write C_Projects
+  * [#12938](https://github.com/metasfresh/metasfresh/issues/12938) Shopware - set pricing system on created business partners
+  * [#12824](https://github.com/metasfresh/metasfresh/issues/12824) Clarify and document externalsystems multithreading behavior
   * [#13054](https://github.com/metasfresh/metasfresh/issues/13054) Optimize `Fresh_Account_Info_Report` 
   * [#13074](https://github.com/metasfresh/metasfresh/issues/13074) externalsystems - document timestamp-usage
   * [#13017](https://github.com/metasfresh/metasfresh/issues/13017) EDI - Extend INVOIC export format
@@ -34,6 +40,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13112](https://github.com/metasfresh/metasfresh/issues/13112) Fix Zoom Across HU Editor
+  * [#13105](https://github.com/metasfresh/metasfresh/issues/13104) Exclude Password Reset process from DebugMailTo
   * [#13086](https://github.com/metasfresh/metasfresh/issues/13086) Windows adjustments & fixing Trls 
   * [#13046](https://github.com/metasfresh/metasfresh/issues/13046) Fix DatePicker format in custom windows
   * [#13062](https://github.com/metasfresh/metasfresh/issues/13062) Pricing issue

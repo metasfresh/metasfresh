@@ -29,6 +29,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @Jacksonized
@@ -36,6 +38,7 @@ public class JsonCalendarResourceRef
 {
 	@NonNull CalendarResourceId resourceId;
 	@NonNull String name;
+	@Nullable CalendarResourceId parentId;
 
 	public static JsonCalendarResourceRef of(
 			@NonNull final CalendarResourceRef resourceRef,
@@ -44,6 +47,7 @@ public class JsonCalendarResourceRef
 		return builder()
 				.resourceId(resourceRef.getCalendarResourceId())
 				.name(resourceRef.getName().translate(adLanguage))
+				.parentId(resourceRef.getParentId())
 				.build();
 	}
 }

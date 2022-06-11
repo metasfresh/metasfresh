@@ -13,6 +13,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
@@ -126,6 +127,8 @@ public class OLCandCreateRequest
 
 	BigDecimal qtyItemCapacity;
 
+	ProjectId projectId;
+
 	AssignSalesRepRule assignSalesRepRule;
 
 	BPartnerId salesRepInternalId;
@@ -133,7 +136,7 @@ public class OLCandCreateRequest
 	String bpartnerName;
 	String email;
 	String phone;
-	
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -180,6 +183,7 @@ public class OLCandCreateRequest
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
 			@Nullable final BigDecimal qtyItemCapacity,
+			@Nullable final ProjectId projectId,
 			@Nullable final AssignSalesRepRule assignSalesRepRule,
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
@@ -243,6 +247,7 @@ public class OLCandCreateRequest
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;
 		this.qtyItemCapacity = qtyItemCapacity;
+		this.projectId = projectId;
 
 		this.assignSalesRepRule = CoalesceUtil.coalesceNotNull(assignSalesRepRule, AssignSalesRepRule.CandidateFirst);
 		this.salesRepInternalId = salesRepInternalId;
