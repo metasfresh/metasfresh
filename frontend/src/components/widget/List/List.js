@@ -102,7 +102,7 @@ class ListWidget extends Component {
           ? properties.parameterName
           : properties.field;
 
-        let request = null;
+        let request;
 
         if (viewId && entity === 'window' && !filterWidget) {
           request = dropdownModalRequest({
@@ -187,7 +187,7 @@ class ListWidget extends Component {
   };
 
   handleBlur = () => {
-    const { onBlur, field } = this.props;
+    const { field, onBlur } = this.props;
 
     this.setState(
       {
@@ -204,9 +204,7 @@ class ListWidget extends Component {
   };
 
   closeDropdownList = () => {
-    this.setState({
-      listToggled: false,
-    });
+    this.setState({ listToggled: false });
   };
 
   activate = () => {
@@ -217,9 +215,7 @@ class ListWidget extends Component {
       (!listToggled && !(lookupList && list.length < 1)) ||
       (list.size === 0 && mandatory)
     ) {
-      this.setState({
-        listToggled: true,
-      });
+      this.setState({ listToggled: true });
     }
   };
 

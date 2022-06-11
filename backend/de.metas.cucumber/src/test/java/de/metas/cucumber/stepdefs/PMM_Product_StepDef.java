@@ -41,13 +41,13 @@ import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_M_Product
 
 public class PMM_Product_StepDef
 {
-	private final StepDefData<I_M_Product> productStepDefData;
-	private final StepDefData<I_PMM_Product> pmmProductStepDefData;
+	private final M_Product_StepDefData productStepDefData;
+	private final PMM_Product_StepDefData pmmProductStepDefData;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public PMM_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productStepDefData,
-			@NonNull final StepDefData<I_PMM_Product> pmmProductStepDefData)
+			@NonNull final M_Product_StepDefData productStepDefData,
+			@NonNull final PMM_Product_StepDefData pmmProductStepDefData)
 	{
 		this.productStepDefData = productStepDefData;
 		this.pmmProductStepDefData = pmmProductStepDefData;

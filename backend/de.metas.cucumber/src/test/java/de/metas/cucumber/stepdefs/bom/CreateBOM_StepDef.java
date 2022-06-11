@@ -29,7 +29,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.metas.common.rest_api.v2.bom.JsonBOMCreateResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMLine_StepDefData;
+import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
+import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -78,12 +83,12 @@ public class CreateBOM_StepDef
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
-	private final StepDefData<I_PP_Product_BOM> bomTable;
-	private final StepDefData<I_PP_Product_BOMVersions> productBOMVersionsTable;
-	private final StepDefData<I_PP_Product_BOM> productBomTable;
-	private final StepDefData<I_PP_Product_BOMLine> productBomLineTable;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final PP_Product_BOM_StepDefData bomTable;
+	private final PP_Product_BOMVersions_StepDefData productBOMVersionsTable;
+	private final PP_Product_BOM_StepDefData productBomTable;
+	private final PP_Product_BOMLine_StepDefData productBomLineTable;
+	private final M_Product_StepDefData productTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final TestContext testContext;
 
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
@@ -95,12 +100,12 @@ public class CreateBOM_StepDef
 			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	public CreateBOM_StepDef(
-			@NonNull final StepDefData<I_PP_Product_BOM> bomTable,
-			@NonNull final StepDefData<I_PP_Product_BOMVersions> productBOMVersionsTable,
-			@NonNull final StepDefData<I_PP_Product_BOM> productBomTable,
-			@NonNull final StepDefData<I_PP_Product_BOMLine> productBomLineTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable,
+			@NonNull final PP_Product_BOM_StepDefData bomTable,
+			@NonNull final PP_Product_BOMVersions_StepDefData productBOMVersionsTable,
+			@NonNull final PP_Product_BOM_StepDefData productBomTable,
+			@NonNull final PP_Product_BOMLine_StepDefData productBomLineTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bomTable = bomTable;
