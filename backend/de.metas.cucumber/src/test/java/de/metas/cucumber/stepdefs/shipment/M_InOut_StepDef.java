@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
@@ -51,14 +52,14 @@ import static org.assertj.core.api.Assertions.*;
 
 public class M_InOut_StepDef
 {
-	private final StepDefData<I_M_InOut> shipmentTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	public M_InOut_StepDef(
-			@NonNull final StepDefData<I_M_InOut> shipmentTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;

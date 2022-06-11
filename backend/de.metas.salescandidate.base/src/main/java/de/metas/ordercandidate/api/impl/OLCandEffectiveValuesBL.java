@@ -10,6 +10,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.IProductBL;
@@ -327,6 +328,17 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		final int dropShipContactId = getHandOver_User_Effective_ID(olCandRecord); // TODO add the column & stuff
 
 		return extractDifferentShipToBPartnerInfo(olCandRecord, dropShipLocationId, dropShipContactId);
+	}
+
+	@Nullable
+	@Override
+	public HUPIItemProductId getEffectivePackingInstructions(@NonNull final I_C_OLCand olCand)
+	{
+		if (olCand.getM_HU_PI_Item_Product_Override_ID() > 0)
+		{
+			return HUPIItemProductId.ofRepoId(olCand.getM_HU_PI_Item_Product_Override_ID());
+		}
+		return HUPIItemProductId.ofRepoIdOrNull(olCand.getM_HU_PI_Item_Product_ID());
 	}
 
 	private Optional<BPartnerInfo> extractDifferentShipToBPartnerInfo(

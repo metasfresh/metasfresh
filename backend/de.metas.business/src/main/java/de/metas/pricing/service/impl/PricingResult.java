@@ -25,6 +25,7 @@ package de.metas.pricing.service.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -125,6 +126,9 @@ final class PricingResult implements IPricingResult
 	private ImmutableList<String> loggableMessages;
 
 	private BigDecimal baseCommissionPointsPerPriceUOM;
+
+	@Nullable
+	private HUPIItemProductId packingMaterialId;
 
 	@Builder
 	private PricingResult(

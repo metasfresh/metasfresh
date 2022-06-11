@@ -25,6 +25,7 @@ package de.metas.externalsystem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -86,6 +87,31 @@ public class ExternalSystemTestUtil
 		childRecord.setIsSyncBPartnersToRestEndpoint(isSyncBPartnersToRestEndpoint);
 		childRecord.setIsSyncHUsOnMaterialReceipt(isSyncHUsOnMaterialReceipt);
 		childRecord.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
+		saveRecord(childRecord);
+
+		return childRecord;
+	}
+
+	@NonNull
+	@Builder(builderMethodName = "createLeichMehlConfigBuilder", builderClassName = "leichMehlConfigBuilder")
+	private I_ExternalSystem_Config_LeichMehl createLeichMehlConfig(
+			final int externalSystemParentConfigId,
+			@NonNull final String value,
+			final String ftpHost,
+			final int ftpPort,
+			final String ftpUsername,
+			final String ftpPassword,
+			final String ftpDirectory)
+	{
+		final I_ExternalSystem_Config_LeichMehl childRecord = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		childRecord.setExternalSystem_Config_ID(externalSystemParentConfigId);
+		childRecord.setExternalSystemValue(value);
+		childRecord.setFTP_Port(ftpPort);
+		childRecord.setFTP_Username(ftpUsername);
+		childRecord.setFTP_Password(ftpPassword);
+		childRecord.setFTP_Hostname(ftpHost);
+		childRecord.setFTP_Directory(ftpDirectory);
+
 		saveRecord(childRecord);
 
 		return childRecord;

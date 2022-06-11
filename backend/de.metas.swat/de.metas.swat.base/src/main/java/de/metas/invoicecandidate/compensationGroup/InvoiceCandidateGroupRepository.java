@@ -175,7 +175,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.build();
 	}
 
-	public InvoiceCandidateId extractLineId(final I_C_Invoice_Candidate invoiceCandidate)
+	public InvoiceCandidateId extractLineId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}
