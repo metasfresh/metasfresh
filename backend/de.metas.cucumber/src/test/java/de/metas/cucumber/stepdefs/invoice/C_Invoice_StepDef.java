@@ -228,7 +228,7 @@ public class C_Invoice_StepDef
 
 		assertThat(invoiceCandidateRecord).isNotNull();
 
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(org.testcontainers.shaded.com.google.common.collect.ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), null);
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), ITrx.TRXNAME_None);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(false);
