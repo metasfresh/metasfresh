@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.monitoring.aop;
+package de.metas.monitoring.aspect;
 
 import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
