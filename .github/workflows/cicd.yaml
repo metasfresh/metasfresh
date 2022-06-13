@@ -18,7 +18,7 @@ jobs:
 
   experiment:
     runs-on: ubuntu-latest
-    if: github.run_attempt > 0
+    if: github.run_attempt > 1
     steps:
       - name: print-vars
         run: env
