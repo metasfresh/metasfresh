@@ -191,7 +191,7 @@ jobs:
       - name: push-results
         run: |
           docker run --rm -v "$(pwd)/reports:/reports" mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
-          find /reports -type d -exec testspace [{}]{}/*.xml \;
+          find reports -type d -exec testspace [{}]{}/*.xml \;
       ## push reports
       - name: push-result-image
         run: |
