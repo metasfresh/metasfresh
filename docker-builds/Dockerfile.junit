@@ -20,5 +20,7 @@ RUN cd /java/backend && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>
 
 VOLUME /reports
 
+RUN apt-get update && apt-get install -y mmv && rm -rf /var/lib/apt/lists/*
+
 SHELL ["/bin/bash", "-c"]
-CMD shopt -s globstar && cp **/TEST-*.xml /reports/
+CMD shopt -s globstar && find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p && mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml'

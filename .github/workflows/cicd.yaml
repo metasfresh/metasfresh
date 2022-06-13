@@ -18,13 +18,6 @@ jobs:
       - name: print-sanitizef-ref-name
         run: echo ${{ steps.sanitize.outputs.refname }}
 
-  experiment:
-    runs-on: ubuntu-latest
-    if: github.run_attempt > 1
-    steps:
-      - name: print-vars
-        run: env
-
   java:
     runs-on: ubuntu-latest
     needs: init
@@ -198,7 +191,7 @@ jobs:
       - name: push-results
         run: |
           docker run --rm -v "$(pwd)/reports:/reports" mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
-          testspace reports/*.xml
+          find /reports -type d -exec testspace [{}]{}/*.xml \;
       ## push reports
       - name: push-result-image
         run: |
