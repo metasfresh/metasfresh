@@ -18,21 +18,7 @@ COPY --from=backend /backend backend
 RUN cd /java/commons && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee /java/junit.log
 RUN cd /java/backend && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
 
-ARG REFNAME
-ENV REFNAME=$REFNAME
-SHELL ["/bin/bash", "-c"]
+VOLUME /reports
 
-RUN --mount=type=secret,id=mysecret \
-    if [[ -f "/run/secrets/mysecret" ]] ;\
-    then \
-        shopt -s globstar \
-        && TESTMO_TOKEN="$(cat /run/secrets/mysecret)" \
-        testmo automation:run:submit \
-        --instance https://metasfresh.testmo.net \
-        --project-id 1 \
-        --name "New test run" \
-        --source "unit-tests-github" \
-		--tags $REFNAME \
-        --results **/TEST-*.xml \
-        -- cat /java/junit.log ;\
-    fi
+SHELL ["/bin/bash", "-c"]
+CMD shopt -s globstar && cp **/TEST-*.xml /reports/
