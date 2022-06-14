@@ -57,6 +57,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -228,7 +229,7 @@ public class C_Invoice_StepDef
 
 		assertThat(invoiceCandidateRecord).isNotNull();
 
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(org.testcontainers.shaded.com.google.common.collect.ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), null);
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), ITrx.TRXNAME_None);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(false);

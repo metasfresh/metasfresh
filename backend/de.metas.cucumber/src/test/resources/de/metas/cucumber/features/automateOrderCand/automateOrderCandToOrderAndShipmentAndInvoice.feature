@@ -172,8 +172,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | ordereLine_1_1            | order_1               | 2021-07-20      | product_1               | 10         | 0            | 0           | 5     | 0        | EUR          | true      |
-    # We didn't close the order, so we expect QtyOrdered=10  
-    
+    # We didn't close the order, so we expect QtyOrdered=10
+
   @from:cucumber
   @topic:orderCandidate
   Scenario: Order candidate to shipment in first step and then invoice with close order

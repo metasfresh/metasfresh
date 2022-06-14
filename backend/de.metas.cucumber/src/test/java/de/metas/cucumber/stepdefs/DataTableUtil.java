@@ -387,5 +387,4 @@ public class DataTableUtil
 
 		return value;
 	}
-
 }

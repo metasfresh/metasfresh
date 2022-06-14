@@ -1,23 +1,20 @@
-import counterpart from 'counterpart';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import counterpart from 'counterpart';
 
 import { addNotification } from '../../actions/AppActions';
-import { patchRequest } from '../../api';
 import {
   completeLetter,
   createLetter,
   getTemplates,
+  applyTemplate,
+  patchMessage,
 } from '../../actions/LetterActions';
+
 import RawList from '../widget/List/RawList';
 
-/**
- * @file Class based component.
- * @module NewLetter
- * @extends Component
- */
-class NewLetter extends Component {
+class NewLetter extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -31,12 +28,6 @@ class NewLetter extends Component {
     };
   }
 
-  /**
-   * @async
-   * @method UNSAFE_componentWillMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   async UNSAFE_componentWillMount() {
     const { windowId, docId, handleCloseLetter } = this.props;
 
@@ -50,7 +41,7 @@ class NewLetter extends Component {
       });
 
       try {
-        await this.getTemplates();
+        await this.loadTemplates();
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error(error);
@@ -60,25 +51,24 @@ class NewLetter extends Component {
     }
   }
 
-  /**
-   * @method getTemplates
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  getTemplates = async () => {
-    const res = await getTemplates();
+  loadTemplates = async () => {
+    const axiosResponse = await getTemplates();
+    const { values, defaultValue } = axiosResponse.data;
 
-    this.setState({
-      templates: res.data.values,
-    });
+    this.setState({ templates: values });
+
+    //
+    // Apply default template if any
+    if (values && values.length > 0 && defaultValue) {
+      const defaultTemplate = values.find(
+        (template) => template.key === defaultValue
+      );
+      if (defaultTemplate != null) {
+        await this.handleTemplate(defaultTemplate);
+      }
+    }
   };
 
-  /**
-   * @method handleTemplate
-   * @summary ToDo: Describe the method
-   * @param {*} option
-   * @todo Write the documentation
-   */
   handleTemplate = async (option) => {
     const { letterId, template } = this.state;
 
@@ -86,38 +76,20 @@ class NewLetter extends Component {
       return;
     }
 
-    const response = await patchRequest({
-      entity: 'letter',
-      docType: letterId,
-      property: 'templateId',
-      value: option,
-    });
+    const letter = await applyTemplate(letterId, option);
 
     this.setState({
-      ...response.data,
+      ...letter,
       template: option,
     });
   };
 
-  /**
-   * @method handleChange
-   * @summary ToDo: Describe the method
-   * @param {object} target
-   * @todo Write the documentation
-   */
   handleChange = ({ target: { value: message } }) => {
     this.setState({
       message,
     });
   };
 
-  /**
-   * @async
-   * @method handleBlur
-   * @summary ToDo: Describe the method
-   * @param {object} target
-   * @todo Write the documentation
-   */
   handleBlur = async ({ target: { value: message } }) => {
     const { letterId } = this.state;
 
@@ -125,70 +97,23 @@ class NewLetter extends Component {
       return;
     }
 
-    const response = await patchRequest({
-      entity: 'letter',
-      docType: letterId,
-      property: 'message',
-      value: message,
-    });
+    const letter = await patchMessage(letterId, message);
 
     this.setState({
-      ...response.data,
-      cached: response.data,
+      ...letter,
+      cached: letter,
       listFocused: false,
     });
   };
 
-  /**
-   * @method handleListFocus
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  handleListFocus = () => {
-    this.setState({
-      listFocused: true,
-    });
-  };
+  handleListFocus = () => this.setState({ listFocused: true });
 
-  /**
-   * @method handleListBlur
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  handleListBlur = () => {
-    this.setState({
-      listFocused: false,
-    });
-  };
+  handleListBlur = () => this.setState({ listFocused: false });
 
-  /**
-   * @method closeTemplatesList
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  closeTemplatesList = () => {
-    this.setState({
-      listToggled: false,
-    });
-  };
+  closeTemplatesList = () => this.setState({ listToggled: false });
 
-  /**
-   * @method openTemplatesList
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  openTemplatesList = () => {
-    this.setState({
-      listToggled: true,
-    });
-  };
+  openTemplatesList = () => this.setState({ listToggled: true });
 
-  /**
-   * @async
-   * @method renderCancelButton
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   complete = async () => {
     const { letterId } = this.state;
     const { handleCloseLetter, dispatch } = this.props;
@@ -202,11 +127,6 @@ class NewLetter extends Component {
     );
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const { handleCloseLetter } = this.props;
     const {
@@ -284,17 +204,9 @@ class NewLetter extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} handleCloseLetter
- * @prop {func} dispatch
- * @prop {string} windowId
- * @prop {string} docId
- * @todo Check props. Which proptype? Required or optional?
- */
 NewLetter.propTypes = {
-  handleCloseLetter: PropTypes.any,
-  dispatch: PropTypes.func,
+  handleCloseLetter: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired,
   windowId: PropTypes.string,
   docId: PropTypes.string,
 };

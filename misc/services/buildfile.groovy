@@ -16,7 +16,7 @@ def build(final MvnConf mvnConf,
     stage('Build misc services') {
         currentBuild.description = """${currentBuild.description}<p/>
 			<h2>misc services</h2>"""
-
+      
         dir('mobile-webui/mobile-webui-frontend') {
             def buildFile = load('buildfile.groovy')
             buildFile.build(mvnConf, scmVars, forceBuild, forceSkipMobileWebui)
