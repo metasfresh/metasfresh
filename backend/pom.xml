@@ -648,10 +648,9 @@
                     <complianceLevel>1.8</complianceLevel>
                     <source>1.8</source>
                     <target>1.8</target>
-                    <includes>
-                        <include>**/*.java</include>
-                        <include>**/*.aj</include>
-                    </includes>
+                    <sources>
+                        <weaveDirectory>${project.build.outputDirectory}</weaveDirectory>
+                    </sources>
                     <forceAjcCompile>true</forceAjcCompile>
                 </configuration>
                 <executions>
