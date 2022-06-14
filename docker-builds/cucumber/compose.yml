@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: mazorn/metas-db:$refname-preloaded
+    image: mazorn/metas-db:${refname:-local}-preloaded
     ports:
       - "15432:5432"
     healthcheck:
@@ -30,18 +30,16 @@ services:
       replicas: 1
 
   cucumber:
-    image: mazorn/metas-cucumber:$refname
+    image: mazorn/metas-cucumber:${refname:-local}
     depends_on:
       db:
         condition: service_healthy
-    secrets:
-      - mysecret
+    volumes:
+      - ./cucumber:/reports
     deploy:
       mode: replicated
       replicas: 1
 
 volumes: {}
 configs: {}
-secrets:
-  mysecret:
-    file: mysecret
+secrets: {}

@@ -183,26 +183,22 @@ jobs:
           --secret id=mysecret \
           -t mazorn/metas-junit:${{ needs.init.outputs.tag-floating }} \
           .
+      - name: push-result-image
+        run: |
+          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
+          docker push mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
+          docker logout
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
-        # env:
-          # mysecret: ${{ secrets.TESTSPACE_TOKEN }}
       - name: push-results
         env:
           runurl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           docker run --rm -v "$(pwd)/junit:/reports" mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;
-      ## push reports
-      - name: push-result-image
-        run: |
-          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
-          docker logout
 
   integration-tests:
-    if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
     steps:
@@ -215,40 +211,45 @@ jobs:
           -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
           -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: build-e2e
-        run: |
-          docker buildx build \
-          -f docker-builds/Dockerfile.e2e \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }} \
-          .
+      # - name: build-e2e
+        # run: |
+          # docker buildx build \
+          # -f docker-builds/Dockerfile.e2e \
+          # --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          # -t mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }} \
+          # -t mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }} \
+          # .
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
           docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }}
           docker logout
-
+      # docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }}
+      # docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }}
   cucumber:
-    if: ${{ false }}  # disable for now
     runs-on: ubuntu-latest
     needs: [init, integration-tests]
-    environment: 'test'
+    # environment: 'test'
     continue-on-error: true
     steps:
       - name: run-cucumber-tests
         env:
-          mysecret: ${{ secrets.TESTMO_TOKEN }}
           refname: ${{ needs.init.outputs.tag-fixed }}
         timeout-minutes: 60
         run: |
-          echo "$mysecret" > mysecret
+          mkdir cucumber
           docker cp "$(docker create --name tempcopytainer mazorn/metas-cucumber:$refname):/compose.yml" . && docker rm tempcopytainer
           docker-compose up --abort-on-container-exit --exit-code-from cucumber
           docker-compose down
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
+      - name: push-results
+        env:
+          runurl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          find cucumber -type d -links 2 -exec testspace [{}]{}/*.xml \;
 
   cypress:
     if: ${{ false }}  # disable for now

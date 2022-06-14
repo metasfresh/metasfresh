@@ -18,21 +18,8 @@ RUN mvn clean test-compile
 COPY docker-builds/cucumber/compose.yml /compose.yml
 ENV CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE=true
 
-ARG REFNAME
-ENV REFNAME=$REFNAME
-SHELL ["/bin/bash", "-c"]
+VOLUME /reports
 
-CMD if [[ -f "/run/secrets/mysecret" ]] ;\
-    then \
-        TESTMO_TOKEN="$(cat /run/secrets/mysecret)" \
-        testmo automation:run:submit \
-        --instance https://metasfresh.testmo.net \
-        --project-id 1 \
-        --name "New test run" \
-        --source "cucumber-tests-github" \
-        --tags $REFNAME \
-        --results target/*.xml \
-        -- mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true ;\
-    else \
-        mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true ;\
-    fi
+
+SHELL ["/bin/bash", "-c"]
+CMD mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true && cp target/*.xml /reports
