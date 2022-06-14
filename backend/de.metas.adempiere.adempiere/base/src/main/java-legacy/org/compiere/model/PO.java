@@ -150,7 +150,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *         <li>[ 2195894 ] Improve performance in PO engine
  *         <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335
  */
-@Configurable
+@Configurable(preConstruction = true)
 public abstract class PO
 		implements Serializable, Comparator<Object>, Evaluatee, Evaluatee2 // metas: 01622
 		, IClientOrgAware // metas

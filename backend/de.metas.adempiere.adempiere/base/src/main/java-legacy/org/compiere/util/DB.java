@@ -101,7 +101,7 @@ import java.util.function.Consumer;
  * General Database Interface
  */
 @UtilityClass
-@Configurable
+@Configurable(preConstruction = true)
 public class DB
 {
 	public final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";

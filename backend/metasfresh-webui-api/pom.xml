@@ -48,12 +48,7 @@
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
 		</dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-aspects</artifactId>
-        </dependency>
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<finalName>metasfresh-webui-api</finalName>

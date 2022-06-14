@@ -47,7 +47,7 @@
 
         <acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
 
-        <aspectj.runtime.version>1.9.6</aspectj.runtime.version>
+        <aspectj.version>1.9.6</aspectj.version>
 
     </properties>
 
@@ -344,25 +344,6 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
-
-
-            <!-- AOP dependencies. -->
-            <dependency>
-                <groupId>org.aspectj</groupId>
-                <artifactId>aspectjrt</artifactId>
-                <version>${aspectj.runtime.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.aspectj</groupId>
-                <artifactId>aspectjtools</artifactId>
-                <version>${aspectj.runtime.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.14.0</version>
-                <type>pom</type>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -378,6 +359,17 @@
             <scope>test</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -639,41 +631,29 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.14.0</version>
+                <version>1.7</version>
                 <configuration>
-                    <complianceLevel>1.8</complianceLevel>
-                    <includes>
-                        <include>**/*.java</include>
-                        <include>**/*.aj</include>
-                    </includes>
-                    <aspectDirectory>src/main/aspect</aspectDirectory>
-                    <testAspectDirectory>src/test/aspect</testAspectDirectory>
-                    <XaddSerialVersionUID>true</XaddSerialVersionUID>
-                    <showWeaveInfo>true</showWeaveInfo>
+
+                    <outxmlfile>META-INF/aop.xml</outxmlfile>
                     <aspectLibraries>
-                        <aspectLibrary>
-                            <groupId>de.metas.monitoring</groupId>
-                            <artifactId>de.metas.monitoring</artifactId>
-                        </aspectLibrary>
                         <aspectLibrary>
                             <groupId>org.springframework</groupId>
                             <artifactId>spring-aspects</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
+                    <complianceLevel>1.8</complianceLevel>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <forceAjcCompile>true</forceAjcCompile>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>compile_with_aspectj</id>
                         <goals>
                             <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>test-compile_with_aspectj</id>
-                        <goals>
                             <goal>test-compile</goal>
                         </goals>
                     </execution>
@@ -681,12 +661,13 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjtools</artifactId>
-                        <version>${aspectj.runtime.version}</version>
+                        <artifactId>aspectjrt</artifactId>
+                        <version>${aspectj.version}</version>
                     </dependency>
                     <dependency>
-                        <groupId>de.metas.monitoring</groupId>
-                        <artifactId>de.metas.monitoring</artifactId>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${aspectj.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
