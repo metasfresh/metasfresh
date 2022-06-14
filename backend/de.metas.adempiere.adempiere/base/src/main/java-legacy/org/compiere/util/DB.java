@@ -29,7 +29,6 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -68,7 +67,6 @@ import org.compiere.model.Null;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Configurable;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -101,7 +99,6 @@ import java.util.function.Consumer;
  * General Database Interface
  */
 @UtilityClass
-@Configurable(preConstruction = true)
 public class DB
 {
 	public final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
@@ -166,7 +163,6 @@ public class DB
 	 *
 	 * @param cc connection
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public void setDBTarget(final CConnection cc)
 	{
 		if (cc == null)
@@ -325,7 +321,6 @@ public class DB
 	 *
 	 * @return Connection (r/w)
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public Connection getConnectionID()
 	{
 		return createConnection(false, false, Connection.TRANSACTION_READ_COMMITTED);
@@ -336,7 +331,6 @@ public class DB
 	 *
 	 * @return Connection (r/o)
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public Connection getConnectionRO()
 	{
 		return createConnection(true, true, Connection.TRANSACTION_READ_COMMITTED);     // see below
@@ -349,7 +343,6 @@ public class DB
 	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 * @return Connection connection
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public Connection createConnection(final boolean autoCommit, final int trxLevel)
 	{
 
@@ -397,7 +390,6 @@ public class DB
 	 * @param readOnly
 	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
 	{
 		// NOTE: hengsin: this could be problematic as it can be reuse for readwrite activites after return to pool,
@@ -413,7 +405,6 @@ public class DB
 	 *
 	 * @return Adempiere Database Driver
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public AdempiereDatabase getDatabase()
 	{
 		final CConnection s_cc = getCConnection();
@@ -432,7 +423,6 @@ public class DB
 	 *
 	 * @return true if connected to PostgreSQL
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public boolean isPostgreSQL()
 	{
 		final CConnection s_cc = getCConnection();
@@ -451,7 +441,6 @@ public class DB
 	 *
 	 * @return info
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public String getDatabaseInfo()
 	{
 		final CConnection s_cc = getCConnection();
@@ -465,7 +454,6 @@ public class DB
 	/**************************************************************************
 	 * Prepare Call
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public CallableStatement prepareCall(final String SQL, final int resultSetConcurrency, final String trxName)
 	{
 		if (SQL == null || SQL.length() == 0)
@@ -494,7 +482,6 @@ public class DB
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
 	}    // prepareStatement
 
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
@@ -531,7 +518,6 @@ public class DB
 	 * @param trxName              transaction name
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public CPreparedStatement prepareStatement(final String sql,
 			final int resultSetType,
 			final int resultSetConcurrency,
@@ -551,7 +537,6 @@ public class DB
 	 * <p>
 	 * Also see https://jdbc.postgresql.org/documentation/head/query.html
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public ImmutablePair<Connection, PreparedStatement> prepareConnectionAndStatementForDataExport(
 			@NonNull final String sqlSelect,
 			@Nullable final List<?> sqlParams/* not ImmutableList because list elements might be null */)
@@ -585,7 +570,6 @@ public class DB
 	 *
 	 * @return Statement
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public Statement createStatement()
 	{
 		return createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, null);
@@ -599,7 +583,6 @@ public class DB
 	 * @param trxName              transaction name
 	 * @return Statement - either r/w ir r/o depending on concur
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public Statement createStatement(final int resultSetType, final int resultSetConcurrency, final String trxName)
 	{
 		return statementsFactory.newCStatement(resultSetType, resultSetConcurrency, trxName);
@@ -611,7 +594,6 @@ public class DB
 	 * @param stmt   statements
 	 * @param params parameters array; if null or empty array, no parameters are set
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public void setParameters(@NonNull final PreparedStatement stmt, @Nullable final Object... params) throws SQLException
 	{
 		if (params == null || params.length == 0)
@@ -631,7 +613,6 @@ public class DB
 	 * @param stmt   statements
 	 * @param params parameters list; if null or empty list, no parameters are set
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public void setParameters(@NonNull final PreparedStatement stmt, @Nullable final List<?> params)
 			throws SQLException
 	{
@@ -648,7 +629,6 @@ public class DB
 	/**
 	 * Set PreparedStatement's parameter. Similar with calling <code>pstmt.setObject(index, param)</code>
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public void setParameter(
 			@NonNull final PreparedStatement pstmt,
 			final int index,
@@ -966,7 +946,6 @@ public class DB
 	 *
 	 * @see {@link #executeUpdateEx(String, Object[], String)}
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public int executeUpdateEx(final String sql, @Nullable final String trxName) throws DBException
 	{
 		final Object[] params = null;
@@ -1111,7 +1090,6 @@ public class DB
 	 * @return first value or -1 if not found
 	 * @throws DBException if there is any SQLException
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public int getSQLValueEx(@Nullable final String trxName, final String sql, final Object... params) throws DBException
 	{
 		int retValue = -1;
@@ -1207,7 +1185,6 @@ public class DB
 	 * @return first value or null
 	 * @throws DBException if there is any SQLException
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.DB)
 	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
 		String retValue = null;

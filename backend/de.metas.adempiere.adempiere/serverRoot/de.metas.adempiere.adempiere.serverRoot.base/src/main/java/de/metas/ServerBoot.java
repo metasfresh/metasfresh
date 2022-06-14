@@ -33,10 +33,8 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -74,8 +72,6 @@ import java.util.concurrent.TimeUnit;
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @ServletComponentScan(value = { "de.metas", "org.adempiere" })
 @Profile(Profiles.PROFILE_App)
-@EnableAspectJAutoProxy
-@EnableSpringConfigured
 public class ServerBoot implements InitializingBean
 {
 	/**

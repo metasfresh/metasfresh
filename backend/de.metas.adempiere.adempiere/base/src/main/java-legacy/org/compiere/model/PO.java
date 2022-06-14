@@ -36,7 +36,6 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
@@ -86,7 +85,6 @@ import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -150,7 +148,6 @@ import java.util.concurrent.locks.ReentrantLock;
  *         <li>[ 2195894 ] Improve performance in PO engine
  *         <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335
  */
-@Configurable(preConstruction = true)
 public abstract class PO
 		implements Serializable, Comparator<Object>, Evaluatee, Evaluatee2 // metas: 01622
 		, IClientOrgAware // metas
@@ -1749,14 +1746,24 @@ public abstract class PO
 	 * @param trxName transaction
 	 * @return true if loaded
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.PO)
 	public final boolean load(final String trxName)
 	{
 		m_loadingLock.lock();
 		try
 		{
 			m_loading = true;
-			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record;
+			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+
+			return service.monitor(
+					() -> load0(trxName, false), // gh #986 isRetry=false because this is our first attempt to load the record;
+					PerformanceMonitoringService.Metadata
+							.builder()
+							.name("PO")
+							.type(PerformanceMonitoringService.Type.PO)
+							.action((new Throwable().getStackTrace()[0]).getMethodName())
+							.build());
 		}
 		finally
 		{
@@ -2882,7 +2889,7 @@ public abstract class PO
 						.builder()
 						.name("PO")
 						.type(PerformanceMonitoringService.Type.PO)
-						.action("saveEx")
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
 	private final void saveEx0() throws AdempiereException
