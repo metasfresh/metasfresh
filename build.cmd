@@ -9,7 +9,7 @@ docker build -f docker-builds/Dockerfile.camel -t mazorn/metas-mvn-camel:local .
 
 docker build -f docker-builds/Dockerfile.junit -t mazorn/metas-junit:local . || @goto error
 docker build -f docker-builds/Dockerfile.cucumber -t mazorn/metas-cucumber:local . || @goto error
-docker build -f docker-builds/Dockerfile.e2e -t mazorn/metas-e2e:local . || @goto error
+
 
 @echo.
 @echo --------------------------
@@ -24,9 +24,12 @@ docker build -f docker-builds/Dockerfile.mobile -t mazorn/metas-mobile:local . |
 docker build -f docker-builds/Dockerfile.db-standalone -t mazorn/metas-db:local . || @goto error
 docker build -f docker-builds/Dockerfile.db-preloaded -t mazorn/metas-db:local-preloaded . || @goto error
 
+
 @REM ----- for a rainy day -----
+@REM docker build -f docker-builds/Dockerfile.e2e -t mazorn/metas-e2e:local . || @goto error
 @REM docker build -f docker-builds/Dockerfile.procurement.frontend -t mazorn/metas-procurement-frontend:local . || @goto error
 @REM ---------------------------
+
 
 :success
 @echo.

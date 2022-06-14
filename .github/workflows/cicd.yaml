@@ -211,26 +211,17 @@ jobs:
           -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
           -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
-      # - name: build-e2e
-        # run: |
-          # docker buildx build \
-          # -f docker-builds/Dockerfile.e2e \
-          # --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          # -t mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }} \
-          # -t mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }} \
-          # .
+
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
           docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}
           docker logout
-      # docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }}
-      # docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }}
+
   cucumber:
     runs-on: ubuntu-latest
     needs: [init, integration-tests]
-    # environment: 'test'
     continue-on-error: true
     steps:
       - name: run-cucumber-tests
@@ -251,24 +242,6 @@ jobs:
         run: |
           find cucumber -type d -links 2 -exec testspace [{}]{}/*.xml \;
 
-  cypress:
-    if: ${{ false }}  # disable for now
-    runs-on: ubuntu-latest
-    needs: [init, integration-tests]
-    environment: 'test'
-    continue-on-error: true
-    steps:
-      - name: run-cypress-tests
-        env:
-          mysecret: ${{ secrets.TESTMO_TOKEN }}
-          refname: ${{ needs.init.outputs.tag-fixed }}
-        timeout-minutes: 240
-        run: |
-          echo "$mysecret" > mysecret
-          docker cp "$(docker create --name tempcopytainer mazorn/metas-e2e:$refname):/compose.yml" . && docker rm tempcopytainer
-          docker-compose up --abort-on-container-exit --exit-code-from cucumber
-          docker-compose down
-
   redeploy:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
@@ -281,3 +254,37 @@ jobs:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
         with:
           args: delete -n dev --all pods
+
+
+
+
+# DISCARDED CYPRESS
+# - name: build-e2e
+# run: |
+# docker buildx build \
+# -f docker-builds/Dockerfile.e2e \
+# --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+# -t mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }} \
+# -t mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }} \
+# .
+# ---
+# docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }}
+# docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }}
+# ---
+# cypress:
+# if: ${{ false }}  # disable for now
+# runs-on: ubuntu-latest
+# needs: [init, integration-tests]
+# environment: 'test'
+# continue-on-error: true
+# steps:
+# - name: run-cypress-tests
+# env:
+# mysecret: ${{ secrets.TESTMO_TOKEN }}
+# refname: ${{ needs.init.outputs.tag-fixed }}
+# timeout-minutes: 240
+# run: |
+# echo "$mysecret" > mysecret
+# docker cp "$(docker create --name tempcopytainer mazorn/metas-e2e:$refname):/compose.yml" . && docker rm tempcopytainer
+# docker-compose up --abort-on-container-exit --exit-code-from cucumber
+# docker-compose down
