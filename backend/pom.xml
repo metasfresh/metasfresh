@@ -637,7 +637,6 @@
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>1.14.0</version>
                 <configuration>
-
                     <outxmlfile>META-INF/aop.xml</outxmlfile>
                     <aspectLibraries>
                         <aspectLibrary>
@@ -648,10 +647,6 @@
                     <complianceLevel>1.8</complianceLevel>
                     <source>1.8</source>
                     <target>1.8</target>
-                    <sources>
-                        <weaveDirectory>${project.build.outputDirectory}</weaveDirectory>
-                    </sources>
-                    <forceAjcCompile>true</forceAjcCompile>
                 </configuration>
                 <executions>
                     <execution>
