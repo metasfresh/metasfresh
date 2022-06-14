@@ -840,7 +840,7 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000019, SeqNo=21, Updated=now(), UpdatedBy=1
 
 -- 2022-06-13T12:38:58.959Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581029,0,'FoodAdviceType',TO_TIMESTAMP('2022-06-13 13:38:58','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Beratungstyp','Beratungstyp',TO_TIMESTAMP('2022-06-13 13:38:58','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581029,0,'FoodAdviceType',TO_TIMESTAMP('2022-06-13 13:38:58','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Hinweistyp','Hinweistyp',TO_TIMESTAMP('2022-06-13 13:38:58','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-06-13T12:38:58.960Z
@@ -860,7 +860,7 @@ UPDATE AD_Element_Trl SET Name='Advice Type', PrintName='Advice Type',Updated=TO
 
 -- 2022-06-13T12:40:57.514Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,583337,581029,0,17,541589,542165,'FoodAdviceType',TO_TIMESTAMP('2022-06-13 13:40:57','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,30,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Beratungstyp',0,0,TO_TIMESTAMP('2022-06-13 13:40:57','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,583337,581029,0,17,541589,542165,'FoodAdviceType',TO_TIMESTAMP('2022-06-13 13:40:57','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,30,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Hinweistyp',0,0,TO_TIMESTAMP('2022-06-13 13:40:57','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2022-06-13T12:40:57.515Z
@@ -885,7 +885,7 @@ UPDATE AD_Column SET FieldLength=40,Updated=TO_TIMESTAMP('2022-06-13 13:41:40','
 
 -- 2022-06-13T12:42:26.250Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,583337,700642,0,546380,TO_TIMESTAMP('2022-06-13 13:42:26','YYYY-MM-DD HH24:MI:SS'),100,40,'D','Y','N','N','N','N','N','N','N','Beratungstyp',TO_TIMESTAMP('2022-06-13 13:42:26','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,583337,700642,0,546380,TO_TIMESTAMP('2022-06-13 13:42:26','YYYY-MM-DD HH24:MI:SS'),100,40,'D','Y','N','N','N','N','N','N','N','Hinweistyp',TO_TIMESTAMP('2022-06-13 13:42:26','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-06-13T12:42:26.251Z
@@ -910,7 +910,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=700642
 
 -- 2022-06-13T12:42:49.569Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,700642,0,546380,549361,609547,'F',TO_TIMESTAMP('2022-06-13 13:42:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Beratungstyp',20,0,0,TO_TIMESTAMP('2022-06-13 13:42:49','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,700642,0,546380,549361,609547,'F',TO_TIMESTAMP('2022-06-13 13:42:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Hinweistyp',20,0,0,TO_TIMESTAMP('2022-06-13 13:42:49','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-06-13T12:46:04.782Z
