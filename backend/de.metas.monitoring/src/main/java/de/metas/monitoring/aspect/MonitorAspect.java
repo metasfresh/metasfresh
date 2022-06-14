@@ -51,7 +51,7 @@ public class MonitorAspect
 		this.service = service;
 	}
 
-	@Around("@annotation(de.metas.monitoring.annotation.Monitor)")
+	@Around("execution(* *(..)) && @annotation(de.metas.monitoring.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
 	{
 		final PerformanceMonitoringService.Metadata metadata;

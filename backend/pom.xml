@@ -635,7 +635,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.7</version>
+                <version>1.14.0</version>
                 <configuration>
 
                     <outxmlfile>META-INF/aop.xml</outxmlfile>
@@ -646,8 +646,6 @@
                         </aspectLibrary>
                     </aspectLibraries>
                     <complianceLevel>1.8</complianceLevel>
-                    <source>1.8</source>
-                    <target>1.8</target>
                     <forceAjcCompile>true</forceAjcCompile>
                 </configuration>
                 <executions>
