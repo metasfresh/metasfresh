@@ -1328,41 +1328,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET IsActive='N',Updated=TO_TIMESTAMP('2022-06-13 16:04:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583266
 ;
 
--- 2022-06-13T15:05:34.698Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,583338,700643,0,546312,0,TO_TIMESTAMP('2022-06-13 16:05:31','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Lebensmittelhinweise',0,70,0,1,1,TO_TIMESTAMP('2022-06-13 16:05:31','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2022-06-13T15:05:34.699Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=700643 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
-
--- 2022-06-13T15:05:34.701Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581027)
-;
-
--- 2022-06-13T15:05:34.705Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=700643
-;
-
--- 2022-06-13T15:05:34.706Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(700643)
-;
-
--- 2022-06-13T15:05:40.176Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET IsActive='N',Updated=TO_TIMESTAMP('2022-06-13 16:05:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=698517
-;
-
--- 2022-06-13T15:06:34.420Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_UI_Element SET AD_Field_ID=700643,Updated=TO_TIMESTAMP('2022-06-13 16:06:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=608708
-;
-
 -- 2022-06-13T15:09:42.769Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ SELECT public.db_alter_table('M_Product_FoodAdvice','ALTER TABLE public.M_Product_FoodAdvice ADD COLUMN M_FoodAdvice_ID NUMERIC(10)')
@@ -1383,33 +1348,52 @@ UPDATE AD_Column SET IsIdentifier='Y', SeqNo=10,Updated=TO_TIMESTAMP('2022-06-13
 INSERT INTO t_alter_column values('m_product_foodadvice','M_FoodAdvice_ID','NUMERIC(10)',null,null)
 ;
 
--- 2022-06-13T15:13:01.255Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Tab SET AD_Column_ID=583264,Updated=TO_TIMESTAMP('2022-06-13 16:13:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546312
-;
-
--- 2022-06-13T15:17:51.583Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=698517
-;
-
--- 2022-06-13T15:17:51.585Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=698517
-;
-
--- 2022-06-13T15:18:37.392Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,700643,0,546312,549262,609548,'F',TO_TIMESTAMP('2022-06-13 16:18:37','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Lebensmittelhinweise',10,0,0,TO_TIMESTAMP('2022-06-13 16:18:37','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2022-06-13T15:21:43.002Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_UI_Element SET Labels_Selector_Field_ID=700643,Updated=TO_TIMESTAMP('2022-06-13 16:21:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=608709
-;
-
 -- 2022-06-13T15:27:52.211Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2022-06-13 16:27:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583338
 ;
 
+-- 2022-06-14T10:46:54.707Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,583338,700694,0,546292,0,TO_TIMESTAMP('2022-06-14 11:46:53','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Lebensmittelhinweise',0,70,0,1,1,TO_TIMESTAMP('2022-06-14 11:46:53','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-06-14T10:46:54.801Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=700694 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-06-14T10:46:54.896Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581027)
+;
+
+-- 2022-06-14T10:46:54.980Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=700694
+;
+
+-- 2022-06-14T10:46:55.052Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(700694)
+;
+
+-- 2022-06-14T10:47:41.791Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsActive='N',Updated=TO_TIMESTAMP('2022-06-14 11:47:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=698028
+;
+
+-- 2022-06-14T10:48:29.179Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET AD_Field_ID=700694,Updated=TO_TIMESTAMP('2022-06-14 11:48:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=608337
+;
+
+-- 2022-06-14T10:52:41.706Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET Labels_Selector_Field_ID=698029,Updated=TO_TIMESTAMP('2022-06-14 11:52:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=608338
+;
+
+-- 2022-06-14T10:53:33.086Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET Labels_Selector_Field_ID=700694,Updated=TO_TIMESTAMP('2022-06-14 11:53:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=608338
+;
