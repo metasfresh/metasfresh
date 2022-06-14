@@ -193,7 +193,7 @@ jobs:
           runurl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           docker run --rm -v "$(pwd)/junit:/reports" mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
-          find junit -type d -links 2 -exec testspace --build-url $runurl [{}]{}/*.xml \;
+          find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;
       ## push reports
       - name: push-result-image
         run: |
