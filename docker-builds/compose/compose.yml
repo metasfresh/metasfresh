@@ -71,6 +71,23 @@ services:
       mode: replicated
       replicas: 1
 
+  external:
+    image: mazorn/metas-externalsystems:$mfversion
+    environment:
+      - METASFRESH_API_BASEURL=http://app:8282/api
+      - METASFRESH_API_V2_BASEURL=http://app:8282/api/v2
+      - METASFRESH_ERROR-REPORT_FOLDER=file://app:8282/data/error
+      - METASFRESH_API_AUTHTOKEN=37b5d80deb7a4ee098bdc82ff0971c84
+      - CAMEL_COMPONENT_RABBITMQ_HOSTNAME=rabbitmq
+      - CAMEL_COMPONENT_RABBITMQ_PORT=5672
+      - CAMEL_COMPONENT_RABBITMQ_USERNAME=metasfresh
+      - CAMEL_COMPONENT_RABBITMQ_PASSWORD=metasfresh
+    depends_on:
+      - app
+    deploy:
+      mode: replicated
+      replicas: 1
+
   webui:
     image: mazorn/metas-frontend:$mfversion
     ports:
