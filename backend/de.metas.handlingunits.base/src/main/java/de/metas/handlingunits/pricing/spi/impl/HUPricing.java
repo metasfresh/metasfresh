@@ -4,7 +4,9 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.Loggables;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -70,7 +72,7 @@ public class HUPricing extends AttributePricing
 		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
 		if (ctxPriceListVersion == null)
 		{
-			logger.debug("No price list version found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("HUPricing.findMatchingProductPrice - No price list version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
@@ -79,7 +81,7 @@ public class HUPricing extends AttributePricing
 		final HUPIItemProductId packingMaterialId = getPackingMaterialId(pricingCtx);
 		if (packingMaterialId == null)
 		{
-			logger.debug("No packing material found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("HUPricing.findMatchingProductPrice - No packing material found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
@@ -91,7 +93,7 @@ public class HUPricing extends AttributePricing
 
 		if (productPrice == null)
 		{
-			logger.debug("No product attribute pricing found: {}", pricingCtx);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("HUPricing.findMatchingProductPrice - No product attribute pricing found: {}", pricingCtx);
 			return Optional.empty(); // no matching
 		}
 

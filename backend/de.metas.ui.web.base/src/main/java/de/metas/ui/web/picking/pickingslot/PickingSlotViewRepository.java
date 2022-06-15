@@ -256,10 +256,8 @@ public class PickingSlotViewRepository
 	 * Creates a HU related picking slot row for the given HU editor row and the given {@code pickingSlotId}.
 	 *
 	 * @param from          the hu editor row to create a picking slot row for. If it has included HU editor rows, then the method creates an included picking slot line accordingly.
-	 * @param pickingSlotId
-	 * @return
 	 */
-	private static final PickingSlotRow createPickedHURow(@NonNull final PickedHUEditorRow from, final PickingSlotId pickingSlotId)
+	private static PickingSlotRow createPickedHURow(@NonNull final PickedHUEditorRow from, final PickingSlotId pickingSlotId)
 	{
 		final HUEditorRow huEditorRow = from.getHuEditorRow();
 
