@@ -2,7 +2,6 @@ package org.compiere.acct;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostPrice;
@@ -32,7 +31,6 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.TimeUtil;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /*
@@ -77,7 +75,9 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		setQty(qty, isSOTrx);
 	}
 
-	/** @return PO cost amount in accounting schema currency */
+	/**
+	 * @return PO cost amount in accounting schema currency
+	 */
 	CostAmount getPOCostAmount(final AcctSchema as)
 	{
 		final I_C_OrderLine orderLine = getOrderLine();
@@ -122,7 +122,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return costPrice.multiply(getQty());
 	}
 
-	AggregatedCostAmount createCostDetails(final AcctSchema as)
+	void createCostDetails(final AcctSchema as)
 	{
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
@@ -138,7 +138,10 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 		final AcctSchemaId acctSchemaId = as.getId();
 
-		return services.createCostDetail(
+		// NOTE: there is no need to fail if no cost details were created because:
+		// * not all costing methods are creating cost details for MatchPO
+		// * we are not using the result of cost details
+		services.createCostDetailOrEmpty(
 				CostDetailCreateRequest.builder()
 						.acctSchemaId(acctSchemaId)
 						.clientId(ClientId.ofRepoId(orderLine.getAD_Client_ID()))
