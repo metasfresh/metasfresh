@@ -59,7 +59,7 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 			return; // shall not happen
 		}
 
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		orderBL.reopenLine(orderLine);
+		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 	}
 }

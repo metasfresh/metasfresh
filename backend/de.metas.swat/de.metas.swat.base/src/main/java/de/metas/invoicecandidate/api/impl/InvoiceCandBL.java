@@ -2075,21 +2075,28 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
-		udpateIsDeliveryClosedForInvoiceCandidates(invoiceCandidates.iterator());
+		udpateIsDeliveryClosedForInvoiceCandidates(invoiceCandidates.iterator(), true);
+	}
+
+	@Override
+	public void openDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		udpateIsDeliveryClosedForInvoiceCandidates(invoiceCandidates.iterator(), false);
 	}
 
 	public void udpateIsDeliveryClosedForInvoiceCandidates(
-			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose)
+			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose, boolean isDeliveryClosed)
 	{
 		while (candidatesToClose.hasNext())
 		{
-			udpateIsDeliveryClosedForInvoiceCandidate(candidatesToClose.next());
+			udpateIsDeliveryClosedForInvoiceCandidate(candidatesToClose.next(), isDeliveryClosed);
 		}
 	}
 
-	public void udpateIsDeliveryClosedForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
+	public void udpateIsDeliveryClosedForInvoiceCandidate(final I_C_Invoice_Candidate candidate, boolean isDeliveryClosed)
 	{
-		candidate.setIsDeliveryClosed(true);
+		candidate.setIsDeliveryClosed(isDeliveryClosed);
 
 		if (!InterfaceWrapperHelper.hasChanges(candidate))
 		{
