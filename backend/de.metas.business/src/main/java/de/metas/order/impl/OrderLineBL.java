@@ -423,9 +423,9 @@ public class OrderLineBL implements IOrderLineBL
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
-		if (orderLine.getQtyOrdered().signum() <= 0)
+		if (orderLine.getQtyOrdered().signum() <= 0 || orderLine.isDeliveryClosed())
 		{
-			logger.debug("Given orderLine {} has QtyOrdered<=0; setting QtyReserved=0.", orderLine);
+			logger.debug("Given orderLine {} has QtyOrdered<=0 or delivery was closed; setting QtyReserved=0.", orderLine);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
