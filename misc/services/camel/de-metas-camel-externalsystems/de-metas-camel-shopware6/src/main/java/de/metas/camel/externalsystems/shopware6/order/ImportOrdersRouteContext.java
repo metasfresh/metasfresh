@@ -22,14 +22,15 @@
 
 package de.metas.camel.externalsystems.shopware6.order;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
+import de.metas.camel.externalsystems.shopware6.api.model.order.Customer;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
-import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
@@ -56,6 +57,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_ORDER_CUSTOMER;
 
 @Data
 @Builder
@@ -149,7 +152,7 @@ public class ImportOrdersRouteContext
 	private JsonProductLookup jsonProductLookup;
 
 	@Nullable
-	JsonOrderAddress orderShippingAddress;
+	JsonAddress orderShippingAddress;
 
 	@Nullable
 	private PriceListBasicInfo priceListBasicInfo;
@@ -281,52 +284,19 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
-	public ExternalIdentifier getMetasfreshId()
+	public ExternalIdentifier getBPExternalIdentifier()
 	{
-		final String id = getId(metasfreshIdJsonPath);
-		if (!Check.isBlank(id))
-		{
-			return ExternalIdentifier.builder()
-					.identifier(id)
-					.rawValue(id)
-					.build();
-		}
-		return getUserId();
+		final Customer customer = getCustomer();
+
+		return customer.getExternalIdentifier(metasfreshIdJsonPath, shopwareIdJsonPath);
 	}
 
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
-		final String id = getId(shopwareIdJsonPath);
-		if (!Check.isBlank(id))
-		{
-			return ExternalIdentifier.builder()
-					.identifier(ExternalIdentifierFormat.formatExternalId(id))
-					.rawValue(id)
-					.build();
-		}
-		final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
+		final Customer customer = getCustomer();
 
-		return ExternalIdentifier.builder()
-				.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
-				.rawValue(customerId)
-				.build();
-	}
-
-	@Nullable
-	private String getId(@Nullable final String bpLocationCustomJsonPath)
-	{
-		if (Check.isBlank(bpLocationCustomJsonPath))
-		{
-			return null;
-		}
-		final OrderCandidate order = getOrderNotNull();
-		final String id = order.getCustomField(bpLocationCustomJsonPath);
-		if (!Check.isBlank(id))
-		{
-			return id;
-		}
-		return null;
+		return customer.getShopwareId(shopwareIdJsonPath);
 	}
 
 	@Nullable
@@ -354,7 +324,7 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
-	public JsonOrderAddress getOrderShippingAddressNotNull()
+	public JsonAddress getOrderShippingAddressNotNull()
 	{
 		return Check.assumeNotNull(orderShippingAddress, "orderShippingAddress cannot be null at this stage!");
 	}
@@ -368,5 +338,20 @@ public class ImportOrdersRouteContext
 		}
 
 		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
+	}
+
+	@NonNull
+	public Customer getCustomer()
+	{
+		final OrderCandidate orderCandidate = getOrderNotNull();
+
+		final JsonNode customerNode = orderCandidate.getCustomNode(JSON_NODE_ORDER_CUSTOMER);
+
+		if (customerNode == null)
+		{
+			throw new RuntimeException("Missing customer info for order: " + orderCandidate.getJsonOrder().getId());
+		}
+
+		return Customer.of(customerNode, orderCandidate.getJsonOrder().getOrderCustomer());
 	}
 }

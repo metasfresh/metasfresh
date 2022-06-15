@@ -22,9 +22,7 @@
 
 package de.metas.scheduler;
 
-import de.metas.common.util.Check;
 import de.metas.process.AdProcessId;
-import de.metas.scheduler.AdSchedulerId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,7 +31,6 @@ import org.compiere.model.I_AD_Scheduler;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class SchedulerDao
@@ -41,19 +38,12 @@ public class SchedulerDao
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public Optional<I_AD_Scheduler> getSchedulerByProcessIdIfUnique(@NonNull final AdProcessId processId)
+	public List<I_AD_Scheduler> getSchedulersByProcessId(@NonNull final AdProcessId processId)
 	{
-		final List<I_AD_Scheduler> records = queryBL.createQueryBuilder(I_AD_Scheduler.class)
+		return queryBL.createQueryBuilder(I_AD_Scheduler.class)
 				.addEqualsFilter(I_AD_Scheduler.COLUMNNAME_AD_Process_ID, processId.getRepoId())
 				.create()
 				.list(I_AD_Scheduler.class);
-
-		if (!Check.isSingleElement(records))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(records.get(0));
 	}
 
 	@NonNull

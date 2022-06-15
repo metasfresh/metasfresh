@@ -49,10 +49,10 @@ public class OrderCandidate
 	String salesRepId;
 
 	@Nullable
-	public String getCustomField(@NonNull final String customPath)
+	public JsonNode getCustomNode(@NonNull final String customPath)
 	{
-		final JsonNode customIdNode = orderNode.at(customPath);
+		final JsonNode customNode = orderNode.get(customPath);
 
-		return (customIdNode == null || customIdNode.isMissingNode() || customIdNode.isNull()) ? null : customIdNode.asText();
+		return (customNode == null || customNode.isMissingNode() || customNode.isNull()) ? null : customNode;
 	}
 }

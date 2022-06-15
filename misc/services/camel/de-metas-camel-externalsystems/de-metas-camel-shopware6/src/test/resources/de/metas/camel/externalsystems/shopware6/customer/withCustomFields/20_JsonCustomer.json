@@ -1,0 +1,199 @@
+{
+  "total": 1,
+  "data": [
+    {
+      "id": "id",
+      "firstName": "firstName",
+      "lastName": "lastName",
+      "company": "company",
+      "customerNumber": "customerNumber",
+      "email": "firstName@lastName.de",
+      "groupId": "customerGroupId",
+      "defaultBillingAddressId": "customerAddressId",
+      "defaultShippingAddressId": "customerAddressId",
+      "createdAt": "2022-03-20T10:28:02.235+00:00",
+      "updatedAt": "2022-05-18T12:21:05.862+00:00",
+      "vatIds": [
+        "vatId1"
+      ],
+      "defaultPaymentMethodId": "8359cef2c19e424abe6799824486b6b7",
+      "salesChannelId": "620a2217f7474e619cb00ad39e804cca",
+      "languageId": "2fbb5fe2e29a4d70aa5854ce7ce3e20b",
+      "lastPaymentMethodId": null,
+      "salutationId": "b089fb7c57694384ba91734a6cacc615",
+      "title": null,
+      "affiliateCode": null,
+      "campaignCode": null,
+      "active": true,
+      "doubleOptInRegistration": false,
+      "doubleOptInEmailSentDate": null,
+      "doubleOptInConfirmDate": null,
+      "hash": null,
+      "guest": false,
+      "firstLogin": "2022-03-20T10:28:02.150+00:00",
+      "lastLogin": "2022-05-18T12:21:05.827+00:00",
+      "newsletter": false,
+      "birthday": null,
+      "lastOrderDate": "2022-03-21T08:15:22.579+00:00",
+      "orderCount": 2,
+      "orderTotalAmount": 0,
+      "group": null,
+      "defaultPaymentMethod": null,
+      "salesChannel": null,
+      "language": null,
+      "lastPaymentMethod": null,
+      "salutation": {
+        "salutationKey": "undefined",
+        "displayName": "",
+        "letterName": "",
+        "translations": null,
+        "customers": null,
+        "customerAddresses": null,
+        "orderCustomers": null,
+        "orderAddresses": null,
+        "newsletterRecipients": null,
+        "_uniqueIdentifier": "ed643807c9f84cc8b50132ea3ccb1c3b",
+        "versionId": null,
+        "translated": {
+          "displayName": "",
+          "letterName": "",
+          "customFields": [
+          ]
+        },
+        "createdAt": "2022-05-25T12:10:14.797+00:00",
+        "updatedAt": null,
+        "extensions": {
+          "foreignKeys": {
+            "apiAlias": null,
+            "extensions": [
+            ]
+          }
+        },
+        "id": "ed643807c9f84cc8b50132ea3ccb1c3b",
+        "customFields": null,
+        "apiAlias": "salutation"
+      },
+      "defaultBillingAddress": null,
+      "defaultShippingAddress": null,
+      "activeBillingAddress": null,
+      "activeShippingAddress": null,
+      "addresses": null,
+      "orderCustomers": null,
+      "autoIncrement": 16189,
+      "tags": null,
+      "tagIds": null,
+      "promotions": null,
+      "recoveryCustomer": null,
+      "productReviews": null,
+      "remoteAddress": "89.157.232.0",
+      "requestedGroupId": null,
+      "requestedGroup": null,
+      "boundSalesChannelId": null,
+      "boundSalesChannel": null,
+      "wishlists": null,
+      "_uniqueIdentifier": "d165beffbe8f428d87c8a9701b5d69e6",
+      "versionId": null,
+      "translated": [
+      ],
+      "extensions": {
+        "foreignKeys": {
+          "apiAlias": null,
+          "extensions": [
+          ]
+        },
+        "partnerMap": {
+          "customer": null,
+          "customerId": "d165beffbe8f428d87c8a9701b5d69e6",
+          "partnerBodymedCenter": null,
+          "partnerBodymedCenterId": null,
+          "affiliateBodymedCenter": null,
+          "affiliateBodymedCenterId": null,
+          "givenMykey": "HAV-CUX-27474",
+          "referrer": "https://bodymed-shop.madco-lab.de/account/mykey?q=%2Faccount%2Fmykey",
+          "affiliateOrigin": null,
+          "_uniqueIdentifier": "1dc0f45c5cfd47f5a5ac0b79813fd59a",
+          "versionId": null,
+          "translated": [
+          ],
+          "createdAt": "2022-05-07T06:46:51.000+00:00",
+          "updatedAt": null,
+          "extensions": {
+            "foreignKeys": {
+              "apiAlias": null,
+              "extensions": [
+              ]
+            },
+            "internal_mapping_storage": {
+              "apiAlias": null,
+              "extensions": [
+              ]
+            }
+          },
+          "id": "1dc0f45c5cfd47f5a5ac0b79813fd59a"
+        },
+        "cooperationPartner": {
+          "pharmacyCustomer": null,
+          "pharmacyCustomerId": "d165beffbe8f428d87c8a9701b5d69e6",
+          "partnerBodymedCenter": {
+            "uuid": "ecd67cb3-cd03-04d6-6ced-fb55864bb917",
+            "name": "Bodymed-Center Karlstadt",
+            "customerNumber": "BMK25975",
+            "streetAddress": "Mainkaistraße 2 / 2. Stock",
+            "postalCode": "97753",
+            "addressLocality": "Karlstadt",
+            "addressCountry": "DE",
+            "code": "KAR-ADT-97753",
+            "uid": "1390",
+            "affiliateId": 90466,
+            "oxidId": "ecd67cb3cd0304d66cedfb55864bb917",
+            "tags": null,
+            "clientCustomerPartnerMaps": [
+            ],
+            "affiliateCustomerPartnerMaps": [
+            ],
+            "_uniqueIdentifier": "00197905ad964f71a2159963a5e33a94",
+            "versionId": null,
+            "translated": [
+            ],
+            "createdAt": "2022-04-04T08:10:14.418+00:00",
+            "updatedAt": "2022-04-07T12:10:56.797+00:00",
+            "extensions": {
+              "foreignKeys": {
+                "apiAlias": null,
+                "extensions": [
+                ]
+              },
+              "internal_mapping_storage": {
+                "apiAlias": null,
+                "extensions": [
+                ]
+              }
+            },
+            "id": "00197905ad964f71a2159963a5e33a94"
+          },
+          "partnerBodymedCenterId": "00197905ad964f71a2159963a5e33a94",
+          "_uniqueIdentifier": "1e25decee2044913b2bf9498f263f195",
+          "versionId": null,
+          "translated": [
+          ],
+          "createdAt": "2022-04-22T08:05:03.000+00:00",
+          "updatedAt": null,
+          "extensions": {
+            "foreignKeys": {
+              "apiAlias": null,
+              "extensions": [
+              ]
+            }
+          },
+          "id": "1e25decee2044913b2bf9498f263f195"
+        }
+      },
+      "customFields": {
+        "custom_customer_attributes_origin": null,
+        "metasfreshId": "123456",
+        "bodymedUserId": "4444"
+      },
+      "apiAlias": "customer"
+    }
+  ]
+}

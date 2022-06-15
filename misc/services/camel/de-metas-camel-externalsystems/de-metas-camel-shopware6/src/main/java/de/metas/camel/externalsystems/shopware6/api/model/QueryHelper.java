@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,13 +20,12 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.order;
+package de.metas.camel.externalsystems.shopware6.api.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
+import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
+import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -42,10 +41,10 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_ORDER_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_ORDER_NUMBER;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_GTE;
 
 @UtilityClass
-public class OrderQueryHelper
+public class QueryHelper
 {
 	@NonNull
 	@VisibleForTesting
@@ -53,38 +52,20 @@ public class OrderQueryHelper
 	{
 		return JsonQuery.builder()
 				.field(key)
-				.queryType(JsonQuery.QueryType.EQUALS)
+				.queryType(QueryType.EQUALS)
 				.value(value)
 				.build();
 	}
 
 	@NonNull
-	@VisibleForTesting
-	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter)
+	public static MultiQueryRequest buildUpdatedAfterFilterQueryRequest(@NonNull final String updatedAfter)
 	{
-		final HashMap<String, String> parameters = new HashMap<>();
-		parameters.put(PARAMETERS_DATE_GTE, updatedAfter);
-
 		return MultiQueryRequest.builder()
-				.isQueryByDate(Boolean.TRUE)
-				.filter(MultiJsonFilter.builder()
-								.operatorType(MultiJsonFilter.OperatorType.OR)
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_UPDATED_AT)
-												   .queryType(JsonQuery.QueryType.RANGE)
-												   .parameters(parameters)
-												   .build())
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_CREATED_AT)
-												   .queryType(JsonQuery.QueryType.RANGE)
-												   .parameters(parameters)
-												   .build())
-								.build())
+				.filter(buildUpdatedAfterJsonQueries(updatedAfter))
 				.build();
 	}
 
 	@NonNull
-	@VisibleForTesting
 	public ImportOrdersRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request)
 	{
 		final ImmutableList.Builder<JsonQuery> jsonQueries = ImmutableList.builder();
@@ -106,8 +87,9 @@ public class OrderQueryHelper
 		if (!Check.isEmpty(queries))
 		{
 			final MultiQueryRequest multiQueryRequest = MultiQueryRequest.builder()
-					.filter(MultiJsonFilter.builder()
-									.operatorType(MultiJsonFilter.OperatorType.AND)
+					.filter(JsonQuery.builder()
+									.queryType(QueryType.MULTI)
+									.operatorType(OperatorType.AND)
 									.jsonQueries(queries)
 									.build())
 					.build();
@@ -128,12 +110,62 @@ public class OrderQueryHelper
 					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
 					Instant.ofEpochSecond(0).toString());
 
-			final MultiQueryRequest multiQueryRequest = buildUpdatedAfterQueryRequest(updatedAfter);
+			final MultiQueryRequest multiQueryRequest = buildUpdatedAfterFilterQueryRequest(updatedAfter);
 
 			return ImportOrdersRequest.builder()
 					.shopware6QueryRequest(multiQueryRequest)
 					.ignoreNextImportTimestamp(ignoreNextImportTimestamp)
 					.build();
 		}
+	}
+
+	@NonNull
+	public static MultiQueryRequest buildShopware6GetCustomersQueryRequest(@NonNull final String updatedAfter)
+	{
+		return MultiQueryRequest.builder()
+				.filter(JsonQuery.builder()
+								.queryType(QueryType.MULTI)
+								.operatorType(OperatorType.AND)
+								.jsonQuery(buildUpdatedAfterJsonQueries(updatedAfter))
+								.jsonQuery(buildCustomerWithOrdersJsonQuery())
+								.build())
+				.build();
+	}
+
+	@NonNull
+	@VisibleForTesting
+	public static JsonQuery buildUpdatedAfterJsonQueries(@NonNull final String updatedAfter)
+	{
+		final HashMap<String, String> parameters = new HashMap<>();
+		parameters.put(PARAMETERS_GTE, updatedAfter);
+
+		return JsonQuery.builder()
+				.queryType(QueryType.MULTI)
+				.operatorType(OperatorType.OR)
+				.jsonQuery(JsonQuery.builder()
+								   .field(FIELD_UPDATED_AT)
+								   .queryType(QueryType.RANGE)
+								   .parameters(parameters)
+								   .build())
+				.jsonQuery(JsonQuery.builder()
+								   .field(FIELD_CREATED_AT)
+								   .queryType(QueryType.RANGE)
+								   .parameters(parameters)
+								   .build())
+				.build();
+	}
+
+	@NonNull
+	@VisibleForTesting
+	public static JsonQuery buildCustomerWithOrdersJsonQuery()
+	{
+		final HashMap<String, String> parameters = new HashMap<>();
+		parameters.put(Shopware6Constants.PARAMETERS_GT, String.valueOf(0));
+
+		return JsonQuery.builder()
+				.field(Shopware6Constants.FIELD_ORDER_COUNT)
+				.queryType(QueryType.RANGE)
+				.parameters(parameters)
+				.build();
 	}
 }
