@@ -9,6 +9,8 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -45,6 +47,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.SynchronizedMutable.OldAndNewValues;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -345,6 +348,24 @@ public final class DefaultView implements IEditableView
 
 	@Override
 	public ViewResult getPage(
+			final int firstRow,
+			final int pageLength,
+			final ViewRowsOrderBy orderBy)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getPage0(firstRow, pageLength, orderBy),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DefaultView")
+						.type(PerformanceMonitoringService.Type.VIEW)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private ViewResult getPage0(
 			final int firstRow,
 			final int pageLength,
 			final ViewRowsOrderBy orderBy)
