@@ -159,6 +159,7 @@ Feature: Render invoice address
       | invoice_1               | customer_bp_26_02        | bpLocation_CH                     | order_ref_45607 | 1000002     | true      | CO        | locationBPNameCH\naddr 33\n258 locationCity_CH\nSchweiz |
 
 
+  @Id:S0150_250
   Scenario: Invoice when origin order disposition has bpartnerName
     Given metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |

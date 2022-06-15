@@ -51,6 +51,8 @@ Feature: Shipment schedule export rest-api
       | billUser_ref                      | Shopware6      | UserID  | billUser_reference    | billUser                  |                             |
       | shipperTest_ref                   | Shopware6      | Shipper | shipperTest_reference |                           | shipper_test                |
 
+
+  @Id:S0150_210
   Scenario: Export oxid shipment candidate
     Given load AD_User:
       | AD_User_ID.Identifier | Login      |
@@ -150,6 +152,8 @@ Feature: Shipment schedule export rest-api
 
     And set sys config int value -1 for sys config de.metas.rest_api.v2.shipping.c_olcand.OxidUserId
 
+
+  @Id:S0150_220
   Scenario: Export non-oxid shipment schedule from order candidate
     Given set sys config int value -1 for sys config de.metas.rest_api.v2.shipping.c_olcand.OxidUserId
     And reset all cache

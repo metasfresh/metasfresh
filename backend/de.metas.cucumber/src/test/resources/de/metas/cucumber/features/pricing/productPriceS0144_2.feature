@@ -137,6 +137,7 @@ Feature: Product price validation
 
   @from:cucumber
   @Id:S0144.2_120
+  @Id:S0150_200
   Scenario: Validate that productPrice attributes and packing material are preserved on order line
     Given metasfresh contains M_Products:
       | Identifier          | Name                |

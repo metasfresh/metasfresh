@@ -35,6 +35,7 @@ Feature: Hierarchy commission and license fee commission combined
 
   @from:cucumber
   @topic:commissionContracts
+  @Id:S0150_170
   Scenario: Hierarchy commission and license fee commission combined having two sales rep in hierarchy
     And metasfresh contains C_HierarchyCommissionSettings:
       | C_HierarchyCommissionSettings_ID.Identifier | Name        | Commission_Product_ID.Identifier | IsSubtractLowerLevelCommissionFromBase |
@@ -217,6 +218,7 @@ Feature: Hierarchy commission and license fee commission combined
 
   @from:cucumber
   @topic:commissionContracts
+  @Id:S0150_180
   Scenario: Hierarchy commission and license fee commission combined having the salesRep as direct customer
     And metasfresh contains C_HierarchyCommissionSettings:
       | C_HierarchyCommissionSettings_ID.Identifier | Name                        | Commission_Product_ID.Identifier | IsCreateShareForOwnRevenue |
