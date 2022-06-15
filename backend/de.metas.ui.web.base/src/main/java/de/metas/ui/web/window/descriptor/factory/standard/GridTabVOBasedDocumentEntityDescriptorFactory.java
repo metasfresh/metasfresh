@@ -25,7 +25,6 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -40,6 +39,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -492,8 +492,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	{
 		if(gridFieldVO.isVirtualColumn())
 		{
-			final String sql = gridFieldVO.getColumnSQL(false);
-			return ColumnSql.ofSql(sql, contextTableName);
+			return gridFieldVO.getColumnSql(contextTableName);
 		}
 		else
 		{

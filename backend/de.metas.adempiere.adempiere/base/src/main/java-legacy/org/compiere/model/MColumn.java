@@ -16,6 +16,26 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -25,30 +45,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.util.CtxNames;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /**
  * Persistent Column Model
@@ -257,13 +253,6 @@ public class MColumn extends X_AD_Column
 		// Virtual Column
 		if (isVirtualColumn())
 		{
-			// Make sure there are no context variables in ColumnSQL
-			final String columnSql = getColumnSQL();
-			if (columnSql != null && columnSql.indexOf(CtxNames.NAME_Marker) >= 0)
-			{
-				throw new AdempiereException("Context variables are not allowed in ColumnSQL: " + columnSql);
-			}
-
 			if (isMandatory())
 				setIsMandatory(false);
 			if (isUpdateable())

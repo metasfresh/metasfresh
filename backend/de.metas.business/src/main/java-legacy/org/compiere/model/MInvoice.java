@@ -283,6 +283,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		setEMail((ship.getEMail()));
 
+		setAD_InputDataSource_ID(ship.getAD_InputDataSource_ID());
+
 		// metas: additional fields
 		final IPOService poService = Services.get(IPOService.class);
 		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_C_Incoterms_ID);
@@ -361,6 +363,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setUser2_ID(ship.getUser2_ID());
 
 		setEMail(ship.getEMail());
+
+		setAD_InputDataSource_ID(ship.getAD_InputDataSource_ID());
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);

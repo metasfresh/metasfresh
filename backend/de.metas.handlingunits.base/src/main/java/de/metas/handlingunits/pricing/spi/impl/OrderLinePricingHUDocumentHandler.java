@@ -14,6 +14,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
@@ -118,6 +119,12 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 
 		final I_M_AttributeSetInstance asi = attributePricingBL.generateASI(productPrice);
 		orderLine.setM_AttributeSetInstance(asi);
+
+		//dev-note: making sure price attributes are preserved
+		if (asi != null)
+		{
+			IModelAttributeSetInstanceListener.DYNATTR_DisableASIUpdateOnModelChange.setValue(orderLine, true);
+		}
 	}
 
 	/**
