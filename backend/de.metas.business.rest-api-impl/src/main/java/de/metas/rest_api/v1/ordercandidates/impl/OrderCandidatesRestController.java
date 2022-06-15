@@ -30,7 +30,6 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.utils.ApiAPMHelper;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
@@ -48,8 +47,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -113,7 +110,6 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
 	private final BpartnerRestController bpartnerRestController;
-	private final PerformanceMonitoringService perfMonService;
 
 	private PermissionServiceFactory permissionServiceFactory;
 
@@ -126,7 +122,6 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
 		this.bpartnerRestController = bpartnerRestController;
-		this.perfMonService = perfMonService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -193,34 +188,12 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		perfMonService.monitor(
-				() -> bulkRequest.getRequests()
+		bulkRequest.getRequests()
 						.stream()
-						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
-				ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
+						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider));
 	}
 
 	private void createOrUpdateMasterdata(
-			@NonNull final JsonOLCandCreateRequest json,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		try (final MDCCloseable extHeaderMDC = MDC.putCloseable("externalHeaderId", json.getExternalHeaderId());
-				final MDCCloseable extLineMDC = MDC.putCloseable("externalLineId", json.getExternalLineId()))
-		{
-			final Metadata metadata = Metadata.builder()
-					.name("CreateOrUpdateMasterDataSingle")
-					.type(Type.REST_API_PROCESSING)
-					.label(PerformanceMonitoringService.LABEL_EXTERNAL_HEADER_ID, json.getExternalHeaderId())
-					.label(PerformanceMonitoringService.LABEL_EXTERNAL_LINE_ID, json.getExternalLineId())
-					.build();
-
-			perfMonService.monitor(
-					() -> createOrUpdateMasterdata0(json, masterdataProvider),
-					metadata);
-		}
-	}
-
-	private void createOrUpdateMasterdata0(
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
@@ -298,20 +271,6 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 	}
 
 	private JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
-			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		final Metadata metadata = Metadata.builder()
-				.name("CreatOrderLineCandidatesBulk")
-				.type(Type.REST_API_PROCESSING)
-				.build();
-
-		return perfMonService.monitor(
-				() -> creatOrderLineCandidates0(bulkRequest, masterdataProvider),
-				metadata);
-	}
-
-	private JsonOLCandCreateBulkResponse creatOrderLineCandidates0(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
