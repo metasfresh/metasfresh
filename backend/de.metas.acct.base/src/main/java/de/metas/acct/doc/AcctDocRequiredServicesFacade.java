@@ -38,6 +38,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyConversionTypeId;
@@ -293,6 +294,12 @@ public class AcctDocRequiredServicesFacade
 	public AggregatedCostAmount createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return costingService.createCostDetail(request);
+	}
+
+	@SuppressWarnings("UnusedReturnValue")
+	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	{
+		return costingService.createCostDetailOrEmpty(request);
 	}
 
 	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)

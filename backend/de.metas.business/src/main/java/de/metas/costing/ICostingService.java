@@ -1,7 +1,8 @@
 package de.metas.costing;
 
+import de.metas.i18n.ExplainedOptional;
 import de.metas.order.OrderLineId;
-import de.metas.uom.UomId;
+import lombok.NonNull;
 
 import java.util.Optional;
 
@@ -30,6 +31,8 @@ import java.util.Optional;
 public interface ICostingService
 {
 	AggregatedCostAmount createCostDetail(CostDetailCreateRequest request);
+
+	ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull CostDetailCreateRequest request);
 
 	AggregatedCostAmount createReversalCostDetails(CostDetailReverseRequest request);
 
