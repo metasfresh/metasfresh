@@ -2015,6 +2015,22 @@ public abstract class PO
 	 */
 	protected final boolean load(final HashMap<String, String> hmIn)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+
+		return service.monitor(
+				() -> load0(hmIn),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("PO")
+						.type(PerformanceMonitoringService.Type.PO)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private final boolean load0(final HashMap<String, String> hmIn)
+	{
 		final int size = get_ColumnCount();
 		boolean success = true;
 		int index = 0;
@@ -4660,6 +4676,22 @@ public abstract class PO
 	 * @param trxName transaction
 	 */
 	public static int[] getAllIDs(final String TableName, final String WhereClause, final String trxName)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+
+		return service.monitor(
+				() -> getAllIDs0(TableName, WhereClause, trxName),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("PO")
+						.type(PerformanceMonitoringService.Type.PO)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private static int[] getAllIDs0(final String TableName, final String WhereClause, final String trxName)
 	{
 		final ArrayList<Integer> list = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder("SELECT ");

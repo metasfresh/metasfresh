@@ -248,6 +248,21 @@ public class DB
 	 */
 	public boolean connect()
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> connect0(),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private boolean connect0()
+	{
 		// direct connection
 		boolean success = false;
 		Connection connRW = null;
@@ -456,6 +471,21 @@ public class DB
 	 */
 	public CallableStatement prepareCall(final String SQL, final int resultSetConcurrency, final String trxName)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> prepareCall0(SQL, resultSetConcurrency, trxName),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private CallableStatement prepareCall0(final String SQL, final int resultSetConcurrency, final String trxName)
+	{
 		if (SQL == null || SQL.length() == 0)
 		{
 			throw new IllegalArgumentException("Required parameter missing - " + SQL);
@@ -523,6 +553,24 @@ public class DB
 			final int resultSetConcurrency,
 			final String trxName)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> prepareStatement0(sql, resultSetType, resultSetConcurrency, trxName),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private CPreparedStatement prepareStatement0(final String sql,
+		final int resultSetType,
+		final int resultSetConcurrency,
+		final String trxName)
+		{
 		if (sql == null || sql.length() == 0)
 		{
 			throw new IllegalArgumentException("No SQL");
@@ -584,6 +632,21 @@ public class DB
 	 * @return Statement - either r/w ir r/o depending on concur
 	 */
 	public Statement createStatement(final int resultSetType, final int resultSetConcurrency, final String trxName)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> createStatement0(resultSetType, resultSetConcurrency, trxName),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private Statement createStatement0(final int resultSetType, final int resultSetConcurrency, final String trxName)
 	{
 		return statementsFactory.newCStatement(resultSetType, resultSetConcurrency, trxName);
 	}    // createStatement
@@ -776,6 +839,26 @@ public class DB
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql,
+			final Object[] params,
+			@NonNull final OnFail onFail,
+			final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> executeUpdate0(sql, params, onFail, trxName, timeOut, updateReturnProcessor),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private int executeUpdate0(final String sql,
 			final Object[] params,
 			@NonNull final OnFail onFail,
 			final String trxName,
@@ -1280,21 +1363,6 @@ public class DB
 	 * @throws DBException if there is any SQLException
 	 */
 	public BigDecimal getSQLValueBDEx(final String trxName, final String sql, final Object... params) throws DBException
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getSQLValueBDEx0(trxName, sql, params),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
-	}
-
-	private BigDecimal getSQLValueBDEx0(final String trxName, final String sql, final Object... params) throws DBException
 	{
 		BigDecimal retValue = null;
 		PreparedStatement pstmt = null;
@@ -2727,6 +2795,26 @@ public class DB
 			@Nullable final String trxName,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> retrieveRows0(sql, sqlParams, trxName, loader),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	@NonNull
+	private static <T> ImmutableList<T> retrieveRows0(
+			@NonNull final CharSequence sql,
+			@Nullable final List<Object> sqlParams,
+			@Nullable final String trxName,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -2758,6 +2846,24 @@ public class DB
 	}
 
 	public <T> T retrieveFirstRowOrNull(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetRowLoader<T> loader)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> retrieveFirstRowOrNull0(sql, sqlParams, loader),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private <T> T retrieveFirstRowOrNull0(
 			@NonNull final String sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
