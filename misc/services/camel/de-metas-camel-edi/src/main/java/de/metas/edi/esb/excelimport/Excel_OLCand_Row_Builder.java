@@ -28,6 +28,7 @@ import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -48,6 +49,7 @@ import java.util.TreeMap;
 public class Excel_OLCand_Row_Builder
 {
 	public static final String MAPKEY_LineNo = "LineNo";
+	@Nullable
 	Integer lineNo;
 	//
 	private static final String MAPKEY_M_Product_ID = "M_Product_ID";
@@ -178,11 +180,12 @@ public class Excel_OLCand_Row_Builder
 		}
 	}
 
-	private static Object getValue(final Map<String, Object> map, final String key)
+	private static Object getValue(@NonNull final Map<String, Object> map, @NonNull final String key)
 	{
 		return map.get(key);
 	}
 
+	@Nullable
 	private static String extractString(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
@@ -323,7 +326,8 @@ public class Excel_OLCand_Row_Builder
 		return numberCandidate.stripTrailingZeros().scale() <= 0;
 	}
 
-	private Date extractDate(final Map<String, Object> map, final String key)
+	@Nullable
+	private Date extractDate(@NonNull final Map<String, Object> map, @NonNull final String key)
 	{
 		final Object value = getValue(map, key);
 		if (value == null)
