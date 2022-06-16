@@ -1,0 +1,5 @@
+-- 2022-06-16T17:18:10.148Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=609600
+;
+
