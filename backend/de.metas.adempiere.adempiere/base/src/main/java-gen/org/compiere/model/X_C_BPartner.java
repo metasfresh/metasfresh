@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner
  *  @author metasfresh (generated)
@@ -13,7 +14,6 @@ import java.util.Properties;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 1539313489L;
 	private static final long serialVersionUID = -607909614L;
 
 	/** Standard Constructor */
@@ -416,6 +416,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setCommercialRegisterNumber (final @Nullable java.lang.String CommercialRegisterNumber)
+	{
+		set_Value (COLUMNNAME_CommercialRegisterNumber, CommercialRegisterNumber);
+	}
+
+	@Override
+	public java.lang.String getCommercialRegisterNumber()
+	{
+		return get_ValueAsString(COLUMNNAME_CommercialRegisterNumber);
+	}
+
+	@Override
 	public void setCompanyName (final @Nullable java.lang.String CompanyName)
 	{
 		set_Value (COLUMNNAME_CompanyName, CompanyName);
@@ -704,6 +716,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setEORI (final @Nullable java.lang.String EORI)
+	{
+		set_Value (COLUMNNAME_EORI, EORI);
+	}
+
+	@Override
+	public java.lang.String getEORI()
+	{
+		return get_ValueAsString(COLUMNNAME_EORI);
+	}
+
+	@Override
 	public void setExcludeFromPromotions (final boolean ExcludeFromPromotions)
 	{
 		set_Value (COLUMNNAME_ExcludeFromPromotions, ExcludeFromPromotions);
@@ -893,6 +917,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String INVOICERULE_Immediate = "I";
 	/** OrderCompletelyDelivered = C */
 	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
+	/** After Pick = P */
+	public static final String INVOICERULE_AfterPick = "P";
 	@Override
 	public void setInvoiceRule (final @Nullable java.lang.String InvoiceRule)
 	{
@@ -1500,7 +1526,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsInt(COLUMNNAME_NumberEmployees);
 	}
 
-	/**
 	@Override
 	public void setOldValue (final @Nullable java.lang.String OldValue)
 	{
@@ -1558,6 +1583,12 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = V */
+	public static final String PAYMENTRULE_PayPalExtern = "V";
+	/** Kreditkarte Extern = U */
+	public static final String PAYMENTRULE_KreditkarteExtern = "U";
+	/** Sofortüberweisung = R */
+	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
@@ -1591,6 +1622,12 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PAYMENTRULEPO_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULEPO_PayPal = "L";
+	/** PayPal Extern = V */
+	public static final String PAYMENTRULEPO_PayPalExtern = "V";
+	/** Kreditkarte Extern = U */
+	public static final String PAYMENTRULEPO_KreditkarteExtern = "U";
+	/** Sofortüberweisung = R */
+	public static final String PAYMENTRULEPO_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRulePO (final java.lang.String PaymentRulePO)
 	{
