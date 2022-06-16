@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.shopware6.customer;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
+import de.metas.camel.externalsystems.shopware6.api.model.order.Customer;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteHelper;
 import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -31,12 +32,16 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Comparator;
+import java.util.Optional;
 
 @Data
 public class ImportCustomersRouteContext
@@ -63,6 +68,13 @@ public class ImportCustomersRouteContext
 
 	@Nullable
 	private final String metasfreshIdJsonPath;
+
+	@Nullable
+	private Instant oldestFailingCustomer;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private Customer customer;
 
 	@Builder
 	public ImportCustomersRouteContext(
@@ -103,5 +115,21 @@ public class ImportCustomersRouteContext
 				.filter(mapping -> mapping.isGroupMatching(jsonCustomerGroup.getName()))
 				.min(Comparator.comparingInt(JsonExternalSystemShopware6ConfigMapping::getSeqNo))
 				.orElse(null);
+	}
+
+	@NonNull
+	public Instant getCustomerUpdatedAt()
+	{
+		return Optional.ofNullable(customer)
+				.map(Customer::getUpdatedAt)
+				.orElseThrow(() -> new RuntimeException("Customer cannot be null at this stage!"));
+	}
+
+	public void recomputeOldestFailingCustomer(@NonNull final Instant oldestFailingCustomer)
+	{
+		if (this.oldestFailingCustomer == null || this.oldestFailingCustomer.isAfter(oldestFailingCustomer))
+		{
+			this.oldestFailingCustomer = oldestFailingCustomer;
+		}
 	}
 }

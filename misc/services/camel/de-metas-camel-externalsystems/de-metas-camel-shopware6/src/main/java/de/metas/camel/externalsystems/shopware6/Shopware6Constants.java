@@ -38,7 +38,7 @@ public interface Shopware6Constants
 	String PARAMETERS_GT = "gt";
 
 	String SALUTATION_KEY_NOT_SPECIFIED = "not_specified";
-	
+
 	//camel route properties
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
 	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
@@ -48,6 +48,7 @@ public interface Shopware6Constants
 	String JSON_NODE_DATA = "data";
 	String JSON_NODE_DELIVERY_ADDRESS = "shippingOrderAddress";
 	String JSON_NODE_ORDER_CUSTOMER = "orderCustomer";
+	String BPARTNER_LOCATION_METASFRESH_ID_JSON_PATH = "/customFields/metasfreshLocationId"; // TODO: replace with request parameter that comes from the external system config
 
 	//shopware client
 	int CONNECTION_TIMEOUT_SECONDS = 600;

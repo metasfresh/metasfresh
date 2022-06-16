@@ -45,6 +45,7 @@ import java.util.Optional;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -88,10 +89,15 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 		from(direct(PROCESS_CUSTOMER_ROUTE_ID))
 				.routeId(PROCESS_CUSTOMER_ROUTE_ID)
 				.log("Route invoked")
-				.streamCaching()
-				.process(new CreateCustomerUpsertReqProcessor()).id(PROCESS_CUSTOMER_ROUTE_ID)
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
-				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}");
+				.doTry()
+					.process(new CreateCustomerUpsertReqProcessor()).id(PROCESS_CUSTOMER_ROUTE_ID)
+					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
+					.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+				.doCatch(Exception.class)
+					.to(direct(MF_ERROR_ROUTE_ID))
+					.process(this::processError)
+				.endDoTry()
+				.end();
 
 		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.routeId(UPSERT_RUNTIME_PARAMS_ROUTE_ID)
@@ -150,5 +156,11 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, customersRouteContext);
+	}
+
+	private void processError(@NonNull final Exchange exchange)
+	{
+		final ImportCustomersRouteContext routeContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, ImportCustomersRouteContext.class);
+		routeContext.recomputeOldestFailingCustomer(routeContext.getCustomerUpdatedAt());
 	}
 }

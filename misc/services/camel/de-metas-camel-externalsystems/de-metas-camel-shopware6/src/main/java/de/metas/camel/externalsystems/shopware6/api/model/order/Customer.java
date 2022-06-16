@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Optional;
 
 @Value
@@ -164,5 +165,14 @@ public class Customer
 				.map(JsonNode::asText)
 				.filter(Check::isNotBlank)
 				.orElse(null);
+	}
+
+	@NonNull
+	public Instant getUpdatedAt()
+	{
+		final JsonCustomerBasicInfo basicInfo = getCustomerBasicInfo();
+
+		return CoalesceUtil.coalesceNotNull(basicInfo.getUpdatedAt(), basicInfo.getCreatedAt())
+				.toInstant();
 	}
 }

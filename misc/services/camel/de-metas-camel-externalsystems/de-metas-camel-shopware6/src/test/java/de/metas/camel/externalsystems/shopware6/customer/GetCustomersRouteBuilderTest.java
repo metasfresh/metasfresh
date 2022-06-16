@@ -112,7 +112,7 @@ public class GetCustomersRouteBuilderTest extends CamelTestSupport
 	@Test
 	void happyFlow() throws Exception
 	{
-		final MockPrepareContextProcessor mockPrepareContextProcessor = new MockPrepareContextProcessor( loadAsString(JSON_CUSTOMER_RESOURCE_PATH));
+		final MockPrepareContextProcessor mockPrepareContextProcessor = new MockPrepareContextProcessor(loadAsString(JSON_CUSTOMER_RESOURCE_PATH));
 		final MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor = new MockUpsertBPartnerProcessor();
 		final MockSuccessfullyUpsertRuntimeParamsProcessor mockRuntimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
 
@@ -136,6 +136,7 @@ public class GetCustomersRouteBuilderTest extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 		assertThat(mockPrepareContextProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(1);
+		// dev-note: when `JsonExternalSystemRequest` contains `UpdatedAfterOverride` param, `UPSERT_RUNTIME_PARAMS_ROUTE_ID` route is not called
 		assertThat(mockRuntimeParamsProcessor.called).isEqualTo(0);
 	}
 

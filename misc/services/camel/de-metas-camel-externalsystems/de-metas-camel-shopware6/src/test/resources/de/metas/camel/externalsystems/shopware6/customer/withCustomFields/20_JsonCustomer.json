@@ -190,8 +190,8 @@
       },
       "customFields": {
         "custom_customer_attributes_origin": null,
-        "metasfreshId": "123456",
-        "bodymedUserId": "4444"
+        "metasfreshId": "internalMetasfreshId",
+        "bodymedUserId": "externalBodymedId"
       },
       "apiAlias": "customer"
     }

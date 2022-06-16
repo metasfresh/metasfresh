@@ -3,7 +3,7 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "123456",
+        "bpartnerIdentifier": "internalMetasfreshId",
         "externalVersion": null,
         "externalReferenceUrl": null,
         "bpartnerComposite": {
@@ -57,7 +57,7 @@
           "locations": {
             "requestItems": [
               {
-                "locationIdentifier": "ext-Shopware6-123456-billTo",
+                "locationIdentifier": "ext-Shopware6-internalMetasfreshId-billTo",
                 "externalVersion": null,
                 "location": {
                   "active": null,
@@ -90,12 +90,12 @@
                   "glnSet": false,
                   "shipTo": true,
                   "shipToSet": true,
-                  "shipToDefault": null,
-                  "shipToDefaultSet": false,
+                  "shipToDefault": true,
+                  "shipToDefaultSet": true,
                   "billTo": true,
                   "billToSet": true,
-                  "billToDefault": null,
-                  "billToDefaultSet": false,
+                  "billToDefault": true,
+                  "billToDefaultSet": true,
                   "ephemeral": false,
                   "ephemeralSet": false,
                   "email": null,
@@ -112,7 +112,7 @@
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-Shopware6-4444",
+                "contactIdentifier": "ext-Shopware6-externalBodymedId",
                 "contact": {
                   "metasfreshBPartnerId": null,
                   "metasfreshBPartnerIdSet": false,

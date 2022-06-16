@@ -22,3 +22,10 @@ UPDATE AD_Scheduler_Para SET ParameterDefault='getCustomers',Updated=TO_TIMESTAM
 UPDATE AD_Scheduler SET CronPattern=NULL, IsActive='N',Updated=TO_TIMESTAMP('2022-06-10 15:58:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Scheduler_ID=550095
 ;
 
+
+update externalsystem_config_shopware6
+set jsonpathmetasfreshid=replace(jsonpathmetasfreshid, '/orderCustomer', ''),
+    jsonpathshopwareid=replace(jsonpathshopwareid, '/orderCustomer', ''),
+    Updated=now(),
+    UpdatedBy=99
+;

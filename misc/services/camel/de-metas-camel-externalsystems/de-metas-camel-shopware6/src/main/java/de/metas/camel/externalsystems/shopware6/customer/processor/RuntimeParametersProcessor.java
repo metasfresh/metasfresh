@@ -31,6 +31,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
@@ -50,11 +51,15 @@ public class RuntimeParametersProcessor implements Processor
 			return;
 		}
 
+		final Instant updatedAt = Optional
+				.ofNullable(context.getOldestFailingCustomer())
+				.orElse(Instant.now());
+
 		final JsonRuntimeParameterUpsertItem runtimeParameterUpsertItem = JsonRuntimeParameterUpsertItem.builder()
 				.externalSystemParentConfigId(context.getExternalSystemRequest().getExternalSystemConfigId())
 				.name(PARAM_UPDATED_AFTER)
 				.request(context.getExternalSystemRequest().getCommand())
-				.value(Instant.now().toString())
+				.value(updatedAt.toString())
 				.build();
 
 		final JsonESRuntimeParameterUpsertRequest request = JsonESRuntimeParameterUpsertRequest.builder()

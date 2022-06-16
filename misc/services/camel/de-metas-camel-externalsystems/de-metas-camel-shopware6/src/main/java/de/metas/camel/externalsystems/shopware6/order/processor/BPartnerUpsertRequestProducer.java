@@ -97,15 +97,6 @@ public class BPartnerUpsertRequestProducer
 	@NonNull
 	Map<String, String> countryIdToISOCode;
 
-	@Nullable
-	String bPartnerLocationIdentifierCustomShopwarePath;
-
-	@Nullable
-	String bPartnerLocationIdentifierCustomMetasfreshPath;
-
-	@Nullable
-	String emailCustomPath;
-
 	@NonNull
 	BPartnerRequestProducerResult.BPartnerRequestProducerResultBuilder resultBuilder;
 
@@ -118,11 +109,8 @@ public class BPartnerUpsertRequestProducer
 	@Nullable
 	JsonCustomerGroup jsonCustomerGroup;
 
-	/**
-	 * @param bPartnerLocationIdentifierCustomShopwarePath   if given, try to get a custom (permanent) shopware6-ID
-	 *                                                       from the shopware-address JSON. Fail if there is no such C_BPartner_Location_ID
-	 * @param bPartnerLocationIdentifierCustomMetasfreshPath if given, try to get the metasfresh C_BPartner_Location_ID
-	 */
+	boolean isDefaultAddress;
+
 	@Builder
 	public BPartnerUpsertRequestProducer(
 			@NonNull final String orgCode,
@@ -131,26 +119,22 @@ public class BPartnerUpsertRequestProducer
 			@NonNull final AddressDetail shippingAddress,
 			@NonNull final AddressDetail billingAddress,
 			@Nullable final SalutationInfoProvider salutationInfoProvider,
-			@Nullable final String bPartnerLocationIdentifierCustomShopwarePath,
-			@Nullable final String bPartnerLocationIdentifierCustomMetasfreshPath,
-			@Nullable final String emailCustomPath,
 			@Nullable final ExternalIdentifier metasfreshId,
 			@NonNull final ExternalIdentifier userId,
 			@Nullable final JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping,
 			@Nullable final PriceListBasicInfo priceListBasicInfo,
-			@Nullable final JsonCustomerGroup jsonCustomerGroup)
+			@Nullable final JsonCustomerGroup jsonCustomerGroup,
+			final boolean isDefaultAddress)
 	{
 		this.orgCode = orgCode;
 		this.shopwareClient = shopwareClient;
 		this.customerCandidate = customerCandidate;
 		this.shippingAddress = shippingAddress;
-		this.bPartnerLocationIdentifierCustomShopwarePath = bPartnerLocationIdentifierCustomShopwarePath;
-		this.bPartnerLocationIdentifierCustomMetasfreshPath = bPartnerLocationIdentifierCustomMetasfreshPath;
-		this.emailCustomPath = emailCustomPath;
 		this.metasfreshId = metasfreshId;
 		this.userId = userId;
 		this.matchingShopware6Mapping = matchingShopware6Mapping;
 		this.salutationInfoProvider = salutationInfoProvider;
+		this.isDefaultAddress = isDefaultAddress;
 		this.countryIdToISOCode = new HashMap<>();
 		this.resultBuilder = BPartnerRequestProducerResult.builder();
 		this.billingAddress = billingAddress;
@@ -269,6 +253,12 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestLocation.setBpartnerName(computeBPartnerName());
 		jsonRequestLocation.setPhone(orderAddress.getPhoneNumber());
 		jsonRequestLocation.setEmail(addressWithCustomId.getCustomEmail());
+
+		if (isDefaultAddress)
+		{
+			jsonRequestLocation.setShipToDefault(isShippingAddress);
+			jsonRequestLocation.setBillToDefault(isBillingAddress);
+		}
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(bpLocationExternalId)

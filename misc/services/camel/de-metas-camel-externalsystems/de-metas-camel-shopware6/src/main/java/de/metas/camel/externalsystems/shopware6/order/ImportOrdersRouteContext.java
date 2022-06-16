@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.shopware6.order;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
@@ -57,8 +56,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
-
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_ORDER_CUSTOMER;
 
 @Data
 @Builder
@@ -286,7 +283,7 @@ public class ImportOrdersRouteContext
 	@NonNull
 	public ExternalIdentifier getBPExternalIdentifier()
 	{
-		final Customer customer = getCustomer();
+		final Customer customer = getOrderNotNull().getCustomer();
 
 		return customer.getExternalIdentifier(metasfreshIdJsonPath, shopwareIdJsonPath);
 	}
@@ -294,7 +291,7 @@ public class ImportOrdersRouteContext
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
-		final Customer customer = getCustomer();
+		final Customer customer = getOrderNotNull().getCustomer();
 
 		return customer.getShopwareId(shopwareIdJsonPath);
 	}
@@ -338,20 +335,5 @@ public class ImportOrdersRouteContext
 		}
 
 		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
-	}
-
-	@NonNull
-	public Customer getCustomer()
-	{
-		final OrderCandidate orderCandidate = getOrderNotNull();
-
-		final JsonNode customerNode = orderCandidate.getCustomNode(JSON_NODE_ORDER_CUSTOMER);
-
-		if (customerNode == null)
-		{
-			throw new RuntimeException("Missing customer info for order: " + orderCandidate.getJsonOrder().getId());
-		}
-
-		return Customer.of(customerNode, orderCandidate.getJsonOrder().getOrderCustomer());
 	}
 }

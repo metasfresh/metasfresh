@@ -37,8 +37,8 @@ public class GetCustomersRouteBuilderTest_withCustomFields extends GetCustomersR
 {
 	private static final String WITH_CUSTOM_FIELDS_PATH = "withCustomFields";
 
+	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = WITH_CUSTOM_FIELDS_PATH + "/10_JsonExternalSystemRequest.json";
 	private static final String JSON_CUSTOMER_RESOURCE_CUSTOM = WITH_CUSTOM_FIELDS_PATH + "/20_JsonCustomer.json";
-
 	private static final String JSON_UPSERT_CUSTOMER_REQUEST_CUSTOM = WITH_CUSTOM_FIELDS_PATH + "/50_BPUpsertCamelRequest.json";
 
 	@Test
@@ -70,6 +70,7 @@ public class GetCustomersRouteBuilderTest_withCustomFields extends GetCustomersR
 		assertMockEndpointsSatisfied();
 		assertThat(mockPrepareContextProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(1);
-		assertThat(mockRuntimeParamsProcessor.called).isEqualTo(0);
+		// dev-note: when `JsonExternalSystemRequest` does not contain `UpdatedAfterOverride` param, `UPSERT_RUNTIME_PARAMS_ROUTE_ID` route is called
+		assertThat(mockRuntimeParamsProcessor.called).isEqualTo(1);
 	}
 }

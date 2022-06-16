@@ -50,6 +50,7 @@ public class CreateCustomerUpsertReqProcessor implements Processor
 		final Customer customerCandidate = exchange.getIn().getBody(Customer.class);
 
 		final ImportCustomersRouteContext routeContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, ImportCustomersRouteContext.class);
+		routeContext.setCustomer(customerCandidate);
 
 		final String shippingAddressId = Optional.ofNullable(customerCandidate.getDefaultShippingAddressId())
 				.orElseThrow(() -> new RuntimeException("Missing default shipping address Id for customerId: " + customerCandidate.getShopwareId()));
@@ -78,6 +79,7 @@ public class CreateCustomerUpsertReqProcessor implements Processor
 				.priceListBasicInfo(routeContext.getPriceListBasicInfo())
 				.matchingShopware6Mapping(routeContext.getMatchingShopware6Mapping(jsonCustomerGroup))
 				.jsonCustomerGroup(jsonCustomerGroup)
+				.isDefaultAddress(true)
 				.build();
 
 		final BPartnerRequestProducerResult bPartnerRequestProducerResult = bPartnerUpsertRequestProducer.run();
