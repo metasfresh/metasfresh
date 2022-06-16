@@ -1,5 +1,4 @@
 @from:cucumber
-@paymentAlloc
 Feature: invoice payment allocation
 
   Background:
@@ -398,7 +397,7 @@ Feature: invoice payment allocation
       | product_180 | product_180 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_180     | paymentAllocPLV                   | product_180             | 5.00     | PCE               | Normal                        |
+      | pp_180     | paymentAllocPLVNotSO              | product_180             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -436,7 +435,7 @@ Feature: invoice payment allocation
       | product_190 | product_190 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_190     | paymentAllocPLV                   | product_190             | 5.00     | PCE               | Normal                        |
+      | pp_190     | paymentAllocPLVNotSO              | product_190             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -471,7 +470,6 @@ Feature: invoice payment allocation
       | inv_190_1                   | payment_190                 | -5.95      | 0                |
       | inv_190_2                   | payment_190                 | -5.95      | 0                |
 
-
   @Id:S0132_200
   @from:cucumber
   Scenario: allocate payment to multiple purchase invoices with invoice open amount left and then apply write off
@@ -481,7 +479,7 @@ Feature: invoice payment allocation
       | product_200 | product_200 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_200     | paymentAllocPLV                   | product_200             | 5.00     | PCE               | Normal                        |
+      | pp_200     | paymentAllocPLVNotSO              | product_200             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -527,7 +525,6 @@ Feature: invoice payment allocation
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.WriteOffAmt |
       | inv_200_2                   | 0          | -2.9            |
 
-
   @Id:S0132_210
   @from:cucumber
   Scenario: allocate payment to multiple purchase invoices with invoice open amount left and then apply discount
@@ -537,7 +534,7 @@ Feature: invoice payment allocation
       | product_210 | product_210 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_210     | paymentAllocPLV                   | product_210             | 5.00     | PCE               | Normal                        |
+      | pp_210     | paymentAllocPLVNotSO              | product_210             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -592,7 +589,7 @@ Feature: invoice payment allocation
       | product_220 | product_220 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_220     | paymentAllocPLV                   | product_220             | 5.00     | PCE               | Normal                        |
+      | pp_220     | paymentAllocPLVNotSO              | product_220             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
@@ -641,7 +638,7 @@ Feature: invoice payment allocation
       | product_230 | product_230 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_230     | paymentAllocPLV                   | product_230             | 5.00     | PCE               | Normal                        |
+      | pp_230     | paymentAllocPLVNotSO              | product_230             | 5.00     | PCE               | Normal                        |
 
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
