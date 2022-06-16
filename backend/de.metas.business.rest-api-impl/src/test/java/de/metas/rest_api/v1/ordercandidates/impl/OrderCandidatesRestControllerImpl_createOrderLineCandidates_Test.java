@@ -44,8 +44,8 @@ import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
-import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.organization.OrgId;
@@ -301,9 +301,9 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		@NonNull
 		@Override
-		public Quantity computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
+		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
-			return Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID()));
+			return Optional.of(Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID())));
 		}
 	}
 
