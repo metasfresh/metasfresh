@@ -47,6 +47,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.camel.externalsystems.shopware6.api.model.salutation.JsonSalutation;
+import de.metas.camel.externalsystems.shopware6.api.model.stock.JsonStock;
 import de.metas.camel.externalsystems.shopware6.api.model.unit.JsonUnits;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
@@ -106,6 +107,29 @@ public class ShopwareClient
 				.build();
 
 		return new ShopwareClient(pInstanceLogger, authToken, baseUrl);
+	}
+
+	public void exportStock(
+			@NonNull final JsonStock jsonStock,
+			@NonNull final String externalReference)
+	{
+		final URI resourceURI;
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.PRODUCT.getValue())
+				.pathSegment(externalReference);
+
+		refreshTokenIfExpired();
+
+		resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<String> response = performWithRetry(resourceURI, HttpMethod.PATCH, String.class, jsonStock);
+
+		if (response == null || Check.isBlank(response.getBody()))
+		{
+			throw new RuntimeException("Error while exporting stock to Shopware");
+		}
 	}
 
 	@NonNull

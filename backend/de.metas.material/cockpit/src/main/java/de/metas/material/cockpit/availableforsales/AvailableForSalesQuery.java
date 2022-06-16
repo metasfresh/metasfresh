@@ -1,10 +1,12 @@
 package de.metas.material.cockpit.availableforsales;
 
 import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -33,15 +35,19 @@ import java.time.Instant;
  */
 
 @Value
-@Builder
 public class AvailableForSalesQuery
 {
-	@NonNull ProductId productId;
+	@NonNull
+	ProductId productId;
 
-	@Nullable WarehouseId warehouseId;
+	@Nullable
+	WarehouseId warehouseId;
 
 	@NonNull
 	AttributesKeyPattern storageAttributesKeyPattern;
+
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
 	Instant dateOfInterest;
@@ -49,4 +55,28 @@ public class AvailableForSalesQuery
 	int shipmentDateLookAheadHours;
 
 	int salesOrderLookBehindHours;
+
+	@Builder
+	public AvailableForSalesQuery(
+			@NonNull final ProductId productId,
+			@Nullable final WarehouseId warehouseId,
+			@NonNull final AttributesKeyPattern storageAttributesKeyPattern,
+			@NonNull final OrgId orgId,
+			@NonNull final Instant dateOfInterest,
+			final int shipmentDateLookAheadHours,
+			final int salesOrderLookBehindHours)
+	{
+		if (orgId.isAny())
+		{
+			throw new AdempiereException("OrgId must be regular! OrgId=" + orgId.getRepoId());
+		}
+
+		this.productId = productId;
+		this.warehouseId = warehouseId;
+		this.storageAttributesKeyPattern = storageAttributesKeyPattern;
+		this.orgId = orgId;
+		this.dateOfInterest = dateOfInterest;
+		this.shipmentDateLookAheadHours = shipmentDateLookAheadHours;
+		this.salesOrderLookBehindHours = salesOrderLookBehindHours;
+	}
 }

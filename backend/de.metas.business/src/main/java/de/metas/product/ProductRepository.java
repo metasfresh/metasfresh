@@ -12,6 +12,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -263,6 +265,17 @@ public class ProductRepository
 				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, id)
 				.create()
 				.firstOnlyNotNull(I_M_Product.class);
+	}
+
+	@NonNull
+	public Iterator<I_M_Product> getSoldProducts(@NonNull final IQueryFilter<I_M_Product> additionalFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsSold, true)
+				.filter(additionalFilter)
+				.create()
+				.iterate(I_M_Product.class);
 	}
 
 	@NonNull

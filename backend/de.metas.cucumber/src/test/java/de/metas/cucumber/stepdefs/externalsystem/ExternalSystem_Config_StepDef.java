@@ -184,6 +184,15 @@ public class ExternalSystem_Config_StepDef
 					configGrsSignum.setIsActive(false);
 					InterfaceWrapperHelper.saveRecord(configGrsSignum);
 					break;
+				case Shopware6:
+					final I_ExternalSystem_Config_Shopware6 configShopware = queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
+							.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID, parentConfig.getExternalSystem_Config_ID())
+							.create()
+							.firstOnlyNotNull(I_ExternalSystem_Config_Shopware6.class);
+
+					configShopware.setIsActive(false);
+					InterfaceWrapperHelper.saveRecord(configShopware);
+					break;
 				default:
 					throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 			}

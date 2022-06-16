@@ -40,7 +40,8 @@ public interface Shopware6Constants
 	//camel route properties
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
 	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
-	
+	String ROUTE_PROPERTY_EXPORT_STOCK_CONTEXT = "ExportStockRouteContext";
+
 	//nodes
 	String JSON_NODE_DATA = "data";
 	String JSON_NODE_DELIVERY_ADDRESS = "shippingOrderAddress";
