@@ -245,6 +245,9 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigShopware6.setClient_Id("notImportant");
 				externalSystemConfigShopware6.setBaseURL("notImportant.com");
 				externalSystemConfigShopware6.setIsActive(true);
+
+				final boolean isSyncStockToShopware6 = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ExternalSystem_Config_Shopware6.COLUMNNAME_IsSyncStockToShopware6, false);
+				externalSystemConfigShopware6.setIsSyncStockToShopware6(isSyncStockToShopware6);
 				InterfaceWrapperHelper.save(externalSystemConfigShopware6);
 				break;
 			case RabbitMQ:

@@ -222,6 +222,9 @@ Feature: available for sales
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
+    And after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | s_s_1                            | s_1                   | CO            |
     Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
@@ -233,8 +236,8 @@ Feature: available for sales
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And add external system parent-child pair
-      | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue |
-      | config_1                            | S6   | stockExportShopware |
+      | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue | OPT.IsSyncStockToShopware6 |
+      | config_1                            | S6   | stockExportShopware | true                       |
     And metasfresh contains S_ExternalReference:
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type    | ExternalReference      | OPT.ExternalSystem_Config_ID.Identifier | OPT.M_Product_ID.Identifier |
       | product_ref                       | Shopware6      | Product | stockProduct_reference | config_1                                | p_1                         |
