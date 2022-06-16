@@ -429,6 +429,7 @@ public class ExternalSystemConfigRepo
 				.isActive(config.isActive())
 				.value(config.getExternalSystemValue())
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
+				.isSyncStockToShopware6(config.isSyncStockToShopware6())
 				.build();
 	}
 

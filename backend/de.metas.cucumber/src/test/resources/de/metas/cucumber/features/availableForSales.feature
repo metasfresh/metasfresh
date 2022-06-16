@@ -184,7 +184,7 @@ Feature: available for sales
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.PreparationDate_Override |
       | s_s_1                            | 2022-04-17                   |
-    Then after not more than 30s, MD_Available_For_Sales table is empty
+    Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales when M_ShipmentSchedule is processed
@@ -222,7 +222,7 @@ Feature: available for sales
     And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
-    Then after not more than 30s, MD_Available_For_Sales table is empty
+    Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales and export stock when MD_Stock is created

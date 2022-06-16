@@ -48,11 +48,14 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
@@ -83,15 +86,26 @@ public class MD_Available_For_Sales_StepDef
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, supplier, () -> logCurrentContext(rows));
 
-		final Supplier<Boolean> noOfRecordsSupplier = () -> rows.size() == getAvailableForSalesNoOfRecords();
+		final Set<ProductId> productIds = rows
+				.stream()
+				.map(this::getProductIdFromRow)
+				.map(ProductId::ofRepoId)
+				.collect(Collectors.toSet());
+
+		final Supplier<Boolean> noOfRecordsSupplier = () -> rows.size() == getAvailableForSalesNoOfRecords(productIds);
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, noOfRecordsSupplier, () -> logCurrentNoOfRecords(rows.size()));
 	}
 
-	@And("^after not more than (.*)s, MD_Available_For_Sales table is empty$")
-	public void validateEmptyTable(final int timeoutSec) throws InterruptedException
+	@And("^after not more than (.*)s, MD_Available_For_Sales table is empty for product: (.*)$")
+	public void validateEmptyTable(final int timeoutSec, final String productIdentifier) throws InterruptedException
 	{
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> getAvailableForSalesNoOfRecords() == 0, () -> logCurrentNoOfRecords(0));
+		final ProductId productId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.map(ProductId::ofRepoId)
+				.orElseGet(() -> ProductId.ofRepoId(Integer.parseInt(productIdentifier)));
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> getAvailableForSalesNoOfRecords(ImmutableSet.of(productId)) == 0, () -> logCurrentNoOfRecords(0));
 	}
 
 	@Given("metasfresh initially has no MD_Available_For_Sales data")
@@ -100,10 +114,11 @@ public class MD_Available_For_Sales_StepDef
 		truncateMDAvailableForSalesData();
 	}
 
-	private int getAvailableForSalesNoOfRecords()
+	private int getAvailableForSalesNoOfRecords(@NonNull final Set<ProductId> productIds)
 	{
 		return queryBL.createQueryBuilder(I_MD_Available_For_Sales.class)
 				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.count();
 	}
@@ -118,10 +133,7 @@ public class MD_Available_For_Sales_StepDef
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalForColumnName(row, I_MD_Available_For_Sales.COLUMNNAME_QtyOnHandStock);
 		final BigDecimal qtyToBeShipped = DataTableUtil.extractBigDecimalForColumnName(row, I_MD_Available_For_Sales.COLUMNNAME_QtyToBeShipped);
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
+		final int productId = getProductIdFromRow(row);
 
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 
@@ -202,5 +214,13 @@ public class MD_Available_For_Sales_StepDef
 						.append("-------------------------------------------------------"));
 
 		logger.error("*** Error while looking for MD_Available_For_Sales records, see current context: \n" + message);
+	}
+
+	private int getProductIdFromRow(@NonNull final Map<String, String> row)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		return productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
 	}
 }

@@ -26,8 +26,10 @@ import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.common.externalsystem.JsonAvailableStock;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonProductIdentifier;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -45,8 +47,6 @@ import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
-import de.metas.common.externalsystem.JsonAvailableStock;
-import de.metas.common.externalsystem.JsonProductIdentifier;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -143,17 +143,15 @@ public class ExportStockToShopwareExternalSystem
 				continue; // nothing to do
 			}
 
-			getExportExternalSystemRequest(externalReference.get(), productId)
+			getExportExternalSystemRequest(externalReference.get())
 					.ifPresent(externalSystemMessageSender::send);
 		}
 	}
 
 	@NonNull
-	private Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(
-			@NonNull final ExternalReference externalReference,
-			@NonNull final ProductId productId)
+	private Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(@NonNull final ExternalReference productExternalRef)
 	{
-		final ExternalSystemParentConfigId externalReferenceParentConfigId = (ExternalSystemParentConfigId)externalReference
+		final ExternalSystemParentConfigId externalReferenceParentConfigId = (ExternalSystemParentConfigId)productExternalRef
 				.getExternalSystemParentConfigId(ExternalSystemParentConfigId::ofRepoIdOrNull);
 
 		if (externalReferenceParentConfigId == null)
@@ -161,7 +159,7 @@ public class ExportStockToShopwareExternalSystem
 			return Optional.empty();
 		}
 
-		final String orgCode = orgDAO.getById(externalReference.getOrgId()).getValue();
+		final String orgCode = orgDAO.getById(productExternalRef.getOrgId()).getValue();
 
 		final ExternalSystemType parentType = ExternalSystemType.ofCode(externalSystemConfigRepo.getParentTypeById(externalReferenceParentConfigId));
 		final IExternalSystemChildConfig externalSystemChildConfig = externalSystemConfigRepo.getChildByParentIdAndType(externalReferenceParentConfigId, parentType)
@@ -170,26 +168,39 @@ public class ExportStockToShopwareExternalSystem
 						.setParameter("ExternalSystemType", parentType)
 						.setParameter("ParentConfigId", externalReferenceParentConfigId));
 
+		if (!isSyncStockEnabled(externalSystemChildConfig))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {} isSyncStockEnabled to external system is false! No action is performed!", externalReferenceParentConfigId);
+
+			return Optional.empty();
+		}
+
 		return Optional.of(JsonExternalSystemRequest.builder()
 								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(ExternalSystemParentConfigId.toRepoId(externalReferenceParentConfigId)))
 								   .externalSystemChildConfigValue(externalSystemChildConfig.getValue())
 								   .orgCode(orgCode)
 								   .command(getExternalCommand())
-								   .parameters(buildParameters(externalReference, productId, externalSystemChildConfig.getId()))
+								   .parameters(buildParameters(productExternalRef, externalSystemChildConfig.getId()))
 								   .traceId(externalSystemConfigService.getTraceId())
 								   .build());
+	}
+
+	private boolean isSyncStockEnabled(@NonNull final IExternalSystemChildConfig childConfig)
+	{
+		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(childConfig);
+
+		return shopware6Config.isSyncStockToShopware6();
 	}
 
 	@NonNull
 	private Map<String, String> buildParameters(
 			@NonNull final ExternalReference externalReference,
-			@NonNull final ProductId productId,
 			@NonNull final IExternalSystemChildConfigId externalSystemChildConfigId)
 	{
 		final ExternalSystemParentConfig externalSystemParentConfig = externalSystemConfigRepo.getById(externalSystemChildConfigId);
 
-		final JsonAvailableStock jsonAvailableStock = buildJsonAvailableStock(productId, externalReference.getExternalReference(), externalSystemParentConfig);
+		final JsonAvailableStock jsonAvailableStock = buildJsonAvailableStock(externalReference, externalSystemParentConfig);
 
 		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(externalSystemParentConfig.getChildConfig());
 
@@ -225,16 +236,15 @@ public class ExportStockToShopwareExternalSystem
 
 	@NonNull
 	private JsonAvailableStock buildJsonAvailableStock(
-			@NonNull final ProductId productId,
-			@NonNull final String externalReference,
+			@NonNull final ExternalReference productExternalReference,
 			@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
 	{
-		final BigDecimal stock = getAvailableStock(externalSystemParentConfig, productId);
+		final BigDecimal stock = getAvailableStock(externalSystemParentConfig, ProductId.ofRepoId(productExternalReference.getRecordId()));
 
 		return JsonAvailableStock.builder()
 				.productIdentifier(JsonProductIdentifier.builder()
-										   .metasfreshId(JsonMetasfreshId.of(ProductId.toRepoId(productId)))
-										   .externalReference(externalReference)
+										   .metasfreshId(JsonMetasfreshId.of(productExternalReference.getRecordId()))
+										   .externalReference(productExternalReference.getExternalReference())
 										   .build())
 				.stock(stock)
 				.build();
