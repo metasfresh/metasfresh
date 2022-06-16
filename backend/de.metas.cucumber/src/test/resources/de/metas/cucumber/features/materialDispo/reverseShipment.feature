@@ -48,25 +48,25 @@ Feature: Shipping HUs interaction with material schedule
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-10T22:00:00Z | -15 | 85                     |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |                                 |
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | -15 | 85                     | 2021-04-11T00:00:00Z            |
     When the shipment identified by s_1 is reactivated
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-10T22:00:00Z | 0   | 100                    |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |                                 |
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | 0   | 100                    | 2021-04-11T00:00:00Z            |
 
     And the shipment identified by s_1 is completed
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-10T21:00:00Z | -15 | 85                     |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |                                 |
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | -15 | 85                     | 2021-04-11T00:00:00Z            |
 
     And the shipment identified by s_1 is reversed
 
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-10T21:00:00Z | 0   | 100                    |
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |                                 |
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     |                      | 0   | 100                    | 2021-04-11T00:00:00Z            |
