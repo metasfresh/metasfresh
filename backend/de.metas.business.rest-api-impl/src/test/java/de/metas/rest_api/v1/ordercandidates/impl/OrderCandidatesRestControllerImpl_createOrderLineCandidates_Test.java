@@ -301,9 +301,9 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		@NonNull
 		@Override
-		public Quantity computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
+		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
-			return Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID()));
+			return Optional.of(Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID())));
 		}
 	}
 
