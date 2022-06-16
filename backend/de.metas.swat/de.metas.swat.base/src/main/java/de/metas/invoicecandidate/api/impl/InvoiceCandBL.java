@@ -2156,7 +2156,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		udpateIsDeliveryClosedForInvoiceCandidates(invoiceCandidates.iterator(), false);
 	}
 
-	public void udpateIsDeliveryClosedForInvoiceCandidates(
+	private void udpateIsDeliveryClosedForInvoiceCandidates(
 			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose, boolean isDeliveryClosed)
 	{
 		while (candidatesToClose.hasNext())
@@ -2165,7 +2165,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	public void udpateIsDeliveryClosedForInvoiceCandidate(final I_C_Invoice_Candidate candidate, boolean isDeliveryClosed)
+	private void udpateIsDeliveryClosedForInvoiceCandidate(final I_C_Invoice_Candidate candidate, boolean isDeliveryClosed)
 	{
 		candidate.setIsDeliveryClosed(isDeliveryClosed);
 
