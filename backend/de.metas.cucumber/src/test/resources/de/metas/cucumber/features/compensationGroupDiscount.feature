@@ -1,5 +1,4 @@
 @from:cucumber
-@ignore
 Feature: Allow order discount via API (compensation group)
 
   Background:

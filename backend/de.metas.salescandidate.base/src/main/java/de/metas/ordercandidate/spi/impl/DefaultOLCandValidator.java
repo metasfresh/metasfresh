@@ -1,25 +1,6 @@
 package de.metas.ordercandidate.spi.impl;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Properties;
-
 import de.metas.currency.CurrencyPrecision;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -30,17 +11,34 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -132,12 +130,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 	private void handleUOMForTUIfRequired(@NonNull final I_C_OLCand olCand)
 	{
-			// *always* set the internal quantity. IsManualQtyItemCapacity decides if we use it
-			final Quantity qtyItemCapacity = olCandCapacityProvider.computeQtyItemCapacity(olCand);
-			if(!qtyItemCapacity.isInfinite())
-			{
-				olCand.setQtyItemCapacityInternal(qtyItemCapacity.toBigDecimal());
-			}
+		// *always* set the internal quantity. IsManualQtyItemCapacity decides if we use it
+		olCandCapacityProvider.computeQtyItemCapacity(olCand)
+				.filter(capacity -> !capacity.isInfinite())
+				.map(capacity -> capacity.toBigDecimal())
+				.ifPresent(olCand::setQtyItemCapacityInternal);
 	}
 
 	private void validateLocation(@NonNull final I_C_OLCand olCand)
