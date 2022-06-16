@@ -44,6 +44,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Optional;
 
 public class CreateOrderCandidateCommand
@@ -67,7 +68,6 @@ public class CreateOrderCandidateCommand
 		final I_PP_Order_Candidate ppOrderCandidateRecord = InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
 
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
-		PPOrderCandidatePojoConverter.setMaterialDispoTraceId(ppOrderCandidateRecord, request.getTraceId());
 
 		ppOrderCandidateRecord.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(request.getProductPlanningId()));
 		ppOrderCandidateRecord.setAD_Org_ID(request.getClientAndOrgId().getOrgId().getRepoId());
@@ -99,12 +99,10 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 
-		ppOrderCandidateRecord.setIsSimulated(request.isSimulated());
-
-		if (request.isSimulated())
-		{
-			ppOrderCandidateRecord.setProcessed(true);
-		}
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		final BigDecimal qtyProcessed_OnDate = productPlanning.getQtyProcessed_OnDate();
+		ppOrderCandidateRecord.setQtyProcessed_OnDate(qtyProcessed_OnDate);
+		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
 

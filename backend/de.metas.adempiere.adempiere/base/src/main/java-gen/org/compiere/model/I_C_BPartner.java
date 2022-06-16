@@ -519,6 +519,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_City = "City";
 
 	/**
+	 * Set Commercial Register Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCommercialRegisterNumber (@Nullable java.lang.String CommercialRegisterNumber);
+
+	/**
+	 * Get Commercial Register Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCommercialRegisterNumber();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_CommercialRegisterNumber = new ModelColumn<>(I_C_BPartner.class, "CommercialRegisterNumber", null);
+	String COLUMNNAME_CommercialRegisterNumber = "CommercialRegisterNumber";
+
+	/**
 	 * Set Company Name.
 	 *
 	 * <br>Type: String
@@ -677,7 +698,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
 
 	/**
-	 * Set Kreditoren-Nr.
+	 * Set Creditor ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -686,7 +707,7 @@ public interface I_C_BPartner
 	void setCreditorId (int CreditorId);
 
 	/**
-	 * Get Kreditoren-Nr.
+	 * Get Creditor ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -765,7 +786,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_DateHaddexCheck = "DateHaddexCheck";
 
 	/**
-	 * Set Debitoren-Nr.
+	 * Set Debtor ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -774,7 +795,7 @@ public interface I_C_BPartner
 	void setDebtorId (int DebtorId);
 
 	/**
-	 * Get Debitoren-Nr.
+	 * Get Debtor ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -991,6 +1012,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_EMail = new ModelColumn<>(I_C_BPartner.class, "EMail", null);
 	String COLUMNNAME_EMail = "EMail";
+
+	/**
+	 * Set EORI Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEORI (@Nullable java.lang.String EORI);
+
+	/**
+	 * Get EORI Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEORI();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_EORI = new ModelColumn<>(I_C_BPartner.class, "EORI", null);
+	String COLUMNNAME_EORI = "EORI";
 
 	/**
 	 * Set Exclude From Promotions.
@@ -2069,7 +2111,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
 
 	/**
-	 * Set Preisliste.
+	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -2079,7 +2121,7 @@ public interface I_C_BPartner
 	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Preisliste.
+	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -2292,6 +2334,71 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_NumberEmployees = new ModelColumn<>(I_C_BPartner.class, "NumberEmployees", null);
 	String COLUMNNAME_NumberEmployees = "NumberEmployees";
+
+	/**
+	 * Set Old Value.
+	 * The old file data
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOldValue (@Nullable java.lang.String OldValue);
+
+	/**
+	 * Get Old Value.
+	 * The old file data
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOldValue();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_OldValue = new ModelColumn<>(I_C_BPartner.class, "OldValue", null);
+	String COLUMNNAME_OldValue = "OldValue";
+
+	/**
+	 * Set Old Value (Customer).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOld_Value_Customer (@Nullable java.lang.String Old_Value_Customer);
+
+	/**
+	 * Get Old Value (Customer).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOld_Value_Customer();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Old_Value_Customer = new ModelColumn<>(I_C_BPartner.class, "Old_Value_Customer", null);
+	String COLUMNNAME_Old_Value_Customer = "Old_Value_Customer";
+
+	/**
+	 * Set Old Value (Vendor).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOld_Value_Vendor (@Nullable java.lang.String Old_Value_Vendor);
+
+	/**
+	 * Get Old Value (Vendor).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOld_Value_Vendor();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Old_Value_Vendor = new ModelColumn<>(I_C_BPartner.class, "Old_Value_Vendor", null);
+	String COLUMNNAME_Old_Value_Vendor = "Old_Value_Vendor";
 
 	/**
 	 * Set Payment Rule.
