@@ -14,6 +14,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 {
 
 	private static final long serialVersionUID = 1539313489L;
+	private static final long serialVersionUID = -607909614L;
 
 	/** Standard Constructor */
 	public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -1497,6 +1498,43 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getNumberEmployees()
 	{
 		return get_ValueAsInt(COLUMNNAME_NumberEmployees);
+	}
+
+	/**
+	@Override
+	public void setOldValue (final @Nullable java.lang.String OldValue)
+	{
+		set_Value (COLUMNNAME_OldValue, OldValue);
+	}
+
+	@Override
+	public java.lang.String getOldValue()
+	{
+		return get_ValueAsString(COLUMNNAME_OldValue);
+	}
+
+	@Override
+	public void setOld_Value_Customer (final @Nullable java.lang.String Old_Value_Customer)
+	{
+		set_Value (COLUMNNAME_Old_Value_Customer, Old_Value_Customer);
+	}
+
+	@Override
+	public java.lang.String getOld_Value_Customer()
+	{
+		return get_ValueAsString(COLUMNNAME_Old_Value_Customer);
+	}
+
+	@Override
+	public void setOld_Value_Vendor (final @Nullable java.lang.String Old_Value_Vendor)
+	{
+		set_Value (COLUMNNAME_Old_Value_Vendor, Old_Value_Vendor);
+	}
+
+	@Override
+	public java.lang.String getOld_Value_Vendor()
+	{
+		return get_ValueAsString(COLUMNNAME_Old_Value_Vendor);
 	}
 
 	/**
