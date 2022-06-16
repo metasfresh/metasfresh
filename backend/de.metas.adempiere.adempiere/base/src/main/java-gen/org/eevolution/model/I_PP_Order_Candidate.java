@@ -444,6 +444,27 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_QtyProcessed = "QtyProcessed";
 
 	/**
+	 * Set Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
+
+	/**
+	 * Get Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyProcessed_OnDate();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyProcessed_OnDate", null);
+	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
+
+	/**
 	 * Set Quantity To Process.
 	 *
 	 * <br>Type: Quantity
@@ -463,6 +484,31 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyToProcess = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyToProcess", null);
 	String COLUMNNAME_QtyToProcess = "QtyToProcess";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Order_Candidate.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Resource.
