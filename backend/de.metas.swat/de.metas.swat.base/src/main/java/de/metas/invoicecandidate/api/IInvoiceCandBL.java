@@ -357,6 +357,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
 
+	void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	void openDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
 	/**
 	 * Iterate the candidates to close and close them one by one.
 	 */
