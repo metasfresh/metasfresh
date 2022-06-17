@@ -6,7 +6,7 @@ computed from the following parameters set on window `541116 - ExternalSystem_Co
 * `JsonExternalSystemRequest.parameters.ClientSecret`
 * `JsonExternalSystemRequest.parameters.BasePath`
 * `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerLocationID`
-  * when importing Shopware documents that contains an `address`, the system will look under the `address` object at the given JSON path to identify the value for the Shopware's address identifier as `shopwareLocationIdentifier`
+  * when importing Shopware documents that contain an `address`, the system will look under the `address` object at the given JSON path to identify the value for the Shopware's address identifier as `shopwareLocationIdentifier`
   * currently, there are two documents pulled from shopware that contain `addresses`:
     * `orders`
       * `shippingAddress` - pulled from `api/order/{{Order.id}}/deliveries`
@@ -17,7 +17,7 @@ computed from the following parameters set on window `541116 - ExternalSystem_Co
       * `defaultShippingAddress` - pulled from `/api/customer-address/{{JsonCustomer.defaultShippingAddressId}}`
       * `defaultBillingAddress` - pulled from `/api/customer-address/{{JsonCustomer.defaultBillingAddressId}}`
         * for this scenario, currently there is no `shopwareLocationIdentifier` provided
-  * even though, the `address` data is located at different paths, the system is able to use the same `JSONPathConstantBPartnerLocationID` for locating the `shopwareLocationIdentifier` as it searches within the Address info. see example:
+  * even though the `address` data is located at different paths, the system is able to use the same `JSONPathConstantBPartnerLocationID` for locating the `shopwareLocationIdentifier` as it searches within the Address info. See example:
     * Given `shopwareLocationIdentifier` is located at `data/shippingOrderAddress/customFields/originalAddressId` on `GET` `api/order/{{Order.id}}/deliveries` response
     * And `shopwareLocationIdentifier` is located at `data/customFields/originalAddressId` on `GET` `api/order-address/{{Order.billingAddressId}}` response
     * Then a valid `JSONPathConstantBPartnerLocationID` would be `customFields/originalAddressId`
