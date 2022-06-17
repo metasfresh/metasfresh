@@ -51,6 +51,8 @@ Feature: Shipment schedule export rest-api
       | billUser_ref                      | Shopware6      | UserID  | billUser_reference    | billUser                  |                             |
       | shipperTest_ref                   | Shopware6      | Shipper | shipperTest_reference |                           | shipper_test                |
 
+
+  @Id:S0150_210
   Scenario: Export oxid shipment candidate
     Given load AD_User:
       | AD_User_ID.Identifier | Login      |
@@ -108,8 +110,8 @@ Feature: Shipment schedule export rest-api
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | null                  | null                    |
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | order_1               | customer_so_25_02        | shipBPLocation                    | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_45201 | true      | CO        | shipUser                  | customer_so_25_02               | billBPLocation                  | billUser                    |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | order_1               | customer_so_25_02        | shipBPLocation                    | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_45201 | true      | CO        | shipUser                  | customer_so_25_02               | billBPLocation                  | billUser                    | Shopware                               |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
@@ -118,8 +120,8 @@ Feature: Shipment schedule export rest-api
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
     And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | PENDING      | order_1                   | orderLine_1                   | shipUser                  | billUser                    |
+      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | PENDING      | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
 
     And update AD_User:
       | AD_User_ID.Identifier | OPT.EMail           | OPT.Phone |
@@ -145,11 +147,13 @@ Feature: Shipment schedule export rest-api
       | schedule_export_item_1                            | schedule_export_1                            | schedule_1                       | EXPORTED     |
 
     And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | EXPORTED     | order_1                   | orderLine_1                   | shipUser                  | billUser                    |
+      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | EXPORTED     | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
 
     And set sys config int value -1 for sys config de.metas.rest_api.v2.shipping.c_olcand.OxidUserId
 
+
+  @Id:S0150_220
   Scenario: Export non-oxid shipment schedule from order candidate
     Given set sys config int value -1 for sys config de.metas.rest_api.v2.shipping.c_olcand.OxidUserId
     And reset all cache
@@ -199,8 +203,8 @@ Feature: Shipment schedule export rest-api
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | null                  | null                    |
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | order_1               | customer_so_25_02        | shipBPLocation                    | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_96411 | true      | CO        | shipUser                  | customer_so_25_02               | billBPLocation                  | billUser                    |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_User_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | order_1               | customer_so_25_02        | shipBPLocation                    | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_96411 | true      | CO        | shipUser                  | customer_so_25_02               | billBPLocation                  | billUser                    | Shopware                               |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02  | product_25_02           | 1          | 0            | 0           | 10.0  | 0        | EUR          | true      |
@@ -209,8 +213,8 @@ Feature: Shipment schedule export rest-api
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | schedule_1 | orderLine_1               | N             |
     And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | PENDING      | order_1                   | orderLine_1                   | shipUser                  | billUser                    |
+      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | PENDING      | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
 
     And update AD_User:
       | AD_User_ID.Identifier | OPT.EMail           | OPT.Phone |
@@ -236,8 +240,8 @@ Feature: Shipment schedule export rest-api
       | schedule_export_item_1                            | schedule_export_1                            | schedule_1                       | EXPORTED     |
 
     And validate M_ShipmentSchedule:
-      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier |
-      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | EXPORTED     | order_1                   | orderLine_1                   | shipUser                  | billUser                    |
+      | M_ShipmentSchedule_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | M_Product_ID.Identifier | ExportStatus | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.AD_InputDataSource_ID.InternalName |
+      | schedule_1                       | customer_so_25_02        | shipBPLocation                    | customer_so_25_02           | billBPLocation              | product_25_02           | EXPORTED     | order_1                   | orderLine_1                   | shipUser                  | billUser                    | Shopware                               |
 
   Scenario: Export non-oxid shipment schedule from order
     Given set sys config int value -1 for sys config de.metas.rest_api.v2.shipping.c_olcand.OxidUserId
