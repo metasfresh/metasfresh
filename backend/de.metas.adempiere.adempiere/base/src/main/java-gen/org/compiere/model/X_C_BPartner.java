@@ -1,7 +1,6 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -1753,7 +1752,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsString(COLUMNNAME_PO_Incoterm);
 	}
 
-	/** 
+	/**
 	 * PO_InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1775,7 +1774,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public java.lang.String getPO_InvoiceRule() 
+	public java.lang.String getPO_InvoiceRule()
 	{
 		return get_ValueAsString(COLUMNNAME_PO_InvoiceRule);
 	}
