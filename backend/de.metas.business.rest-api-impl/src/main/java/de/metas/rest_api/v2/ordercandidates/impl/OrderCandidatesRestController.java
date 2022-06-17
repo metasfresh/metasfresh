@@ -8,6 +8,8 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
@@ -93,6 +95,7 @@ public class OrderCandidatesRestController
 		return createOrderLineCandidates(JsonOLCandCreateBulkRequest.of(request));
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PostMapping(PATH_BULK)
 	public ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(@RequestBody @NonNull final JsonOLCandCreateBulkRequest bulkRequest)
 	{
@@ -124,6 +127,7 @@ public class OrderCandidatesRestController
 		}
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PutMapping(PATH_PROCESS)
 	public ResponseEntity<JsonProcessCompositeResponse> processOLCands(@RequestBody @NonNull final JsonOLCandProcessRequest request)
 	{

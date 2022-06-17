@@ -20,8 +20,6 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;

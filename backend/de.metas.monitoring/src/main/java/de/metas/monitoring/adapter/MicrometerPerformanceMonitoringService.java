@@ -43,7 +43,6 @@ import java.util.concurrent.Callable;
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
 {
 	private final MeterRegistry meterRegistry;
-	private final ThreadLocal<Integer> step = ThreadLocal.withInitial(() -> 1);
 	private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
 	private final ThreadLocal<String> initiator = ThreadLocal.withInitial(() -> "");
 	private final ThreadLocal<String> initiatorWindowId = ThreadLocal.withInitial(() -> "");
@@ -63,21 +62,11 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
 
 		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
-		// if(metadata.getSubType() != null)
-		// {
-		// 	mkTagIfNotNull("SubType", metadata.getSubType().getCode()).ifPresent(tags::add);
-		// }
 		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
-
-		// if(isInitiatorLabelActive.get())
-		// {
-		// 	addAdditionalTags(tags);
-		// }
-
 		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
 
 		if(depth.get() == 0
-				&& metadata.getType() == Type.REST_CONTROLLER
+				&& metadata.getType() == Type.REST_CONTROLLER_WITH_WINDOW_ID
 				&& metadata.getAction() != null
 				&& metadata.getWindowIdStr() != null)
 		{
@@ -87,17 +76,16 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 		}
 		else if(depth.get() == 0
-				&& metadata.getType() == Type.REST_API_PROCESSING
+				&& metadata.getType() == Type.REST_CONTROLLER
 				&& metadata.getAction() != null)
 		{
 			isInitiatorLabelActive.set(true);
-			initiator.set("CreatOrderLineCandidatesBulk");
+			initiator.set(metadata.getName() + " - " + metadata.getAction());
 			initiatorWindowId.set(null);
 		}
 		else if(depth.get() == 0)
 		{
 			isInitiatorLabelActive.set(false);
-			step.set(1);
 		}
 
 		if(isInitiatorLabelActive.get())
@@ -156,13 +144,6 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			throw PerformanceMonitoringServiceUtil.asRTE(e);
 		}
-	}
-
-	private void addAdditionalTags(ArrayList<Tag> tags)
-	{
-		mkTagIfNotNull("Step", String.valueOf(step.get())).ifPresent(tags::add);
-		step.set(step.get() + 1);
-		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
 	}
 
 	private IAutoCloseable reduceDepth()

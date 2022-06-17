@@ -140,7 +140,7 @@ public class ViewRestController
 		return JSONDocumentLayoutOptions.of(userSession);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping
 	public JSONViewResult createView(
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
@@ -206,7 +206,7 @@ public class ViewRestController
 	/**
 	 * Creates a new view by filtering the given one.
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{viewId}/filter")
 	public JSONViewResult filterView( //
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
@@ -226,7 +226,7 @@ public class ViewRestController
 		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, viewRowCommentsSummary);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
 	public JSONViewResult deleteStickyFilter(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
@@ -245,7 +245,7 @@ public class ViewRestController
 		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, viewRowCommentsSummary);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@DeleteMapping("/{viewId}")
 	public void closeView(
 			@PathVariable(PARAM_WindowId) final String windowId,
@@ -259,7 +259,7 @@ public class ViewRestController
 		viewsRepo.closeView(viewId, closeAction);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}")
 	public JSONViewResult getViewData(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
@@ -285,7 +285,7 @@ public class ViewRestController
 		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/layout")
 	public ResponseEntity<JSONViewLayout> getViewLayout(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
@@ -305,7 +305,7 @@ public class ViewRestController
 				.toLayoutJson(JSONViewLayout::of);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/availableProfiles")
 	public JSONViewProfilesList getAvailableViewProfiles(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
@@ -316,7 +316,7 @@ public class ViewRestController
 		return JSONViewProfilesList.of(availableProfiles, userSession.getAD_Language());
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}/headerProperties")
 	public JSONViewHeaderProperties getHeaderProperties(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -332,7 +332,7 @@ public class ViewRestController
 		return JSONViewHeaderProperties.of(headerProperties, jsonOpts.getAdLanguage());
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}/byIds")
 	public List<JSONViewRow> getByIds(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -373,7 +373,7 @@ public class ViewRestController
 		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesPage getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -394,7 +394,7 @@ public class ViewRestController
 				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
 	public JSONLookupValuesList getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -443,7 +443,7 @@ public class ViewRestController
 				.build();
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{viewId}/actions")
 	public JSONDocumentActionsList getRowsActions(
 			@PathVariable(PARAM_WindowId) final String windowId,
@@ -469,7 +469,7 @@ public class ViewRestController
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{viewId}/quickActions")
 	public JSONDocumentActionsList getRowsQuickActions(
 			@PathVariable(PARAM_WindowId) final String windowId,
@@ -496,7 +496,7 @@ public class ViewRestController
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getRowFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr,
@@ -513,7 +513,7 @@ public class ViewRestController
 		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}/export/excel")
 	public ResponseEntity<Resource> exportToExcel(
 			@PathVariable("windowId") final String windowIdStr,

@@ -38,8 +38,6 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.impex.InputDataSourceId;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCand;
@@ -108,7 +106,6 @@ public class OrderCandidateRestControllerService
 		this.asyncBatchService = asyncBatchService;
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_API_PROCESSING)
 	public JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)

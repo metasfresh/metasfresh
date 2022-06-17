@@ -115,7 +115,7 @@ public class DocumentReferencesRestController
 		return JSONOptions.prepareFrom(userSession).build();
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/references/sse")
 	public SseEmitter streamRootDocumentReferences(
 			@PathVariable("windowId") final String windowIdStr,
@@ -128,7 +128,7 @@ public class DocumentReferencesRestController
 		return streamRootDocumentReferences(documentPath);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/references/sse")
 	public SseEmitter streamIncludedDocumentReferences(
 			@PathVariable("windowId") final String windowIdStr,

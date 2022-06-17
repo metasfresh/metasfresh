@@ -59,12 +59,8 @@ public class MonitorAspect
 
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
 		Monitor monitor = method.getAnnotation(Monitor.class);
-		// if (monitor == null) {
-		// 	method = pjp.getTarget().getClass().getMethod(method.getName(), method.getParameterTypes());
-		// 	monitor = method.getAnnotation(Monitor.class);
-		// }
 
-		if(monitor.type() == PerformanceMonitoringService.Type.REST_CONTROLLER)
+		if(monitor.type() == PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 		{
 			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 			Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);

@@ -172,7 +172,7 @@ public class WindowRestController
 				.userSession(userSession);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/layout")
 	public ResponseEntity<JSONDocumentLayout> getLayout(
 			@PathVariable("windowId") final String windowIdStr,
@@ -194,7 +194,7 @@ public class WindowRestController
 				.toLayoutJson(JSONDocumentLayout::ofHeaderLayout);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{tabId}/layout")
 	public ResponseEntity<JSONDocumentLayout> getLayout(
 			@PathVariable("windowId") final String windowIdStr,
@@ -219,7 +219,7 @@ public class WindowRestController
 				.toLayoutJson(JSONDocumentLayout::ofDetailTab);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> getRootDocuments(
 			@PathVariable("windowId") final String windowIdStr,
@@ -236,7 +236,7 @@ public class WindowRestController
 		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
 	public JSONDocumentList getIncludedTabRows(
 			@PathVariable("windowId") final String windowIdStr,
@@ -292,7 +292,7 @@ public class WindowRestController
 
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public List<JSONDocument> getIncludedTabRow(
 			@PathVariable("windowId") final String windowIdStr
@@ -362,7 +362,7 @@ public class WindowRestController
 	/**
 	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created.
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PatchMapping("/{windowId}/{documentId}")
 	public JSONDocumentPatchResult patchRootDocument(
 			@PathVariable("windowId") final String windowIdStr,
@@ -379,7 +379,7 @@ public class WindowRestController
 		return patchDocument(documentPath, advanced, events);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PatchMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public JSONDocumentPatchResult patchIncludedDocument(
 			@PathVariable("windowId") final String windowIdStr,
@@ -439,7 +439,7 @@ public class WindowRestController
 				.build();
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{windowId}/{documentId}/duplicate")
 	public JSONDocument duplicate(
 			@PathVariable("windowId") final String windowIdStr,
@@ -469,7 +469,7 @@ public class WindowRestController
 		return deleteDocuments(ImmutableList.of(documentPath));
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@DeleteMapping("/{windowId}")
 	public List<JSONDocument> deleteRootDocumentsList(
 			@PathVariable("windowId") final String windowIdStr
@@ -489,7 +489,7 @@ public class WindowRestController
 		return deleteDocuments(documentPaths);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@DeleteMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
 	public List<JSONDocument> deleteIncludedDocument(
 			@PathVariable("windowId") final String windowIdStr
@@ -510,7 +510,7 @@ public class WindowRestController
 		return deleteDocuments(ImmutableList.of(documentPath));
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@DeleteMapping("/{windowId}/{documentId}/{tabId}")
 	public List<JSONDocument> deleteIncludedDocumentsList(
 			@PathVariable("windowId") final String windowIdStr
@@ -557,7 +557,7 @@ public class WindowRestController
 	/**
 	 * Typeahead for root document's field
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesPage getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr
@@ -581,7 +581,7 @@ public class WindowRestController
 	/**
 	 * Typeahead for included document's field
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesPage getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr
@@ -627,7 +627,7 @@ public class WindowRestController
 		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr
@@ -645,7 +645,7 @@ public class WindowRestController
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr
@@ -682,7 +682,7 @@ public class WindowRestController
 				.transform(this::toJSONLookupValuesList);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@ApiOperation("field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
@@ -701,7 +701,7 @@ public class WindowRestController
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@ApiOperation("field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
@@ -835,7 +835,7 @@ public class WindowRestController
 		}
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
@@ -880,7 +880,7 @@ public class WindowRestController
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/topActions")
 	public JSONDocumentActionsList getIncludedTabTopActions(
 			@PathVariable("windowId") final String windowIdStr,
@@ -901,7 +901,7 @@ public class WindowRestController
 				DisplayPlace.IncludedTabTopActionsMenu);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
 	public JSONDocumentActionsList getIncludedDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
@@ -954,7 +954,7 @@ public class WindowRestController
 	/**
 	 * task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/processNewRecord")
 	public int processRecord(
 			@PathVariable("windowId") final String windowIdStr
@@ -990,7 +990,7 @@ public class WindowRestController
 		}));
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{windowId}/{documentId}/field/{fieldName}/advSearchResult")
 	public List<JSONDocument> advSearchResult(
 			@PathVariable("windowId") final String windowIdStr,
@@ -1026,7 +1026,7 @@ public class WindowRestController
 		return jsonDocumentEvents;
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{windowId}/{documentId}/discardChanges")
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,
@@ -1038,7 +1038,7 @@ public class WindowRestController
 		documentCollection.invalidateRootDocument(documentPath);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@PostMapping("/{windowId}/{documentId}/{tabId}/{rowId}/discardChanges")
 	public void discardChanges(
 			@PathVariable("windowId") final String windowIdStr,
@@ -1054,7 +1054,7 @@ public class WindowRestController
 		documentCollection.invalidateRootDocument(documentPath);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/changeLog")
 	public JSONDocumentChangeLog getDocumentChangeLog(
 			@PathVariable("windowId") final String windowIdStr,
@@ -1065,7 +1065,7 @@ public class WindowRestController
 		return getDocumentChangeLog(documentPath);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/changeLog")
 	public JSONDocumentChangeLog getDocumentChangeLog(
 			@PathVariable("windowId") final String windowIdStr,

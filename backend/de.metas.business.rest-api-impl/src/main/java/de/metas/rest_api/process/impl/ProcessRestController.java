@@ -27,6 +27,7 @@ import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;
@@ -94,26 +95,10 @@ public class ProcessRestController
 		this.processService = processService;
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@ApiOperation("Invoke a process from the list returned by the `available` endpoint")
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
-			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
-			@Nullable @RequestBody(required = false) final RunProcessRequest request)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> invokeProcess0(processValue, request),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("ProcessRestController")
-						.type(PerformanceMonitoringService.Type.REST_CONTROLLER)
-						.action("invokeProcess")
-						.label("uri", "/api/v2/processes")
-						.build());
-	}
-	private ResponseEntity<?> invokeProcess0(
 			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
 			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{
@@ -149,6 +134,7 @@ public class ProcessRestController
 		return getResponse(processExecutionResult);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/available")
 	public ResponseEntity<GetAvailableProcessesResponse> getAllProcesses()
 	{
