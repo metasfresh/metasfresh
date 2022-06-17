@@ -104,10 +104,6 @@
         "partnerMap": {
           "customer": null,
           "customerId": "customerId",
-          "partnerBodymedCenter": null,
-          "partnerBodymedCenterId": null,
-          "affiliateBodymedCenter": null,
-          "affiliateBodymedCenterId": null,
           "givenMykey": "givenMykey",
           "referrer": "referrer",
           "affiliateOrigin": null,
@@ -134,44 +130,6 @@
         "cooperationPartner": {
           "pharmacyCustomer": null,
           "pharmacyCustomerId": "pharmacyCustomerId",
-          "partnerBodymedCenter": {
-            "uuid": "uuid",
-            "name": "name",
-            "customerNumber": "customerNumber",
-            "streetAddress": "streetAddress",
-            "postalCode": "postalCode",
-            "addressLocality": "addressLocality",
-            "addressCountry": "DE",
-            "code": "code",
-            "uid": "uid",
-            "affiliateId": 90466,
-            "oxidId": "oxidId",
-            "tags": null,
-            "clientCustomerPartnerMaps": [
-            ],
-            "affiliateCustomerPartnerMaps": [
-            ],
-            "_uniqueIdentifier": "uniqueIdentifier",
-            "versionId": null,
-            "translated": [
-            ],
-            "createdAt": "2022-04-04T08:10:14.418+00:00",
-            "updatedAt": "2022-04-07T12:10:56.797+00:00",
-            "extensions": {
-              "foreignKeys": {
-                "apiAlias": null,
-                "extensions": [
-                ]
-              },
-              "internal_mapping_storage": {
-                "apiAlias": null,
-                "extensions": [
-                ]
-              }
-            },
-            "id": "id"
-          },
-          "partnerBodymedCenterId": "partnerBodymedCenterId",
           "_uniqueIdentifier": "uniqueIdentifier",
           "versionId": null,
           "translated": [

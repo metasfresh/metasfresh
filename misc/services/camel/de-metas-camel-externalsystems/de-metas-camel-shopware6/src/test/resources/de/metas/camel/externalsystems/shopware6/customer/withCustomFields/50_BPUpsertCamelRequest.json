@@ -112,7 +112,7 @@
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-Shopware6-externalBodymedId",
+                "contactIdentifier": "ext-Shopware6-someCustomId",
                 "contact": {
                   "metasfreshBPartnerId": null,
                   "metasfreshBPartnerIdSet": false,

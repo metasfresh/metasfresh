@@ -79,9 +79,9 @@ computed from the following parameters set on window `541116 - ExternalSystem_Co
       * pulled from `api/search/customer`
       * in this case, the `customer` info is located directly at path `data`
   * even though, the customer data is located at different paths, the system is able to use the same `JSONPathShopwareID` for locating the `shopwareId` as it searches within the customer info. see example:
-    * Given `shopwareId` is located at `data/orderCustomer/customFields/bodymedUserId` on `POST` `api/search/order/` response
-    * And `shopwareId` is located at `data/customFields/bodymedUserId` on `POST` `api/search/customer` response
-    * Then a valid `JSONPathShopwareID` would be `customFields/bodymedUserId`
+    * Given `shopwareId` is located at `data/orderCustomer/customFields/someCustomId` on `POST` `api/search/order/` response
+    * And `shopwareId` is located at `data/customFields/someCustomId` on `POST` `api/search/customer` response
+    * Then a valid `JSONPathShopwareID` would be `customFields/someCustomId`
 
 * `JsonExternalSystemRequest.parameters.JsonExternalSystemShopware6ConfigMappings`
     * `JsonExternalSystemShopware6ConfigMappings.seqNo`
