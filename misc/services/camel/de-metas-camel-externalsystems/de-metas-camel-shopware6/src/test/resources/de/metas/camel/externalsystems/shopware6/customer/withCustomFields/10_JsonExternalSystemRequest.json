@@ -11,7 +11,7 @@
     "ClientId": "ClientId",
     "BasePath": "https://someurl.com",
     "JSONPathConstantMetasfreshID": "/customFields/metasfreshId",
-    "JSONPathConstantShopwareID": "/customFields/bodymedUserId",
+    "JSONPathConstantShopwareID": "/customFields/someCustomId",
     "UpdatedAfter": "2020-04-10T00:09:00.000Z"
   }
 }

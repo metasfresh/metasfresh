@@ -17,7 +17,7 @@
   "customFields": {
     "custom_customer_attributes_origin": null,
     "metasfreshId": "metasfreshId",
-    "bodymedUserId": "bodymedUserId"
+    "someCustomId": "someCustomId"
   },
   "apiAlias": "customer"
 }

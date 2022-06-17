@@ -56,7 +56,7 @@ public class CreateCustomerUpsertReqProcessor implements Processor
 				.orElseThrow(() -> new RuntimeException("Missing default shipping address Id for customerId: " + customerCandidate.getShopwareId()));
 
 		final String billingAddressId = Optional.ofNullable(customerCandidate.getDefaultBillingAddressId())
-				.orElseThrow(() -> new RuntimeException("Missing default shipping address Id for customerId: " + customerCandidate.getShopwareId()));
+				.orElseThrow(() -> new RuntimeException("Missing default billing address Id for customerId: " + customerCandidate.getShopwareId()));
 
 		final ShopwareClient shopwareClient = routeContext.getShopwareClient();
 

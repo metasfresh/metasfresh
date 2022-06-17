@@ -16,11 +16,11 @@
       "vatIds": [
         "vatId1"
       ],
-      "defaultPaymentMethodId": "8359cef2c19e424abe6799824486b6b7",
-      "salesChannelId": "620a2217f7474e619cb00ad39e804cca",
-      "languageId": "2fbb5fe2e29a4d70aa5854ce7ce3e20b",
+      "defaultPaymentMethodId": "defaultPaymentMethodId",
+      "salesChannelId": "salesChannelId",
+      "languageId": "languageId",
       "lastPaymentMethodId": null,
-      "salutationId": "b089fb7c57694384ba91734a6cacc615",
+      "salutationId": "salutationId",
       "title": null,
       "affiliateCode": null,
       "campaignCode": null,
@@ -52,7 +52,7 @@
         "orderCustomers": null,
         "orderAddresses": null,
         "newsletterRecipients": null,
-        "_uniqueIdentifier": "ed643807c9f84cc8b50132ea3ccb1c3b",
+        "_uniqueIdentifier": "uniqueIdentifier",
         "versionId": null,
         "translated": {
           "displayName": "",
@@ -69,7 +69,7 @@
             ]
           }
         },
-        "id": "ed643807c9f84cc8b50132ea3ccb1c3b",
+        "id": "id",
         "customFields": null,
         "apiAlias": "salutation"
       },
@@ -85,13 +85,13 @@
       "promotions": null,
       "recoveryCustomer": null,
       "productReviews": null,
-      "remoteAddress": "89.157.232.0",
+      "remoteAddress": "remoteAddress",
       "requestedGroupId": null,
       "requestedGroup": null,
       "boundSalesChannelId": null,
       "boundSalesChannel": null,
       "wishlists": null,
-      "_uniqueIdentifier": "d165beffbe8f428d87c8a9701b5d69e6",
+      "_uniqueIdentifier": "uniqueIdentifier",
       "versionId": null,
       "translated": [
       ],
@@ -103,15 +103,15 @@
         },
         "partnerMap": {
           "customer": null,
-          "customerId": "d165beffbe8f428d87c8a9701b5d69e6",
+          "customerId": "customerId",
           "partnerBodymedCenter": null,
           "partnerBodymedCenterId": null,
           "affiliateBodymedCenter": null,
           "affiliateBodymedCenterId": null,
-          "givenMykey": "HAV-CUX-27474",
-          "referrer": "https://bodymed-shop.madco-lab.de/account/mykey?q=%2Faccount%2Fmykey",
+          "givenMykey": "givenMykey",
+          "referrer": "referrer",
           "affiliateOrigin": null,
-          "_uniqueIdentifier": "1dc0f45c5cfd47f5a5ac0b79813fd59a",
+          "_uniqueIdentifier": "uniqueIdentifier",
           "versionId": null,
           "translated": [
           ],
@@ -129,29 +129,29 @@
               ]
             }
           },
-          "id": "1dc0f45c5cfd47f5a5ac0b79813fd59a"
+          "id": "id"
         },
         "cooperationPartner": {
           "pharmacyCustomer": null,
-          "pharmacyCustomerId": "d165beffbe8f428d87c8a9701b5d69e6",
+          "pharmacyCustomerId": "pharmacyCustomerId",
           "partnerBodymedCenter": {
-            "uuid": "ecd67cb3-cd03-04d6-6ced-fb55864bb917",
-            "name": "Bodymed-Center Karlstadt",
-            "customerNumber": "BMK25975",
-            "streetAddress": "Mainkaistraße 2 / 2. Stock",
-            "postalCode": "97753",
-            "addressLocality": "Karlstadt",
+            "uuid": "uuid",
+            "name": "name",
+            "customerNumber": "customerNumber",
+            "streetAddress": "streetAddress",
+            "postalCode": "postalCode",
+            "addressLocality": "addressLocality",
             "addressCountry": "DE",
-            "code": "KAR-ADT-97753",
-            "uid": "1390",
+            "code": "code",
+            "uid": "uid",
             "affiliateId": 90466,
-            "oxidId": "ecd67cb3cd0304d66cedfb55864bb917",
+            "oxidId": "oxidId",
             "tags": null,
             "clientCustomerPartnerMaps": [
             ],
             "affiliateCustomerPartnerMaps": [
             ],
-            "_uniqueIdentifier": "00197905ad964f71a2159963a5e33a94",
+            "_uniqueIdentifier": "uniqueIdentifier",
             "versionId": null,
             "translated": [
             ],
@@ -169,10 +169,10 @@
                 ]
               }
             },
-            "id": "00197905ad964f71a2159963a5e33a94"
+            "id": "id"
           },
-          "partnerBodymedCenterId": "00197905ad964f71a2159963a5e33a94",
-          "_uniqueIdentifier": "1e25decee2044913b2bf9498f263f195",
+          "partnerBodymedCenterId": "partnerBodymedCenterId",
+          "_uniqueIdentifier": "uniqueIdentifier",
           "versionId": null,
           "translated": [
           ],
@@ -185,7 +185,7 @@
               ]
             }
           },
-          "id": "1e25decee2044913b2bf9498f263f195"
+          "id": "id"
         }
       },
       "customFields": {

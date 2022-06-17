@@ -64,12 +64,12 @@ public class CustomerCandidateTest
 	}
 
 	@Test
-	public void givenExistingPath_whenGetCustomFieldBodymedUserId_thenReturnValue() throws IOException
+	public void givenExistingPath_whenGetCustomField_thenReturnValue() throws IOException
 	{
 		//given
-		final String bPartnerCustomJsonPath = "/customFields/bodymedUserId";
+		final String bPartnerCustomJsonPath = "/customFields/someCustomId";
 
-		final String customFieldValue = "bodymedUserId";
+		final String customFieldValue = "someCustomId";
 
 		final InputStream jsonCustomerIS = this.getClass().getResourceAsStream(CUSTOMER_METASFRESH_ID);
 		final JsonNode jsonNode = objectMapper.readValue(jsonCustomerIS, JsonNode.class);

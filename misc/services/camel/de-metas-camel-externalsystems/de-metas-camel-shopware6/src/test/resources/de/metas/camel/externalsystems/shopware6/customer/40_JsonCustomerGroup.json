@@ -1,22 +1,22 @@
 {
   "data": {
-    "name": "Bodymed-Partner-name",
+    "name": "test_group",
     "displayGross": false,
     "translations": null,
     "customers": null,
     "salesChannels": null,
     "registrationActive": false,
-    "registrationTitle": "Bodymed Partner ",
+    "registrationTitle": "registrationTitle",
     "registrationIntroduction": null,
     "registrationOnlyCompanyRegistration": true,
     "registrationSeoMetaDescription": null,
     "registrationSalesChannels": null,
-    "_uniqueIdentifier": "63908d7978ea4e609b6445df7077a1bc",
+    "_uniqueIdentifier": "uniqueIdentifier",
     "versionId": null,
     "translated": {
-      "name": "Bodymed-Partner",
+      "name": "test_group",
       "customFields": {},
-      "registrationTitle": "Bodymed Partner ",
+      "registrationTitle": "registrationTitle",
       "registrationIntroduction": null,
       "registrationOnlyCompanyRegistration": true,
       "registrationSeoMetaDescription": null
@@ -29,7 +29,7 @@
         "extensions": []
       }
     },
-    "id": "63908d7978ea4e609b6445df7077a1bc",
+    "id": "id",
     "customFields": null,
     "apiAlias": "customer_group"
   }
