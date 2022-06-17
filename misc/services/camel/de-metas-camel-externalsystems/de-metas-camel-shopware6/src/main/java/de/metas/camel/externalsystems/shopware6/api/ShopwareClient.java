@@ -126,7 +126,7 @@ public class ShopwareClient
 
 		final ResponseEntity<String> response = performWithRetry(resourceURI, HttpMethod.PATCH, String.class, jsonStock);
 
-		if (response == null || Check.isBlank(response.getBody()))
+		if (response == null || !response.getStatusCode().is2xxSuccessful())
 		{
 			throw new RuntimeException("Error while exporting stock to Shopware");
 		}
