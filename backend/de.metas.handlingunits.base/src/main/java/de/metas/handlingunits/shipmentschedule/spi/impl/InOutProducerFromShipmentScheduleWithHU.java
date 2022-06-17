@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -192,7 +193,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 		catch (final Exception ex)
 		{
 			final String sourceInfo = extractSourceInfo(candidates);
-			shipmentGeneratedNotifications.notifyShipmentError(sourceInfo, ex.getLocalizedMessage());
+			shipmentGeneratedNotifications.notifyShipmentError(
+					sourceInfo,
+					CoalesceUtil.coalesceSuppliersNotNull(
+							() -> ex.getLocalizedMessage(),
+							() -> ex.getClass().getName()));
 
 			// propagate
 			throw AdempiereException.wrapIfNeeded(ex)
@@ -201,6 +206,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	}
 
+	@NonNull
 	private static String extractSourceInfo(final List<ShipmentScheduleWithHU> candidates)
 	{
 		return candidates.stream()

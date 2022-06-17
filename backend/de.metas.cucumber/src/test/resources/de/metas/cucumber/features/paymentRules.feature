@@ -254,6 +254,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
+  @Id:S0150_230
   Scenario: PaymentRule = `DirectDebit` from order disposition is correctly propagated to C_Order
     Given metasfresh contains C_BPartners:
       | Identifier | Name                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
@@ -305,10 +306,11 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | order_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
-      | order_1               | 1188           | bpartner_1               | location_1                        | 2022-03-22  | SOO         | EUR          | F            | S               | po_ref_mock     | true      | CO        | D               |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule | OPT.AD_InputDataSource_ID.InternalName |
+      | order_1               | 1188           | bpartner_1               | location_1                        | 2022-03-22  | SOO         | EUR          | F            | S               | po_ref_mock     | true      | CO        | D               | Shopware                               |
 
   @from:cucumber
+  @Id:S0150_240
   Scenario: PaymentRule = `OnCredit` from order disposition is correctly propagated to C_Order
     Given metasfresh contains C_BPartners:
       | Identifier | Name                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
@@ -360,5 +362,5 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | order_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
-      | order_1               | 9208           | bpartner_1               | location_1                        | 2022-03-22  | SOO         | EUR          | F            | S               | po_ref_mock     | true      | CO        | P               |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule | OPT.AD_InputDataSource_ID.InternalName |
+      | order_1               | 9208           | bpartner_1               | location_1                        | 2022-03-22  | SOO         | EUR          | F            | S               | po_ref_mock     | true      | CO        | P               | Shopware                               |
