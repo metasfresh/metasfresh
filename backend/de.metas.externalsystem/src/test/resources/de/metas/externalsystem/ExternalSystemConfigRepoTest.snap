@@ -250,7 +250,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "baseUrl" : "baseUrl",
       "clientId" : "id",
       "clientSecret" : "secret",
-      "isSynStockToShopware6": false,
+      "isSyncStockToShopware6" : false,
+      "syncStockToShopware6" : false,
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [
         {
@@ -284,7 +285,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "baseUrl" : "baseUrl",
       "clientId" : "id",
       "clientSecret" : "secret",
-      "isSynStockToShopware6": false,
+      "isSyncStockToShopware6" : false,
+      "syncStockToShopware6" : false,
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [
         {
@@ -312,7 +314,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "baseUrl" : "baseUrl",
     "clientId" : "id",
     "clientSecret" : "secret",
-    "isSynStockToShopware6": false,
+    "isSyncStockToShopware6" : false,
+    "syncStockToShopware6" : false,
     "externalSystemShopware6ConfigMappingList" : [
       {
         "seqNo" : 10,
@@ -358,7 +361,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "baseUrl" : "baseUrl",
       "clientId" : "id",
       "clientSecret" : "secret",
-      "isSynStockToShopware6": false,
+      "isSyncStockToShopware6" : false,
+      "syncStockToShopware6" : false,
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [
         {
@@ -392,7 +396,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "baseUrl" : "new-baseURL",
       "clientId" : "new-clientId",
       "clientSecret" : "new-clientSecret",
-      "isSynStockToShopware6": false,
+      "isSyncStockToShopware6" : false,
+      "syncStockToShopware6" : false,
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [ ],
       "salesRepJSONPath" : "/test/salesrep",

@@ -225,7 +225,8 @@ Feature: available for sales
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_1                            | s_1                   | CO            |
-    Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
+    And the shipment schedule identified by s_s_1 is processed after not more than 30 seconds
+    Then after not more than 60s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales and export stock when MD_Stock is created
