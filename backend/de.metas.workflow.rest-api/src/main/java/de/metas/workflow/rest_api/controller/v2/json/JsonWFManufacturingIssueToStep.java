@@ -35,7 +35,7 @@ import java.math.BigDecimal;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFManufacturingStep extends JsonWFStep
+public class JsonWFManufacturingIssueToStep
 {
 	@JsonProperty("id")
 	@NonNull String id;
@@ -48,7 +48,7 @@ public class JsonWFManufacturingStep extends JsonWFStep
 
 	@Builder
 	@JsonCreator
-	public JsonWFManufacturingStep(
+	public JsonWFManufacturingIssueToStep(
 			@JsonProperty("id") @NonNull final String id,
 			@JsonProperty("huQRCode") @NonNull final JsonWFHQRCode huQRCode,
 			@JsonProperty("qtyToIssue") @NonNull final BigDecimal qtyToIssue

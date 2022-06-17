@@ -35,15 +35,15 @@ import java.util.List;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFManufacturingLine
+public class JsonWFManufacturingIssueToLine
 {
 	@JsonProperty("steps")
-	@NonNull List<JsonWFManufacturingStep> steps;
+	@NonNull List<JsonWFManufacturingIssueToStep> steps;
 
 	@Builder
 	@JsonCreator
-	public JsonWFManufacturingLine(
-			@JsonProperty("steps") @NonNull final List<JsonWFManufacturingStep> steps
+	public JsonWFManufacturingIssueToLine(
+			@JsonProperty("steps") @NonNull final List<JsonWFManufacturingIssueToStep> steps
 	)
 	{
 		this.steps = steps;
