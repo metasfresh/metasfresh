@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13148](https://github.com/metasfresh/metasfresh/issues/13148) Datenaustausch - Provide default Title for invoice document
   * [#13158](https://github.com/metasfresh/metasfresh/issues/13158) Adjust Window Manufacturing Candidate
   * [#13153](https://github.com/metasfresh/metasfresh/issues/13153) Add FirmenbuchNR to Business Partner Window
   * [#13132](https://github.com/metasfresh/metasfresh/issues/13132) Customizing: Add fr_CH Language as System Language
