@@ -30,22 +30,28 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.distributionorder.DD_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.productionorder.PP_Order_BOMLine_StepDefData;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.DistributionMobileApplication;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.model.I_DD_Order_MoveSchedule;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToLU;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToNewLU;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
@@ -53,7 +59,8 @@ import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFDistributionLine;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWFManufacturingLine;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFManufacturingIssueToLine;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFManufacturingReceiveFromLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFPickingLine;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
@@ -71,9 +78,12 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -100,8 +110,9 @@ public class AD_Workflow_StepDef
 	private final PP_Order_StepDefData ppOrderTable;
 	private final DD_Order_StepDefData ddOrderTable;
 	private final DD_OrderLine_StepDefData ddOrderLineTable;
-	private final M_HU_StepDefData huTable;
+	private final M_Product_StepDefData productTable;
 	private final M_Locator_StepDefData locatorTable;
+	private final PP_Order_BOMLine_StepDefData bomLineTable;
 	private final TestContext testContext;
 
 	public AD_Workflow_StepDef(
@@ -112,8 +123,9 @@ public class AD_Workflow_StepDef
 			@NonNull final PP_Order_StepDefData ppOrderTable,
 			@NonNull final DD_Order_StepDefData ddOrderTable,
 			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
-			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_Locator_StepDefData locatorTable,
+			@NonNull final PP_Order_BOMLine_StepDefData bomLineTable,
 			@NonNull final TestContext testContext
 	)
 	{
@@ -125,8 +137,9 @@ public class AD_Workflow_StepDef
 		this.ppOrderTable = ppOrderTable;
 		this.ddOrderTable = ddOrderTable;
 		this.ddOrderLineTable = ddOrderLineTable;
-		this.huTable = huTable;
+		this.productTable = productTable;
 		this.locatorTable = locatorTable;
+		this.bomLineTable = bomLineTable;
 	}
 
 	@And("update duration for AD_Workflow nodes")
@@ -244,28 +257,52 @@ public class AD_Workflow_StepDef
 
 		final JsonWFProcess wfProcessResponse = objectMapper.readValue(content, JsonWFProcess.class);
 
-		final JsonWFActivity wfManufacturingIssueToActivity = wfProcessResponse.getActivities().stream()
-				.filter(jsonWFActivity -> jsonWFActivity.getComponentType().equals("manufacturing/rawMaterialsIssue"))
-				.collect(Collectors.toList()).get(0);
-
-		final ArrayList activityLines = (ArrayList)wfManufacturingIssueToActivity.getComponentProps().get("lines");
-
-		final JsonWFManufacturingLine wfLine = objectMapper.readValue(objectMapper.writeValueAsString(activityLines.get(0)), JsonWFManufacturingLine.class);
-
-		final JsonManufacturingOrderEvent.JsonManufacturingOrderEventBuilder manufacturingOrderEventBuilder = JsonManufacturingOrderEvent.builder()
-				.wfProcessId(wfProcessResponse.getId())
-				.wfActivityId(wfManufacturingIssueToActivity.getActivityId());
+		final JsonManufacturingOrderEvent.JsonManufacturingOrderEventBuilder manufacturingOrderEventBuilder = JsonManufacturingOrderEvent.builder();
 
 		if (event.equals("IssueTo"))
 		{
-			manufacturingOrderEventBuilder.issueTo(JsonManufacturingOrderEvent.IssueTo.builder()
-													.issueStepId(wfLine.getSteps().get(0).getId())
-													.qtyIssued(wfLine.getSteps().get(0).getQtyToIssue())
-													.huQRCode(wfLine.getSteps().get(0).getHuQRCode().getCode())
-													.build());
+			final JsonWFActivity wfManufacturingIssueToActivity = wfProcessResponse.getActivities().stream()
+					.filter(jsonWFActivity -> jsonWFActivity.getComponentType().equals("manufacturing/rawMaterialsIssue"))
+					.collect(Collectors.toList()).get(0);
+
+			final ArrayList activityLines = (ArrayList)wfManufacturingIssueToActivity.getComponentProps().get("lines");
+
+			final JsonWFManufacturingIssueToLine wfLine = objectMapper.readValue(objectMapper.writeValueAsString(activityLines.get(0)), JsonWFManufacturingIssueToLine.class);
+
+			manufacturingOrderEventBuilder
+					.wfProcessId(wfProcessResponse.getId())
+					.wfActivityId(wfManufacturingIssueToActivity.getActivityId())
+					.issueTo(JsonManufacturingOrderEvent.IssueTo.builder()
+									 .issueStepId(wfLine.getSteps().get(0).getId())
+									 .qtyIssued(wfLine.getSteps().get(0).getQtyToIssue())
+									 .huQRCode(wfLine.getSteps().get(0).getHuQRCode().getCode())
+									 .build());
 		}
 		else if (event.equals("ReceiveFrom"))
 		{
+			final JsonWFActivity wfManufacturingReceiveFromActivity = wfProcessResponse.getActivities().stream()
+					.filter(jsonWFActivity -> jsonWFActivity.getComponentType().equals("manufacturing/materialReceipt"))
+					.collect(Collectors.toList()).get(0);
+
+			final ArrayList activityLines = (ArrayList)wfManufacturingReceiveFromActivity.getComponentProps().get("lines");
+
+			final JsonWFManufacturingReceiveFromLine wfLine = objectMapper.readValue(objectMapper.writeValueAsString(activityLines.get(0)), JsonWFManufacturingReceiveFromLine.class);
+
+			manufacturingOrderEventBuilder
+					.wfProcessId(wfProcessResponse.getId())
+					.wfActivityId(wfManufacturingReceiveFromActivity.getActivityId())
+					.receiveFrom(JsonManufacturingOrderEvent.ReceiveFrom.builder()
+										 .lineId(wfLine.getId())
+										 .qtyReceived(wfLine.getQtyToReceive())
+										 .aggregateToLU(JsonAggregateToLU.builder()
+																.newLU(JsonAggregateToNewLU.builder()
+																			   .luCaption(wfLine.getAvailableReceivingTargets().getValues().get(0).getLuCaption())
+																			   .tuCaption(wfLine.getAvailableReceivingTargets().getValues().get(0).getTuCaption())
+																			   .luPIItemId(HuPackingInstructionsItemId.ofRepoId(wfLine.getAvailableReceivingTargets().getValues().get(0).getLuPIItemId()))
+																			   .tuPIItemProductId(HUPIItemProductId.ofRepoId(wfLine.getAvailableReceivingTargets().getValues().get(0).getTuPIItemProductId()))
+																			   .build())
+																.build())
+										 .build());
 
 		}
 
@@ -399,13 +436,59 @@ public class AD_Workflow_StepDef
 
 			final I_M_HU hu = queryBL.createQueryBuilder(I_M_HU.class)
 					.addEqualsFilter(COLUMNNAME_M_HU_ID, huAssignment.getM_HU_ID())
-					.orderBy(I_M_HU.COLUMNNAME_Created)
+					.orderBy(I_M_HU.COLUMNNAME_Updated)
 					.create()
 					.first();
 
 			assertThat(hu).isNotNull();
 			assertThat(hu.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
 
+		}
+	}
+
+	@And("validate cost collector after manufacturing workflow")
+	public void validate_after_manufacturing_workflow(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order order = ppOrderTable.get(orderIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final String bomLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order_BOMLine bomLine = bomLineIdentifier != null ? bomLineTable.get(bomLineIdentifier) : null;
+
+			final I_PP_Cost_Collector costCollector = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+					.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
+					.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.orderBy(I_PP_Cost_Collector.COLUMNNAME_Created)
+					.create()
+					.first();
+
+			assertThat(costCollector).isNotNull();
+			assertThat(costCollector.isProcessed()).isEqualTo(true);
+			assertThat(costCollector.getMovementQty()).isEqualTo(new BigDecimal(1));
+			if (bomLine != null)
+			{
+				assertThat(costCollector.getPP_Order_BOMLine_ID()).isEqualTo(bomLine.getPP_Order_BOMLine_ID());
+			}
+
+			final I_PP_Order_Qty orderQty = queryBL.createQueryBuilder(I_PP_Order_Qty.class)
+					.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
+					.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.orderBy(I_PP_Order_Qty.COLUMNNAME_Created)
+					.create()
+					.first();
+
+			assertThat(orderQty).isNotNull();
+			assertThat(orderQty.getQty()).isEqualTo(new BigDecimal(1));
+			if (bomLine != null)
+			{
+				assertThat(orderQty.getPP_Order_BOMLine_ID()).isEqualTo(bomLine.getPP_Order_BOMLine_ID());
+			}
 		}
 	}
 

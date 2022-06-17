@@ -33,7 +33,7 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFDistributionStep extends JsonWFStep
+public class JsonWFDistributionStep
 {
 	@JsonProperty("id")
 	@NonNull String id;

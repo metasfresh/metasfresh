@@ -1,3 +1,4 @@
+@workflowTests
 @from:cucumber
 Feature: workflow rest controller tests
 
@@ -113,9 +114,10 @@ Feature: workflow rest controller tests
       | transitWarehouse          | transitWarehouse | endcustomer_1            | l_1                               | true        |
 
     And metasfresh contains M_Locators:
-      | Identifier           | M_Warehouse_ID.Identifier | Value                |
-      | fromWarehouseLocator | fromWarehouse             | fromWarehouseLocator |
-      | toWarehouseLocator   | toWarehouse               | toWarehouseLocator   |
+      | Identifier              | M_Warehouse_ID.Identifier | Value                   |
+      | fromWarehouseLocator    | fromWarehouse             | fromWarehouseLocator    |
+      | toWarehouseLocator      | toWarehouse               | toWarehouseLocator      |
+      | transitWarehouseLocator | transitWarehouse          | transitWarehouseLocator |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
@@ -164,88 +166,120 @@ Feature: workflow rest controller tests
       | DD_OrderLine_ID.Identifier | QtyPicked | M_HU_ID.Identifier | M_Locator_ID.Identifier |
       | dd_ol_1                    | 1         | huProductCU        | toWarehouseLocator      |
 
-  @workflowTests
   @from:cucumber
   Scenario: create and start manufacturing workflow
+
     And metasfresh contains M_Products:
-      | Identifier        | Name                             | OPT.X12DE355 |
-      | p_1_manufacturing | p_mfg_workflow_product           | PCE          |
-      | p_2_manufacturing | p_mfg_workflow_product_component | PCE          |
+      | Identifier              | Value                                | Name                                 |
+      | huProduct               | huProduct                            | huProduct                            |
+      | manufacturingProduct_HU | manufacturingProduct_IssueClearedHUs | manufacturingProduct_IssueClearedHUs |
     And metasfresh contains M_ProductPrices
-      | Identifier         | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1_manufacturing | plv_1                             | p_1_manufacturing       | 5.0      | PCE               | Normal                        |
-      | pp_2_manufacturing | plv_1                             | p_2_manufacturing       | 5.0      | PCE               | Normal                        |
-
-    And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier    | Name            |
-      | huManufacturingVirtualPI | No Packing Item |
-      | huPackingTU              | huPackingTU     |
-    And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier    | Name             | HU_UnitType | IsCurrent |
-      | packingVersionTU              | huPackingTU              | packingVersionTU | TU          | Y         |
-      | manufacturingVersionCU        | huManufacturingVirtualPI | No Packing Item  | V           | Y         |
-    And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
-      | huPiItemTU                 | packingVersionTU              | 0   | MI       |
-    And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductCU                        | huPiItemTU                 | p_1_manufacturing       | 1   | 2022-01-01 |
-
-    And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inventory_1               | 2021-10-12   | 540008         |
-    And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
-      | inventory_1               | inventoryLine_1               | p_2_manufacturing       | 0       | 1        | PCE          |
-    And complete inventory with inventoryIdentifier 'inventory_1'
-    And after not more than 30s, there are added M_HUs for inventory
-      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | inventoryLine_1               | huProductCU        |
+      | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | manufacturingProductPrice | plv_1                             | huProduct               | 5.0      | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | cl_Endcustomer_19 | N            | Y              | ps_1                          |
+      | Identifier    | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | cl_Endcustomer_1 | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | l_1        | cl_bPLocation | endcustomer_1            | true                | true         |
 
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name            |
+      | huPackingLU           | huPackingLU     |
+      | huPackingTU           | huPackingTU     |
+      | huPackingVirtualPI    | No Packing Item |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
+      | packingVersionLU              | huPackingLU           | packingVersionLU | LU          | Y         |
+      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
+      | packingVersionCU              | huPackingVirtualPI    | No Packing Item  | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | huPiItemLU                 | packingVersionLU              | 1   | HU       | huPackingTU                      |
+      | huPiItemTU                 | packingVersionTU              | 0   | MI       |                                  |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | huProductTU                        | huPiItemTU                 | manufacturingProduct_HU | 1   | 2022-01-01 |
+
+    And metasfresh contains M_Warehouses:
+      | M_Warehouse_ID.Identifier | Name         | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsInTransit |
+      | warehouseStd              | warehouseStd | endcustomer_1            | l_1                               | false       |
+
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | huProduct_inventory       | 2021-10-12   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory       | huProduct_inventoryLine       | manufacturingProduct_HU | 0       | 1        | PCE          |
+    And complete inventory with inventoryIdentifier 'huProduct_inventory'
+
+    And after not more than 30s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | huProduct_inventoryLine       | createdCU          |
+
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
+      | createdCU           | 1     | huProductTU                        | createdTU                 | newCreatedCU              |
+
+    And after not more than 30s, M_HUs should have
+      | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | createdTU          | huProductTU                            |
+
+    And transform TU to new LUs
+      | sourceTU.Identifier | tuQty | M_HU_PI_Item_ID.Identifier | resultedNewLUs.Identifier |
+      | createdTU           | 1     | huPiItemLU                 | createdLU                 |
+
+    And update HU clearance status
+      | M_HU_ID.Identifier | ClearanceStatus | OPT.ClearanceNote |
+      | createdLU          | Cleared         | Cleared HU        |
+
     And metasfresh contains PP_Product_BOM
       | Identifier        | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom_manufacturing | p_1_manufacturing       | 2021-01-02 | bomVersions_manufacturing            |
+      | bom_manufacturing | huProduct               | 2021-01-02 | bomVersions_manufacturing            |
     And metasfresh contains PP_Product_BOMLines
       | Identifier           | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
-      | bom_l_manufacturing1 | bom_manufacturing            | p_2_manufacturing       | 2021-01-02 | 1        |
+      | bom_l_manufacturing1 | bom_manufacturing            | manufacturingProduct_HU | 2021-01-02 | 1        |
+
     And the PP_Product_BOM identified by bom_manufacturing is completed
+
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_1     | huProduct               | bomVersions_manufacturing                | false        |
+
+    And metasfresh contains PP_Order_Candidates
+      | Identifier | M_Product_ID.Identifier | M_Warehouse_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    |
+      | oc_1       | huProduct               | warehouseStd              | bom_manufacturing            | ppln_1                            | 540006        | 1          | 1            | 0            | PCE               | 2021-01-12T21:00:00Z | 2021-01-12T21:00:00Z |
 
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540006        |
 
-    When create PP_Order:
+    And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.AD_Workflow_ID |
-      | ppOrder_manufacturing  | MOP         | p_1_manufacturing       | 1          | testResource             | 2022-03-31T23:59:00.00Z | 2022-04-05T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | 540114             |
+      | ppOrder_manufacturing  | MOP         | huProduct               | 1          | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | 540114             |
 
-    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
-      | huLuTuConfig                          | ppOrder_manufacturing  | ppOrderTU          | N               | 0     | N               | 1     | N               | 1     | huProductCU                        |
+    And after not more than 30s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBOMLine_1               | ppOrder_manufacturing  | manufacturingProduct_HU | 1            | false           | PCE               | CO            |
 
-    And RabbitMQ MF_TO_ExternalSystem queue is purged
+    And select M_HU to be issued for productionOrder
+      | M_HU_ID.Identifier | PP_Order_Qty_ID.Identifier | PP_Order_BOMLine_ID.Identifier | OPT.MovementDate     |
+      | createdLU          | pp_order_qty_1             | ppOrderBOMLine_1               | 2022-03-31T13:30:13Z |
 
-    And complete planning for PP_Order:
+    And validate PP_Order_Qty records
+      | PP_Order_Qty_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | PP_Order_BOMLine_ID.Identifier | OPT.Processed |
+      | pp_order_qty_1             | createdLU          | manufacturingProduct_HU | ppOrderBOMLine_1               | false         |
+
+    When complete planning for PP_Order:
       | PP_Order_ID.Identifier |
       | ppOrder_manufacturing  |
 
-    And after not more than 30s, M_HUs should have
-      | M_HU_ID.Identifier | OPT.HUStatus |
-      | ppOrderTU          | A            |
-
-    And after not more than 30s, PP_Order_BomLines are found
-      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | ppOrderBOMLine_1               | ppOrder_manufacturing  | ppol_1     | p_2_manufacturing       | 1            | false           | PCE               | CO            |
-
-    And after not more than 30s, PP_Cost_Collector are found:
-      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
-      | ppOrder_CostCollector           | ppOrder_manufacturing  | p_1_manufacturing       | 1           | CO        |
+    Then validate M_HUs:
+      | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | HUStatus | OPT.ClearanceStatus | OPT.ClearanceNote |
+      | createdLU          | packingVersionLU              |                                        | D        | C                   | Cleared HU        |
+      | createdTU          | packingVersionTU              | huProductTU                            | D        | C                   | Cleared HU        |
+      | newCreatedCU       | packingVersionCU              |                                        | D        | C                   | Cleared HU        |
 
     And create JsonWFProcessStartRequest for manufacturing and store it as the request payload in the test context
       | PP_Order_ID.Identifier |
@@ -266,3 +300,8 @@ Feature: workflow rest controller tests
       | Event       |
       | ReceiveFrom |
     And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And validate cost collector after manufacturing workflow
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | PP_Order_BOMLine_ID.Identifier |
+      | ppOrder_manufacturing  | huProduct               |                                |
+      | ppOrder_manufacturing  | manufacturingProduct_HU | ppOrderBOMLine_1               |
