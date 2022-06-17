@@ -1,6 +1,7 @@
 
 update ad_sysconfig set value='http://metasfresh-app:8282/adempiereJasper/ReportServlet' where name='de.metas.adempiere.report.jasper.JRServerServlet';
 update ad_sysconfig set value='http://metasfresh-app:8282/adempiereJasper/BarcodeServlet' where name='de.metas.adempiere.report.barcode.BarcodeServlet';
+update ad_sysconfig set value='' where name='webui.frontend.url';
 
 insert into ad_user(
 	ad_user_id, name, description, value, login, password, ad_language, isactive, issystemuser, isfullbpaccess, isdefaultcontact, ad_client_id, ad_org_id, createdby, updatedby, notificationtype, isinpayroll, issubjectmattercontact, issalescontact, isaccountlocked, fresh_gift, ispurchasecontact, ismfprocurementuser, issalescontact_default, ispurchasecontact_default, isloginashostkey, isbilltocontact_default, isshiptocontact_default, isnewsletter, isdecider, ismanagement, ismultiplier, isauthorizedsignatory, ismembershipcontact)
