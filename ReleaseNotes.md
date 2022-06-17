@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13158](https://github.com/metasfresh/metasfresh/issues/13158) Adjust Window Manufacturing Candidate
   * [#13132](https://github.com/metasfresh/metasfresh/issues/13132) Customizing: Add fr_CH Language as System Language
   * [#13062](https://github.com/metasfresh/metasfresh/issues/13062) Pricing issue 
   * [#13107](https://github.com/metasfresh/metasfresh/issues/13107) KPI - Add sum of SO/PO orders today / of last 7 days
