@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
@@ -83,6 +84,7 @@ public class DeliveredDataLoader
 	 * <li>in these cases, {@link IInvoiceCandidateHandler#setDeliveredData(de.metas.invoicecandidate.model.I_C_Invoice_Candidate)} might delivered quantities that are not related to inout lines.
 	 * <li>these quantities need to end up in the IC's "deliveredData".
 	 */
+	@NonNull
 	StockQtyAndUOMQty defaultQtyDelivered;
 
 	@lombok.Builder
@@ -103,7 +105,7 @@ public class DeliveredDataLoader
 		this.soTrx = soTrx;
 		this.negateQtys = negateQtys;
 		this.deliveryQualityDiscount = deliveryQualityDiscount;
-		this.defaultQtyDelivered = coalesce(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
+		this.defaultQtyDelivered = coalesceNotNull(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
 	}
 
 	DeliveredData loadDeliveredQtys()
@@ -163,7 +165,7 @@ public class DeliveredDataLoader
 
 			qtyNominal = Quantitys.add(conversionCtx,
 					qtyNominal,
-					coalesce(shippedQtyItem.getQtyOverride(), shippedQtyItem.getQtyNominal()));
+					coalesceNotNull(shippedQtyItem.getQtyOverride(), shippedQtyItem.getQtyNominal()));
 
 			final Quantity qtyCatchEffective = coalesce(
 					shippedQtyItem.getQtyOverride(),
