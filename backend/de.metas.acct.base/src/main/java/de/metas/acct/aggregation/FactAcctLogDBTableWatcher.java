@@ -26,7 +26,6 @@ import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -35,20 +34,21 @@ public class FactAcctLogDBTableWatcher implements Runnable
 {
 	private static final Logger logger = LogManager.getLogger(FactAcctLogDBTableWatcher.class);
 	private final ISysConfigBL sysConfigBL;
-	private final IFactAcctLogBL factAcctLogBL;
+	private final FactAcctLogService factAcctLogService;
 
 	private static final String SYSCONFIG_PollIntervalInSeconds = "de.metas.acct.aggregation.FactAcctLogDBTableWatcher.pollIntervalInSeconds";
 	private static final Duration DEFAULT_PollInterval = Duration.ofSeconds(10);
 
-	private static final int RETRIEVE_CHUNK_SIZE = 500;
+	private static final String SYSCONFIG_BatchSize = "de.metas.acct.aggregation.FactAcctLogDBTableWatcher.batchSize";
+	private static final int DEFAULT_BatchSize = 1000;
 
 	@Builder
 	private FactAcctLogDBTableWatcher(
 			@NonNull final ISysConfigBL sysConfigBL,
-			@NonNull final IFactAcctLogBL factAcctLogBL)
+			@NonNull final FactAcctLogService factAcctLogService)
 	{
 		this.sysConfigBL = sysConfigBL;
-		this.factAcctLogBL = factAcctLogBL;
+		this.factAcctLogService = factAcctLogService;
 	}
 
 	@Override
@@ -60,6 +60,7 @@ public class FactAcctLogDBTableWatcher implements Runnable
 			logger.debug("Sleeping {}", pollInterval);
 			try
 			{
+				//noinspection BusyWait
 				Thread.sleep(getPollInterval().toMillis());
 			}
 			catch (InterruptedException e)
@@ -88,13 +89,21 @@ public class FactAcctLogDBTableWatcher implements Runnable
 				: DEFAULT_PollInterval;
 	}
 
+	private int getBatchSize()
+	{
+		final int batchSize = sysConfigBL.getIntValue(SYSCONFIG_BatchSize, DEFAULT_BatchSize);
+		return batchSize > 0 ? batchSize : DEFAULT_BatchSize;
+	}
+
 	private void processNow()
 	{
+		final int batchSize = getBatchSize();
+		int countProcessed;
 		do
 		{
-			factAcctLogBL.processAll(Env.getCtx(), RETRIEVE_CHUNK_SIZE);
+			countProcessed = factAcctLogService.processAll(batchSize);
 		}
-		while (factAcctLogBL.hasLogsToProcess());
+		while (countProcessed > 0);
 	}
 
 }

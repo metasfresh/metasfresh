@@ -1,21 +1,8 @@
-package de.metas.acct.aggregation.impl;
-
-import java.util.Date;
-
-import org.adempiere.util.lang.EqualsBuilder;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
-import de.metas.acct.model.I_Fact_Acct_Log;
-import de.metas.util.Check;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,18 +11,30 @@ import de.metas.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.acct.aggregation.legacy;
+
+import java.util.Date;
+
+import org.adempiere.util.lang.EqualsBuilder;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.util.Check;
+
 final class FactAcctSummaryKey implements IFactAcctSummaryKey
 {
-	public static final IFactAcctSummaryKey of(final I_Fact_Acct_Log log)
+	public static IFactAcctSummaryKey of(final I_Fact_Acct_Log log)
 	{
 		return new FactAcctSummaryKey(log);
 	}

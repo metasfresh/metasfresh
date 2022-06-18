@@ -1,9 +1,27 @@
-package de.metas.acct.aggregation.impl;
+/*
+ * #%L
+ * de.metas.acct.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import de.metas.acct.aggregation.IFactAcctLogBL;
-import de.metas.acct.aggregation.IFactAcctLogDAO;
-import de.metas.acct.aggregation.IFactAcctLogIterable;
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
+package de.metas.acct.aggregation.legacy;
+
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.acct.model.X_Fact_Acct_Log;
@@ -27,54 +45,25 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-public class FactAcctLogBL implements IFactAcctLogBL
+public class LegacyFactAcctLogProcessor
 {
-	private final IFactAcctLogDAO factAcctLogDAO = Services.get(IFactAcctLogDAO.class);
+	private final ILegacyFactAcctLogDAO factAcctLogDAO = Services.get(ILegacyFactAcctLogDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	@Override
-	public boolean hasLogsToProcess()
+	public int processAll(final int limit)
 	{
-		return factAcctLogDAO.hasLogs(Env.getCtx(), IFactAcctLogDAO.PROCESSINGTAG_NULL);
+		return trxManager.callInNewTrx(() -> processAllInTrx(limit));
 	}
 
-	@Override
-	public void processAll(final Properties ctx, final int limit)
+	private int processAllInTrx(final int limit)
 	{
-		trxManager.runInNewTrx(() -> processAllInTrx(ctx, limit));
-	}
-
-	private void processAllInTrx(final Properties ctx, final int limit)
-	{
-		try (final IFactAcctLogIterable logs = factAcctLogDAO.tagAndRetrieve(ctx, limit))
+		try (final IFactAcctLogIterable logs = factAcctLogDAO.tagAndRetrieve(Env.getCtx(), limit))
 		{
-			process(logs);
+			return process(logs);
 		}
 	}
 
-	public void process(final IFactAcctLogIterable logs)
+	public int process(final IFactAcctLogIterable logs)
 	{
 		final ILoggable loggable = Loggables.get();
 
@@ -93,18 +82,20 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 		//
 		// Delete all processed logs
-		logs.deleteAll();
+		final int countProcessed = logs.deleteAll();
 
 		loggable.addLog("Processed {0} {1} records", factAcctSummaryUpdater.getItemsCount(), I_Fact_Acct_Log.Table_Name);
 		loggable.addLog("Created/Updated {0} {1} records", factAcctSummaryUpdater.getGroupsCount(), I_Fact_Acct_Summary.Table_Name);
+
+		return countProcessed;
 	}
 
 	private static class FactAcctSummaryUpdater extends MapReduceAggregator<FactAcctGroup, I_Fact_Acct_Log>
 	{
-		private final IFactAcctLogDAO factAcctLogDAO;
+		private final ILegacyFactAcctLogDAO factAcctLogDAO;
 
 		private FactAcctSummaryUpdater(
-				@NonNull final IFactAcctLogDAO factAcctLogDAO)
+				@NonNull final ILegacyFactAcctLogDAO factAcctLogDAO)
 		{
 			this.factAcctLogDAO = factAcctLogDAO;
 			setGroupsBufferSize(1); // IMPORTANT: keep only one group in memory because we are also updating next groups when a current group is updated
@@ -135,7 +126,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 	private static final class FactAcctGroup
 	{
-		private final IFactAcctLogDAO factAcctLogDAO;
+		private final ILegacyFactAcctLogDAO factAcctLogDAO;
 
 		private final Object contextProvider;
 		private final Properties ctx;
@@ -146,7 +137,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 		@Builder
 		private FactAcctGroup(
-				@NonNull final IFactAcctLogDAO factAcctLogDAO,
+				@NonNull final ILegacyFactAcctLogDAO factAcctLogDAO,
 				@NonNull final I_Fact_Acct_Log log)
 		{
 			this.factAcctLogDAO = factAcctLogDAO;
@@ -295,7 +286,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 	private static final class FactAcctSummaryKeyBuilder implements IAggregationKeyBuilder<I_Fact_Acct_Log>
 	{
-		public static final transient FactAcctSummaryKeyBuilder instance = new FactAcctSummaryKeyBuilder();
+		public static final FactAcctSummaryKeyBuilder instance = new FactAcctSummaryKeyBuilder();
 
 		private FactAcctSummaryKeyBuilder()
 		{

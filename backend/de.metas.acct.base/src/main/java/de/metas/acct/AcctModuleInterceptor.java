@@ -2,11 +2,10 @@ package de.metas.acct;
 
 import de.metas.Profiles;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
-import de.metas.acct.aggregation.IFactAcctLogBL;
+import de.metas.acct.aggregation.FactAcctLogService;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.impexp.AccountImportProcess;
@@ -58,8 +57,7 @@ import java.util.Properties;
 @Component
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
-	private static final transient Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
-	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+	private static final Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
@@ -69,7 +67,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAccountBL accountBL = Services.get(IAccountBL.class);
-	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
+	private final FactAcctLogService factAcctLogService;
 
 	private final ICostElementRepository costElementRepo;
 	private final TreeNodeService treeNodeService;
@@ -77,9 +75,11 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
 
 	public AcctModuleInterceptor(
+			@NonNull final FactAcctLogService factAcctLogService,
 			@NonNull final ICostElementRepository costElementRepo,
 			@NonNull final TreeNodeService treeNodeService)
 	{
+		this.factAcctLogService = factAcctLogService;
 		this.costElementRepo = costElementRepo;
 		this.treeNodeService = treeNodeService;
 	}
@@ -198,7 +198,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 		runInThread(FactAcctLogDBTableWatcher.builder()
 				.sysConfigBL(sysConfigBL)
-				.factAcctLogBL(factAcctLogBL)
+				.factAcctLogService(factAcctLogService)
 				.build());
 	}
 

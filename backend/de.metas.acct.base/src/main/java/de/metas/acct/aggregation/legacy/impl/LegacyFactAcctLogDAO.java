@@ -1,4 +1,26 @@
-package de.metas.acct.aggregation.impl;
+/*
+ * #%L
+ * de.metas.acct.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.acct.aggregation.legacy.impl;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,9 +43,9 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.acct.aggregation.IFactAcctLogDAO;
-import de.metas.acct.aggregation.IFactAcctLogIterable;
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
+import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
+import de.metas.acct.aggregation.legacy.IFactAcctLogIterable;
+import de.metas.acct.aggregation.legacy.IFactAcctSummaryKey;
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
@@ -32,31 +54,9 @@ import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-public class FactAcctLogDAO implements IFactAcctLogDAO
+public class LegacyFactAcctLogDAO implements ILegacyFactAcctLogDAO
 {
-	private static final Logger logger = LogManager.getLogger(FactAcctLogDAO.class);
+	private static final Logger logger = LogManager.getLogger(LegacyFactAcctLogDAO.class);
 
 	/** Function used to check {@link I_Fact_Acct_Log}s for a given tag and update {@link I_Fact_Acct_EndingBalance} */
 	private static final String DB_FUNC_Fact_Acct_EndingBalance_UpdateForTag = IFactAcctDAO.DB_SCHEMA + ".Fact_Acct_EndingBalance_UpdateForTag";
@@ -70,13 +70,13 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 		return new FactAcctLogIterable(ctx, processingTag);
 	}
 
-	private final int releaseTag(final Properties ctx, final String processingTag)
+	private int releaseTag(final Properties ctx, final String processingTag)
 	{
 		final int limit = IQuery.NO_LIMIT;
 		return updateProcessingTag(ctx, processingTag, PROCESSINGTAG_NULL, limit);
 	}
 
-	private final int updateProcessingTag(final Properties ctx, final String processingTagOld, final String processingTagNew, final int limit)
+	private int updateProcessingTag(final Properties ctx, final String processingTagOld, final String processingTagNew, final int limit)
 	{
 		return retrieveForTagQuery(ctx, processingTagOld)
 				.setLimit(limit)
@@ -95,14 +95,14 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 				.anyMatch();
 	}
 
-	private final IQueryBuilder<I_Fact_Acct_Log> retrieveForTagQuery(final Properties ctx, final String processingTag)
+	private IQueryBuilder<I_Fact_Acct_Log> retrieveForTagQuery(final Properties ctx, final String processingTag)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct_Log.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_Fact_Acct_Log.COLUMN_ProcessingTag, processingTag);
 	}
 
-	private final Iterator<I_Fact_Acct_Log> retrieveForTag(final Properties ctx, final String processingTag)
+	private Iterator<I_Fact_Acct_Log> retrieveForTag(final Properties ctx, final String processingTag)
 	{
 		return retrieveForTagQuery(ctx, processingTag)
 				//
@@ -241,9 +241,9 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 		}
 
 		@Override
-		public void deleteAll()
+		public int deleteAll()
 		{
-			deleteAllForTag(ctx, processingTag);
+			return deleteAllForTag(ctx, processingTag);
 		}
 	}
 }

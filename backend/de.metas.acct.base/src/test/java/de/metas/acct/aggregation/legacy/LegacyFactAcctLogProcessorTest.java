@@ -1,38 +1,8 @@
-package de.metas.acct.aggregation.impl;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_Year;
-import org.compiere.model.X_C_Period;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import de.metas.acct.aggregation.IFactAcctLogBL;
-import de.metas.acct.aggregation.IFactAcctLogDAO;
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
-import de.metas.acct.model.I_Fact_Acct_Log;
-import de.metas.acct.model.I_Fact_Acct_Summary;
-import de.metas.acct.model.X_Fact_Acct_Log;
-import de.metas.util.Services;
-
 /*
  * #%L
  * de.metas.acct.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -50,16 +20,42 @@ import de.metas.util.Services;
  * #L%
  */
 
+package de.metas.acct.aggregation.legacy;
+
+import de.metas.acct.aggregation.impl.Fact_Acct_Log_Builder;
+import de.metas.acct.aggregation.legacy.impl.PlainLegacyFactAcctLogDAO;
+import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.acct.model.I_Fact_Acct_Summary;
+import de.metas.acct.model.X_Fact_Acct_Log;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_Year;
+import org.compiere.model.X_C_Period;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.*;
+
 @ExtendWith(AdempiereTestWatcher.class)
-public class FactAcctLogBLTest
+public class LegacyFactAcctLogProcessorTest
 {
 	private Properties ctx;
 
 	// services
-	private IFactAcctLogBL factAcctLogBL;
-	private FactAcctLogDAO factAcctLogDAO;
+	private PlainLegacyFactAcctLogDAO factAcctLogDAO;
 
-	private final int C_AcctSchema_ID1 = 1;
 	private final int C_ElementValue_ID1 = 1;
 
 	private I_C_Period year2014_p1;
@@ -73,8 +69,7 @@ public class FactAcctLogBLTest
 		ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 10);
 
-		factAcctLogBL = Services.get(IFactAcctLogBL.class);
-		factAcctLogDAO = (FactAcctLogDAO)Services.get(IFactAcctLogDAO.class);
+		factAcctLogDAO = (PlainLegacyFactAcctLogDAO)Services.get(ILegacyFactAcctLogDAO.class);
 
 		// Master data:
 		final I_C_Year year2014 = createYear(2014);
@@ -196,15 +191,16 @@ public class FactAcctLogBLTest
 
 	}
 
-	private final Fact_Acct_Log_Builder newFactAcctLogBuilder()
+	private Fact_Acct_Log_Builder newFactAcctLogBuilder()
 	{
+		int c_AcctSchema_ID1 = 1;
 		return Fact_Acct_Log_Builder.newBuilder()
 				.setCtx(ctx)
-				.setC_AcctSchema_ID(C_AcctSchema_ID1)
+				.setC_AcctSchema_ID(c_AcctSchema_ID1)
 				.setPostingType(X_Fact_Acct_Log.POSTINGTYPE_Actual)
 				.setC_Period(year2014_p1)
-		//
-		;
+				//
+				;
 	}
 
 	private void assertEquals(String description, int expected, int actual)
@@ -212,23 +208,23 @@ public class FactAcctLogBLTest
 		assertThat(actual).as(description).isEqualTo(expected);
 	}
 
-	private final void assertHasLogs()
+	private void assertHasLogs()
 	{
-		assertThat(factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL))
+		assertThat(factAcctLogDAO.hasLogs(ctx, ILegacyFactAcctLogDAO.PROCESSINGTAG_NULL))
 				.as("has logs")
 				.isTrue();
 	}
 
-	private final void assertNoLogs()
+	private void assertNoLogs()
 	{
-		assertThat(factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL))
+		assertThat(factAcctLogDAO.hasLogs(ctx, ILegacyFactAcctLogDAO.PROCESSINGTAG_NULL))
 				.as("has logs")
 				.isFalse();
 	}
 
-	private final void processAllLogs()
+	private void processAllLogs()
 	{
-		factAcctLogBL.processAll(ctx, IQuery.NO_LIMIT);
+		new LegacyFactAcctLogProcessor().processAll(IQuery.NO_LIMIT);
 		assertNoLogs();
 	}
 
@@ -242,7 +238,7 @@ public class FactAcctLogBLTest
 				.list(I_Fact_Acct_Summary.class);
 	}
 
-	private final I_C_Year createYear(final int year)
+	private I_C_Year createYear(final int year)
 	{
 		final I_C_Year record = InterfaceWrapperHelper.create(ctx, I_C_Year.class, ITrx.TRXNAME_None);
 		record.setFiscalYear(String.valueOf(year));
@@ -250,7 +246,7 @@ public class FactAcctLogBLTest
 		return record;
 	}
 
-	private final I_C_Period createPeriod(final I_C_Year year, final int periodNo)
+	private I_C_Period createPeriod(final I_C_Year year, final int periodNo)
 	{
 		final I_C_Period period = InterfaceWrapperHelper.create(ctx, I_C_Period.class, ITrx.TRXNAME_None);
 		period.setC_Year_ID(year.getC_Year_ID());
