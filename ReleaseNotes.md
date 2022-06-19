@@ -43,7 +43,6 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
-  * [#13100](https://github.com/metasfresh/metasfresh/issues/13100) Overhaul Shipments interaction with Material Schedule
   * [#13112](https://github.com/metasfresh/metasfresh/issues/13112) Fix Zoom Across HU Editor
   * [#13105](https://github.com/metasfresh/metasfresh/issues/13104) Exclude Password Reset process from DebugMailTo
   * [#13086](https://github.com/metasfresh/metasfresh/issues/13086) Windows adjustments & fixing Trls 
@@ -446,6 +445,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13100](https://github.com/metasfresh/metasfresh/issues/13100) Overhaul Shipments interaction with Material Schedule 
   * [#11931](https://github.com/metasfresh/metasfresh/issues/11931) Address is not saved when focus is on other tab
   * [#12017](https://github.com/metasfresh/metasfresh/issues/12017) UnpackV2ResponseRouteBuilder should not fail for "not-wrapped" api responses
   * [#12105](https://github.com/metasfresh/metasfresh/issues/12105) Picking error: huId is null
