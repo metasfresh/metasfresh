@@ -22,12 +22,6 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.ModelValidator;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -35,10 +29,19 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.model.ModelValidator;
+import org.slf4j.MDC.MDCCloseable;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut_Shipment
 {
+	final ITrxManager trxManager = Services.get(ITrxManager.class);
+	final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_REACTIVATE,
 			ModelValidator.TIMING_AFTER_COMPLETE })
@@ -53,7 +56,7 @@ public class M_InOut_Shipment
 			}
 			// we only need to invalidate for the respective lines, because basically we only need to shift the qty from QtyPicked to QtyDelivered.
 			// No other shipment schedule will have anything more or less after that.
-			Services.get(IShipmentScheduleInvalidateBL.class).invalidateJustForLines(inoutRecord);
+			trxManager.runAfterCommit(() -> shipmentScheduleInvalidateBL.invalidateJustForLines(inoutRecord));
 		}
 	}
 
