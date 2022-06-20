@@ -87,7 +87,7 @@ ORDER BY pc_value, P_name
 
 -- indices that shall improve ordering and filtering
 CREATE INDEX fresh_statistics_kg_week_year_Index ON fresh_statistics_kg_week_MV (C_Year_ID, issotrx);
-CREATE INDEX fresh_statistics_kg_week_p_name_pc_name ON fresh_statistics_kg_week_MV (pc_value, P_name, C_Year_ID, issotrx);
+CREATE INDEX fresh_statistics_kg_week_p_name_pc_name ON fresh_statistics_kg_week_MV (pc_value, P_name, C_Year_ID, issotrx); 
 
 
 CREATE OR REPLACE FUNCTION report.update_fresh_statistics_kg_week(

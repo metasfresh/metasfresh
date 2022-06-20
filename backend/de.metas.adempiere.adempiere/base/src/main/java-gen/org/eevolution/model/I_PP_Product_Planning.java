@@ -773,4 +773,12 @@ public interface I_PP_Product_Planning
 
 	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Product_Planning.class, "Yield", null);
 	String COLUMNNAME_Yield = "Yield";
+
+
+	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
+
+	BigDecimal getQtyProcessed_OnDate();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Product_Planning.class, "QtyProcessed_OnDate", null);
+	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
 }

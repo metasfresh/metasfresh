@@ -82,7 +82,7 @@ CREATE FUNCTION report.fresh_statistics_kg_week
   RETURNS SETOF report.fresh_statistics_kg_week AS
 $$
 SELECT
-	pc_name, 
+	pc_name,
 	P_name,
 	P_value,
 	uom.UOMSymbol,

@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13148](https://github.com/metasfresh/metasfresh/issues/13148) Datenaustausch - Provide default Title for invoice document
+  * [#13158](https://github.com/metasfresh/metasfresh/issues/13158) Adjust Window Manufacturing Candidate
+  * [#13153](https://github.com/metasfresh/metasfresh/issues/13153) Add FirmenbuchNR to Business Partner Window
   * [#13132](https://github.com/metasfresh/metasfresh/issues/13132) Customizing: Add fr_CH Language as System Language
   * [#13062](https://github.com/metasfresh/metasfresh/issues/13062) Pricing issue 
   * [#13107](https://github.com/metasfresh/metasfresh/issues/13107) KPI - Add sum of SO/PO orders today / of last 7 days
@@ -57,6 +60,7 @@ Here come the actual release notes:
 # metasfresh 5.175 (current RC)
 ## Features
 * metasfresh
+  * [#13041](https://github.com/metasfresh/metasfresh/issues/13041) Create cucumber-harness for invoice and payment allocation
   * [#12760](https://github.com/metasfresh/metasfresh/issues/12760) Create import/export for C_Campaign_price
   * [#7151](https://github.com/metasfresh/metasfresh/issues/7151) On page switching (in parent view) the includedView for the selected parent row needs to be refreshed
   * [#10032](https://github.com/metasfresh/metasfresh/issues/10032) Cleanup table styles
@@ -441,6 +445,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13100](https://github.com/metasfresh/metasfresh/issues/13100) Overhaul Shipments interaction with Material Schedule 
   * [#11931](https://github.com/metasfresh/metasfresh/issues/11931) Address is not saved when focus is on other tab
   * [#12017](https://github.com/metasfresh/metasfresh/issues/12017) UnpackV2ResponseRouteBuilder should not fail for "not-wrapped" api responses
   * [#12105](https://github.com/metasfresh/metasfresh/issues/12105) Picking error: huId is null

@@ -159,6 +159,7 @@ Feature: Render invoice address
       | invoice_1               | customer_bp_26_02        | bpLocation_CH                     | order_ref_45607 | 1000002     | true      | CO        | locationBPNameCH\naddr 33\n258 locationCity_CH\nSchweiz |
 
 
+  @Id:S0150_250
   Scenario: Invoice when origin order disposition has bpartnerName
     Given metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
@@ -209,24 +210,24 @@ Feature: Render invoice address
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus |
-      | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_18231 | true      | CO        |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
+      | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_18231 | true      | CO        | Shopware                               |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference      | processed | docStatus |
-      | shipment_1            | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | olCand_ref_10001 | true      | CO        |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference      | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
+      | shipment_1            | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | olCand_ref_10001 | true      | CO        | Shopware                               |
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine1_1           | shipment_1            | test_product_26_02      | 1           | true      |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
-      | invoice_1               | customer_bp_26_02        | bpLocation_2                      | olCand_ref_10001 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         | OPT.AD_InputDataSource_ID.InternalName |
+      | invoice_1               | customer_bp_26_02        | bpLocation_2                      | olCand_ref_10001 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 | Shopware                               |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
