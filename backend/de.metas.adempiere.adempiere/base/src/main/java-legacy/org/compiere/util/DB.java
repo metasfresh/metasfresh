@@ -589,6 +589,23 @@ public class DB
 			@NonNull final String sqlSelect,
 			@Nullable final List<?> sqlParams/* not ImmutableList because list elements might be null */)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> prepareConnectionAndStatementForDataExport0(sqlSelect, sqlParams),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private ImmutablePair<Connection, PreparedStatement> prepareConnectionAndStatementForDataExport0(
+			@NonNull final String sqlSelect,
+			@Nullable final List<?> sqlParams/* not ImmutableList because list elements might be null */)
+	{
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		try
@@ -1070,6 +1087,24 @@ public class DB
 			final String functionCall,
 			final Object[] params)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		service.monitor(
+				() -> executeFunctionCallEx0(trxName, functionCall, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private void executeFunctionCallEx0(
+		final String trxName,
+		final String functionCall,
+		final Object[] params)
+		{
 		try (final CallableStatement callableStmt = prepareCall(functionCall, ResultSet.CONCUR_UPDATABLE, trxName))
 		{
 			setParameters(callableStmt, params);
@@ -1090,6 +1125,21 @@ public class DB
 	 * @throws SQLException
 	 */
 	public boolean commit(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> commit0(throwException, trxName),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private boolean commit0(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
 	{
 		// Not on transaction scope, Connection are thus auto commit
 		if (trxName == null)
@@ -1135,6 +1185,21 @@ public class DB
 	 */
 	public boolean rollback(final boolean throwException, final String trxName) throws SQLException
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> rollback0(throwException, trxName),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private boolean rollback0(final boolean throwException, final String trxName) throws SQLException
+	{
 		try
 		{
 			Connection conn = null;
@@ -1174,6 +1239,21 @@ public class DB
 	 * @throws DBException if there is any SQLException
 	 */
 	public int getSQLValueEx(@Nullable final String trxName, final String sql, final Object... params) throws DBException
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getSQLValueEx0(trxName, sql, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private int getSQLValueEx0(@Nullable final String trxName, final String sql, final Object... params) throws DBException
 	{
 		int retValue = -1;
 		PreparedStatement pstmt = null;
@@ -1270,6 +1350,21 @@ public class DB
 	 */
 	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getSQLValueStringEx0(trxName, sql, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private String getSQLValueStringEx0(@Nullable final String trxName, final String sql, final Object... params)
+	{
 		String retValue = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1364,6 +1459,21 @@ public class DB
 	 */
 	public BigDecimal getSQLValueBDEx(final String trxName, final String sql, final Object... params) throws DBException
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getSQLValueBDEx0(trxName, sql, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private BigDecimal getSQLValueBDEx0(final String trxName, final String sql, final Object... params) throws DBException
+	{
 		BigDecimal retValue = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1457,6 +1567,21 @@ public class DB
 	 * @throws DBException if there is any SQLException
 	 */
 	public Timestamp getSQLValueTSEx(final String trxName, final String sql, final Object... params)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getSQLValueTSEx0(trxName, sql, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private Timestamp getSQLValueTSEx0(final String trxName, final String sql, final Object... params)
 	{
 		Timestamp retValue = null;
 		PreparedStatement pstmt = null;
@@ -1616,6 +1741,25 @@ public class DB
 			final boolean optional,
 			final Object... params)
 	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> getKeyNamePairs0(trxName, sql, optional, params),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private KeyNamePair[] getKeyNamePairs0(
+			@Nullable final String trxName,
+			@NonNull final String sql,
+			final boolean optional,
+			final Object... params)
+	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		final ArrayList<KeyNamePair> list = new ArrayList<>();
@@ -1671,6 +1815,21 @@ public class DB
 	 * @return true (default) or false if tested that not SO
 	 */
 	public Optional<SOTrx> retrieveRecordSOTrx(final String tableName, final String whereClause)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		return service.monitor(
+				() -> retrieveRecordSOTrx0(tableName, whereClause),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private Optional<SOTrx> retrieveRecordSOTrx0(final String tableName, final String whereClause)
 	{
 		if (Check.isEmpty(tableName, true))
 		{
@@ -2737,6 +2896,24 @@ public class DB
 	}
 
 	public void forEachRow(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetConsumer rowConsumer)
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+		service.monitor(
+				() -> forEachRow0(sql, sqlParams, rowConsumer),
+				PerformanceMonitoringService.Metadata
+						.builder()
+						.name("DB")
+						.type(PerformanceMonitoringService.Type.DB)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.build());
+	}
+
+	private void forEachRow0(
 			@NonNull final String sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetConsumer rowConsumer)
