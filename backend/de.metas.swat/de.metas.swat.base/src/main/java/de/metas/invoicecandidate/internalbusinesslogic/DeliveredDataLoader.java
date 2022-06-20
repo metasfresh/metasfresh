@@ -291,7 +291,7 @@ public class DeliveredDataLoader
 				continue;
 			}
 
-			final I_M_InOutLine inoutLine = inOutDAO.getLineById(inoutLineId, I_M_InOutLine.class);
+			final I_M_InOutLine inoutLine = inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
 
 			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
 

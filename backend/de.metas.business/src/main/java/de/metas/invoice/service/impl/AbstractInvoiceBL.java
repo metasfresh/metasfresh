@@ -1390,7 +1390,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(il.getM_InOutLine_ID());
 
-			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineByIdInTrx(inoutLineId);
 			final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
 			final OrgId orgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
@@ -1437,7 +1437,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoId(invoiceLine.getM_InOutLine_ID());
 
-			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
 
 			final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
