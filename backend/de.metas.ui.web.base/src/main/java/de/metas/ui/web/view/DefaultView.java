@@ -270,6 +270,9 @@ public final class DefaultView implements IEditableView
 		return selectionsRef.isQueryLimitHit();
 	}
 
+	@Override
+	public EmptyReason getEmptyReason() {return selectionsRef.getEmptyReason();}
+
 	public ViewRowIdsOrderedSelection getDefaultSelectionBeforeFacetsFiltering()
 	{
 		return selectionsRef.getDefaultSelectionBeforeFacetsFiltering();
@@ -361,6 +364,7 @@ public final class DefaultView implements IEditableView
 				.orderBys(orderedSelection.getOrderBys())
 				.rows(rows)
 				.columnInfos(extractViewResultColumns(rows))
+				.emptyReason(orderedSelection.getEmptyReason())
 				.build();
 	}
 
@@ -740,6 +744,7 @@ public final class DefaultView implements IEditableView
 	// Builder
 	//
 	//
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private ViewId viewId;
@@ -945,7 +950,7 @@ public final class DefaultView implements IEditableView
 			return this;
 		}
 
-		public Builder refreshViewOnChangeEvents(boolean refreshViewOnChangeEvents)
+		public Builder refreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
 		{
 			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 			return this;
