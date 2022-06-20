@@ -991,12 +991,6 @@ public class DocumentEntityDescriptor
 			return includedTabNewRecordInputMode;
 		}
 
-		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
-		{
-			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
-			return this;
-		}
-
 		/**
 		 * Advises the descriptor that Document instances which will be created based on this descriptor will not have ANY callouts.
 		 */
