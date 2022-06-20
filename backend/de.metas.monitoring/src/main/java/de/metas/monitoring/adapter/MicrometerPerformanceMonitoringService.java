@@ -95,6 +95,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			mkTagIfNotNull("initiator", initiator.get()).ifPresent(tags::add);
 			mkTagIfNotNull("window", initiatorWindow.get()).ifPresent(tags::add);
+			mkTagIfNotNull("callerName", metadata.getName() + " - " + metadata.getAction()).ifPresent(tags::add);
 			mkTagIfNotNull("calledBy", calledBy.get().get(depth.get())).ifPresent(tags::add);
 			calledBy.get().add(depth.get() + 1 ,metadata.getName() + " - " + metadata.getAction());
 
