@@ -256,7 +256,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -479,7 +479,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -561,7 +561,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -597,7 +597,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -658,7 +658,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -870,7 +870,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1095,7 +1095,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1134,7 +1134,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1193,7 +1193,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1248,7 +1248,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1358,7 +1358,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1467,7 +1467,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1576,7 +1576,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1749,7 +1749,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -1824,7 +1824,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -2908,7 +2908,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -2980,7 +2980,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -3035,7 +3035,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -3154,7 +3154,7 @@ public class DB
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DB")
-						.type(PerformanceMonitoringService.Type.DB)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}

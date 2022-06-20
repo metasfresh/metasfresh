@@ -95,25 +95,17 @@ public interface PerformanceMonitoringService
 
 		SCHEDULER("scheduler"),
 
-		//REST_API_PROCESSING("rest-API"),
+		REST_API_PROCESSING("rest-API-processing"),
 
 		CACHE_OPERATION("cache-operation"),
 
 		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint"),
 
-		PO("po"),
-
 		REST_CONTROLLER("rest-controller"),
 
 		REST_CONTROLLER_WITH_WINDOW_ID("rest-controller-with-windowId"),
 
-		PROCESS_REST_CONTROLLER("process-rest-controller"),
-
-		INVOICE("invoice"),
-
-		DB("db"),
-
-		VIEW("view");
+		INVOICE("invoice");
 
 		Type(final String code)
 		{

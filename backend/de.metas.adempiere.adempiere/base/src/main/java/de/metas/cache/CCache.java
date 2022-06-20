@@ -644,7 +644,7 @@ public class CCache<K, V> implements CacheInterface
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("CCache")
-						.type(PerformanceMonitoringService.Type.CACHE_OPERATION)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -688,7 +688,7 @@ public class CCache<K, V> implements CacheInterface
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("CCache")
-						.type(PerformanceMonitoringService.Type.CACHE_OPERATION)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}

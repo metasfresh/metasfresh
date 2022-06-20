@@ -360,7 +360,7 @@ public final class DefaultView implements IEditableView
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("DefaultView")
-						.type(PerformanceMonitoringService.Type.VIEW)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}

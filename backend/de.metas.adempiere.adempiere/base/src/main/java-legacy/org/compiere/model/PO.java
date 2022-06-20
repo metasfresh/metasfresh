@@ -1761,7 +1761,7 @@ public abstract class PO
 					PerformanceMonitoringService.Metadata
 							.builder()
 							.name("PO")
-							.type(PerformanceMonitoringService.Type.PO)
+							.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 							.action((new Throwable().getStackTrace()[0]).getMethodName())
 							.build());
 		}
@@ -2024,7 +2024,7 @@ public abstract class PO
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("PO")
-						.type(PerformanceMonitoringService.Type.PO)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -2904,7 +2904,7 @@ public abstract class PO
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("PO")
-						.type(PerformanceMonitoringService.Type.PO)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
@@ -4686,7 +4686,7 @@ public abstract class PO
 				PerformanceMonitoringService.Metadata
 						.builder()
 						.name("PO")
-						.type(PerformanceMonitoringService.Type.PO)
+						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
 						.action((new Throwable().getStackTrace()[0]).getMethodName())
 						.build());
 	}
