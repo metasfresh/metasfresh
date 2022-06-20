@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,19 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.camel.externalsystems.shopware6.api.model;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class OrderAddressDetails
+@AllArgsConstructor
+@Getter
+public enum OperatorType
 {
-	@NonNull
-	JsonOrderAddress jsonOrderAddress;
+	OR("or"),
+	AND("and");
 
-	@Nullable
-	String customShopwareId;
-
-	@Nullable
-	String customMetasfreshId;
-	
-	@Nullable
-	String customEmail;
+	@JsonValue
+	private final String value;
 }

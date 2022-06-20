@@ -427,6 +427,8 @@ public class ExternalSystemConfigRepo
 				.isActive(config.isActive())
 				.value(config.getExternalSystemValue())
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
+				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
+				.shopwareIdJSONPath(config.getJSONPathShopwareID())
 				.build();
 	}
 
