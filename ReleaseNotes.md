@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13154](https://github.com/metasfresh/metasfresh/issues/13154) Shopware - implement getBPartners action 
   * [#13148](https://github.com/metasfresh/metasfresh/issues/13148) Datenaustausch - Provide default Title for invoice document
   * [#13158](https://github.com/metasfresh/metasfresh/issues/13158) Adjust Window Manufacturing Candidate
   * [#13153](https://github.com/metasfresh/metasfresh/issues/13153) Add FirmenbuchNR to Business Partner Window
