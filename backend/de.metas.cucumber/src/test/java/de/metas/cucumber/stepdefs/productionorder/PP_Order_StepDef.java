@@ -30,8 +30,11 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_Bom_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
@@ -92,6 +95,7 @@ public class PP_Order_StepDef
 	private final S_Resource_StepDefData resourceTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -101,7 +105,8 @@ public class PP_Order_StepDef
 			@NonNull final PP_Order_StepDefData ppOrderTable,
 			@NonNull final S_Resource_StepDefData resourceTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable)
+			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable,
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -111,6 +116,7 @@ public class PP_Order_StepDef
 		this.resourceTable = resourceTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ppOrderBomLineTable = ppOrderBomLineTable;
+		this.huPiItemProductTable = huPiItemProductTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -344,6 +350,16 @@ public class PP_Order_StepDef
 					.orElse(AttributesKey.NONE);
 
 			assertThat(ppOrderAttributesKeys).isEqualTo(expectedAttributesKeys);
+		}
+
+		final String itemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(itemProductIdentifier))
+		{
+			final Integer huPiItemProductRecordID = huPiItemProductTable.getOptional(itemProductIdentifier)
+					.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+					.orElseGet(() -> Integer.parseInt(itemProductIdentifier));
+
+			assertThat(ppOrder.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductRecordID);
 		}
 	}
 }
