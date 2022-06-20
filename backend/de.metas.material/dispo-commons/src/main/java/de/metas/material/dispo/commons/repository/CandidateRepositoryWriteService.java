@@ -624,6 +624,7 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setM_ShipmentSchedule_ID(toRepoId(demandDetail.getShipmentScheduleId()));
 		detailRecordToUpdate.setC_OrderLine_ID(toRepoId(demandDetail.getOrderLineId()));
 		detailRecordToUpdate.setC_SubscriptionProgress_ID(toRepoId(demandDetail.getSubscriptionProgressId()));
+		detailRecordToUpdate.setM_InOutLine_ID(toRepoId(demandDetail.getInOutLineId()));
 
 		detailRecordToUpdate.setPlannedQty(demandDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());

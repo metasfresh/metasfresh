@@ -350,7 +350,14 @@ public class RepositoryCommons
 					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMN_M_ForecastLine_ID, toRepoId(demandDetailsQuery.getForecastLineId()));
 		}
 
-		if (hasOrderLine || hasForecastLine || hasShipmentschedule || hasSubscriptionLine)
+		final boolean hasShipmentLine = demandDetailsQuery.getInOutLineId() != UNSPECIFIED_REPO_ID;
+		if (hasShipmentLine)
+		{
+			demandDetailsSubQueryBuilder
+					.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMNNAME_M_InOutLine_ID, toRepoId(demandDetailsQuery.getInOutLineId()));
+		}
+
+		if (hasOrderLine || hasForecastLine || hasShipmentschedule || hasSubscriptionLine || hasShipmentLine)
 		{
 			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
 					I_MD_Candidate_Demand_Detail.COLUMN_MD_Candidate_ID,
