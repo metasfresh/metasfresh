@@ -25,11 +25,11 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
+import de.metas.camel.externalsystems.shopware6.api.model.order.Customer;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifier;
-import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.camel.externalsystems.shopware6.product.PriceListBasicInfo;
@@ -149,7 +149,7 @@ public class ImportOrdersRouteContext
 	private JsonProductLookup jsonProductLookup;
 
 	@Nullable
-	JsonOrderAddress orderShippingAddress;
+	JsonAddress orderShippingAddress;
 
 	@Nullable
 	private PriceListBasicInfo priceListBasicInfo;
@@ -281,52 +281,19 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
-	public ExternalIdentifier getMetasfreshId()
+	public ExternalIdentifier getBPExternalIdentifier()
 	{
-		final String id = getId(metasfreshIdJsonPath);
-		if (!Check.isBlank(id))
-		{
-			return ExternalIdentifier.builder()
-					.identifier(id)
-					.rawValue(id)
-					.build();
-		}
-		return getUserId();
+		final Customer customer = getOrderNotNull().getCustomer();
+
+		return customer.getExternalIdentifier(metasfreshIdJsonPath, shopwareIdJsonPath);
 	}
 
 	@NonNull
 	public ExternalIdentifier getUserId()
 	{
-		final String id = getId(shopwareIdJsonPath);
-		if (!Check.isBlank(id))
-		{
-			return ExternalIdentifier.builder()
-					.identifier(ExternalIdentifierFormat.formatExternalId(id))
-					.rawValue(id)
-					.build();
-		}
-		final String customerId = getOrderNotNull().getJsonOrder().getOrderCustomer().getCustomerId();
+		final Customer customer = getOrderNotNull().getCustomer();
 
-		return ExternalIdentifier.builder()
-				.identifier(ExternalIdentifierFormat.formatExternalId(customerId))
-				.rawValue(customerId)
-				.build();
-	}
-
-	@Nullable
-	private String getId(@Nullable final String bpLocationCustomJsonPath)
-	{
-		if (Check.isBlank(bpLocationCustomJsonPath))
-		{
-			return null;
-		}
-		final OrderCandidate order = getOrderNotNull();
-		final String id = order.getCustomField(bpLocationCustomJsonPath);
-		if (!Check.isBlank(id))
-		{
-			return id;
-		}
-		return null;
+		return customer.getShopwareId(shopwareIdJsonPath);
 	}
 
 	@Nullable
@@ -354,7 +321,7 @@ public class ImportOrdersRouteContext
 	}
 
 	@NonNull
-	public JsonOrderAddress getOrderShippingAddressNotNull()
+	public JsonAddress getOrderShippingAddressNotNull()
 	{
 		return Check.assumeNotNull(orderShippingAddress, "orderShippingAddress cannot be null at this stage!");
 	}
