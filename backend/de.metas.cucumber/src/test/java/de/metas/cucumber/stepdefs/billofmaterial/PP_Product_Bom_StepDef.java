@@ -124,8 +124,6 @@ public class PP_Product_Bom_StepDef
 
 		final I_PP_Product_BOMLine bomLine = newInstance(I_PP_Product_BOMLine.class);
 
-		assertThat(bomLine).isNotNull();
-
 		bomLine.setPP_Product_BOM_ID(productBOMRecord.getPP_Product_BOM_ID());
 		bomLine.setM_Product_ID(productRecord.getM_Product_ID());
 		bomLine.setC_UOM_ID(productRecord.getC_UOM_ID());
@@ -173,8 +171,6 @@ public class PP_Product_Bom_StepDef
 
 		final I_PP_Product_BOM productBOMRecord = newInstance(I_PP_Product_BOM.class);
 
-		assertThat(productBOMRecord).isNotNull();
-
 		productBOMRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		productBOMRecord.setC_UOM_ID(productRecord.getC_UOM_ID());
 		productBOMRecord.setValue(productRecord.getValue());
@@ -212,8 +208,6 @@ public class PP_Product_Bom_StepDef
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
 		final I_PP_Product_BOMVersions bomVersionsRecord = newInstance(I_PP_Product_BOMVersions.class);
-
-		assertThat(bomVersionsRecord).isNotNull();
 
 		bomVersionsRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		bomVersionsRecord.setName(productRecord.getName());
