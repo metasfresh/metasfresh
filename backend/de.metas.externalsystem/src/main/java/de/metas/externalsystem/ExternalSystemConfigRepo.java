@@ -458,6 +458,9 @@ public class ExternalSystemConfigRepo
 				.shopwareIdJSONPath(config.getJSONPathShopwareID())
 				.uomShopwareMappingList(getUOMShopwareMappingList(externalSystemShopware6ConfigId))
 				.value(config.getExternalSystemValue())
+				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
+				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
+				.shopwareIdJSONPath(config.getJSONPathShopwareID())
 				.build();
 	}
 

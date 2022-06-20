@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.api.model.query;
 
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -48,7 +48,7 @@ public class OrderQueryHelperTests
 		final InputStream externalSystemRequest = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST_ORDER_NO);
 		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonObjectMapperHolder.newJsonObjectMapper().readValue(externalSystemRequest, JsonExternalSystemRequest.class);
 
-		final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(jsonExternalSystemRequest, PageAndLimit.of(1, 1));
+		final MultiQueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(jsonExternalSystemRequest, PageAndLimit.of(1, 1));
 
 		final String shopware6QueryRequestAsJSON = JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(shopware6QueryRequest);
 
@@ -62,7 +62,7 @@ public class OrderQueryHelperTests
 		final InputStream externalSystemRequest = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST_ORDER_ID);
 		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonObjectMapperHolder.newJsonObjectMapper().readValue(externalSystemRequest, JsonExternalSystemRequest.class);
 
-		final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(jsonExternalSystemRequest, PageAndLimit.of(1, 1));
+		final MultiQueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(jsonExternalSystemRequest, PageAndLimit.of(1, 1));
 
 		final String shopware6QueryRequestAsJSON = JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(shopware6QueryRequest);
 
@@ -76,7 +76,7 @@ public class OrderQueryHelperTests
 		final InputStream externalSystemRequest = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST_UPDATED);
 		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonObjectMapperHolder.newJsonObjectMapper().readValue(externalSystemRequest, JsonExternalSystemRequest.class);
 
-		final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(jsonExternalSystemRequest, PageAndLimit.of(1, 1));
+		final MultiQueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(jsonExternalSystemRequest, PageAndLimit.of(1, 1));
 
 		final String shopware6QueryRequestAsJSON = JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(shopware6QueryRequest);
 
@@ -90,7 +90,7 @@ public class OrderQueryHelperTests
 		final InputStream externalSystemRequest = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST_UPDATED_OVERRIDE);
 		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonObjectMapperHolder.newJsonObjectMapper().readValue(externalSystemRequest, JsonExternalSystemRequest.class);
 
-		final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(jsonExternalSystemRequest, PageAndLimit.of(1, 1));
+		final MultiQueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(jsonExternalSystemRequest, PageAndLimit.of(1, 1));
 
 		final String shopware6QueryRequestAsJSON = JsonObjectMapperHolder.newJsonObjectMapper().writeValueAsString(shopware6QueryRequest);
 

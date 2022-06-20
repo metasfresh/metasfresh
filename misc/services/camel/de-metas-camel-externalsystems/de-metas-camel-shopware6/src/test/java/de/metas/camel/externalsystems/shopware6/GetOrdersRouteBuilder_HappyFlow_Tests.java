@@ -30,7 +30,7 @@ import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
@@ -286,10 +286,10 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 									  .process(mockSuccessfullyCalledGetOrderPage));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
-				advice -> {
-					advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
-							.after()
-							.to(MOCK_BPARTNER_UPSERT);
+							  advice -> {
+								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_BPARTNER_UPSERT);
 
 								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 										  .skipSendToOriginalEndpoint()
@@ -482,7 +482,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 
 				final String orders = loadAsString(actualFileName);
 
-				final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(pageIndex, pageSize));
+				final MultiQueryRequest shopware6QueryRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(pageIndex, pageSize));
 
 				Mockito.doReturn(ResponseEntity.ok(orders))
 						.when(shopwareClientSpy)
