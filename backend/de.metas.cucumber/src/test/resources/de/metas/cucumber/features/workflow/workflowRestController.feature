@@ -31,10 +31,10 @@ Feature: workflow rest controller tests
       | packingVersionCU              | huPackingVirtualPI    | No Packing Item | V           | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
-      | huPiItemCU                 | packingVersionCU              | 1   | HU       |
+      | huPiItemPicking            | packingVersionCU              | 1   | HU       |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductCU                        | huPiItemCU                 | p_1_picking             | 1   | 2022-01-01 |
+      | huProductCU                        | huPiItemPicking            | p_1_picking             | 1   | 2022-01-01 |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
@@ -74,7 +74,7 @@ Feature: workflow rest controller tests
       | 1         |
     And the metasfresh REST-API endpoint path 'api/v2/picking/events' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate picking candidate and shipment schedule after picking workflow
+    And validate I_M_ShipmentSchedule, I_M_Picking_Candidate and I_M_HU after picking order workflow
       | C_OrderLine_ID.Identifier | QtyPicked |
       | ol_2                      | 1         |
 
@@ -102,10 +102,10 @@ Feature: workflow rest controller tests
       | distributionVersionCU         | huDistributionVirtualPI | No Packing Item | V           | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
-      | huPiItemCU                 | distributionVersionCU         | 1   | HU       |
+      | huPiItemDistribution       | distributionVersionCU         | 1   | HU       |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductCU                        | huPiItemCU                 | p_1_distribution        | 1   | 2022-01-01 |
+      | huProductCU                        | huPiItemDistribution       | p_1_distribution        | 1   | 2022-01-01 |
 
     And metasfresh contains M_Warehouses:
       | M_Warehouse_ID.Identifier | Name             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsInTransit |
@@ -162,9 +162,12 @@ Feature: workflow rest controller tests
       | DropTo |
     And the metasfresh REST-API endpoint path 'api/v2/distribution/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate order move schedule and movement after distribution workflow
-      | DD_OrderLine_ID.Identifier | QtyPicked | M_HU_ID.Identifier | M_Locator_ID.Identifier |
-      | dd_ol_1                    | 1         | huProductCU        | toWarehouseLocator      |
+    And validate I_DD_Order_MoveSchedule after distribution order workflow
+      | DD_OrderLine_ID.Identifier | QtyPicked |
+      | dd_ol_1                    | 1         |
+    And validate I_M_Movement and I_M_HU after distribution order workflow
+      | DD_OrderLine_ID.Identifier | M_Locator_ID.Identifier |
+      | dd_ol_1                    | toWarehouseLocator      |
 
   @from:cucumber
   Scenario: create and start manufacturing workflow
@@ -176,13 +179,6 @@ Feature: workflow rest controller tests
     And metasfresh contains M_ProductPrices
       | Identifier                | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | manufacturingProductPrice | plv_1                             | huProduct               | 5.0      | PCE               | Normal                        |
-
-    And metasfresh contains C_BPartners without locations:
-      | Identifier    | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | cl_Endcustomer_1 | N            | Y              | ps_1                          |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | l_1        | cl_bPLocation | endcustomer_1            | true                | true         |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
@@ -200,11 +196,8 @@ Feature: workflow rest controller tests
       | huPiItemTU                 | packingVersionTU              | 0   | MI       |                                  |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductTU                        | huPiItemTU                 | manufacturingProduct_HU | 1   | 2022-01-01 |
-
-    And metasfresh contains M_Warehouses:
-      | M_Warehouse_ID.Identifier | Name         | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsInTransit |
-      | warehouseStd              | warehouseStd | endcustomer_1            | l_1                               | false       |
+      | huProductTU                        | huPiItemTU                 | huProduct               | 1   | 2022-01-01 |
+      | manufacturingProductTU             | huPiItemTU                 | manufacturingProduct_HU | 1   | 2022-01-01 |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
@@ -220,11 +213,11 @@ Feature: workflow rest controller tests
 
     And transform CU to new TUs
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
-      | createdCU           | 1     | huProductTU                        | createdTU                 | newCreatedCU              |
+      | createdCU           | 1     | manufacturingProductTU             | createdTU                 | newCreatedCU              |
 
     And after not more than 30s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | createdTU          | huProductTU                            |
+      | createdTU          | manufacturingProductTU                 |
 
     And transform TU to new LUs
       | sourceTU.Identifier | tuQty | M_HU_PI_Item_ID.Identifier | resultedNewLUs.Identifier |
@@ -246,10 +239,6 @@ Feature: workflow rest controller tests
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
       | ppln_1     | huProduct               | bomVersions_manufacturing                | false        |
-
-    And metasfresh contains PP_Order_Candidates
-      | Identifier | M_Product_ID.Identifier | M_Warehouse_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    |
-      | oc_1       | huProduct               | warehouseStd              | bom_manufacturing            | ppln_1                            | 540006        | 1          | 1            | 0            | PCE               | 2021-01-12T21:00:00Z | 2021-01-12T21:00:00Z |
 
     And load S_Resource:
       | S_Resource_ID.Identifier | S_Resource_ID |
@@ -276,10 +265,10 @@ Feature: workflow rest controller tests
       | ppOrder_manufacturing  |
 
     Then validate M_HUs:
-      | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | HUStatus | OPT.ClearanceStatus | OPT.ClearanceNote |
-      | createdLU          | packingVersionLU              |                                        | D        | C                   | Cleared HU        |
-      | createdTU          | packingVersionTU              | huProductTU                            | D        | C                   | Cleared HU        |
-      | newCreatedCU       | packingVersionCU              |                                        | D        | C                   | Cleared HU        |
+      | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | HUStatus |
+      | createdLU          | packingVersionLU              |                                        | D        |
+      | createdTU          | packingVersionTU              | manufacturingProductTU                 | D        |
+      | newCreatedCU       | packingVersionCU              |                                        | D        |
 
     And create JsonWFProcessStartRequest for manufacturing and store it as the request payload in the test context
       | PP_Order_ID.Identifier |
@@ -297,11 +286,15 @@ Feature: workflow rest controller tests
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And create JsonManufacturingOrderEvent from JsonWFProcess that comes back from previous request and store it as the request payload in the test context
-      | Event       |
-      | ReceiveFrom |
+      | Event       | OPT.M_HU_PI_ID.Identifier |
+      | ReceiveFrom | huPackingTU               |
     And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    And validate cost collector after manufacturing workflow
+    And validate I_PP_Cost_Collector after manufacturing order workflow
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | PP_Order_BOMLine_ID.Identifier |
+      | ppOrder_manufacturing  | huProduct               |                                |
+      | ppOrder_manufacturing  | manufacturingProduct_HU | ppOrderBOMLine_1               |
+    And validate I_PP_Order_Qty after manufacturing order workflow
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | PP_Order_BOMLine_ID.Identifier |
       | ppOrder_manufacturing  | huProduct               |                                |
       | ppOrder_manufacturing  | manufacturingProduct_HU | ppOrderBOMLine_1               |
