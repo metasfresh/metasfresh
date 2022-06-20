@@ -125,7 +125,7 @@ public class MD_Available_For_Sales_StepDef
 
 	private void truncateMDAvailableForSalesData()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Available_For_Sales CASCADE", ITrx.TRXNAME_None);
+		DB.executeUpdateEx("DELETE FROM MD_Available_For_Sales", ITrx.TRXNAME_None);
 	}
 
 	private boolean matchingMDAvailableForSalesFound(@NonNull final Map<String, String> row)

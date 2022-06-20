@@ -63,6 +63,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -218,20 +219,14 @@ public class ExportStockToShopwareExternalSystem
 			@NonNull final ExternalSystemParentConfig externalSystemParentConfig,
 			@NonNull final ProductId productId)
 	{
-		if (OrgId.ANY.equals(externalSystemParentConfig.getOrgId()))
-		{
-			return availableForSalesRepository.getRecordsByProductId(productId)
-					.stream()
-					.map(I_MD_Available_For_Sales::getQtyOnHandStock)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-		}
-		else
-		{
-			return availableForSalesRepository.getRecordsByProductAndOrg(productId, externalSystemParentConfig.getOrgId())
-					.stream()
-					.map(I_MD_Available_For_Sales::getQtyOnHandStock)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-		}
+		final List<I_MD_Available_For_Sales> records = OrgId.ANY.equals(externalSystemParentConfig.getOrgId())
+				? availableForSalesRepository.getRecordsByProductId(productId)
+				: availableForSalesRepository.getRecordsByProductAndOrg(productId, externalSystemParentConfig.getOrgId());
+
+		return records
+				.stream()
+				.map(ExportStockToShopwareExternalSystem::getAvailableForSalesQty)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@NonNull
@@ -285,5 +280,11 @@ public class ExportStockToShopwareExternalSystem
 	private String getExternalCommand()
 	{
 		return EXTERNAL_SYSTEM_COMMAND_EXPORT_STOCK;
+	}
+
+	@NonNull
+	private static BigDecimal getAvailableForSalesQty(@NonNull final I_MD_Available_For_Sales availableForSales)
+	{
+		return availableForSales.getQtyOnHandStock().subtract(availableForSales.getQtyToBeShipped());
 	}
 }

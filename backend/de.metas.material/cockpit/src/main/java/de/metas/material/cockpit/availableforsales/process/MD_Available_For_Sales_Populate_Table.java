@@ -23,24 +23,28 @@
 package de.metas.material.cockpit.availableforsales.process;
 
 import de.metas.material.cockpit.availableforsales.AvailableForSalesService;
-import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil;
 import de.metas.process.JavaProcess;
+import de.metas.product.Product;
+import de.metas.product.ProductQuery;
 import de.metas.product.ProductRepository;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Product;
 
 import java.util.Iterator;
 
 public class MD_Available_For_Sales_Populate_Table extends JavaProcess
 {
 	private final AvailableForSalesService availableForSalesService = SpringContextHolder.instance.getBean(AvailableForSalesService.class);
-	private final AvailableForSalesUtil availableForSalesUtil = SpringContextHolder.instance.getBean(AvailableForSalesUtil.class);
 	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Iterator<I_M_Product> productsMeantToBeSold = productRepository.getSoldProducts(availableForSalesUtil.getEligibleForFeatureFilter());
+		final ProductQuery productQuery = ProductQuery.builder()
+				.isStocked(true)
+				.isSold(true)
+				.build();
+
+		final Iterator<Product> productsMeantToBeSold = productRepository.getProductsByQuery(productQuery);
 
 		while (productsMeantToBeSold.hasNext())
 		{

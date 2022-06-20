@@ -32,7 +32,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
+import de.metas.product.Product;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
@@ -42,7 +42,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_MD_Available_For_Sales;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -93,9 +92,9 @@ public class AvailableForSalesService
 		syncProductDebouncer.add(enqueueAvailableForSalesRequest);
 	}
 
-	public void syncAvailableForSalesForProduct(@NonNull final I_M_Product productRecord)
+	public void syncAvailableForSalesForProduct(@NonNull final Product product)
 	{
-		final ImmutableList<AvailableForSalesQuery> availableForSalesQueries = buildAvailableForSalesQueries(productRecord);
+		final ImmutableList<AvailableForSalesQuery> availableForSalesQueries = buildAvailableForSalesQueries(product);
 
 		for (final AvailableForSalesQuery availableForSalesQuery : availableForSalesQueries)
 		{
@@ -110,24 +109,24 @@ public class AvailableForSalesService
 	}
 
 	@NonNull
-	private ImmutableList<AvailableForSalesQuery> buildAvailableForSalesQueries(@NonNull final I_M_Product productRecord)
+	private ImmutableList<AvailableForSalesQuery> buildAvailableForSalesQueries(@NonNull final Product product)
 	{
-		final OrgId orgId = OrgId.ofRepoId(productRecord.getAD_Org_ID());
+		final OrgId orgId = product.getOrgId();
 
 		if (OrgId.ANY.equals(orgId))
 		{
-			return orgDAO.retrieveClientOrgs(productRecord.getAD_Client_ID())
+			return orgDAO.retrieveClientOrgs(Env.getAD_Client_ID())
 					.stream()
 					.map(I_AD_Org::getAD_Org_ID)
 					.map(OrgId::ofRepoId)
-					.map(currentOrgId -> createAvailableForSalesQuery(productRecord, currentOrgId))
+					.map(currentOrgId -> createAvailableForSalesQuery(product, currentOrgId))
 					.filter(Optional::isPresent)
 					.map(Optional::get)
 					.collect(ImmutableList.toImmutableList());
 		}
 		else
 		{
-			return createAvailableForSalesQuery(productRecord, orgId)
+			return createAvailableForSalesQuery(product, orgId)
 					.map(ImmutableList::of)
 					.orElseGet(ImmutableList::of);
 		}
@@ -215,10 +214,10 @@ public class AvailableForSalesService
 
 	@NonNull
 	private Optional<AvailableForSalesQuery> createAvailableForSalesQuery(
-			@NonNull final I_M_Product productRecord,
+			@NonNull final Product product,
 			@NonNull final OrgId orgId)
 	{
-		final AvailableForSalesConfig config = getAvailableForSalesConfig(ClientId.ofRepoId(productRecord.getAD_Client_ID()), orgId);
+		final AvailableForSalesConfig config = getAvailableForSalesConfig(Env.getClientId(), orgId);
 
 		if (!config.isFeatureEnabled())
 		{
@@ -228,7 +227,7 @@ public class AvailableForSalesService
 		return Optional.of(AvailableForSalesQuery
 								   .builder()
 								   .dateOfInterest(SystemTime.asInstant())
-								   .productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+								   .productId(product.getId())
 								   .storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ALL))
 								   .orgId(orgId)
 								   .shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())

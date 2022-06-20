@@ -75,7 +75,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	@Nullable
 	String shopwareIdJSONPath;
 
-	boolean isSyncStockToShopware6;
+	boolean syncStockToShopware6;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -96,7 +96,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull ProductLookup productLookup,
 			final @Nullable String metasfreshIdJSONPath,
 			final @Nullable String shopwareIdJSONPath,
-			final boolean isSyncStockToShopware6)
+			final boolean syncStockToShopware6)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -116,7 +116,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.productLookup = productLookup;
 		this.metasfreshIdJSONPath = metasfreshIdJSONPath;
 		this.shopwareIdJSONPath = shopwareIdJSONPath;
-		this.isSyncStockToShopware6 = isSyncStockToShopware6;
+		this.syncStockToShopware6 = syncStockToShopware6;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

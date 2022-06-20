@@ -236,6 +236,30 @@ Feature: available for sales
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                             | Value                             | OPT.Description                         | OPT.IsActive |
+      | ps_1       | d_pricing_system_name_20062022_1 | d_pricing_system_value_20062022_1 | d_pricing_system_description_20062022_1 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                         | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | d_price_list_name_20062022_1 | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                      | ValidFrom  |
+      | plv_1      | pl_1                      | salesOrder-PLV_20062022_1 | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains C_BPartners:
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | endcustomer_1 | Endcustomer_20062022_2 | N            | Y              | ps_1                          | D               |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
+      | o_1        | true    | endcustomer_1            | 2021-04-11  | po_ref_mock     | 1000012              |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_1       | o_1                   | p_1                     | 8          |
+
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue | OPT.IsSyncStockToShopware6 |
       | config_1                            | S6   | stockExportShopware | true                       |
@@ -253,11 +277,11 @@ Feature: available for sales
 
     Then after not more than 30s, MD_Available_For_Sales table contains only the following records:
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
-      | p_1                     | 10             | 0              | -1002                           |
+      | p_1                     | 10             | 8              | -1002                           |
 
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
-      | ExternalSystem_Config_ID.Identifier | OPT.JsonAvailableStock                                                                            |
-      | config_1                            | {"productIdentifier": {"metasfreshId":1,"externalReference":"stockProduct_reference"},"stock":10} |
+      | ExternalSystem_Config_ID.Identifier | OPT.JsonAvailableStock                                                                           |
+      | config_1                            | {"productIdentifier": {"metasfreshId":1,"externalReference":"stockProduct_reference"},"stock":2} |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

@@ -3,10 +3,10 @@ package de.metas.material.cockpit.availableforsales;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -66,10 +66,7 @@ public class AvailableForSalesQuery
 			final int shipmentDateLookAheadHours,
 			final int salesOrderLookBehindHours)
 	{
-		if (orgId.isAny())
-		{
-			throw new AdempiereException("OrgId must be regular! OrgId=" + orgId.getRepoId());
-		}
+		Check.assumeGreaterThanZero(orgId.getRepoId(), "OrgId must be regular!");
 
 		this.productId = productId;
 		this.warehouseId = warehouseId;

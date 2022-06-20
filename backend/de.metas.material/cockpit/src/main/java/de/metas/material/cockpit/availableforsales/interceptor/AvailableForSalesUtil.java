@@ -140,13 +140,6 @@ public class AvailableForSalesUtil
 		return productRecord.isStocked();
 	}
 
-	@NonNull
-	public IQueryFilter<I_M_Product> getEligibleForFeatureFilter()
-	{
-		return queryBL.createCompositeQueryFilter(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true);
-	}
-
 	public boolean isOrderEligibleForFeature(@NonNull final OrderId orderId)
 	{
 		final I_C_Order orderRecord = ordersDAO.getById(orderId);

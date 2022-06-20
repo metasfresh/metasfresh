@@ -12,7 +12,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
@@ -268,14 +268,26 @@ public class ProductRepository
 	}
 
 	@NonNull
-	public Iterator<I_M_Product> getSoldProducts(@NonNull final IQueryFilter<I_M_Product> additionalFilter)
+	public Iterator<Product> getProductsByQuery(@NonNull final ProductQuery productQuery)
 	{
-		return queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_IsSold, true)
-				.filter(additionalFilter)
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (productQuery.getIsSold() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_IsSold, productQuery.getIsSold());
+		}
+
+		if (productQuery.getIsStocked() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, productQuery.getIsStocked());
+		}
+
+		return queryBuilder
 				.create()
-				.iterate(I_M_Product.class);
+				.stream()
+				.map(this::ofProductRecord)
+				.iterator();
 	}
 
 	@NonNull
