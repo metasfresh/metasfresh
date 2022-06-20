@@ -249,7 +249,7 @@ public class ShipmentScheduleWithHUService
 
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
-		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliers(
+		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> quantityToDeliverOverride,
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
