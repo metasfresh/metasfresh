@@ -49,7 +49,7 @@ public class DeliveredQtyItem
 	boolean inDispute;
 
 	/** Usually we ignore items where this is false; but sometimes we still need the items to exist none the less */
-	boolean isCompletedOrClosed;
+	boolean completedOrClosed;
 	
 	@Builder
 	@JsonCreator
@@ -58,14 +58,14 @@ public class DeliveredQtyItem
 			@JsonProperty("qtyNominal") @NonNull final Quantity qtyNominal,
 			@JsonProperty("qtyCatch") @Nullable final Quantity qtyCatch,
 			@JsonProperty("qtyOverride") @Nullable final Quantity qtyOverride,
-			@JsonProperty("isCompletedOrClosed") final boolean isCompletedOrClosed,
+			@JsonProperty("completedOrClosed") final boolean completedOrClosed,
 			@JsonProperty("inDispute") @Nullable final Boolean inDispute)
 	{
 		this.qtyInStockUom = qtyInStockUom;
 		this.qtyNominal = qtyNominal;
 		this.qtyCatch = qtyCatch;
 		this.qtyOverride = qtyOverride;
-		this.isCompletedOrClosed = isCompletedOrClosed;
+		this.completedOrClosed = completedOrClosed;
 		this.inDispute = coalesceNotNull(inDispute, false);
 	}
 

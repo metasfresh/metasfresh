@@ -291,7 +291,7 @@ public class DeliveredDataLoader
 			
 			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
 					.inDispute(inoutLine.isInDispute())
-					.isCompletedOrClosed(inoutCompletedOrClosed);
+					.completedOrClosed(inoutCompletedOrClosed);
 
 			final Quantity qtyInStockUom = Quantitys
 					.create(
