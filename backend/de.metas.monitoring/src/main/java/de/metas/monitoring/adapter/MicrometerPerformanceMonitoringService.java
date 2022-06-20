@@ -46,6 +46,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
 	private final ThreadLocal<String> initiator = ThreadLocal.withInitial(() -> "");
 	private final ThreadLocal<String> initiatorWindow = ThreadLocal.withInitial(() -> "");
+	private final ThreadLocal<ArrayList<String>> calledBy = ThreadLocal.withInitial(() -> new ArrayList<>());
 	private final ThreadLocal<Boolean> isInitiatorLabelActive = ThreadLocal.withInitial(() -> false);
 
 	public MicrometerPerformanceMonitoringService(
@@ -73,6 +74,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			isInitiatorLabelActive.set(true);
 			initiator.set(metadata.getName() + " - " + metadata.getAction());
 			initiatorWindow.set(metadata.getWindow());
+			calledBy.get().add(0, "HTTP Request");
 
 		}
 		else if(depth.get() == 0
@@ -82,6 +84,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			isInitiatorLabelActive.set(true);
 			initiator.set(metadata.getName() + " - " + metadata.getAction());
 			initiatorWindow.set(null);
+			calledBy.get().add(0, "HTTP Request");
 		}
 		else if(depth.get() == 0)
 		{
@@ -92,6 +95,9 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			mkTagIfNotNull("initiator", initiator.get()).ifPresent(tags::add);
 			mkTagIfNotNull("window", initiatorWindow.get()).ifPresent(tags::add);
+			mkTagIfNotNull("calledBy", calledBy.get().get(depth.get())).ifPresent(tags::add);
+			calledBy.get().add(depth.get() + 1 ,metadata.getName() + " - " + metadata.getAction());
+
 			depth.set(depth.get() + 1);
 			try(final IAutoCloseable ignored = this.reduceDepth())
 			{
