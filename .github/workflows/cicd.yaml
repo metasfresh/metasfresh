@@ -198,9 +198,10 @@ jobs:
           docker run --rm -v "$(pwd)/junit:/reports" mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;
 
-  integration-tests:
+  cucumber:
     runs-on: ubuntu-latest
     needs: [init, backend, frontend]
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v3
       - name: build-cucumber
@@ -211,20 +212,13 @@ jobs:
           -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
           -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
-
       - name: push-images
         run: |
           echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
           docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}
           docker logout
-
-  cucumber:
-    runs-on: ubuntu-latest
-    needs: [init, integration-tests]
-    continue-on-error: true
-    steps:
-      - name: run-cucumber-tests
+      - name: run-tests
         env:
           refname: ${{ needs.init.outputs.tag-fixed }}
         timeout-minutes: 60
