@@ -23,6 +23,7 @@
 package de.metas.scheduler;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.scheduler.eventbus.ManageSchedulerRequest;
 import de.metas.scheduler.eventbus.ManageSchedulerRequestHandler;
@@ -43,6 +44,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -62,32 +64,8 @@ public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHa
 	@Override
 	public void handleRequest(final ManageSchedulerRequest request)
 	{
-		final I_AD_Scheduler scheduler = getScheduler(request);
-
-		Optional.ofNullable(request.getSupervisorAction())
-				.ifPresent(supervisorAction -> handleSupervisor(scheduler, supervisorAction));
-
-		switch (request.getSchedulerAction())
-		{
-			case ENABLE:
-				activateScheduler(scheduler);
-				startScheduler(scheduler);
-				break;
-			case DISABLE:
-				deactivateScheduler(scheduler);
-				stopScheduler(scheduler);
-				break;
-			case RESTART:
-				stopScheduler(scheduler);
-				activateScheduler(scheduler);
-				startScheduler(scheduler);
-				break;
-			case RUN_ONCE:
-				runOnce(AdSchedulerId.ofRepoId(scheduler.getAD_Scheduler_ID()));
-				break;
-			default:
-				throw new AdempiereException("Unsupported scheduler action: " + request);
-		}
+		getSchedulers(request)
+				.forEach(scheduler -> executeSchedulerAction(scheduler, request));
 	}
 
 	private void handleSupervisor(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest.SupervisorAction supervisorAction)
@@ -174,18 +152,24 @@ public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHa
 	}
 
 	@NonNull
-	private I_AD_Scheduler getScheduler(@NonNull final ManageSchedulerRequest request)
+	private List<I_AD_Scheduler> getSchedulers(@NonNull final ManageSchedulerRequest request)
 	{
 		if (request.getSchedulerSearchKey().getAdProcessId() != null)
 		{
-			return schedulerDao.getSchedulerByProcessIdIfUnique(request.getSchedulerSearchKey().getAdProcessId())
-					.orElseThrow(() -> new AdempiereException("No scheduler found for process")
-							.appendParametersToMessage()
-							.setParameter("adProcessId", request.getSchedulerSearchKey().getAdProcessId()));
+			final List<I_AD_Scheduler> schedulers = schedulerDao.getSchedulersByProcessId(request.getSchedulerSearchKey().getAdProcessId());
+
+			if (schedulers.isEmpty())
+			{
+				throw new AdempiereException("No AD_Scheduler found for process")
+						.appendParametersToMessage()
+						.setParameter("AdProcessId", request.getSchedulerSearchKey().getAdProcessId());
+			}
+
+			return schedulers;
 		}
 		else if (request.getSchedulerSearchKey().getAdSchedulerId() != null)
 		{
-			return schedulerDao.getById(request.getSchedulerSearchKey().getAdSchedulerId());
+			return ImmutableList.of(schedulerDao.getById(request.getSchedulerSearchKey().getAdSchedulerId()));
 		}
 		else
 		{
@@ -195,4 +179,31 @@ public class AdSchedulerManageRequestHandler implements ManageSchedulerRequestHa
 		}
 	}
 
+	private void executeSchedulerAction(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest request)
+	{
+		Optional.ofNullable(request.getSupervisorAction())
+				.ifPresent(supervisorAction -> handleSupervisor(scheduler, supervisorAction));
+
+		switch (request.getSchedulerAction())
+		{
+			case ENABLE:
+				activateScheduler(scheduler);
+				startScheduler(scheduler);
+				break;
+			case DISABLE:
+				deactivateScheduler(scheduler);
+				stopScheduler(scheduler);
+				break;
+			case RESTART:
+				stopScheduler(scheduler);
+				activateScheduler(scheduler);
+				startScheduler(scheduler);
+				break;
+			case RUN_ONCE:
+				runOnce(AdSchedulerId.ofRepoId(scheduler.getAD_Scheduler_ID()));
+				break;
+			default:
+				throw new AdempiereException("Unsupported scheduler action: " + request);
+		}
+	}
 }

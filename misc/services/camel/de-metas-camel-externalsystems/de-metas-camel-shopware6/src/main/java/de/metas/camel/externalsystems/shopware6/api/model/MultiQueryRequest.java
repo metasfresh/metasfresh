@@ -34,11 +34,11 @@ import java.util.List;
 
 @Value
 @JsonDeserialize(builder = MultiQueryRequest.MultiQueryRequestBuilder.class)
-public class MultiQueryRequest implements Shopware6QueryRequest
+public class MultiQueryRequest
 {
 	@NonNull
 	@JsonProperty("filter")
-	List<MultiJsonFilter> filterList;
+	List<JsonQuery> filterList;
 
 	@Nullable
 	@JsonProperty("limit")
@@ -50,7 +50,7 @@ public class MultiQueryRequest implements Shopware6QueryRequest
 
 	@Builder
 	public MultiQueryRequest(
-			@NonNull @Singular @JsonProperty("filter") final List<MultiJsonFilter> filters,
+			@NonNull @Singular @JsonProperty("filter") final List<JsonQuery> filters,
 			@Nullable @JsonProperty("limit") final Integer limit,
 			@Nullable @JsonProperty("page") final Integer page)
 	{

@@ -20,8 +20,27 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.camel.externalsystems.shopware6.api.model.order;
 
-public interface Shopware6QueryRequest
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class AddressDetail
 {
+	@NonNull
+	JsonAddress jsonAddress;
+
+	@Nullable
+	String customShopwareId;
+
+	@Nullable
+	String customMetasfreshId;
+
+	@Nullable
+	String customEmail;
 }
