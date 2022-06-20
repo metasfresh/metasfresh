@@ -23,13 +23,40 @@
 package de.metas.acct.aggregation;
 
 import de.metas.acct.aggregation.legacy.LegacyFactAcctLogProcessor;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FactAcctLogService
 {
+	private static final String SYSCONFIG_IsUseLegacyProcessor = "FactAcctLogService.useLegacyProcessor";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	public int processAll(final int limit)
 	{
-		return new LegacyFactAcctLogProcessor().processAll(limit);
+		return trxManager.callInNewTrx(() -> processAllInTrx(limit));
+	}
+
+	private int processAllInTrx(final int limit)
+	{
+		if (isUseLegacyProcessor())
+		{
+			return new LegacyFactAcctLogProcessor().processAll(limit);
+		}
+		else
+		{
+			return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, "SELECT de_metas_acct.fact_acct_log_process(?)", limit);
+		}
+	}
+
+	private boolean isUseLegacyProcessor()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_IsUseLegacyProcessor, true); // default to true for backwards compatibility
 	}
 }

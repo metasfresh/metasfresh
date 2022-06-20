@@ -34,7 +34,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.util.Env;
@@ -48,14 +47,8 @@ import java.util.Properties;
 public class LegacyFactAcctLogProcessor
 {
 	private final ILegacyFactAcctLogDAO factAcctLogDAO = Services.get(ILegacyFactAcctLogDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public int processAll(final int limit)
-	{
-		return trxManager.callInNewTrx(() -> processAllInTrx(limit));
-	}
-
-	private int processAllInTrx(final int limit)
 	{
 		try (final IFactAcctLogIterable logs = factAcctLogDAO.tagAndRetrieve(Env.getCtx(), limit))
 		{
