@@ -445,6 +445,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13174](https://github.com/metasfresh/metasfresh/pull/13174) wrap DateAcct with TRUNC while looking for a C_Period
   * [#13100](https://github.com/metasfresh/metasfresh/issues/13100) Overhaul Shipments interaction with Material Schedule 
   * [#11931](https://github.com/metasfresh/metasfresh/issues/11931) Address is not saved when focus is on other tab
   * [#12017](https://github.com/metasfresh/metasfresh/issues/12017) UnpackV2ResponseRouteBuilder should not fail for "not-wrapped" api responses
