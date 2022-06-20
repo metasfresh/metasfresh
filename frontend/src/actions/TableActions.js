@@ -409,7 +409,6 @@ export function createTabTable(tableId, tableResponse) {
   return (dispatch) => {
     const tableData = createTableData({
       ...tableResponse,
-      ...extractEmptyResultTextAndHint({ tableResponse }),
     });
 
     dispatch(createTable(tableId, tableData));
@@ -430,7 +429,6 @@ export function updateTabTable(tableId, tableResponse) {
       const tableExists = state.tables[tableId];
       const tableData = createTableData({
         ...tableResponse,
-        ...extractEmptyResultTextAndHint({ tableResponse }),
         keyProperty: 'rowId',
       });
 
