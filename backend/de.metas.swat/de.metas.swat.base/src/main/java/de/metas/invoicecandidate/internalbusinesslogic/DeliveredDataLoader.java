@@ -284,9 +284,17 @@ public class DeliveredDataLoader
 
 		for (final I_C_InvoiceCandidate_InOutLine icIolAssociationRecord : icIolAssociationRecords)
 		{
-			final I_M_InOutLine inoutLine = inOutDAO.getLineById(InOutLineId.ofRepoId(icIolAssociationRecord.getM_InOutLine_ID()), I_M_InOutLine.class);
-	
+			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(icIolAssociationRecord.getM_InOutLine_ID());
+
+			if(inoutLineId == null)
+			{
+				continue;
+			}
+
+			final I_M_InOutLine inoutLine = inOutDAO.getLineById(inoutLineId, I_M_InOutLine.class);
+
 			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+
 			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 			
 			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()

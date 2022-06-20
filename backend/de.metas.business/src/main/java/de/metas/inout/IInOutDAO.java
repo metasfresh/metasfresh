@@ -108,7 +108,7 @@ public interface IInOutDAO extends ISingletonService
 
 	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
 
-	<T extends I_M_InOutLine> T getLineById(InOutLineId inoutLineId, Class<T> modelClass);
+	<T extends I_M_InOutLine> T getLineById(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
 
 	@NonNull
 	ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId);
