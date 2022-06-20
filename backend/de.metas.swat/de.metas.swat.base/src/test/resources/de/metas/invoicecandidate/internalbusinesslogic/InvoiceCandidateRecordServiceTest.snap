@@ -47,7 +47,9 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "420",
               "uomId" : 100003
             },
-            "inDispute" : false
+            "isCompletedOrClosed" : true,
+            "inDispute" : false,
+            "completedOrClosed" : true
           },
           {
             "qtyInStockUom" : {
@@ -62,7 +64,9 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "190",
               "uomId" : 100003
             },
-            "inDispute" : false
+            "isCompletedOrClosed" : true,
+            "inDispute" : false,
+            "completedOrClosed" : true
           }
         ]
       }
@@ -132,7 +136,9 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "400",
               "uomId" : 100003
             },
-            "inDispute" : false
+            "isCompletedOrClosed" : true,
+            "inDispute" : false,
+            "completedOrClosed" : true
           },
           {
             "qtyInStockUom" : {
@@ -143,7 +149,9 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "200",
               "uomId" : 100003
             },
-            "inDispute" : false
+            "isCompletedOrClosed" : true,
+            "inDispute" : false,
+            "completedOrClosed" : true
           }
         ]
       }
