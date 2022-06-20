@@ -248,7 +248,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				//
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
-				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents());
+				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents())
+				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters());
 
 		// Fields descriptor
 		gridTabVO
