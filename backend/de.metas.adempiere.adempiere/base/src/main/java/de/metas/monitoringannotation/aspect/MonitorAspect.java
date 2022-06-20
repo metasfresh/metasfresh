@@ -25,7 +25,10 @@ package de.metas.monitoringannotation.aspect;
 import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoringannotation.annotation.Monitor;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -58,26 +61,27 @@ public class MonitorAspect
 		final Callable callable = getCallableFromProceedingJoinPoint( pjp );
 
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
-		Monitor monitor = method.getAnnotation(Monitor.class);
+		Monitor monitorAnnotation = method.getAnnotation(Monitor.class);
 
-		if(monitor.type() == PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
+		if(monitorAnnotation.type() == PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 		{
 			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 			Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-			String windowIdStr = (String)pathVariables.get("windowId");
+			String windowId = (String)pathVariables.get("windowId");
+			String window = (Services.get(IADWindowDAO.class).retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
 
 			metadata = PerformanceMonitoringService.Metadata.builder()
 					.name(pjp.getTarget().getClass().getSimpleName())
-					.type(monitor.type())
+					.type(monitorAnnotation.type())
 					.action(method.getName())
-					.windowIdStr(windowIdStr)
+					.window(window + " (" + windowId + ")")
 					.build();
 		}
 		else
 		{
 			metadata = PerformanceMonitoringService.Metadata.builder()
 					.name(pjp.getTarget().getClass().getSimpleName())
-					.type(monitor.type())
+					.type(monitorAnnotation.type())
 					.action(method.getName())
 					.build();
 		}

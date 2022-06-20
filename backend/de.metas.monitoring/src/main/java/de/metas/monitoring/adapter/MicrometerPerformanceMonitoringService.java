@@ -45,7 +45,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final MeterRegistry meterRegistry;
 	private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
 	private final ThreadLocal<String> initiator = ThreadLocal.withInitial(() -> "");
-	private final ThreadLocal<String> initiatorWindowId = ThreadLocal.withInitial(() -> "");
+	private final ThreadLocal<String> initiatorWindow = ThreadLocal.withInitial(() -> "");
 	private final ThreadLocal<Boolean> isInitiatorLabelActive = ThreadLocal.withInitial(() -> false);
 
 	public MicrometerPerformanceMonitoringService(
@@ -61,18 +61,18 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	{
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
 
-		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
-		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
-		mkTagIfNotNull("Depth", String.valueOf(depth.get())).ifPresent(tags::add);
+		mkTagIfNotNull("name", metadata.getName()).ifPresent(tags::add);
+		mkTagIfNotNull("action", metadata.getAction()).ifPresent(tags::add);
+		mkTagIfNotNull("depth", String.valueOf(depth.get())).ifPresent(tags::add);
 
 		if(depth.get() == 0
 				&& metadata.getType() == Type.REST_CONTROLLER_WITH_WINDOW_ID
 				&& metadata.getAction() != null
-				&& metadata.getWindowIdStr() != null)
+				&& metadata.getWindow() != null)
 		{
 			isInitiatorLabelActive.set(true);
 			initiator.set(metadata.getName() + " - " + metadata.getAction());
-			initiatorWindowId.set(metadata.getWindowIdStr());
+			initiatorWindow.set(metadata.getWindow());
 
 		}
 		else if(depth.get() == 0
@@ -81,7 +81,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			isInitiatorLabelActive.set(true);
 			initiator.set(metadata.getName() + " - " + metadata.getAction());
-			initiatorWindowId.set(null);
+			initiatorWindow.set(null);
 		}
 		else if(depth.get() == 0)
 		{
@@ -90,8 +90,8 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 		if(isInitiatorLabelActive.get())
 		{
-			mkTagIfNotNull("Initiator", initiator.get()).ifPresent(tags::add);
-			mkTagIfNotNull("WindowId", initiatorWindowId.get()).ifPresent(tags::add);
+			mkTagIfNotNull("initiator", initiator.get()).ifPresent(tags::add);
+			mkTagIfNotNull("window", initiatorWindow.get()).ifPresent(tags::add);
 			depth.set(depth.get() + 1);
 			try(final IAutoCloseable ignored = this.reduceDepth())
 			{
