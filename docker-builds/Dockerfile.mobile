@@ -12,14 +12,15 @@ COPY misc/services/mobile-webui/mobile-webui-frontend/ .
 
 RUN yarn lint
 # RUN yarn test --ci
+
+ENV PUBLIC_URL=/
 RUN yarn build
 
 
-FROM nginx as runtime
+FROM nginx:1.21.6 as runtime
 
-# COPY docker-builds/mobile/default.conf /etc/nginx/conf.d
-COPY docker-builds/mobile/config.js /usr/share/nginx/html/mobile/
+COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 
-COPY --from=build /app/build/* /usr/share/nginx/html/mobile/
+WORKDIR /usr/share/nginx/html
 
-RUN cd /usr/share/nginx/html/mobile/ && mkdir static && mv js static/ && mv css static/
+COPY --from=build /app/build/ .

@@ -15,14 +15,10 @@ RUN yarn lint
 RUN webpack --config webpack.docker.js
 
 
-FROM nginx as runtime
+FROM nginx:1.21.6 as runtime
 
-COPY docker-builds/frontend/config.js /usr/share/nginx/html
-COPY docker-builds/frontend/default.conf /etc/nginx/conf.d
-COPY --chmod=700 docker-builds/frontend/start_webui.sh .
+COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 
-COPY --from=build /app/dist/* /usr/share/nginx/html/
+WORKDIR /usr/share/nginx/html
 
-RUN mkdir /usr/share/nginx/html/src && mv /usr/share/nginx/html/assets /usr/share/nginx/html/src/assets
-
-ENTRYPOINT ["/start_webui.sh"]
+COPY --from=build /app/dist/ .

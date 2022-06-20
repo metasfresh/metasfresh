@@ -93,6 +93,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    volumes:
+      - ./web-config.js:/usr/share/nginx/html/config.js:ro
     depends_on:
       - webapi
       - app
@@ -104,6 +106,8 @@ services:
     image: mazorn/metas-mobile:$mfversion
     ports:
       - "8880:80"
+    volumes:
+      - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
     depends_on:
       - webapi
       - app
