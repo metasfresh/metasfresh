@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.monitoring
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.monitoring.annotation;
+package de.metas.monitoringannotation.annotation;
 
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.monitoring
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.monitoring.aspect;
+package de.metas.monitoringannotation.aspect;
 
 import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
+import de.metas.monitoringannotation.annotation.Monitor;
 import lombok.NonNull;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -51,7 +51,7 @@ public class MonitorAspect
 		this.service = service;
 	}
 
-	@Around("execution(* *(..)) && @annotation(de.metas.monitoring.annotation.Monitor)")
+	@Around("execution(* *(..)) && @annotation(de.metas.monitoringannotation.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
 	{
 		final PerformanceMonitoringService.Metadata metadata;

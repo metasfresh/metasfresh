@@ -28,7 +28,7 @@ import com.google.common.collect.Sets;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
+import de.metas.monitoringannotation.annotation.Monitor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;

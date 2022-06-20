@@ -9,7 +9,7 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
+import de.metas.monitoringannotation.annotation.Monitor;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
+import de.metas.monitoringannotation.annotation.Monitor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
