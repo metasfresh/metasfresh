@@ -1377,7 +1377,7 @@ public class MOrder extends X_C_Order implements IDocument
 			final BigDecimal difference = target
 					.subtract(line.getQtyReserved())
 					.subtract(line.getQtyDelivered());
-			if (difference.signum() == 0)
+			if (difference.signum() == 0 && !line.isDeliveryClosed())
 			{
 				final MProduct product = line.getProduct();
 				if (product != null)
@@ -1442,7 +1442,7 @@ public class MOrder extends X_C_Order implements IDocument
 							line.getM_AttributeSetInstance_ID(),
 							line.getM_AttributeSetInstance_ID(),
 							BigDecimal.ZERO,
-							reserved,
+							line.isDeliveryClosed() ? line.getQtyDelivered().subtract(line.getQtyOrdered()) : reserved,
 							ordered,
 							get_TrxName());
 				}    // stockec
