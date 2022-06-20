@@ -191,6 +191,7 @@ public class PPOrderProducerFromCandidate implements ITrxItemChunkProcessor<I_PP
 				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getOrderLineIdAsRepoId()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getShipmentScheduleIdAsRepoId()))
 				//
+				.packingMaterialId(ppOrderCandidatePojo.getPpOrderData().getPackingMaterialId())
 				.build();
 	}
 
