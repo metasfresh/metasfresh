@@ -26,15 +26,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -636,21 +633,6 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public V getOrLoad(final K key, final Callable<V> valueLoader)
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getOrLoad0(key, valueLoader),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("CCache")
-						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
-	}
-
-	private V getOrLoad0(final K key, final Callable<V> valueLoader)
-	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			return get(key, valueLoader);
@@ -679,21 +661,6 @@ public class CCache<K, V> implements CacheInterface
 	 * @return values (IMPORTANT: order is not guaranteed)
 	 */
 	public Collection<V> getAllOrLoad(final Collection<K> keys, final Function<Set<K>, Map<K, V>> valuesLoader)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getAllOrLoad0(keys, valuesLoader),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("CCache")
-						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
-	}
-
-	private Collection<V> getAllOrLoad0(final Collection<K> keys, final Function<Set<K>, Map<K, V>> valuesLoader)
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
