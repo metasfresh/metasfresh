@@ -31,13 +31,11 @@ import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -359,8 +357,6 @@ public class C_OrderLine_StepDef
 			orderLineTable.putOrReplace(olIdentifier, orderLine);
 		}
 	}
-
-
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
