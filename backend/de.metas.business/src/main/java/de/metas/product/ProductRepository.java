@@ -285,7 +285,7 @@ public class ProductRepository
 
 		return queryBuilder
 				.create()
-				.stream()
+				.iterateAndStream()
 				.map(this::ofProductRecord)
 				.iterator();
 	}

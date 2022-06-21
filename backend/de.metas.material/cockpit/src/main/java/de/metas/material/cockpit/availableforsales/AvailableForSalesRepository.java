@@ -15,6 +15,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -101,36 +102,24 @@ public class AvailableForSalesRepository
 	}
 
 	@NonNull
-	public ImmutableList<I_MD_Available_For_Sales> getRecordsByProductId(@NonNull final ProductId productId)
+	public ImmutableList<I_MD_Available_For_Sales> getRecordsByQuery(@NonNull final RetrieveAvailableForSalesQuery retrieveAvailableForSalesQuery)
 	{
-		return queryBL.createQueryBuilder(I_MD_Available_For_Sales.class)
+		final IQueryBuilder<I_MD_Available_For_Sales> queryBuilder = queryBL.createQueryBuilder(I_MD_Available_For_Sales.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.listImmutable(I_MD_Available_For_Sales.class);
-	}
+				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID, retrieveAvailableForSalesQuery.getProductId());
 
-	@NonNull
-	public ImmutableList<I_MD_Available_For_Sales> getRecordsByQuery(@NonNull final AvailableForSalesQuery availableForSalesQuery)
-	{
-		return queryBL.createQueryBuilder(I_MD_Available_For_Sales.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID, availableForSalesQuery.getProductId())
-				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_AD_Org_ID, availableForSalesQuery.getOrgId())
-				.filter(ASIAvailableForSalesAttributesKeyFilter.matchingAttributes(availableForSalesQuery.getStorageAttributesKeyPattern()))
-				.create()
-				.listImmutable(I_MD_Available_For_Sales.class);
-	}
+		if (retrieveAvailableForSalesQuery.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_AD_Org_ID, retrieveAvailableForSalesQuery.getOrgId());
 
-	@NonNull
-	public ImmutableList<I_MD_Available_For_Sales> getRecordsByProductAndOrg(
-			@NonNull final ProductId productId,
-			@NonNull final OrgId orgId)
-	{
-		return queryBL.createQueryBuilder(I_MD_Available_For_Sales.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_AD_Org_ID, orgId)
+		}
+
+		if (retrieveAvailableForSalesQuery.getStorageAttributesKeyPattern() != null)
+		{
+			queryBuilder.filter(ASIAvailableForSalesAttributesKeyFilter.matchingAttributes(retrieveAvailableForSalesQuery.getStorageAttributesKeyPattern()));
+		}
+
+		return queryBuilder
 				.create()
 				.listImmutable(I_MD_Available_For_Sales.class);
 	}

@@ -155,7 +155,9 @@ public class AvailableForSalesService
 		final ImmutableList<AvailableForSalesResult> availableForSalesResults = computeAvailableForSales(AvailableForSalesMultiQuery.of(availableForSalesQuery))
 				.getAvailableForSalesResults();
 
-		final ImmutableList<I_MD_Available_For_Sales> availableForSalesRecords = availableForSalesRepository.getRecordsByQuery(availableForSalesQuery);
+		final RetrieveAvailableForSalesQuery retrieveAvailableForSalesQuery = buildRetrieveAvailableForSalesQuery(availableForSalesQuery);
+
+		final ImmutableList<I_MD_Available_For_Sales> availableForSalesRecords = availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQuery);
 
 		final ImmutableMap<I_MD_Available_For_Sales, AvailableForSalesResult> recordsToBeUpdated =
 				mapRecordsWithResultBasedOnASI(availableForSalesRecords, availableForSalesResults);
@@ -170,13 +172,21 @@ public class AvailableForSalesService
 
 		final Set<I_MD_Available_For_Sales> recordsToBeDeleted = new HashSet<>(availableForSalesRecords);
 		recordsToBeDeleted.removeAll(recordsToBeUpdated.keySet());
-		recordsToBeDeleted.forEach(availableForSalesRepository::delete);
+
+		for (final I_MD_Available_For_Sales toBeDeleted : recordsToBeDeleted)
+		{
+			availableForSalesRepository.delete(toBeDeleted);
+		}
 
 		final Set<AvailableForSalesResult> recordsToBeCreated = new HashSet<>(availableForSalesResults);
 		recordsToBeCreated.removeAll(recordsToBeUpdated.values());
-		recordsToBeCreated.stream()
-				.map(this::buildCreateAvailableForSalesRequest)
-				.forEach(availableForSalesRepository::create);
+
+		for (final AvailableForSalesResult toBeCreated : recordsToBeCreated)
+		{
+			final CreateAvailableForSalesRequest createAvailableForSalesRequest = buildCreateAvailableForSalesRequest(toBeCreated);
+
+			availableForSalesRepository.create(createAvailableForSalesRequest);
+		}
 	}
 
 	@NonNull
@@ -236,7 +246,7 @@ public class AvailableForSalesService
 	}
 
 	@NonNull
-	private CreateAvailableForSalesRequest buildCreateAvailableForSalesRequest(@NonNull final AvailableForSalesResult availableForSalesResult)
+	private static CreateAvailableForSalesRequest buildCreateAvailableForSalesRequest(@NonNull final AvailableForSalesResult availableForSalesResult)
 	{
 		return CreateAvailableForSalesRequest.builder()
 				.productId(availableForSalesResult.getProductId())
@@ -244,6 +254,16 @@ public class AvailableForSalesService
 				.orgId(availableForSalesResult.getOrgId())
 				.qtyOnHandStock(availableForSalesResult.getQuantities().getQtyOnHandStock())
 				.qtyToBeShipped(availableForSalesResult.getQuantities().getQtyToBeShipped())
+				.build();
+	}
+
+	@NonNull
+	private static RetrieveAvailableForSalesQuery buildRetrieveAvailableForSalesQuery(@NonNull final AvailableForSalesQuery availableForSalesQuery)
+	{
+		return RetrieveAvailableForSalesQuery.builder()
+				.productId(availableForSalesQuery.getProductId())
+				.orgId(availableForSalesQuery.getOrgId())
+				.storageAttributesKeyPattern(availableForSalesQuery.getStorageAttributesKeyPattern())
 				.build();
 	}
 }

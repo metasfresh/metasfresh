@@ -47,8 +47,8 @@ import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
+import de.metas.material.cockpit.availableforsales.RetrieveAvailableForSalesQuery;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -63,7 +63,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -219,11 +218,15 @@ public class ExportStockToShopwareExternalSystem
 			@NonNull final ExternalSystemParentConfig externalSystemParentConfig,
 			@NonNull final ProductId productId)
 	{
-		final List<I_MD_Available_For_Sales> records = OrgId.ANY.equals(externalSystemParentConfig.getOrgId())
-				? availableForSalesRepository.getRecordsByProductId(productId)
-				: availableForSalesRepository.getRecordsByProductAndOrg(productId, externalSystemParentConfig.getOrgId());
+		final RetrieveAvailableForSalesQuery.RetrieveAvailableForSalesQueryBuilder retrieveAvailableForSalesQueryBuilder = RetrieveAvailableForSalesQuery.builder()
+				.productId(productId);
 
-		return records
+		if (externalSystemParentConfig.getOrgId().isRegular())
+		{
+			retrieveAvailableForSalesQueryBuilder.orgId(externalSystemParentConfig.getOrgId());
+		}
+
+		return availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQueryBuilder.build())
 				.stream()
 				.map(ExportStockToShopwareExternalSystem::getAvailableForSalesQty)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);

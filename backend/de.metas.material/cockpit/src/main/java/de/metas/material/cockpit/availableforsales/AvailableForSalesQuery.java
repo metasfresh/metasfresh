@@ -66,7 +66,8 @@ public class AvailableForSalesQuery
 			final int shipmentDateLookAheadHours,
 			final int salesOrderLookBehindHours)
 	{
-		Check.assumeGreaterThanZero(orgId.getRepoId(), "OrgId must be regular!");
+		Check.errorUnless(orgId.isRegular(), "AD_Org_Id={} must be regular! M_Product_ID={}, M_Warehouse_ID={}, AttributesKey={}, dateOfInterest={}",
+						  OrgId.toRepoId(orgId), ProductId.toRepoId(productId), WarehouseId.toRepoId(warehouseId), storageAttributesKeyPattern, dateOfInterest);
 
 		this.productId = productId;
 		this.warehouseId = warehouseId;
