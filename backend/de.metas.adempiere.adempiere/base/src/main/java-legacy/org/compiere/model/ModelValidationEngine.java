@@ -699,10 +699,10 @@ public class ModelValidationEngine implements IModelValidationEngine
 				() -> fireModelChange0(po, changeType),
 				Metadata
 						.builder()
-						.name(changeTypeStr + " " + tableName)
+						.name("ModelValidationEngine")
 						.type(Type.MODEL_INTERCEPTOR)
-						.subType(SubType.MODEL_CHANGE)
-						.action(changeTypeStr)
+						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.label("changeType", changeTypeStr)
 						.label("tableName", tableName)
 						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
 						.build());
@@ -1070,10 +1070,10 @@ public class ModelValidationEngine implements IModelValidationEngine
 					() -> fireDocValidate0(model, docTiming),
 					Metadata
 							.builder()
-							.name(docTimingStr + " " + tableName)
+							.name("ModelValidationEngine")
 							.type(Type.MODEL_INTERCEPTOR)
-							.subType(SubType.DOC_VALIDATE)
-							.action(docTimingStr)
+							.action((new Throwable().getStackTrace()[0]).getMethodName())
+							.label("docTiming", docTimingStr)
 							.label("tableName", tableName)
 							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))
 							.build());
