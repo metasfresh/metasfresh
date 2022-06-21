@@ -200,7 +200,23 @@ const Calendar = ({ className = 'container' }) => {
       )}
       <FullCalendar
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
-        initialView="resourceTimelineMonth"
+        views={{
+          resourceTimelineYear: {
+            buttonText: 'year', // TODO trl
+            slotDuration: { months: 1 },
+            slotLabelInterval: { months: 1 },
+            slotLabelFormat: [{ month: 'long' }],
+          },
+          resourceTimelineThreeYear: {
+            type: 'resourceTimeline',
+            buttonText: '3 years', // TODO trl
+            duration: { years: 3 },
+            slotDuration: { months: 1 },
+            slotLabelInterval: { months: 1 },
+            slotLabelFormat: [{ month: 'long' }],
+          },
+        }}
+        initialView="resourceTimelineYear"
         plugins={[
           dayGridPlugin,
           timeGridPlugin,
@@ -213,7 +229,7 @@ const Calendar = ({ className = 'container' }) => {
           left: 'prev,next today',
           center: 'title',
           right:
-            'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth',
+            'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear,resourceTimelineThreeYear',
         }}
         resourceAreaHeaderContent="Resources"
         resources={extractResourcesFromCalendarsArray(availableCalendars)}
