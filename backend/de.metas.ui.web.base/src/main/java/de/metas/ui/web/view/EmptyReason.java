@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,35 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.ui.web.view;
 
-import lombok.Builder;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-@Builder
-public class OrderAddressDetails
+public class EmptyReason
 {
-	@NonNull
-	JsonOrderAddress jsonOrderAddress;
+	@NonNull ITranslatableString text;
+	@NonNull ITranslatableString hint;
 
-	@Nullable
-	String customShopwareId;
+	private EmptyReason(
+			@NonNull final ITranslatableString text,
+			@NonNull final ITranslatableString hint)
+	{
+		this.text = text;
+		this.hint = hint;
+	}
 
-	@Nullable
-	String customMetasfreshId;
-	
-	@Nullable
-	String customEmail;
+	public static EmptyReason of(
+			@Nullable final ITranslatableString text,
+			@Nullable final ITranslatableString hint)
+	{
+		final ITranslatableString textNorm = TranslatableStrings.nullToEmpty(text);
+		final ITranslatableString hintNorm = TranslatableStrings.nullToEmpty(hint);
+		return new EmptyReason(textNorm, hintNorm);
+	}
 }
