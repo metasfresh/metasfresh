@@ -330,7 +330,7 @@ public class ShipmentService
 	{
 		final List<I_M_InOutLine> shipmentLines = retrieveInOuLineIdByShipScheduleId(shipmentScheduleIds)
 				.stream()
-				.map(inOutDAO::getLineByIdInTrx)
+				.map(inOutDAO::getLineById)
 				.collect(ImmutableList.toImmutableList());
 
 		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
@@ -760,7 +760,7 @@ public class ShipmentService
 	{
 		return retrieveInOuLineIdByShipScheduleId(ids)
 				.stream()
-				.map(inOutDAO::getLineByIdInTrx)
+				.map(inOutDAO::getLineById)
 				.map(I_M_InOutLine::getM_InOut_ID)
 				.map(InOutId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());

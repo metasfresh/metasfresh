@@ -6,6 +6,8 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.costing.ChargeId;
+import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -40,6 +42,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.uom.IUOMConversionBL;
@@ -48,8 +51,31 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.TaxCategoryNotFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.MTax;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -117,7 +143,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoId(il.getM_InOutLine_ID());
-		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
 
 		final I_M_InOut io = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
