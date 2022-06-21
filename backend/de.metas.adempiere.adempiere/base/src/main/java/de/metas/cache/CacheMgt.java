@@ -184,8 +184,9 @@ public final class CacheMgt
 		}
 
 		final Metadata metadata = Metadata.builder()
-				.name("Full CacheReset")
-				.type(Type.CACHE_OPERATION).subType(SubType.CACHE_INVALIDATE)
+				.name("CacheMgt")
+				.action((new Throwable().getStackTrace()[0]).getMethodName())
+				.type(Type.CACHE_OPERATION)
 				.build();
 		return getPerfMonService().monitor(
 				() -> reset0(),
@@ -351,8 +352,9 @@ public final class CacheMgt
 	long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
 		final Metadata metadata = Metadata.builder()
-				.name("CacheReset")
-				.type(Type.CACHE_OPERATION).subType(SubType.CACHE_INVALIDATE)
+				.name("CacheMgt")
+				.action((new Throwable().getStackTrace()[0]).getMethodName())
+				.type(Type.CACHE_OPERATION)
 				.label("resetMode", mode.toString())
 				.build();
 		return getPerfMonService().monitor(
