@@ -247,7 +247,8 @@ import java.util.Set;
 				//
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
-				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents());
+				.setRefreshViewOnChangeEvents(gridTabVO.isRefreshViewOnChangeEvents())
+				.queryIfNoFilters(gridTabVO.isQueryIfNoFilters());
 
 		// Fields descriptor
 		gridTabVO

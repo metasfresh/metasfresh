@@ -1,32 +1,38 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
-import produce from 'immer';
 import { merge } from 'merge-anything';
 import { combineReducers } from 'redux';
 import nock from 'nock';
 
-import tablesHandler, { initialTableState, getTableId } from '../../reducers/tables';
-import viewHandler, { initialState as initialViewsState } from '../../reducers/viewHandler';
-import { getQuickActionsId } from '../../reducers/actionsHandler';
+import tablesHandler, {
+  getTableId,
+  initialTableState
+} from '../../reducers/tables';
+import viewHandler, {
+  initialState as initialViewsState
+} from '../../reducers/viewHandler';
 
 import {
-  createTableData,
   createGridTable,
+  createTableData,
   createTabTable,
-  updateGridTable,
-  updateTabTable,
   deleteTable,
-  setActiveSort,
-  updateTableSelection,
   deselectTableRows,
+  setActiveSort,
+  updateGridTable,
+  updateTableSelection,
+  updateTabTable,
 } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { flattenRows } from '../../utils/documentListHelper';
 
 import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
-import masterDataFixtures from '../../../test_setup/fixtures/master_window/data.json';
-import masterLayoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
-import masterRowFixtures from '../../../test_setup/fixtures/master_window/row_data.json';
+import masterDataFixtures
+  from '../../../test_setup/fixtures/master_window/data.json';
+import masterLayoutFixtures
+  from '../../../test_setup/fixtures/master_window/layout.json';
+import masterRowFixtures
+  from '../../../test_setup/fixtures/master_window/row_data.json';
 
 import gridProps from '../../../test_setup/fixtures/grid.json';
 import gridDataFixtures from '../../../test_setup/fixtures/grid/data.json';
@@ -37,15 +43,13 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createState = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       viewHandler: initialViewsState,
       tables: { ...tablesHandler(undefined, {}) },
     },
     state
   );
-
-  return res;
 };
 
 describe('TableActions general', () => {
@@ -104,7 +108,10 @@ describe('TableActions general', () => {
       keyProperty,
     }
     const store = mockStore();
-    const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload }];
+    const expectedActions = [{
+      type: ACTION_TYPES.UPDATE_TABLE_SELECTION,
+      payload
+    }];
     const params = { id: tableId, selection: [rowId], keyProperty };
 
     return store.dispatch(updateTableSelection(params)).then(
@@ -113,20 +120,23 @@ describe('TableActions general', () => {
   });
 
   it('should call DESELECT_TABLE_ROWS action with correct payload', () => {
-    const { windowId, tabId, id, rowId } = masterRowFixtures.row_data1[0];
+    const { windowId, tabId, id } = masterRowFixtures.row_data1[0];
     const tableId = getTableId({ windowId, tabId, docId: id });
     const payload = {
       id: tableId,
       selection: [],
     }
     const store = mockStore();
-    const expectedActions = [{ type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload }];
+    const expectedActions = [{
+      type: ACTION_TYPES.DESELECT_TABLE_ROWS,
+      payload
+    }];
     const params = { id: tableId, selection: [] };
 
     return store.dispatch(deselectTableRows(params)).then(
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
     );
-  }); 
+  });
 });
 
 describe('TableActions grid', () => {
@@ -228,7 +238,7 @@ describe('TableActions grid', () => {
     const dataResponse = gridDataFixtures.data1;
     const rowResponse = gridRowFixtures.data1;
     const id = getTableId({ windowId: windowType, viewId });
-    const tableData_create = createTableData({
+    createTableData({
       ...dataResponse,
       ...layoutResponse,
     });
@@ -265,7 +275,7 @@ describe('TableActions grid', () => {
   it(`should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const rowResponse = gridRowFixtures.data3_parent;
-    const { windowId, viewId , result} = rowResponse;
+    const { windowId, viewId, result } = rowResponse;
     const rowId = result[0].id;
     const { includedView } = result[0];
     const tableId = getTableId({ windowId, viewId });
@@ -309,7 +319,7 @@ describe('TableActions grid', () => {
       id: includedView.windowId,
       viewId: includedView.viewId,
       viewProfileId: null,
-      parentId: windowId,      
+      parentId: windowId,
     };
 
     const expectedActions = [
@@ -331,7 +341,10 @@ describe('TableActions grid', () => {
     const { windowId, viewId, parentWindowId, parentViewId } = childRowResponse;
     const parentRowId = parentRowResponse.result[0].id;
     const childRowId = childRowResponse.result[0].id;
-    const parentTableId = getTableId({ windowId: parentWindowId, viewId: parentViewId });
+    const parentTableId = getTableId({
+      windowId: parentWindowId,
+      viewId: parentViewId
+    });
     const childTableId = getTableId({ windowId, viewId });
     const c_tableData_create = createTableData({
       ...childLayoutResponse,
@@ -435,16 +448,14 @@ describe('TableActions tab', () => {
         tableId,
         ...tab,
       };
-      const tableData = createTableData(dataResponse);
-      const payload = {
-        id: tableId,
-        data: tableData,
-      };
-
-      dispatchedActions.push(
-        store.dispatch(createTabTable(tableId, dataResponse))
-      );
-      expectedActions.push({ type: ACTION_TYPES.CREATE_TABLE, payload });
+      dispatchedActions.push(store.dispatch(createTabTable(tableId, dataResponse)));
+      expectedActions.push({
+        type: ACTION_TYPES.CREATE_TABLE,
+        payload: {
+          id: tableId,
+          data: createTableData(dataResponse),
+        }
+      });
     });
 
     return Promise.all(dispatchedActions).then(() => {
@@ -468,14 +479,12 @@ describe('TableActions tab', () => {
         docId,
         tabId: tab.tabId,
       });
-      const initialStateData = {
+      initialStateTables[tableId] = {
         windowType,
         docId,
         tableId,
         ...tab,
       };
-
-      initialStateTables[tableId] = initialStateData;
     });
 
     const initialState = createState({
@@ -546,21 +555,16 @@ describe('TableActions tab', () => {
         docId,
         tabId: tab.tabId,
       });
-      const fullTab = {
-        ...tab,
-        ...layoutResponse.tabs[tab.tabId],
-      };
-      const initialStateData = {
+      initialStateTables[tableId] = {
         windowType,
         docId,
         tableId,
-        ...fullTab,
+        ...tab,
+        ...layoutResponse.tabs[tab.tabId],
       };
-
-      initialStateTables[tableId] = initialStateData;
     });
 
-    const initialState = createState({
+    const store = mockStore(createState({
       viewHandler: {
         views: {
           [windowType]: {
@@ -572,28 +576,31 @@ describe('TableActions tab', () => {
         length: Object.values(masterWindowResponse.includedTabsInfo).length,
         ...initialStateTables,
       },
-    });
+    }));
 
-    const store = mockStore(initialState);
-    const tabId = rowDataResponse[0].tabId;
-    const tableId = getTableId({ windowId: windowType, docId, tabId });
+    const tableId = getTableId({
+      windowId: windowType,
+      docId,
+      tabId: rowDataResponse[0].tabId
+    });
     const tableData = createTableData({
       result: rowDataResponse,
       keyProperty: 'rowId',
     });
     tableData.rows = flattenRows(tableData.rows);
-    const payload = {
-      id: tableId,
-      data: { ...tableData },
-    };
-
-    const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE, payload }];
-
     return store
       .dispatch(updateTabTable(tableId, { result: rowDataResponse }))
       .then(() => {
         expect(store.getActions()).toEqual(
-          expect.arrayContaining(expectedActions)
+          expect.arrayContaining([
+            {
+              type: ACTION_TYPES.UPDATE_TABLE,
+              payload: {
+                id: tableId,
+                data: { ...tableData },
+              }
+            }
+          ])
         );
       });
   });

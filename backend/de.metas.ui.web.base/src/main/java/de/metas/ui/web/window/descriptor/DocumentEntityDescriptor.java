@@ -85,6 +85,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class DocumentEntityDescriptor
 {
 	public static Builder builder()
@@ -159,6 +160,9 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean cloneEnabled;
 
+	@Getter
+	private final boolean queryIfNoFilters;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -204,6 +208,8 @@ public class DocumentEntityDescriptor
 		soTrx = builder.getSOTrx();
 
 		cloneEnabled = builder.isCloneEnabled();
+
+		queryIfNoFilters = builder.queryIfNoFilters;
 	}
 
 	@Override
@@ -250,11 +256,7 @@ public class DocumentEntityDescriptor
 		return WindowId.of(documentTypeId);
 	}
 
-	public boolean hasIdFields()
-	{
-		return !idFields.isEmpty();
-	}
-
+	@Nullable
 	public DocumentFieldDescriptor getSingleIdFieldOrNull()
 	{
 		return idFields.size() == 1 ? idFields.get(0) : null;
@@ -351,7 +353,7 @@ public class DocumentEntityDescriptor
 				.filter(includedEntity -> tableName.equals(includedEntity.getTableNameOrNull()));
 	}
 
-	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(final Class<T> bindingType)
+	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(@SuppressWarnings("unused") final Class<T> bindingType)
 	{
 		@SuppressWarnings("unchecked") final T dataBindingCasted = (T)getDataBinding();
 		return dataBindingCasted;
@@ -379,6 +381,7 @@ public class DocumentEntityDescriptor
 		return tableName.orElseThrow(() -> new IllegalStateException("No TableName defined for " + this));
 	}
 
+	@Nullable
 	public String getTableNameOrNull()
 	{
 		return tableName.orElse(null);
@@ -412,7 +415,7 @@ public class DocumentEntityDescriptor
 	{
 		if (printProcessId == null)
 		{
-			new AdempiereException("No print process configured for " + this);
+			throw new AdempiereException("No print process configured for " + this);
 		}
 		return printProcessId;
 	}
@@ -428,6 +431,7 @@ public class DocumentEntityDescriptor
 	//
 	//
 
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
@@ -479,6 +483,8 @@ public class DocumentEntityDescriptor
 		private Optional<AdTabId> _adTabId = Optional.empty();
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<SOTrx> _soTrx = Optional.empty();
+
+		private boolean queryIfNoFilters = true;
 
 		private Builder()
 		{
@@ -626,7 +632,6 @@ public class DocumentEntityDescriptor
 			assertFieldsNotBuilt();
 
 			_fieldBuilders.values()
-					.stream()
 					.forEach(fieldUpdater);
 		}
 
@@ -639,6 +644,7 @@ public class DocumentEntityDescriptor
 					.collect(ImmutableList.toImmutableList());
 		}
 
+		@Nullable
 		public DocumentFieldDescriptor.Builder getSingleIdFieldBuilderOrNull()
 		{
 			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();
@@ -661,11 +667,6 @@ public class DocumentEntityDescriptor
 					.collect(ImmutableList.toImmutableList());
 		}
 
-		public boolean hasIdField()
-		{
-			return !getIdFieldBuilders().isEmpty();
-		}
-
 		private Map<String, DocumentFieldDescriptor> getFields()
 		{
 			if (_fields == null)
@@ -679,6 +680,7 @@ public class DocumentEntityDescriptor
 			return _fields;
 		}
 
+		@Nullable
 		private DocumentFieldDescriptor getParentLinkFieldOrNull()
 		{
 			final List<DocumentFieldDescriptor> parentLinkFields = getFields()
@@ -753,12 +755,13 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(final Class<T> builderType)
+		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> builderType)
 		{
 			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
 			return dataBindingBuilder;
 		}
 
+		@Nullable
 		private DocumentEntityDataBindingDescriptor getOrBuildDataBinding()
 		{
 			Preconditions.checkNotNull(_dataBinding, "dataBinding");
@@ -795,7 +798,7 @@ public class DocumentEntityDescriptor
 					getReadonlyLogic().getParameterNames(),
 					DependencyType.DocumentReadonlyLogic);
 
-			getFields().values().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
+			getFields().values().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
 		}
 
@@ -842,6 +845,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setTableName(final Optional<String> tableName)
 		{
+			//noinspection OptionalAssignedToNull
 			_tableName = tableName != null ? tableName : Optional.empty();
 			return this;
 		}
@@ -851,14 +855,10 @@ public class DocumentEntityDescriptor
 			return _tableName;
 		}
 
+		@Nullable
 		public String getTableNameOrNull()
 		{
 			return _tableName.orElse(null);
-		}
-
-		public boolean isTableName(final String expectedTableName)
-		{
-			return Objects.equals(expectedTableName, _tableName.orElse(null));
 		}
 
 		public Builder setCaption(final Map<String, String> captionTrls, final String defaultCaption)
@@ -917,6 +917,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setIsSOTrx(final Optional<SOTrx> soTrx)
 		{
+			//noinspection OptionalAssignedToNull
 			_soTrx = soTrx != null ? soTrx : Optional.empty();
 			return this;
 		}
@@ -1109,12 +1110,6 @@ public class DocumentEntityDescriptor
 			return _printProcessId;
 		}
 
-		public Builder setCloneEnabled(final boolean cloneEnabled)
-		{
-			_cloneEnabled = cloneEnabled;
-			return this;
-		}
-
 		private boolean isCloneEnabled()
 		{
 			if (_cloneEnabled != null)
@@ -1146,6 +1141,12 @@ public class DocumentEntityDescriptor
 					.sorted(Ordering.natural().onResultOf(field -> field.getDefaultOrderByPriority()))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
+		}
+
+		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
+		{
+			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
 		}
 	}
 }

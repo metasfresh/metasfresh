@@ -2,6 +2,8 @@ package de.metas.ui.web.view;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -65,6 +67,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	private static final Logger logger = LogManager.getLogger(SqlViewRowIdsOrderedSelectionFactory.class);
 	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
 
+	private static final AdMessageKey MSG_PleaseFilterFirst_Text = AdMessageKey.of("webui.view.emptyReason.pleaseFilterFirst.text");
+	private static final AdMessageKey MSG_PleaseFilterFirst_Hint = AdMessageKey.of("webui.view.emptyReason.pleaseFilterFirst.hint");
+
 	private final SqlViewBinding viewBinding;
 
 	private SqlViewRowIdsOrderedSelectionFactory(@NonNull final SqlViewBinding viewBinding)
@@ -102,6 +107,19 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 				.applySecurityRestrictions(applySecurityRestrictions)
 				.buildSqlCreateSelectionFrom(viewEvalCtx, viewId, filters, orderBys, queryLimit, context);
 		logger.trace("Creating selection using {}", sqlCreates);
+
+		if (!context.isQueryIfNoFilters() && !sqlCreates.isAnyFilterApplied())
+		{
+			return ViewRowIdsOrderedSelection.builder()
+					.viewId(viewId)
+					.size(0)
+					.orderBys(orderBys)
+					.queryLimit(queryLimit)
+					.emptyReason(EmptyReason.of(
+							TranslatableStrings.adMessage(MSG_PleaseFilterFirst_Text),
+							TranslatableStrings.adMessage(MSG_PleaseFilterFirst_Hint)))
+					.build();
+		}
 
 		//
 		// Create selection lines if any => insert into T_WEBUI_ViewSelectionLine
@@ -248,7 +266,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// Delete
 		{
 			final SqlAndParams sqlDelete = newSqlViewSelectionQueryBuilder().buildSqlDeleteRowIdsFromSelection(selection.getSelectionId(), rowIds);
-			if(sqlDelete == null)
+			if (sqlDelete == null)
 			{
 				return selection;
 			}
@@ -269,11 +287,11 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		return selection.withSize(size);
 	}
 
-	private final int retrieveSize(final String selectionId)
+	private int retrieveSize(final String selectionId)
 	{
 		final SqlAndParams sqlCount = newSqlViewSelectionQueryBuilder().buildSqlRetrieveSize(selectionId);
 		final int size = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount.getSql(), sqlCount.getSqlParams());
-		return size <= 0 ? 0 : size;
+		return Math.max(size, 0);
 	}
 
 	@Override
