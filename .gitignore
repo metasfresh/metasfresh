@@ -13,7 +13,6 @@
 *.project
 *.classpath
 
-**/metasfresh*.properties
 **/swingui/log/
 **/serverRoot/log/
 **/serverRoot/data/

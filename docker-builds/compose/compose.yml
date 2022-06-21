@@ -47,7 +47,19 @@ services:
     ports:
       - "8080:8080"
       - "8789:8789"
+      - "61616:61616"
+    volumes:
+      - ./metasfresh.properties:/opt/metasfresh/metasfresh-webui-api/metasfresh.properties:ro
     environment:
+      # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params}, ${metasfresh_admin_params} and ${webui_frontend_url_params}
+      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789"
+      - "JAVA_SECURITY_EGD=file:/dev/./urandom"
+      - PropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties
+      - "SPRING_RABBITMQ_HOST=rabbitmq"
+      - "SPRING_RABBITMQ_PORT=5672"
+      - "SPRING_RABBITMQ_USERNAME=metasfresh"
+      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
+      - "SPRING_DATA_ELASTICSEARCH_CLUSTER_NODES=search:9200"
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
     depends_on:
       db:
@@ -60,9 +72,18 @@ services:
     image: mazorn/metas-app:$mfversion
     ports:
       - "8282:8282"
-      - "61616:61616"
       - "8788:8788"
+    volumes:
+      - ./metasfresh.properties:/opt/metasfresh/metasfresh.properties:ro
     environment:
+      # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params} and  ${metasfresh_admin_params}
+      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788"
+      - PropertyFile=/opt/metasfresh/metasfresh.properties
+      - "METASFRESH_ELASTICSEARCH_HOST=search:9300"
+      - "SPRING_RABBITMQ_HOST=rabbitmq"
+      - "SPRING_RABBITMQ_PORT=5672"
+      - "SPRING_RABBITMQ_USERNAME=metasfresh"
+      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
     depends_on:
       db:
