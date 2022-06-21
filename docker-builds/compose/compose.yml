@@ -47,7 +47,6 @@ services:
     ports:
       - "8080:8080"
       - "8789:8789"
-      - "61616:61616"
     volumes:
       - ./metasfresh.properties:/opt/metasfresh/metasfresh-webui-api/metasfresh.properties:ro
     environment:
