@@ -171,7 +171,8 @@ public class C_OrderLine_StepDef
 			}
 
 			final String itemProductIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (de.metas.util.Check.isNotBlank(itemProductIdentifier))
+
+			if (Check.isNotBlank(itemProductIdentifier))
 			{
 				final String itemProductIdentifierValue = DataTableUtil.nullToken2Null(itemProductIdentifier);
 				if (itemProductIdentifierValue == null)
@@ -356,8 +357,6 @@ public class C_OrderLine_StepDef
 			orderLineTable.putOrReplace(olIdentifier, orderLine);
 		}
 	}
-
-
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{

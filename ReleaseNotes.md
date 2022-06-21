@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13178](https://github.com/metasfresh/metasfresh/issues/13178) Gebindekonfiguration not set in PP_Order from PP_Order Dispo although set in sales orderline
   * [#13183](https://github.com/metasfresh/metasfresh/issues/13183) Rename Sektion to Organisation
   * [#13154](https://github.com/metasfresh/metasfresh/issues/13154) Shopware - implement getBPartners action 
   * [#13148](https://github.com/metasfresh/metasfresh/issues/13148) Datenaustausch - Provide default Title for invoice document

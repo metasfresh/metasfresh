@@ -161,18 +161,6 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
-	@Nullable
-	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
-	{
-		return dataTableRow.get(columnName);
-	}
-
-	@Nullable
-	public String nullToken2Null(@NonNull final String value)
-	{
-		return NULL_STRING.equals(value) ? null : value;
-	}
-
 	@NonNull
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
@@ -213,6 +201,18 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
+
+	@Nullable
+	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	{
+		return dataTableRow.get(columnName);
+	}
+
+	@Nullable
+	public String nullToken2Null(@NonNull final String value)
+	{
+		return NULL_STRING.equals(value) ? null : value;
 	}
 
 	public Instant extractInstantForIndex(final List<String> dataTableRow, final int index)
