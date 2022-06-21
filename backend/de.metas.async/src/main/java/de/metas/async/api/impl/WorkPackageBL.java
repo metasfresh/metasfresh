@@ -15,8 +15,6 @@ import java.util.Optional;
 
 public class WorkPackageBL implements IWorkPackageBL
 {
-	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
-
 	@Override
 	public Optional<UserId> getUserIdInCharge(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
@@ -26,7 +24,7 @@ public class WorkPackageBL implements IWorkPackageBL
 		}
 
 		final QueuePackageProcessorId queuePackageProcessorId = QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID());
-		final QueuePackageProcessor packageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(queuePackageProcessorId);
+		final QueuePackageProcessor packageProcessor = QueueProcessorDescriptorRepository.getInstance().getPackageProcessor(queuePackageProcessorId);
 		Check.assumeNotNull(packageProcessor, "C_Queue_PackageProcessor is not null for 'workPackage'={}", workPackage);
 
 		if (Check.isEmpty(packageProcessor.getInternalName()))
