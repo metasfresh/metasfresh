@@ -33,7 +33,6 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -41,11 +40,8 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -56,8 +52,6 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -65,20 +59,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Properties;
-
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /**
@@ -690,7 +671,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(getM_InOutLine_ID());
 
-		final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+		final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineByIdInTrx(inoutLineId);
 		final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
 		final OrgId fromOrgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
