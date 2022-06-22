@@ -58,8 +58,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -79,7 +77,6 @@ import static org.assertj.core.api.Assertions.*;
 public class C_OLCand_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final C_Order_StepDefData orderTable;
 	private final M_InOut_StepDefData shipmentTable;
@@ -117,12 +114,6 @@ public class C_OLCand_StepDef
 		this.productTable = productTable;
 		this.issueTable = issueTable;
 		this.testContext = testContext;
-	}
-
-	@And("enable sys config {string}")
-	public void enable_sys_config(@NonNull final String sysConfigName)
-	{
-		sysConfigBL.setValue(sysConfigName, true, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 	}
 
 	@Then("process metasfresh response")

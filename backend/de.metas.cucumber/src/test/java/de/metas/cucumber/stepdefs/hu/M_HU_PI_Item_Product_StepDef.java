@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
+import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -35,6 +37,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -43,8 +46,10 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static de.metas.cucumber.stepdefs.StepDefConstants.PCE_UOM_ID;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class M_HU_PI_Item_Product_StepDef
 {
@@ -80,10 +85,11 @@ public class M_HU_PI_Item_Product_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_Qty);
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom);
-		final boolean isInfiniteCapacity = DataTableUtil.extractBooleanForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_IsInfiniteCapacity);
-		final boolean isAllowAnyProduct = DataTableUtil.extractBooleanForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct);
-		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_Name);
-		final boolean isDefaultForProduct = DataTableUtil.extractBooleanForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_IsDefaultForProduct);
+		final Boolean isInfiniteCapacity = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_IsInfiniteCapacity, false);
+		final Boolean isAllowAnyProduct = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, false);
+		final String name = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_Name);
+		final Boolean isDefaultForProduct = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_IsDefaultForProduct, false);
+		final Boolean active = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_IsActive, true);
 
 		final String huPiItemIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final Integer huPiItemId = huPiItemTable.getOptional(huPiItemIdentifier)
@@ -92,31 +98,70 @@ public class M_HU_PI_Item_Product_StepDef
 
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 
-		final int mhupiItemProductID = DataTableUtil.extractIntForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID);
+		final Integer mhupiItemProductID = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID);
 
-		final I_M_HU_PI_Item_Product huPiItemProductRecord = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, mhupiItemProductID)
-				.create()
-				.firstOnlyOptional(I_M_HU_PI_Item_Product.class)
-				.orElseGet(() -> newInstance(I_M_HU_PI_Item_Product.class));
+		final I_M_HU_PI_Item_Product existingHuPiItemProduct;
 
-		huPiItemProductRecord.setM_HU_PI_Item_Product_ID(mhupiItemProductID);
+		if (mhupiItemProductID != null)
+		{
+			existingHuPiItemProduct = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, mhupiItemProductID)
+					.create()
+					.firstOnlyOrNull(I_M_HU_PI_Item_Product.class);
+
+		}
+		else
+		{
+			existingHuPiItemProduct = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemId)
+					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_Qty, qty)
+					.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsActive, active)
+					.create()
+					.firstOnlyOrNull(I_M_HU_PI_Item_Product.class);
+		}
+
+		final I_M_HU_PI_Item_Product huPiItemProductRecord = CoalesceUtil.coalesceSuppliers(() -> existingHuPiItemProduct,
+																							() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class));
+
+		assertThat(huPiItemProductRecord).isNotNull();
+
+		if (mhupiItemProductID != null)
+		{
+			huPiItemProductRecord.setM_HU_PI_Item_Product_ID(mhupiItemProductID);
+		}
+
 		huPiItemProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		huPiItemProductRecord.setM_HU_PI_Item_ID(huPiItemId);
-		huPiItemProductRecord.setC_UOM_ID(uomId.getRepoId());
 		huPiItemProductRecord.setQty(qty);
 		huPiItemProductRecord.setValidFrom(validFrom);
-		huPiItemProductRecord.setIsInfiniteCapacity(isInfiniteCapacity);
-		huPiItemProductRecord.setIsAllowAnyProduct(isAllowAnyProduct);
-		huPiItemProductRecord.setName(name);
-		huPiItemProductRecord.setIsDefaultForProduct(isDefaultForProduct);
+		huPiItemProductRecord.setIsActive(Boolean.TRUE.equals(active));
+
+		if (Check.isNotBlank(x12de355Code))
+		{
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+			huPiItemProductRecord.setC_UOM_ID(uomId.getRepoId());
+		}
+		else
+		{
+			huPiItemProductRecord.setC_UOM_ID(PCE_UOM_ID.getRepoId());
+		}
+
+		if (Check.isNotBlank(name))
+		{
+			huPiItemProductRecord.setName(name);
+		}
+
+		huPiItemProductRecord.setIsInfiniteCapacity(Boolean.TRUE.equals(isInfiniteCapacity));
+		huPiItemProductRecord.setIsAllowAnyProduct(Boolean.TRUE.equals(isAllowAnyProduct));
+		huPiItemProductRecord.setIsDefaultForProduct(Boolean.TRUE.equals(isDefaultForProduct));
 
 		saveRecord(huPiItemProductRecord);
 
-		huPiItemProductTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID), huPiItemProductRecord);
+		final String huPiItemProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		huPiItemProductTable.put(huPiItemProductIdentifier, huPiItemProductRecord);
 	}
 }

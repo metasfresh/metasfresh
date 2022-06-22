@@ -6,7 +6,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And enable sys config 'SKIP_WP_PROCESSOR_FOR_AUTOMATION'
+   And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
   @topic:orderCandidate
