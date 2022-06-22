@@ -25,6 +25,8 @@ package de.metas.material.cockpit.availableforsales;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
@@ -37,6 +39,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -46,10 +49,12 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class AvailableForSalesService
@@ -152,62 +157,33 @@ public class AvailableForSalesService
 
 	private void syncAvailableForSalesTable(@NonNull final AvailableForSalesQuery availableForSalesQuery)
 	{
-		final ImmutableList<AvailableForSalesResult> availableForSalesResults = computeAvailableForSales(AvailableForSalesMultiQuery.of(availableForSalesQuery))
+		final ImmutableList<AvailableForSalesResult> availableForSalesComputationResults = computeAvailableForSales(AvailableForSalesMultiQuery.of(availableForSalesQuery))
 				.getAvailableForSalesResults();
 
-		final RetrieveAvailableForSalesQuery retrieveAvailableForSalesQuery = buildRetrieveAvailableForSalesQuery(availableForSalesQuery);
+		final ImmutableMap<AvailableForSalesId, I_MD_Available_For_Sales> availableForSalesIds2Records = getRecordsForQuery(availableForSalesQuery);
 
-		final ImmutableList<I_MD_Available_For_Sales> availableForSalesRecords = availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQuery);
+		final ImmutableMap<AvailableForSalesIdOrNone, AvailableForSalesResult> idsToResult =
+				mapIdsToResultBasedOnASI(availableForSalesIds2Records, availableForSalesComputationResults);
 
-		final ImmutableMap<I_MD_Available_For_Sales, AvailableForSalesResult> recordsToBeUpdated =
-				mapRecordsWithResultBasedOnASI(availableForSalesRecords, availableForSalesResults);
-
-		recordsToBeUpdated
-				.forEach((record, result) -> {
-					record.setQtyToBeShipped(result.getQuantities().getQtyToBeShipped());
-					record.setQtyOnHandStock(result.getQuantities().getQtyOnHandStock());
-
-					availableForSalesRepository.save(record);
-				});
-
-		final Set<I_MD_Available_For_Sales> recordsToBeDeleted = new HashSet<>(availableForSalesRecords);
-		recordsToBeDeleted.removeAll(recordsToBeUpdated.keySet());
-
-		for (final I_MD_Available_For_Sales toBeDeleted : recordsToBeDeleted)
-		{
-			availableForSalesRepository.delete(toBeDeleted);
-		}
-
-		final Set<AvailableForSalesResult> recordsToBeCreated = new HashSet<>(availableForSalesResults);
-		recordsToBeCreated.removeAll(recordsToBeUpdated.values());
-
-		for (final AvailableForSalesResult toBeCreated : recordsToBeCreated)
-		{
-			final CreateAvailableForSalesRequest createAvailableForSalesRequest = buildCreateAvailableForSalesRequest(toBeCreated);
-
-			availableForSalesRepository.create(createAvailableForSalesRequest);
-		}
-	}
-
-	@NonNull
-	private ImmutableMap<I_MD_Available_For_Sales, AvailableForSalesResult> mapRecordsWithResultBasedOnASI(
-			@NonNull final ImmutableList<I_MD_Available_For_Sales> availableForSalesRecords,
-			@NonNull final ImmutableList<AvailableForSalesResult> availableForSalesResults)
-	{
-		final ImmutableMap.Builder<I_MD_Available_For_Sales, AvailableForSalesResult> recordsToBeUpdatedMapBuilder = ImmutableMap.builder();
-
-		for (final I_MD_Available_For_Sales availableForSales : availableForSalesRecords)
-		{
-			for (final AvailableForSalesResult availableForSalesResult : availableForSalesResults)
+		idsToResult.forEach((recordIdOrNone, result) -> {
+			if (recordIdOrNone.isNone())
 			{
-				if (availableForSales.getStorageAttributesKey().equals(availableForSalesResult.getStorageAttributesKey().getAsString()))
-				{
-					recordsToBeUpdatedMapBuilder.put(availableForSales, availableForSalesResult);
-				}
+				saveResult(result);
+				return;
 			}
-		}
 
-		return recordsToBeUpdatedMapBuilder.build();
+			final I_MD_Available_For_Sales record = availableForSalesIds2Records.get(recordIdOrNone.getAvailableForSalesId());
+
+			record.setQtyToBeShipped(result.getQuantities().getQtyToBeShipped());
+			record.setQtyOnHandStock(result.getQuantities().getQtyOnHandStock());
+
+			availableForSalesRepository.save(record);
+		});
+
+		for (final I_MD_Available_For_Sales availableForSales : getRecordsToBeDeleted(idsToResult, availableForSalesIds2Records))
+		{
+			availableForSalesRepository.delete(availableForSales);
+		}
 	}
 
 	@NonNull
@@ -245,6 +221,40 @@ public class AvailableForSalesService
 								   .build());
 	}
 
+	private void saveResult(@NonNull final AvailableForSalesResult result)
+	{
+		final CreateAvailableForSalesRequest createAvailableForSalesRequest = buildCreateAvailableForSalesRequest(result);
+
+		availableForSalesRepository.create(createAvailableForSalesRequest);
+	}
+
+	@NonNull
+	private List<I_MD_Available_For_Sales> getRecordsToBeDeleted(
+			@NonNull final Map<AvailableForSalesIdOrNone, AvailableForSalesResult> idsToResult,
+			@NonNull final Map<AvailableForSalesId, I_MD_Available_For_Sales> idsToRecords)
+	{
+		final ImmutableSet<AvailableForSalesId> updatedRecordsId = idsToResult.keySet()
+				.stream()
+				.filter(availableForSalesOrNone -> !availableForSalesOrNone.isNone())
+				.map(AvailableForSalesIdOrNone::getAvailableForSalesId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return idsToRecords.keySet()
+				.stream()
+				.filter(availableForSalesId -> !updatedRecordsId.contains(availableForSalesId))
+				.map(idsToRecords::get)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableMap<AvailableForSalesId, I_MD_Available_For_Sales> getRecordsForQuery(@NonNull final AvailableForSalesQuery availableForSalesQuery)
+	{
+		final RetrieveAvailableForSalesQuery retrieveAvailableForSalesQuery = buildRetrieveAvailableForSalesQuery(availableForSalesQuery);
+
+		return Maps.uniqueIndex(availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQuery),
+								 record -> AvailableForSalesId.ofRepoId(record.getMD_Available_For_Sales_ID()));
+	}
+
 	@NonNull
 	private static CreateAvailableForSalesRequest buildCreateAvailableForSalesRequest(@NonNull final AvailableForSalesResult availableForSalesResult)
 	{
@@ -265,5 +275,52 @@ public class AvailableForSalesService
 				.orgId(availableForSalesQuery.getOrgId())
 				.storageAttributesKeyPattern(availableForSalesQuery.getStorageAttributesKeyPattern())
 				.build();
+	}
+
+	@NonNull
+	private static ImmutableMap<AvailableForSalesIdOrNone, AvailableForSalesResult> mapIdsToResultBasedOnASI(
+			@NonNull final ImmutableMap<AvailableForSalesId, I_MD_Available_For_Sales> availableForSalesIds2Records,
+			@NonNull final ImmutableList<AvailableForSalesResult> availableForSalesResults)
+	{
+		final ImmutableMap.Builder<AvailableForSalesIdOrNone, AvailableForSalesResult> collector = ImmutableMap.builder();
+
+		for (final AvailableForSalesResult availableForSalesResult : availableForSalesResults)
+		{
+			final Iterator<AvailableForSalesId> availableForSalesIdIterator = availableForSalesIds2Records.keySet().iterator();
+
+			while (availableForSalesIdIterator.hasNext())
+			{
+				final AvailableForSalesId availableForSalesId = availableForSalesIdIterator.next();
+
+				final I_MD_Available_For_Sales availableForSalesRecord = availableForSalesIds2Records.get(availableForSalesId);
+
+				if (availableForSalesRecord.getStorageAttributesKey().equals(availableForSalesResult.getStorageAttributesKey().getAsString()))
+				{
+					collector.put(new AvailableForSalesIdOrNone(availableForSalesId), availableForSalesResult);
+					break;
+				}
+
+				if (!availableForSalesIdIterator.hasNext())
+				{
+					collector.put(AvailableForSalesIdOrNone.NONE, availableForSalesResult);
+				}
+			}
+		}
+
+		return collector.build();
+	}
+
+	@Value
+	private static class AvailableForSalesIdOrNone
+	{
+		private static final AvailableForSalesIdOrNone NONE = new AvailableForSalesIdOrNone(null);
+
+		@Nullable
+		AvailableForSalesId availableForSalesId;
+
+		public boolean isNone()
+		{
+			return availableForSalesId == null;
+		}
 	}
 }
