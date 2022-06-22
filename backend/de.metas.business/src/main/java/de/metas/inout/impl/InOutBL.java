@@ -644,6 +644,20 @@ public class InOutBL implements IInOutBL
 
 		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID());
 		if (contactId == null)
+<<<<<<< HEAD
+=======
+		{
+			return null;
+		}
+		final I_AD_User contactRecord = bpartnerDAO.getContactById(contactId);
+		if (contactRecord == null)
+		{
+			return null;
+		}
+			
+		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
+		if (contactLocationId != null)
+>>>>>>> 8cf58721fd6 (prevent NPE when getting email address for inout (#13199))
 		{
 			return null;
 		}
