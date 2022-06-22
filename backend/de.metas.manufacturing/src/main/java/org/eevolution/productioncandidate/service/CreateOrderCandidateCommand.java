@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.service;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
@@ -111,6 +112,8 @@ public class CreateOrderCandidateCommand
 		{
 			ppOrderCandidateRecord.setProcessed(true);
 		}
+
+		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
 

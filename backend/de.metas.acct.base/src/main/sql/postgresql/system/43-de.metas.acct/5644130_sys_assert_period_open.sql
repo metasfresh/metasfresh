@@ -37,10 +37,10 @@ BEGIN
                  INNER JOIN c_doctype dt ON dt.c_doctype_id = p.c_doctype_id
         WHERE p.c_payment_id = p_Record_ID;
     ELSIF (p_TableName = 'C_AllocationHdr') THEN
-        SELECT ah.dateacct, 'CMA' AS docbasetype, ah.ad_client_id, ah.ad_org_id
+        SELECT ah.dateacct, 'CMA', ah.ad_client_id, ah.ad_org_id
         INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID
-        FROM C_AllocationHdr ah
-        WHERE ah.C_AllocationHdr_ID = p_Record_ID;
+        FROM c_allocationhdr ah
+        WHERE ah.c_allocationhdr_id = p_Record_ID;
     ELSIF (p_TableName = 'M_InOut') THEN
         SELECT io.dateacct, dt.docbasetype, io.ad_client_id, io.ad_org_id
         INTO v_DateAcct, v_DocBaseType, v_AD_Client_ID, v_AD_Org_ID

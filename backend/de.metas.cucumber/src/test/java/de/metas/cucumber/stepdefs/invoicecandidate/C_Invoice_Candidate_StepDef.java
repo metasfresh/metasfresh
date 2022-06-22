@@ -415,6 +415,9 @@ public class C_Invoice_Candidate_StepDef
 			{
 				assertThat(invoiceCandidate.getPaymentRule()).isEqualTo(paymentRule);
 			}
+
+			final boolean isDeliveryClosed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_IsDeliveryClosed, false);
+			assertThat(invoiceCandidate.isDeliveryClosed()).isEqualTo(isDeliveryClosed);
 		}
 	}
 

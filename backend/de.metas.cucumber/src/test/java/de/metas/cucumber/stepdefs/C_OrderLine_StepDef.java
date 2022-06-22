@@ -171,7 +171,8 @@ public class C_OrderLine_StepDef
 			}
 
 			final String itemProductIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (de.metas.util.Check.isNotBlank(itemProductIdentifier))
+
+			if (Check.isNotBlank(itemProductIdentifier))
 			{
 				final String itemProductIdentifierValue = DataTableUtil.nullToken2Null(itemProductIdentifier);
 				if (itemProductIdentifierValue == null)
@@ -357,8 +358,6 @@ public class C_OrderLine_StepDef
 		}
 	}
 
-
-
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
@@ -534,6 +533,11 @@ public class C_OrderLine_StepDef
 					.forEach(value -> validateAttributeValue(orderLine, value));
 		}
 
+		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
+		if (qtyReserved != null)
+		{
+			assertThat(orderLine.getQtyReserved()).isEqualTo(qtyReserved);
+		}
 	}
 
 	private void validateAttributeValue(@NonNull final I_C_OrderLine orderLine, @NonNull final String value)

@@ -72,7 +72,6 @@ $BODY$
 ;
 
 
-
 /*
 SELECT "de_metas_acct".assert_period_open(
                p_DateAcct := '2020-12-01'::timestamp WITH TIME ZONE,

@@ -256,10 +256,12 @@ public final class SqlViewSelectionQueryBuilder
 
 		SqlAndParams sqlOrderBy_FTS_Line = SqlAndParams.EMPTY;
 		SqlAndParams sqlJoinFTSTable = SqlAndParams.EMPTY;
+		boolean isAnyFilterApplied = false;
 		if (filterSqlExpression.getFilterByFTS() != null)
 		{
 			sqlOrderBy_FTS_Line = filterSqlExpression.getFilterByFTS().buildOrderBy("fts");
 			sqlJoinFTSTable = filterSqlExpression.getFilterByFTS().buildInnerJoinClause(sqlTableAlias, "fts");
+			isAnyFilterApplied = true;
 		}
 
 		final SqlAndParamsExpression sqlOrderBy = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
@@ -295,7 +297,6 @@ public final class SqlViewSelectionQueryBuilder
 
 		//
 		// WHERE clause (from query)
-		boolean isAnyFilterApplied = false;
 		{
 			final SqlAndParamsExpression sqlWhereClause = filterSqlExpression.getWhereClauseConsideringAlwaysIncludeSqls();
 			if (sqlWhereClause != null && !sqlWhereClause.isEmpty())
