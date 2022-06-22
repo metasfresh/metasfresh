@@ -613,8 +613,17 @@ public class InOutBL implements IInOutBL
 			return locationEmail;
 		}
 
-		final I_AD_User contactRecord = bpartnerDAO.getContactById(BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID()));
-
+		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID());
+		if (contactId == null)
+		{
+			return null;
+		}
+		final I_AD_User contactRecord = bpartnerDAO.getContactById(contactId);
+		if (contactRecord == null)
+		{
+			return null;
+		}
+			
 		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
 		if (contactLocationId != null)
 		{

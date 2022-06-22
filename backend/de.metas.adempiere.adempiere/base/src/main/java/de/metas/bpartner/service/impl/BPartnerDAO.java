@@ -322,7 +322,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public <T extends I_AD_User> T getContactById(final BPartnerContactId contactId, final Class<T> modelClass)
+	public <T extends I_AD_User> T getContactById(@NonNull final BPartnerContactId contactId, final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(getContactById(contactId), modelClass);
 	}
