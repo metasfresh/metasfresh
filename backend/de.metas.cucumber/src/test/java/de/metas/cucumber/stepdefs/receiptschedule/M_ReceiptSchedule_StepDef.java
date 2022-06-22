@@ -70,6 +70,7 @@ public class M_ReceiptSchedule_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	private final C_Order_StepDefData orderTable;
@@ -136,6 +137,15 @@ public class M_ReceiptSchedule_StepDef
 			assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
 			assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
 
+			final BigDecimal qtyMoved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyMoved);
+			if (qtyMoved != null)
+			{
+				assertThat(receiptSchedule.getQtyMoved()).isEqualTo(qtyMoved);
+			}
+
+			final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
+			assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
+
 			receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule);
 		}
 	}
@@ -152,6 +162,26 @@ public class M_ReceiptSchedule_StepDef
 
 		final List<I_M_ReceiptSchedule> purchaseOrderReceiptSchedules = producer.createOrUpdateReceiptSchedules(purchaseOrderLine, Collections.emptyList());
 		assertThat(purchaseOrderReceiptSchedules).isNull();
+	}
+
+	@And("^the M_ReceiptSchedule identified by (.*) is (closed|reactivated)$")
+	public void M_ReceiptSchedule_action(@NonNull final String receiptScheduleIdentifier, @NonNull final String action)
+	{
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case closed:
+				receiptScheduleBL.close(receiptSchedule);
+				break;
+			case reactivated:
+				receiptScheduleBL.reopen(receiptSchedule);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_ReceiptSchedule action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
 	}
 
 	@NonNull
