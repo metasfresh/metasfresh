@@ -96,7 +96,7 @@ public class TransactionEventFactoryForInOutLine
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
-		final I_M_InOutLine shipmentLine = inoutsRepo.getLineById(transaction.getInoutLineId());
+		final I_M_InOutLine shipmentLine = inoutsRepo.getLineByIdInTrx(transaction.getInoutLineId());
 		final BPartnerId customerId = BPartnerId.ofRepoId(shipmentLine.getM_InOut().getC_BPartner_ID());
 
 		final boolean isReversal = shipmentLine.getReversalLine_ID() > 0;
@@ -171,7 +171,7 @@ public class TransactionEventFactoryForInOutLine
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
-		final I_M_InOutLine receiptLine = inoutsRepo.getLineById(transaction.getInoutLineId());
+		final I_M_InOutLine receiptLine = inoutsRepo.getLineByIdInTrx(transaction.getInoutLineId());
 		final InOutAndLineId receiptLineId = InOutAndLineId.ofRepoId(receiptLine.getM_InOut_ID(), receiptLine.getM_InOutLine_ID());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(receiptLine.getM_InOut().getC_BPartner_ID());
 

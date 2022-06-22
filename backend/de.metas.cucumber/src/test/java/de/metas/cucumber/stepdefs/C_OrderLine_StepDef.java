@@ -533,6 +533,11 @@ public class C_OrderLine_StepDef
 					.forEach(value -> validateAttributeValue(orderLine, value));
 		}
 
+		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
+		if (qtyReserved != null)
+		{
+			assertThat(orderLine.getQtyReserved()).isEqualTo(qtyReserved);
+		}
 	}
 
 	private void validateAttributeValue(@NonNull final I_C_OrderLine orderLine, @NonNull final String value)
