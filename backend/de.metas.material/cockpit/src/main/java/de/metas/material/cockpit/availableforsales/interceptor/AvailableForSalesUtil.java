@@ -42,7 +42,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -59,6 +58,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -486,8 +486,16 @@ public class AvailableForSalesUtil
 	}
 
 	@NonNull
-	private Quantities computeQuantitiesForQuery(@NonNull final List<AvailableForSalesResult> results)
+	private Quantities computeQuantitiesForQuery(@Nullable final List<AvailableForSalesResult> results)
 	{
+		if (results == null)
+		{
+			return Quantities.builder()
+					.qtyOnHandStock(BigDecimal.ZERO)
+					.qtyToBeShipped(BigDecimal.ZERO)
+					.build();
+		}
+
 		final BigDecimal qtyOnHandStock = results
 				.stream()
 				.map(AvailableForSalesResult::getQuantities)
