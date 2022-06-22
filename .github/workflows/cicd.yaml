@@ -10,8 +10,8 @@ jobs:
     steps:
       - name: print-vars
         run: env
-      - name: print-github-context
-        run: echo '${{ toJSON(github) }}'
+      # - name: print-github-context
+        # run: echo '${{ toJSON(github) }}'
       - name: sanitize-ref-name
         id: sanitize
         run: 'echo "::set-output name=refname::$(echo $GITHUB_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')"'
