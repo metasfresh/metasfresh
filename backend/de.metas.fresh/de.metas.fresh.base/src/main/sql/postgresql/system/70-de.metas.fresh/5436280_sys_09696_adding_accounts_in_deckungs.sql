@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE VIEW report.Direct_Costing_ElementValue_selection AS
 SELECT 
 	e1.C_ElementValue_ID as lvl1_C_ElementValue_ID, e1.value as lvl1_value, e1.name as lvl1_name, ( e1.value || ' ' || e1.name ) as lvl1_label,
