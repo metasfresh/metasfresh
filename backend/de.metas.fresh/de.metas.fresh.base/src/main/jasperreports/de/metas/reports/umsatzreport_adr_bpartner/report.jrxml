@@ -169,7 +169,7 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 	<detail>
 		<band height="13" splitType="Stretch">
 			<rectangle>
-				<reportElement x="39" y="0" width="465" height="13" backcolor="#FFFFCC" uuid="3ccf7465-19e9-4de0-b307-39125ebe70b3">
+				<reportElement x="39" y="0" width="465" height="13" forecolor="#FFFFFF" backcolor="#FFFFCC" uuid="3ccf7465-19e9-4de0-b307-39125ebe70b3">
 					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{REPORT_COUNT}.intValue()%2)==1)]]></printWhenExpression>
 				</reportElement>
 			</rectangle>
