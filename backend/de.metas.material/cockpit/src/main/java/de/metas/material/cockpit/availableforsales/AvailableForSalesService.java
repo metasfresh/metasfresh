@@ -25,7 +25,6 @@ package de.metas.material.cockpit.availableforsales;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
@@ -38,6 +37,7 @@ import de.metas.product.Product;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.async.Debouncer;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
@@ -49,7 +49,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -162,28 +161,26 @@ public class AvailableForSalesService
 
 		final ImmutableMap<AvailableForSalesId, I_MD_Available_For_Sales> availableForSalesIds2Records = getRecordsForQuery(availableForSalesQuery);
 
-		final ImmutableMap<AvailableForSalesIdOrNone, AvailableForSalesResult> idsToResult =
-				mapIdsToResultBasedOnASI(availableForSalesIds2Records, availableForSalesComputationResults);
+		final AvailableForSalesMergeResult availableForSalesMergeResult = computeAvailableForSalesMergeResult(availableForSalesIds2Records, availableForSalesComputationResults);
 
-		idsToResult.forEach((recordIdOrNone, result) -> {
-			if (recordIdOrNone.isNone())
-			{
-				saveResult(result);
-				return;
-			}
+		for (final AvailableForSalesResult availableForSalesResult : availableForSalesMergeResult.getResultsToInsert())
+		{
+			saveResult(availableForSalesResult);
+		}
 
-			final I_MD_Available_For_Sales record = availableForSalesIds2Records.get(recordIdOrNone.getAvailableForSalesId());
-
-			record.setQtyToBeShipped(result.getQuantities().getQtyToBeShipped());
-			record.setQtyOnHandStock(result.getQuantities().getQtyOnHandStock());
-
-			availableForSalesRepository.save(record);
-		});
-
-		for (final I_MD_Available_For_Sales availableForSales : getRecordsToBeDeleted(idsToResult, availableForSalesIds2Records))
+		for (final I_MD_Available_For_Sales availableForSales : availableForSalesMergeResult.getRecordsToDelete())
 		{
 			availableForSalesRepository.delete(availableForSales);
 		}
+
+		availableForSalesMergeResult.getRecordId2Result().forEach((recordId, result) -> {
+			final I_MD_Available_For_Sales toBeUpdated = availableForSalesIds2Records.get(recordId);
+
+			toBeUpdated.setQtyToBeShipped(result.getQuantities().getQtyToBeShipped());
+			toBeUpdated.setQtyOnHandStock(result.getQuantities().getQtyOnHandStock());
+
+			availableForSalesRepository.save(toBeUpdated);
+		});
 	}
 
 	@NonNull
@@ -229,30 +226,12 @@ public class AvailableForSalesService
 	}
 
 	@NonNull
-	private List<I_MD_Available_For_Sales> getRecordsToBeDeleted(
-			@NonNull final Map<AvailableForSalesIdOrNone, AvailableForSalesResult> idsToResult,
-			@NonNull final Map<AvailableForSalesId, I_MD_Available_For_Sales> idsToRecords)
-	{
-		final ImmutableSet<AvailableForSalesId> updatedRecordsId = idsToResult.keySet()
-				.stream()
-				.filter(availableForSalesOrNone -> !availableForSalesOrNone.isNone())
-				.map(AvailableForSalesIdOrNone::getAvailableForSalesId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return idsToRecords.keySet()
-				.stream()
-				.filter(availableForSalesId -> !updatedRecordsId.contains(availableForSalesId))
-				.map(idsToRecords::get)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
 	private ImmutableMap<AvailableForSalesId, I_MD_Available_For_Sales> getRecordsForQuery(@NonNull final AvailableForSalesQuery availableForSalesQuery)
 	{
 		final RetrieveAvailableForSalesQuery retrieveAvailableForSalesQuery = buildRetrieveAvailableForSalesQuery(availableForSalesQuery);
 
 		return Maps.uniqueIndex(availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQuery),
-								 record -> AvailableForSalesId.ofRepoId(record.getMD_Available_For_Sales_ID()));
+								record -> AvailableForSalesId.ofRepoId(record.getMD_Available_For_Sales_ID()));
 	}
 
 	@NonNull
@@ -278,17 +257,20 @@ public class AvailableForSalesService
 	}
 
 	@NonNull
-	private static ImmutableMap<AvailableForSalesIdOrNone, AvailableForSalesResult> mapIdsToResultBasedOnASI(
+	private static AvailableForSalesMergeResult computeAvailableForSalesMergeResult(
 			@NonNull final ImmutableMap<AvailableForSalesId, I_MD_Available_For_Sales> availableForSalesIds2Records,
 			@NonNull final ImmutableList<AvailableForSalesResult> availableForSalesResults)
 	{
-		final ImmutableMap.Builder<AvailableForSalesIdOrNone, AvailableForSalesResult> collector = ImmutableMap.builder();
+		final ImmutableMap.Builder<AvailableForSalesId, AvailableForSalesResult> recordId2ResultCollector = ImmutableMap.builder();
+		final ImmutableList.Builder<AvailableForSalesResult> resultsToInsertCollector = ImmutableList.builder();
 
 		for (final AvailableForSalesResult availableForSalesResult : availableForSalesResults)
 		{
+			AvailableForSalesId idForCurrentResult = null;
+
 			final Iterator<AvailableForSalesId> availableForSalesIdIterator = availableForSalesIds2Records.keySet().iterator();
 
-			while (availableForSalesIdIterator.hasNext())
+			while (availableForSalesIdIterator.hasNext() && idForCurrentResult == null)
 			{
 				final AvailableForSalesId availableForSalesId = availableForSalesIdIterator.next();
 
@@ -296,31 +278,47 @@ public class AvailableForSalesService
 
 				if (availableForSalesRecord.getStorageAttributesKey().equals(availableForSalesResult.getStorageAttributesKey().getAsString()))
 				{
-					collector.put(new AvailableForSalesIdOrNone(availableForSalesId), availableForSalesResult);
-					break;
+					idForCurrentResult = AvailableForSalesId.ofRepoId(availableForSalesRecord.getMD_Available_For_Sales_ID());
 				}
+			}
 
-				if (!availableForSalesIdIterator.hasNext())
-				{
-					collector.put(AvailableForSalesIdOrNone.NONE, availableForSalesResult);
-				}
+			if (idForCurrentResult == null)
+			{
+				resultsToInsertCollector.add(availableForSalesResult);
+			}
+			else
+			{
+				recordId2ResultCollector.put(idForCurrentResult, availableForSalesResult);
 			}
 		}
 
-		return collector.build();
+		final Map<AvailableForSalesId, AvailableForSalesResult> recordId2Result = recordId2ResultCollector.build();
+
+		final List<I_MD_Available_For_Sales> recordsToBeDeleted = availableForSalesIds2Records
+				.entrySet()
+				.stream()
+				.filter(id2Record -> !recordId2Result.containsKey(id2Record.getKey()))
+				.map(Map.Entry::getValue)
+				.collect(ImmutableList.toImmutableList());
+
+		return AvailableForSalesMergeResult.builder()
+				.recordId2Result(recordId2Result)
+				.recordsToDelete(recordsToBeDeleted)
+				.resultsToInsert(resultsToInsertCollector.build())
+				.build();
 	}
 
 	@Value
-	private static class AvailableForSalesIdOrNone
+	@Builder
+	private static class AvailableForSalesMergeResult
 	{
-		private static final AvailableForSalesIdOrNone NONE = new AvailableForSalesIdOrNone(null);
+		@NonNull
+		Map<AvailableForSalesId, AvailableForSalesResult> recordId2Result;
 
-		@Nullable
-		AvailableForSalesId availableForSalesId;
+		@NonNull
+		List<AvailableForSalesResult> resultsToInsert;
 
-		public boolean isNone()
-		{
-			return availableForSalesId == null;
-		}
+		@NonNull
+		List<I_MD_Available_For_Sales> recordsToDelete;
 	}
 }

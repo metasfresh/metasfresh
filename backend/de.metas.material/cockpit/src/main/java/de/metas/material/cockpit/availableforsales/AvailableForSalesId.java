@@ -23,6 +23,7 @@
 package de.metas.material.cockpit.availableforsales;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -54,5 +55,12 @@ public class AvailableForSalesId implements RepoIdAware
 	private AvailableForSalesId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "MD_Available_For_Sales_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
