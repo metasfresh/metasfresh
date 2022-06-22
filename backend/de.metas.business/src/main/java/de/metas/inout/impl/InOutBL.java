@@ -597,6 +597,48 @@ public class InOutBL implements IInOutBL
 		return requestsRepo.createRequest(requestCandidate);
 	}
 
+<<<<<<< HEAD
+=======
+	public String getLocationEmail(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inout = inOutDAO.getById(inOutId);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID());
+		if (contactId == null)
+		{
+			return null;
+		}
+		final I_AD_User contactRecord = bpartnerDAO.getContactById(contactId);
+		if (contactRecord == null)
+		{
+			return null;
+		}
+			
+		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
+		if (contactLocationId != null)
+		{
+			final I_C_BPartner_Location contactLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(contactLocationId);
+			final String contactLocationEmail = contactLocationRecord.getEMail();
+
+			if (!Check.isEmpty(contactLocationEmail))
+			{
+				return contactLocationEmail;
+			}
+		}
+
+		return null;
+	}
+
+>>>>>>> 8cf58721fd6 (prevent NPE when getting email address for inout (#13199))
 	@Override
 	@NonNull
 	public LocalDate retrieveMovementDate(@NonNull final I_M_InOut inOut)
