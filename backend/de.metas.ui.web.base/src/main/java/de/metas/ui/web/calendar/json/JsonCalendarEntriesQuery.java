@@ -23,6 +23,7 @@
 package de.metas.ui.web.calendar.json;
 
 import de.metas.calendar.CalendarGlobalId;
+import de.metas.calendar.simulation.CalendarSimulationId;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -36,6 +37,7 @@ import java.util.Set;
 @Jacksonized
 public class JsonCalendarEntriesQuery
 {
+	@Nullable CalendarSimulationId simulationId;
 	@Nullable @Singular Set<CalendarGlobalId> calendarIds;
 	@Nullable JsonDateTime startDate;
 	@Nullable JsonDateTime endDate;

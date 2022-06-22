@@ -34,6 +34,7 @@ import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.CalendarResourceRef;
 import de.metas.calendar.CalendarService;
 import de.metas.calendar.CalendarServiceId;
+import de.metas.calendar.simulation.CalendarSimulationId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ResourceId;
 import de.metas.resource.Resource;
@@ -54,6 +55,7 @@ import java.util.HashSet;
 import java.util.stream.Stream;
 
 //@Component
+@Deprecated
 public class ResourceAssignmentCalendarService implements CalendarService
 {
 	private static final CalendarServiceId ID = CalendarServiceId.ofString("ResourceAssignment");
@@ -186,6 +188,10 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	public CalendarEntry addEntry(@NonNull final CalendarEntryAddRequest request)
 	{
 		assertValidCalendarId(request.getCalendarId());
+		if (request.getSimulationId() != null)
+		{
+			throw new UnsupportedOperationException("Simulation is not supported");
+		}
 
 		if (request.getResourceId() == null)
 		{
@@ -206,6 +212,11 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
 		assertValidCalendarId(request.getCalendarId());
+		if (request.getSimulationId() != null)
+		{
+			throw new UnsupportedOperationException("Simulation is not supported");
+		}
+
 		final ResourceAssignment changedResourceAssignment = resourceService.changeResourceAssignment(
 				toResourceAssignmentId(request.getEntryId()),
 				resourceAssignment -> updateResourceAssignment(resourceAssignment, request)
@@ -221,8 +232,13 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	}
 
 	@Override
-	public void deleteEntryById(@NonNull final CalendarEntryId entryId)
+	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable CalendarSimulationId simulationId)
 	{
+		if (simulationId != null)
+		{
+			throw new UnsupportedOperationException("Simulation is not supported");
+		}
+
 		resourceService.deleteResourceAssignment(toResourceAssignmentId(entryId));
 	}
 

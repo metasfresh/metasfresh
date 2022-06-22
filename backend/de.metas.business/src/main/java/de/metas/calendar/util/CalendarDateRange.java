@@ -26,6 +26,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -62,4 +63,10 @@ public class CalendarDateRange
 		this.startDate = startDateToUse;
 		this.endDate = endDateToUse;
 	}
+
+	public Duration getDuration()
+	{
+		return Duration.between(startDate, endDate);
+	}
+
 }

@@ -29,29 +29,41 @@ import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarEntryUpdateRequest;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.MultiCalendarService;
+import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.CalendarSimulationRef;
+import de.metas.calendar.simulation.CalendarSimulationService;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryAddRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryUpdateRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarRef;
+import de.metas.ui.web.calendar.json.JsonDateTime;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
+import de.metas.ui.web.calendar.json.JsonGetAvailableSimulationsResponse;
+import de.metas.ui.web.calendar.json.JsonSimulationCreateRequest;
+import de.metas.ui.web.calendar.json.JsonSimulationRef;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.user.UserId;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Comparator;
 
 @Api
 @RestController
@@ -60,13 +72,16 @@ public class CalendarRestController
 {
 	private final UserSession userSession;
 	private final MultiCalendarService calendarService;
+	private final CalendarSimulationService simulationService;
 
 	public CalendarRestController(
 			@NonNull final UserSession userSession,
-			@NonNull final MultiCalendarService calendarService)
+			@NonNull final MultiCalendarService calendarService,
+			@NonNull final CalendarSimulationService simulationService)
 	{
 		this.userSession = userSession;
 		this.calendarService = calendarService;
+		this.simulationService = simulationService;
 	}
 
 	@GetMapping("/available")
@@ -111,6 +126,7 @@ public class CalendarRestController
 
 		if (query != null)
 		{
+			result.simulationId(query.getSimulationId());
 			result.onlyCalendarIds(query.getCalendarIds());
 
 			if (query.getStartDate() != null)
@@ -134,6 +150,7 @@ public class CalendarRestController
 
 		final CalendarEntry calendarEntry = calendarService.addEntry(CalendarEntryAddRequest.builder()
 				.userId(userSession.getLoggedUserId())
+				.simulationId(request.getSimulationId())
 				.calendarId(request.getCalendarId())
 				.resourceId(request.getResourceId())
 				.title(request.getTitle())
@@ -156,28 +173,73 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final CalendarEntry calendarEntry = calendarService.updateEntry(CalendarEntryUpdateRequest.builder()
-				.updatedByUserId(userSession.getLoggedUserId())
 				.entryId(CalendarEntryId.ofString(entryIdStr))
-				.calendarId(request.getCalendarId())
+				.simulationId(request.getSimulationId())
+				.updatedByUserId(userSession.getLoggedUserId())
 				.resourceId(request.getResourceId())
 				.title(request.getTitle())
 				.description(request.getDescription())
-				.dateRange(CalendarDateRange.builder()
-						.startDate(request.getStartDate().toZonedDateTime())
-						.endDate(request.getEndDate().toZonedDateTime())
-						.allDay(request.isAllDay())
-						.build())
+				.dateRange(extractDateRange(request))
 				.build());
 
 		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
 	}
 
+	private static CalendarDateRange extractDateRange(final JsonCalendarEntryUpdateRequest request)
+	{
+		final JsonDateTime startDate = request.getStartDate();
+		final JsonDateTime endDate = request.getEndDate();
+		final Boolean isAllDay = request.getIsAllDay();
+		if (startDate != null && endDate != null && isAllDay != null)
+		{
+			return CalendarDateRange.builder()
+					.startDate(startDate.toZonedDateTime())
+					.endDate(endDate.toZonedDateTime())
+					.allDay(isAllDay)
+					.build();
+		}
+		else if (CoalesceUtil.countNotNulls(startDate, endDate, isAllDay) > 0)
+		{
+			throw new AdempiereException("Please specify startDate, endDate and isAllDay or don't specify any of those");
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	@DeleteMapping("/entries/{entryId}")
-	public void updateCalendarEntry(
-			@PathVariable("entryId") @NonNull final String entryIdStr)
+	public void deleteCalendarEntry(
+			@PathVariable("entryId") @NonNull final String entryIdStr,
+			@RequestParam(name = "simulationId", required = false) final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+		calendarService.deleteEntryById(
+				CalendarEntryId.ofString(entryIdStr),
+				CalendarSimulationId.ofNullable(simulationIdStr));
+	}
+
+	@PostMapping("/simulations/new")
+	public JsonSimulationRef createNewSimulation(@RequestBody @NonNull final JsonSimulationCreateRequest request)
 	{
 		userSession.assertLoggedIn();
 
-		calendarService.deleteEntryById(CalendarEntryId.ofString(entryIdStr));
+		final CalendarSimulationRef simulationRef = simulationService.createNewSimulation(request.getName(), userSession.getLoggedUserId());
+		return JsonSimulationRef.of(simulationRef);
 	}
+
+	@GetMapping("/simulations")
+	public JsonGetAvailableSimulationsResponse getAvailableSimulations()
+	{
+		userSession.assertLoggedIn();
+
+		final Collection<CalendarSimulationRef> simulationRefs = simulationService.getAll();
+		return JsonGetAvailableSimulationsResponse.builder()
+				.simulations(simulationRefs.stream()
+						.map(JsonSimulationRef::of)
+						.sorted(Comparator.comparing(JsonSimulationRef::getName))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
 }

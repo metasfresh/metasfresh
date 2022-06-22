@@ -28,6 +28,7 @@ import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project_WO_Step;
 import org.springframework.stereotype.Repository;
 
@@ -73,6 +74,17 @@ public class WOProjectStepRepository
 						.steps(stepsByProjectId.get(projectId))
 						.build())
 				.collect(ImmutableMap.toImmutableMap(WOProjectSteps::getProjectId, steps -> steps));
+	}
+
+	public WOProjectStep getById(@NonNull final ProjectId projectId, @NonNull final WOProjectStepId stepId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_WO_Step.class)
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_ID, projectId)
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, stepId)
+				.create()
+				.firstOnlyOptional(I_C_Project_WO_Step.class)
+				.map(WOProjectStepRepository::fromRecord)
+				.orElseThrow(() -> new AdempiereException("No Step found for " + projectId + ", " + stepId));
 	}
 
 	private static WOProjectStep fromRecord(@NonNull final I_C_Project_WO_Step record)

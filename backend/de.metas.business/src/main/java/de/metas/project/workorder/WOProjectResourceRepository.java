@@ -32,13 +32,13 @@ import de.metas.util.StringUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -47,7 +47,7 @@ public class WOProjectResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public Map<ProjectId, WOProjectResources> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public ImmutableMap<ProjectId, WOProjectResources> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		if (projectIds.isEmpty())
 		{
@@ -66,6 +66,17 @@ public class WOProjectResourceRepository
 						.resources(byProjectId.get(projectId))
 						.build())
 				.collect(ImmutableMap.toImmutableMap(WOProjectResources::getProjectId, Function.identity()));
+	}
+
+	public WOProjectResource getById(@NonNull final ProjectId projectId, @NonNull final WOProjectResourceId projectResourceId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectId)
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceId)
+				.create()
+				.firstOnlyOptional(I_C_Project_WO_Resource.class)
+				.map(WOProjectResourceRepository::fromRecord)
+				.orElseThrow(() -> new AdempiereException("No project resource found for " + projectId + ", " + projectResourceId));
 	}
 
 	private static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)

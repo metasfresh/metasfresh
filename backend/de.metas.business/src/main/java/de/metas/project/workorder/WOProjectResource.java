@@ -34,7 +34,7 @@ import java.time.Duration;
 import java.time.temporal.TemporalUnit;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class WOProjectResource
 {
 	@NonNull WOProjectResourceId id;
@@ -49,4 +49,9 @@ public class WOProjectResource
 	@NonNull Duration duration;
 
 	@Nullable String description;
+
+	public WOProjectStepAndResourceId getWOProjectStepAndResourceId()
+	{
+		return WOProjectStepAndResourceId.of(projectId, stepId, id);
+	}
 }

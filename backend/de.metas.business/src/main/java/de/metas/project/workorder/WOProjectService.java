@@ -26,6 +26,7 @@ import de.metas.project.ProjectId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,13 +57,23 @@ public class WOProjectService
 		return woProjectRepository.getAllActiveProjects();
 	}
 
-	public Map<ProjectId, WOProjectResources> getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public Collection<WOProjectResources> getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
-		return woProjectResourceRepository.getByProjectIds(projectIds);
+		return woProjectResourceRepository.getByProjectIds(projectIds).values();
+	}
+
+	public WOProjectResource getResourceById(@NonNull final ProjectId projectId, @NonNull final WOProjectResourceId projectResourceId)
+	{
+		return woProjectResourceRepository.getById(projectId, projectResourceId);
 	}
 
 	public Map<ProjectId, WOProjectSteps> getStepsByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		return woProjectStepRepository.getByProjectIds(projectIds);
+	}
+
+	public WOProjectStep getStepById(@NonNull final ProjectId projectId, @NonNull final WOProjectStepId stepId)
+	{
+		return woProjectStepRepository.getById(projectId, stepId);
 	}
 }

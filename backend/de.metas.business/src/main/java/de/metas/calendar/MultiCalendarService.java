@@ -25,11 +25,13 @@ package de.metas.calendar;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.calendar.simulation.CalendarSimulationId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -76,13 +78,13 @@ public class MultiCalendarService
 
 	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
-		return getCalendarServiceById(request.getCalendarId().getCalendarServiceId())
+		return getCalendarServiceById(request.getCalendarServiceId())
 				.updateEntry(request);
 	}
 
-	public void deleteEntryById(@NonNull final CalendarEntryId entryId)
+	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable CalendarSimulationId simulationId)
 	{
 		getCalendarServiceById(entryId.getCalendarServiceId())
-				.deleteEntryById(entryId);
+				.deleteEntryById(entryId, simulationId);
 	}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.calendar;
 
+import de.metas.calendar.simulation.CalendarSimulationId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -37,6 +38,8 @@ import java.net.URI;
 public class CalendarEntry
 {
 	@NonNull CalendarEntryId entryId;
+
+	@Nullable CalendarSimulationId simulationId;
 
 	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;

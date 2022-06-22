@@ -11,12 +11,14 @@ export const getAvailableCalendars = () => {
 
 export const getCalendarEvents = ({
   calendarIds = null,
+  simulationId = null,
   startDate = null,
   endDate = null,
 }) => {
   return axios
     .post(`${config.API_URL}/calendars/entries/query`, {
       calendarIds: calendarIds || [],
+      simulationId,
       startDate,
       endDate,
     })
@@ -26,13 +28,13 @@ export const getCalendarEvents = ({
 
 export const addOrUpdateCalendarEvent = ({
   id,
-  calendarId,
-  resourceId,
-  title,
+  simulationId = null,
+  resourceId = null,
+  title = null,
   description = null,
-  startDate,
-  endDate,
-  allDay,
+  startDate = null,
+  endDate = null,
+  allDay = null,
 }) => {
   const url = !id
     ? `${config.API_URL}/calendars/entries/add`
@@ -40,7 +42,7 @@ export const addOrUpdateCalendarEvent = ({
 
   return axios
     .post(url, {
-      calendarId,
+      simulationId,
       resourceId,
       title,
       description,
@@ -58,11 +60,27 @@ export const deleteCalendarEventById = (eventId) => {
     .then(extractAxiosResponseData);
 };
 
-//
+export const getAvailableSimulations = () => {
+  return axios
+    .get(`${config.API_URL}/calendars/simulations`)
+    .then(extractAxiosResponseData)
+    .then(({ simulations }) => simulations.map(converters.fromAPISimulation));
+};
+
+export const createSimulation = () => {
+  return axios
+    .post(`${config.API_URL}/calendars/simulations/new`, {
+      name: null, // to be generated
+    })
+    .then(extractAxiosResponseData)
+    .then((simulation) => converters.fromAPISimulation(simulation));
+};
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // Converters
 //
-//
+///////////////////////////////////////////////////////////////////////////////
 
 const converters = {
   fromAPICalendar: (calendar) => ({
@@ -77,6 +95,11 @@ const converters = {
   fromAPIEvent: (entry) => ({
     calendarId: entry.calendarId,
     ...converters.fullcalendar_io.fromAPIEvent(entry),
+  }),
+
+  fromAPISimulation: (simulation) => ({
+    simulationId: simulation.id,
+    name: simulation.name,
   }),
 
   /**

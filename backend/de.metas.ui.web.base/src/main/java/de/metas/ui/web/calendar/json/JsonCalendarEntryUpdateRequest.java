@@ -24,6 +24,7 @@ package de.metas.ui.web.calendar.json;
 
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarResourceId;
+import de.metas.calendar.simulation.CalendarSimulationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,13 +37,14 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonCalendarEntryUpdateRequest
 {
-	@NonNull CalendarGlobalId calendarId;
-	@NonNull CalendarResourceId resourceId;
+	@Nullable CalendarSimulationId simulationId;
 
-	@NonNull String title;
+	@Nullable CalendarResourceId resourceId;
+
+	@Nullable String title;
 	@Nullable String description;
 
-	@NonNull JsonDateTime startDate;
-	@NonNull JsonDateTime endDate;
-	boolean isAllDay;
+	@Nullable JsonDateTime startDate;
+	@Nullable JsonDateTime endDate;
+	@Nullable Boolean isAllDay;
 }

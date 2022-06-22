@@ -26,6 +26,7 @@ import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarResourceId;
+import de.metas.calendar.simulation.CalendarSimulationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,6 +41,9 @@ import java.time.ZoneId;
 public class JsonCalendarEntry
 {
 	@NonNull CalendarEntryId entryId;
+
+	@Nullable CalendarSimulationId simulationId;
+
 	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;
 
@@ -61,6 +65,7 @@ public class JsonCalendarEntry
 	{
 		return builder()
 				.entryId(entry.getEntryId())
+				.simulationId(entry.getSimulationId())
 				.calendarId(entry.getCalendarId())
 				.resourceId(entry.getResourceId())
 				.title(entry.getTitle().translate(adLanguage))

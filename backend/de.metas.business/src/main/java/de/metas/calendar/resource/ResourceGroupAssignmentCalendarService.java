@@ -34,6 +34,7 @@ import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.CalendarResourceRef;
 import de.metas.calendar.CalendarService;
 import de.metas.calendar.CalendarServiceId;
+import de.metas.calendar.simulation.CalendarSimulationId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.resource.ResourceGroup;
 import de.metas.resource.ResourceGroupAssignment;
@@ -51,6 +52,7 @@ import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
 // @Component
+@Deprecated
 public class ResourceGroupAssignmentCalendarService implements CalendarService
 {
 	private static final CalendarServiceId ID = CalendarServiceId.ofString("ResourceGroupAssignment");
@@ -164,6 +166,10 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 	public CalendarEntry addEntry(@NonNull final CalendarEntryAddRequest request)
 	{
 		assertValidCalendarId(request.getCalendarId());
+		if (request.getSimulationId() != null)
+		{
+			throw new UnsupportedOperationException("Simulation is not supported");
+		}
 
 		if (request.getResourceId() == null)
 		{
@@ -185,6 +191,11 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
 		assertValidCalendarId(request.getCalendarId());
+		if (request.getSimulationId() != null)
+		{
+			throw new UnsupportedOperationException("Simulation is not supported");
+		}
+
 		final ResourceGroupAssignment changedAssignment = resourceService.changeResourceGroupAssignmentById(
 				toResourceGroupAssignmentId(request.getEntryId()),
 				assignment -> updateResourceAssignment(assignment, request)
@@ -200,8 +211,13 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 	}
 
 	@Override
-	public void deleteEntryById(@NonNull final CalendarEntryId entryId)
+	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable CalendarSimulationId simulationId)
 	{
+		if (simulationId != null)
+		{
+			throw new UnsupportedOperationException("Simulation is not supported");
+		}
+
 		resourceService.deleteResourceGroupAssignment(toResourceGroupAssignmentId(entryId));
 	}
 

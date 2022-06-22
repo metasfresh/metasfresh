@@ -22,6 +22,7 @@
 
 package de.metas.calendar;
 
+import de.metas.calendar.simulation.CalendarSimulationId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -35,6 +36,7 @@ import javax.annotation.Nullable;
 public class CalendarEntryAddRequest
 {
 	@NonNull UserId userId;
+	@Nullable CalendarSimulationId simulationId;
 
 	@NonNull CalendarGlobalId calendarId;
 	@Nullable CalendarResourceId resourceId;
