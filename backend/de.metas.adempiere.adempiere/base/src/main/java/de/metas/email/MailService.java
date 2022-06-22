@@ -1,17 +1,6 @@
 package de.metas.email;
 
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.mail.internet.InternetAddress;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.email.EmailValidator;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
+import ch.qos.logback.classic.Level;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.email.impl.EMailSendException;
 import de.metas.email.mailboxes.ClientEMailConfig;
@@ -30,9 +19,22 @@ import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.email.EmailValidator;
+import org.compiere.model.I_AD_MailConfig;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import javax.mail.internet.InternetAddress;
+import java.util.Properties;
 
 /*
  * #%L
@@ -44,12 +46,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -94,12 +96,18 @@ public class MailService
 				.clientId(tenantEmailConfig.getClientId())
 				.orgId(orgId)
 				.adProcessId(adProcessId)
+				.docBaseAndSubType(docBaseAndSubType)
 				.customType(customType)
 				.build();
 
 		return mailboxRepo
 				.findMailBox(query)
-				.orElseGet(() -> createClientMailbox(tenantEmailConfig))
+				.orElseGet(() -> {
+					final Mailbox fallbackMailBox = createClientMailbox(tenantEmailConfig);
+					Loggables.withLogger(logger, Level.DEBUG).addLog("No Mailbox ({}) found for query {}; -> fallback to mail-config of AD_Client_ID={}",
+																	 I_AD_MailConfig.Table_Name, query, ClientId.toRepoId(tenantEmailConfig.getClientId()));
+					return fallbackMailBox;
+				})
 				.withSendEmailsFromServer(tenantEmailConfig.isSendEmailsFromServer());
 	}
 
@@ -133,17 +141,17 @@ public class MailService
 			@NonNull final ClientEMailConfig clientEmailConfig,
 			@Nullable final EMailCustomType mailCustomType,
 			@Nullable final UserEMailConfig userEmailConfig,
-			@Nullable final EMailAddress to,
+			@NonNull final EMailAddress to,
 			@Nullable final String subject,
 			@Nullable final String message,
 			final boolean html)
 	{
 		final Mailbox mailbox = findMailBox(clientEmailConfig,
-				ProcessExecutor.getCurrentOrgId(),
-				ProcessExecutor.getCurrentProcessIdOrNull(),
-				(DocBaseAndSubType)null,
-				mailCustomType)
-						.mergeFrom(userEmailConfig);
+											ProcessExecutor.getCurrentOrgId(),
+											ProcessExecutor.getCurrentProcessIdOrNull(),
+											null /*DocBaseAndSubType*/,
+											mailCustomType)
+				.mergeFrom(userEmailConfig);
 		return createEMail(mailbox, to, subject, message, html);
 	}
 
@@ -178,9 +186,9 @@ public class MailService
 	{
 		final Properties ctx = Env.getCtx();
 		String emailStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_DebugMailTo,
-				null,             // defaultValue
-				Env.getAD_Client_ID(ctx),
-				Env.getAD_Org_ID(ctx));
+																	null,             // defaultValue
+																	Env.getAD_Client_ID(ctx),
+																	Env.getAD_Org_ID(ctx));
 		if (Check.isEmpty(emailStr, true))
 		{
 			return null;
