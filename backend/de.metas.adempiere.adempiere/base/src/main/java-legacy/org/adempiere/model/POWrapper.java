@@ -665,7 +665,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return method.invoke(po, args);
 	}
 
-	private final boolean invokeEquals(final Object[] args)
+	private boolean invokeEquals(final Object[] args)
 	{
 		final Object otherModel = args[0];
 		final PO otherPO = getPO(otherModel);
