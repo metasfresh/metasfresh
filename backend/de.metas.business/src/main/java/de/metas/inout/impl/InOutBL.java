@@ -618,19 +618,7 @@ public class InOutBL implements IInOutBL
 		{
 			return null;
 		}
-		final I_AD_User contactRecord = bpartnerDAO.getContactById(contactId);
-		if (contactRecord == null)
-		{
-			return null;
-		}
-
-		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
-		if (contactLocationId != null)
-		{
-			return null;
-		}
 		return bpartnerDAO.getContactLocationEmail(contactId);
-
 	}
 
 	@Override
