@@ -1,4 +1,4 @@
-﻿DROP FUNCTION IF EXISTS M_PriceList_Version_CopyFromBase
+DROP FUNCTION IF EXISTS M_PriceList_Version_CopyFromBase
 (
     /* p_M_PriceList_Version_ID */ numeric
 , /* p_AD_User_ID */               numeric
