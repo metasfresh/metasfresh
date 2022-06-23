@@ -1,4 +1,4 @@
-﻿DROP VIEW IF EXISTS M_ProductScalePrice_CopySource_v
+DROP VIEW IF EXISTS M_ProductScalePrice_CopySource_v
 ;
 
 CREATE VIEW M_ProductScalePrice_CopySource_v(target_pricelist_version_id, m_productprice_id, qty, pricelist, pricestd, pricelimit, m_discountschemaline_id, ad_client_id, ad_org_id, isactive, source_productprice_id, source_productscaleprice_id, IsSkipInactivePrices) AS
