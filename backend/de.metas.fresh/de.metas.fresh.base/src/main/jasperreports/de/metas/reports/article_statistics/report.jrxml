@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/article_statistics/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/article_statistics/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.9487171000000116"/>
 	<property name="ireport.x" value="474"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="releasetestdev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -465,18 +465,9 @@
 			</band>
 		</groupHeader>
 	</group>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
 	<title>
 		<band splitType="Stretch"/>
 	</title>
-	<pageHeader>
-		<band splitType="Stretch"/>
-	</pageHeader>
-	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
 	<detail>
 		<band height="14" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ( $F{unionorder}.intValue() == 1 )]]></printWhenExpression>
@@ -731,11 +722,8 @@
 			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
 	<pageFooter>
-		<band height="17">
+		<band height="17" splitType="Stretch">
 			<textField evaluationTime="Page">
 				<reportElement positionType="FixRelativeToBottom" x="640" y="5" width="146" height="10" uuid="64e4c15a-e706-4eb0-913a-4f84f2a89c66"/>
 				<textElement textAlignment="Right">
