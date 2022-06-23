@@ -49,6 +49,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh 
+  * [#13201] https://github.com/metasfresh/metasfresh/pull/13201 add new accounts in Deckungsbeitragsrechnung 
   * [#13204](https://github.com/metasfresh/metasfresh/pull/13204) fix flaky test: Create sales order with different ASI, on complete no production candidate is found
   * [#13197](https://github.com/metasfresh/metasfresh/pull/13197) cucumber fixes
   * [#13170](https://github.com/metasfresh/metasfresh/pull/13170) hotfix RV_UnPosted: DateTrx was used instead of DateAcct for M_MatchInv and M_MatchPO
