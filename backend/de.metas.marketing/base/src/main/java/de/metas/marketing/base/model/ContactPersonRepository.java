@@ -216,6 +216,16 @@ public class ContactPersonRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public boolean isEmailInUse(@NonNull final String email)
+	{
+		return queryBL
+				.createQueryBuilder(I_MKTG_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_EMail, email)
+				.create()
+				.anyMatch();
+	}
+
 	public Set<Integer> getIdsByCampaignId(final int campaignId)
 	{
 		return queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
