@@ -285,3 +285,4 @@ UPDATE report.Margin_Conf_Acct SET lvl2_SeqNo = 20 WHERE Parent_Account_ID = (SE
 UPDATE report.Margin_Conf_Acct SET lvl2_SeqNo = 30 WHERE Margin_Conf_ID = 1000004 AND value = '680';
 UPDATE report.Margin_Conf_Acct SET lvl2_SeqNo = 30 WHERE Parent_Account_ID = (SELECT Margin_Conf_Acct_ID FROM report.Margin_Conf_Acct WHERE Margin_Conf_ID = 1000004 AND value = '680');
 UPDATE report.Margin_Conf_Acct SET Name = '' WHERE Margin_Conf_ID = 1000003 AND value IN ( '6', '7', '8' );
+
