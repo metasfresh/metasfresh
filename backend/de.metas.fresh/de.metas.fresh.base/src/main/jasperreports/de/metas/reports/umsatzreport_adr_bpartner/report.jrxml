@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/umsatzreport_adr_bpartner/report" uuid="f0c87073-442f-4c7c-8390-c00eb0a5188c">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/umsatzreport_adr_bpartner/report" whenResourceMissingType="Empty" uuid="f0c87073-442f-4c7c-8390-c00eb0a5188c">
 	<property name="ireport.zoom" value="1.9487171000000014"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -76,7 +76,9 @@ order by productname]]>
 				<textFieldExpression><![CDATA[$R{periodrange}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="209" y="51" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="209" y="51" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+					<printWhenExpression><![CDATA[!$P{IsSOTrx}.equals( "" ) ? Boolean.TRUE : Boolean.FALSE]]></printWhenExpression>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
@@ -90,14 +92,18 @@ order by productname]]>
 				<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement x="209" y="62" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="209" y="62" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+					<printWhenExpression><![CDATA[!$F{startdate}.equals( "" ) || !$F{enddate}.equals( "" ) ? Boolean.TRUE : Boolean.FALSE]]></printWhenExpression>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{startdate} + " - " + $F{enddate}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="209" y="40" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<reportElement x="209" y="40" width="295" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+					<printWhenExpression><![CDATA[!$F{bpartnername}.equals( "" ) ? Boolean.TRUE : Boolean.FALSE]]></printWhenExpression>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
@@ -133,6 +139,12 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{org}+" "+ ($F{org} !=null ? $F{org} : $R{all})]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement key="line" x="39" y="97" width="465" height="1" forecolor="#000000" uuid="0a29e0e4-1a35-43e6-bee8-b24a18b5655c"/>
+				<graphicElement>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
 		</band>
 	</title>
 	<pageHeader>
@@ -142,6 +154,9 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 		<band height="24" splitType="Stretch">
 			<rectangle>
 				<reportElement x="39" y="0" width="465" height="13" backcolor="#808080" uuid="2cf3ef0a-f86a-4f52-b73f-61fd6adcabde"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
 			</rectangle>
 			<textField>
 				<reportElement x="39" y="0" width="170" height="12" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
@@ -170,25 +185,31 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 		<band height="13" splitType="Stretch">
 			<rectangle>
 				<reportElement x="39" y="0" width="465" height="13" forecolor="#FFFFFF" backcolor="#FFFFCC" uuid="3ccf7465-19e9-4de0-b307-39125ebe70b3">
-					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{REPORT_COUNT}.intValue()%2)==1)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{REPORT_COUNT}.intValue()%2)==1) && !$F{productname}.equals( "" ) ? Boolean.TRUE : Boolean.FALSE]]></printWhenExpression>
 				</reportElement>
 			</rectangle>
 			<textField>
-				<reportElement x="39" y="0" width="170" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="39" y="0" width="170" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<printWhenExpression><![CDATA[!$F{productname}.equals( "" ) ? Boolean.TRUE : Boolean.FALSE]]></printWhenExpression>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00;-#,##0.00">
-				<reportElement x="209" y="0" width="175" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="209" y="0" width="175" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<printWhenExpression><![CDATA[!$F{sameperiodsum}.equals( "" ) ? Boolean.TRUE : Boolean.FALSE]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sameperiodsum}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="384" y="0" width="120" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="384" y="0" width="120" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375">
+					<printWhenExpression><![CDATA[!$F{productcategory}.equals( "" ) ? Boolean.TRUE : Boolean.FALSE]]></printWhenExpression>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
@@ -238,7 +259,7 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line" x="39" y="5" width="465" height="2" forecolor="#000000" uuid="4663796f-24ed-49c8-9592-74efcbb0edaf"/>
+				<reportElement key="line" x="39" y="5" width="465" height="1" forecolor="#000000" uuid="4663796f-24ed-49c8-9592-74efcbb0edaf"/>
 				<graphicElement>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
