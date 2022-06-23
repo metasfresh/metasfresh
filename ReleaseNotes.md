@@ -49,6 +49,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh 
+  * [#13197](https://github.com/metasfresh/metasfresh/pull/13197) cucumber fixes
   * [#13170](https://github.com/metasfresh/metasfresh/pull/13170) hotfix RV_UnPosted: DateTrx was used instead of DateAcct for M_MatchInv and M_MatchPO
   * [#13169](https://github.com/metasfresh/metasfresh/pull/13169) db functions: getC_Calendar_ID, getC_Period_ID_by_Date 
   * [#13179](https://github.com/metasfresh/metasfresh/issues/13179) Count QtyDelivered as zero if all inouts are reveserd 
