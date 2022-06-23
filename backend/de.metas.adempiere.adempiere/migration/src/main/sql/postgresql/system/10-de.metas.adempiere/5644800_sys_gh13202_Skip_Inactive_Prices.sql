@@ -1,4 +1,4 @@
-﻿DROP VIEW IF EXISTS M_ProductPrice_CopySource_v
+DROP VIEW IF EXISTS M_ProductPrice_CopySource_v
 ;
 
 CREATE VIEW M_ProductPrice_CopySource_v
