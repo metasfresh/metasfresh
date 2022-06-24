@@ -740,11 +740,11 @@ public class CandidateRepositoryWriteService
 
 		while (candidatesIterator.hasNext())
 		{
-			final Integer currentCandidateId = candidatesIterator.next().getMD_Candidate_ID();
+			// final I_MD_Candidate currentCandidateId = candidatesIterator.next();
 
 			//am facut asta pentru ca in iterator raman si copii care sunt stersi deja
 			final Optional<I_MD_Candidate> loadedCurrentCandidateOpt = Optional.ofNullable(queryBL.createQueryBuilder(I_MD_Candidate.class)
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, currentCandidateId)
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidatesIterator.next().getMD_Candidate_ID())
 					.orderBy(I_MD_Candidate.COLUMNNAME_Created)
 					.create()
 					.first(I_MD_Candidate.class));
