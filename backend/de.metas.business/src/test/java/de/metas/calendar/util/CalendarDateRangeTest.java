@@ -1,19 +1,21 @@
 package de.metas.calendar.util;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.time.SystemTime;
+import org.adempiere.exceptions.AdempiereException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CalendarDateRangeTest
 {
-	public static final ZonedDateTime refZDT = LocalDate.parse("2022-06-24").atStartOfDay(SystemTime.zoneId());
+	public static final ZonedDateTime refZDT = LocalDate.parse("2022-06-24").atStartOfDay(ZoneId.of("Europe/Bucharest"));
 
 	private static ZonedDateTime zdt(int daysOffset) {return refZDT.plusDays(daysOffset);}
 
@@ -24,6 +26,20 @@ class CalendarDateRangeTest
 				.endDate(zdt(daysOffsetEnd))
 				.allDay(true)
 				.build();
+	}
+
+	@Nested
+	class constructor
+	{
+		@Test
+		void equalStartAndEndDate()
+		{
+			final ZonedDateTime zdt = zdt(1);
+			Assertions.assertThatThrownBy(() -> CalendarDateRange.builder().startDate(zdt).endDate(zdt).build())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Start date and end date shall not be equal")
+			;
+		}
 	}
 
 	@Nested

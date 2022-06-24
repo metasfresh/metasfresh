@@ -61,6 +61,10 @@ public class CalendarDateRange
 			startDateToUse = endDateToUse;
 			endDateToUse = temp;
 		}
+		else if (startDateToUse.equals(endDateToUse))
+		{
+			throw new AdempiereException("Start date and end date shall not be equal: " + startDateToUse);
+		}
 
 		this.allDay = allDay;
 		this.startDate = startDateToUse;
@@ -133,5 +137,4 @@ public class CalendarDateRange
 					.build();
 		}
 	}
-
 }
