@@ -482,4 +482,21 @@ public final class CollectionUtils
 			}
 		}
 	}
+
+	public static <K, V> ImmutableMap<K, V> mergeElementToMap(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final V element,
+			@NonNull final Function<V, K> keyExtractor)
+	{
+		final K key = keyExtractor.apply(element);
+		final V oldElement = map.get(key);
+		if (Objects.equals(element, oldElement))
+		{
+			return map;
+		}
+
+		final LinkedHashMap<K, V> newMap = new LinkedHashMap<>(map);
+		newMap.put(key, element);
+		return ImmutableMap.copyOf(newMap);
+	}
 }
