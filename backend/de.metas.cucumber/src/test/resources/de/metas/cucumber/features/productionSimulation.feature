@@ -125,6 +125,10 @@ Feature: create production simulation
       | c_3        | INVENTORY_UP      |                               | p_1                     | 2021-04-16T00:00:00Z | 95   | 95                     | olASI                                    | false         |
       | c_4        | INVENTORY_UP      |                               | p_1                     | 2021-04-17T00:00:00Z | 4    | 99                     | olASI                                    | false         |
 
+    And post DeactivateAllSimulatedCandidatesEvent
+    And delete all simulated candidates
+    And validate there is no simulated md_candidate
+
 
   @from:cucumber
   Scenario: The simulation for qty 14 is created with duration to produce 1 qty set to 1 day,

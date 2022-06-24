@@ -38,16 +38,20 @@ import de.metas.material.dispo.commons.candidate.MaterialDispoRecordRepository;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
@@ -102,6 +106,7 @@ public class MD_Candidate_StepDef
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private CandidateRepositoryWriteService candidateWriteService;
 	private final M_Product_StepDefData productTable;
 	private final MD_Candidate_StepDefData stockCandidateTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
@@ -125,6 +130,7 @@ public class MD_Candidate_StepDef
 		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
+		candidateWriteService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 
@@ -407,6 +413,36 @@ public class MD_Candidate_StepDef
 		{
 			validate_md_candidate_stock(tableRow);
 		}
+	}
+
+	@And("post DeactivateAllSimulatedCandidatesEvent")
+	public void deactivate_simulated_md_candidates()
+	{
+		postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
+													  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
+													  .build());
+	}
+
+	@And("delete all simulated candidates")
+	public void delete_simulated_candidates()
+	{
+		final DeleteCandidatesQuery deleteCandidatesQuery = DeleteCandidatesQuery.builder()
+				.status(X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
+				.isActive(false)
+				.build();
+
+		candidateWriteService.deleteCandidatesByQuery(deleteCandidatesQuery);
+	}
+
+	@And("validate there is no simulated md_candidate")
+	public void validate_no_simulated_md_candidate()
+	{
+		final int noOfRecords = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
+				.create()
+				.count();
+
+		assertThat(noOfRecords).isEqualTo(0);
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)
