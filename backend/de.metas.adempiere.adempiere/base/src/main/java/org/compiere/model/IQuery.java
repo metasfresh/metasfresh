@@ -23,6 +23,7 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -509,7 +510,9 @@ public interface IQuery<T>
 	 * @return key to model map
 	 * @see #list(Class)
 	 */
-	<K, ET extends T> Map<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
+	<K, ET extends T> ImmutableMap<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
+
+	<K> ImmutableMap<K, T> map(Function<T, K> keyFunction);
 
 	/**
 	 * Retrieves the records as {@link ListMultimap}.
