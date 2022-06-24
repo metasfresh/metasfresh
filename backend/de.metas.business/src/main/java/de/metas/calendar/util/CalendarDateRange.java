@@ -22,13 +22,16 @@
 
 package de.metas.calendar.util;
 
+import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Value
 public class CalendarDateRange
@@ -67,6 +70,68 @@ public class CalendarDateRange
 	public Duration getDuration()
 	{
 		return Duration.between(startDate, endDate);
+	}
+
+	public CalendarDateRange plus(@NonNull final Duration duration)
+	{
+		if (duration.isZero())
+		{
+			return this;
+		}
+
+		return builder()
+				.startDate(startDate.plus(duration))
+				.endDate(endDate.plus(duration))
+				.allDay(allDay && DurationUtils.isCompleteDays(duration))
+				.build();
+	}
+
+	public CalendarDateRange minus(@NonNull final Duration duration)
+	{
+		return plus(duration.negated());
+	}
+
+	public static CalendarDateRange computeDateRangeToFitAll(@NonNull List<CalendarDateRange> dateRanges)
+	{
+		if (dateRanges.isEmpty())
+		{
+			throw new AdempiereException("No date ranges provided");
+		}
+		else if (dateRanges.size() == 1)
+		{
+			return dateRanges.get(0);
+		}
+		else
+		{
+			final CalendarDateRange firstDateRange = dateRanges.get(0);
+			ZonedDateTime minStartDate = firstDateRange.getStartDate();
+			boolean minStartDate_isAllDay = firstDateRange.isAllDay();
+			ZonedDateTime maxEndDate = firstDateRange.getEndDate();
+			boolean maxEndDate_isAllDay = firstDateRange.isAllDay();
+
+			for (int i = 1; i < dateRanges.size(); i++)
+			{
+				final CalendarDateRange dateRange = dateRanges.get(i);
+
+				if (dateRange.getStartDate().isBefore(minStartDate))
+				{
+					minStartDate = dateRange.getStartDate();
+					minStartDate_isAllDay = dateRange.isAllDay();
+				}
+
+				if (dateRange.getEndDate().isAfter(maxEndDate))
+				{
+					maxEndDate = dateRange.getEndDate();
+					maxEndDate_isAllDay = dateRange.isAllDay();
+				}
+			}
+
+			return builder()
+					.startDate(minStartDate)
+					.endDate(maxEndDate)
+					.allDay(minStartDate_isAllDay && maxEndDate_isAllDay)
+					.build();
+		}
 	}
 
 }
