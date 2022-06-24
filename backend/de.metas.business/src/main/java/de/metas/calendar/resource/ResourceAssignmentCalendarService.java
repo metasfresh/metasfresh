@@ -27,6 +27,7 @@ import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryAddRequest;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarEntryUpdateRequest;
+import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.CalendarRef;
@@ -209,7 +210,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	}
 
 	@Override
-	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
+	public CalendarEntryUpdateResult updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
 		assertValidCalendarId(request.getCalendarId());
 		if (request.getSimulationId() != null)
@@ -222,7 +223,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 				resourceAssignment -> updateResourceAssignment(resourceAssignment, request)
 		);
 
-		return toCalendarEntry(changedResourceAssignment);
+		return CalendarEntryUpdateResult.ofChangedEntry(toCalendarEntry(changedResourceAssignment));
 	}
 
 	private ResourceAssignmentId toResourceAssignmentId(@NonNull final CalendarEntryId entryId)

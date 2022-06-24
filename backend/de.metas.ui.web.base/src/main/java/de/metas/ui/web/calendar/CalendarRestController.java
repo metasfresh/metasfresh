@@ -27,6 +27,7 @@ import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryAddRequest;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarEntryUpdateRequest;
+import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.MultiCalendarService;
 import de.metas.calendar.simulation.CalendarSimulationId;
@@ -39,6 +40,7 @@ import de.metas.ui.web.calendar.json.JsonCalendarEntriesQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryAddRequest;
 import de.metas.ui.web.calendar.json.JsonCalendarEntryUpdateRequest;
+import de.metas.ui.web.calendar.json.JsonCalendarEntryUpdateResult;
 import de.metas.ui.web.calendar.json.JsonCalendarRef;
 import de.metas.ui.web.calendar.json.JsonDateTime;
 import de.metas.ui.web.calendar.json.JsonGetAvailableCalendarsResponse;
@@ -144,7 +146,7 @@ public class CalendarRestController
 	}
 
 	@PostMapping("/entries/add")
-	public JsonCalendarEntry addCalendarEntry(@RequestBody @NonNull final JsonCalendarEntryAddRequest request)
+	public JsonCalendarEntryUpdateResult addCalendarEntry(@RequestBody @NonNull final JsonCalendarEntryAddRequest request)
 	{
 		userSession.assertLoggedIn();
 
@@ -162,17 +164,17 @@ public class CalendarRestController
 						.build())
 				.build());
 
-		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
+		return JsonCalendarEntryUpdateResult.ofChangedEntry(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
 	}
 
 	@PostMapping("/entries/{entryId}")
-	public JsonCalendarEntry updateCalendarEntry(
+	public JsonCalendarEntryUpdateResult updateCalendarEntry(
 			@PathVariable("entryId") @NonNull final String entryIdStr,
 			@RequestBody @NonNull final JsonCalendarEntryUpdateRequest request)
 	{
 		userSession.assertLoggedIn();
 
-		final CalendarEntry calendarEntry = calendarService.updateEntry(CalendarEntryUpdateRequest.builder()
+		final CalendarEntryUpdateResult result = calendarService.updateEntry(CalendarEntryUpdateRequest.builder()
 				.entryId(CalendarEntryId.ofString(entryIdStr))
 				.simulationId(request.getSimulationId())
 				.updatedByUserId(userSession.getLoggedUserId())
@@ -182,7 +184,7 @@ public class CalendarRestController
 				.dateRange(extractDateRange(request))
 				.build());
 
-		return JsonCalendarEntry.of(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
+		return JsonCalendarEntryUpdateResult.of(result, userSession.getTimeZone(), userSession.getAD_Language());
 	}
 
 	private static CalendarDateRange extractDateRange(final JsonCalendarEntryUpdateRequest request)

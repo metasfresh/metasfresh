@@ -1,0 +1,66 @@
+de.metas.project.workorder.calendar.WOProjectSimulationPlanEditorTest.test=[ {
+  "projectResourcesById" : {
+    "1" : {
+      "dateRange" : {
+        "allDay" : true,
+        "endDate" : "2022-06-13T00:00:00+02:00",
+        "startDate" : "2022-06-11T00:00:00+02:00"
+      },
+      "projectStepAndResourceId" : {
+        "projectId" : 1,
+        "projectResourceId" : 1,
+        "stepId" : 1
+      },
+      "simulationId" : "simulation1"
+    },
+    "3" : {
+      "dateRange" : {
+        "allDay" : true,
+        "endDate" : "2022-06-15T00:00:00+02:00",
+        "startDate" : "2022-06-13T00:00:00+02:00"
+      },
+      "projectStepAndResourceId" : {
+        "projectId" : 1,
+        "projectResourceId" : 3,
+        "stepId" : 2
+      },
+      "simulationId" : "simulation1"
+    },
+    "4" : {
+      "dateRange" : {
+        "allDay" : true,
+        "endDate" : "2022-06-16T00:00:00+02:00",
+        "startDate" : "2022-06-15T00:00:00+02:00"
+      },
+      "projectStepAndResourceId" : {
+        "projectId" : 1,
+        "projectResourceId" : 4,
+        "stepId" : 2
+      },
+      "simulationId" : "simulation1"
+    }
+  },
+  "simulationPlanId" : "simulation1",
+  "stepsById" : {
+    "1" : {
+      "dateRange" : {
+        "allDay" : true,
+        "endDate" : "2022-06-13T00:00:00+02:00",
+        "startDate" : "2022-06-04T00:00:00+02:00"
+      },
+      "projectId" : 1,
+      "simulationId" : "simulation1",
+      "stepId" : 1
+    },
+    "2" : {
+      "dateRange" : {
+        "allDay" : true,
+        "endDate" : "2022-06-16T00:00:00+02:00",
+        "startDate" : "2022-06-13T00:00:00+02:00"
+      },
+      "projectId" : 1,
+      "simulationId" : "simulation1",
+      "stepId" : 2
+    }
+  }
+} ]

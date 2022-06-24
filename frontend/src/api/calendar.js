@@ -51,7 +51,7 @@ export const addOrUpdateCalendarEvent = ({
       isAllDay: allDay,
     })
     .then(extractAxiosResponseData)
-    .then(converters.fromAPIEvent);
+    .then(converters.fromAPIUpdateResult);
 };
 
 export const deleteCalendarEventById = (eventId) => {
@@ -92,10 +92,23 @@ const converters = {
   fromAPIResource: (resource) =>
     converters.fullcalendar_io.fromAPIResource(resource),
 
-  fromAPIEvent: (entry) => ({
-    calendarId: entry.calendarId,
-    ...converters.fullcalendar_io.fromAPIEvent(entry),
-  }),
+  fromAPIUpdateResult: (updateResult) => {
+    //console.log('fromAPIUpdateResult', { updateResult });
+    return [
+      converters.fromAPIEvent(updateResult.changedEntry),
+      ...updateResult.otherChangedEntries.map((entry) =>
+        converters.fromAPIEvent(entry)
+      ),
+    ];
+  },
+
+  fromAPIEvent: (entry) => {
+    //console.log('fromAPIEvent', { entry });
+    return {
+      calendarId: entry.calendarId,
+      ...converters.fullcalendar_io.fromAPIEvent(entry),
+    };
+  },
 
   fromAPISimulation: (simulation) => ({
     simulationId: simulation.id,

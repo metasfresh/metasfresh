@@ -2,6 +2,7 @@ package de.metas.project.workorder;
 
 import de.metas.calendar.simulation.CalendarSimulationId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -11,32 +12,30 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder(toBuilder = true)
-public class WOProjectResourceSimulation
+public class WOProjectStepSimulation
 {
 	@NonNull CalendarSimulationId simulationId;
-	@NonNull WOProjectStepAndResourceId projectStepAndResourceId;
+	@NonNull ProjectId projectId;
+	@NonNull WOProjectStepId stepId;
 
 	@NonNull CalendarDateRange dateRange;
 
-	public WOProjectResourceId getProjectResourceId()
-	{
-		return getProjectStepAndResourceId().getProjectResourceId();
-	}
-
-	public static WOProjectResourceSimulation reduce(@Nullable WOProjectResourceSimulation simulation, @NonNull UpdateRequest updateRequest)
+	public static WOProjectStepSimulation reduce(@Nullable WOProjectStepSimulation simulation, @NonNull UpdateRequest updateRequest)
 	{
 		if (simulation == null)
 		{
 			return builder()
 					.simulationId(updateRequest.getSimulationId())
-					.projectStepAndResourceId(updateRequest.getProjectStepAndResourceId())
+					.projectId(updateRequest.getProjectId())
+					.stepId(updateRequest.getStepId())
 					.dateRange(updateRequest.getDateRange())
 					.build();
 		}
 		else
 		{
 			Check.assumeEquals(simulation.getSimulationId(), updateRequest.getSimulationId(), "expected same simulationId: {}, {}", simulation, updateRequest);
-			Check.assumeEquals(simulation.getProjectStepAndResourceId(), updateRequest.getProjectStepAndResourceId(), "expected same projectStepAndResourceId: {}, {}", simulation, updateRequest);
+			Check.assumeEquals(simulation.getProjectId(), updateRequest.getProjectId(), "expected same projectId: {}, {}", simulation, updateRequest);
+			Check.assumeEquals(simulation.getStepId(), updateRequest.getStepId(), "expected same stepId: {}, {}", simulation, updateRequest);
 
 			return simulation.toBuilder()
 					.dateRange(updateRequest.getDateRange())
@@ -44,27 +43,25 @@ public class WOProjectResourceSimulation
 		}
 	}
 
-	public WOProjectResource applyOn(@NonNull final WOProjectResource resource)
+	public WOProjectStep applyOn(@NonNull final WOProjectStep step)
 	{
-		Check.assumeEquals(resource.getWOProjectStepAndResourceId(), projectStepAndResourceId, "expected same project and step and projectResourceId: {}, {}", resource, this);
+		Check.assumeEquals(step.getProjectId(), projectId, "expected same projectId: {}, {}", step, this);
+		Check.assumeEquals(step.getId(), stepId, "expected same stepId: {}, {}", step, this);
 
-		return resource.toBuilder()
+		return step.toBuilder()
 				.dateRange(dateRange)
-				.duration(dateRange.getDuration())
 				.build();
 	}
-
-	//
-	//
-	//
 
 	@Value
 	@Builder
 	public static class UpdateRequest
 	{
 		@NonNull CalendarSimulationId simulationId;
-		@NonNull WOProjectStepAndResourceId projectStepAndResourceId;
+		@NonNull ProjectId projectId;
+		@NonNull WOProjectStepId stepId;
 
 		@NonNull CalendarDateRange dateRange;
 	}
+
 }

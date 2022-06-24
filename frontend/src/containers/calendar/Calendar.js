@@ -40,52 +40,19 @@ const extractResourcesFromCalendarsArray = (calendars) => {
   return resources;
 };
 
-const mergeCalendarEventToArray = (eventsArray, eventToAdd) => {
-  let added = false;
-  const result = [];
-  for (const event of eventsArray) {
-    if (event.id === eventToAdd.id) {
-      result.push(eventToAdd);
-      added = true;
-    } else {
-      result.push(event);
-    }
-  }
+const mergeCalendarEventsArrayToArray = (eventsArray, eventsToAdd) => {
+  const resultEventsById = [];
+  eventsArray.forEach((event) => {
+    resultEventsById[event.id] = event;
+  });
+  eventsToAdd.forEach((event) => {
+    resultEventsById[event.id] = event;
+  });
 
-  if (!added) {
-    result.push(eventToAdd);
-  }
-
-  return result;
+  return Object.values(resultEventsById);
 };
 
-// const suggestCalendarIdAndResourceId = (calendars, preferredResourceId) => {
-//   if (!calendars || calendars.length === 0) {
-//     return {};
-//   }
-//
-//   if (preferredResourceId) {
-//     for (const calendar of calendars) {
-//       for (const resource of calendar.resources) {
-//         if (resource.id === preferredResourceId) {
-//           return {
-//             calendarId: calendar.calendarId,
-//             resourceId: resource.id,
-//           };
-//         }
-//       }
-//     }
-//   }
-//
-//   const firstCalendar = calendars[0];
-//   return {
-//     calendarId: firstCalendar.calendarId,
-//     resourceId: firstCalendar.resources?.[0].id,
-//   };
-// };
-
 const Calendar = ({ className = 'container' }) => {
-  //console.log('Calendar ctor------------------');
   const [calendarEvents, setCalendarEvents] = React.useState({
     startStr: null,
     endStr: null,
@@ -132,9 +99,14 @@ const Calendar = ({ className = 'container' }) => {
     }
   };
 
-  const addCalendarEvent = (eventToAdd) => {
-    const events = mergeCalendarEventToArray(calendarEvents.events, eventToAdd);
-    setCalendarEvents({ ...calendarEvents, events });
+  const addCalendarEventsArray = (eventsArrayToAdd) => {
+    setCalendarEvents({
+      ...calendarEvents,
+      events: mergeCalendarEventsArrayToArray(
+        calendarEvents.events,
+        eventsArrayToAdd
+      ),
+    });
   };
 
   const handleDateClick = (params) => {
@@ -177,8 +149,8 @@ const Calendar = ({ className = 'container' }) => {
         allDay: event.allDay,
         title: event.title,
       })
-      .then((eventFromBackend) => {
-        addCalendarEvent(eventFromBackend);
+      .then((changedEvents) => {
+        addCalendarEventsArray(changedEvents);
         setEditingEvent(null);
       });
   };
@@ -284,7 +256,7 @@ const Calendar = ({ className = 'container' }) => {
               endDate: params.event.end,
               allDay: params.event.allDay,
             })
-            .then((eventFromBackend) => addCalendarEvent(eventFromBackend))
+            .then((changedEvents) => addCalendarEventsArray(changedEvents))
             .catch((error) => {
               console.log('Got error', error);
               params.revert();

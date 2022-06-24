@@ -27,7 +27,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.calendar.simulation.CalendarSimulationId;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,7 @@ import java.util.stream.Stream;
 @Service
 public class MultiCalendarService
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ImmutableList<CalendarService> calendarServices;
 	private final ImmutableMap<CalendarServiceId, CalendarService> calendarServicesById;
 
@@ -72,19 +75,19 @@ public class MultiCalendarService
 
 	public CalendarEntry addEntry(@NonNull final CalendarEntryAddRequest request)
 	{
-		return getCalendarServiceById(request.getCalendarId().getCalendarServiceId())
-				.addEntry(request);
+		final CalendarService calendarService = getCalendarServiceById(request.getCalendarId().getCalendarServiceId());
+		return trxManager.callInThreadInheritedTrx(() -> calendarService.addEntry(request));
 	}
 
-	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
+	public CalendarEntryUpdateResult updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
-		return getCalendarServiceById(request.getCalendarServiceId())
-				.updateEntry(request);
+		final CalendarService calendarService = getCalendarServiceById(request.getCalendarServiceId());
+		return trxManager.callInThreadInheritedTrx(() -> calendarService.updateEntry(request));
 	}
 
 	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable CalendarSimulationId simulationId)
 	{
-		getCalendarServiceById(entryId.getCalendarServiceId())
-				.deleteEntryById(entryId, simulationId);
+		final CalendarService calendarService = getCalendarServiceById(entryId.getCalendarServiceId());
+		trxManager.runInThreadInheritedTrx(() -> calendarService.deleteEntryById(entryId, simulationId));
 	}
 }

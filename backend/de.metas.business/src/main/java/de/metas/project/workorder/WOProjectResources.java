@@ -23,45 +23,71 @@
 package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.product.ResourceId;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.project.ProjectId;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Stream;
 
-@Value
+@EqualsAndHashCode
+@ToString(of = { "projectId", "resourcesById" })
 public class WOProjectResources
 {
+	@Getter
 	ProjectId projectId;
-	ImmutableList<WOProjectResource> resources;
+	private final ImmutableMap<WOProjectResourceId, WOProjectResource> resourcesById;
 
 	@Builder
 	private WOProjectResources(
 			@NonNull final ProjectId projectId,
 			@NonNull final List<WOProjectResource> resources)
 	{
-		this.projectId = projectId;
-		this.resources = ImmutableList.copyOf(resources);
+		assertResourcesAreMatchingProject(resources, projectId);
 
-		if (!resources.isEmpty())
+		this.projectId = projectId;
+		this.resourcesById = Maps.uniqueIndex(resources, WOProjectResource::getId);
+	}
+
+	private static void assertResourcesAreMatchingProject(final @NonNull List<WOProjectResource> resources, final @NonNull ProjectId projectId)
+	{
+		if (resources.isEmpty())
 		{
-			final ImmutableList<WOProjectResource> resourcesFromOtherProjects = resources.stream()
-					.filter(resource -> !ProjectId.equals(resource.getProjectId(), projectId))
-					.collect(ImmutableList.toImmutableList());
-			if (!resourcesFromOtherProjects.isEmpty())
-			{
-				throw new AdempiereException("Expected all resources to be from project " + projectId + ": " + resourcesFromOtherProjects);
-			}
+			return;
+		}
+
+		final ImmutableList<WOProjectResource> resourcesFromOtherProjects = resources.stream()
+				.filter(resource -> !ProjectId.equals(resource.getProjectId(), projectId))
+				.collect(ImmutableList.toImmutableList());
+		if (!resourcesFromOtherProjects.isEmpty())
+		{
+			throw new AdempiereException("Expected all resources to be from project " + projectId + ": " + resourcesFromOtherProjects);
 		}
 	}
 
-	public Set<ResourceId> getResourceIds()
+	public WOProjectResource getById(@NonNull final WOProjectResourceId projectResourceId)
 	{
-		return resources.stream().map(WOProjectResource::getResourceId).collect(ImmutableSet.toImmutableSet());
+		final WOProjectResource projectResource = resourcesById.get(projectResourceId);
+		if (projectResource == null)
+		{
+			throw new AdempiereException("No project resource found for " + projectResourceId + " in " + this);
+		}
+		return projectResource;
+	}
+
+	public Stream<WOProjectResource> stream()
+	{
+		return resourcesById.values().stream();
+	}
+
+	public Stream<WOProjectResource> streamByStepId(@NonNull final WOProjectStepId stepId)
+	{
+		return stream().filter(resource -> WOProjectStepId.equals(resource.getStepId(), stepId));
 	}
 }

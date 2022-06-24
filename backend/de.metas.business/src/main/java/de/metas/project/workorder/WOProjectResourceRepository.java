@@ -24,6 +24,7 @@ package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
@@ -68,6 +69,11 @@ public class WOProjectResourceRepository
 				.collect(ImmutableMap.toImmutableMap(WOProjectResources::getProjectId, Function.identity()));
 	}
 
+	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)
+	{
+		return getByProjectIds(ImmutableSet.of(projectId)).get(projectId);
+	}
+
 	public WOProjectResource getById(@NonNull final ProjectId projectId, @NonNull final WOProjectResourceId projectResourceId)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
@@ -79,7 +85,7 @@ public class WOProjectResourceRepository
 				.orElseThrow(() -> new AdempiereException("No project resource found for " + projectId + ", " + projectResourceId));
 	}
 
-	private static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)
+	public static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)
 	{
 		final TemporalUnit durationUnit = WFDurationUnit.ofCode(record.getDurationUnit()).getTemporalUnit();
 
