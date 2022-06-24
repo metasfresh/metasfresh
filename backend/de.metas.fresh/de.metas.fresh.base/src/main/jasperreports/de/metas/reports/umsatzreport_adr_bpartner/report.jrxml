@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.9487171000000014"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Localhost (putty port)"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="Base_Period_Start" class="java.util.Date"/>
 	<parameter name="Base_Period_End" class="java.util.Date"/>
@@ -59,8 +59,8 @@ order by productname]]>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
-	<title>
-		<band height="100" splitType="Stretch">
+	<pageHeader>
+		<band height="98" splitType="Stretch">
 			<textField>
 				<reportElement x="39" y="1" width="465" height="19" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement textAlignment="Center">
@@ -146,12 +146,9 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 				</graphicElement>
 			</line>
 		</band>
-	</title>
-	<pageHeader>
-		<band splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="24" splitType="Stretch">
+		<band height="13" splitType="Stretch">
 			<rectangle>
 				<reportElement x="39" y="0" width="465" height="13" backcolor="#808080" uuid="2cf3ef0a-f86a-4f52-b73f-61fd6adcabde"/>
 				<graphicElement>
@@ -245,7 +242,7 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page} + " " +$V{PAGE_NUMBER} +" " + $R{of}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
+			<textField pattern="dd/MM/yyyy HH:mm" isBlankWhenNull="false">
 				<reportElement key="textField" x="39" y="7" width="81" height="13" uuid="c65c3a4f-254c-4747-98e2-832d39154783"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
