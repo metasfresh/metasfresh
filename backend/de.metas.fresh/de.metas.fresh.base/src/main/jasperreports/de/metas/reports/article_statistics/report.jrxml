@@ -373,8 +373,94 @@
 			</band>
 		</groupHeader>
 	</group>
-	<title>
-		<band height="48" splitType="Stretch">
+	<pageHeader>
+		<band height="78">
+			<textField>
+				<reportElement x="220" y="68" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="220" y="50" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Type}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="220" y="59" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement markup="html">
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{TimePeriod}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="330" y="59" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{startdate} != null ? $F{startdate} : "")  + " - " + ($F{enddate} != null ? $F{enddate} : "")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="330" y="50" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+					<printWhenExpression><![CDATA[$P{IsSOTrx} != null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{Purchase} : ($P{IsSOTrx} .equals("Y") ? $R{Sales} : $R{All} )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="330" y="68" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : $R{All}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="530" y="59" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : $R{All}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="59" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="530" y="68" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : $R{All}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="68" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Attribute}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="530" y="50" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : $R{All}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="50" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ArticleNr}]]></textFieldExpression>
+			</textField>
 			<textField>
 				<reportElement x="322" y="10" width="198" height="23" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement textAlignment="Center">
@@ -389,96 +475,6 @@
 					<paragraph lineSpacing="Double"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{org}+" "+ ($F{ad_org_name} !=null ? $F{ad_org_name} : $R{All})]]></textFieldExpression>
-			</textField>
-		</band>
-	</title>
-	<pageHeader>
-		<band height="28">
-			<textField>
-				<reportElement x="220" y="18" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="220" y="0" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Type}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="220" y="9" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement markup="html">
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{TimePeriod}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="330" y="9" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[($F{startdate} != null ? $F{startdate} : "")  + " - " + ($F{enddate} != null ? $F{enddate} : "")]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="330" y="0" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
-					<printWhenExpression><![CDATA[$P{IsSOTrx} != null]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{Purchase} : ($P{IsSOTrx} .equals("Y") ? $R{Sales} : $R{All} )]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="330" y="18" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : $R{All}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="530" y="9" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : $R{All}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="450" y="9" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="530" y="18" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : $R{All}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="450" y="18" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Attribute}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="530" y="0" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : $R{All}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="450" y="0" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{ArticleNr}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -745,7 +741,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Page}  + "  " + $V{PAGE_NUMBER}  + "  "+ $R{of}]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="dd. MMMMM yyyy">
+			<textField evaluationTime="Report" pattern="dd/MM/yyyy HH:mm">
 				<reportElement positionType="FixRelativeToBottom" x="64" y="5" width="100" height="10" uuid="8e0018f6-f773-49eb-86cd-40caa2c25880"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
