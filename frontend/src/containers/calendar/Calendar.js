@@ -223,14 +223,6 @@ const Calendar = ({
             slotLabelInterval: { months: 1 },
             slotLabelFormat: [{ month: 'long' }],
           },
-          resourceTimelineThreeYear: {
-            type: 'resourceTimeline',
-            buttonText: '3 years', // TODO trl
-            duration: { years: 3 },
-            slotDuration: { months: 1 },
-            slotLabelInterval: { months: 1 },
-            slotLabelFormat: [{ month: 'long' }],
-          },
         }}
         initialView="resourceTimelineYear"
         plugins={[
@@ -242,10 +234,10 @@ const Calendar = ({
         weekends="true"
         editable="true"
         headerToolbar={{
-          left: 'prev,next today',
+          left: 'prev,today,next',
           center: 'title',
           right:
-            'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear,resourceTimelineThreeYear',
+            'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear',
         }}
         resourceAreaHeaderContent="Resources"
         resources={extractResourcesFromCalendarsArray(availableCalendars)}
