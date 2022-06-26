@@ -37,6 +37,7 @@ const SimulationsDropDown = ({
   const OPTION_NEW = { key: 'NEW', caption: 'New simulation' }; // TODO trl
   return (
     <SimpleList
+      className="calendar-simulations-dropdown"
       list={[OPTION_NEW, OPTION_None, ...simulations.map(toKeyCaption)]}
       selected={
         selectedSimulation != null

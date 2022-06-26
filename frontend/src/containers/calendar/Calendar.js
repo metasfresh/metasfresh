@@ -53,7 +53,6 @@ const mergeCalendarEventsArrayToArray = (eventsArray, eventsToAdd) => {
 };
 
 const Calendar = ({
-  className = 'container',
   simulationId: initialSelectedSimulationId,
   onParamsChanged,
 }) => {
@@ -179,7 +178,7 @@ const Calendar = ({
   };
 
   return (
-    <div className={className}>
+    <div className="calendar-container">
       {editingEvent && (
         <CalendarEventEditor
           availableCalendars={availableCalendars}
@@ -189,24 +188,31 @@ const Calendar = ({
           onDelete={handleEventDelete}
         />
       )}
-      <div>
-        <SimulationsDropDown
-          simulations={availableSimulations}
-          selectedSimulationId={selectedSimulationId}
-          onSelect={(simulation) => {
-            setSelectedSimulationId(simulation?.simulationId);
-          }}
-          onNew={() => {
-            api
-              .createSimulation({
-                copyFromSimulationId: selectedSimulationId,
-              })
-              .then((simulation) => {
-                setAvailableSimulations([...availableSimulations, simulation]);
-                setSelectedSimulationId(simulation.simulationId);
-              });
-          }}
-        />
+      <div className="calendar-top">
+        <div className="calendar-top-left" />
+        <div className="calendar-top-center" />
+        <div className="calendar-top-right">
+          <SimulationsDropDown
+            simulations={availableSimulations}
+            selectedSimulationId={selectedSimulationId}
+            onSelect={(simulation) => {
+              setSelectedSimulationId(simulation?.simulationId);
+            }}
+            onNew={() => {
+              api
+                .createSimulation({
+                  copyFromSimulationId: selectedSimulationId,
+                })
+                .then((simulation) => {
+                  setAvailableSimulations([
+                    ...availableSimulations,
+                    simulation,
+                  ]);
+                  setSelectedSimulationId(simulation.simulationId);
+                });
+            }}
+          />
+        </div>
       </div>
       <FullCalendar
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
@@ -303,7 +309,6 @@ const Calendar = ({
 };
 
 Calendar.propTypes = {
-  className: PropTypes.string,
   simulationId: PropTypes.string,
   onParamsChanged: PropTypes.func,
 };

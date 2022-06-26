@@ -1,2 +1,24 @@
-.calendarEventEditor {
+.calendar-container {
+  padding: 15px;
+
+  .calendarEventEditor {
+  }
+
+  .calendar-top {
+    display: flex;
+    .calendar-top-left {
+      flex: 0 0 auto;
+    }
+    .calendar-top-center {
+      flex: 1 1 auto;
+    }
+    .calendar-top-right {
+      flex: 0 0 auto;
+
+      .calendar-simulations-dropdown {
+        min-width: 300px;
+        text-align: right;
+      }
+    }
+  }
 }
