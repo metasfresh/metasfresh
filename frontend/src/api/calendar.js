@@ -67,10 +67,11 @@ export const getAvailableSimulations = () => {
     .then(({ simulations }) => simulations.map(converters.fromAPISimulation));
 };
 
-export const createSimulation = () => {
+export const createSimulation = ({ copyFromSimulationId }) => {
   return axios
     .post(`${config.API_URL}/calendars/simulations/new`, {
       name: null, // to be generated
+      copyFromSimulationId,
     })
     .then(extractAxiosResponseData)
     .then((simulation) => converters.fromAPISimulation(simulation));

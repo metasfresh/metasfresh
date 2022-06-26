@@ -226,7 +226,11 @@ public class CalendarRestController
 	{
 		userSession.assertLoggedIn();
 
-		final CalendarSimulationRef simulationRef = simulationService.createNewSimulation(request.getName(), userSession.getLoggedUserId());
+		final CalendarSimulationRef simulationRef = simulationService.createNewSimulation(
+				request.getName(),
+				request.getCopyFromSimulationId(),
+				userSession.getLoggedUserId());
+
 		return JsonSimulationRef.of(simulationRef);
 	}
 

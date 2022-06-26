@@ -7,6 +7,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 

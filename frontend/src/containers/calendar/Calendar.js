@@ -184,10 +184,14 @@ const Calendar = ({ className = 'container' }) => {
             setSelectedSimulation(simulation);
           }}
           onNew={() => {
-            api.createSimulation().then((simulation) => {
-              setAvailableSimulations([...availableSimulations, simulation]);
-              setSelectedSimulation(simulation);
-            });
+            api
+              .createSimulation({
+                copyFromSimulationId: selectedSimulation?.simulationId,
+              })
+              .then((simulation) => {
+                setAvailableSimulations([...availableSimulations, simulation]);
+                setSelectedSimulation(simulation);
+              });
           }}
         />
       </div>

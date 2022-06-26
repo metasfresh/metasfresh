@@ -130,4 +130,12 @@ final class WOProjectSimulationPlan
 				? simulation.applyOn(woProjectResource)
 				: woProjectResource;
 	}
+
+	public WOProjectSimulationPlan mergeFrom(@NonNull final WOProjectSimulationPlan from)
+	{
+		return toBuilder()
+				.stepsById(CollectionUtils.mergeMaps(this.stepsById, from.stepsById))
+				.projectResourcesById(CollectionUtils.mergeMaps(this.projectResourcesById, from.projectResourcesById))
+				.build();
+	}
 }

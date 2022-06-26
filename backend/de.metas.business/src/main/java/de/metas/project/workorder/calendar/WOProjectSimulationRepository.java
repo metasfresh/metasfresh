@@ -93,4 +93,14 @@ public class WOProjectSimulationRepository
 						simulation -> WOProjectStepSimulation.reduce(simulation, request))
 		);
 	}
+
+	public void copySimulationDataTo(
+			@NonNull final CalendarSimulationId fromSimulationId,
+			@NonNull final CalendarSimulationId toSimulationId)
+	{
+		final WOProjectSimulationPlan fromSimulationPlan = getSimulationPlanById(fromSimulationId);
+		changeSimulationPlanById(
+				toSimulationId,
+				toSimulation -> toSimulation.mergeFrom(fromSimulationPlan));
+	}
 }
