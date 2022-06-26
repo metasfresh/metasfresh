@@ -499,4 +499,24 @@ public final class CollectionUtils
 		newMap.put(key, element);
 		return ImmutableMap.copyOf(newMap);
 	}
+
+	public static <K, V> ImmutableMap<K, V> mergeMaps(
+			@NonNull final ImmutableMap<K, V> map1,
+			@NonNull final ImmutableMap<K, V> map2)
+	{
+		if (map2.isEmpty())
+		{
+			return map1;
+		}
+		else if (map1.isEmpty())
+		{
+			return map2;
+		}
+		else
+		{
+			final LinkedHashMap<K, V> result = new LinkedHashMap<>(map1);
+			result.putAll(map2);
+			return ImmutableMap.copyOf(result);
+		}
+	}
 }
