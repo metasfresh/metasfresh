@@ -263,19 +263,25 @@ const Calendar = ({
             return;
           }
 
-          api
-            .addOrUpdateCalendarEvent({
-              id: params.event.id,
-              simulationId: selectedSimulationId,
-              startDate: params.event.start,
-              endDate: params.event.end,
-              allDay: params.event.allDay,
-            })
-            .then((changedEvents) => addCalendarEventsArray(changedEvents))
-            .catch((error) => {
-              console.log('Got error', error);
-              params.revert();
-            });
+          if (
+            params.event.startStr !== params.oldEvent.startStr ||
+            params.event.endStr !== params.oldEvent.endStr ||
+            params.event.allDay !== params.oldEvent.allDay
+          ) {
+            api
+              .addOrUpdateCalendarEvent({
+                id: params.event.id,
+                simulationId: selectedSimulationId,
+                startDate: params.event.start,
+                endDate: params.event.end,
+                allDay: params.event.allDay,
+              })
+              .then((changedEvents) => addCalendarEventsArray(changedEvents))
+              .catch((error) => {
+                console.log('Got error', error);
+                params.revert();
+              });
+          }
         }}
         drop={(event) => {
           console.log('drop', { event });
