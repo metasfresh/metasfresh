@@ -287,8 +287,8 @@ Feature: Sales order
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_S0156_900            | D            | true                | false       |
     Then after not more than 30s, M_InOut is found:
-      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier   |
-      | schedule_SO_S0156_900            | shipment_SO_S0156_900_2 |
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier   | OPT.IgnoreCreated.M_InOut_ID.Identifier |
+      | schedule_SO_S0156_900            | shipment_SO_S0156_900_2 | shipment_SO_S0156_900_1                 |
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier            | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO_S0156_900 | orderLine_SO_S0156_900    | N             | 26               |
