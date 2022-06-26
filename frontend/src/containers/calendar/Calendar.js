@@ -10,12 +10,14 @@ import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import '@fullcalendar/common/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
+import deLocale from '@fullcalendar/core/locales/de';
 
 import * as api from '../../api/calendar';
 import { normalizeDateTime } from './calendarUtils';
 
 import CalendarEventEditor from '../../components/calendar/CalendarEventEditor';
 import SimulationsDropDown from '../../components/calendar/SimulationsDropDown';
+import { getCurrentActiveLanguage } from '../../utils/locale';
 
 const extractResourcesFromCalendarsArray = (calendars) => {
   const resourcesById = calendars
@@ -216,6 +218,8 @@ const Calendar = ({
       </div>
       <FullCalendar
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
+        locales={[deLocale]}
+        locale={getCurrentActiveLanguage()}
         views={{
           resourceTimelineYear: {
             slotDuration: { months: 1 },
