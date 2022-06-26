@@ -61,8 +61,8 @@ Feature: Purchase order
     When the order identified by order_PO_S0156_100 is completed
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_100    | order_PO_S0156_100 | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_100    | order_PO_S0156_100    | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_100    | order_PO_S0156_100    | orderLine_PO_S0156_100    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
@@ -81,8 +81,8 @@ Feature: Purchase order
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_S0156_100       | receiptSchedule_PO_S0156_100    | inOut_PO_S0156_100    |
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_100    | order_PO_S0156_100 | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_100    | order_PO_S0156_100    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_100    | order_PO_S0156_100    | orderLine_PO_S0156_100    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
@@ -95,8 +95,8 @@ Feature: Purchase order
 
     When the M_ReceiptSchedule identified by receiptSchedule_PO_S0156_100 is closed
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_100    | order_PO_S0156_100 | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 0               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_100    | order_PO_S0156_100    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 0               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_100    | order_PO_S0156_100    | orderLine_PO_S0156_100    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | true          |
@@ -121,8 +121,8 @@ Feature: Purchase order
     When the order identified by order_PO_S0156_200 is completed
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_200    | order_PO_S0156_200 | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_200    | order_PO_S0156_200    | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_200    | order_PO_S0156_200    | orderLine_PO_S0156_200    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
@@ -141,8 +141,8 @@ Feature: Purchase order
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_S0156_200       | receiptSchedule_PO_S0156_200    | inOut_PO_S0156_200    |
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_200    | order_PO_S0156_200 | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_200    | order_PO_S0156_200    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_200    | order_PO_S0156_200    | orderLine_PO_S0156_200    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
@@ -155,8 +155,8 @@ Feature: Purchase order
 
     When the M_ReceiptSchedule identified by receiptSchedule_PO_S0156_200 is closed
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_200    | order_PO_S0156_200 | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 0               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_200    | order_PO_S0156_200    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 0               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_200    | order_PO_S0156_200    | orderLine_PO_S0156_200    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | true          |
@@ -169,8 +169,8 @@ Feature: Purchase order
 
     When the M_ReceiptSchedule identified by receiptSchedule_PO_S0156_200 is reactivated
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_200    | order_PO_S0156_200 | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_200    | order_PO_S0156_200    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_200    | order_PO_S0156_200    | orderLine_PO_S0156_200    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
@@ -195,8 +195,8 @@ Feature: Purchase order
     When the order identified by order_PO_S0156_300 is completed
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_300    | order_PO_S0156_300 | product_PO_17062022     | 27         | 0            | 0           | 10    | 0        | EUR          | true      | 27              |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_300    | order_PO_S0156_300    | product_PO_17062022     | 27         | 0            | 0           | 10    | 0        | EUR          | true      | 27              |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_300    | order_PO_S0156_300    | orderLine_PO_S0156_300    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 27         | warehouseStd              | 0            | false         |
@@ -215,8 +215,8 @@ Feature: Purchase order
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_S0156_300       | receiptSchedule_PO_S0156_300    | inOut_PO_S0156_300    |
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_300    | order_PO_S0156_300 | product_PO_17062022     | 27         | 27           | 0           | 10    | 0        | EUR          | true      | 0               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_300    | order_PO_S0156_300    | product_PO_17062022     | 27         | 27           | 0           | 10    | 0        | EUR          | true      | 0               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_300    | order_PO_S0156_300    | orderLine_PO_S0156_300    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 27         | warehouseStd              | 27           | false         |
@@ -241,8 +241,8 @@ Feature: Purchase order
     When the order identified by order_PO_S0156_400 is completed
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_400    | order_PO_S0156_400 | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_400    | order_PO_S0156_400    | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_400    | order_PO_S0156_400    | orderLine_PO_S0156_400    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
@@ -261,8 +261,8 @@ Feature: Purchase order
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_S0156_400_1     | receiptSchedule_PO_S0156_400    | inOut_PO_S0156_400_1  |
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_400    | order_PO_S0156_400 | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_400    | order_PO_S0156_400    | product_PO_17062022     | 26         | 24           | 0           | 10    | 0        | EUR          | true      | 2               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_400    | order_PO_S0156_400    | orderLine_PO_S0156_400    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 24           | false         |
@@ -281,8 +281,8 @@ Feature: Purchase order
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_S0156_400_2     | receiptSchedule_PO_S0156_400    | inOut_PO_S0156_400    |
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_400    | order_PO_S0156_400 | product_PO_17062022     | 26         | 26           | 0           | 10    | 0        | EUR          | true      | 0               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_400    | order_PO_S0156_400    | product_PO_17062022     | 26         | 26           | 0           | 10    | 0        | EUR          | true      | 0               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_400    | order_PO_S0156_400    | orderLine_PO_S0156_400    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 26           | false         |
@@ -307,8 +307,8 @@ Feature: Purchase order
     When the order identified by order_PO_S0156_500 is completed
 
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_500    | order_PO_S0156_500 | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_500    | order_PO_S0156_500    | product_PO_17062022     | 26         | 0            | 0           | 10    | 0        | EUR          | true      | 26              |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_500    | order_PO_S0156_500    | orderLine_PO_S0156_500    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 0            | false         |
@@ -327,8 +327,8 @@ Feature: Purchase order
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu_S0156_500       | receiptSchedule_PO_S0156_500    | inOut_PO_S0156_500    |
     Then validate C_OrderLine:
-      | C_OrderLine_ID.Identifier | Order.Identifier   | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
-      | orderLine_PO_S0156_500    | order_PO_S0156_500 | product_PO_17062022     | 26         | 30           | 0           | 10    | 0        | EUR          | true      | 0               |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_S0156_500    | order_PO_S0156_500    | product_PO_17062022     | 26         | 30           | 0           | 10    | 0        | EUR          | true      | 0               |
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
       | receiptSchedule_PO_S0156_500    | order_PO_S0156_500    | orderLine_PO_S0156_500    | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 26         | warehouseStd              | 30           | false         |
