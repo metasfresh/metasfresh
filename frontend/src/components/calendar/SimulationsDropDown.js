@@ -10,7 +10,7 @@ const toKeyCaption = (simulation) => {
 
 const SimulationsDropDown = ({
   simulations,
-  selectedSimulation,
+  selectedSimulationId,
   onSelect,
   onNew,
 }) => {
@@ -18,6 +18,9 @@ const SimulationsDropDown = ({
     accum[simulation.simulationId] = simulation;
     return accum;
   }, {});
+
+  const selectedSimulation =
+    selectedSimulationId != null ? simulationsById[selectedSimulationId] : null;
 
   const handleOnSelect = (keyCaptionEntry) => {
     if (!keyCaptionEntry || keyCaptionEntry.key === 'NONE') {
@@ -47,7 +50,10 @@ const SimulationsDropDown = ({
 
 SimulationsDropDown.propTypes = {
   simulations: PropTypes.array.isRequired,
-  selectedSimulation: PropTypes.object,
+  selectedSimulationId: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]),
   onNew: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
 };

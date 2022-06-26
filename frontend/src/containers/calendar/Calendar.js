@@ -52,7 +52,11 @@ const mergeCalendarEventsArrayToArray = (eventsArray, eventsToAdd) => {
   return Object.values(resultEventsById);
 };
 
-const Calendar = ({ className = 'container' }) => {
+const Calendar = ({
+  className = 'container',
+  simulationId: initialSelectedSimulationId,
+  onParamsChanged,
+}) => {
   const [calendarEvents, setCalendarEvents] = React.useState({
     startStr: null,
     endStr: null,
@@ -60,7 +64,10 @@ const Calendar = ({ className = 'container' }) => {
     events: [],
   });
   const [availableSimulations, setAvailableSimulations] = React.useState([]);
-  const [selectedSimulation, setSelectedSimulation] = React.useState(null);
+
+  const [selectedSimulationId, setSelectedSimulationId] = React.useState(
+    initialSelectedSimulationId
+  );
   const [availableCalendars, setAvailableCalendars] = React.useState([]);
   const [editingEvent, setEditingEvent] = React.useState(null);
 
@@ -69,12 +76,18 @@ const Calendar = ({ className = 'container' }) => {
     api.getAvailableCalendars().then(setAvailableCalendars);
   }, []);
 
+  if (onParamsChanged) {
+    useEffect(() => {
+      onParamsChanged({ simulationId: selectedSimulationId });
+    }, [selectedSimulationId]);
+  }
+
   const fetchCalendarEvents = (params) => {
     //console.log('fetchCalendarEvents', { params, calendarEvents });
 
     const startDate = normalizeDateTime(params.startStr);
     const endDate = normalizeDateTime(params.endStr);
-    const simulationId = selectedSimulation?.simulationId || null;
+    const simulationId = selectedSimulationId;
 
     if (
       calendarEvents.startDate === startDate &&
@@ -179,18 +192,18 @@ const Calendar = ({ className = 'container' }) => {
       <div>
         <SimulationsDropDown
           simulations={availableSimulations}
-          selectedSimulation={selectedSimulation}
+          selectedSimulationId={selectedSimulationId}
           onSelect={(simulation) => {
-            setSelectedSimulation(simulation);
+            setSelectedSimulationId(simulation?.simulationId);
           }}
           onNew={() => {
             api
               .createSimulation({
-                copyFromSimulationId: selectedSimulation?.simulationId,
+                copyFromSimulationId: selectedSimulationId,
               })
               .then((simulation) => {
                 setAvailableSimulations([...availableSimulations, simulation]);
-                setSelectedSimulation(simulation);
+                setSelectedSimulationId(simulation.simulationId);
               });
           }}
         />
@@ -244,7 +257,7 @@ const Calendar = ({ className = 'container' }) => {
           console.log('eventDragStop', { event });
         }}
         eventDrop={(params) => {
-          console.log('eventDrop', { params, selectedSimulation });
+          console.log('eventDrop', { params, selectedSimulationId });
 
           if (params.oldResource?.id !== params.newResource?.id) {
             console.log('moving event to another resource is not allowed');
@@ -255,7 +268,7 @@ const Calendar = ({ className = 'container' }) => {
           api
             .addOrUpdateCalendarEvent({
               id: params.event.id,
-              simulationId: selectedSimulation?.simulationId,
+              simulationId: selectedSimulationId,
               startDate: params.event.start,
               endDate: params.event.end,
               allDay: params.event.allDay,
@@ -291,6 +304,8 @@ const Calendar = ({ className = 'container' }) => {
 
 Calendar.propTypes = {
   className: PropTypes.string,
+  simulationId: PropTypes.string,
+  onParamsChanged: PropTypes.func,
 };
 
 export default Calendar;
