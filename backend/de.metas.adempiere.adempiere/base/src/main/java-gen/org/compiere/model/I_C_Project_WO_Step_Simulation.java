@@ -1,18 +1,17 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for C_Project_WO_Step
+/** Generated Interface for C_Project_WO_Step_Simulation
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Project_WO_Step 
+public interface I_C_Project_WO_Step_Simulation 
 {
 
-	String Table_Name = "C_Project_WO_Step";
+	String Table_Name = "C_Project_WO_Step_Simulation";
 
-//	/** AD_Table_ID=542159 */
+//	/** AD_Table_ID=542175 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -75,7 +74,7 @@ public interface I_C_Project_WO_Step
 	/**
 	 * Set Project Step.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -84,14 +83,64 @@ public interface I_C_Project_WO_Step
 	/**
 	 * Get Project Step.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_Project_WO_Step_ID();
 
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_C_Project_WO_Step_ID = new ModelColumn<>(I_C_Project_WO_Step.class, "C_Project_WO_Step_ID", null);
+	org.compiere.model.I_C_Project_WO_Step getC_Project_WO_Step();
+
+	void setC_Project_WO_Step(org.compiere.model.I_C_Project_WO_Step C_Project_WO_Step);
+
+	ModelColumn<I_C_Project_WO_Step_Simulation, org.compiere.model.I_C_Project_WO_Step> COLUMN_C_Project_WO_Step_ID = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "C_Project_WO_Step_ID", org.compiere.model.I_C_Project_WO_Step.class);
 	String COLUMNNAME_C_Project_WO_Step_ID = "C_Project_WO_Step_ID";
+
+	/**
+	 * Set WO Project Step Simulation.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_WO_Step_Simulation_ID (int C_Project_WO_Step_Simulation_ID);
+
+	/**
+	 * Get WO Project Step Simulation.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_WO_Step_Simulation_ID();
+
+	ModelColumn<I_C_Project_WO_Step_Simulation, Object> COLUMN_C_Project_WO_Step_Simulation_ID = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "C_Project_WO_Step_Simulation_ID", null);
+	String COLUMNNAME_C_Project_WO_Step_Simulation_ID = "C_Project_WO_Step_Simulation_ID";
+
+	/**
+	 * Set Simulation Plan.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_SimulationPlan_ID (int C_SimulationPlan_ID);
+
+	/**
+	 * Get Simulation Plan.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_SimulationPlan_ID();
+
+	org.compiere.model.I_C_SimulationPlan getC_SimulationPlan();
+
+	void setC_SimulationPlan(org.compiere.model.I_C_SimulationPlan C_SimulationPlan);
+
+	ModelColumn<I_C_Project_WO_Step_Simulation, org.compiere.model.I_C_SimulationPlan> COLUMN_C_SimulationPlan_ID = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "C_SimulationPlan_ID", org.compiere.model.I_C_SimulationPlan.class);
+	String COLUMNNAME_C_SimulationPlan_ID = "C_SimulationPlan_ID";
 
 	/**
 	 * Get Created.
@@ -103,7 +152,7 @@ public interface I_C_Project_WO_Step
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_Created = new ModelColumn<>(I_C_Project_WO_Step.class, "Created", null);
+	ModelColumn<I_C_Project_WO_Step_Simulation, Object> COLUMN_Created = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -136,7 +185,7 @@ public interface I_C_Project_WO_Step
 	 */
 	java.sql.Timestamp getDateEnd();
 
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateEnd = new ModelColumn<>(I_C_Project_WO_Step.class, "DateEnd", null);
+	ModelColumn<I_C_Project_WO_Step_Simulation, Object> COLUMN_DateEnd = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "DateEnd", null);
 	String COLUMNNAME_DateEnd = "DateEnd";
 
 	/**
@@ -159,29 +208,8 @@ public interface I_C_Project_WO_Step
 	 */
 	java.sql.Timestamp getDateStart();
 
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateStart = new ModelColumn<>(I_C_Project_WO_Step.class, "DateStart", null);
+	ModelColumn<I_C_Project_WO_Step_Simulation, Object> COLUMN_DateStart = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "DateStart", null);
 	String COLUMNNAME_DateStart = "DateStart";
-
-	/**
-	 * Set Description.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDescription (@Nullable java.lang.String Description);
-
-	/**
-	 * Get Description.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getDescription();
-
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_Description = new ModelColumn<>(I_C_Project_WO_Step.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Active.
@@ -203,54 +231,8 @@ public interface I_C_Project_WO_Step
 	 */
 	boolean isActive();
 
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Project_WO_Step.class, "IsActive", null);
+	ModelColumn<I_C_Project_WO_Step_Simulation, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setName (java.lang.String Name);
-
-	/**
-	 * Get Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getName();
-
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_Name = new ModelColumn<>(I_C_Project_WO_Step.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo (int SeqNo);
-
-	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getSeqNo();
-
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_Project_WO_Step.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.
@@ -262,7 +244,7 @@ public interface I_C_Project_WO_Step
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_Updated = new ModelColumn<>(I_C_Project_WO_Step.class, "Updated", null);
+	ModelColumn<I_C_Project_WO_Step_Simulation, Object> COLUMN_Updated = new ModelColumn<>(I_C_Project_WO_Step_Simulation.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

@@ -35,7 +35,7 @@ import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.CalendarResourceRef;
 import de.metas.calendar.CalendarService;
 import de.metas.calendar.CalendarServiceId;
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ResourceId;
 import de.metas.resource.Resource;
@@ -233,7 +233,7 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	}
 
 	@Override
-	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable CalendarSimulationId simulationId)
+	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable SimulationPlanId simulationId)
 	{
 		if (simulationId != null)
 		{

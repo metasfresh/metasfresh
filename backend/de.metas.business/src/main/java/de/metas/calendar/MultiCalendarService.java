@@ -25,7 +25,7 @@ package de.metas.calendar;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -85,7 +85,7 @@ public class MultiCalendarService
 		return trxManager.callInThreadInheritedTrx(() -> calendarService.updateEntry(request));
 	}
 
-	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable CalendarSimulationId simulationId)
+	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable SimulationPlanId simulationId)
 	{
 		final CalendarService calendarService = getCalendarServiceById(entryId.getCalendarServiceId());
 		trxManager.runInThreadInheritedTrx(() -> calendarService.deleteEntryById(entryId, simulationId));

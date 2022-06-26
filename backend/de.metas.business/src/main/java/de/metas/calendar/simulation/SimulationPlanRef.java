@@ -9,12 +9,12 @@ import java.time.Instant;
 
 @Value
 @Builder
-public class CalendarSimulationRef
+public class SimulationPlanRef
 {
-	@NonNull CalendarSimulationId id;
+	@NonNull SimulationPlanId id;
 	@NonNull String name;
+	@NonNull UserId responsibleUserId;
 	boolean processed;
 
 	@NonNull Instant created;
-	@NonNull UserId createdByUserId;
 }

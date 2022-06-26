@@ -1,6 +1,6 @@
 package de.metas.project.workorder;
 
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
 import de.metas.util.Check;
@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class WOProjectStepSimulation
 {
-	@NonNull CalendarSimulationId simulationId;
 	@NonNull ProjectId projectId;
 	@NonNull WOProjectStepId stepId;
 
@@ -25,7 +24,6 @@ public class WOProjectStepSimulation
 		if (simulation == null)
 		{
 			return builder()
-					.simulationId(updateRequest.getSimulationId())
 					.projectId(updateRequest.getProjectId())
 					.stepId(updateRequest.getStepId())
 					.dateRange(updateRequest.getDateRange())
@@ -33,7 +31,6 @@ public class WOProjectStepSimulation
 		}
 		else
 		{
-			Check.assumeEquals(simulation.getSimulationId(), updateRequest.getSimulationId(), "expected same simulationId: {}, {}", simulation, updateRequest);
 			Check.assumeEquals(simulation.getProjectId(), updateRequest.getProjectId(), "expected same projectId: {}, {}", simulation, updateRequest);
 			Check.assumeEquals(simulation.getStepId(), updateRequest.getStepId(), "expected same stepId: {}, {}", simulation, updateRequest);
 
@@ -57,7 +54,7 @@ public class WOProjectStepSimulation
 	@Builder
 	public static class UpdateRequest
 	{
-		@NonNull CalendarSimulationId simulationId;
+		@NonNull SimulationPlanId simulationId;
 		@NonNull ProjectId projectId;
 		@NonNull WOProjectStepId stepId;
 

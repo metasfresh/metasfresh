@@ -23,7 +23,7 @@
 package de.metas.calendar;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.user.UserId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
@@ -43,7 +43,7 @@ public class CalendarQuery
 {
 	@Nullable UserId availableForUserId;
 
-	@Nullable CalendarSimulationId simulationId;
+	@Nullable SimulationPlanId simulationId;
 
 	@NonNull @Singular Set<CalendarServiceId> onlyCalendarServiceIds;
 	@NonNull @Singular Set<CalendarGlobalId> onlyCalendarIds;

@@ -30,9 +30,9 @@ import de.metas.calendar.CalendarEntryUpdateRequest;
 import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.MultiCalendarService;
-import de.metas.calendar.simulation.CalendarSimulationId;
-import de.metas.calendar.simulation.CalendarSimulationRef;
-import de.metas.calendar.simulation.CalendarSimulationService;
+import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.calendar.simulation.SimulationPlanRef;
+import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
@@ -64,7 +64,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
-import java.util.Collection;
 import java.util.Comparator;
 
 @Api
@@ -74,12 +73,12 @@ public class CalendarRestController
 {
 	private final UserSession userSession;
 	private final MultiCalendarService calendarService;
-	private final CalendarSimulationService simulationService;
+	private final SimulationPlanService simulationService;
 
 	public CalendarRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final MultiCalendarService calendarService,
-			@NonNull final CalendarSimulationService simulationService)
+			@NonNull final SimulationPlanService simulationService)
 	{
 		this.userSession = userSession;
 		this.calendarService = calendarService;
@@ -218,7 +217,7 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 		calendarService.deleteEntryById(
 				CalendarEntryId.ofString(entryIdStr),
-				CalendarSimulationId.ofNullable(simulationIdStr));
+				SimulationPlanId.ofNullableObject(simulationIdStr));
 	}
 
 	@PostMapping("/simulations/new")
@@ -226,7 +225,7 @@ public class CalendarRestController
 	{
 		userSession.assertLoggedIn();
 
-		final CalendarSimulationRef simulationRef = simulationService.createNewSimulation(
+		final SimulationPlanRef simulationRef = simulationService.createNewSimulation(
 				request.getName(),
 				request.getCopyFromSimulationId(),
 				userSession.getLoggedUserId());
@@ -239,12 +238,13 @@ public class CalendarRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Collection<CalendarSimulationRef> simulationRefs = simulationService.getAll();
 		return JsonGetAvailableSimulationsResponse.builder()
-				.simulations(simulationRefs.stream()
-						.map(JsonSimulationRef::of)
-						.sorted(Comparator.comparing(JsonSimulationRef::getName))
-						.collect(ImmutableList.toImmutableList()))
+				.simulations(
+						simulationService.getAllNotProcessed()
+								.stream()
+								.map(JsonSimulationRef::of)
+								.sorted(Comparator.comparing(JsonSimulationRef::getName))
+								.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 

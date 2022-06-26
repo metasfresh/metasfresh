@@ -26,7 +26,7 @@ import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarResourceId;
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,7 +42,7 @@ public class JsonCalendarEntry
 {
 	@NonNull CalendarEntryId entryId;
 
-	@Nullable CalendarSimulationId simulationId;
+	@Nullable SimulationPlanId simulationId;
 
 	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;

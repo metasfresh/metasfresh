@@ -1,7 +1,7 @@
 package de.metas.ui.web.calendar.json;
 
-import de.metas.calendar.simulation.CalendarSimulationId;
-import de.metas.calendar.simulation.CalendarSimulationRef;
+import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.calendar.simulation.SimulationPlanRef;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -12,11 +12,11 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class JsonSimulationRef
 {
-	@NonNull CalendarSimulationId id;
+	@NonNull SimulationPlanId id;
 	@NonNull String name;
 	boolean processed;
 
-	public static JsonSimulationRef of(@NonNull final CalendarSimulationRef simulationRef)
+	public static JsonSimulationRef of(@NonNull final SimulationPlanRef simulationRef)
 	{
 		return builder()
 				.id(simulationRef.getId())

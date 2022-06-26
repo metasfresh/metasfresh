@@ -104,6 +104,7 @@ public class BudgetProjectResourceRepository
 				.dateRange(CalendarDateRange.builder()
 						.startDate(TimeUtil.asZonedDateTime(record.getDateStartPlan()))
 						.endDate(TimeUtil.asZonedDateTime(record.getDateFinishPlan()))
+						.allDay(true)
 						.build())
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.build();

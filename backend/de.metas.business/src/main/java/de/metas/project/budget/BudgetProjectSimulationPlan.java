@@ -1,14 +1,16 @@
 package de.metas.project.budget;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.calendar.simulation.CalendarSimulationId;
+import com.google.common.collect.ImmutableMap;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
@@ -16,44 +18,66 @@ public class BudgetProjectSimulationPlan
 {
 	@Getter
 	@NonNull
-	private final CalendarSimulationId simulationPlanId;
-	private final HashMap<BudgetProjectResourceId, BudgetProjectResourceSimulation> byProjectResourceId = new HashMap<>();
+	private final SimulationPlanId simulationPlanId;
+	private final ImmutableMap<BudgetProjectResourceId, BudgetProjectResourceSimulation> projectResourcesById;
 
-	public BudgetProjectSimulationPlan(@NonNull final CalendarSimulationId simulationPlanId)
+	@Builder(toBuilder = true)
+	private BudgetProjectSimulationPlan(
+			@NonNull final SimulationPlanId simulationPlanId,
+			@Nullable final ImmutableMap<BudgetProjectResourceId, BudgetProjectResourceSimulation> projectResourcesById)
 	{
 		this.simulationPlanId = simulationPlanId;
+		this.projectResourcesById = projectResourcesById != null ? projectResourcesById : ImmutableMap.of();
 	}
 
-	public synchronized Collection<BudgetProjectResourceSimulation> getAll()
+	public Collection<BudgetProjectResourceSimulation> getAll()
 	{
-		return ImmutableList.copyOf(byProjectResourceId.values());
+		return projectResourcesById.values();
 	}
 
-	synchronized BudgetProjectResourceSimulation changeById(
-			@NonNull BudgetProjectAndResourceId budgetProjectAndResourceId,
+	BudgetProjectSimulationPlan mapByProjectResourceId(
+			@NonNull BudgetProjectAndResourceId projectAndResourceId,
 			@NonNull UnaryOperator<BudgetProjectResourceSimulation> mapper)
 	{
 		@Nullable
-		BudgetProjectResourceSimulation simulation = getByProjectResourceIdOrNull(budgetProjectAndResourceId.getProjectResourceId());
+		BudgetProjectResourceSimulation simulation = getByProjectResourceIdOrNull(projectAndResourceId.getProjectResourceId());
 		final BudgetProjectResourceSimulation simulationChanged = mapper.apply(simulation);
 		if (Objects.equals(simulation, simulationChanged))
 		{
-			return simulation;
+			// no changes
+			return this;
 		}
 		else
 		{
 			Check.assumeNotNull(simulationChanged, "changed simulation cannot be null");
-			Check.assumeEquals(simulationChanged.getSimulationId(), simulationPlanId, "simulationId");
-			Check.assumeEquals(simulationChanged.getProjectAndResourceId(), budgetProjectAndResourceId, "projectAndResourceId");
+			Check.assumeEquals(simulationChanged.getProjectAndResourceId(), projectAndResourceId, "projectStepAndResourceId");
 
-			byProjectResourceId.put(budgetProjectAndResourceId.getProjectResourceId(), simulationChanged);
-			return simulationChanged;
+			return toBuilder()
+					.projectResourcesById(CollectionUtils.mergeElementToMap(projectResourcesById, simulationChanged, BudgetProjectResourceSimulation::getProjectResourceId))
+					.build();
 		}
 	}
 
 	@Nullable
-	public synchronized BudgetProjectResourceSimulation getByProjectResourceIdOrNull(@NonNull final BudgetProjectResourceId projectResourceId)
+	public BudgetProjectResourceSimulation getByProjectResourceIdOrNull(@NonNull final BudgetProjectResourceId projectResourceId)
 	{
-		return byProjectResourceId.get(projectResourceId);
+		return projectResourcesById.get(projectResourceId);
+	}
+
+	public BudgetProjectResourceSimulation getByProjectResourceId(@NonNull final BudgetProjectResourceId projectResourceId)
+	{
+		final BudgetProjectResourceSimulation projectResource = getByProjectResourceIdOrNull(projectResourceId);
+		if (projectResource == null)
+		{
+			throw new AdempiereException("No simulation found for " + projectResourceId);
+		}
+		return projectResource;
+	}
+
+	public BudgetProjectSimulationPlan mergeFrom(final BudgetProjectSimulationPlan fromSimulationPlan)
+	{
+		return toBuilder()
+				.projectResourcesById(CollectionUtils.mergeMaps(this.projectResourcesById, fromSimulationPlan.projectResourcesById))
+				.build();
 	}
 }

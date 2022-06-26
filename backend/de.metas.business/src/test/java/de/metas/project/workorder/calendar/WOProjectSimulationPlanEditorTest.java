@@ -1,7 +1,7 @@
 package de.metas.project.workorder.calendar;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
@@ -124,7 +124,7 @@ class WOProjectSimulationPlanEditorTest
 						))
 						.build())
 				.currentSimulationPlan(WOProjectSimulationPlan.builder()
-						.simulationPlanId(CalendarSimulationId.of("simulation1"))
+						.simulationPlanId(SimulationPlanId.ofRepoId(1))
 						.build())
 				.build();
 

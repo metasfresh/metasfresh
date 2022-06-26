@@ -1,6 +1,6 @@
 package de.metas.project.workorder.calendar;
 
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -15,19 +15,19 @@ public class WOProjectSimulationService
 		this.woProjectSimulationRepository = woProjectSimulationRepository;
 	}
 
-	public WOProjectSimulationPlan getSimulationPlanById(final CalendarSimulationId simulationId)
+	public WOProjectSimulationPlan getSimulationPlanById(final SimulationPlanId simulationId)
 	{
 		return woProjectSimulationRepository.getSimulationPlanById(simulationId);
 	}
 
 	public void savePlan(final WOProjectSimulationPlan plan)
 	{
-		woProjectSimulationRepository.changeSimulationPlan(plan);
+		woProjectSimulationRepository.savePlan(plan);
 	}
 
 	public void copySimulationDataTo(
-			@NonNull final CalendarSimulationId fromSimulationId,
-			@NonNull final CalendarSimulationId toSimulationId)
+			@NonNull final SimulationPlanId fromSimulationId,
+			@NonNull final SimulationPlanId toSimulationId)
 	{
 		woProjectSimulationRepository.copySimulationDataTo(fromSimulationId, toSimulationId);
 	}

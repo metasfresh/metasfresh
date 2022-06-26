@@ -351,7 +351,7 @@ public interface I_C_Project_WO_Resource
 	 * Resource
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setS_Resource_ID (int S_Resource_ID);
@@ -361,7 +361,7 @@ public interface I_C_Project_WO_Resource
 	 * Resource
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getS_Resource_ID();

@@ -38,7 +38,7 @@ import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.CalendarResourceRef;
 import de.metas.calendar.CalendarService;
 import de.metas.calendar.CalendarServiceId;
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -255,7 +255,7 @@ public class WOProjectCalendarService implements CalendarService
 			@NonNull final BudgetProjectResource budget0,
 			@Nullable final BudgetProjectResourceSimulation budgetSimulation,
 			@NonNull final BudgetProject project,
-			@Nullable final CalendarSimulationId simulationId,
+			@Nullable final SimulationPlanId simulationId,
 			@NonNull final WOProjectFrontendURLsProvider frontendURLs)
 	{
 		final BudgetProjectResource budgetEffective = budgetSimulation != null ? budgetSimulation.applyOn(budget0) : budget0;
@@ -282,7 +282,7 @@ public class WOProjectCalendarService implements CalendarService
 			@NonNull final WOProjectResource resource,
 			@NonNull final WOProjectStep step,
 			@NonNull final WOProject project,
-			@Nullable final CalendarSimulationId simulationId,
+			@Nullable final SimulationPlanId simulationId,
 			@NonNull final WOProjectFrontendURLsProvider frontendURLs)
 	{
 		final int durationInt = DurationUtils.toInt(resource.getDuration(), resource.getDurationUnit());
@@ -419,7 +419,7 @@ public class WOProjectCalendarService implements CalendarService
 	}
 
 	@Override
-	public void deleteEntryById(final CalendarEntryId entryId, @Nullable CalendarSimulationId simulationId)
+	public void deleteEntryById(final CalendarEntryId entryId, @Nullable SimulationPlanId simulationId)
 	{
 		throw new UnsupportedOperationException();
 	}

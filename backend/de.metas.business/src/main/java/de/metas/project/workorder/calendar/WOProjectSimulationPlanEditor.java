@@ -1,7 +1,7 @@
 package de.metas.project.workorder.calendar;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProject;
@@ -21,6 +21,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -31,8 +32,9 @@ class WOProjectSimulationPlanEditor
 	@NonNull private final WOProjectResources _originalProjectResources;
 
 	@Getter
-	private final CalendarSimulationId simulationPlanId;
+	private final SimulationPlanId simulationPlanId;
 	private final HashMap<WOProjectStepId, WOProjectStepSimulation> simulationStepsById;
+	private final HashSet<WOProjectResourceId> changedProjectResourceIds = new HashSet<>();
 	private final HashMap<WOProjectResourceId, WOProjectResourceSimulation> simulationProjectResourcesById;
 
 	@Builder
@@ -136,8 +138,7 @@ class WOProjectSimulationPlanEditor
 
 	public Stream<WOProjectResource> getChangedProjectResources()
 	{
-		return simulationProjectResourcesById.keySet()
-				.stream()
+		return changedProjectResourceIds.stream()
 				.map(this._originalProjectResources::getById)
 				.map(this::adjustBySimulation);
 	}
@@ -169,7 +170,6 @@ class WOProjectSimulationPlanEditor
 					if (existingSimulation == null)
 					{
 						builder = WOProjectStepSimulation.builder()
-								.simulationId(simulationPlanId)
 								.projectId(getProjectId())
 								.stepId(stepId);
 					}
@@ -193,7 +193,6 @@ class WOProjectSimulationPlanEditor
 					if (existingSimulation == null)
 					{
 						builder = WOProjectResourceSimulation.builder()
-								.simulationId(simulationPlanId)
 								.projectStepAndResourceId(projectStepAndResourceId);
 					}
 					else
@@ -203,6 +202,8 @@ class WOProjectSimulationPlanEditor
 
 					return builder.dateRange(newDateRange).build();
 				});
+
+		changedProjectResourceIds.add(projectStepAndResourceId.getProjectResourceId());
 	}
 
 	private void shiftLeftAllStepsBefore(@NonNull final WOProjectStepId stepId)

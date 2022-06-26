@@ -1,6 +1,6 @@
 package de.metas.project.workorder;
 
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class WOProjectResourceSimulation
 {
-	@NonNull CalendarSimulationId simulationId;
 	@NonNull WOProjectStepAndResourceId projectStepAndResourceId;
 
 	@NonNull CalendarDateRange dateRange;
@@ -28,14 +27,12 @@ public class WOProjectResourceSimulation
 		if (simulation == null)
 		{
 			return builder()
-					.simulationId(updateRequest.getSimulationId())
 					.projectStepAndResourceId(updateRequest.getProjectStepAndResourceId())
 					.dateRange(updateRequest.getDateRange())
 					.build();
 		}
 		else
 		{
-			Check.assumeEquals(simulation.getSimulationId(), updateRequest.getSimulationId(), "expected same simulationId: {}, {}", simulation, updateRequest);
 			Check.assumeEquals(simulation.getProjectStepAndResourceId(), updateRequest.getProjectStepAndResourceId(), "expected same projectStepAndResourceId: {}, {}", simulation, updateRequest);
 
 			return simulation.toBuilder()
@@ -62,7 +59,7 @@ public class WOProjectResourceSimulation
 	@Builder
 	public static class UpdateRequest
 	{
-		@NonNull CalendarSimulationId simulationId;
+		@NonNull SimulationPlanId simulationId;
 		@NonNull WOProjectStepAndResourceId projectStepAndResourceId;
 
 		@NonNull CalendarDateRange dateRange;

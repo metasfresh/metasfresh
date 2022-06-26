@@ -22,7 +22,7 @@
 
 package de.metas.calendar;
 
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.user.UserId;
 
 import javax.annotation.Nullable;
@@ -42,5 +42,5 @@ public interface CalendarService
 
 	void deleteEntryById(
 			CalendarEntryId entryId,
-			@Nullable CalendarSimulationId simulationId);
+			@Nullable SimulationPlanId simulationId);
 }

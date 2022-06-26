@@ -1,6 +1,6 @@
 package de.metas.project.budget;
 
-import de.metas.calendar.simulation.CalendarSimulationId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -13,10 +13,11 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class BudgetProjectResourceSimulation
 {
-	@NonNull CalendarSimulationId simulationId;
 	@NonNull BudgetProjectAndResourceId projectAndResourceId;
 
 	@NonNull CalendarDateRange dateRange;
+
+	public BudgetProjectResourceId getProjectResourceId() {return getProjectAndResourceId().getProjectResourceId();}
 
 	public static BudgetProjectResourceSimulation reduce(@Nullable BudgetProjectResourceSimulation simulation, @NonNull UpdateRequest updateRequest)
 	{
@@ -24,12 +25,10 @@ public class BudgetProjectResourceSimulation
 		if (simulation == null)
 		{
 			builder = builder()
-					.simulationId(updateRequest.getSimulationId())
 					.projectAndResourceId(updateRequest.getProjectAndResourceId());
 		}
 		else
 		{
-			Check.assumeEquals(simulation.getSimulationId(), updateRequest.getSimulationId(), "expected same simulationId: {}, {}", simulation, updateRequest);
 			Check.assumeEquals(simulation.getProjectAndResourceId(), updateRequest.getProjectAndResourceId(), "expected same projectAndResourceId: {}, {}", simulation, updateRequest);
 
 			builder = simulation.toBuilder();
@@ -58,7 +57,7 @@ public class BudgetProjectResourceSimulation
 	@Builder
 	public static class UpdateRequest
 	{
-		@NonNull CalendarSimulationId simulationId;
+		@NonNull SimulationPlanId simulationId;
 		@NonNull BudgetProjectAndResourceId projectAndResourceId;
 
 		@NonNull CalendarDateRange dateRange;
