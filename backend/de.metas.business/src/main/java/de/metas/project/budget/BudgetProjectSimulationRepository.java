@@ -71,8 +71,8 @@ public class BudgetProjectSimulationRepository
 						ProjectId.ofRepoId(record.getC_Project_ID()),
 						BudgetProjectResourceId.ofRepoId(record.getC_Project_Resource_Budget_ID())))
 				.dateRange(CalendarDateRange.builder()
-						.startDate(TimeUtil.asZonedDateTime(record.getDateStartPlan()))
-						.endDate(TimeUtil.asZonedDateTime(record.getDateFinishPlan()))
+						.startDate(record.getDateStartPlan().toInstant())
+						.endDate(record.getDateFinishPlan().toInstant())
 						.allDay(true)
 						.build())
 				.build();

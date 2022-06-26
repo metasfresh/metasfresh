@@ -7,23 +7,24 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CalendarDateRangeTest
 {
-	public static final ZonedDateTime refZDT = LocalDate.parse("2022-06-24").atStartOfDay(ZoneId.of("Europe/Bucharest"));
+	public static final Instant refInstant = LocalDate.parse("2022-06-24").atStartOfDay(ZoneId.of("Europe/Bucharest")).toInstant();
 
-	private static ZonedDateTime zdt(int daysOffset) {return refZDT.plusDays(daysOffset);}
+	private static Instant instant(int daysOffset) {return refInstant.plus(daysOffset, ChronoUnit.DAYS);}
 
 	private static CalendarDateRange allDay(int daysOffsetStart, int daysOffsetEnd)
 	{
 		return CalendarDateRange.builder()
-				.startDate(zdt(daysOffsetStart))
-				.endDate(zdt(daysOffsetEnd))
+				.startDate(instant(daysOffsetStart))
+				.endDate(instant(daysOffsetEnd))
 				.allDay(true)
 				.build();
 	}
@@ -34,11 +35,10 @@ class CalendarDateRangeTest
 		@Test
 		void equalStartAndEndDate()
 		{
-			final ZonedDateTime zdt = zdt(1);
-			Assertions.assertThatThrownBy(() -> CalendarDateRange.builder().startDate(zdt).endDate(zdt).build())
+			final Instant instant = instant(1);
+			Assertions.assertThatThrownBy(() -> CalendarDateRange.builder().startDate(instant).endDate(instant).build())
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Start date and end date shall not be equal")
-			;
+					.hasMessageStartingWith("Start date and end date shall not be equal");
 		}
 	}
 

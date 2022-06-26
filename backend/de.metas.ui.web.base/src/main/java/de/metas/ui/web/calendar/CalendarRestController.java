@@ -157,8 +157,8 @@ public class CalendarRestController
 				.title(request.getTitle())
 				.description(request.getDescription())
 				.dateRange(CalendarDateRange.builder()
-						.startDate(request.getStartDate().toZonedDateTime())
-						.endDate(request.getEndDate().toZonedDateTime())
+						.startDate(request.getStartDate().toInstant())
+						.endDate(request.getEndDate().toInstant())
 						.allDay(request.isAllDay())
 						.build())
 				.build());
@@ -194,8 +194,8 @@ public class CalendarRestController
 		if (startDate != null && endDate != null && isAllDay != null)
 		{
 			return CalendarDateRange.builder()
-					.startDate(startDate.toZonedDateTime())
-					.endDate(endDate.toZonedDateTime())
+					.startDate(startDate.toInstant())
+					.endDate(endDate.toInstant())
 					.allDay(isAllDay)
 					.build();
 		}

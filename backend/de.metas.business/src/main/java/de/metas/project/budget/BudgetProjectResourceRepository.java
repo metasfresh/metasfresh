@@ -40,7 +40,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_Resource_Budget;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
@@ -102,8 +101,8 @@ public class BudgetProjectResourceRepository
 				.plannedAmount(Money.of(record.getPlannedAmt(), currencyId))
 				.pricePerDurationUnit(Money.of(record.getPricePerTimeUOM(), currencyId))
 				.dateRange(CalendarDateRange.builder()
-						.startDate(TimeUtil.asZonedDateTime(record.getDateStartPlan()))
-						.endDate(TimeUtil.asZonedDateTime(record.getDateFinishPlan()))
+						.startDate(record.getDateStartPlan().toInstant())
+						.endDate(record.getDateFinishPlan().toInstant())
 						.allDay(true)
 						.build())
 				.description(StringUtils.trimBlankToNull(record.getDescription()))

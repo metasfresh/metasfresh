@@ -35,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project_WO_Resource;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
@@ -95,8 +94,8 @@ public class WOProjectResourceRepository
 				.stepId(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.dateRange(CalendarDateRange.builder()
-						.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom()))
-						.endDate(TimeUtil.asZonedDateTime(record.getAssignDateTo()))
+						.startDate(record.getAssignDateFrom().toInstant())
+						.endDate(record.getAssignDateTo().toInstant())
 						.allDay(record.isAllDay())
 						.build())
 				.durationUnit(durationUnit)

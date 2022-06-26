@@ -35,6 +35,7 @@ import org.compiere.model.I_S_Resource_Group_Assignment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.function.UnaryOperator;
@@ -94,18 +95,18 @@ class ResourceGroupAssignmentRepository
 	private static CalendarDateRange extractDateRange(@NonNull final I_S_Resource_Group_Assignment record)
 	{
 		return CalendarDateRange.builder()
-				.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom()))
+				.startDate(record.getAssignDateFrom().toInstant())
 				.endDate(CoalesceUtil.coalesceSuppliersNotNull(
-						() -> TimeUtil.asZonedDateTime(record.getAssignDateTo()),
-						() -> LocalDate.MAX.atTime(LocalTime.MAX).atZone(SystemTime.zoneId())))
+						() -> TimeUtil.asInstant(record.getAssignDateTo()),
+						() -> LocalDate.MAX.atTime(LocalTime.MAX).atZone(SystemTime.zoneId()).toInstant()))
 				.allDay(record.isAllDay())
 				.build();
 	}
 
 	private static void updateRecordFromDateRange(@NonNull final I_S_Resource_Group_Assignment record, @NonNull final CalendarDateRange from)
 	{
-		record.setAssignDateFrom(TimeUtil.asTimestampNotNull(from.getStartDate()));
-		record.setAssignDateTo(TimeUtil.asTimestampNotNull(from.getEndDate()));
+		record.setAssignDateFrom(Timestamp.from(from.getStartDate()));
+		record.setAssignDateTo(Timestamp.from(from.getEndDate()));
 		record.setIsAllDay(from.isAllDay());
 	}
 

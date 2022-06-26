@@ -82,8 +82,8 @@ public class WOProjectSimulationRepository
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
 				.stepId(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
 				.dateRange(CalendarDateRange.builder()
-						.startDate(TimeUtil.asZonedDateTime(record.getDateStart()))
-						.endDate(TimeUtil.asZonedDateTime(record.getDateEnd()))
+						.startDate(record.getDateStart().toInstant())
+						.endDate(record.getDateEnd().toInstant())
 						.build())
 				.build();
 	}
@@ -105,8 +105,8 @@ public class WOProjectSimulationRepository
 						WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()),
 						WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID())))
 				.dateRange(CalendarDateRange.builder()
-						.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom()))
-						.endDate(TimeUtil.asZonedDateTime(record.getAssignDateTo()))
+						.startDate(record.getAssignDateFrom().toInstant())
+						.endDate(record.getAssignDateTo().toInstant())
 						.allDay(record.isAllDay())
 						.build())
 				.build();

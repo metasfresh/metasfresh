@@ -19,9 +19,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
@@ -30,7 +30,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 
 class WOProjectSimulationPlanEditorTest
 {
-	public static final ZonedDateTime refZDT = LocalDate.parse("2022-06-01").atStartOfDay(ZoneId.of("Europe/Berlin"));
+	public static final Instant refInstant = LocalDate.parse("2022-06-01").atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant();
 
 	@BeforeAll
 	static void beforeAll()
@@ -44,13 +44,13 @@ class WOProjectSimulationPlanEditorTest
 		validateSnapshots();
 	}
 
-	private static ZonedDateTime zdt(int day) {return refZDT.plusDays(day - 1);}
+	private static Instant instant(int day) {return refInstant.plus(day - 1, ChronoUnit.DAYS);}
 
 	private static CalendarDateRange allDay(int startDay, int endDay)
 	{
 		return CalendarDateRange.builder()
-				.startDate(zdt(startDay))
-				.endDate(zdt(endDay))
+				.startDate(instant(startDay))
+				.endDate(instant(endDay))
 				.allDay(true)
 				.build();
 	}

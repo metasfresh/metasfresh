@@ -29,25 +29,25 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Value
 public class CalendarDateRange
 {
-	@NonNull ZonedDateTime startDate;
-	@NonNull ZonedDateTime endDate;
+	@NonNull Instant startDate;
+	@NonNull Instant endDate;
 	boolean allDay;
 
 	@Builder
 	private CalendarDateRange(
-			@NonNull final ZonedDateTime startDate,
-			@NonNull final ZonedDateTime endDate,
+			@NonNull final Instant startDate,
+			@NonNull final Instant endDate,
 			final boolean allDay)
 	{
-		ZonedDateTime startDateToUse = startDate;
-		ZonedDateTime endDateToUse = endDate;
+		Instant startDateToUse = startDate;
+		Instant endDateToUse = endDate;
 
 		if (allDay)
 		{
@@ -57,7 +57,7 @@ public class CalendarDateRange
 
 		if (startDateToUse.isAfter(endDateToUse))
 		{
-			final ZonedDateTime temp = startDateToUse;
+			final Instant temp = startDateToUse;
 			startDateToUse = endDateToUse;
 			endDateToUse = temp;
 		}
@@ -108,9 +108,9 @@ public class CalendarDateRange
 		else
 		{
 			final CalendarDateRange firstDateRange = dateRanges.get(0);
-			ZonedDateTime minStartDate = firstDateRange.getStartDate();
+			Instant minStartDate = firstDateRange.getStartDate();
 			boolean minStartDate_isAllDay = firstDateRange.isAllDay();
-			ZonedDateTime maxEndDate = firstDateRange.getEndDate();
+			Instant maxEndDate = firstDateRange.getEndDate();
 			boolean maxEndDate_isAllDay = firstDateRange.isAllDay();
 
 			for (int i = 1; i < dateRanges.size(); i++)

@@ -95,8 +95,8 @@ public class WOProjectStepRepository
 					.seqNo(record.getSeqNo())
 					.name(record.getName())
 					.dateRange(CalendarDateRange.builder()
-							.startDate(TimeUtil.asZonedDateTime(record.getDateStart()))
-							.endDate(TimeUtil.asZonedDateTime(record.getDateEnd()))
+							.startDate(record.getDateStart().toInstant())
+							.endDate(record.getDateEnd().toInstant())
 							.build())
 					.build();
 		}
