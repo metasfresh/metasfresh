@@ -271,7 +271,10 @@ UPDATE AD_Column SET IsParent='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2022-0
 -- Tab: Simulation Plan -> WO Project Resource Simulation
 -- Table: C_Project_WO_Resource_Simulation
 -- 2022-06-26T07:40:25.960352900Z
-INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryIfNoFilters,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,583526,581066,0,546393,542176,541541,'Y',TO_TIMESTAMP('2022-06-26 10:40:25','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','C_Project_WO_Resource_Simulation','Y','N','Y','Y','N','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'WO Project Resource Simulation',583496,'N',30,1,TO_TIMESTAMP('2022-06-26 10:40:25','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord
+,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
+VALUES (0,583526,581066,0,546393,542176,541541,'Y',TO_TIMESTAMP('2022-06-26 10:40:25','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','C_Project_WO_Resource_Simulation','Y','N','Y','Y','N','N','N','N'
+,'Y','N','N','N','Y','Y','N','N','N',0,'WO Project Resource Simulation',583496,'N',30,1,TO_TIMESTAMP('2022-06-26 10:40:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-06-26T07:40:25.976403700Z

@@ -222,7 +222,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Tab: Simulation Plan -> Project Resource Budget Simulation
 -- Table: C_Project_Resource_Budget_Simulation
 -- 2022-06-26T11:03:45.616668700Z
-INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryIfNoFilters,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,583538,581067,0,546394,542177,541541,'Y',TO_TIMESTAMP('2022-06-26 14:03:45','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','C_Project_Resource_Budget_Simulation','Y','N','Y','Y','N','N','N','N','Y','Y','Y','N','N','Y','Y','N','N','N',0,'Project Resource Budget Simulation',583496,'N',40,1,TO_TIMESTAMP('2022-06-26 14:03:45','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord
+,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
+VALUES (0,583538,581067,0,546394,542177,541541,'Y',TO_TIMESTAMP('2022-06-26 14:03:45','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','C_Project_Resource_Budget_Simulation','Y','N','Y','Y','N','N','N','N'
+,'Y','Y','N','N','Y','Y','N','N','N',0,'Project Resource Budget Simulation',583496,'N',40,1,TO_TIMESTAMP('2022-06-26 14:03:45','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-06-26T11:03:45.620707100Z

@@ -177,7 +177,10 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541541
 -- Tab: Simulation Plan -> Simulation Plan
 -- Table: C_SimulationPlan
 -- 2022-06-26T07:14:41.588071400Z
-INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryIfNoFilters,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,581064,0,546390,542173,541541,'Y',TO_TIMESTAMP('2022-06-26 10:14:41','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','simulationPlan','Y','N','Y','Y','N','N','N','Y','Y','Y','N','N','N','Y','Y','N','N','N',0,'Simulation Plan','N',10,0,TO_TIMESTAMP('2022-06-26 10:14:41','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,
+                    IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
+VALUES (0,581064,0,546390,542173,541541,'Y',TO_TIMESTAMP('2022-06-26 10:14:41','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','simulationPlan','Y','N','Y','Y','N','N','N','Y',
+        'Y','N','N','N','Y','Y','N','N','N',0,'Simulation Plan','N',10,0,TO_TIMESTAMP('2022-06-26 10:14:41','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-06-26T07:14:41.600070200Z
