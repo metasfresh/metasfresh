@@ -218,7 +218,6 @@ const Calendar = ({
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
         views={{
           resourceTimelineYear: {
-            buttonText: 'year', // TODO trl
             slotDuration: { months: 1 },
             slotLabelInterval: { months: 1 },
             slotLabelFormat: [{ month: 'long' }],
