@@ -3,63 +3,58 @@ de.metas.project.workorder.calendar.WOProjectSimulationPlanEditorTest.test=[ {
     "1" : {
       "dateRange" : {
         "allDay" : true,
-        "endDate" : "2022-06-13T00:00:00+02:00",
-        "startDate" : "2022-06-11T00:00:00+02:00"
+        "endDate" : "2022-06-12T00:00:00Z",
+        "startDate" : "2022-06-10T00:00:00Z"
       },
       "projectStepAndResourceId" : {
         "projectId" : 1,
         "projectResourceId" : 1,
         "stepId" : 1
-      },
-      "simulationId" : "simulation1"
+      }
     },
     "3" : {
       "dateRange" : {
         "allDay" : true,
-        "endDate" : "2022-06-15T00:00:00+02:00",
-        "startDate" : "2022-06-13T00:00:00+02:00"
+        "endDate" : "2022-06-14T00:00:00Z",
+        "startDate" : "2022-06-12T00:00:00Z"
       },
       "projectStepAndResourceId" : {
         "projectId" : 1,
         "projectResourceId" : 3,
         "stepId" : 2
-      },
-      "simulationId" : "simulation1"
+      }
     },
     "4" : {
       "dateRange" : {
         "allDay" : true,
-        "endDate" : "2022-06-16T00:00:00+02:00",
-        "startDate" : "2022-06-15T00:00:00+02:00"
+        "endDate" : "2022-06-15T00:00:00Z",
+        "startDate" : "2022-06-14T00:00:00Z"
       },
       "projectStepAndResourceId" : {
         "projectId" : 1,
         "projectResourceId" : 4,
         "stepId" : 2
-      },
-      "simulationId" : "simulation1"
+      }
     }
   },
-  "simulationPlanId" : "simulation1",
+  "simulationPlanId" : 1,
   "stepsById" : {
     "1" : {
       "dateRange" : {
         "allDay" : true,
-        "endDate" : "2022-06-13T00:00:00+02:00",
-        "startDate" : "2022-06-04T00:00:00+02:00"
+        "endDate" : "2022-06-12T00:00:00Z",
+        "startDate" : "2022-06-03T00:00:00Z"
       },
       "projectId" : 1,
-      "simulationId" : "simulation1",
       "stepId" : 1
     },
     "2" : {
       "dateRange" : {
         "allDay" : true,
-        "endDate" : "2022-06-16T00:00:00+02:00",
-        "startDate" : "2022-06-13T00:00:00+02:00"
+        "endDate" : "2022-06-15T00:00:00Z",
+        "startDate" : "2022-06-12T00:00:00Z"
       },
       "projectId" : 1,
-      "simulationId" : "simulation1",
       "stepId" : 2
     }
   }
