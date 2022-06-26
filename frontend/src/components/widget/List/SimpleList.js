@@ -8,7 +8,7 @@ import { RawList } from './RawList';
  *
  * Basically it wraps a RawList and implement common sense features and avoids the crap from RawList.
  */
-const SimpleList = ({ list, selected, onSelect }) => {
+const SimpleList = ({ list, selected, onSelect, className }) => {
   const listHash = uuidv4();
   const [isFocused, setIsFocused] = React.useState(false);
   const [isToggled, setIsToggled] = React.useState(false);
@@ -18,6 +18,7 @@ const SimpleList = ({ list, selected, onSelect }) => {
   // Stupid, but true.
   return (
     <RawList
+      className={className}
       list={isToggled ? list : []}
       listHash={isToggled ? listHash : null}
       onSelect={onSelect}
@@ -36,6 +37,7 @@ SimpleList.propTypes = {
   list: PropTypes.array,
   selected: PropTypes.object,
   onSelect: PropTypes.func.isRequired,
+  className: PropTypes.string,
 };
 
 export default SimpleList;
