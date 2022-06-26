@@ -30,7 +30,7 @@ const SimulationsDropDown = ({
     }
   };
 
-  const OPTION_None = { key: 'NONE', caption: 'None' }; // TODO trl
+  const OPTION_None = { key: 'NONE', caption: 'Actual data' }; // TODO trl
   const OPTION_NEW = { key: 'NEW', caption: 'New simulation' }; // TODO trl
   return (
     <SimpleList
