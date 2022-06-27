@@ -38,8 +38,6 @@ public class MD_Candidate_CleanUp extends JavaProcess
 	protected String doIt()
 	{
 
-		//todo mi: build a DeleteCandidatesQuery and call app method
-
 		final DeleteCandidatesQuery deleteCandidatesQuery = DeleteCandidatesQuery.builder()
 				.status(X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
 				.isActive(false)

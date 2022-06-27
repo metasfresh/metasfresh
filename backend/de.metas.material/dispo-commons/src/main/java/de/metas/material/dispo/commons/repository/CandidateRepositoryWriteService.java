@@ -775,7 +775,6 @@ public class CandidateRepositoryWriteService
 
 	private void deleteRelatedRecordsForId(@NonNull final CandidateId candidateId)
 	{
-		//load child candidates by id -> deleteCandidatebyId(ca)
 		final Optional<List<I_MD_Candidate>> childCandidateList = Optional.ofNullable(queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
 				.orderBy(I_MD_Candidate.COLUMNNAME_Created)
