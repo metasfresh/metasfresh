@@ -758,15 +758,17 @@ public class CandidateRepositoryWriteService
 
 		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
 
+		final DeleteResult deleteResult = new DeleteResult(candidateId,
+														   DateAndSeqNo
+																   .builder()
+																   .date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+																   .seqNo(candidateRecord.getSeqNo())
+																   .build(),
+														   candidateRecord.getQty());
+
 		deleteRecord(candidateRecord);
 
-		return new DeleteResult(candidateId,
-								DateAndSeqNo
-										.builder()
-										.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
-										.seqNo(candidateRecord.getSeqNo())
-										.build(),
-								candidateRecord.getQty());
+		return deleteResult;
 	}
 
 	private void deleteRelatedRecordsForId(
