@@ -26,20 +26,13 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.process.JavaProcess;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 
 public class MD_Candidate_CleanUp extends JavaProcess
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	@Override
 	protected String doIt()
 	{
-
-		//todo mi: build a DeleteCandidatesQuery and call app method
-
 		final DeleteCandidatesQuery deleteCandidatesQuery = DeleteCandidatesQuery.builder()
 				.status(X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
 				.isActive(false)
@@ -51,7 +44,4 @@ public class MD_Candidate_CleanUp extends JavaProcess
 
 		return MSG_OK;
 	}
-
-
-
 }

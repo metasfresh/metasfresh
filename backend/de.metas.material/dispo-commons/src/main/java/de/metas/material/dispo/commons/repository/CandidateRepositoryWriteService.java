@@ -44,8 +44,9 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -53,14 +54,14 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 
 import static de.metas.common.util.IdConstants.NULL_REPO_ID;
 import static de.metas.common.util.IdConstants.toRepoId;
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -730,63 +731,71 @@ public class CandidateRepositoryWriteService
 				.withSeqNo(candidateRecord.getSeqNo());
 	}
 
+	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
+	{
+		return deleteCandidateById(candidateId, new HashSet<>());
+	}
+
 	public void deleteCandidatesByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
 	{
-		final Iterator<I_MD_Candidate> candidatesIterator = queryBL.createQueryBuilder(I_MD_Candidate.class)
+		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
+
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, deleteCandidatesQuery.getStatus())
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive())
 				.create()
-				.iterate(I_MD_Candidate.class);
+				.iterateAndStreamIds(CandidateId::ofRepoId)
+				.filter(candidateId -> !alreadyDeletedIds.contains(candidateId))
+				.forEach(candidateId -> deleteCandidateById(candidateId, alreadyDeletedIds));
+	}
 
-		while (candidatesIterator.hasNext())
+	@NonNull
+	private DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId, @NonNull final Set<CandidateId> alreadySeenIds)
+	{
+		alreadySeenIds.add(candidateId);
+
+		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.load(candidateId, I_MD_Candidate.class);
+
+		deleteRelatedRecordsForId(candidateRecord, alreadySeenIds);
+
+		deleteRecord(candidateRecord);
+
+		return new DeleteResult(candidateId,
+								DateAndSeqNo
+										.builder()
+										.date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+										.seqNo(candidateRecord.getSeqNo())
+										.build(),
+								candidateRecord.getQty());
+	}
+
+	private void deleteRelatedRecordsForId(
+			@NonNull final I_MD_Candidate candidate,
+			@NonNull final Set<CandidateId> alreadySeenIds)
+	{
+		final IQueryFilter<I_MD_Candidate> stockQueryFilter;
+
+		if (candidate.getMD_Candidate_Parent_ID() > 0)
 		{
-			// final I_MD_Candidate currentCandidateId = candidatesIterator.next();
-
-			//am facut asta pentru ca in iterator raman si copii care sunt stersi deja
-			final Optional<I_MD_Candidate> loadedCurrentCandidateOpt = Optional.ofNullable(queryBL.createQueryBuilder(I_MD_Candidate.class)
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidatesIterator.next().getMD_Candidate_ID())
-					.orderBy(I_MD_Candidate.COLUMNNAME_Created)
-					.create()
-					.first(I_MD_Candidate.class));
-
-			loadedCurrentCandidateOpt.map(I_MD_Candidate::getMD_Candidate_ID).map(CandidateId::ofRepoId).ifPresent(this::deleteCandidatebyId);
-
+			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
+					.setJoinOr()
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID())
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_Parent_ID());
 		}
-	}
+		else
+		{
+			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID());
+		}
 
-	public DeleteResult deleteCandidatebyId(@NonNull final CandidateId candidateId)
-	{
-		deleteRelatedRecordsForId(candidateId);
-
-		final IQuery<I_MD_Candidate> candidateQuery = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateId.getRepoId())
-				.create();
-
-		final I_MD_Candidate candidateRecord = candidateQuery.firstOnlyNotNull(I_MD_Candidate.class);
-
-		candidateQuery.delete();
-
-		return new DeleteResult(candidateId, DateAndSeqNo
-				.builder()
-				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
-				.seqNo(candidateRecord.getSeqNo())
-				.build(), candidateRecord.getQty());
-	}
-
-	private void deleteRelatedRecordsForId(@NonNull final CandidateId candidateId)
-	{
-		//load child candidates by id -> deleteCandidatebyId(ca)
-		final Optional<List<I_MD_Candidate>> childCandidateList = Optional.ofNullable(queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
-				.orderBy(I_MD_Candidate.COLUMNNAME_Created)
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.filter(stockQueryFilter)
 				.create()
-				.list());
+				.iterateAndStreamIds(CandidateId::ofRepoId)
+				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
+				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
 
-		childCandidateList.ifPresent(candidates -> candidates.stream()
-				.filter(candidate -> candidate.getMD_Candidate_Parent_ID() != candidate.getMD_Candidate_ID())
-				.map(I_MD_Candidate::getMD_Candidate_ID)
-				.map(CandidateId::ofRepoId)
-				.forEach(this::deleteCandidatebyId));
+		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
 
 		deleteDemandDetailsRecords(candidateId);
 		deleteDistDetailsRecords(candidateId);
