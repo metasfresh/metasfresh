@@ -431,7 +431,7 @@ public class MD_Candidate_StepDef
 				.isActive(false)
 				.build();
 
-		candidateWriteService.deleteCandidatesByQuery(deleteCandidatesQuery);
+		candidateWriteService.deleteCandidatesAndDetailsByQuery(deleteCandidatesQuery);
 	}
 
 	@And("validate there is no simulated md_candidate")
