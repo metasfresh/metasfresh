@@ -1,6 +1,10 @@
 package org.compiere.model;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
+import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
@@ -103,8 +107,19 @@ public class MProjectLine extends X_C_ProjectLine
 		{
 			return limitPrice;
 		}
+		
 		final boolean isSOTrx = true;
-		final MProductPricing pp = new MProductPricing(getM_Product_ID(), m_parent.getC_BPartner_ID(), getPlannedQty(), isSOTrx);
+		final CountryId countryId = m_parent.getC_BPartner_Location_ID() > 0
+				? Services.get(IBPartnerDAO.class).getCountryId(BPartnerLocationId.ofRepoId(m_parent.getC_BPartner_ID(), m_parent.getC_BPartner_Location_ID()))
+				: null;
+		
+		final MProductPricing pp = new MProductPricing(
+				OrgId.ofRepoId(m_parent.getAD_Org_ID()),
+				getM_Product_ID(),
+				m_parent.getC_BPartner_ID(),
+				countryId,
+				getPlannedQty(),
+				isSOTrx);
 		pp.setM_PriceList_ID(m_parent.getM_PriceList_ID());
 		if (pp.recalculatePrice())
 		{
