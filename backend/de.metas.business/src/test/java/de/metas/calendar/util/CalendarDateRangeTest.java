@@ -16,9 +16,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CalendarDateRangeTest
 {
-	public static final Instant refInstant = LocalDate.parse("2022-06-24").atStartOfDay(ZoneId.of("Europe/Bucharest")).toInstant();
+	public static final Instant refInstant = LocalDate.parse("2022-06-01").atStartOfDay(ZoneId.of("Europe/Bucharest")).toInstant();
 
-	private static Instant instant(int daysOffset) {return refInstant.plus(daysOffset, ChronoUnit.DAYS);}
+	private static Instant instant(int day) {return refInstant.plus(day - 1, ChronoUnit.DAYS);}
 
 	private static CalendarDateRange allDay(int daysOffsetStart, int daysOffsetEnd)
 	{
@@ -87,5 +87,25 @@ class CalendarDateRangeTest
 			assertThat(allDay(2, 3).minus(Duration.ofDays(1)))
 					.isEqualTo(allDay(1, 2));
 		}
+	}
+
+	@Nested
+	class isConnectedTo
+	{
+		@Test
+		void notIntersecting() {assertThat(allDay(2, 3).isConnectedTo(instant(4), instant(5))).isFalse();}
+
+		@Test
+		void adjacent() {assertThat(allDay(2, 3).isConnectedTo(instant(3), instant(4))).isTrue();}
+
+		@Test
+		void intersecting() {assertThat(allDay(2, 4).isConnectedTo(instant(3), instant(5))).isTrue();}
+
+		@Test
+		void including() {assertThat(allDay(2, 10).isConnectedTo(instant(3), instant(5))).isTrue();}
+
+		@Test
+		void included() {assertThat(allDay(2, 10).isConnectedTo(instant(1), instant(11))).isTrue();}
+
 	}
 }

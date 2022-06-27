@@ -22,15 +22,17 @@
 
 package de.metas.calendar.util;
 
+import com.google.common.collect.Range;
 import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.impl.DateIntervalIntersectionQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Value
@@ -48,12 +50,6 @@ public class CalendarDateRange
 	{
 		Instant startDateToUse = startDate;
 		Instant endDateToUse = endDate;
-
-		if (allDay)
-		{
-			startDateToUse = startDateToUse.truncatedTo(ChronoUnit.DAYS);
-			endDateToUse = endDateToUse.truncatedTo(ChronoUnit.DAYS);
-		}
 
 		if (startDateToUse.isAfter(endDateToUse))
 		{
@@ -137,4 +133,12 @@ public class CalendarDateRange
 					.build();
 		}
 	}
+
+	public boolean isConnectedTo(@Nullable final Instant otherRangeStart, @Nullable final Instant otherRangeEnd)
+	{
+		final Range<Instant> otherGuavaRange = DateIntervalIntersectionQueryFilter.range(otherRangeStart, otherRangeEnd);
+		final Range<Instant> thisGuavaRange = DateIntervalIntersectionQueryFilter.range(this.startDate, this.endDate);
+		return thisGuavaRange.isConnected(otherGuavaRange);
+	}
+
 }

@@ -70,7 +70,7 @@ public class DateIntervalIntersectionQueryFilter<T> implements IQueryFilter<T>, 
 		return range1.isConnected(range2);
 	}
 
-	private static Range<Instant> range(@Nullable final Instant lowerBound, @Nullable final Instant upperBound)
+	public static Range<Instant> range(@Nullable final Instant lowerBound, @Nullable final Instant upperBound)
 	{
 		if (lowerBound == null)
 		{
