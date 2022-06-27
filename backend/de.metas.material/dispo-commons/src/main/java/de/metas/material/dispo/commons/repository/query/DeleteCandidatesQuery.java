@@ -30,8 +30,9 @@ import lombok.Value;
 @Value
 public class DeleteCandidatesQuery
 {
+	@NonNull
+	String status;
 
-	final @NonNull String status;
-	final @NonNull Boolean isActive;
-
+	@NonNull
+	Boolean isActive;
 }
