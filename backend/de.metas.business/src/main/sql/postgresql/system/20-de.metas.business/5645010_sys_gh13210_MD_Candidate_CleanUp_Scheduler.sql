@@ -31,3 +31,18 @@ UPDATE AD_Scheduler SET AD_Role_ID=0, CronPattern=NULL,Updated=TO_TIMESTAMP('202
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process SET Classname='de.metas.material.dispo.commons.process.MD_Candidate_CleanUp',Updated=TO_TIMESTAMP('2022-06-23 22:23:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585069
 ;
+
+-- 2022-06-27T12:43:54.791Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585069,540808,541116,TO_TIMESTAMP('2022-06-27 15:43:54','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2022-06-27 15:43:54','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+;
+
+-- 2022-06-27T12:46:37.593Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Clean Up Simulated Candidates',Updated=TO_TIMESTAMP('2022-06-27 15:46:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585069
+;
+
+-- 2022-06-27T12:52:11.374Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Clean Up Simulated Candidates',Updated=TO_TIMESTAMP('2022-06-27 15:52:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585069
+;
