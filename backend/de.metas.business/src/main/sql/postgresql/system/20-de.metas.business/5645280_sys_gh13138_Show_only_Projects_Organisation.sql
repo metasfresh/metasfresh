@@ -26,8 +26,8 @@ SELECT * FROM backup.BKP_ad_ref_table_gh13138_27062022
 ;
 
 
--- Set the validation rule to those without it and has no ad_ref_table
-UPDATE AD_Column SET AD_Val_Rule_ID=540579,
+-- Set the validation rule to those without it and has no ad_val_rule_id nor ad_reference_value_id
+UPDATE AD_Column SET ad_val_rule_id=540579,
                      Updated=now(),
                      UpdatedBy=99
 WHERE AD_Column_ID in (select distinct x.ad_column_id
@@ -39,6 +39,26 @@ WHERE AD_Column_ID in (select distinct x.ad_column_id
                                       left outer join ad_tab tab on t.ad_table_id = tab.ad_table_id
                                       left outer join ad_val_rule cvr on cvr.ad_val_rule_id = c.ad_val_rule_id
                                       left outer join ad_val_rule fvr on fvr.ad_val_rule_id = f.ad_val_rule_id
-                             where upper(c.columnname) = upper('c_project_id') and c.ad_reference_value_id is null
+                             where upper(c.columnname) = upper('c_project_id')
+                               and c.ad_reference_value_id is null        -- No ad_reference defined
+                               and c.ad_val_rule_id is NULL               -- No validation rule defined
                              order by 1) x
-                       where x.ad_val_rule_id is null);
+                       )
+;
+
+
+-- Update manually the existed ad_val_rule_id that has no ad_reference
+-- 2022-06-27T19:47:57.688Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='C_Project.AD_Org_ID IN (@AD_Org_ID/-1@, 0) AND C_Project.IsSummary=''N'' AND (C_Project.C_BPartner_ID IS NULL OR C_Project.C_BPartner_ID=@C_BPartner_ID@ OR C_Project.C_BPartnerSR_ID=@C_BPartner_ID@)',Updated=TO_TIMESTAMP('2022-06-27 20:47:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=227
+;
+
+-- 2022-06-27T19:50:19.746Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='C_Project.AD_Org_ID IN (@AD_Org_ID/-1@, 0) AND C_Project.IsSummary=''N'' AND C_Project.IsActive=''Y'' AND C_Project.Processed=''N''',Updated=TO_TIMESTAMP('2022-06-27 20:50:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=232
+;
+
+
+-- Update manually the existed ad_reference that reference the project table
+
+
