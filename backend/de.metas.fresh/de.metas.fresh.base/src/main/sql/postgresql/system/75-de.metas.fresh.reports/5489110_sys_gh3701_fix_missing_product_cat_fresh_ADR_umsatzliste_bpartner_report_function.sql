@@ -65,7 +65,7 @@ SELECT
      ,to_char($1, 'DD.MM.YYYY') AS Base_Period_Start
      ,to_char($2, 'DD.MM.YYYY') AS Base_Period_End
      ,um.ad_org_id
-     ,COALESCE((SELECT name FROM AD_Org WHERE $7 = AD_Org_ID AND isActive = 'Y'), 'Alle') AS org
+     ,COALESCE((SELECT name FROM AD_Org WHERE $7 = AD_Org_ID AND isActive = 'Y'), 'Keine vorhanden') AS org
 
 FROM report.fresh_umsatzliste_bpartner_report(
              $1,
