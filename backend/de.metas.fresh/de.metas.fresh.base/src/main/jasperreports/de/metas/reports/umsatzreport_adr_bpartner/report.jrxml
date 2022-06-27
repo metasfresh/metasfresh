@@ -140,7 +140,7 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$R{org}+" "+ ($F{org} !=null ? $F{org} : $R{all})]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line" x="39" y="97" width="465" height="1" forecolor="#000000" uuid="0a29e0e4-1a35-43e6-bee8-b24a18b5655c"/>
+				<reportElement key="line" x="39" y="96" width="465" height="1" forecolor="#000000" uuid="0a29e0e4-1a35-43e6-bee8-b24a18b5655c"/>
 				<graphicElement>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
@@ -155,23 +155,23 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 					<pen lineWidth="0.0"/>
 				</graphicElement>
 			</rectangle>
-			<textField>
-				<reportElement x="39" y="0" width="170" height="12" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="39" y="0" width="170" height="13" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement verticalAlignment="Middle">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="209" y="0" width="175" height="12" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="209" y="0" width="175" height="13" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sameperiodsum}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="384" y="0" width="120" height="12" forecolor="#FFFFFF" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="384" y="0" width="120" height="13" forecolor="#FFFFFF" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement verticalAlignment="Middle">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[" "+$R{productcategory}]]></textFieldExpression>
