@@ -61,4 +61,23 @@ UPDATE AD_Val_Rule SET Code='C_Project.AD_Org_ID IN (@AD_Org_ID/-1@, 0) AND C_Pr
 
 -- Update manually the existed ad_reference that reference the project table
 
+-- 2022-06-27T19:58:05.087Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='C_Project.AD_Org_ID IN (@AD_Org_ID/-1@, 0) AND C_Project.IsSummary=''N''',Updated=TO_TIMESTAMP('2022-06-27 20:58:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=141
+;
+
+-- 2022-06-27T19:59:00.364Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='C_Project.AD_Org_ID IN (@AD_Org_ID/-1@, 0) AND C_Project.IsSummary=''Y''',Updated=TO_TIMESTAMP('2022-06-27 20:59:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=169
+;
+
+-- 2022-06-27T20:00:58.111Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='C_Project.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',Updated=TO_TIMESTAMP('2022-06-27 21:00:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541242
+;
+
+-- 2022-06-27T20:02:13.665Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='C_Project.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',Updated=TO_TIMESTAMP('2022-06-27 21:02:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541136
+;
 
