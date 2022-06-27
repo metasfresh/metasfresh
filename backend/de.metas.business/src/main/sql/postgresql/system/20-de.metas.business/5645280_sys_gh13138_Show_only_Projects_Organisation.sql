@@ -47,7 +47,7 @@ WHERE AD_Column_ID in (select distinct x.ad_column_id
 ;
 
 
--- Update manually the existed ad_val_rule_id that has no ad_reference
+-- Update manually the existed ad_val_rule_id for columns that has no ad_reference
 -- 2022-06-27T19:47:57.688Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Val_Rule SET Code='C_Project.AD_Org_ID IN (@AD_Org_ID/-1@, 0) AND C_Project.IsSummary=''N'' AND (C_Project.C_BPartner_ID IS NULL OR C_Project.C_BPartner_ID=@C_BPartner_ID@ OR C_Project.C_BPartnerSR_ID=@C_BPartner_ID@)',Updated=TO_TIMESTAMP('2022-06-27 20:47:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=227
