@@ -221,7 +221,8 @@ public class ContactPersonRepository
 	{
 		return queryBL
 				.createQueryBuilder(I_MKTG_ContactPerson.class)
-				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE, email)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE ,email)
 				.create()
 				.anyMatch();
 	}
