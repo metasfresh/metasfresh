@@ -24,31 +24,31 @@ package org.adempiere.ad.dao.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DateIntervalIntersectionQueryFilterTest
 {
 	@Nullable
-	private static ZonedDateTime zdt(@Nullable final String datePart)
+	private static Instant instant(@Nullable final String datePart)
 	{
-		return datePart != null ? LocalDate.parse(datePart).atStartOfDay(ZoneId.of("Europe/Berlin")) : null;
+		return datePart != null ? LocalDate.parse(datePart).atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant() : null;
 	}
 
 	@Nullable
 	private static Timestamp ts(@Nullable final String datePart)
 	{
-		return datePart != null ? TimeUtil.asTimestamp(zdt(datePart)) : null;
+		final Instant instant = instant(datePart);
+		return instant != null ? Timestamp.from(instant) : null;
 	}
 
 	private static DateIntervalIntersectionQueryFilter<I_TestRecord> filter(
@@ -58,8 +58,8 @@ class DateIntervalIntersectionQueryFilterTest
 		return new DateIntervalIntersectionQueryFilter<>(
 				ModelColumnNameValue.forColumnName(I_TestRecord.COLUMNNAME_Date1),
 				ModelColumnNameValue.forColumnName(I_TestRecord.COLUMNNAME_Date2),
-				date1 != null ? zdt(date1) : null,
-				date2 != null ? zdt(date2) : null
+				date1 != null ? instant(date1) : null,
+				date2 != null ? instant(date2) : null
 		);
 	}
 
@@ -77,7 +77,7 @@ class DateIntervalIntersectionQueryFilterTest
 		{
 			final DateIntervalIntersectionQueryFilter<I_TestRecord> filter = filter("2020-02-10", "2020-02-20");
 			assertThat(filter.getSql()).isEqualTo("NOT ISEMPTY(TSTZRANGE(Date1, Date2, '[]') * TSTZRANGE(?, ?, '[]'))");
-			assertThat(filter.getSqlParams()).containsExactly(zdt("2020-02-10"), zdt("2020-02-20"));
+			assertThat(filter.getSqlParams()).containsExactly(instant("2020-02-10"), instant("2020-02-20"));
 		}
 
 		@Test

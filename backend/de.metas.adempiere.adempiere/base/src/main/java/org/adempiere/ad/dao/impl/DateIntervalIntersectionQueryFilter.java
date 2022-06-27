@@ -32,7 +32,6 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -41,8 +40,8 @@ public class DateIntervalIntersectionQueryFilter<T> implements IQueryFilter<T>, 
 {
 	@NonNull private final ModelColumnNameValue<T> lowerBoundColumnName;
 	@NonNull private final ModelColumnNameValue<T> upperBoundColumnName;
-	@Nullable private final ZonedDateTime lowerBoundValue;
-	@Nullable private final ZonedDateTime upperBoundValue;
+	@Nullable private final Instant lowerBoundValue;
+	@Nullable private final Instant upperBoundValue;
 
 	private String sqlWhereClause; // lazy
 	private List<Object> sqlParams; // lazy
@@ -50,8 +49,8 @@ public class DateIntervalIntersectionQueryFilter<T> implements IQueryFilter<T>, 
 	public DateIntervalIntersectionQueryFilter(
 			@NonNull final ModelColumnNameValue<T> lowerBoundColumnName,
 			@NonNull final ModelColumnNameValue<T> upperBoundColumnName,
-			@Nullable final ZonedDateTime lowerBoundValue,
-			@Nullable final ZonedDateTime upperBoundValue)
+			@Nullable final Instant lowerBoundValue,
+			@Nullable final Instant upperBoundValue)
 	{
 		this.lowerBoundColumnName = lowerBoundColumnName;
 		this.upperBoundColumnName = upperBoundColumnName;
@@ -66,9 +65,7 @@ public class DateIntervalIntersectionQueryFilter<T> implements IQueryFilter<T>, 
 				TimeUtil.asInstant(lowerBoundColumnName.getValue(model)),
 				TimeUtil.asInstant(upperBoundColumnName.getValue(model)));
 
-		final Range<Instant> range2 = range(
-				lowerBoundValue == null ? null : lowerBoundValue.toInstant(),
-				upperBoundValue == null ? null : upperBoundValue.toInstant());
+		final Range<Instant> range2 = range(lowerBoundValue, upperBoundValue);
 
 		return range1.isConnected(range2);
 	}
