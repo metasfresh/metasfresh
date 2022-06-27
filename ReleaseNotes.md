@@ -49,6 +49,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh 
+  * [#13218] https://github.com/metasfresh/metasfresh/pull/13218 Show Adr attribute details
   * [#13201] https://github.com/metasfresh/metasfresh/pull/13201 add new accounts in Deckungsbeitragsrechnung 
   * [#13204](https://github.com/metasfresh/metasfresh/pull/13204) fix flaky test: Create sales order with different ASI, on complete no production candidate is found
   * [#13197](https://github.com/metasfresh/metasfresh/pull/13197) cucumber fixes
