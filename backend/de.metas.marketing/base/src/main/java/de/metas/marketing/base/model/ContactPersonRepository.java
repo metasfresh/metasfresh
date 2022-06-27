@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -220,8 +221,7 @@ public class ContactPersonRepository
 	{
 		return queryBL
 				.createQueryBuilder(I_MKTG_ContactPerson.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_EMail, email)
+				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE, email)
 				.create()
 				.anyMatch();
 	}
