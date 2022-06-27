@@ -20,16 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp;
 
-public interface LeichMehlConstants
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Builder
+@Value
+public class TCPConnection
 {
-	String ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT = "ExportPPOrderRouteContext";
+	@NonNull
+	@JsonProperty("tcpPort")
+	String tcpPort;
 
-	String XML_ELEMENT_RI = "ri";
-	String XML_ELEMENT_RECV_PLU = "recvPLU";
-
-	String HEADER_TCP_PORT = "TCPPort";
-	String HEADER_TCP_HOST = "TCPHost";
-	String HEADER_TCP_Filename = "TCPFilename";
+	@NonNull
+	@JsonProperty("tcpHost")
+	String tcpHost;
 }

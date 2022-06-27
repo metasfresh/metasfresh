@@ -166,7 +166,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-ftp</artifactId>
+            <artifactId>camel-mina</artifactId>
             <version>${camel.version}</version>
         </dependency>
     </dependencies>

@@ -28,6 +28,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
 @Value
 public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 {
@@ -41,42 +45,51 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 	String value;
 
 	@NonNull
-	String ftpHost;
-
-	int ftpPort;
+	String productBaseFolderName;
 
 	@NonNull
-	String ftpUsername;
+	Integer tcpPort;
 
 	@NonNull
-	String ftpPassword;
+	String tcpHost;
 
 	@NonNull
-	String ftpDirectory;
+	List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList;
 
 	@Builder
 	public ExternalSystemLeichMehlConfig(
 			@NonNull final ExternalSystemLeichMehlConfigId id,
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final String value,
-			@NonNull final String ftpHost,
-			final int ftpPort,
-			@NonNull final String ftpUsername,
-			@NonNull final String ftpPassword,
-			@NonNull final String ftpDirectory)
+			@NonNull final String productBaseFolderName,
+			@NonNull final Integer tcpPort,
+			@NonNull final String tcpHost,
+			@NonNull final List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.value = value;
-		this.ftpHost = ftpHost;
-		this.ftpPort = ftpPort;
-		this.ftpUsername = ftpUsername;
-		this.ftpPassword = ftpPassword;
-		this.ftpDirectory = ftpDirectory;
+		this.productBaseFolderName = productBaseFolderName;
+		this.tcpPort = tcpPort;
+		this.tcpHost = tcpHost;
+		this.externalSystemLeichMehlConfigProductMappingList = externalSystemLeichMehlConfigProductMappingList;
 	}
 
 	public static ExternalSystemLeichMehlConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		return (ExternalSystemLeichMehlConfig)childConfig;
+	}
+
+	public boolean isProductMappingEmpty()
+	{
+		return externalSystemLeichMehlConfigProductMappingList.isEmpty();
+	}
+
+	@NonNull
+	public Optional<ExternalSystemLeichMehlConfigProductMapping> findMappingForQuery(@NonNull final LeichMehlProductMappingQuery query)
+	{
+		return externalSystemLeichMehlConfigProductMappingList.stream()
+				.filter(productMapping -> productMapping.isMatchingQuery(query))
+				.min(Comparator.comparing(ExternalSystemLeichMehlConfigProductMapping::getSeqNo));
 	}
 }

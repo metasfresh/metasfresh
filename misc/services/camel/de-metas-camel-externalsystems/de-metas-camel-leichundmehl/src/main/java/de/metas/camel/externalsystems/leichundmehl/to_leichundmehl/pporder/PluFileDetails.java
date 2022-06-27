@@ -20,38 +20,21 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.nio.file.Path;
+
 @Value
 @Builder
-public class FTPCredentials
+public class PluFileDetails
 {
 	@NonNull
-	@JsonProperty("ftpHost")
-	String ftpHost;
+	Path path;
 
 	@NonNull
-	@JsonProperty("ftpPort")
-	String ftpPort;
-
-	@NonNull
-	@JsonProperty("ftpDirectory")
-	String ftpDirectory;
-
-	@NonNull
-	@JsonProperty("ftpFilename")
-	String ftpFilename;
-
-	@NonNull
-	@JsonProperty("ftpUsername")
-	String ftpUsername;
-
-	@NonNull
-	@JsonProperty("ftpPassword")
-	String ftpPassword;
+	String content;
 }

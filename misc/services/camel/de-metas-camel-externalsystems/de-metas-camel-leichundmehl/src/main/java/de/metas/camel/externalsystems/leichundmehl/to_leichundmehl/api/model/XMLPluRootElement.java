@@ -20,16 +20,23 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
-public interface LeichMehlConstants
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+@JacksonXmlRootElement(localName = LeichMehlConstants.XML_ELEMENT_RI)
+public class XMLPluRootElement
 {
-	String ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT = "ExportPPOrderRouteContext";
-
-	String XML_ELEMENT_RI = "ri";
-	String XML_ELEMENT_RECV_PLU = "recvPLU";
-
-	String HEADER_TCP_PORT = "TCPPort";
-	String HEADER_TCP_HOST = "TCPHost";
-	String HEADER_TCP_Filename = "TCPFilename";
+	@NonNull
+	@JacksonXmlProperty(localName = LeichMehlConstants.XML_ELEMENT_RECV_PLU)
+	@JacksonXmlElementWrapper(useWrapping = false)
+	XMLPluElement xmlPluElement;
 }

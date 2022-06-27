@@ -33,13 +33,18 @@ import com.rabbitmq.client.Envelope;
 import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
+import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.productionorder.PP_Order_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
 import io.cucumber.datatable.DataTable;
@@ -49,6 +54,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -62,6 +69,7 @@ import java.util.stream.Stream;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
@@ -76,15 +84,21 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	private final PP_Order_StepDefData ppOrderTable;
+	private final M_Product_StepDefData productTable;
 
 	public MetasfreshToExternalSystemRabbitMQ_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable)
+			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
+			@NonNull final PP_Order_StepDefData ppOrderTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.huTable = huTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
+		this.ppOrderTable = ppOrderTable;
+		this.productTable = productTable;
 
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
 		final CommandLineParser.CommandLineOptions commandLineOptions = serverBoot.getCommandLineOptions();
@@ -160,6 +174,50 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 					logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
 				}
 				assertThat(jsonExternalSystemRequest).isNotNull();
+			}
+
+			final String ppOrderIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(ppOrderIdentifier))
+			{
+				final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+
+				final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+						.filter(request -> Integer.parseInt(request.getParameters().get(PARAM_PP_ORDER_ID)) == ppOrder.getPP_Order_ID())
+						.findFirst()
+						.orElse(null);
+
+				if (jsonExternalSystemRequest == null)
+				{
+					logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
+				}
+
+				assertThat(jsonExternalSystemRequest.getParameters()).isNotNull();
+
+				final Map<String, String> params = jsonExternalSystemRequest.getParameters();
+				assertThat(params).isNotEmpty();
+
+				final String portNumber = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
+				assertThat(params.get(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER)).isEqualTo(portNumber);
+
+				final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
+				assertThat(params.get(ExternalSystemConstants.PARAM_TCP_HOST)).isEqualTo(host);
+
+				final String product_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
+				assertThat(params.get(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME)).isEqualTo(product_BaseFolderName);
+
+				final String productMappingString = params.get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
+				assertThat(productMappingString).isNotNull();
+
+				final JsonExternalSystemLeichMehlConfigProductMapping productMapping = JsonObjectMapperHolder.sharedJsonObjectMapper()
+						.readValue(productMappingString, JsonExternalSystemLeichMehlConfigProductMapping.class);
+
+				final String pluFile = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.pluFile");
+				assertThat(productMapping.getPluFile()).isEqualTo(pluFile);
+
+				final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.M_Product_ID.Identifier");
+				final I_M_Product product = productTable.get(productIdentifier);
+				assertThat(productMapping.getProductId().getValue()).isEqualTo(product.getM_Product_ID());
 			}
 		}
 	}

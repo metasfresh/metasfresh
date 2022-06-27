@@ -22,11 +22,12 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonBPartner;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonBPartnerProduct;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp.FTPCredentials;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.TCPConnection;
+import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.common.pricing.v2.productprice.JsonResponsePrice;
@@ -48,7 +49,14 @@ public class ExportPPOrderRouteContext
 	private final JsonExternalSystemRequest jsonExternalSystemRequest;
 
 	@NonNull
-	private final FTPCredentials ftpCredentials;
+	private final TCPConnection tcpDetails;
+
+	@NonNull
+	@JsonProperty("productBaseFolderName")
+	String productBaseFolderName;
+
+	@NonNull
+	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
 
 	@Nullable
 	@Getter(AccessLevel.NONE)

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,16 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl;
+package de.metas.externalsystem.leichmehl;
 
-public interface LeichMehlConstants
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class LeichMehlProductMappingQuery
 {
-	String ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT = "ExportPPOrderRouteContext";
+	@Nullable
+	BPartnerId bPartnerId;
 
-	String XML_ELEMENT_RI = "ri";
-	String XML_ELEMENT_RECV_PLU = "recvPLU";
+	@Nullable
+	ProductId productId;
 
-	String HEADER_TCP_PORT = "TCPPort";
-	String HEADER_TCP_HOST = "TCPHost";
-	String HEADER_TCP_Filename = "TCPFilename";
+	@Nullable
+	ProductCategoryId productCategoryId;
 }

@@ -20,22 +20,23 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Builder
 @Value
-public class DispatchMessageRequest
+@Builder
+@JacksonXmlRootElement(localName = LeichMehlConstants.XML_ELEMENT_RECV_PLU)
+public class XMLPluElement
 {
 	@NonNull
-	@JsonProperty("ftpPayload")
-	Object ftpPayload;
-
-	@NonNull
-	@JsonProperty("ftpCredentials")
-	FTPCredentials ftpCredentials;
+	@JsonValue
+	@JacksonXmlElementWrapper(useWrapping = false)
+	Object content;
 }

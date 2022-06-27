@@ -125,6 +125,29 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_ProductMapping_getById=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "externalSystemLeichMehlConfigProductMappingList" : [ ],
+      "productMappingEmpty" : true
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getActiveByType=[
   [
     {
@@ -137,11 +160,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "id" : 100002,
         "parentId" : 100001,
         "value" : "testLeichMehlValue",
-        "ftpHost" : "hostname",
-        "ftpPort" : 1111,
-        "ftpUsername" : "ftpUsername",
-        "ftpPassword" : "ftpPassword",
-        "ftpDirectory" : "directory"
+        "productBaseFolderName" : "productBaseFolderName",
+        "tcpPort" : 8080,
+        "tcpHost" : "tcpHost",
+        "externalSystemLeichMehlConfigProductMappingList" : [ ],
+        "productMappingEmpty" : true
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -155,11 +178,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testLeichMehlValue",
-    "ftpHost" : "hostname",
-    "ftpPort" : 1111,
-    "ftpUsername" : "ftpUsername",
-    "ftpPassword" : "ftpPassword",
-    "ftpDirectory" : "directory"
+    "productBaseFolderName" : "productBaseFolderName",
+    "tcpPort" : 8080,
+    "tcpHost" : "tcpHost",
+    "externalSystemLeichMehlConfigProductMappingList" : [ ],
+    "productMappingEmpty" : true
   }
 ]
 
@@ -175,11 +198,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testLeichMehlValue",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "externalSystemLeichMehlConfigProductMappingList" : [ ],
+      "productMappingEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -465,11 +488,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
       "id" : 100002,
       "parentId" : 100001,
       "value" : "LeichMehl",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "externalSystemLeichMehlConfigProductMappingList" : [ ],
+      "productMappingEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
