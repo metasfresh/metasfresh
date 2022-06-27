@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.9487171000000014"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Localhost (putty port)"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="Base_Period_Start" class="java.util.Date"/>
 	<parameter name="Base_Period_End" class="java.util.Date"/>
@@ -230,7 +230,7 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-30" x="298" y="8" width="170" height="12" forecolor="#000000" uuid="f86c275a-4413-45da-8de0-099aa8ccc32b"/>
+				<reportElement key="textField-30" x="315" y="8" width="170" height="12" forecolor="#000000" uuid="f86c275a-4413-45da-8de0-099aa8ccc32b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
