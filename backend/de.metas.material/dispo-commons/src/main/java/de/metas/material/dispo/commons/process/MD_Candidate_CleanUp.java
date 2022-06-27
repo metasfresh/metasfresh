@@ -40,7 +40,7 @@ public class MD_Candidate_CleanUp extends JavaProcess
 
 		final CandidateRepositoryWriteService candidateService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
 
-		candidateService.deleteCandidatesByQuery(deleteCandidatesQuery);
+		candidateService.deleteCandidatesAndDetailsByQuery(deleteCandidatesQuery);
 
 		return MSG_OK;
 	}

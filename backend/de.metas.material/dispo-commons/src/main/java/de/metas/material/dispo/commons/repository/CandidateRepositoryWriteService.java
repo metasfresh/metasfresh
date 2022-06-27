@@ -63,6 +63,7 @@ import static de.metas.common.util.IdConstants.toRepoId;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -731,12 +732,22 @@ public class CandidateRepositoryWriteService
 				.withSeqNo(candidateRecord.getSeqNo());
 	}
 
+	@NonNull
 	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
 	{
-		return deleteCandidateById(candidateId, new HashSet<>());
+		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		final DeleteResult deleteResult = new DeleteResult(candidateId,
+														   DateAndSeqNo.builder()
+																   .date(TimeUtil.asInstantNonNull(candidateRecord.getDateProjected()))
+																   .seqNo(candidateRecord.getSeqNo())
+																   .build(),
+														   candidateRecord.getQty());
+
+		deleteRecord(candidateRecord);
+		return deleteResult;
 	}
 
-	public void deleteCandidatesByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
+	public void deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
 	{
 		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
 
