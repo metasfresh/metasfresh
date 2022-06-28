@@ -49,6 +49,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh 
+  * [#13215] https://github.com/metasfresh/metasfresh/issues/13215 Description and documentnote are not copied from doctype into shipment
   * [#13218] https://github.com/metasfresh/metasfresh/pull/13218 Show Adr attribute details
   * [#13201] https://github.com/metasfresh/metasfresh/pull/13201 add new accounts in Deckungsbeitragsrechnung 
   * [#13204](https://github.com/metasfresh/metasfresh/pull/13204) fix flaky test: Create sales order with different ASI, on complete no production candidate is found
