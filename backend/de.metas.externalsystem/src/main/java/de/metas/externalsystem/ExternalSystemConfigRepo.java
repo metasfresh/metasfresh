@@ -215,6 +215,8 @@ public class ExternalSystemConfigRepo
 				result = getAllByTypeLeichMehl();
 				break;
 			case Shopware6:
+				result = getAllByTypeShopware6();
+				break;
 			case Other:
 				throw new AdempiereException("Method not supported")
 						.appendParametersToMessage()
@@ -461,6 +463,7 @@ public class ExternalSystemConfigRepo
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
 				.shopwareIdJSONPath(config.getJSONPathShopwareID())
+				.syncStockToShopware6(config.isSyncStockToShopware6())
 				.build();
 	}
 
@@ -887,6 +890,17 @@ public class ExternalSystemConfigRepo
 	private ImmutableList<ExternalSystemParentConfig> getAllByTypeGRS()
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeShopware6()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
