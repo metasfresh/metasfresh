@@ -48,6 +48,7 @@
         <module>de-metas-camel-woocommerce</module>
         <module>de-metas-camel-grssignum</module>
         <module>de-metas-camel-leichundmehl</module>
+        <module>com-adekia-exchange</module>
     </modules>
 
     <dependencies>
