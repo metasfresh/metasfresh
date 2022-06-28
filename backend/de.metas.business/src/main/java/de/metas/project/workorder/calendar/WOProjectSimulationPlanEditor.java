@@ -18,11 +18,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.OldAndNewValues;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 class WOProjectSimulationPlanEditor
@@ -33,6 +35,7 @@ class WOProjectSimulationPlanEditor
 
 	@Getter
 	private final SimulationPlanId simulationPlanId;
+	private final WOProjectSimulationPlan initialSimulationPlan;
 	private final HashMap<WOProjectStepId, WOProjectStepSimulation> simulationStepsById;
 	private final HashSet<WOProjectResourceId> changedProjectResourceIds = new HashSet<>();
 	private final HashMap<WOProjectResourceId, WOProjectResourceSimulation> simulationProjectResourcesById;
@@ -49,6 +52,7 @@ class WOProjectSimulationPlanEditor
 		this._originalProjectResources = projectResources;
 
 		this.simulationPlanId = currentSimulationPlan.getSimulationPlanId();
+		this.initialSimulationPlan = currentSimulationPlan;
 		this.simulationStepsById = new HashMap<>(currentSimulationPlan.getStepsById());
 		this.simulationProjectResourcesById = new HashMap<>(currentSimulationPlan.getProjectResourcesById());
 	}
@@ -136,9 +140,30 @@ class WOProjectSimulationPlanEditor
 		return adjustBySimulation(this._originalProjectResources.getById(projectResourceId));
 	}
 
+	public OldAndNewValues<WOProjectResource> getProjectResourceInitialAndNow(final @NonNull WOProjectResourceId projectResourceId)
+	{
+		final WOProjectResource original = this._originalProjectResources.getById(projectResourceId);
+		final WOProjectResource initial = this.initialSimulationPlan.applyOn(original);
+		final WOProjectResource now = adjustBySimulation(original);
+
+		return OldAndNewValues.ofOldAndNewValues(initial, now);
+	}
+
+	public <T> OldAndNewValues<T> mapProjectResourceInitialAndNow(
+			final @NonNull WOProjectResourceId projectResourceId,
+			final @NonNull Function<WOProjectResource, T> mapper)
+	{
+		return getProjectResourceInitialAndNow(projectResourceId).mapNonNulls(mapper);
+	}
+
+	public Stream<WOProjectResourceId> streamChangedProjectResourceIds()
+	{
+		return changedProjectResourceIds.stream();
+	}
+
 	public Stream<WOProjectResource> getChangedProjectResources()
 	{
-		return changedProjectResourceIds.stream()
+		return streamChangedProjectResourceIds()
 				.map(this._originalProjectResources::getById)
 				.map(this::adjustBySimulation);
 	}

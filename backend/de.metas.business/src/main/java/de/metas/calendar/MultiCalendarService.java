@@ -44,6 +44,8 @@ public class MultiCalendarService
 	private final ImmutableList<CalendarService> calendarServices;
 	private final ImmutableMap<CalendarServiceId, CalendarService> calendarServicesById;
 
+	private final CalendarContinuousQueryDispatcher continuousQueriesDispatcher = new CalendarContinuousQueryDispatcher(trxManager);
+
 	public MultiCalendarService(
 			@NonNull final List<CalendarService> calendarServices)
 	{
@@ -73,21 +75,37 @@ public class MultiCalendarService
 				.flatMap(calendarService -> calendarService.query(query));
 	}
 
+	public CalendarContinuousQuery continuousQuery(@NonNull final CalendarQuery query)
+	{
+		return continuousQueriesDispatcher.get(query);
+	}
+
 	public CalendarEntry addEntry(@NonNull final CalendarEntryAddRequest request)
 	{
 		final CalendarService calendarService = getCalendarServiceById(request.getCalendarId().getCalendarServiceId());
-		return trxManager.callInThreadInheritedTrx(() -> calendarService.addEntry(request));
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final CalendarEntry result = calendarService.addEntry(request);
+			continuousQueriesDispatcher.onEntryAdded(result);
+			return result;
+		});
 	}
 
 	public CalendarEntryUpdateResult updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
 		final CalendarService calendarService = getCalendarServiceById(request.getCalendarServiceId());
-		return trxManager.callInThreadInheritedTrx(() -> calendarService.updateEntry(request));
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final CalendarEntryUpdateResult result = calendarService.updateEntry(request);
+			continuousQueriesDispatcher.onEntryUpdated(result);
+			return result;
+		});
 	}
 
 	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable SimulationPlanId simulationId)
 	{
 		final CalendarService calendarService = getCalendarServiceById(entryId.getCalendarServiceId());
-		trxManager.runInThreadInheritedTrx(() -> calendarService.deleteEntryById(entryId, simulationId));
+		trxManager.runInThreadInheritedTrx(() -> {
+			calendarService.deleteEntryById(entryId, simulationId);
+			continuousQueriesDispatcher.onEntryDeleted(entryId, simulationId);
+		});
 	}
 }

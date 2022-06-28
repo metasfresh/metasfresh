@@ -41,7 +41,6 @@ public class CalendarEntry
 
 	@Nullable SimulationPlanId simulationId;
 
-	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;
 
 	@Builder.Default
@@ -54,4 +53,10 @@ public class CalendarEntry
 	boolean editable;
 	@Nullable String color;
 	@Nullable URI url;
+
+	public CalendarServiceId getCalendarServiceId() {return getEntryId().getCalendarServiceId();}
+
+	public CalendarGlobalId getCalendarId() {return getEntryId().getCalendarId();}
+
+	public CalendarEntryAndSimulationId getCalendarEntryAndSimulationId() {return CalendarEntryAndSimulationId.of(getEntryId(), getSimulationId());}
 }

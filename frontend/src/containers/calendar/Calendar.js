@@ -54,6 +54,29 @@ const mergeCalendarEventsArrayToArray = (eventsArray, eventsToAdd) => {
   return Object.values(resultEventsById);
 };
 
+const mergeWSEventsToCalendarEvents = (eventsArray, wsEventsArray) => {
+  if (!wsEventsArray) {
+    return;
+  }
+
+  const resultEventsById = [];
+  eventsArray.forEach((event) => {
+    resultEventsById[event.id] = event;
+  });
+
+  wsEventsArray.forEach((wsEvent) => {
+    if (wsEvent.type === 'addOrChange') {
+      resultEventsById[wsEvent.entry.entryId] = wsEvent.entry;
+    } else if (wsEvent.type === 'remove') {
+      delete resultEventsById[wsEvent.entryId];
+    } else {
+      console.warn('Unhandled websocket event: ', event);
+    }
+  });
+
+  return Object.values(resultEventsById);
+};
+
 const Calendar = ({
   simulationId: initialSelectedSimulationId,
   onParamsChanged,
@@ -82,6 +105,14 @@ const Calendar = ({
       onParamsChanged({ simulationId: selectedSimulationId });
     }, [selectedSimulationId]);
   }
+
+  useEffect(() => {
+    return api.connectToWS({
+      simulationId: selectedSimulationId,
+      onWSEventsArray: (wsEventsArray) =>
+        applyWSEventsToCurrentCalendarEvents(wsEventsArray),
+    });
+  }, [selectedSimulationId]);
 
   const fetchCalendarEvents = (params) => {
     //console.log('fetchCalendarEvents', { params, calendarEvents });
@@ -119,6 +150,16 @@ const Calendar = ({
       events: mergeCalendarEventsArrayToArray(
         calendarEvents.events,
         eventsArrayToAdd
+      ),
+    });
+  };
+
+  const applyWSEventsToCurrentCalendarEvents = (wsEventsArray) => {
+    setCalendarEvents({
+      ...calendarEvents,
+      events: mergeWSEventsToCalendarEvents(
+        calendarEvents.events,
+        wsEventsArray
       ),
     });
   };

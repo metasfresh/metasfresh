@@ -50,6 +50,7 @@ import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.OldAndNewValues;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -168,7 +169,6 @@ public class ResourceAssignmentCalendarService implements CalendarService
 	{
 		return CalendarEntry.builder()
 				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resourceAssignment.getId()))
-				.calendarId(CALENDAR_ID)
 				.resourceId(CalendarResourceId.ofRepoId(resourceAssignment.getResourceId()))
 				.title(TranslatableStrings.anyLanguage(resourceAssignment.getName()))
 				.description(TranslatableStrings.anyLanguage(resourceAssignment.getDescription()))
@@ -218,12 +218,12 @@ public class ResourceAssignmentCalendarService implements CalendarService
 			throw new UnsupportedOperationException("Simulation is not supported");
 		}
 
-		final ResourceAssignment changedResourceAssignment = resourceService.changeResourceAssignment(
+		final OldAndNewValues<ResourceAssignment> result = resourceService.changeResourceAssignment(
 				toResourceAssignmentId(request.getEntryId()),
 				resourceAssignment -> updateResourceAssignment(resourceAssignment, request)
 		);
 
-		return CalendarEntryUpdateResult.ofChangedEntry(toCalendarEntry(changedResourceAssignment));
+		return CalendarEntryUpdateResult.ofChangedEntry(result.mapNonNulls(ResourceAssignmentCalendarService::toCalendarEntry));
 	}
 
 	private ResourceAssignmentId toResourceAssignmentId(@NonNull final CalendarEntryId entryId)

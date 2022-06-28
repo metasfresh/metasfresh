@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.compiere.model.I_S_Resource_Group_Assignment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -121,20 +122,21 @@ class ResourceGroupAssignmentRepository
 		return fromRecord(record);
 	}
 
-	public ResourceGroupAssignment changeById(@NonNull final ResourceGroupAssignmentId id, @NonNull final UnaryOperator<ResourceGroupAssignment> mapper)
+	public OldAndNewValues<ResourceGroupAssignment> changeById(@NonNull final ResourceGroupAssignmentId id, @NonNull final UnaryOperator<ResourceGroupAssignment> mapper)
 	{
 		final I_S_Resource_Group_Assignment record = getRecordById(id);
 
-		final ResourceGroupAssignment changedAssignment = mapper.apply(fromRecord(record));
+		final ResourceGroupAssignment assignment = fromRecord(record);
+		final ResourceGroupAssignment changedAssignment = mapper.apply(assignment);
+
 		record.setS_Resource_Group_ID(changedAssignment.getResourceGroupId().getRepoId());
 		record.setName(changedAssignment.getName());
 		record.setDescription(changedAssignment.getDescription());
-
 		updateRecordFromDateRange(record, changedAssignment.getDateRange());
 
 		InterfaceWrapperHelper.saveRecord(record);
 
-		return changedAssignment;
+		return OldAndNewValues.ofOldAndNewValues(assignment, changedAssignment);
 	}
 
 	@NonNull

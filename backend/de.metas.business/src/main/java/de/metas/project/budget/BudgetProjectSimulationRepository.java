@@ -11,6 +11,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.compiere.model.I_C_Project_Resource_Budget_Simulation;
 import org.compiere.model.I_C_Project_WO_Resource_Simulation;
 import org.compiere.util.TimeUtil;
@@ -33,7 +34,7 @@ public class BudgetProjectSimulationRepository
 		return cache.getOrLoad(simulationPlanId, this::retrieveSimulationPlanById);
 	}
 
-	private BudgetProjectSimulationPlan changeSimulationPlanById(
+	private void changeSimulationPlanById(
 			@NonNull SimulationPlanId simulationPlanId,
 			@NonNull UnaryOperator<BudgetProjectSimulationPlan> mapper)
 	{
@@ -45,7 +46,6 @@ public class BudgetProjectSimulationRepository
 		}
 
 		savePlan(changedSimulationPlan);
-		return changedSimulationPlan;
 	}
 
 	private BudgetProjectSimulationPlan retrieveSimulationPlanById(@NonNull SimulationPlanId simulationPlanId)
@@ -111,17 +111,19 @@ public class BudgetProjectSimulationRepository
 		InterfaceWrapperHelper.deleteAll(existingRecords.values());
 	}
 
-	public BudgetProjectResourceSimulation createOrUpdate(@NonNull final BudgetProjectResourceSimulation.UpdateRequest request)
+	public OldAndNewValues<BudgetProjectResourceSimulation> createOrUpdate(@NonNull final BudgetProjectResourceSimulation.UpdateRequest request)
 	{
-		final BudgetProjectSimulationPlan changedSimulation = changeSimulationPlanById(
-				request.getSimulationId(),
-				simulationPlan -> simulationPlan.mapByProjectResourceId(
-						request.getProjectAndResourceId(),
-						existingSimulation -> BudgetProjectResourceSimulation.reduce(existingSimulation, request)
-				)
+		BudgetProjectSimulationPlan simulationPlan = getSimulationPlanById(request.getSimulationId());
+		final BudgetProjectSimulationPlan changedSimulationPlan = simulationPlan.mapByProjectResourceId(
+				request.getProjectAndResourceId(),
+				existingSimulation -> BudgetProjectResourceSimulation.reduce(existingSimulation, request)
 		);
 
-		return changedSimulation.getByProjectResourceId(request.getProjectAndResourceId().getProjectResourceId());
+		final BudgetProjectResourceId projectResourceId = request.getProjectAndResourceId().getProjectResourceId();
+		return OldAndNewValues.ofOldAndNewValues(
+				simulationPlan.getByProjectResourceIdOrNull(projectResourceId),
+				changedSimulationPlan.getByProjectResourceId(projectResourceId)
+		);
 	}
 
 	public void copySimulationDataTo(

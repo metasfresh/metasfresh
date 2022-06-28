@@ -74,6 +74,12 @@ public class BudgetProjectSimulationPlan
 		return projectResource;
 	}
 
+	public BudgetProjectResource applyOn(@NonNull BudgetProjectResource projectResource)
+	{
+		final BudgetProjectResourceSimulation simulation = getByProjectResourceIdOrNull(projectResource.getId());
+		return simulation != null ? simulation.applyOn(projectResource) : projectResource;
+	}
+
 	public BudgetProjectSimulationPlan mergeFrom(final BudgetProjectSimulationPlan fromSimulationPlan)
 	{
 		return toBuilder()

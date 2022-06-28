@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
+
 const extractAxiosResponseData = (axiosReponse) => axiosReponse.data;
 
 export const getAvailableCalendars = () => {
@@ -77,6 +80,28 @@ export const createSimulation = ({ copyFromSimulationId }) => {
     .then((simulation) => converters.fromAPISimulation(simulation));
 };
 
+export const connectToWS = ({ simulationId, onWSEventsArray }) => {
+  const wsTopicName = `/v2/calendar/${simulationId || 'actual'}`;
+  const sockClient = Stomp.Stomp.over(new SockJs(config.WS_URL));
+  //sockClient.debug = null; // TODO uncomment to avoid debugging
+  sockClient.connect({}, () => {
+    sockClient.subscribe(wsTopicName, (msg) => {
+      const wsEventsArray =
+        JSON.parse(msg.body)?.events?.map(converters.fromAPIWebsocketEvent) ||
+        [];
+      onWSEventsArray(wsEventsArray);
+    });
+    console.log(`subscribed to WS topic ${wsTopicName}`);
+  });
+
+  return () => {
+    if (sockClient && sockClient.connected) {
+      sockClient.disconnect();
+      console.log(`unsubscribed from WS topic ${wsTopicName}`);
+    }
+  };
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Converters
@@ -114,6 +139,14 @@ const converters = {
   fromAPISimulation: (simulation) => ({
     simulationId: simulation.id,
     name: simulation.name,
+  }),
+
+  // see de.metas.ui.web.calendar.json.JsonWebsocketEvent
+  fromAPIWebsocketEvent: (wsEvent) => ({
+    type: wsEvent.type,
+    entry: wsEvent.entry ? converters.fromAPIEvent(wsEvent.entry) : null,
+    entryId: wsEvent.entryId,
+    simulationId: wsEvent.simulationId,
   }),
 
   /**

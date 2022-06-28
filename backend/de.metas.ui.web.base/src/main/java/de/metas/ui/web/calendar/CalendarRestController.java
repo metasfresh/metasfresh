@@ -122,8 +122,7 @@ public class CalendarRestController
 
 	private static CalendarQuery toCalendarQuery(@Nullable final JsonCalendarEntriesQuery query, @NonNull final UserId loggedUserId)
 	{
-		final CalendarQuery.CalendarQueryBuilder result = CalendarQuery.builder()
-				.availableForUserId(loggedUserId);
+		final CalendarQuery.CalendarQueryBuilder result = CalendarQuery.builder();
 
 		if (query != null)
 		{
@@ -132,12 +131,12 @@ public class CalendarRestController
 
 			if (query.getStartDate() != null)
 			{
-				result.startDate(query.getStartDate().toZonedDateTime());
+				result.startDate(query.getStartDate().toInstant());
 			}
 
 			if (query.getEndDate() != null)
 			{
-				result.endDate(query.getEndDate().toZonedDateTime());
+				result.endDate(query.getEndDate().toInstant());
 			}
 		}
 

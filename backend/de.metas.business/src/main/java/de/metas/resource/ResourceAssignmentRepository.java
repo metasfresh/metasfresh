@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -125,11 +126,12 @@ class ResourceAssignmentRepository
 		return fromRecord(record);
 	}
 
-	public ResourceAssignment changeById(@NonNull final ResourceAssignmentId id, @NonNull final UnaryOperator<ResourceAssignment> mapper)
+	public OldAndNewValues<ResourceAssignment> changeById(@NonNull final ResourceAssignmentId id, @NonNull final UnaryOperator<ResourceAssignment> mapper)
 	{
 		final I_S_ResourceAssignment record = getRecordById(id);
 
-		final ResourceAssignment changedResourceAssignment = mapper.apply(fromRecord(record));
+		final ResourceAssignment initialResourceAssignment = fromRecord(record);
+		final ResourceAssignment changedResourceAssignment = mapper.apply(initialResourceAssignment);
 		record.setS_Resource_ID(changedResourceAssignment.getResourceId().getRepoId());
 		record.setName(changedResourceAssignment.getName());
 		record.setDescription(changedResourceAssignment.getDescription());
@@ -138,7 +140,7 @@ class ResourceAssignmentRepository
 
 		InterfaceWrapperHelper.saveRecord(record);
 
-		return changedResourceAssignment;
+		return OldAndNewValues.ofOldAndNewValues(initialResourceAssignment, changedResourceAssignment);
 	}
 
 	@NonNull
