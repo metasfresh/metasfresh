@@ -32,6 +32,7 @@ export const getCalendarEvents = ({
 export const addOrUpdateCalendarEvent = ({
   id,
   simulationId = null,
+  //
   resourceId = null,
   title = null,
   description = null,
