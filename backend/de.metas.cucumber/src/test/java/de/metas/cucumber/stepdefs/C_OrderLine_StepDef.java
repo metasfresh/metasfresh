@@ -286,6 +286,23 @@ public class C_OrderLine_StepDef
 				orderLine.setM_HU_PI_Item_Product_ID(piItemProductId);
 			}
 
+			final BigDecimal updatedQtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyOrdered);
+			if (updatedQtyOrdered != null)
+			{
+				orderLine.setQtyOrdered(updatedQtyOrdered);
+			}
+
+			final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (Check.isNotBlank(asiIdentifier))
+			{
+				final Integer asiId = attributeSetInstanceTable.getOptional(asiIdentifier)
+						.map(I_M_AttributeSetInstance::getM_AttributeSetInstance_ID)
+						.orElseGet(() -> Integer.parseInt(asiIdentifier));
+
+				orderLine.setM_AttributeSetInstance_ID(asiId);
+			}
+
 			saveRecord(orderLine);
 
 			orderLineTable.putOrReplace(olIdentifier, orderLine);
