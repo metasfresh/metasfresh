@@ -30,3 +30,18 @@ export const convertToMoment = (value) => {
     return MomentTZ(value, FULLCALENDAR_IO_DATE_FORMAT, true);
   }
 };
+
+export const isSameMoment = (date1, date2) => {
+  if (date1 === date2) {
+    return true;
+  }
+
+  const moment1 = convertToMoment(date1);
+  const moment2 = convertToMoment(date2);
+  //console.log('isSameMoment', { date1, moment1, date2, moment2 });
+
+  return (
+    moment1 === moment2 ||
+    (moment1 != null && moment2 != null && moment1.isSame(moment2))
+  );
+};
