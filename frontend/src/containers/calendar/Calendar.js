@@ -15,244 +15,104 @@ import deLocale from '@fullcalendar/core/locales/de';
 import * as api from '../../api/calendar';
 import { normalizeDateTime } from './calendarUtils';
 
-import CalendarEventEditor from '../../components/calendar/CalendarEventEditor';
 import SimulationsDropDown from '../../components/calendar/SimulationsDropDown';
 import { getCurrentActiveLanguage } from '../../utils/locale';
-
-const extractResourcesFromCalendarsArray = (calendars) => {
-  const resourcesById = calendars
-    .flatMap((calendar) => calendar.resources)
-    .reduce((accum, resource) => {
-      accum[resource.id] = resource;
-      return accum;
-    }, {});
-
-  const resources = Object.values(resourcesById);
-
-  // IMPORTANT: completely remove 'parentId' property if it's not found in our list of resources
-  // Else fullcalendar.io won't render that resource at all.
-  resources.forEach((resource) => {
-    if ('parentId' in resource && !resourcesById[resource.parentId]) {
-      console.log('removing parentId because was not found: ', resource);
-      delete resource.parentId;
-    }
-  });
-  //console.log('extractResourcesFromCalendarsArray', resources);
-
-  return resources;
-};
-
-const mergeCalendarEventsArrayToArray = (eventsArray, eventsToAdd) => {
-  const resultEventsById = [];
-  eventsArray.forEach((event) => {
-    resultEventsById[event.id] = event;
-  });
-  eventsToAdd.forEach((event) => {
-    resultEventsById[event.id] = event;
-  });
-
-  return Object.values(resultEventsById);
-};
-
-const mergeWSEventsToCalendarEvents = (eventsArray, wsEventsArray) => {
-  if (!wsEventsArray) {
-    return;
-  }
-
-  const resultEventsById = [];
-  eventsArray.forEach((event) => {
-    resultEventsById[event.id] = event;
-  });
-
-  wsEventsArray.forEach((wsEvent) => {
-    if (wsEvent.type === 'addOrChange') {
-      resultEventsById[wsEvent.entry.entryId] = wsEvent.entry;
-    } else if (wsEvent.type === 'remove') {
-      delete resultEventsById[wsEvent.entryId];
-    } else {
-      console.warn('Unhandled websocket event: ', event);
-    }
-  });
-
-  return Object.values(resultEventsById);
-};
+import { newCalendarEventsHolder } from './calendarEventsHolder';
+import { newAvailableCalendarsHolder } from './availableCalendarsHolder';
+import { newSimulationsHolder } from './simulationsHolder';
 
 const Calendar = ({
   simulationId: initialSelectedSimulationId,
   onParamsChanged,
 }) => {
-  const [calendarEvents, setCalendarEvents] = React.useState({
-    startStr: null,
-    endStr: null,
-    simulationId: null,
-    events: [],
-  });
-  const [availableSimulations, setAvailableSimulations] = React.useState([]);
-
-  const [selectedSimulationId, setSelectedSimulationId] = React.useState(
-    initialSelectedSimulationId
-  );
-  const [availableCalendars, setAvailableCalendars] = React.useState([]);
-  const [editingEvent, setEditingEvent] = React.useState(null);
+  const availableCalendarsHolder = newAvailableCalendarsHolder();
+  const calendarEventsHolder = newCalendarEventsHolder();
+  const simulationsHolder = newSimulationsHolder(initialSelectedSimulationId);
+  //const [editingEvent, setEditingEvent] = React.useState(null);
 
   useEffect(() => {
-    api.getAvailableSimulations().then(setAvailableSimulations);
-    api.getAvailableCalendars().then(setAvailableCalendars);
+    console.log('Loading simulations and calendars');
+    api
+      .getAvailableSimulations()
+      .then(simulationsHolder.setAvailableSimulations);
+    api
+      .getAvailableCalendars()
+      .then(availableCalendarsHolder.setCalendarsArray);
   }, []);
 
   if (onParamsChanged) {
     useEffect(() => {
-      onParamsChanged({ simulationId: selectedSimulationId });
-    }, [selectedSimulationId]);
+      onParamsChanged({
+        simulationId: simulationsHolder.getSelectedSimulationId(),
+      });
+    }, [simulationsHolder.getSelectedSimulationId()]);
   }
 
   useEffect(() => {
     return api.connectToWS({
-      simulationId: selectedSimulationId,
-      onWSEventsArray: (wsEventsArray) =>
-        applyWSEventsToCurrentCalendarEvents(wsEventsArray),
+      simulationId: simulationsHolder.getSelectedSimulationId(),
+      onWSEventsArray: calendarEventsHolder.applyWSEventsArray,
     });
-  }, [selectedSimulationId]);
+  }, [simulationsHolder.getSelectedSimulationId()]);
 
   const fetchCalendarEvents = (params) => {
     //console.log('fetchCalendarEvents', { params, calendarEvents });
 
     const startDate = normalizeDateTime(params.startStr);
     const endDate = normalizeDateTime(params.endStr);
-    const simulationId = selectedSimulationId;
+    const simulationId = simulationsHolder.getSelectedSimulationId();
 
-    if (
-      calendarEvents.startDate === startDate &&
-      calendarEvents.endDate === endDate &&
-      calendarEvents.simulationId === simulationId
-    ) {
+    if (calendarEventsHolder.isMatching({ startDate, endDate, simulationId })) {
       //console.log('fetchCalendarEvents: already fetched', calendarEvents);
-      return Promise.resolve(calendarEvents.events);
+      return Promise.resolve(calendarEventsHolder.getEventsArray());
     } else {
-      //console.log('fetchCalendarEvents: start fetching from backend');
+      console.log('fetchCalendarEvents: start fetching from backend');
 
-      const calendarIds = availableCalendars.map(
-        (calendar) => calendar.calendarId
-      );
-
+      const calendarIds = availableCalendarsHolder.getCalendarIds();
       return api
         .getCalendarEvents({ calendarIds, simulationId, startDate, endDate })
         .then((events) => {
           //console.log('fetchCalendarEvents: got result', { events });
-          setCalendarEvents({ startDate, endDate, simulationId, events });
+          calendarEventsHolder.setEvents({
+            simulationId,
+            startDate,
+            endDate,
+            events,
+          });
+
+          return events;
         });
     }
-  };
-
-  const addCalendarEventsArray = (eventsArrayToAdd) => {
-    setCalendarEvents({
-      ...calendarEvents,
-      events: mergeCalendarEventsArrayToArray(
-        calendarEvents.events,
-        eventsArrayToAdd
-      ),
-    });
-  };
-
-  const applyWSEventsToCurrentCalendarEvents = (wsEventsArray) => {
-    setCalendarEvents({
-      ...calendarEvents,
-      events: mergeWSEventsToCalendarEvents(
-        calendarEvents.events,
-        wsEventsArray
-      ),
-    });
-  };
-
-  const handleDateClick = (params) => {
-    console.log('handleDateClick', { params });
-    // FIXME for now, consider the calendar not editable, i.e. do nothing
-    // const { calendarId, resourceId } = suggestCalendarIdAndResourceId(
-    //   availableCalendars,
-    //   params?.resource?.id
-    // );
-    // //console.log('handleDateClick', { calendarId, resourceId });
-    //
-    // setEditingEvent({
-    //   calendarId,
-    //   resourceId,
-    //   start: convertToMoment(params.date),
-    //   end: convertToMoment(params.date),
-    //   allDay: params.allDay,
-    // });
   };
 
   const handleEventClick = (params) => {
     if (params.event.url) {
       params.jsEvent.preventDefault();
       window.open(params.event.url, '_blank');
-    } else {
-      const eventId = params.event.id;
-      const event = calendarEvents.events.find((event) => event.id === eventId);
-      console.log('handleEventClick', { params, event });
-      setEditingEvent(event);
     }
-  };
-
-  const handleEventEditOK = (event) => {
-    api
-      .addOrUpdateCalendarEvent({
-        id: event.id,
-        resourceId: event.resourceId,
-        startDate: event.start,
-        endDate: event.end,
-        allDay: event.allDay,
-        title: event.title,
-      })
-      .then((changedEvents) => {
-        addCalendarEventsArray(changedEvents);
-        setEditingEvent(null);
-      });
-  };
-
-  const handleEventDelete = (eventId) => {
-    api.deleteCalendarEventById(eventId).then(() => {
-      const events = calendarEvents.events.filter(
-        (event) => event.id !== eventId
-      );
-      setCalendarEvents({ ...calendarEvents, events });
-      setEditingEvent(null);
-    });
   };
 
   return (
     <div className="calendar-container">
-      {editingEvent && (
-        <CalendarEventEditor
-          availableCalendars={availableCalendars}
-          initialEvent={editingEvent}
-          onOK={handleEventEditOK}
-          onCancel={() => setEditingEvent(null)}
-          onDelete={handleEventDelete}
-        />
-      )}
       <div className="calendar-top">
         <div className="calendar-top-left" />
         <div className="calendar-top-center" />
         <div className="calendar-top-right">
           <SimulationsDropDown
-            simulations={availableSimulations}
-            selectedSimulationId={selectedSimulationId}
+            simulations={simulationsHolder.getAvailableSimulations()}
+            selectedSimulationId={simulationsHolder.getSelectedSimulationId()}
             onSelect={(simulation) => {
-              setSelectedSimulationId(simulation?.simulationId);
+              simulationsHolder.setSelectedSimulationId(
+                simulation?.simulationId
+              );
             }}
             onNew={() => {
               api
                 .createSimulation({
-                  copyFromSimulationId: selectedSimulationId,
+                  copyFromSimulationId:
+                    simulationsHolder.getSelectedSimulationId(),
                 })
-                .then((simulation) => {
-                  setAvailableSimulations([
-                    ...availableSimulations,
-                    simulation,
-                  ]);
-                  setSelectedSimulationId(simulation.simulationId);
-                });
+                .then(simulationsHolder.addSimulationAndSelect);
             }}
           />
         </div>
@@ -284,9 +144,9 @@ const Calendar = ({
             'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear',
         }}
         resourceAreaHeaderContent="Resources"
-        resources={extractResourcesFromCalendarsArray(availableCalendars)}
+        resources={availableCalendarsHolder.getResourcesArray()}
         events={fetchCalendarEvents}
-        dateClick={handleDateClick}
+        //dateClick={handleDateClick}
         eventClick={handleEventClick}
         eventContent={(params) => {
           //console.log('eventContent', { params });
@@ -299,7 +159,8 @@ const Calendar = ({
           console.log('eventDragStop', { event });
         }}
         eventDrop={(params) => {
-          console.log('eventDrop', { params, selectedSimulationId });
+          const simulationId = simulationsHolder.getSelectedSimulationId();
+          console.log('eventDrop', { params, simulationId });
 
           if (params.oldResource?.id !== params.newResource?.id) {
             console.log('moving event to another resource is not allowed');
@@ -315,12 +176,12 @@ const Calendar = ({
             api
               .addOrUpdateCalendarEvent({
                 id: params.event.id,
-                simulationId: selectedSimulationId,
+                simulationId,
                 startDate: params.event.start,
                 endDate: params.event.end,
                 allDay: params.event.allDay,
               })
-              .then((changedEvents) => addCalendarEventsArray(changedEvents))
+              .then(calendarEventsHolder.addEventsArray)
               .catch((error) => {
                 console.log('Got error', error);
                 params.revert();
