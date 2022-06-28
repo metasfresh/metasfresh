@@ -53,3 +53,9 @@ UPDATE AD_Process_Trl SET Description='Der Prozess läuft automatisch jede Nacht
 UPDATE AD_Process_Trl SET Description='Der Prozess läuft automatisch jede Nacht und muss in der Regel nicht manuell ausgeführt werden.',Updated=TO_TIMESTAMP('2022-06-28 14:22:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585069
 ;
 
+-- 2022-06-28T15:00:15.099Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET ShowHelp='Y',Updated=TO_TIMESTAMP('2022-06-28 18:00:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585069
+;
+
+
