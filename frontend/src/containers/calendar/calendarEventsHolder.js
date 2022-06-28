@@ -1,4 +1,6 @@
 import React from 'react';
+import Moment from 'moment-timezone';
+import MomentTZ from 'moment-timezone';
 
 export const newCalendarEventsHolder = () => {
   const [state, setState] = React.useState({
@@ -210,11 +212,36 @@ const isEqualEvents = (event1, event2) => {
     event1.id === event2.id &&
     event1.resourceId === event2.resourceId &&
     event1.title === event2.title &&
-    event1.start === event2.start &&
-    event1.end === event2.end &&
+    isSameMoment(event1.start, event2.start) &&
+    isSameMoment(event1.end, event2.end) &&
     event1.allDay === event2.allDay &&
     event1.editable === event2.editable &&
     event1.color === event2.color &&
     event1.url === event2.url
   );
+};
+
+const isSameMoment = (date1, date2) => {
+  if (date1 === date2) {
+    return true;
+  }
+
+  const moment1 = convertToMoment(date1);
+  const moment2 = convertToMoment(date2);
+  console.log('isSameMoment', { date1, moment1, date2, moment2 });
+
+  return (
+    moment1 === moment2 ||
+    (moment1 != null && moment2 != null && moment1.isSame(moment2))
+  );
+};
+
+const convertToMoment = (value) => {
+  if (!value) {
+    return null;
+  } else if (Moment.isMoment(value)) {
+    return value;
+  } else {
+    return MomentTZ(value);
+  }
 };
