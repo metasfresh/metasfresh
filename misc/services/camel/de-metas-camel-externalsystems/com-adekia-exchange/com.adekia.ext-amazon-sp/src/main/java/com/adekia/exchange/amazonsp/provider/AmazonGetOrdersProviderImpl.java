@@ -1,0 +1,85 @@
+/*
+ * #%L
+ * ext-amazon-sp
+ * %%
+ * Copyright (C) 2022 Adekia
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package com.adekia.exchange.amazonsp.provider;
+
+import com.adekia.exchange.amazonsp.client.ApiException;
+import com.adekia.exchange.amazonsp.client.api.OrdersV0Api;
+import com.adekia.exchange.amazonsp.client.model.GetOrdersResponse;
+import com.adekia.exchange.amazonsp.util.AmazonOrder;
+import com.adekia.exchange.context.Ctx;
+import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon")
+public class AmazonGetOrdersProviderImpl implements AmazonGetOrdersProvider {
+
+    @Override
+    public List<OrderType> getOrders(Ctx ctx) throws Exception {
+        //final ImportOrdersRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
+
+        OrdersV0Api apiInstance = new OrdersV0Api();
+
+        /* Parameters used for selection */
+        final List<String> marketplaceIds = Arrays.asList("marketplaceIds_example"); // List<String> | A list of MarketplaceId values. Used to select orders that were placed in the specified marketplaces.  See the [Selling Partner API Developer Guide](doc:marketplace-ids) for a complete list of marketplaceId values.
+        final String lastUpdatedAfter = "lastUpdatedAfter_example"; // String | A date used for selecting orders that were last updated after (or at) a specified time. An update is defined as any change in order status, including the creation of a new order. Includes updates made by Amazon and by the seller. The date must be in ISO 8601 format.
+        // Technical one
+        final Integer maxResultsPerPage = 100; // Integer | A number that indicates the maximum number of orders that can be returned per page. Value must be 1 - 100. Default 100.
+        // todo : take this one from parameter of the route ? For the moment we consider only first 100 Orders in time intervalle
+        final String nextToken = null; // String | A string token returned in the response of your previous request.
+
+        /* Have a look to this ? Do we consider all Amazon statuses ?*/
+        final List<String> orderStatuses = null; // List<String> | A list of OrderStatus values used to filter the results. Possible values: PendingAvailability (This status is available for pre-orders only. The order has been placed, payment has not been authorized, and the release date of the item is in the future.); Pending (The order has been placed but payment has not been authorized); Unshipped (Payment has been authorized and the order is ready for shipment, but no items in the order have been shipped); PartiallyShipped (One or more, but not all, items in the order have been shipped); Shipped (All items in the order have been shipped); InvoiceUnconfirmed (All items in the order have been shipped. The seller has not yet given confirmation to Amazon that the invoice has been shipped to the buyer.); Canceled (The order has been canceled); and Unfulfillable (The order cannot be fulfilled. This state applies only to Multi-Channel Fulfillment orders.).
+
+        /* Seems i will not use this */
+        final String createdAfter = null; // String | A date used for selecting orders created after (or at) a specified time. Only orders placed after the specified time are returned. Either the CreatedAfter parameter or the LastUpdatedAfter parameter is required. Both cannot be empty. The date must be in ISO 8601 format.
+        final String createdBefore = null; // String | A date used for selecting orders created before (or at) a specified time. Only orders placed before the specified time are returned. The date must be in ISO 8601 format.
+        final String lastUpdatedBefore = null; // String | A date used for selecting orders that were last updated before (or at) a specified time. An update is defined as any change in order status, including the creation of a new order. Includes updates made by Amazon and by the seller. The date must be in ISO 8601 format.
+        final List<String> fulfillmentChannels = null; // List<String> | A list that indicates how an order was fulfilled. Filters the results by fulfillment channel. Possible values: AFN (Fulfillment by Amazon); MFN (Fulfilled by the seller).
+        final List<String> paymentMethods = null; // List<String> | A list of payment method values. Used to select orders paid using the specified payment methods. Possible values: COD (Cash on delivery); CVS (Convenience store payment); Other (Any payment method other than COD or CVS).
+        final String buyerEmail = null; // String | The email address of a buyer. Used to select orders that contain the specified email address.
+        final String sellerOrderId = null; // String | An order identifier that is specified by the seller. Used to select only the orders that match the order identifier. If SellerOrderId is specified, then FulfillmentChannels, OrderStatuses, PaymentMethod, LastUpdatedAfter, LastUpdatedBefore, and BuyerEmail cannot be specified.
+        final List<String> easyShipShipmentStatuses = null; // List<String> | A list of EasyShipShipmentStatus values. Used to select Easy Ship orders with statuses that match the specified  values. If EasyShipShipmentStatus is specified, only Amazon Easy Ship orders are returned.Possible values: PendingPickUp (Amazon has not yet picked up the package from the seller). LabelCanceled (The seller canceled the pickup). PickedUp (Amazon has picked up the package from the seller). AtOriginFC (The packaged is at the origin fulfillment center). AtDestinationFC (The package is at the destination fulfillment center). OutForDelivery (The package is out for delivery). Damaged (The package was damaged by the carrier). Delivered (The package has been delivered to the buyer). RejectedByBuyer (The package has been rejected by the buyer). Undeliverable (The package cannot be delivered). ReturnedToSeller (The package was not delivered to the buyer and was returned to the seller). ReturningToSeller (The package was not delivered to the buyer and is being returned to the seller).
+        final List<String> amazonOrderIds = null; // List<String> | A list of AmazonOrderId values. An AmazonOrderId is an Amazon-defined order identifier, in 3-7-7 format.
+        final String actualFulfillmentSupplySourceId = null; // String | Denotes the recommended sourceId where the order should be fulfilled from.
+        final Boolean isISPU = null; // Boolean | When true, this order is marked to be picked up from a store rather than delivered.
+        final String storeChainStoreId = null; // String | The store chain store identifier. Linked to a specific store in a store chain.
+
+        try {
+            GetOrdersResponse result = apiInstance.getOrders(marketplaceIds, createdAfter, createdBefore, lastUpdatedAfter, lastUpdatedBefore, orderStatuses, fulfillmentChannels, paymentMethods, buyerEmail, sellerOrderId, maxResultsPerPage, easyShipShipmentStatuses, nextToken, amazonOrderIds, actualFulfillmentSupplySourceId, isISPU, storeChainStoreId);
+            if (result != null && result.getPayload() != null && result.getPayload().getOrders() != null) {
+                result.getPayload().getOrders().stream()
+                        .map(order -> AmazonOrder.toOrderType(order, null))
+                        .collect(Collectors.toList());
+            }
+        } catch (ApiException apie) {
+            throw new RuntimeException(apie);
+        }
+        return null;
+    }
+}

@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Library:           OASIS Universal Business Language (UBL) 2.3 OS
+                     http://docs.oasis-open.org/ubl/os-UBL-2.3/
+  Release Date:      15 June 2021
+  Module:            xsd/maindoc/UBL-ImportCustomsDeclaration-2.3.xsd
+  Generated on:      2021-06-18 19:57z
+  Copyright (c) OASIS Open 2021. All Rights Reserved.
+-->
+<xsd:schema xmlns="urn:oasis:names:specification:ubl:schema:xsd:ImportCustomsDeclaration-2"
+            xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+            xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+            xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ccts="urn:un:unece:uncefact:documentation:2"
+            targetNamespace="urn:oasis:names:specification:ubl:schema:xsd:ImportCustomsDeclaration-2"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            version="2.3">
+    <!-- ===== Imports ===== -->
+    <xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+                schemaLocation="../common/UBL-CommonAggregateComponents-2.3.xsd"/>
+    <xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+                schemaLocation="../common/UBL-CommonBasicComponents-2.3.xsd"/>
+    <xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2"
+                schemaLocation="../common/UBL-CommonExtensionComponents-2.3.xsd"/>
+    <!-- ===== Element Declarations ===== -->
+    <xsd:element name="ImportCustomsDeclaration" type="ImportCustomsDeclarationType">
+        <xsd:annotation>
+            <xsd:documentation>This element MUST be conveyed as the root element in any instance document based on this
+                Schema expression
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+    <!-- ===== Type Definitions ===== -->
+    <!-- ===== Aggregate Business Information Entity Type Definitions ===== -->
+    <xsd:complexType name="ImportCustomsDeclarationType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <ccts:Component>
+                    <ccts:ComponentType>ABIE</ccts:ComponentType>
+                    <ccts:DictionaryEntryName>Import Customs Declaration. Details</ccts:DictionaryEntryName>
+                    <ccts:Definition>A customs declaration document for importing goods.</ccts:Definition>
+                    <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                </ccts:Component>
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element ref="ext:UBLExtensions" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>A container for extensions foreign to the document.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:UBLVersionID" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. UBL Version Identifier. Identifier
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Identifies the earliest version of the UBL 2 schema for this document type
+                                that defines all of the elements that might be encountered in the current instance.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>UBL Version Identifier</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Identifier</ccts:RepresentationTerm>
+                            <ccts:DataType>Identifier. Type</ccts:DataType>
+                            <ccts:Examples>2.3</ccts:Examples>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:CustomizationID" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Customization Identifier. Identifier
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Identifies a user-defined customization of UBL for a specific use.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Customization Identifier</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Identifier</ccts:RepresentationTerm>
+                            <ccts:DataType>Identifier. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:ProfileID" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Profile Identifier. Identifier
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Identifies a user-defined profile of the customization of UBL being used.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Profile Identifier</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Identifier</ccts:RepresentationTerm>
+                            <ccts:DataType>Identifier. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:ProfileExecutionID" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Profile Execution Identifier.
+                                Identifier
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Identifies an instance of executing a profile, to associate all
+                                transactions in a collaboration.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Profile Execution Identifier</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Identifier</ccts:RepresentationTerm>
+                            <ccts:DataType>Identifier. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:ID" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Identifier</ccts:DictionaryEntryName>
+                            <ccts:Definition>An identifier for this document.</ccts:Definition>
+                            <ccts:Cardinality>1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Identifier</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Identifier</ccts:RepresentationTerm>
+                            <ccts:DataType>Identifier. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:UUID" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. UUID. Identifier
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>A universally unique identifier for an instance of this document.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>UUID</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Identifier</ccts:RepresentationTerm>
+                            <ccts:DataType>Identifier. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:IssueDate" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Issue Date. Date
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>The date, assigned by the sender, on which this document was issued.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Issue Date</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Date</ccts:RepresentationTerm>
+                            <ccts:DataType>Date. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:IssueTime" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Issue Time. Time
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>The time, assigned by the sender, at which this document was issued.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Issue Time</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Time</ccts:RepresentationTerm>
+                            <ccts:DataType>Time. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:TypeCode" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Type Code. Code
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Code specifying the type of import.</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Type Code</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Code</ccts:RepresentationTerm>
+                            <ccts:DataType>Code. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:SubTypeCode" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Sub_ Type Code. Code
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Code specifying the subtype of import.</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Sub</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Type Code</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Code</ccts:RepresentationTerm>
+                            <ccts:DataType>Code. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:NatureOfTransactionCode" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Nature Of_ Transaction Code. Code
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Code specifying the type of transactions for this import</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Nature Of</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Transaction Code</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Code</ccts:RepresentationTerm>
+                            <ccts:DataType>Code. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:Note" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Note. Text</ccts:DictionaryEntryName>
+                            <ccts:Definition>Free-form text pertinent to this document, conveying information that is
+                                not contained explicitly in other structures.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..n</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Note</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Text</ccts:RepresentationTerm>
+                            <ccts:DataType>Text. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cbc:VersionID" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>BBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Version. Identifier
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Identifies a version of an Import Customs Declaration in order to
+                                distinguish updates.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Version</ccts:PropertyTerm>
+                            <ccts:RepresentationTerm>Identifier</ccts:RepresentationTerm>
+                            <ccts:DataType>Identifier. Type</ccts:DataType>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:ValidityPeriod" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Validity_ Period. Period
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>A period, assigned by the issuer, during which the information in the
+                                declaration is valid.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Validity</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Period</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Period</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Period</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:CustomsExitOfficeLocation" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Customs Exit Office_ Location.
+                                Location
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>Customs exit office of the goods being declared.</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Customs Exit Office</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Location</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Location</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Location</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:JurisdictionRegionAddress" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Jurisdiction Region_ Address.
+                                Address
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>A geographic area in which this declaration applies.</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Jurisdiction Region</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Address</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Address</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Address</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:ImporterParty" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Importer_ Party. Party
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>The Party who makes the import declaration, or on whose behalf the import
+                                declaration is made, and who is the owner of the goods or has similar right of disposal
+                                over them at the time when the declaration is accepted.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Importer</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Party</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Party</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Party</ccts:RepresentationTerm>
+                            <ccts:Examples>Importer (WCO ID 74A)</ccts:Examples>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:ConsignorParty" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Consignor_ Party. Party
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>The Party responsible for the consignment</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Consignor</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Party</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Party</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Party</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:ConsigneeParty" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Consignee_ Party. Party
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>The Party responsible for receiving the goods.</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Consignee</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Party</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Party</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Party</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:FreightForwarderParty" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Freight Forwarder_ Party. Party
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>The Party responsibe for the freight forwarding.</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Freight Forwarder</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Party</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Party</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Party</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:CustomsParty" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Customs_ Party. Party
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>The authority who is legally responsible for processing the declaration.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Customs</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Party</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Party</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Party</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:NotifierParty" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Notifier_ Party. Party
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>The party responsible for contact on master level.</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Notifier</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Party</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Party</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Party</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:Shipment" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Shipment</ccts:DictionaryEntryName>
+                            <ccts:Definition>The shipment related to this trade certificate</ccts:Definition>
+                            <ccts:Cardinality>1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Shipment</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Shipment</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Shipment</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:PreviousCustomsDeclaration" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Previous_ Customs Declaration. Customs
+                                Declaration
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>A reference to a previously sent customs declaration.</ccts:Definition>
+                            <ccts:Cardinality>0..1</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Previous</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Customs Declaration</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Customs Declaration</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Customs Declaration</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:AdditionalDocumentReference"
+                         minOccurs="0"
+                         maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Additional_ Document Reference.
+                                Document Reference
+                            </ccts:DictionaryEntryName>
+                            <ccts:Definition>A reference to additional documents related to or relevant for this customs
+                                declaration.
+                            </ccts:Definition>
+                            <ccts:Cardinality>0..n</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTermQualifier>Additional</ccts:PropertyTermQualifier>
+                            <ccts:PropertyTerm>Document Reference</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Document Reference</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Document Reference</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="cac:Signature" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <ccts:Component>
+                            <ccts:ComponentType>ASBIE</ccts:ComponentType>
+                            <ccts:DictionaryEntryName>Import Customs Declaration. Signature</ccts:DictionaryEntryName>
+                            <ccts:Definition>A signature applied to this document.</ccts:Definition>
+                            <ccts:Cardinality>0..n</ccts:Cardinality>
+                            <ccts:ObjectClass>Import Customs Declaration</ccts:ObjectClass>
+                            <ccts:PropertyTerm>Signature</ccts:PropertyTerm>
+                            <ccts:AssociatedObjectClass>Signature</ccts:AssociatedObjectClass>
+                            <ccts:RepresentationTerm>Signature</ccts:RepresentationTerm>
+                        </ccts:Component>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>
+        <!-- ===== Copyright Notice ===== -->
+        <!--
+          OASIS takes no position regarding the validity or scope of any
+          intellectual property or other rights that might be claimed to pertain
+          to the implementation or use of the technology described in this
+          document or the extent to which any license under such rights
+          might or might not be available; neither does it represent that it has
+          made any effort to identify any such rights. Information on OASIS's
+          procedures with respect to rights in OASIS specifications can be
+          found at the OASIS website. Copies of claims of rights made
+          available for publication and any assurances of licenses to be made
+          available, or the result of an attempt made to obtain a general
+          license or permission for the use of such proprietary rights by
+          implementors or users of this specification, can be obtained from
+          the OASIS Executive Director.
+
+          OASIS invites any interested party to bring to its attention any
+          copyrights, patents or patent applications, or other proprietary
+          rights which may cover technology that may be required to
+          implement this specification. Please address the information to the
+          OASIS Executive Director.
+
+          This document and translations of it may be copied and furnished to
+          others, and derivative works that comment on or otherwise explain
+          it or assist in its implementation may be prepared, copied,
+          published and distributed, in whole or in part, without restriction of
+          any kind, provided that the above copyright notice and this
+          paragraph are included on all such copies and derivative works.
+          However, this document itself may not be modified in any way,
+          such as by removing the copyright notice or references to OASIS,
+          except as needed for the purpose of developing OASIS
+          specifications, in which case the procedures for copyrights defined
+          in the OASIS Intellectual Property Rights document must be
+          followed, or as required to translate it into languages other than
+          English.
+
+          The limited permissions granted above are perpetual and will not be
+          revoked by OASIS or its successors or assigns.
+
+          This document and the information contained herein is provided on
+          an "AS IS" basis and OASIS DISCLAIMS ALL WARRANTIES,
+          EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY
+          WARRANTY THAT THE USE OF THE INFORMATION HEREIN
+          WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+          WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A
+          PARTICULAR PURPOSE.
+        -->
