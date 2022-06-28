@@ -15,11 +15,6 @@ export const newAvailableCalendarsHolder = () => {
       });
     },
 
-    getCalendarsArray: () => {
-      // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-      return state.calendarsArray;
-    },
-
     getCalendarIds: () => {
       return state.calendarsArray.map((calendar) => calendar.calendarId);
     },
