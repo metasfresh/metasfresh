@@ -22,9 +22,9 @@
 
 package com.adekia.exchange.camel.context;
 
-import com.adekia.exchange.camel.processor.CtxProcessor;
 import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.context.CtxProvider;
+import com.adekia.exchange.context.OrderCtx;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.stereotype.Component;
 
@@ -36,8 +36,8 @@ public class CtxProviderSimpleImpl implements CtxProvider
 {
 
     @Override
-    public Ctx process(final Object ctx) throws Exception {
-        return Ctx.builder()
+    public Ctx getCtx(final Object ctx) throws Exception {
+        return OrderCtx.builder()
                 .properties(new HashMap<String, String>())
                 .build();
     }

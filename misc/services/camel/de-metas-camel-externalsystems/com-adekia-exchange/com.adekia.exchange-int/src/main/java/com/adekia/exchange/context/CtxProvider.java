@@ -24,5 +24,5 @@ package com.adekia.exchange.context;
 
 public interface CtxProvider
 {
-	public Ctx process(final Object ctx) throws Exception;
+	public Ctx getCtx(final Object ctx) throws Exception;
 }

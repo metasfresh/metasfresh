@@ -24,9 +24,13 @@ package com.adekia.exchange.camel.provider;
 
 import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.provider.GetOrderProvider;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.AddressType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.ContactType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.CustomerPartyType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.ItemType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.LineItemType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.OrderLineType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.PartyType;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.PriceType;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
@@ -46,6 +50,17 @@ public class GetOrderProviderSimpleImpl implements GetOrderProvider {
     public OrderType getOrder(Ctx ctx) {
         OrderType order = new OrderType();
         order.setUUID(UUID.randomUUID().toString());
+
+        CustomerPartyType cpt = new CustomerPartyType();
+        PartyType pt = new PartyType();
+        ContactType ct = new ContactType();
+        ct.setElectronicMail("sauron@barad.dur");
+        pt.setContact(ct);
+        AddressType at = new AddressType();
+        at.setID("Mordor");
+        pt.setPostalAddress(at);
+        cpt.setParty(pt);
+        order.setBuyerCustomerParty(cpt);
         order.setOrderLine(createOrderLines());
         return order;
     }

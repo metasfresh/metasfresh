@@ -22,7 +22,7 @@
 
 package com.adekia.exchange.camel.processor;
 
-import com.adekia.exchange.context.Ctx;
+import com.adekia.exchange.context.OrderCtx;
 import com.adekia.exchange.provider.GetOrdersProvider;
 import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +31,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnSingleCandidate(GetOrdersProcessorImpl.class)
-public class GetOrdersProcessorImpl implements GetOrdersProcessor
-{
+public class GetOrdersProcessorImpl implements GetOrdersProcessor {
     private final GetOrdersProvider getOrdersProvider;
 
     @Autowired
@@ -42,7 +41,7 @@ public class GetOrdersProcessorImpl implements GetOrdersProcessor
 
     @Override
     public void process(final Exchange exchange) throws Exception {
-        Ctx ctx = exchange.getProperty(Ctx.CAMEL_PROPERTY_NAME, Ctx.class);
+        OrderCtx ctx = exchange.getProperty(OrderCtx.CAMEL_PROPERTY_NAME, OrderCtx.class);
         exchange.getIn().setBody(getOrdersProvider.getOrders(ctx));
     }
 

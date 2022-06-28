@@ -40,7 +40,7 @@ public class AmazonShipmentSenderMockImpl implements ShipmentSender
 	{
 		ShippingApi shippingApi = new ShippingApi();
 		ApiClient apiClient = shippingApi.getApiClient().setBasePath("http://localhost:3101/sp-api");
-		apiClient.apiType="mock";
+		//apiClient.apiType="mock"; todo
 
 		CreateShipmentResponse response = shippingApi.createShipment((CreateShipmentRequest)shipment);
 

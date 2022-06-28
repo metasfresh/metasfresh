@@ -24,21 +24,23 @@ package com.adekia.exchange.metasfresh.ctx;
 
 import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.context.CtxProvider;
+import com.adekia.exchange.context.OrderCtx;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
-//@ConditionalOnProperty(prefix = "ctx", name = "provider", havingValue = "metasfresh")
+@ConditionalOnProperty(prefix = "ctx", name = "provider", havingValue = "metasfresh")
 public class MetasfreshCtxProviderImpl implements CtxProvider
 {
-	public Ctx process(final Object ctx) throws Exception {
+	public Ctx getCtx(final Object ctx) throws Exception {
 		JsonExternalSystemRequest request = (JsonExternalSystemRequest) ctx;
 		Map<String, String> parameters = (request==null) ? new HashMap<String,String>() : request.getParameters();
 
-		return Ctx.builder()
+		return OrderCtx.builder()
 				.properties(parameters)
 				.build();
 	}

@@ -65,8 +65,8 @@ public class ShipmentRouteBuilder extends RouteBuilder
 				.to(direct(MF_ERROR_ROUTE_ID));
 
 		//Simple direct route to retrieve collection of Orders and route individually
-//		from(direct(SHIPMENT_ROUTE_ID)) // todo
-		from("timer://foo?repeatCount=1")
+		from(direct(SHIPMENT_ROUTE_ID)) // todo
+//		from("timer://foo?repeatCount=1")
 				.routeId(SHIPMENT_ROUTE_ID)
 				.process(ctxBuilderProcessor).id(CTX_PROCESSOR_ID)
 				.log(LoggingLevel.INFO, "RUNNING Shipment Processor...")

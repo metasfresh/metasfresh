@@ -108,7 +108,7 @@
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
-            <version>10.0.0</version>
+            <version>${metasfresh-common.version}</version>
         </dependency>
         <dependency>
             <groupId>de.metas.common.ordercandidates</groupId>

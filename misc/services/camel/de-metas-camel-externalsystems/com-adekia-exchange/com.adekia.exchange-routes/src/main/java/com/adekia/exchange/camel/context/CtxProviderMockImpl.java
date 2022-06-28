@@ -24,6 +24,7 @@ package com.adekia.exchange.camel.context;
 
 import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.context.CtxProvider;
+import com.adekia.exchange.context.OrderCtx;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,14 +48,14 @@ public class CtxProviderMockImpl implements CtxProvider
             { "clientId", "clientId" },
             { "clientSecret", "clientSecret" },
             { "refreshToken", "refreshToken" },
-            //            { "endpoint", "https://api.amazon.com/auth/o2/token" },
+            { "LwaEndpoint", "https://api.amazon.com/auth/o2/token" },
             //OrdersApi
             { "endpoint", "https://sellingpartnerapi-eu.amazon.com" }
     }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
     @Override
-    public Ctx process(final Object ctx) throws Exception {
-        return Ctx.builder()
+    public Ctx getCtx(final Object ctx) throws Exception {
+        return OrderCtx.builder()
                 .properties(AmazonAuthProperties)
                 .build();
     }

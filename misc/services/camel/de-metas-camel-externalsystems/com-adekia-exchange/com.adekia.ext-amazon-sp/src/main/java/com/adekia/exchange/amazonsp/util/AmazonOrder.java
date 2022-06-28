@@ -22,9 +22,32 @@
 
 package com.adekia.exchange.amazonsp.util;
 
-import com.adekia.exchange.amazonsp.client.orders.model.*;
+import com.adekia.exchange.amazonsp.client.orders.model.Address;
+import com.adekia.exchange.amazonsp.client.orders.model.Money;
+import com.adekia.exchange.amazonsp.client.orders.model.Order;
+import com.adekia.exchange.amazonsp.client.orders.model.OrderItem;
+import com.adekia.exchange.amazonsp.client.orders.model.OrderItemList;
+import com.adekia.exchange.amazonsp.client.orders.model.PaymentExecutionDetailItem;
 import com.helger.commons.string.StringHelper;
-import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.*;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.AddressLineType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.AddressType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.ContactType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.CountryType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.CustomerPartyType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.DeliveryTermsType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.DeliveryType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.ItemIdentificationType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.ItemType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.LineItemType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.MonetaryTotalType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.OrderLineType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.PartyIdentificationType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.PartyNameType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.PartyType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.PaymentTermsType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.PriceType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.SupplierPartyType;
+import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.TransactionConditionsType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_23.AmountType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_23.PaymentMeansIDType;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_23.SpecialTermsType;

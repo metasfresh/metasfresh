@@ -37,8 +37,13 @@ import java.util.stream.Collectors;
 @Component
 @ConditionalOnSingleCandidate(GetOrdersProvider.class)
 public class GetOrdersProviderSimpleImpl implements GetOrdersProvider {
+    private final GetOrderProviderSimpleImpl orderProvider;
+
     @Autowired
-    GetOrderProviderSimpleImpl orderProvider;
+    public GetOrdersProviderSimpleImpl(final GetOrderProviderSimpleImpl orderProvider)
+    {
+        this.orderProvider = orderProvider;
+    }
 
     @Override
     public List<OrderType> getOrders(Ctx ctx) throws Exception {

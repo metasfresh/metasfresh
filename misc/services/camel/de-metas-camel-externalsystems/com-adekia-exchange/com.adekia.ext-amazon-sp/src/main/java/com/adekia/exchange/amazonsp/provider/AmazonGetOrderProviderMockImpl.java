@@ -25,30 +25,30 @@ package com.adekia.exchange.amazonsp.provider;
 import com.adekia.exchange.amazonsp.client.orders.ApiClient;
 import com.adekia.exchange.amazonsp.client.orders.ApiException;
 import com.adekia.exchange.amazonsp.client.orders.api.OrdersV0Api;
-import com.adekia.exchange.amazonsp.client.orders.model.GetOrderItemsResponse;
 import com.adekia.exchange.amazonsp.client.orders.model.GetOrderResponse;
 import com.adekia.exchange.amazonsp.util.AmazonOrder;
-import com.adekia.exchange.amazonsp.util.AmazonOrderApiHelper;
 import com.adekia.exchange.context.Ctx;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-//@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon-mock")
+@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "mock")
 public class AmazonGetOrderProviderMockImpl implements AmazonGetOrderProvider {
     @Override
     public OrderType getOrder(Ctx ctx) throws Exception {
-        OrdersV0Api ordersApi = AmazonOrderApiHelper.getOrdersAPI(ctx);
-        ApiClient apiClient = ordersApi.getApiClient().setBasePath("http://localhost:3101/sp-api");
-        apiClient.apiType ="mock";
+        OrdersV0Api apiInstance = new OrdersV0Api();
+        ApiClient apiClient = apiInstance.getApiClient()
+                .setBasePath("http://localhost:3001/sp-api")
+                //			.setDebugging(true)
+                ;
 
         try {
             // /orders/v0/orders/{orderId}
-            GetOrderResponse getOrderResponse = ordersApi.getOrder("1");
-            GetOrderItemsResponse getOrderItemsResponse = ordersApi.getOrderItems("123", null);
-            if (getOrderResponse != null)
-                return AmazonOrder.toOrderType(getOrderResponse.getPayload(), getOrderItemsResponse.getPayload().getOrderItems());
+            GetOrderResponse result = apiInstance.getOrder("1");
 
+            if (result != null && result.getPayload() != null)
+                return AmazonOrder.toOrderType(result.getPayload(), null);
         } catch (ApiException apie) {
             throw new RuntimeException(apie);
         }

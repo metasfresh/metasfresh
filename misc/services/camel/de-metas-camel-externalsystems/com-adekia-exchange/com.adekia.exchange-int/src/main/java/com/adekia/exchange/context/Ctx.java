@@ -22,11 +22,8 @@
 
 package com.adekia.exchange.context;
 
-import lombok.Builder;
 import lombok.Data;
-import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +37,7 @@ public class Ctx {
     public Ctx() {
         this.properties = new HashMap<>();
     }
-    @Builder
+    //@Builder
     public Ctx(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -52,5 +49,4 @@ public class Ctx {
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
-
 }

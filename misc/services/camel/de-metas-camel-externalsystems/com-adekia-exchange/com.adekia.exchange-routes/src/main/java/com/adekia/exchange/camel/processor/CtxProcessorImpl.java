@@ -39,6 +39,6 @@ public class CtxProcessorImpl implements CtxProcessor
 
     @Override
     public void process(final Exchange exchange) throws Exception {
-        exchange.setProperty(Ctx.CAMEL_PROPERTY_NAME, ctxProvider.process(exchange.getIn().getBody()));
+        exchange.setProperty(Ctx.CAMEL_PROPERTY_NAME, ctxProvider.getCtx(exchange.getIn().getBody()));
     }
 }

@@ -23,8 +23,6 @@
 package com.adekia.exchange.camel.processor;
 
 import com.adekia.exchange.camel.logger.SimpleLog;
-import com.adekia.exchange.context.Ctx;
-import com.adekia.exchange.sender.OrderPaymentSender;
 import com.adekia.exchange.sender.OrderSender;
 import com.adekia.exchange.transformer.OrderTransformer;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;

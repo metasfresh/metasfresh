@@ -25,5 +25,5 @@ package com.adekia.exchange.transformer;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
 
 public interface OrderTransformer {
-    public Object transform(final OrderType order) throws Exception;
+    public Object transform(OrderType order) throws Exception;
 }
