@@ -23,54 +23,84 @@ export const newCalendarEventsHolder = () => {
     });
   };
 
+  const isMatching = ({ startDate, endDate, simulationId }) => {
+    return (
+      state.startDate === startDate &&
+      state.endDate === endDate &&
+      state.simulationId === simulationId
+    );
+  };
+
+  const getEventsArray = () => {
+    // IMPORTANT: don't copy it because we don't want to trigger a "react change"
+    return state.events;
+  };
+
+  const setEvents = ({ startDate, endDate, simulationId, events }) => {
+    setState({
+      startDate,
+      endDate,
+      simulationId,
+      events: events || [],
+    });
+  };
+
+  const addEventsArray = (eventsArrayToAdd) => {
+    console.log('addEventsArray', { eventsArrayToAdd });
+    setStateEvents((prevEvents) =>
+      mergeCalendarEventsArrayToArray(prevEvents, eventsArrayToAdd)
+    );
+  };
+
+  const applyWSEventsArray = (wsEventsArray) => {
+    console.log('applyWSEvents', { wsEventsArray });
+    setStateEvents((prevEvents) =>
+      mergeWSEventsToCalendarEvents(prevEvents, wsEventsArray)
+    );
+  };
+
+  const updateEventsAndGet = ({
+    calendarIds,
+    startDate,
+    endDate,
+    simulationId,
+    newEventsSupplier,
+  }) => {
+    if (isMatching({ startDate, endDate, simulationId })) {
+      console.log('updateEventsAndGet: already fetched');
+      return Promise.resolve(getEventsArray());
+    } else {
+      console.log(
+        'updateEventsAndGet: start fetching from supplier: ',
+        newEventsSupplier
+      );
+
+      newEventsSupplier({
+        calendarIds,
+        simulationId,
+        startDate,
+        endDate,
+      }).then((events) => {
+        //console.log('fetchCalendarEvents: got result', { events });
+        setEvents({
+          simulationId,
+          startDate,
+          endDate,
+          events,
+        });
+
+        return events;
+      });
+    }
+  };
+
   return {
-    isMatching: ({ startDate, endDate, simulationId }) => {
-      return (
-        state.startDate === startDate &&
-        state.endDate === endDate &&
-        state.simulationId === simulationId
-      );
-    },
-
-    getEventsArray: () => {
-      // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-      return state.events;
-    },
-
-    setEvents: ({ startDate, endDate, simulationId, events }) => {
-      const version = (state?.version || 0) + 1;
-      console.log('setEvents', {
-        startDate,
-        endDate,
-        simulationId,
-        events,
-        state,
-        stateId: state.stateId,
-        version,
-      });
-      setState({
-        stateId: state.stateId,
-        version,
-        startDate,
-        endDate,
-        simulationId,
-        events: events || [],
-      });
-    },
-
-    addEventsArray: (eventsArrayToAdd) => {
-      console.log('addEventsArray', { eventsArrayToAdd });
-      setStateEvents((prevEvents) =>
-        mergeCalendarEventsArrayToArray(prevEvents, eventsArrayToAdd)
-      );
-    },
-
-    applyWSEventsArray: (wsEventsArray) => {
-      console.log('applyWSEvents', { wsEventsArray });
-      setStateEvents((prevEvents) =>
-        mergeWSEventsToCalendarEvents(prevEvents, wsEventsArray)
-      );
-    },
+    isMatching,
+    getEventsArray,
+    setEvents,
+    addEventsArray,
+    applyWSEventsArray,
+    updateEventsAndGet,
   };
 };
 

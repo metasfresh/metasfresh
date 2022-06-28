@@ -28,7 +28,6 @@ const Calendar = ({
   const availableCalendarsHolder = newAvailableCalendarsHolder();
   const calendarEventsHolder = newCalendarEventsHolder();
   const simulationsHolder = newSimulationsHolder(initialSelectedSimulationId);
-  //const [editingEvent, setEditingEvent] = React.useState(null);
 
   useEffect(() => {
     console.log('Loading simulations and calendars');
@@ -56,33 +55,18 @@ const Calendar = ({
   }, [simulationsHolder.getSelectedSimulationId()]);
 
   const fetchCalendarEvents = (params) => {
-    //console.log('fetchCalendarEvents', { params, calendarEvents });
-
+    const calendarIds = availableCalendarsHolder.getCalendarIds();
     const startDate = normalizeDateTime(params.startStr);
     const endDate = normalizeDateTime(params.endStr);
     const simulationId = simulationsHolder.getSelectedSimulationId();
 
-    if (calendarEventsHolder.isMatching({ startDate, endDate, simulationId })) {
-      //console.log('fetchCalendarEvents: already fetched', calendarEvents);
-      return Promise.resolve(calendarEventsHolder.getEventsArray());
-    } else {
-      console.log('fetchCalendarEvents: start fetching from backend');
-
-      const calendarIds = availableCalendarsHolder.getCalendarIds();
-      return api
-        .getCalendarEvents({ calendarIds, simulationId, startDate, endDate })
-        .then((events) => {
-          //console.log('fetchCalendarEvents: got result', { events });
-          calendarEventsHolder.setEvents({
-            simulationId,
-            startDate,
-            endDate,
-            events,
-          });
-
-          return events;
-        });
-    }
+    return calendarEventsHolder.updateEventsAndGet({
+      calendarIds,
+      startDate,
+      endDate,
+      simulationId,
+      newEventsSupplier: api.getCalendarEvents,
+    });
   };
 
   const handleEventClick = (params) => {
