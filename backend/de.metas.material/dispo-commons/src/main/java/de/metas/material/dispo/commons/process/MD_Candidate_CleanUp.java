@@ -22,11 +22,16 @@
 
 package de.metas.material.dispo.commons.process;
 
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.process.JavaProcess;
+import de.metas.util.Loggables;
 import org.compiere.SpringContextHolder;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MD_Candidate_CleanUp extends JavaProcess
 {
@@ -40,7 +45,14 @@ public class MD_Candidate_CleanUp extends JavaProcess
 
 		final CandidateRepositoryWriteService candidateService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
 
-		candidateService.deleteCandidatesAndDetailsByQuery(deleteCandidatesQuery);
+		final Set<CandidateId> deletedCandidateIDs = candidateService.deleteCandidatesAndDetailsByQuery(deleteCandidatesQuery);
+
+		final String deletedCandidatesString = deletedCandidateIDs.stream()
+				.map(CandidateId::getRepoId)
+				.map(String::valueOf)
+				.collect(Collectors.joining(",", "[", "]"));
+
+		Loggables.get().addLog("Deleted the following MD_Candidate_IDs: {}", deletedCandidatesString);
 
 		return MSG_OK;
 	}

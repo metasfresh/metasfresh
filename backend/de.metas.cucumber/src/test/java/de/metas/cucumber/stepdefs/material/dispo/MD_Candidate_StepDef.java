@@ -45,6 +45,7 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
@@ -55,6 +56,7 @@ import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -85,6 +87,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -107,6 +110,7 @@ public class MD_Candidate_StepDef
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private CandidateRepositoryWriteService candidateWriteService;
+	private MaterialEventObserver materialEventObserver;
 	private final M_Product_StepDefData productTable;
 	private final MD_Candidate_StepDefData stockCandidateTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
@@ -131,6 +135,7 @@ public class MD_Candidate_StepDef
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
 		candidateWriteService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
+		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 
@@ -415,12 +420,18 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	@And("post DeactivateAllSimulatedCandidatesEvent")
+	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
 	public void deactivate_simulated_md_candidates()
 	{
+		final String traceId = UUID.randomUUID().toString();
+
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
+
 		postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
-													  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
+													  .eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
 													  .build());
+
+		materialEventObserver.awaitProcessing(traceId);
 	}
 
 	@And("delete all simulated candidates")

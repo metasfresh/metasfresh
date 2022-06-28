@@ -747,7 +747,8 @@ public class CandidateRepositoryWriteService
 		return deleteResult;
 	}
 
-	public void deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
+	@NonNull
+	public Set<CandidateId> deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
 	{
 		final Set<CandidateId> alreadyDeletedIds = new HashSet<>();
 
@@ -758,6 +759,8 @@ public class CandidateRepositoryWriteService
 				.iterateAndStreamIds(CandidateId::ofRepoId)
 				.filter(candidateId -> !alreadyDeletedIds.contains(candidateId))
 				.forEach(candidateId -> deleteCandidateById(candidateId, alreadyDeletedIds));
+
+		return alreadyDeletedIds;
 	}
 
 	@NonNull
