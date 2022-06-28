@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ ext-amazon-sp
+  ~ %%
+  ~ Copyright (C) 2022 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.adekia.exchange</groupId>
+        <artifactId>com-adekia-exchange</artifactId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.adekia.exchange</groupId>
+    <artifactId>ext-amazon-sp</artifactId>
+    <name>Adekia Exchange - Amazon Selling Partner Client API Integration</name>
+    <packaging>jar</packaging>
+    <version>10.0.0</version>
+    <url>https://www.adekia.com</url>
+
+    <properties>
+        <java.version>11</java.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <swagger-annotations-version>2.1.13</swagger-annotations-version>
+        <jersey-version>2.35</jersey-version>
+        <jackson-version>2.13.2</jackson-version>
+        <jodatime-version>2.10.14</jodatime-version>
+        <maven-plugin-version>1.0.0</maven-plugin-version>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- activate the plugin -->
+            <plugin>
+                <groupId>io.swagger.codegen.v3</groupId>
+                <artifactId>swagger-codegen-maven-plugin</artifactId>
+                <version>3.0.33</version>
+
+                <!-- Java 16+ Bug see: https://github.com/swagger-api/swagger-codegen/issues/10966 -->
+                <dependencies>
+                    <dependency>
+                        <groupId>com.github.jknack</groupId>
+                        <artifactId>handlebars</artifactId>
+                        <version>4.3.0</version>
+                    </dependency>
+                </dependencies>
+                <!-- Java 16+ Bug -->
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <!-- specify the swagger yaml -->
+                            <inputSpec>${project.basedir}/ordersV0.json</inputSpec>
+
+                            <!-- target to generate java client code -->
+                            <language>java</language>
+
+                            <!-- Base Path to generate java client code -->
+                            <output>${project.basedir}</output>
+
+                            <modelPackage>com.adekia.exchange.amazonsp.client.model</modelPackage>
+                            <apiPackage>com.adekia.exchange.amazonsp.client.api</apiPackage>
+                            <invokerPackage>com.adekia.exchange.amazonsp.client</invokerPackage>
+                            <!-- <generateSupportingFiles>false</generateSupportingFiles> -->
+                            <supportingFilesToGenerate>
+                                ApiClient.java,Configuration.java,ApiException.java,Pair.java,Authentication.java,JSON.java,HttpBasicAuth.java,ApiKeyAuth.java,OAuth.java,StringUtil.java,RFC3339DateFormat.java,README.md
+                            </supportingFilesToGenerate>
+
+                            <!-- hint: if you want to generate java server code, e.g. based on Spring Boot,
+                                 you can use the following target: <language>spring</language> -->
+
+                            <!-- pass any necessary config options -->
+                            <configOptions>
+                                <dateLibrary>joda</dateLibrary>
+                            </configOptions>
+
+                            <!-- override the default library to jersey2 -->
+                            <library>jersey2</library>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.glassfish.jersey</groupId>
+                <artifactId>jersey-bom</artifactId>
+                <version>${jersey-version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.adekia.exchange</groupId>
+            <artifactId>exchange-int</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.adekia.exchange</groupId>
+            <artifactId>exchange-model</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
+        <!-- dependencies are needed for the client being generated -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swagger-annotations-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
+        </dependency>
+
+        <!-- JSON processing: jackson -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
+        </dependency>
+
+        <!-- Joda time: if you use it -->
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>${jodatime-version}</version>
+        </dependency>
+
+        <!-- Base64 encoding that works in both JVM and Android -->
+        <dependency>
+            <groupId>com.brsanthu</groupId>
+            <artifactId>migbase64</artifactId>
+            <version>2.2</version>
+        </dependency>
+    </dependencies>
+
+</project>
