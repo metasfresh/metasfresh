@@ -83,7 +83,7 @@ public class ProjectLinePricing extends JavaProcess
 				OrgId.ofRepoId(project.getAD_Org_ID()),
 				projectLine.getM_Product_ID(),
 				project.getC_BPartner_ID(),
-				null,
+				null, /* countryId */
 				projectLine.getPlannedQty(),
 				isSOTrx);
 		pp.setM_PriceList_ID(project.getM_PriceList_ID());
