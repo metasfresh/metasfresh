@@ -3,10 +3,10 @@ package de.metas.handlingunits.model;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Job
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_M_Picking_Job
+public interface I_M_Picking_Job 
 {
 
 	String Table_Name = "M_Picking_Job";
@@ -207,6 +207,71 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Approved.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsApproved (boolean IsApproved);
+
+	/**
+	 * Get Approved.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isApproved();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_Picking_Job.class, "IsApproved", null);
+	String COLUMNNAME_IsApproved = "IsApproved";
+
+	/**
+	 * Set Picking Review Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingReviewRequired (boolean IsPickingReviewRequired);
+
+	/**
+	 * Get Picking Review Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingReviewRequired();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsPickingReviewRequired = new ModelColumn<>(I_M_Picking_Job.class, "IsPickingReviewRequired", null);
+	String COLUMNNAME_IsPickingReviewRequired = "IsPickingReviewRequired";
+
+	/**
+	 * Set Ready To Review.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyToReview (boolean IsReadyToReview);
+
+	/**
+	 * Get Ready To Review.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyToReview();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsReadyToReview = new ModelColumn<>(I_M_Picking_Job.class, "IsReadyToReview", null);
+	String COLUMNNAME_IsReadyToReview = "IsReadyToReview";
+
+	/**
 	 * Set Picking Job.
 	 *
 	 * <br>Type: ID
@@ -334,16 +399,4 @@ public interface I_M_Picking_Job
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	// TODO add columns:
-	default void setIsPickingReviewRequired(boolean isPickingReviewRequired) {throw new UnsupportedOperationException("TODO impl");}
-	default boolean isPickingReviewRequired() { return false; }
-
-	String COLUMNNAME_IsApproved = "IsApproved";
-	default void setIsApproved(boolean isApproved) { throw new UnsupportedOperationException("TODO impl"); }
-	default boolean isApproved() { return false; }
-
-	String COLUMNNAME_IsReadyToReview="IsReadyToReview";
-	default void setIsReadyToReview(boolean readyToReview) { throw new UnsupportedOperationException("TODO impl"); }
-	default boolean isReadyToReview() { return false; }
 }

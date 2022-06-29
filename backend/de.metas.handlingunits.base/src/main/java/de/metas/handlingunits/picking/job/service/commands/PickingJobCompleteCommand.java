@@ -6,6 +6,9 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -19,6 +22,9 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
+	@NonNull  private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	private final PickingJob initialPickingJob;
 	private final boolean approveIfReadyToReview;
@@ -65,7 +71,8 @@ public class PickingJobCompleteCommand
 
 		if (pickingJob.isPickingReviewRequired() && !pickingJob.isApproved())
 		{
-			throw new AdempiereException("Not approved"); // TODO trl
+			final ITranslatableString msg_notapproved = msgBL.getTranslatableMsgText(MSG_NotApproved, pickingJob.getPickingSlot(), pickingJob.getCustomerName());
+			throw new AdempiereException(msg_notapproved);
 		}
 
 		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);

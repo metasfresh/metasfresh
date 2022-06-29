@@ -11,7 +11,6 @@ import org.compiere.SpringContextHolder;
 import java.util.List;
 import java.util.Objects;
 
-// TODO add to AD_Process, link it to M_Picking_Job table
 public class M_Picking_Job_ApproveAndComplete extends ViewBasedProcessTemplate
 {
 	private final PickingJobService pickingJobService = SpringContextHolder.instance.getBean(PickingJobService.class);
