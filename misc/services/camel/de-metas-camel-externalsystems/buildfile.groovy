@@ -29,7 +29,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
         currentBuild.description = """${currentBuild.description}<p/>
 					No changes happened in EDI; latest docker image: <code>${latestDockerImageName}</code>
 					"""
-        echo 'no changes happened in de-metas-camel-externalsystems; skip building it';
+        echo 'no changes happened in de-metas-camel-externalsystems; skip building it'
         return
     }
 
@@ -41,7 +41,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
     // resolve the version property ${metasfresh-common.version} in the pom.xml
     final String commonPropertyParam = "-Dproperty=metasfresh-common.version -DnewVersion=LATEST"
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DallowDowngrade=true ${commonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
+    sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DallowDowngrade=true ${commonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
     withEnv(["BRANCH_NAME_DOCKERIZED=${misc.mkDockerTag(env.BRANCH_NAME)}", "MF_VERSION_DOCKERIZED=${misc.mkDockerTag(env.MF_VERSION)}"]) {
         withCredentials([usernamePassword(credentialsId: 'nexus.metasfresh.com_jenkins', passwordVariable: 'DOCKER_PUSH_REGISTRY_PASSWORD', usernameVariable: 'DOCKER_PUSH_REGISTRY_USERNAME')]) {
