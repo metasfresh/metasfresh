@@ -75,7 +75,7 @@ public class MProductPricing
 																		 0, 
 																		 Qty, 
 																		 isSOTrx);
-		pricingCtx.setCountryId(countryId); // needed because we might unset the price
+		pricingCtx.setCountryId(countryId); // needed because we might unset the priceList
 
 		result = Services.get(IPricingBL.class).createInitialResult(pricingCtx);
 	}	// MProductPricing
