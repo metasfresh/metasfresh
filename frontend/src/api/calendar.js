@@ -79,6 +79,7 @@ export const connectToWS = ({ simulationId, onWSEventsArray }) => {
   const wsTopicName = `/v2/calendar/${simulationId || 'actual'}`;
   const sockClient = Stomp.Stomp.over(new SockJs(config.WS_URL));
   //sockClient.debug = null; // TODO uncomment to avoid debugging
+  // TODO: try connecting on disconnect
   sockClient.connect({}, () => {
     sockClient.subscribe(wsTopicName, (msg) => {
       const wsEventsArray =
