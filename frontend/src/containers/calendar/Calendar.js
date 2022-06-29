@@ -72,6 +72,31 @@ const Calendar = ({
     }
   };
 
+  const handleEventDragOrResize = (params) => {
+    if (
+      params.event.startStr === params.oldEvent.startStr &&
+      params.event.endStr === params.oldEvent.endStr &&
+      params.event.allDay === params.oldEvent.allDay
+    ) {
+      console.log('handleEventDragOrResize: no change', { params });
+      return;
+    }
+
+    api
+      .addOrUpdateCalendarEvent({
+        id: params.event.id,
+        simulationId: simulations.getSelectedSimulationId(),
+        startDate: params.event.start,
+        endDate: params.event.end,
+        allDay: params.event.allDay,
+      })
+      .then(calendarEvents.addEventsArray)
+      .catch((error) => {
+        console.log('Got error', error);
+        params.revert();
+      });
+  };
+
   return (
     <div className="calendar-container">
       <div className="calendar-top">
@@ -136,8 +161,7 @@ const Calendar = ({
           console.log('eventDragStop', { event });
         }}
         eventDrop={(params) => {
-          const simulationId = simulations.getSelectedSimulationId();
-          console.log('eventDrop', { params, simulationId });
+          console.log('eventDrop', { params });
 
           if (params.oldResource?.id !== params.newResource?.id) {
             console.log('moving event to another resource is not allowed');
@@ -145,25 +169,7 @@ const Calendar = ({
             return;
           }
 
-          if (
-            params.event.startStr !== params.oldEvent.startStr ||
-            params.event.endStr !== params.oldEvent.endStr ||
-            params.event.allDay !== params.oldEvent.allDay
-          ) {
-            api
-              .addOrUpdateCalendarEvent({
-                id: params.event.id,
-                simulationId,
-                startDate: params.event.start,
-                endDate: params.event.end,
-                allDay: params.event.allDay,
-              })
-              .then(calendarEvents.addEventsArray)
-              .catch((error) => {
-                console.log('Got error', error);
-                params.revert();
-              });
-          }
+          handleEventDragOrResize(params);
         }}
         drop={(event) => {
           console.log('drop', { event });
@@ -174,14 +180,17 @@ const Calendar = ({
         eventResizeStop={(event) => {
           console.log('eventResizeStop', { event });
         }}
-        eventResize={(event) => {
-          console.log('eventResize', { event });
+        eventResize={(params) => {
+          console.log('eventResize', { params });
+          handleEventDragOrResize(params);
         }}
         eventReceive={(event) => {
           console.log('eventReceive', { event });
+          event.revert();
         }}
         eventLeave={(event) => {
           console.log('eventLeave', { event });
+          event.revert();
         }}
       />
     </div>
