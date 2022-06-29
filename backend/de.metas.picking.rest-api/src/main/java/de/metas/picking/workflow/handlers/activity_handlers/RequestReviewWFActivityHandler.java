@@ -21,7 +21,6 @@ public class RequestReviewWFActivityHandler implements WFActivityHandler, UserCo
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.requestReview");
 
-	// TODO add AD_Message
 	public static final AdMessageKey MSG_Caption = AdMessageKey.of("de.metas.picking.workflow.handlers.activity_handlers.RequestReviewWFActivityHandler.caption");
 
 	private final PickingJobRestService pickingJobRestService;
