@@ -1,17 +1,17 @@
 import React from 'react';
 
-export const newSimulationsHolder = (initialSelectedSimulationId) => {
+export const useSimulations = (initialSelectedSimulationId) => {
   const [availableSimulationsState, setAvailableSimulationsState] =
     React.useState([]);
   const [selectedSimulationIdState, setSelectedSimulationIdState] =
     React.useState(initialSelectedSimulationId);
 
   return {
-    setAvailableSimulations: (newAvailableSimulations) => {
+    setFromArray: (newAvailableSimulations) => {
       setAvailableSimulationsState(newAvailableSimulations || []);
     },
 
-    getAvailableSimulations: () => {
+    toArray: () => {
       // IMPORTANT: don't copy it because we don't want to trigger a "react change"
       return availableSimulationsState;
     },

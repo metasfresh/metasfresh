@@ -58,12 +58,6 @@ export const addOrUpdateCalendarEvent = ({
     .then(converters.fromAPIUpdateResult);
 };
 
-export const deleteCalendarEventById = (eventId) => {
-  return axios
-    .delete(`${config.API_URL}/calendars/entries/${eventId}`)
-    .then(extractAxiosResponseData);
-};
-
 export const getAvailableSimulations = () => {
   return axios
     .get(`${config.API_URL}/calendars/simulations`)

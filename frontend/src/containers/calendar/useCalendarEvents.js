@@ -1,7 +1,7 @@
 import React from 'react';
 import { isSameMoment } from './calendarUtils';
 
-export const newCalendarEventsHolder = () => {
+export const useCalendarEvents = () => {
   const [state, setState] = React.useState({
     startDate: null,
     endDate: null,
@@ -24,26 +24,12 @@ export const newCalendarEventsHolder = () => {
     });
   };
 
-  const isMatching = ({ startDate, endDate, simulationId }) => {
+  const isStateMatchingQuery = ({ startDate, endDate, simulationId }) => {
     return (
       state.startDate === startDate &&
       state.endDate === endDate &&
       state.simulationId === simulationId
     );
-  };
-
-  const getEventsArray = () => {
-    // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-    return state.events;
-  };
-
-  const setEvents = ({ startDate, endDate, simulationId, events }) => {
-    setState({
-      startDate,
-      endDate,
-      simulationId,
-      events: events || [],
-    });
   };
 
   const addEventsArray = (eventsArrayToAdd) => {
@@ -67,14 +53,13 @@ export const newCalendarEventsHolder = () => {
     simulationId,
     newEventsSupplier,
   }) => {
-    if (isMatching({ startDate, endDate, simulationId })) {
-      console.log('updateEventsAndGet: already fetched');
-      return Promise.resolve(getEventsArray());
+    if (isStateMatchingQuery({ startDate, endDate, simulationId })) {
+      //console.log('updateEventsAndGet: already fetched');
+
+      // IMPORTANT: don't copy it because we don't want to trigger a "react change"
+      return Promise.resolve(state.events);
     } else {
-      console.log(
-        'updateEventsAndGet: start fetching from supplier: ',
-        newEventsSupplier
-      );
+      //console.log('updateEventsAndGet: start fetching from supplier: ', newEventsSupplier);
 
       newEventsSupplier({
         calendarIds,
@@ -83,10 +68,10 @@ export const newCalendarEventsHolder = () => {
         endDate,
       }).then((events) => {
         //console.log('fetchCalendarEvents: got result', { events });
-        setEvents({
-          simulationId,
+        setState({
           startDate,
           endDate,
+          simulationId,
           events,
         });
 
@@ -96,9 +81,6 @@ export const newCalendarEventsHolder = () => {
   };
 
   return {
-    isMatching,
-    getEventsArray,
-    setEvents,
     addEventsArray,
     applyWSEventsArray,
     updateEventsAndGet,

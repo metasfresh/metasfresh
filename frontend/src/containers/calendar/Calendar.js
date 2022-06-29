@@ -17,50 +17,46 @@ import { normalizeDateTime } from './calendarUtils';
 
 import SimulationsDropDown from '../../components/calendar/SimulationsDropDown';
 import { getCurrentActiveLanguage } from '../../utils/locale';
-import { newCalendarEventsHolder } from './calendarEventsHolder';
-import { newAvailableCalendarsHolder } from './availableCalendarsHolder';
-import { newSimulationsHolder } from './simulationsHolder';
+import { useCalendarEvents } from './useCalendarEvents';
+import { useAvailableCalendars } from './useAvailableCalendars';
+import { useSimulations } from './useSimulations';
 
 const Calendar = ({
   simulationId: initialSelectedSimulationId,
   onParamsChanged,
 }) => {
-  const availableCalendarsHolder = newAvailableCalendarsHolder();
-  const calendarEventsHolder = newCalendarEventsHolder();
-  const simulationsHolder = newSimulationsHolder(initialSelectedSimulationId);
+  const simulations = useSimulations(initialSelectedSimulationId);
+  const availableCalendars = useAvailableCalendars();
+  const calendarEvents = useCalendarEvents();
 
   useEffect(() => {
     console.log('Loading simulations and calendars');
-    api
-      .getAvailableSimulations()
-      .then(simulationsHolder.setAvailableSimulations);
-    api
-      .getAvailableCalendars()
-      .then(availableCalendarsHolder.setCalendarsArray);
+    api.getAvailableSimulations().then(simulations.setFromArray);
+    api.getAvailableCalendars().then(availableCalendars.setFromArray);
   }, []);
 
   if (onParamsChanged) {
     useEffect(() => {
       onParamsChanged({
-        simulationId: simulationsHolder.getSelectedSimulationId(),
+        simulationId: simulations.getSelectedSimulationId(),
       });
-    }, [simulationsHolder.getSelectedSimulationId()]);
+    }, [simulations.getSelectedSimulationId()]);
   }
 
   useEffect(() => {
     return api.connectToWS({
-      simulationId: simulationsHolder.getSelectedSimulationId(),
-      onWSEventsArray: calendarEventsHolder.applyWSEventsArray,
+      simulationId: simulations.getSelectedSimulationId(),
+      onWSEventsArray: calendarEvents.applyWSEventsArray,
     });
-  }, [simulationsHolder.getSelectedSimulationId()]);
+  }, [simulations.getSelectedSimulationId()]);
 
   const fetchCalendarEvents = (params) => {
-    const calendarIds = availableCalendarsHolder.getCalendarIds();
+    const calendarIds = availableCalendars.getCalendarIds();
     const startDate = normalizeDateTime(params.startStr);
     const endDate = normalizeDateTime(params.endStr);
-    const simulationId = simulationsHolder.getSelectedSimulationId();
+    const simulationId = simulations.getSelectedSimulationId();
 
-    return calendarEventsHolder.updateEventsAndGet({
+    return calendarEvents.updateEventsAndGet({
       calendarIds,
       startDate,
       endDate,
@@ -83,20 +79,17 @@ const Calendar = ({
         <div className="calendar-top-center" />
         <div className="calendar-top-right">
           <SimulationsDropDown
-            simulations={simulationsHolder.getAvailableSimulations()}
-            selectedSimulationId={simulationsHolder.getSelectedSimulationId()}
+            simulations={simulations.toArray()}
+            selectedSimulationId={simulations.getSelectedSimulationId()}
             onSelect={(simulation) => {
-              simulationsHolder.setSelectedSimulationId(
-                simulation?.simulationId
-              );
+              simulations.setSelectedSimulationId(simulation?.simulationId);
             }}
             onNew={() => {
               api
                 .createSimulation({
-                  copyFromSimulationId:
-                    simulationsHolder.getSelectedSimulationId(),
+                  copyFromSimulationId: simulations.getSelectedSimulationId(),
                 })
-                .then(simulationsHolder.addSimulationAndSelect);
+                .then(simulations.addSimulationAndSelect);
             }}
           />
         </div>
@@ -128,7 +121,7 @@ const Calendar = ({
             'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear',
         }}
         resourceAreaHeaderContent="Resources"
-        resources={availableCalendarsHolder.getResourcesArray()}
+        resources={availableCalendars.getResourcesArray()}
         events={fetchCalendarEvents}
         //dateClick={handleDateClick}
         eventClick={handleEventClick}
@@ -143,7 +136,7 @@ const Calendar = ({
           console.log('eventDragStop', { event });
         }}
         eventDrop={(params) => {
-          const simulationId = simulationsHolder.getSelectedSimulationId();
+          const simulationId = simulations.getSelectedSimulationId();
           console.log('eventDrop', { params, simulationId });
 
           if (params.oldResource?.id !== params.newResource?.id) {
@@ -165,7 +158,7 @@ const Calendar = ({
                 endDate: params.event.end,
                 allDay: params.event.allDay,
               })
-              .then(calendarEventsHolder.addEventsArray)
+              .then(calendarEvents.addEventsArray)
               .catch((error) => {
                 console.log('Got error', error);
                 params.revert();

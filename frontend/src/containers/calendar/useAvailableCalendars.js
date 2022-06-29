@@ -1,13 +1,13 @@
 import React from 'react';
 
-export const newAvailableCalendarsHolder = () => {
+export const useAvailableCalendars = () => {
   const [state, setState] = React.useState({
     calendarsArray: [],
     resourcesArray: [],
   });
 
   return {
-    setCalendarsArray: (calendarsArray) => {
+    setFromArray: (calendarsArray) => {
       console.log('setCalendarsArray', { calendarsArray, state });
       setState({
         calendarsArray: calendarsArray || [],
