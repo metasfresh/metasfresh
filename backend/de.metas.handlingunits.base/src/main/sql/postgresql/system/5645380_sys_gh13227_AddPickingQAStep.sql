@@ -235,3 +235,28 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-06-29 12:5
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Überprüfung zur Kommissionierung anfordern',Updated=TO_TIMESTAMP('2022-06-29 12:58:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545135
 ;
 
+
+
+
+-- 2022-06-29T13:35:45.343Z
+UPDATE AD_Process SET Name='Kommissionierauftrag freigeben und fertigstellen',Updated=TO_TIMESTAMP('2022-06-29 16:35:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585070
+;
+
+-- 2022-06-29T13:35:50.027Z
+UPDATE AD_Process_Trl SET Name='Kommissionierauftrag freigeben und fertigstellen',Updated=TO_TIMESTAMP('2022-06-29 16:35:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585070
+;
+
+-- 2022-06-29T13:35:58.226Z
+UPDATE AD_Process_Trl SET Name='Kommissionierauftrag freigeben und fertigstellen',Updated=TO_TIMESTAMP('2022-06-29 16:35:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585070
+;
+
+-- 2022-06-29T13:36:50.802Z
+UPDATE AD_Message_Trl SET MsgText='Freigabe für Kommissionierauftrag anfordern',Updated=TO_TIMESTAMP('2022-06-29 16:36:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545135
+;
+
+-- 2022-06-29T13:36:56.322Z
+UPDATE AD_Message_Trl SET MsgText='Freigabe für Kommissionierauftrag anfordern',Updated=TO_TIMESTAMP('2022-06-29 16:36:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545135
+;
+
+
+
