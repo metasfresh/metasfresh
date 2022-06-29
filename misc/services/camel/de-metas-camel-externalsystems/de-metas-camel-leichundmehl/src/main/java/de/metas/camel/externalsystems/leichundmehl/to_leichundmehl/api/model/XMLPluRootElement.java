@@ -22,21 +22,32 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
+
 @Value
-@Builder
-@JacksonXmlRootElement(localName = LeichMehlConstants.XML_ELEMENT_RI)
-public class XMLPluRootElement
+@XmlRootElement(name = LeichMehlConstants.XML_ELEMENT_RI)
+@XmlAccessorType(XmlAccessType.FIELD)
+public class XMLPluRootElement implements Serializable
 {
 	@NonNull
-	@JacksonXmlProperty(localName = LeichMehlConstants.XML_ELEMENT_RECV_PLU)
-	@JacksonXmlElementWrapper(useWrapping = false)
+	@XmlElement(name = LeichMehlConstants.XML_ELEMENT_RECV_PLU)
 	XMLPluElement xmlPluElement;
+
+	@Builder
+	@JsonCreator
+	public XMLPluRootElement(@JsonProperty(LeichMehlConstants.XML_ELEMENT_RECV_PLU) @NonNull final XMLPluElement xmlPluElement)
+	{
+		this.xmlPluElement = xmlPluElement;
+	}
 }

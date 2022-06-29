@@ -31,7 +31,6 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -94,13 +93,8 @@ public class FileUtil
 	}
 
 	@NonNull
-	public Optional<String> normalizeFilePath(@Nullable final String filePath)
+	public String normalizeAndValidateFilePath(@NonNull final String filePath)
 	{
-		if (Check.isBlank(filePath))
-		{
-			return Optional.empty();
-		}
-
 		final File file = new File(filePath);
 
 		if (file.isAbsolute())
@@ -119,9 +113,9 @@ public class FileUtil
 				throw new RuntimeException("Absolute path and canonical path for filePath must be equal! filePath: " + filePath);
 			}
 
-			return Optional.ofNullable(Paths.get(file.getPath())
-											   .normalize()
-											   .toString());
+			return Paths.get(file.getPath())
+					.normalize()
+					.toString();
 
 		}
 		catch (final Exception e)

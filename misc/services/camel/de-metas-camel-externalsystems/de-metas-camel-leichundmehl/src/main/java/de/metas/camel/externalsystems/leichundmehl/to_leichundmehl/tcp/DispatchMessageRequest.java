@@ -28,18 +28,22 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-@Builder
 public class DispatchMessageRequest
 {
 	@NonNull
-	@JsonProperty("tcpConnection")
-	TCPConnection tcpConnection;
+	@JsonProperty("connectionDetails")
+	ConnectionDetails connectionDetails;
 
 	@NonNull
-	@JsonProperty("tcpFilename")
-	String tcpFilename;
+	@JsonProperty("payload")
+	Object payload;
 
-	@NonNull
-	@JsonProperty("tcpPayload")
-	Object tcpPayload;
+	@Builder
+	public DispatchMessageRequest(
+			@JsonProperty("connectionDetails") @NonNull final ConnectionDetails connectionDetails,
+			@JsonProperty("payload") @NonNull final Object payload)
+	{
+		this.connectionDetails = connectionDetails;
+		this.payload = payload;
+	}
 }

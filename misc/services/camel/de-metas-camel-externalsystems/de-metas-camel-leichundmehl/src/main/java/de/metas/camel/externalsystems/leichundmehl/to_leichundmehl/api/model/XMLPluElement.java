@@ -22,21 +22,30 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import java.io.Serializable;
+
 @Value
-@Builder
-@JacksonXmlRootElement(localName = LeichMehlConstants.XML_ELEMENT_RECV_PLU)
-public class XMLPluElement
+@XmlAccessorType(XmlAccessType.FIELD)
+public class XMLPluElement implements Serializable
 {
 	@NonNull
-	@JsonValue
-	@JacksonXmlElementWrapper(useWrapping = false)
-	Object content;
+	@XmlElement(name = "content")
+	@JsonProperty("content")
+	String content;
+
+	@Builder
+	@JsonCreator
+	public XMLPluElement(@JsonProperty("content") @NonNull final String content)
+	{
+		this.content = content;
+	}
 }

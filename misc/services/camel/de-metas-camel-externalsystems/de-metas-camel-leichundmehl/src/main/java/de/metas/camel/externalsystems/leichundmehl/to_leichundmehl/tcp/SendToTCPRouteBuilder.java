@@ -22,13 +22,17 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp;
 
-import de.metas.camel.externalsystems.common.RouteBuilderHelper;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
-import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.SerializationUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.net.Socket;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -37,13 +41,6 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 public class SendToTCPRouteBuilder extends RouteBuilder
 {
 	public static final String SEND_TO_TCP_ROUTE_ID = "LeichUndMehl-sendToTCP";
-
-	private final ProducerTemplate producerTemplate;
-
-	public SendToTCPRouteBuilder(@NonNull final ProducerTemplate producerTemplate)
-	{
-		this.producerTemplate = producerTemplate;
-	}
 
 	@Override
 	public void configure() throws Exception
@@ -56,29 +53,41 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 		from(direct(SEND_TO_TCP_ROUTE_ID))
 				.routeId(SEND_TO_TCP_ROUTE_ID)
 				.log("Route invoked!")
-				.process(this::prepareAndSendToTCP)
-				.marshal(RouteBuilderHelper.setupJacksonDataFormatFor(getContext(), Object.class))
-				.removeHeaders("CamelHttp*");
-				// .to("websocket://{{header.TCPHost}}:{{header.TCPPort}}/{{header.TCPFilename}}")
+				.process(this::sendToTcpSocket);
 		//@formatter:on
 	}
 
-	private void prepareAndSendToTCP(@NonNull final Exchange exchange)
+	private void sendToTcpSocket(@NonNull final Exchange exchange) throws Exception
 	{
 		final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
 
-		final TCPConnection tcpConnection = request.getTcpConnection();
-		exchange.getIn().setBody(request.getTcpPayload(), Object.class);
-		exchange.getIn().setHeader(LeichMehlConstants.HEADER_TCP_PORT, tcpConnection.getTcpPort());
-		exchange.getIn().setHeader(LeichMehlConstants.HEADER_TCP_HOST, tcpConnection.getTcpHost());
-		exchange.getIn().setHeader(LeichMehlConstants.HEADER_TCP_Filename, request.getTcpFilename());
+		final ConnectionDetails tcpConnection = request.getConnectionDetails();
 
-		final String aa = request.getTcpFilename().replace("\\", "/");
+		try (final Socket socket = new Socket(tcpConnection.getTcpHost(), tcpConnection.getTcpPort());
+				final DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream()))
+		{
+			sendFile(request.getPayload(), dataOutputStream);
+		}
+	}
 
-		producerTemplate.sendBody("mina:tcp://" + tcpConnection.getTcpHost() //todo fp
-										  + ":"
-										  + tcpConnection.getTcpPort()
-										  + "/"
-										  + aa, request.getTcpPayload());
+	private static void sendFile(
+			@NonNull final Object payload,
+			@NonNull final DataOutputStream dataOutputStream) throws Exception
+	{
+		int bytes;
+		final byte[] data = SerializationUtils.serialize(payload);
+		Check.assumeNotNull(data, "data cannot be null at this stage");
+
+		final InputStream fileInputStream = new ByteArrayInputStream(data);
+
+		// send file size
+		// break file into chunks
+		final byte[] buffer = new byte[4 * 1024];
+		while ((bytes = fileInputStream.read(buffer)) != -1)
+		{
+			dataOutputStream.write(buffer, 0, bytes);
+			dataOutputStream.flush();
+		}
+		fileInputStream.close();
 	}
 }

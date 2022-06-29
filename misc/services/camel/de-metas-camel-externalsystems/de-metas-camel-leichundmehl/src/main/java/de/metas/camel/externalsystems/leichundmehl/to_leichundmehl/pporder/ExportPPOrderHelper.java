@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.TCPConnection;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -66,7 +66,7 @@ public class ExportPPOrderHelper
 	}
 
 	@NonNull
-	public TCPConnection getTcpDetails(@NonNull final Map<String, String> params)
+	public ConnectionDetails getTcpConnectionDetails(@NonNull final Map<String, String> params)
 	{
 		final String tcpPortNumber = params.get(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER);
 		if (Check.isBlank(tcpPortNumber))
@@ -80,8 +80,8 @@ public class ExportPPOrderHelper
 			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_TCP_HOST);
 		}
 
-		return TCPConnection.builder()
-				.tcpPort(tcpPortNumber)
+		return ConnectionDetails.builder()
+				.tcpPort(Integer.parseInt(tcpPortNumber))
 				.tcpHost(tcpHost)
 				.build();
 	}

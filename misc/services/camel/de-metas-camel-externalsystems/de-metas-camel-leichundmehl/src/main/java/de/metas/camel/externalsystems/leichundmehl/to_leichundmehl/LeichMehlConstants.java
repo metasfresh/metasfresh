@@ -28,8 +28,4 @@ public interface LeichMehlConstants
 
 	String XML_ELEMENT_RI = "ri";
 	String XML_ELEMENT_RECV_PLU = "recvPLU";
-
-	String HEADER_TCP_PORT = "TCPPort";
-	String HEADER_TCP_HOST = "TCPHost";
-	String HEADER_TCP_Filename = "TCPFilename";
 }

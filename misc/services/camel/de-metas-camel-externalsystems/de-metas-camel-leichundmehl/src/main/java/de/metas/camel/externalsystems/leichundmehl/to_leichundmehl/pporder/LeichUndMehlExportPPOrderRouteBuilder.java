@@ -47,7 +47,6 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 	@Override
 	public void configure() throws Exception
 	{
-
 		//@formatter:off
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
@@ -87,7 +86,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 
 		final ExportPPOrderRouteContext context = ExportPPOrderRouteContext.builder()
 				.jsonExternalSystemRequest(request)
-				.tcpDetails(ExportPPOrderHelper.getTcpDetails(parameters))
+				.connectionDetails(ExportPPOrderHelper.getTcpConnectionDetails(parameters))
 				.productMapping(ExportPPOrderHelper.getProductMapping(parameters))
 				.productBaseFolderName(productBaseFolderName)
 				.build();

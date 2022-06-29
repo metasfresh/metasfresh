@@ -1,0 +1,7 @@
+{
+  "tcpConnection": {
+    "tcpPort": 445,
+    "tcpHost": "Host"
+  },
+  "tcpPayload": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<ri>\r\n  <recvPLU>\r\n    <id>101</id>\r\n    <firstname>firstname</firstname>\r\n    <lastname>lastname</lastname>\r\n  </recvPLU>\r\n</ri>\r\n"
+}

@@ -27,15 +27,23 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Builder
 @Value
-public class TCPConnection
+public class ConnectionDetails
 {
 	@NonNull
 	@JsonProperty("tcpPort")
-	String tcpPort;
+	int tcpPort;
 
 	@NonNull
 	@JsonProperty("tcpHost")
 	String tcpHost;
+
+	@Builder
+	public ConnectionDetails(
+			@JsonProperty("tcpPort") @NonNull final int tcpPort,
+			@JsonProperty("tcpHost") @NonNull final String tcpHost)
+	{
+		this.tcpPort = tcpPort;
+		this.tcpHost = tcpHost;
+	}
 }

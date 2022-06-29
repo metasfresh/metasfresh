@@ -22,13 +22,10 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.common.XmlMapperHolder;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluElement;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.ExportPPOrderRouteContext;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.PluFileDetails;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.DispatchMessageRequest;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.util.FileUtil;
@@ -36,13 +33,25 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
-import java.io.File;
-import java.nio.file.Files;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
 
@@ -53,70 +62,59 @@ public class ReadPluFileProcessor implements Processor
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
-		final Optional<PluFileDetails> pluFileDetailsOpt = getPluFileDetails(context.getProductMapping());
+		final Optional<Object> pluFileContentOpt = getPluFileContent(context.getProductMapping(), context.getProductBaseFolderName());
 
-		if (pluFileDetailsOpt.isEmpty())
-		{
-			exchange.getIn().setBody(null); //dev-note: nothing to route
-			return;
-		}
-
-		final PluFileDetails pluFileDetails = pluFileDetailsOpt.get();
-
-		final Optional<String> filenameOpt = concatenateFilename(context.getProductBaseFolderName(), pluFileDetails.getPath());
-
-		if (filenameOpt.isEmpty())
+		if (pluFileContentOpt.isEmpty())
 		{
 			exchange.getIn().setBody(null); //dev-note: nothing to route
 			return;
 		}
 
 		final DispatchMessageRequest request = DispatchMessageRequest.builder()
-				.tcpConnection(context.getTcpDetails())
-				.tcpPayload(pluFileDetails.getContent())
-				.tcpFilename(filenameOpt.get())
+				.connectionDetails(context.getConnectionDetails())
+				.payload(pluFileContentOpt.get())
 				.build();
 
 		exchange.getIn().setBody(request, DispatchMessageRequest.class);
 	}
 
 	@NonNull
-	private Optional<PluFileDetails> getPluFileDetails(@NonNull final JsonExternalSystemLeichMehlConfigProductMapping mapping)
+	private Optional<Object> getPluFileContent(
+			@NonNull final JsonExternalSystemLeichMehlConfigProductMapping mapping,
+			@NonNull final String productBaseFolderName)
 	{
-		final XmlMapper xmlMapper = XmlMapperHolder.sharedXmlMapper();
-
 		try
 		{
-			final Optional<Path> filePathOpt = FileUtil.normalizeFilePath(mapping.getPluFile())
-					.map(Paths::get);
+			final Path filePath = getPluFilePath(productBaseFolderName, mapping.getPluFile());
 
-			if (filePathOpt.isEmpty())
-			{
-				return Optional.empty();
-			}
+			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilder builder = factory.newDocumentBuilder();
 
-			final Path filePath = filePathOpt.get();
+			final InputStream inputStream = new FileInputStream(filePath.toFile());
+			final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "Windows-1252");
 
-			final Object pluFileContent = xmlMapper.readValue(Files.readAllBytes(filePath), Object.class);
+			final BufferedReader reader = new BufferedReader(inputStreamReader);
+			final InputSource input = new InputSource(reader);
+			final Document doc = builder.parse(input);
 
-			final Optional<XMLPluRootElement> xmlPluRootElement = Optional.ofNullable(pluFileContent)
-					.map(content -> XMLPluRootElement.builder()
-							.xmlPluElement(XMLPluElement.builder()
-												   .content(content)
-												   .build())
-							.build());
+			final Element root = doc.getDocumentElement();
+			root.normalize();
 
-			if (xmlPluRootElement.isEmpty())
-			{
-				return Optional.empty();
-			}
+			final TransformerFactory transFactory = TransformerFactory.newInstance();
+			final Transformer transformer = transFactory.newTransformer();
+			final StringWriter buffer = new StringWriter();
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			transformer.transform(new DOMSource(doc),
+								  new StreamResult(buffer));
+			final String strContent = buffer.toString();
 
-			final String fileContent = xmlMapper.writeValueAsString(xmlPluRootElement.get());
+			final XMLPluRootElement xmlPluRootElement = XMLPluRootElement.builder()
+					.xmlPluElement(XMLPluElement.builder()
+										   .content(strContent)
+										   .build())
+					.build();
 
-			return Optional.of(PluFileDetails.builder()
-									   .path(filePath)
-									   .content(fileContent)
-									   .build());
+			return Optional.of(xmlPluRootElement);
 		}
 		catch (final Exception e)
 		{
@@ -125,20 +123,9 @@ public class ReadPluFileProcessor implements Processor
 	}
 
 	@NonNull
-	private Optional<String> concatenateFilename(@NonNull final String productBaseFolderName, @NonNull final Path filePath)
+	private Path getPluFilePath(@NonNull final String productBaseFolderName, @NonNull final String pluFilepath)
 	{
-		final Function<StringBuilder, StringBuilder> appendFileSeparatorIfNeeded = pathBuilder -> {
-			if (!filePath.startsWith(File.separator))
-			{
-				pathBuilder.append(File.separator);
-			}
-
-			return pathBuilder.append(filePath);
-		};
-
-		return FileUtil.normalizeFilePath(productBaseFolderName)
-				.map(basePath -> new StringBuilder().append(basePath))
-				.map(appendFileSeparatorIfNeeded)
-				.map(StringBuilder::toString);
+		return Paths.get(FileUtil.normalizeAndValidateFilePath(productBaseFolderName),
+						 FileUtil.normalizeAndValidateFilePath(pluFilepath));
 	}
 }

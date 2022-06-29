@@ -164,11 +164,6 @@
             <artifactId>de-metas-common-manufacturing</artifactId>
             <version>${metasfresh-common.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-mina</artifactId>
-            <version>${camel.version}</version>
-        </dependency>
     </dependencies>
 
     <build>

@@ -209,6 +209,8 @@ public class ExternalSystem_Config_StepDef
 
 			assertThat(productMapping).isNotNull();
 
+			productMapping.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
+
 			final int seqNo = DataTableUtil.extractIntForColumnName(row, I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_SeqNo);
 			productMapping.setSeqNo(seqNo);
 
@@ -325,6 +327,7 @@ public class ExternalSystem_Config_StepDef
 				leichMehlConfig.setProduct_BaseFolderName(product_BaseFolderName);
 				leichMehlConfig.setExternalSystemValue(externalSystemChildValue);
 				leichMehlConfig.setIsActive(true);
+				leichMehlConfig.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
 				InterfaceWrapperHelper.saveRecord(leichMehlConfig);
 
 				final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID

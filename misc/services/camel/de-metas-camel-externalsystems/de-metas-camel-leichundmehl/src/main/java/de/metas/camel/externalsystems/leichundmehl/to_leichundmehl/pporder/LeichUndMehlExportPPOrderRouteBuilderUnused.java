@@ -111,10 +111,17 @@ public class LeichUndMehlExportPPOrderRouteBuilderUnused extends RouteBuilder
 			throw new RuntimeException("Missing mandatory parameters from JsonExternalSystemRequest: " + request);
 		}
 
+		final String productBaseFolderName = parameters.get(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME);
+		if (Check.isBlank(productBaseFolderName))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME);
+		}
+
 		final ExportPPOrderRouteContext context = ExportPPOrderRouteContext.builder()
 				.jsonExternalSystemRequest(request)
-				.tcpDetails(ExportPPOrderHelper.getTcpDetails(parameters))
+				.connectionDetails(ExportPPOrderHelper.getTcpConnectionDetails(parameters))
 				.productMapping(ExportPPOrderHelper.getProductMapping(parameters))
+				.productBaseFolderName(productBaseFolderName)
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, context);

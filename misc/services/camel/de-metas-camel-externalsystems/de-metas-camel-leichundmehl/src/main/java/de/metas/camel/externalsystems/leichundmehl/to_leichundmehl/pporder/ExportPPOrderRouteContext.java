@@ -22,11 +22,10 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonBPartner;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.TCPConnection;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
@@ -49,10 +48,9 @@ public class ExportPPOrderRouteContext
 	private final JsonExternalSystemRequest jsonExternalSystemRequest;
 
 	@NonNull
-	private final TCPConnection tcpDetails;
+	private final ConnectionDetails connectionDetails;
 
 	@NonNull
-	@JsonProperty("productBaseFolderName")
 	String productBaseFolderName;
 
 	@NonNull

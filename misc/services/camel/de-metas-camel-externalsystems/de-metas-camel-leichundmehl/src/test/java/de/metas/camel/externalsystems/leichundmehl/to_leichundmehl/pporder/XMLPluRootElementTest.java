@@ -22,19 +22,28 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluElement;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.util.SerializationUtils;
 
-import java.nio.file.Path;
-
-@Value
-@Builder
-public class PluFileDetails
+public class XMLPluRootElementTest
 {
-	@NonNull
-	Path path;
+	@Test
+	public void test()
+	{
+		final XMLPluElement element = XMLPluElement.builder()
+				.content("element")
+				.build();
 
-	@NonNull
-	String content;
+		final XMLPluRootElement root = XMLPluRootElement.builder()
+				.xmlPluElement(element)
+				.build();
+
+		final byte[] data = SerializationUtils.serialize(root);
+		final Object deserializedRoot = SerializationUtils.deserialize(data);
+
+		Assertions.assertThat(root).isEqualTo(deserializedRoot);
+	}
 }
