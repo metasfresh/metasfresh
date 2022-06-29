@@ -114,7 +114,7 @@ public class RestAPIRouteBuilder extends RouteBuilder implements IExternalSystem
 				.post()
 				.route()
 				.routeId(REST_API_ROUTE_ID)
-				.autoStartup(false)
+				.group(ExternalSystemCamelConstants.START_ON_DEMAND_GROUP)
 				.process(this::restAPIProcessor)
 				.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
 				.end();

@@ -22,7 +22,9 @@
 
 package de.metas.camel.externalsystems.core;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_ES_TO_MF_AUTH;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_AUTH;
 
 public interface CoreConstants
 {
@@ -47,4 +49,18 @@ public interface CoreConstants
 			+ "&concurrentConsumers=" + CONCURRENT_CONSUMERS_PROPERTY
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
 			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
+
+	String CUSTOM_TO_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_ES_TO_MF_AUTH
+			+ "?durable=true"
+			+ "&autoDelete=false"
+			+ "&autoAck=false"
+			+ "&routingKey=" + QUEUE_NAME_ES_TO_MF_AUTH
+			+ "&queue=" + QUEUE_NAME_ES_TO_MF_AUTH;
+
+	String CUSTOM_FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES_AUTH
+			+ "?durable=true"
+			+ "&autoDelete=false"
+			+ "&autoAck=false"
+			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES_AUTH
+			+ "&queue=" + QUEUE_NAME_MF_TO_ES_AUTH;
 }

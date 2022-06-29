@@ -132,7 +132,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.post()
 				.route()
 				.routeId(REST_API_ROUTE_ID)
-				.autoStartup(false)
+				.group(ExternalSystemCamelConstants.START_ON_DEMAND_GROUP)
 				.doTry()
 					.process(this::restAPIProcessor)
 					.process(this::prepareSuccessResponse)
