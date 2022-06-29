@@ -22,7 +22,9 @@
 
 package de.metas.async.eventbus;
 
+import lombok.NonNull;
+
 public interface AsyncBatchNotifyRequestHandler
 {
-	void handleRequest(final AsyncBatchNotifyRequest request);
+	void handleRequest(@NonNull final AsyncBatchNotifyRequest request);
 }

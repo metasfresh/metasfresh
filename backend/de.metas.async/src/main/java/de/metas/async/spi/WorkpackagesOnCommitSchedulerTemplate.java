@@ -123,6 +123,12 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		scheduleFactory.collect(item);
 	}
 
+	public final void scheduleAll(@NonNull final List<ItemType> items)
+	{
+		items.forEach(this::schedule);
+	}
+
+
 	public WorkpackagesOnCommitSchedulerTemplate<ItemType> setCreateOneWorkpackagePerModel(
 			final boolean createOneWorkpackagePerModel)
 	{
@@ -214,7 +220,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		protected String getTrxProperyName()
 		{
 			return WorkpackagesOnCommitSchedulerTemplate.this.trxPropertyName;
-		};
+		}
 
 		@Override
 		protected String extractTrxNameFromItem(final ItemType item)

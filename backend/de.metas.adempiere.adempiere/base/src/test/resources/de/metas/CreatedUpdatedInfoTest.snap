@@ -1,0 +1,50 @@
+de.metas.CreatedUpdatedInfoTest.createNew_updated=[
+  {
+    "createdBy" : 10,
+    "created" : {
+      "dateTime" : {
+        "date" : {
+          "year" : 2019,
+          "month" : 3,
+          "day" : 8,
+          "leapYear" : false
+        },
+        "time" : {
+          "hour" : 13,
+          "minute" : 20,
+          "second" : 42,
+          "nano" : 2
+        }
+      },
+      "offset" : {
+        "totalSeconds" : 3600
+      },
+      "zone" : {
+        "totalSeconds" : 3600
+      }
+    },
+    "updatedBy" : 20,
+    "updated" : {
+      "dateTime" : {
+        "date" : {
+          "year" : 2019,
+          "month" : 3,
+          "day" : 8,
+          "leapYear" : false
+        },
+        "time" : {
+          "hour" : 14,
+          "minute" : 20,
+          "second" : 42,
+          "nano" : 2
+        }
+      },
+      "offset" : {
+        "totalSeconds" : 3600
+      },
+      "zone" : {
+        "totalSeconds" : 3600
+      }
+    }
+  }
+]

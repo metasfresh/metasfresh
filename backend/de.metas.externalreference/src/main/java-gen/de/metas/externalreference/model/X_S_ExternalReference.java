@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalreference.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for S_ExternalReference
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1886150685L;
+	private static final long serialVersionUID = 480936277L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -75,6 +75,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String EXTERNALSYSTEM_Other = "Other";
 	/** WooCommerce = WooCommerce */
 	public static final String EXTERNALSYSTEM_WooCommerce = "WooCommerce";
+	/** GRSSignum = GRSSignum */
+	public static final String EXTERNALSYSTEM_GRSSignum = "GRSSignum";
 	@Override
 	public void setExternalSystem (final java.lang.String ExternalSystem)
 	{

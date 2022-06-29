@@ -8,7 +8,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
@@ -53,9 +52,6 @@ public class MaterialCockpitRowRepositoryTest
 	@Test
 	public void retrieveRows_when_emptyFilters_then_return_nothing()
 	{
-		final I_X_MRP_ProductInfo_Detail_MV record = newInstance(I_X_MRP_ProductInfo_Detail_MV.class);
-		save(record);
-
 		final IRowsData<MaterialCockpitRow> result = materialCockpitRowRepository.createRowsData(DocumentFilterList.EMPTY);
 		assertThat(result.getAllRows()).isEmpty();
 		assertThat(result.getTopLevelRows()).isEmpty();

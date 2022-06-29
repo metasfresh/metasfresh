@@ -1,10 +1,32 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OrderLine
  *  @author metasfresh (generated)
@@ -15,17 +37,17 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 
 	private static final long serialVersionUID = 217893768L;
 
-    /** Standard Constructor */
-    public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
-    {
-      super (ctx, C_OrderLine_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
+	{
+		super (ctx, C_OrderLine_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_C_OrderLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_C_OrderLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -63,19 +85,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getAD_User_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
-	}
-
-	@Override
-	public void setBase_Commission_Points_Per_Price_UOM (final @Nullable BigDecimal Base_Commission_Points_Per_Price_UOM)
-	{
-		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
-	}
-
-	@Override
-	public BigDecimal getBase_Commission_Points_Per_Price_UOM()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -175,6 +184,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_BPartner_Location_Value_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Vendor_ID (final int C_BPartner_Vendor_ID)
+	{
+		if (C_BPartner_Vendor_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, C_BPartner_Vendor_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Vendor_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
 	}
 
 	@Override
@@ -946,33 +970,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getLink_OrderLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_Link_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setLink_OrderLine(final org.compiere.model.I_C_OrderLine Link_OrderLine)
-	{
-		set_ValueFromPO(COLUMNNAME_Link_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, Link_OrderLine);
-	}
-
-	@Override
-	public void setLink_OrderLine_ID (final int Link_OrderLine_ID)
-	{
-		if (Link_OrderLine_ID < 1)
-			set_Value (COLUMNNAME_Link_OrderLine_ID, null);
-		else
-			set_Value (COLUMNNAME_Link_OrderLine_ID, Link_OrderLine_ID);
-	}
-
-	@Override
-	public int getLink_OrderLine_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_Link_OrderLine_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
@@ -1192,19 +1189,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getNoPriceConditionsColor_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_NoPriceConditionsColor_ID);
-	}
-
-	@Override
-	public void setOrder_Min (final @Nullable BigDecimal Order_Min)
-	{
-		set_Value (COLUMNNAME_Order_Min, Order_Min);
-	}
-
-	@Override
-	public BigDecimal getOrder_Min()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

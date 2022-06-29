@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
@@ -18,17 +19,25 @@ import de.metas.handlingunits.picking.candidate.commands.RemoveHUFromPickingSlot
 import de.metas.handlingunits.picking.candidate.commands.RemoveQtyFromHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ReviewQtyPickedCommand;
 import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstructionIdCommand;
-import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidateCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesAndRestoreSourceHUsCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesCommand;
+import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidatesResult;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
+import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -65,27 +74,27 @@ public class PickingCandidateService
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
+	private final HUReservationService huReservationService;
+	private final IBPartnerBL bpartnersService;
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final HuId2SourceHUsService sourceHUsRepository)
+			@NonNull final HuId2SourceHUsService sourceHUsRepository,
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final IBPartnerBL bpartnersService)
 	{
 		this.pickingConfigRepository = pickingConfigRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.sourceHUsRepository = sourceHUsRepository;
+		this.huReservationService = huReservationService;
+		this.bpartnersService = bpartnersService;
 	}
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
 	{
 		return pickingCandidateRepository.getByIds(pickingCandidateIds);
-	}
-
-	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final PickingCandidateStatus status)
-	{
-		return pickingCandidateRepository.getByShipmentScheduleIdAndStatus(shipmentScheduleId, status);
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdsAndStatus(
@@ -199,9 +208,18 @@ public class PickingCandidateService
 				.perform();
 	}
 
-	public void unprocessForHUId(final HuId huId)
+	public UnProcessPickingCandidatesResult unprocess(@NonNull final Set<PickingCandidateId> pickingCandidateIds)
 	{
-		UnProcessPickingCandidateCommand.builder()
+		return UnProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.pickingCandidateIds(pickingCandidateIds)
+				.build()
+				.execute();
+	}
+
+	public void unprocessAndRestoreSourceHUsByHUId(final HuId huId)
+	{
+		UnProcessPickingCandidatesAndRestoreSourceHUsCommand.builder()
 				.sourceHUsRepository(sourceHUsRepository)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.huId(huId)
@@ -275,4 +293,33 @@ public class PickingCandidateService
 				.perform();
 	}
 
+	public PickingPlan createPlan(@NonNull final CreatePickingPlanRequest request)
+	{
+		return CreatePickingPlanCommand.builder()
+				.bpartnersService(bpartnersService)
+				.huReservationService(huReservationService)
+				.pickingCandidateRepository(pickingCandidateRepository)
+				//
+				.request(request)
+				//
+				.build()
+				.execute();
+	}
+
+	public void deleteDraftPickingCandidatesByShipmentScheduleId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final List<PickingCandidate> draftCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(shipmentScheduleIds, PickingCandidateStatus.Draft);
+		deleteDraftPickingCandidates(draftCandidates);
+	}
+
+	public void deleteDraftPickingCandidates(final List<PickingCandidate> draftCandidates)
+	{
+		draftCandidates.forEach(PickingCandidate::assertDraft);
+		pickingCandidateRepository.deletePickingCandidates(draftCandidates);
+	}
+
+	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	{
+		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+	}
 }

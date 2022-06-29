@@ -38,24 +38,19 @@ import javax.annotation.Nullable;
 @Value
 public class ReserveHUsRequest
 {
-	@NonNull
-	Quantity qtyToReserve;
+	@NonNull Quantity qtyToReserve;
 
-	@NonNull
-	HUReservationDocRef documentRef;
+	@NonNull HUReservationDocRef documentRef;
 
-	@NonNull
-	ProductId productId;
+	@NonNull ProductId productId;
 
-	@Nullable
-	BPartnerId customerId;
+	@Nullable BPartnerId customerId;
 
 	/**
 	 * The HUs from which the respective {@link #qtyToReserve} shall be reserved. can be higher-level-HUs;
 	 * The actual reservation is done on VHU level.
 	 */
-	@NonNull
-	ImmutableSet<HuId> huIds;
+	@NonNull ImmutableSet<HuId> huIds;
 
 	@Builder
 	private ReserveHUsRequest(

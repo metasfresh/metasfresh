@@ -146,7 +146,7 @@ public class ShipperDeliveryService
 		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
 		final String shipperGatewayId = shipper.getShipperGateway();
 		// no ShipperGateway, so no API to call/no courier to request
-		if (Check.isEmpty(shipperGatewayId, true))
+		if (Check.isBlank(shipperGatewayId))
 		{
 			return;
 		}
@@ -177,7 +177,7 @@ public class ShipperDeliveryService
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID()));
-		return CoalesceUtil.coalesce(
+		return CoalesceUtil.coalesceNotNull(
 				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched(), timeZone), 
 				TimeUtil.asLocalDate(shipperTransportation.getDateDoc(), timeZone));
 	}

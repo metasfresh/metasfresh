@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
+import de.metas.document.NewRecordContext;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
 import lombok.NonNull;
@@ -37,7 +38,8 @@ public class NewRecordDescriptor
 {
 	public interface NewRecordProcessor
 	{
-		int processNewRecordDocument(Document document);
+		int processNewRecordDocument(Document document,
+				NewRecordContext newRecordContext);
 	}
 
 	@NonNull String tableName;

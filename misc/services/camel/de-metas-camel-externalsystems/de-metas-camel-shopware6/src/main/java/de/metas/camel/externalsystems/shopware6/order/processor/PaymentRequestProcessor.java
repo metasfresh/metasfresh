@@ -22,7 +22,8 @@
 
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
-import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
+import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransaction;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
@@ -30,6 +31,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.PaymentMethodTyp
 import de.metas.camel.externalsystems.shopware6.api.model.order.TechnicalNameEnum;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -41,6 +43,13 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_
 
 public class PaymentRequestProcessor implements Processor
 {
+	private final ProcessLogger processLogger;
+
+	public PaymentRequestProcessor(@NonNull final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
@@ -65,6 +74,10 @@ public class PaymentRequestProcessor implements Processor
 
 		if (!isPaypalType || !isPaid)
 		{
+			processLogger.logMessage("*** Skipping the current payment based on paid status & paypal type!"
+											 + " PaymentId = " + orderTransaction.getId()
+											 + " paidStatus = " + isPaid
+											 + " paypalType = " + isPaypalType, JsonMetasfreshId.toValue(context.getPInstanceId()));
 			return Optional.empty();
 		}
 

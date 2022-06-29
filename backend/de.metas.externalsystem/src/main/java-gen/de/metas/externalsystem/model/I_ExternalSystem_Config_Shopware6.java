@@ -389,6 +389,28 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_M_FreightCost_ReducedVAT_Product_ID = "M_FreightCost_ReducedVAT_Product_ID";
 
 	/**
+	 * Set Price List.
+	 * Unique identifier of a Price List
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_PriceList_ID (int M_PriceList_ID);
+
+	/**
+	 * Get Price List.
+	 * Unique identifier of a Price List
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_PriceList_ID();
+
+	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

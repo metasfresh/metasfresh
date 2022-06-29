@@ -84,9 +84,13 @@ public class HuId implements RepoIdAware
 		}
 		catch (final Exception ex)
 		{
-			throw new AdempiereException("Invalid HUValue. It cannot be converted to M_HU_ID.", ex);
+			final AdempiereException metasfreshException = new AdempiereException("Invalid HUValue `" + huValue + "`. It cannot be converted to M_HU_ID.");
+			metasfreshException.addSuppressed(ex);
+			throw metasfreshException;
 		}
 	}
+
+	public String toHUValue() {return String.valueOf(repoId);}
 
 	int repoId;
 

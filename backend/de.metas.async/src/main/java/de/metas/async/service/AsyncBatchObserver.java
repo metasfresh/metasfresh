@@ -58,7 +58,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	private final Map<AsyncBatchId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
 
 	@Override
-	public void handleRequest(final AsyncBatchNotifyRequest request)
+	public void handleRequest(@NonNull final AsyncBatchNotifyRequest request)
 	{
 		Loggables.withLogger(logger, Level.INFO).addLog("Batch notified as finished; AsyncBatchId: {}", request.getAsyncBatchId());
 

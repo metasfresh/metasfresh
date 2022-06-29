@@ -284,6 +284,9 @@ public class OLCandRepository
 			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
 		}
 
+		olCandPO.setApplySalesRepFrom(request.getAssignSalesRepRule().getCode());
+		olCandPO.setC_BPartner_SalesRep_Internal_ID(BPartnerId.toRepoId(request.getSalesRepInternalId()));
+
 		saveRecord(olCandWithIssuesInterface);
 
 		return olCandWithIssuesInterface;

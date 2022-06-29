@@ -38,10 +38,10 @@ public class JsonExternalSystemShopware6ConfigMapping
 	@NonNull
 	Integer seqNo;
 
-	@NonNull
+	@Nullable
 	String docTypeOrder;
 
-	@NonNull
+	@Nullable
 	String paymentRule;
 
 	@NonNull
@@ -69,8 +69,8 @@ public class JsonExternalSystemShopware6ConfigMapping
 	@JsonCreator
 	public JsonExternalSystemShopware6ConfigMapping(
 			@JsonProperty("seqNo") @NonNull final Integer seqNo,
-			@JsonProperty("docTypeOrder") @NonNull final String docTypeOrder,
-			@JsonProperty("paymentRule") @NonNull final String paymentRule,
+			@JsonProperty("docTypeOrder") @Nullable final String docTypeOrder,
+			@JsonProperty("paymentRule") @Nullable final String paymentRule,
 			@JsonProperty("bpartnerSyncAdvice") @NonNull final SyncAdvise bPartnerSyncAdvice,
 			@JsonProperty("bpartnerLocationSyncAdvice") @NonNull final SyncAdvise bPartnerLocationSyncAdvice,
 			@JsonProperty("invoiceEmailEnabled") @Nullable final Boolean invoiceEmailEnabled,
@@ -100,5 +100,4 @@ public class JsonExternalSystemShopware6ConfigMapping
 	{
 		return Check.isBlank(this.sw6PaymentMethod) || this.sw6PaymentMethod.trim().equals(sw6PaymentMethod.trim());
 	}
-
 }

@@ -1,0 +1,95 @@
+.btn-icon {
+    font-size: 48px;
+    color: white;
+    display: block;
+    cursor: pointer;
+    height: 1em;
+}
+
+.btn-green {
+    background-color: $base-mf-green;
+    color: white;
+
+    &[disabled] {
+        background-color: $base-mf-green;
+        border-color: transparent;
+        box-shadow: none;        
+    }
+}
+
+.logout-btn-green {
+    width: 8em;
+    color: white;
+    background-color: $custom-dk-green;
+    font-weight: 400;
+    border: 0px;
+}
+.logout-btn-green:hover {
+    color: white;
+    background-color: $custom-dk-green;
+    border: 0px;
+}
+.logout-btn-green:focus {
+    color: white;
+    border-color: $base-mf-green;
+}
+
+.full-size-btn {
+    width: 100%;
+}
+
+.caption-btn {
+    width:90%;
+    float: left;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap
+}
+.left-btn-side {
+    width: 5%;
+    float: left;
+}
+.right-btn-side {
+    width: 5%;
+    float: right;
+}
+
+.indicator-red {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    border: 1px solid #000;
+    border-radius: 7px;
+    background-color: $indicator-red;
+    border-color: $indicator-red-border;
+    box-shadow: 0px 0px 4px 1px $indicator-red;
+    margin-bottom: 5px;
+}
+
+.indicator-green {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    border: 1px solid #000;
+    border-radius: 7px;
+    background-color: $indicator-green;
+    border-color: $indicator-green-border;
+    box-shadow: 0px 0px 4px 1px $indicator-green;
+    margin-bottom: 5px;
+}
+
+.indicator-yellow {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    border: 1px solid #000;
+    border-radius: 7px;
+    background-color: $indicator-yellow;
+    border-color: $indicator-yellow-border;
+    box-shadow: 0px 0px 4px 1px $indicator-yellow;
+    margin-bottom: 5px;
+}

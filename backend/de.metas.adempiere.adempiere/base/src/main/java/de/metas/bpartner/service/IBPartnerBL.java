@@ -170,6 +170,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
 
+	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
+
 	@Value
 	@Builder
 	class RetrieveContactRequest
@@ -237,4 +239,8 @@ public interface IBPartnerBL extends ISingletonService
 	boolean isSalesRep(BPartnerId bpartnerId);
 
 	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
+
+	void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation);
+
+	void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation);
 }

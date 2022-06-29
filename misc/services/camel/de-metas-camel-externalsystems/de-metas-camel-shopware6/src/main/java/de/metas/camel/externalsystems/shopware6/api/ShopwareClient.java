@@ -28,11 +28,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.shopware6.api.model.GetBearerRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonOauthResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
@@ -46,6 +46,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMetho
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
+import de.metas.camel.externalsystems.shopware6.api.model.unit.JsonUnits;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -84,6 +85,8 @@ public class ShopwareClient
 	private static final Logger logger = Logger.getLogger(ShopwareClient.class.getName());
 
 	@NonNull
+	private final PInstanceLogger pInstanceLogger;
+	@NonNull
 	private final AuthToken authToken;
 	@NonNull
 	private final String baseUrl;
@@ -93,7 +96,8 @@ public class ShopwareClient
 	public static ShopwareClient of(
 			@NonNull final String clientId,
 			@NonNull final String clientSecret,
-			@NonNull final String baseUrl)
+			@NonNull final String baseUrl,
+			@NonNull final PInstanceLogger pInstanceLogger)
 	{
 		final AuthToken authToken = AuthToken.builder()
 				.clientId(clientId)
@@ -101,11 +105,12 @@ public class ShopwareClient
 				.validUntil(Instant.ofEpochMilli(0))
 				.build();
 
-		return new ShopwareClient(authToken, baseUrl);
+		return new ShopwareClient(pInstanceLogger, authToken, baseUrl);
 	}
 
 	@NonNull
-	public GetOrdersResponse getOrders(@NonNull final Shopware6QueryRequest queryRequest,
+	public GetOrdersResponse getOrders(
+			@NonNull final Shopware6QueryRequest queryRequest,
 			@Nullable final String customIdentifierJSONPath,
 			@Nullable final String salesRepJSONPath)
 	{
@@ -423,7 +428,7 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public Optional<JsonProducts> getProducts(@NonNull final MultiQueryRequest queryRequest)
+	public Optional<JsonProducts> getProducts(@NonNull final Shopware6QueryRequest queryRequest)
 	{
 		final URI resourceURI;
 
@@ -449,12 +454,37 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	protected Optional<OrderCandidate> getJsonOrderCandidate(@Nullable final JsonNode orderJson,
+	public JsonUnits getUnits()
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.UNIT.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonUnits> response = performWithRetry(resourceURI, HttpMethod.GET, JsonUnits.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			throw new RuntimeException("No units return from Shopware!");
+		}
+
+		return response.getBody();
+	}
+
+	@NonNull
+	protected Optional<OrderCandidate> getJsonOrderCandidate(
+			@Nullable final JsonNode orderJson,
 			@Nullable final String customIdJSONPath,
 			@Nullable final String salesRepJSONPath)
 	{
 		if (orderJson == null)
 		{
+			pInstanceLogger.logMessage("Skipping the current 'order' ; no value found for orderJson node!");
 			return Optional.empty();
 		}
 
@@ -476,11 +506,13 @@ public class ShopwareClient
 				}
 				else
 				{
+					pInstanceLogger.logMessage("Skipping current order: " + jsonOrder.getId() + "; no value found for customIdJSONPath: " + customIdJSONPath);
 					return Optional.empty();
 				}
 			}
 			else if (Check.isBlank(jsonOrder.getOrderCustomer().getCustomerId()))
 			{
+				pInstanceLogger.logMessage("Skipping current order: " + jsonOrder.getId() + "; jsonOrder.getOrderCustomer().getCustomerId() is null!");
 				return Optional.empty();
 			}
 

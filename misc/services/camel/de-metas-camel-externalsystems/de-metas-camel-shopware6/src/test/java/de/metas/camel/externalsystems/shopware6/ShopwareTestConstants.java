@@ -28,10 +28,14 @@ public interface ShopwareTestConstants
 	String MOCK_TRACE_ID = "traceId";
 
 	String MOCK_EUR_CODE = "EUR";
+	String MOCK_UNIT_CODE = "kg";
 	String MOCK_CURRENCY_ID = "currencyId";
+	String MOCK_UNIT_ID = "unitId";
 
 	int MOCK_NORMAL_VAT_PRODUCT_ID = 1001;
 	int MOCK_REDUCED_VAT_PRODUCT_ID = 1002;
+	String MOCK_ORDER_ID = "1111";
+	String MOCK_ORDER_NO = "2222";
 
 	String MOCK_NORMAL_VAT_RATES = "7.7,19,0";
 	String MOCK_REDUCED_VAT_RATES = "5.5,12";

@@ -1,0 +1,11 @@
+.application-container {
+    width: 100%;
+    .card {
+        justify-content: center;
+        align-content: center;
+        flex-direction: column;
+        height: 9.5em;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+}

@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Date;
@@ -178,6 +179,13 @@ public final class TranslatableStringBuilder
 		return append(NumberTranslatableString.of(value, displayType));
 	}
 
+	public TranslatableStringBuilder appendQty(@NonNull final BigDecimal qty, @NonNull final String uom)
+	{
+		return append(NumberTranslatableString.of(qty, DisplayType.Quantity))
+				.append(" ")
+				.append(uom);
+	}
+
 	public TranslatableStringBuilder append(@NonNull final Amount amount)
 	{
 		return append(NumberTranslatableString.of(amount.getAsBigDecimal(), DisplayType.Amount))
@@ -213,6 +221,11 @@ public final class TranslatableStringBuilder
 	}
 
 	public TranslatableStringBuilder appendDateTime(@NonNull final Instant value)
+	{
+		return append(DateTimeTranslatableString.ofDateTime(value));
+	}
+
+	public TranslatableStringBuilder appendDateTime(@NonNull final ZonedDateTime value)
 	{
 		return append(DateTimeTranslatableString.ofDateTime(value));
 	}

@@ -9,6 +9,7 @@ import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
 import de.metas.security.UserNotAuthorizedException;
 import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -108,5 +109,10 @@ public class UserAuthTokenService
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(permissions.getRoleId()));
 		// TODO: set other properties like language, warehouse etc...
 		return ctx;
+	}
+
+	public UserAuthToken getOrCreateNewToken(@NonNull final CreateUserAuthTokenRequest request)
+	{
+		return userAuthTokenRepo.getOrCreateNew(request);
 	}
 }
