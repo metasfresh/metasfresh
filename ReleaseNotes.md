@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13176](https://github.com/metasfresh/metasfresh/pull/13176) assert_period_open: improve error reporting when document was not found
+  * [#13175](https://github.com/metasfresh/metasfresh/pull/13175) fact_acct_summary_partial_from_date_functions
   * [#13192](https://github.com/metasfresh/metasfresh/issues/13192) Port stepdefs and implement material-receipt cucumber tests 
   * [#13178](https://github.com/metasfresh/metasfresh/issues/13178) Gebindekonfiguration not set in PP_Order from PP_Order Dispo although set in sales orderline
   * [#13183](https://github.com/metasfresh/metasfresh/issues/13183) Rename Sektion to Organisation
@@ -46,7 +48,15 @@ Here come the actual release notes:
   * [#13045](https://github.com/metasfresh/metasfresh/pull/13045) log to loggables why an attribute based price is not applied
 
 ## Fixes
-* metasfresh
+* metasfresh 
+  * [#13215] https://github.com/metasfresh/metasfresh/issues/13215 Description and documentnote are not copied from doctype into shipment
+  * [#13218] https://github.com/metasfresh/metasfresh/pull/13218 Show Adr attribute details
+  * [#13201] https://github.com/metasfresh/metasfresh/pull/13201 add new accounts in Deckungsbeitragsrechnung 
+  * [#13204](https://github.com/metasfresh/metasfresh/pull/13204) fix flaky test: Create sales order with different ASI, on complete no production candidate is found
+  * [#13197](https://github.com/metasfresh/metasfresh/pull/13197) cucumber fixes
+  * [#13170](https://github.com/metasfresh/metasfresh/pull/13170) hotfix RV_UnPosted: DateTrx was used instead of DateAcct for M_MatchInv and M_MatchPO
+  * [#13169](https://github.com/metasfresh/metasfresh/pull/13169) db functions: getC_Calendar_ID, getC_Period_ID_by_Date 
+  * [#13179](https://github.com/metasfresh/metasfresh/issues/13179) Count QtyDelivered as zero if all inouts are reveserd 
   * [#13112](https://github.com/metasfresh/metasfresh/issues/13112) Fix Zoom Across HU Editor
   * [#13105](https://github.com/metasfresh/metasfresh/issues/13104) Exclude Password Reset process from DebugMailTo
   * [#13086](https://github.com/metasfresh/metasfresh/issues/13086) Windows adjustments & fixing Trls 

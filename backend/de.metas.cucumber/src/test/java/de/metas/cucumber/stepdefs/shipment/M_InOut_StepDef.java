@@ -71,6 +71,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -206,14 +207,27 @@ public class M_InOut_StepDef
 		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Optional<String> docStatus = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_InOut.COLUMNNAME_DocStatus));
 
+		final String alreadyCreatedShipmentIdentifiers = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.IgnoreCreated" + "." + I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final Set<InOutLineId> alreadyCreatedShipmentLines = Optional.ofNullable(alreadyCreatedShipmentIdentifiers)
+				.map(StepDefUtil::extractIdentifiers)
+				.map(this::getShipmentLinesForShipmentIdentifiers)
+				.orElseGet(ImmutableSet::of);
+
+
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
 		final Supplier<Boolean> isShipmentCreated = () -> {
+
+			final Set<Integer> linesToIgnore = alreadyCreatedShipmentLines.isEmpty()
+					? ImmutableSet.of(-1)
+					: alreadyCreatedShipmentLines.stream().map(InOutLineId::getRepoId).collect(ImmutableSet.toImmutableSet());
 
 			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = queryBL
 					.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.addNotInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, linesToIgnore)
 					.create()
 					.firstOnly(I_M_ShipmentSchedule_QtyPicked.class);
 
@@ -227,17 +241,7 @@ public class M_InOut_StepDef
 				return false;
 			}
 
-			final I_M_InOutLine shipmentLine = queryBL
-					.createQueryBuilder(I_M_InOutLine.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, qtyPickedRecord.getM_InOutLine_ID())
-					.create()
-					.firstOnly(I_M_InOutLine.class);
-
-			if (shipmentLine == null)
-			{
-				return false;
-			}
+			final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.load(qtyPickedRecord.getM_InOutLine_ID(), I_M_InOutLine.class);
 
 			final IQueryBuilder<I_M_InOut> shipmentQueryBuilder = queryBL
 					.createQueryBuilder(I_M_InOut.class)
@@ -367,5 +371,23 @@ public class M_InOut_StepDef
 
 		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + ".Identifier");
 		shipmentTable.put(shipmentIdentifier, shipmentRecord);
+	}
+
+	@NonNull
+	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<String> shipmentIdentifiers)
+	{
+		final Set<Integer> shipmentIds = shipmentIdentifiers.stream()
+				.map(shipmentTable::get)
+				.map(I_M_InOut::getM_InOut_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentIds)
+				.create()
+				.stream()
+				.map(I_M_InOutLine::getM_InOutLine_ID)
+				.map(InOutLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

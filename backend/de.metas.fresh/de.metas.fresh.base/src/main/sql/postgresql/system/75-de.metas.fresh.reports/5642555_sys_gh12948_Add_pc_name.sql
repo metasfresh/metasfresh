@@ -77,13 +77,30 @@ WHERE fa.AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'
 
 DROP TABLE IF EXISTS  fresh_statistics_kg_week_MV;
 
-
-CREATE TABLE fresh_statistics_kg_week_MV
-AS
-SELECT *
-FROM fresh_statistics_kg_week_view
-ORDER BY pc_value, P_name
+CREATE TABLE fresh_statistics_kg_week_mv
+(
+    m_product_id                 numeric(10),
+    m_product_category_id        numeric(10),
+    fiscalyear                   varchar(20),
+    c_year_id                    numeric(10),
+    dateacct                     timestamp,
+    amtacct                      numeric,
+    qty                          numeric,
+    c_activity_id                numeric(10),
+    ad_org_id                    numeric(10),
+    iso_code                     char(3),
+    il_m_attributesetinstance_id numeric(10),
+    c_uom_id                     numeric(10),
+    uomkg                        numeric(10),
+    convqty                      numeric,
+    issotrx                      char,
+    pc_value                     varchar(40),
+    pc_name                      varchar(60),
+    p_name                       varchar(255),
+    p_value                      varchar(40)
+)
 ;
+
 
 -- indices that shall improve ordering and filtering
 CREATE INDEX fresh_statistics_kg_week_year_Index ON fresh_statistics_kg_week_MV (C_Year_ID, issotrx);

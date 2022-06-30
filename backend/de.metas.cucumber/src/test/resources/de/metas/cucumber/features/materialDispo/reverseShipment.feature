@@ -11,8 +11,8 @@ Feature: Shipping HUs interaction with material schedule
   @from:cucumber
   Scenario: Validate the way shipping HUs interacts with material schedule (complete, reactivate, reverse shipment)
     Given load M_Product:
-      | M_Product_ID.Identifier | OPT.M_Product_ID |
-      | p_1                     | 2005577          |
+      | M_Product_ID.Identifier | M_Product_ID |
+      | p_1                     | 2005577      |
     And metasfresh contains M_Inventories:
       | Identifier | M_Warehouse_ID | MovementDate |
       | i_1        | 540008         | 2021-04-09   |

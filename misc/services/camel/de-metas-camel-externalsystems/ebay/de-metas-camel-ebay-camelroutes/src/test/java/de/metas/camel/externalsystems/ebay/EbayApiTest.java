@@ -72,6 +72,17 @@ public class EbayApiTest
 	}
 
 	//@Test
+
+	/**
+	 * To run this test you need access to the ebay api.
+	 * 1. Create ebay developer account
+	 * 2. Put your credentials into ebay-test-creds.yaml
+	 *    -> This are the credentials for developer access to create an app.
+	 * 3. Put your ebay crentials into application.properties
+	 *    -> This are credentials of an account who sells and wants to grant access to metasfresh.
+	 * 3. Execute test -> it will open a browser, auth and fetch orders.
+	 * @throws Exception
+	 */
 	public void testLoadOrders() throws Exception
 	{
 
