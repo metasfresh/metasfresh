@@ -144,13 +144,13 @@ public class Percent
 	}
 
 	@Nullable
-	public static BigDecimal toBigDecimalOrNull(@Nullable final Percent paymentDiscountOverrideOrNull)
+	public static BigDecimal toBigDecimalOrNull(@Nullable final Percent percentOrNull)
 	{
-		if (paymentDiscountOverrideOrNull == null)
+		if (percentOrNull == null)
 		{
 			return null;
 		}
-		return paymentDiscountOverrideOrNull.toBigDecimal();
+		return percentOrNull.toBigDecimal();
 	}
 
 	private static final BigDecimal ONE_HUNDRED_VALUE = BigDecimal.valueOf(100);

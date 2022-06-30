@@ -41,6 +41,7 @@ import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
@@ -645,15 +646,16 @@ public class CalloutInvoice extends CalloutEngine
 				// if (PriceEntered == null)
 				// PriceEntered = pp.getPriceStd();
 				// metas us1064
+				final BigDecimal priceStd = pp.getPriceStd();
+				final Percent discount = pp.getDiscount();
 				final BigDecimal priceStdMinusDiscount = pp.mkPriceStdMinusDiscount();
 				log.debug("amt - QtyChanged -> PriceActual=" + priceStdMinusDiscount
-								  + ", PriceEntered=" + priceEntered + ", Discount=" + pp.getDiscount());
+								  + ", PriceEntered=" + priceEntered + ", Discount=" + discount);
 
 				priceActual = priceStdMinusDiscount;
 				invoiceLine.setPriceActual(priceActual); // 08763 align the behavior to that of order line
-				// metas us1064 end
-				// mTab.setValue("Discount", pp.getDiscount());
-				invoiceLine.setPriceEntered(priceActual); // 08763 align the behavior to that of order line
+				invoiceLine.setDiscount(Percent.toBigDecimalOrNull(discount));	
+				invoiceLine.setPriceEntered(priceStd); // 08763 align the behavior to that of order line
 
 				calloutField.putContext(CTX_DiscountSchema, pp.isDiscountSchema());
 			}
