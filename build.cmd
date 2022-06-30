@@ -28,6 +28,14 @@ docker build -f docker-builds/Dockerfile.db-standalone -t %registry%/metas-db:%t
 docker build -f docker-builds/Dockerfile.db-preloaded -t %registry%/metas-db:%tag%-preloaded . || @goto error
 
 
+@echo.
+@echo --------------------------
+@echo building classic-compatible deployables
+@echo --------------------------
+docker build -f docker-builds/Dockerfile.backend.api.compat -t %registry%/metas-api:%tag%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.app.compat -t %registry%/metas-app:%tag%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.frontend.compat -t %registry%/metas-frontend:%tag%-compat . || @goto error
+
 @REM ----- for a rainy day -----
 @REM docker build -f docker-builds/Dockerfile.e2e -t %registry%/metas-e2e:%tag% . || @goto error
 @REM docker build -f docker-builds/Dockerfile.procurement.frontend -t %registry%/metas-procurement-frontend:%tag% . || @goto error
