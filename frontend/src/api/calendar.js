@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-import SockJs from 'sockjs-client';
-import Stomp from 'stompjs/lib/stomp.min.js';
+import * as StompJs from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 const extractAxiosResponseData = (axiosReponse) => axiosReponse.data;
 
@@ -75,26 +75,43 @@ export const createSimulation = ({ copyFromSimulationId }) => {
     .then((simulation) => converters.fromAPISimulation(simulation));
 };
 
+const WS_DEBUG = true;
 export const connectToWS = ({ simulationId, onWSEventsArray }) => {
   const wsTopicName = `/v2/calendar/${simulationId || 'actual'}`;
-  const sockClient = Stomp.Stomp.over(new SockJs(config.WS_URL));
-  //sockClient.debug = null; // TODO uncomment to avoid debugging
-  // TODO: try connecting on disconnect
-  sockClient.connect({}, () => {
-    sockClient.subscribe(wsTopicName, (msg) => {
+
+  const stompJsConfig = {
+    reconnectDelay: 5000,
+    heartbeatIncoming: 4000,
+    heartbeatOutgoing: 4000,
+  };
+  if (WS_DEBUG) {
+    stompJsConfig.debug = (msg) => console.log('STOMP DEBUG: ' + msg);
+  }
+
+  const client = new StompJs.Client(stompJsConfig);
+
+  client.webSocketFactory = () => new SockJS(config.WS_URL);
+
+  client.onConnect = (frame) => {
+    if (WS_DEBUG) console.log('websocket connected: ', frame);
+
+    client.subscribe(wsTopicName, (msg) => {
       const wsEventsArray =
         JSON.parse(msg.body)?.events?.map(converters.fromAPIWebsocketEvent) ||
         [];
       onWSEventsArray(wsEventsArray);
     });
-    console.log(`subscribed to WS topic ${wsTopicName}`);
-  });
+  };
+
+  client.onStompError = function (frame) {
+    console.log('Broker reported error: ' + frame.headers['message']);
+    console.log('Additional details: ' + frame.body);
+  };
+
+  client.activate();
 
   return () => {
-    if (sockClient && sockClient.connected) {
-      sockClient.disconnect();
-      console.log(`unsubscribed from WS topic ${wsTopicName}`);
-    }
+    client && client.deactivate();
   };
 };
 
@@ -104,7 +121,7 @@ export const connectToWS = ({ simulationId, onWSEventsArray }) => {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-const converters = {
+export const converters = {
   fromAPICalendar: (calendar) => ({
     calendarId: calendar.calendarId,
     name: calendar.name,
