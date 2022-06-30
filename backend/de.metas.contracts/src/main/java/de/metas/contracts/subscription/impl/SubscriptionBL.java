@@ -5,6 +5,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.ConditionsId;
@@ -37,6 +38,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMonitoringBL;
 import de.metas.order.IOrderBL;
@@ -46,6 +48,7 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
@@ -790,10 +793,14 @@ public class SubscriptionBL implements ISubscriptionBL
 				SOTrx.SALES);
 
 		final IProductPA productPA = Services.get(IProductPA.class);
+		final CountryId countryId = Services.get(IBPartnerBL.class).getCountryId(bpLocationId);
+
 		final BigDecimal newPrice = productPA.retrievePriceStd(
+				OrgId.ofRepoId(ol.getAD_Org_ID()),
 				ol.getM_Product_ID(),
 				ol.getC_BPartner_ID(),
 				plId.getRepoId(),
+				countryId,
 				qtySum,
 				true).multiply(qtySum);
 
@@ -1120,7 +1127,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final Timestamp today = SystemTime.asDayTimestamp();
 		final List<I_C_SubscriptionProgress> subscriptionProgressList = subscriptionDAO.retrieveSubscriptionProgresses(SubscriptionProgressQuery.builder()
-				.term(term).build());
+																															   .term(term).build());
 		final int seqNoToUse = getSeqNoToUse(today, subscriptionProgressList);//default start seq number. Should not happen.
 		final I_C_SubscriptionProgress changeEvent = newInstance(I_C_SubscriptionProgress.class);
 
@@ -1147,10 +1154,10 @@ public class SubscriptionBL implements ISubscriptionBL
 				.mapToInt(I_C_SubscriptionProgress::getSeqNo)
 				.min()//smallest seqNo after today's date
 				.orElse(subscriptionProgressList.stream()
-						.mapToInt(I_C_SubscriptionProgress::getSeqNo)
-						.map(Math::incrementExact)
-						.max()//greatest seqNo + 1 before today
-						.orElse(SEQNO_FIRST_VALUE));
+								.mapToInt(I_C_SubscriptionProgress::getSeqNo)
+								.map(Math::incrementExact)
+								.max()//greatest seqNo + 1 before today
+								.orElse(SEQNO_FIRST_VALUE));
 	}
 
 	private void addEventValue(final I_C_SubscriptionProgress changeEvent, final String eventType, @Nullable final Object eventValue)

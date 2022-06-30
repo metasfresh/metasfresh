@@ -21,14 +21,10 @@
  */
 package de.metas.project.process.legacy;
 
-
-import org.slf4j.Logger;
-
 import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
-
+import de.metas.process.ProcessInfoParameter;
 import org.compiere.model.MProductPricing;
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
@@ -78,11 +74,18 @@ public class ProjectLinePricing extends JavaProcess
 		//
 		MProject project = new MProject (getCtx(), projectLine.getC_Project_ID(), get_TrxName());
 		if (project.getM_PriceList_ID() == 0)
+		{
 			throw new IllegalArgumentException("No PriceList");
+		}
 		//
 		boolean isSOTrx = true;
-		MProductPricing pp = new MProductPricing (projectLine.getM_Product_ID(), project.getC_BPartner_ID(),
-			projectLine.getPlannedQty(), isSOTrx);
+		MProductPricing pp = new MProductPricing (
+				OrgId.ofRepoId(project.getAD_Org_ID()),
+				projectLine.getM_Product_ID(),
+				project.getC_BPartner_ID(),
+				null, /* countryId */
+				projectLine.getPlannedQty(),
+				isSOTrx);
 		pp.setM_PriceList_ID(project.getM_PriceList_ID());
 		pp.setPriceDate(project.getDateContract());
 		//
