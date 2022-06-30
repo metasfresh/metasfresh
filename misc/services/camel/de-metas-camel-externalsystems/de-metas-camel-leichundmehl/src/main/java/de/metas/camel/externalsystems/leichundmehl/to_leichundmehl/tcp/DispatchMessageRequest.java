@@ -36,12 +36,12 @@ public class DispatchMessageRequest
 
 	@NonNull
 	@JsonProperty("payload")
-	Object payload;
+	String payload;
 
 	@Builder
 	public DispatchMessageRequest(
 			@JsonProperty("connectionDetails") @NonNull final ConnectionDetails connectionDetails,
-			@JsonProperty("payload") @NonNull final Object payload)
+			@JsonProperty("payload") @NonNull final String payload)
 	{
 		this.connectionDetails = connectionDetails;
 		this.payload = payload;

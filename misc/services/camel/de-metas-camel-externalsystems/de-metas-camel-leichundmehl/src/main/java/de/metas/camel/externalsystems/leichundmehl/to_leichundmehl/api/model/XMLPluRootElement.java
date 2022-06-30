@@ -22,8 +22,6 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,9 +43,13 @@ public class XMLPluRootElement implements Serializable
 	XMLPluElement xmlPluElement;
 
 	@Builder
-	@JsonCreator
-	public XMLPluRootElement(@JsonProperty(LeichMehlConstants.XML_ELEMENT_RECV_PLU) @NonNull final XMLPluElement xmlPluElement)
+	public XMLPluRootElement(@NonNull final XMLPluElement xmlPluElement)
 	{
 		this.xmlPluElement = xmlPluElement;
+	}
+
+	public XMLPluRootElement()
+	{
+		throw new RuntimeException("Here just to please jaxb marshalling!");
 	}
 }

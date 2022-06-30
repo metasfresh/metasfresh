@@ -685,3 +685,27 @@ UPDATE AD_Menu SET AD_Element_ID=581062, Description=NULL, Name='External system
 /* DDL */  select update_menu_translation_from_ad_element(581062) 
 ;
 
+-- 2022-06-30T15:40:04.133Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Sendet die ausgewählten Produktionsaufträge an die entsprechende Leich & Mehl TCP-Server Konfiguration.',Updated=TO_TIMESTAMP('2022-06-30 18:40:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585045
+;
+
+-- 2022-06-30T15:40:11.902Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Sendet die ausgewählten Produktionsaufträge an die entsprechende Leich & Mehl TCP-Server Konfiguration.', Help=NULL, Name='An Leich + Mehl PAW senden',Updated=TO_TIMESTAMP('2022-06-30 18:40:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585045
+;
+
+-- 2022-06-30T15:40:11.835Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Sendet die ausgewählten Produktionsaufträge an die entsprechende Leich & Mehl TCP-Server Konfiguration.',Updated=TO_TIMESTAMP('2022-06-30 18:40:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585045
+;
+
+-- 2022-06-30T15:40:15.170Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Sends the selected manufacturing orders to the corresponding Leich & Mehl TCP-Server configuration.',Updated=TO_TIMESTAMP('2022-06-30 18:40:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585045
+;
+
+-- 2022-06-30T15:40:18.079Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Sendet die ausgewählten Produktionsaufträge an die entsprechende Leich & Mehl TCP-Server Konfiguration.',Updated=TO_TIMESTAMP('2022-06-30 18:40:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585045
+;

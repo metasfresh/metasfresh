@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XML
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.ExportPPOrderRouteContext;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.DispatchMessageRequest;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.util.FileUtil;
 import lombok.NonNull;
@@ -34,24 +35,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
 
@@ -62,24 +52,18 @@ public class ReadPluFileProcessor implements Processor
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
-		final Optional<Object> pluFileContentOpt = getPluFileContent(context.getProductMapping(), context.getProductBaseFolderName());
-
-		if (pluFileContentOpt.isEmpty())
-		{
-			exchange.getIn().setBody(null); //dev-note: nothing to route
-			return;
-		}
+		final String content = getRootPLUFileContent(context.getProductMapping(), context.getProductBaseFolderName());
 
 		final DispatchMessageRequest request = DispatchMessageRequest.builder()
 				.connectionDetails(context.getConnectionDetails())
-				.payload(pluFileContentOpt.get())
+				.payload(content)
 				.build();
 
 		exchange.getIn().setBody(request, DispatchMessageRequest.class);
 	}
 
 	@NonNull
-	private Optional<Object> getPluFileContent(
+	private String getRootPLUFileContent(
 			@NonNull final JsonExternalSystemLeichMehlConfigProductMapping mapping,
 			@NonNull final String productBaseFolderName)
 	{
@@ -87,34 +71,13 @@ public class ReadPluFileProcessor implements Processor
 		{
 			final Path filePath = getPluFilePath(productBaseFolderName, mapping.getPluFile());
 
-			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			final DocumentBuilder builder = factory.newDocumentBuilder();
-
-			final InputStream inputStream = new FileInputStream(filePath.toFile());
-			final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "Windows-1252");
-
-			final BufferedReader reader = new BufferedReader(inputStreamReader);
-			final InputSource input = new InputSource(reader);
-			final Document doc = builder.parse(input);
-
-			final Element root = doc.getDocumentElement();
-			root.normalize();
-
-			final TransformerFactory transFactory = TransformerFactory.newInstance();
-			final Transformer transformer = transFactory.newTransformer();
-			final StringWriter buffer = new StringWriter();
-			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			transformer.transform(new DOMSource(doc),
-								  new StreamResult(buffer));
-			final String strContent = buffer.toString();
+			final String fileContent = readPluFile(filePath);
 
 			final XMLPluRootElement xmlPluRootElement = XMLPluRootElement.builder()
-					.xmlPluElement(XMLPluElement.builder()
-										   .content(strContent)
-										   .build())
+					.xmlPluElement(XMLPluElement.of(fileContent))
 					.build();
 
-			return Optional.of(xmlPluRootElement);
+			return XMLUtil.convertToXML(xmlPluRootElement, XMLPluRootElement.class);
 		}
 		catch (final Exception e)
 		{
@@ -123,9 +86,16 @@ public class ReadPluFileProcessor implements Processor
 	}
 
 	@NonNull
-	private Path getPluFilePath(@NonNull final String productBaseFolderName, @NonNull final String pluFilepath)
+	private static Path getPluFilePath(@NonNull final String productBaseFolderName, @NonNull final String pluFilepath)
 	{
 		return Paths.get(FileUtil.normalizeAndValidateFilePath(productBaseFolderName),
 						 FileUtil.normalizeAndValidateFilePath(pluFilepath));
+	}
+
+	@NonNull
+	private static String readPluFile(@NonNull final Path pluFilepath) throws IOException, ParserConfigurationException, SAXException, TransformerException
+	{
+		final Document pluDocument = XMLUtil.readFromPath(pluFilepath);
+		return XMLUtil.toString(pluDocument);
 	}
 }

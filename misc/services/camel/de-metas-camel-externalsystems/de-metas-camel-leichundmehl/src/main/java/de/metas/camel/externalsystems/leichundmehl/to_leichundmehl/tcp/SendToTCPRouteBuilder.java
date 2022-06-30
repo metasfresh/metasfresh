@@ -22,12 +22,10 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp;
 
-import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.SerializationUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
@@ -71,23 +69,20 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 	}
 
 	private static void sendFile(
-			@NonNull final Object payload,
+			@NonNull final String payload,
 			@NonNull final DataOutputStream dataOutputStream) throws Exception
 	{
-		int bytes;
-		final byte[] data = SerializationUtils.serialize(payload);
-		Check.assumeNotNull(data, "data cannot be null at this stage");
-
-		final InputStream fileInputStream = new ByteArrayInputStream(data);
-
-		// send file size
-		// break file into chunks
-		final byte[] buffer = new byte[4 * 1024];
-		while ((bytes = fileInputStream.read(buffer)) != -1)
+		try (final InputStream fileInputStream = new ByteArrayInputStream(payload.getBytes()))
 		{
-			dataOutputStream.write(buffer, 0, bytes);
-			dataOutputStream.flush();
+			// break file into chunks
+			final byte[] buffer = new byte[4 * 1024];
+
+			int bytes;
+			while ((bytes = fileInputStream.read(buffer)) != -1)
+			{
+				dataOutputStream.write(buffer, 0, bytes);
+				dataOutputStream.flush();
+			}
 		}
-		fileInputStream.close();
 	}
 }

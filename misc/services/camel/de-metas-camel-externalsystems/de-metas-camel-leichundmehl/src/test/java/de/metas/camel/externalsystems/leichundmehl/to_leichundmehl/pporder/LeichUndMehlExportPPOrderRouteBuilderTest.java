@@ -24,14 +24,11 @@ package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.DispatchMessageRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import lombok.NonNull;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -41,15 +38,14 @@ import java.util.Properties;
 
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.LeichUndMehlExportPPOrderRouteBuilder.EXPORT_PPORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.SendToTCPRouteBuilder.SEND_TO_TCP_ROUTE_ID;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_TCP_ENDPOINT = "mock:TCPEndpoint";
 
 	private static final String TCP_EXPORT_DIRECTORY = "tcpExport";
-	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = TCP_EXPORT_DIRECTORY + "0_JsonExternalSystemRequest.json";
-	private static final String JSON_DISPATCH_MESSAGE_REQUEST = TCP_EXPORT_DIRECTORY + "10_DispatchMessageRequest.json";
+	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = TCP_EXPORT_DIRECTORY + "/0_JsonExternalSystemRequest.json";
+	private static final String JSON_DISPATCH_MESSAGE_REQUEST = TCP_EXPORT_DIRECTORY + "/10_DispatchMessageRequest.json";
 
 	private static final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
@@ -83,9 +79,14 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	@Test
 	public void happyFlow() throws Exception
 	{
-		final MockTCPProcessor mockTCPProcessor = new MockTCPProcessor();
+		prepareRouteForTesting();
 
-		prepareRouteForTesting(mockTCPProcessor);
+		final MockEndpoint retrievePPOrderMockEndpoint = getMockEndpoint(MOCK_TCP_ENDPOINT);
+
+		//validate DispatchMessageRequest
+		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
+		final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
+		retrievePPOrderMockEndpoint.expectedBodiesReceived(expectedDispatchMessageRequest);
 
 		context.start();
 
@@ -97,39 +98,14 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + EXPORT_PPORDER_ROUTE_ID, invokeExternalSystemRequest);
 
 		//then
-		assertThat(mockTCPProcessor.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 	}
 
-	private void prepareRouteForTesting(
-			@NonNull final LeichUndMehlExportPPOrderRouteBuilderTest.MockTCPProcessor mockTCPProcessor) throws Exception
+	private void prepareRouteForTesting() throws Exception
 	{
 		AdviceWith.adviceWith(context, EXPORT_PPORDER_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + SEND_TO_TCP_ROUTE_ID)
 									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_TCP_ENDPOINT)
-									  .process(mockTCPProcessor));
-	}
-
-	private static class MockTCPProcessor implements Processor
-	{
-		private int called = 0;
-
-		@Override
-		public void process(final Exchange exchange) throws IOException
-		{
-			final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
-
-			final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
-			final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
-
-			assertThat(request).isEqualTo(expectedDispatchMessageRequest);
-
-			final ConnectionDetails tcpConnection = request.getConnectionDetails();
-			assertThat(tcpConnection.getTcpHost()).isEqualTo("Host");
-			assertThat(tcpConnection.getTcpPort()).isEqualTo(445);
-
-			called++;
-		}
+									  .to(MOCK_TCP_ENDPOINT));
 	}
 }

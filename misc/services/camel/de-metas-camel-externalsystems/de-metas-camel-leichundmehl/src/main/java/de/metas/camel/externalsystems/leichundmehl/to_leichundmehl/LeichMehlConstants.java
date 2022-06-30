@@ -28,4 +28,7 @@ public interface LeichMehlConstants
 
 	String XML_ELEMENT_RI = "ri";
 	String XML_ELEMENT_RECV_PLU = "recvPLU";
+
+	String XML_PROPERTY_PLU_FILE_ENCODING_VALUE = "Windows-1252";
+	String XML_PROPERTY_VALUE_YES = "yes";
 }

@@ -20,33 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlValue;
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.Writer;
 
-@Value(staticConstructor = "of")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class XMLPluElement implements Serializable
+public class NoEscapeHandler implements CharacterEscapeHandler
 {
-	@NonNull
-	@XmlValue
-	String content;
-
-	@Builder
-	public XMLPluElement(@NonNull final String content)
+	private NoEscapeHandler()
 	{
-		this.content = content;
+		super();
 	}
 
-	public XMLPluElement()
+	public static final NoEscapeHandler INSTANCE = new NoEscapeHandler();
+
+	public void escape(char[] buf, int start, int len, boolean isAttValue, Writer out) throws IOException
 	{
-		throw new RuntimeException("Here just to please jaxb marshalling!");
+		for (int i = start; i < start + len; i++)
+		{
+			out.write(buf[i]);
+		}
+		return;
 	}
 }
+
