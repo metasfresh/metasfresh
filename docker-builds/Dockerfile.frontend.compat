@@ -1,6 +1,6 @@
 ARG REFNAME=local
 FROM mazorn/metas-frontend:$REFNAME as frontend
-FROM mazorn/metas-mobile:$REFNAME as mobile
+FROM mazorn/metas-mobile:$REFNAME-compat as mobile
 
 # ubuntu:16.04
 FROM httpd:2.4.54 as runtime
