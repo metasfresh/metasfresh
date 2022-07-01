@@ -3,6 +3,7 @@ package de.metas.externalsystem.model;
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for ExternalSystem_Config_Shopware6
  *  @author metasfresh (generated) 
@@ -276,7 +277,8 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set IsSyncStockToShopware6.
+	 * Set Is sync stock to Shopware6.
+	 * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -285,7 +287,8 @@ public interface I_ExternalSystem_Config_Shopware6
 	void setIsSyncStockToShopware6 (boolean IsSyncStockToShopware6);
 
 	/**
-	 * Get IsSyncStockToShopware6.
+	 * Get Is sync stock to Shopware6.
+	 * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -344,7 +347,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Set Business partner mapping - metasfresh-ID JSON-Path.
-	 * JSON path that specifies where within a customized Shopware order the customer's metasfresh ID (C_BPartner_ID) can be read.
+	 * JSON path indicating where the customer's metasfresh ID (C_BPartner_ID) can be read when importing a customized Shopware document that contains a customer. Currently, there are 2 workflows where we deal with such payloads: during a sales order import, and during the explicit customer import. For more details see: https://github.com/metasfresh/metasfresh/blob/master/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-shopware6/README.md
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -354,7 +357,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Get Business partner mapping - metasfresh-ID JSON-Path.
-	 * JSON path that specifies where within a customized Shopware order the customer's metasfresh ID (C_BPartner_ID) can be read.
+	 * JSON path indicating where the customer's metasfresh ID (C_BPartner_ID) can be read when importing a customized Shopware document that contains a customer. Currently, there are 2 workflows where we deal with such payloads: during a sales order import, and during the explicit customer import. For more details see: https://github.com/metasfresh/metasfresh/blob/master/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-shopware6/README.md
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -390,7 +393,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Set Business partner mapping - Shopware6-ID JSON-Path.
-	 * JSON path that specifies where within a customized Shopware order the customer's Shopware6 reference can be read.
+	 * JSON path indicating where the customer's Shopware6 reference can be read when importing a customized Shopware document that contains a customer. Currently, there are 2 workflows where we deal with such payloads: during a sales order import, and during the explicit customer import. For more details see: https://github.com/metasfresh/metasfresh/blob/master/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-shopware6/README.md
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -400,7 +403,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Get Business partner mapping - Shopware6-ID JSON-Path.
-	 * JSON path that specifies where within a customized Shopware order the customer's Shopware6 reference can be read.
+	 * JSON path indicating where the customer's Shopware6 reference can be read when importing a customized Shopware document that contains a customer. Currently, there are 2 workflows where we deal with such payloads: during a sales order import, and during the explicit customer import. For more details see: https://github.com/metasfresh/metasfresh/blob/master/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-shopware6/README.md
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -476,6 +479,29 @@ public interface I_ExternalSystem_Config_Shopware6
 	int getM_PriceList_ID();
 
 	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
+	 * Set Percentage deduction.
+	 * Percentage that is subtracted from the actual available stock before it is transferred to Shopware. For example, with 25% only three quarters of the actually available stock is reported to the shop.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPercentageOfAvailableStockToSync (BigDecimal PercentageOfAvailableStockToSync);
+
+	/**
+	 * Get Percentage deduction.
+	 * Percentage that is subtracted from the actual available stock before it is transferred to Shopware. For example, with 25% only three quarters of the actually available stock is reported to the shop.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPercentageOfAvailableStockToSync();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_PercentageOfAvailableStockToSync = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "PercentageOfAvailableStockToSync", null);
+	String COLUMNNAME_PercentageOfAvailableStockToSync = "PercentageOfAvailableStockToSync";
 
 	/**
 	 * Set Product Lookup.
