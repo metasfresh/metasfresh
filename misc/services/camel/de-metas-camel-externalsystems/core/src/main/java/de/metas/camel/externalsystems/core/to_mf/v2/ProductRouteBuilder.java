@@ -72,7 +72,6 @@ public class ProductRouteBuilder extends RouteBuilder
 					exchange.getIn().setHeader("queryParams", getQueryParams(getProductsCamelRequest));
 				})
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{metasfresh.products.v2.api.uri}}?${header.queryParams}")
 
@@ -97,7 +96,6 @@ public class ProductRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductUpsert.class))
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-product-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
 

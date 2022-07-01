@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.rabbitmq.authorization;
+package de.metas.externalsystem.rabbitmq.custom;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_AUTH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_CUSTOM;
 
 @Service
 public class CustomMFToExternalSystemMessageSender
@@ -46,7 +46,7 @@ public class CustomMFToExternalSystemMessageSender
 
 	public CustomMFToExternalSystemMessageSender(
 			@NonNull final RabbitTemplate rabbitTemplate,
-			@NonNull @Qualifier(QUEUE_NAME_MF_TO_ES_AUTH) final Queue queue
+			@NonNull @Qualifier(QUEUE_NAME_MF_TO_ES_CUSTOM) final Queue queue
 	)
 	{
 		this.rabbitTemplate = rabbitTemplate;

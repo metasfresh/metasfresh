@@ -49,7 +49,6 @@ public class SeqNoRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.log("Route invoked!")
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{" + MF_SEQ_NO_V2_URI + "}}" + "/" + AUDIT_AD_SEQUENCE_ID + "/next")
 				.to(direct(UNPACK_V2_API_RESPONSE))

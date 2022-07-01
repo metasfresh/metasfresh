@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.core.restapi;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.camel.externalsystems.common.CamelRoutesStartUpOrderEnum;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.InvokeExternalSystemActionCamelRequest;
 import de.metas.camel.externalsystems.common.v2.RetreiveServiceStatusCamelRequest;
@@ -62,9 +63,10 @@ public class ExternalSystemRestAPIHandler extends RouteBuilder
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID))
+		from("timer://runOnce?repeatCount=1")
 				.routeId(HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID)
 				.log("Route invoked!")
+				.startupOrder(CamelRoutesStartUpOrderEnum.ONE.getCode())
 				.process(this::prepareQueryServiceStatusRequests)
 				.split(body())
 					.to("{{" + ExternalSystemCamelConstants.MF_GET_SERVICE_STATUS_V2_CAMEL_URI + "}}")

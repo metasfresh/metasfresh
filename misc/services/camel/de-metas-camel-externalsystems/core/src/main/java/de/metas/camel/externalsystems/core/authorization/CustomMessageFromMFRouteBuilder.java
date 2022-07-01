@@ -20,34 +20,42 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.authorizationmf;
+package de.metas.camel.externalsystems.core.authorization;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.authorizationmf.provider.MetasfreshAuthProvider;
-import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.camel.externalsystems.core.CustomRouteController;
+import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
-import de.metas.common.util.EmptyUtil;
+import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.spi.RouteController;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.core.CoreConstants.CUSTOM_FROM_MF_ROUTE;
-import static de.metas.camel.externalsystems.core.restapi.ExternalSystemRestAPIHandler.HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class FromMFAuthorizationRouteBuilder extends RouteBuilder
+public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 {
 	public final static String CUSTOM_FROM_MF_ROUTE_ID = "RabbitMQ_custom_from_MF_ID";
 
 	final MetasfreshAuthProvider authProvider;
+	final ObjectMapper objectMapper;
+	final CustomRouteController customRouteController;
 
-	public FromMFAuthorizationRouteBuilder(final @NonNull MetasfreshAuthProvider authProvider)
+	public CustomMessageFromMFRouteBuilder(
+			@NonNull final MetasfreshAuthProvider authProvider,
+			@NonNull final ObjectMapper objectMapper,
+			@NonNull final CustomRouteController customRouteController
+	)
 	{
 		this.authProvider = authProvider;
+		this.objectMapper = objectMapper;
+		this.customRouteController = customRouteController;
 	}
 
 	@Override
@@ -60,33 +68,32 @@ public class FromMFAuthorizationRouteBuilder extends RouteBuilder
 		from(CUSTOM_FROM_MF_ROUTE)
 				.routeId(CUSTOM_FROM_MF_ROUTE_ID)
 				.streamCaching()
+				.autoStartup(false)
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemMessage.class))
-				.process(this::storeAuthTokenAndStartRoutes)
-				.to(direct(HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID));
+				.process(this::processCustomMessage);
 	}
 
-	private void storeAuthTokenAndStartRoutes(@NonNull final Exchange exchange)
+	private void processCustomMessage(@NonNull final Exchange exchange) throws JsonProcessingException
 	{
 		final JsonExternalSystemMessage message = exchange.getIn().getBody(JsonExternalSystemMessage.class);
 
-		if (message != null && message.getType().equals(ExternalSystemConstants.FROM_MF_AUTHORIZATION_REPLY_MESSAGE_TYPE) && EmptyUtil.isNotBlank(message.getPayload().getAuthToken()))
+		if (message != null)
 		{
-			authProvider.setAuthToken(message.getPayload().getAuthToken());
+			switch (message.getType())
+			{
+				case AUTHORIZATION_REPLY:
+				{
+					if (message.getPayload() != null)
+					{
+						final JsonExternalSystemMessagePayload messagePayload = objectMapper.readValue(message.getPayload(), JsonExternalSystemMessagePayload.class);
 
-			final RouteController routeController = exchange.getContext().getRouteController();
+						authProvider.setAuthToken(messagePayload.getAuthToken());
 
-			exchange.getContext().getRoutes().stream()
-					.filter(route -> route.getGroup() == null)
-					.forEach(route -> {
-						try
-						{
-							routeController.startRoute(route.getRouteId());
-						}
-						catch (final Exception e)
-						{
-							throw new RuntimeException("Failed to start routes after authorization!", e);
-						}
-					});
+						customRouteController.startAllRoutes(exchange);
+					}
+					break;
+				}
+			}
 		}
 	}
 

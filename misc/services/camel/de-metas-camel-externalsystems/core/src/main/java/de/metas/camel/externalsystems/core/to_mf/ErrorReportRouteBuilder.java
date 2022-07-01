@@ -91,7 +91,6 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.process(this::prepareJsonErrorRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error");
 

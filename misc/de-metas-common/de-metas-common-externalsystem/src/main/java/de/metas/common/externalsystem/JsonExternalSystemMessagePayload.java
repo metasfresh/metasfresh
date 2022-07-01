@@ -22,27 +22,18 @@
 
 package de.metas.common.externalsystem;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
 import lombok.Value;
 
 @Value
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = JsonExternalSystemMessagePayload.JsonExternalSystemMessagePayloadBuilder.class)
 public class JsonExternalSystemMessagePayload
 {
-	@JsonValue
+	@JsonProperty("authToken")
 	String authToken;
-
-	public static JsonExternalSystemMessagePayload of(final String authToken)
-	{
-		return new JsonExternalSystemMessagePayload(authToken);
-	}
-
-	@JsonCreator
-	public JsonExternalSystemMessagePayload(
-			@NonNull final String authToken
-	)
-	{
-		this.authToken = authToken;
-	}
 }

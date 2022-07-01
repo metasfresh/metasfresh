@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.externalsystems.common.CamelRoutesGroupEnum;
 import de.metas.camel.externalsystems.common.ErrorBuilderHelper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
@@ -132,7 +133,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.post()
 				.route()
 				.routeId(REST_API_ROUTE_ID)
-				.group(ExternalSystemCamelConstants.START_ON_DEMAND_GROUP)
+				.group(CamelRoutesGroupEnum.START_ON_DEMAND.getCode())
 				.doTry()
 					.process(this::restAPIProcessor)
 					.process(this::prepareSuccessResponse)

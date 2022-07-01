@@ -22,9 +22,9 @@
 
 package de.metas.camel.externalsystems.core;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_ES_TO_MF_AUTH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_ES_TO_MF_CUSTOM;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_AUTH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_CUSTOM;
 
 public interface CoreConstants
 {
@@ -50,17 +50,17 @@ public interface CoreConstants
 			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
 			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
 
-	String CUSTOM_TO_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_ES_TO_MF_AUTH
+	String CUSTOM_TO_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_ES_TO_MF_CUSTOM
 			+ "?durable=true"
 			+ "&autoDelete=false"
 			+ "&autoAck=false"
-			+ "&routingKey=" + QUEUE_NAME_ES_TO_MF_AUTH
-			+ "&queue=" + QUEUE_NAME_ES_TO_MF_AUTH;
+			+ "&routingKey=" + QUEUE_NAME_ES_TO_MF_CUSTOM
+			+ "&queue=" + QUEUE_NAME_ES_TO_MF_CUSTOM;
 
-	String CUSTOM_FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES_AUTH
+	String CUSTOM_FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES_CUSTOM
 			+ "?durable=true"
 			+ "&autoDelete=false"
 			+ "&autoAck=false"
-			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES_AUTH
-			+ "&queue=" + QUEUE_NAME_MF_TO_ES_AUTH;
+			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES_CUSTOM
+			+ "&queue=" + QUEUE_NAME_MF_TO_ES_CUSTOM;
 }

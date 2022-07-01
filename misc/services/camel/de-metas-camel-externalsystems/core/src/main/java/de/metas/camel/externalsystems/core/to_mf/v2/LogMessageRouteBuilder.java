@@ -54,7 +54,6 @@ public class LogMessageRouteBuilder extends RouteBuilder
 				.process(this::prepareRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), CreatePInstanceLogRequest.class))
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/message");
 		//@formatter:on

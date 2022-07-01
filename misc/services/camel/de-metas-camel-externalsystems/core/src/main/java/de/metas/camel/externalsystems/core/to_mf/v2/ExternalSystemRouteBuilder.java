@@ -64,7 +64,6 @@ public class ExternalSystemRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonESRuntimeParameterUpsertRequest.class))
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.externalsystem.v2.api.uri}}/runtimeParameter/bulk")
 
@@ -76,7 +75,6 @@ public class ExternalSystemRouteBuilder extends RouteBuilder
 				.log("Route invoked!")
 				.process(this::processInvokeRequest)
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/invoke/${header." + HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE + "}/${header." + HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE + "}/${header." + HEADER_EXTERNAL_SYSTEM_REQUEST + "}")
 
@@ -88,7 +86,6 @@ public class ExternalSystemRouteBuilder extends RouteBuilder
 				.log("Route invoked!")
 				.process(this::processRetrieveInfoRequest)
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/${header." + HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE + "}/${header." + HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE + "}/info")
 

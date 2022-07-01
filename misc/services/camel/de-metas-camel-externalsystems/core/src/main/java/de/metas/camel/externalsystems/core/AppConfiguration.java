@@ -23,7 +23,8 @@
 package de.metas.camel.externalsystems.core;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.core.authorizationmf.MetasfreshAuthorizationTokenNotifier;
+import de.metas.camel.externalsystems.core.authorization.MetasfreshAuthorizationTokenNotifier;
+import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.spring.boot.CamelContextConfiguration;
@@ -33,8 +34,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 
-import static de.metas.camel.externalsystems.core.authorizationmf.FromMFAuthorizationRouteBuilder.CUSTOM_FROM_MF_ROUTE_ID;
-import static de.metas.camel.externalsystems.core.authorizationmf.ToMFAuthorizationRouteBuilder.CUSTOM_TO_MF_ROUTE_ID;
+import static de.metas.camel.externalsystems.core.authorization.CustomMessageToMFRouteBuilder.CUSTOM_TO_MF_ROUTE_ID;
 
 @Configuration
 public class AppConfiguration
@@ -67,10 +67,18 @@ public class AppConfiguration
 	@PostConstruct
 	public void authorizationTokenNotifier()
 	{
+		final String baseUrlPropertyValue = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+
 		final String defaultAuthToken = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_AUTHORIZATION_TOKEN_PROPERTY);
-		// note that calling producerTemp8late() here does *not* mean wh create an additional instance. See https://docs.spring.io/spring-framework/docs/current/reference/html/core.html#beans for details
+		final MetasfreshAuthProvider metasfreshAuthProvider = context.getBean(MetasfreshAuthProvider.class);
+		metasfreshAuthProvider.setPropertiesAuthToken(defaultAuthToken);
+
+		final CustomRouteController customRouteController = context.getBean(CustomRouteController.class);
+
+		final ProducerTemplate producerTemplate = context.getBean(ProducerTemplate.class);
+
 		camelContext.getManagementStrategy()
-				.addEventNotifier(new MetasfreshAuthorizationTokenNotifier(context, producerTemplate(), defaultAuthToken));
+				.addEventNotifier(new MetasfreshAuthorizationTokenNotifier(metasfreshAuthProvider, baseUrlPropertyValue, customRouteController, producerTemplate));
 	}
 
 	@Bean
@@ -89,14 +97,10 @@ public class AppConfiguration
 			{
 				try
 				{
-					camelContext.getRouteController().startRoute(CUSTOM_TO_MF_ROUTE_ID);
-					camelContext.getRouteController().startRoute(CUSTOM_FROM_MF_ROUTE_ID);
+					context.getBean(CustomRouteController.class).startAuthRoutes(camelContext.getRouteController());
 
 					context.getBean(ProducerTemplate.class)
 							.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "trigger external system authentication for metasfresh!");
-
-					// context.getBean(ProducerTemplate.class)
-					// 		.sendBody("direct:" + HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID, "trigger rest api handler!");
 				}
 				catch (final Exception e)
 				{

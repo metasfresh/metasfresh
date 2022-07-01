@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.authorizationmf.provider;
+package de.metas.externalsystem.rabbitmq.custom;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.stereotype.Component;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.Nullable;
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_ES_TO_MF_CUSTOM;
 
-@Component
-@Getter
-@Setter
-public class MetasfreshAuthProvider
+@Configuration
+@EnableRabbit
+public class CustomExternalSystemToMFQueueConfig
 {
-	@Nullable String authToken;
+	@Bean(name = QUEUE_NAME_ES_TO_MF_CUSTOM)
+	public Queue externalSystemToMFQueue()
+	{
+		return new Queue(QUEUE_NAME_ES_TO_MF_CUSTOM);
+	}
 }

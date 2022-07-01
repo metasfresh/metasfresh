@@ -34,16 +34,16 @@ import javax.annotation.Nullable;
 public class JsonExternalSystemMessage
 {
 	@JsonProperty("type")
-	String type;
+	JsonExternalSystemMessageTypeEnum type;
 
 	@JsonProperty("payload")
-	JsonExternalSystemMessagePayload payload;
+	String payload;
 
 	@Builder
 	@JsonCreator
 	public JsonExternalSystemMessage(
-			@NonNull @JsonProperty("type") final String type,
-			@Nullable @JsonProperty("payload") final JsonExternalSystemMessagePayload payload
+			@NonNull @JsonProperty("type") final JsonExternalSystemMessageTypeEnum type,
+			@Nullable @JsonProperty("payload") final String payload
 	)
 	{
 		this.type = type;

@@ -20,22 +20,22 @@
  * #L%
  */
 
-package de.metas.externalsystem.rabbitmq.authorization;
+package de.metas.externalsystem.rabbitmq.custom;
 
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_ES_TO_MF_AUTH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES_CUSTOM;
 
 @Configuration
 @EnableRabbit
-public class CustomExternalSystemToMFQueueConfig
+public class CustomMFToExternalSystemQueueConfig
 {
-	@Bean(name = QUEUE_NAME_ES_TO_MF_AUTH)
-	public Queue metasfreshToAuthProcurementWebQueue()
+	@Bean(name = QUEUE_NAME_MF_TO_ES_CUSTOM)
+	public Queue externalSystemToMFQueue()
 	{
-		return new Queue(QUEUE_NAME_ES_TO_MF_AUTH);
+		return new Queue(QUEUE_NAME_MF_TO_ES_CUSTOM);
 	}
 }

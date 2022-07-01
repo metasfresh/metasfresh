@@ -57,7 +57,6 @@ public class ExternalStatusRouteBuilder extends RouteBuilder
 				.process(this::processCreateRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonStatusRequest.class))
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/service/${header." + HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE + "}/${header." + HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE + "}/${header." + HEADER_EXTERNAL_SERVICE_VALUE + "}/status");
 
@@ -68,7 +67,6 @@ public class ExternalStatusRouteBuilder extends RouteBuilder
 				.log("Route invoked!")
 				.process(this::processRetrieveRequest)
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/service/${header." + HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE + "}/status")
 

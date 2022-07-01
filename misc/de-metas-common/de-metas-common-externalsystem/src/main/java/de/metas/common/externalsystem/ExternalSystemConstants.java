@@ -71,9 +71,9 @@ public class ExternalSystemConstants
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
-	public static final String QUEUE_NAME_ES_TO_MF_AUTH = "Custom_ExternalSystem_To_Metasfresh";
+	public static final String QUEUE_NAME_ES_TO_MF_CUSTOM = "Custom_ExternalSystem_To_Metasfresh";
 
-	public static final String QUEUE_NAME_MF_TO_ES_AUTH = "Custom_Metasfresh_To_ExternalSystem";
+	public static final String QUEUE_NAME_MF_TO_ES_CUSTOM = "Custom_Metasfresh_To_ExternalSystem";
 
 
 	public static final String PARAM_APP_ID = "AppId";
@@ -107,6 +107,5 @@ public class ExternalSystemConstants
 
 	public static final String API_REQUEST_AUDIT_TABLE_NAME = "API_Request_Audit";
 
-	public static final String TO_MF_AUTHORIZATION_REQUEST_MESSAGE_TYPE = "RequestAuthorization";
-	public static final String FROM_MF_AUTHORIZATION_REPLY_MESSAGE_TYPE = "AuthorizationReply";
+	public static final String API_SETUP_USER_GROUP_NAME = "API-Setup";
 }

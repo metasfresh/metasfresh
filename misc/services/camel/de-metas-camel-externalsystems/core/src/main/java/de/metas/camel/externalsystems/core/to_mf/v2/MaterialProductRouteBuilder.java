@@ -50,7 +50,6 @@ public class MaterialProductRouteBuilder extends RouteBuilder
 				.log("Route invoked!")
 				.process(this::validateAndAttachHeaders)
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{metasfresh.material-products-v2.api-uri}}/${header.orgCode}/${header.productIdentifier}")
 

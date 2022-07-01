@@ -1,23 +1,21 @@
 package de.metas.user;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.Instant;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
+import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_UserGroup;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Range;
+import java.time.Instant;
+import java.util.Set;
 
-import de.metas.cache.CCache;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -90,6 +88,16 @@ public class UserGroupRepository
 				.collect(ImmutableSet.toImmutableSet());
 
 		return UserGroupsCollection.of(assignments);
+	}
+
+	public UserGroup getUserGroupByName(final String groupName)
+	{
+		final I_AD_UserGroup userGroupRecord = queryBL.createQueryBuilder(I_AD_UserGroup.class)
+				.addEqualsFilter(I_AD_UserGroup.COLUMNNAME_Name, groupName)
+				.create()
+				.firstOnlyNotNull(I_AD_UserGroup.class);
+
+		return toUserGroup(userGroupRecord);
 	}
 
 	@NonNull

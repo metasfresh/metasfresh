@@ -22,37 +22,53 @@
 
 package de.metas.externalsystem.externalservice.authorization;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
 import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
-import de.metas.externalsystem.rabbitmq.authorization.CustomMFToExternalSystemMessageSender;
+import de.metas.common.externalsystem.JsonExternalSystemMessageTypeEnum;
+import de.metas.externalsystem.rabbitmq.custom.CustomMFToExternalSystemMessageSender;
+import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
+import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
+import de.metas.user.UserGroup;
+import de.metas.user.UserGroupRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ExternalSystemAuthorizationService
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
+	private final ObjectMapper objectMapper;
 	private final UserAuthTokenRepository authTokenRepository;
-	private final CustomMFToExternalSystemMessageSender fromMFMessageSender;
+	private final CustomMFToExternalSystemMessageSender customMessageSender;
+	private final UserGroupRepository userGroupRepository;
 
-	private static final String SYS_CONFIG_EXTERNAL_SYSTEM_AUTH_TOKEN = "EXTERNAL_SYSTEM_AUTHORIZATION_TOKEN";
+	private static final String SYS_CONFIG_EXTERNAL_SYSTEM_AUTH_TOKEN = "de.metas.externalsystem.externalservice.authorization.authToken";
+
+	private static final String EXTERNAL_SYSTEM_AUTH_NOTIFICATION_SUBJECT = "External_Systems_Authorization_Subject";
+	private static final String EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_VERIFICATION = "ExternalSystem_Authorization_Verification_Error";
+	private static final String EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_SYSCONFIG_NOT_FOUND = "External_Systems_Authorization_SysConfig_Not_Found_Error";
 
 	public ExternalSystemAuthorizationService(
+			@NonNull final ObjectMapper objectMapper,
 			@NonNull final UserAuthTokenRepository authTokenRepository,
-			@NonNull final CustomMFToExternalSystemMessageSender fromMFMessageSender
+			@NonNull final CustomMFToExternalSystemMessageSender customMessageSender,
+			@NonNull final UserGroupRepository userGroupRepository
 	)
 	{
+		this.objectMapper = objectMapper;
 		this.authTokenRepository = authTokenRepository;
-		this.fromMFMessageSender = fromMFMessageSender;
+		this.customMessageSender = customMessageSender;
+		this.userGroupRepository = userGroupRepository;
 	}
 
 	public void postAuthorizationReply()
@@ -65,23 +81,39 @@ public class ExternalSystemAuthorizationService
 			{
 				final UserAuthToken authToken = authTokenRepository.getByToken(token);
 
+				final JsonExternalSystemMessagePayload payload = JsonExternalSystemMessagePayload.builder()
+						.authToken(authToken.getAuthToken())
+						.build();
+
 				final JsonExternalSystemMessage message = JsonExternalSystemMessage.builder()
-						.type(ExternalSystemConstants.FROM_MF_AUTHORIZATION_REPLY_MESSAGE_TYPE)
-						.payload(JsonExternalSystemMessagePayload.of(authToken.getAuthToken()))
+						.type(JsonExternalSystemMessageTypeEnum.AUTHORIZATION_REPLY)
+						.payload(objectMapper.writeValueAsString(payload))
 						.build();
 
-				fromMFMessageSender.send(message);
-			} catch (Exception e)
+				customMessageSender.send(message);
+			} catch (final Exception e)
 			{
-				final UserNotificationRequest request = UserNotificationRequest.builder()
-						.recipientUserId(Env.getLoggedUserId())
-						.subjectPlain("Metasfresh Authorization Token for External Systems")
-						.contentPlain("The authorization token could not be verified by metasfresh using sysconfig. This is the error that was thrown : " + e.getMessage() + " .")
-						.noEmail(false)
-						.build();
-				Services.get(INotificationBL.class).send(request);
+				sendErrorNotification(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_SUBJECT, EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_VERIFICATION);
 			}
+		} else {
+			sendErrorNotification(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_SUBJECT, EXTERNAL_SYSTEM_AUTH_NOTIFICATION_CONTENT_SYSCONFIG_NOT_FOUND);
 		}
+	}
 
+	private void sendErrorNotification(final String subjectKey, final String contentKey)
+	{
+		final AdMessageKey notificationSubject = AdMessageKey.of(subjectKey);
+		final AdMessageKey notificationContent = AdMessageKey.of(contentKey);
+
+		final UserGroup userGroup = userGroupRepository.getUserGroupByName(ExternalSystemConstants.API_SETUP_USER_GROUP_NAME);
+
+		final Recipient recipient = Recipient.group(userGroup.getId());
+
+		final UserNotificationRequest verificationFailureNotification = UserNotificationRequest.builder()
+				.recipient(recipient)
+				.subjectADMessage(notificationSubject)
+				.contentADMessage(notificationContent)
+				.build();
+		notificationBL.send(verificationFailureNotification);
 	}
 }

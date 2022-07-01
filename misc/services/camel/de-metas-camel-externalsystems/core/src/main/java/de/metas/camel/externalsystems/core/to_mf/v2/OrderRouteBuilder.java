@@ -59,7 +59,6 @@ public class OrderRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonOrderPaymentCreateRequest.class))
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{metasfresh.salesorder.v2.api.uri}}/payment")
 
@@ -71,7 +70,6 @@ public class OrderRouteBuilder extends RouteBuilder
 				.log("Route invoked!")
 				.process(this::validateAndAttachHeaders)
 				.removeHeaders("CamelHttp*")
-				// .setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{metasfresh.pp-order-v2.api.uri}}/${header.PP_ORDER_ID}")
 
