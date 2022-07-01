@@ -12,11 +12,14 @@
         "lastName": "lastName",
         "customerNumber": "customerNumber",
         "email": "orderCustomerEmail@example.com",
+        "vatIds": [
+          "vatId12"
+        ],
         "customFields": {
           "externalReference": "customerId",
           "customUserId": "userId1"
-          }
-        },
+        }
+      },
       "currencyId": "currencyId",
       "orderNumber": "poReference",
       "orderDate": "2021-01-12T00:00:00.000+00:00",
@@ -40,7 +43,6 @@
         "customFields": {
           "externalReference": "customerId"
         }
-
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
       "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",

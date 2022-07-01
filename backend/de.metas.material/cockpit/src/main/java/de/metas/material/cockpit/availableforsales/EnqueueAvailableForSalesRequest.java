@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,9 +20,19 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.material.cockpit.availableforsales;
 
-public interface Shopware6QueryRequest
+import lombok.NonNull;
+import lombok.Value;
+
+import java.util.Properties;
+
+@Value(staticConstructor = "of")
+public class EnqueueAvailableForSalesRequest
 {
-	Boolean getIsQueryByDate();
+	@NonNull
+	AvailableForSalesQuery availableForSalesQuery;
+
+	@NonNull
+	Properties ctx;
 }

@@ -24,6 +24,7 @@ package de.metas.externalreference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
@@ -95,6 +96,8 @@ public class ExternalReferenceRepository
 	{
 		final I_S_ExternalReference record = InterfaceWrapperHelper.loadOrNew(externalReference.getExternalReferenceId(), I_S_ExternalReference.class);
 
+		final ExternalSystemParentConfigId externalSystemConfigId = (ExternalSystemParentConfigId)externalReference.getExternalSystemParentConfigId(ExternalSystemParentConfigId::ofRepoIdOrNull);
+
 		record.setAD_Org_ID(externalReference.getOrgId().getRepoId());
 		record.setExternalReference(externalReference.getExternalReference());
 		record.setExternalSystem(externalReference.getExternalSystem().getCode());
@@ -102,6 +105,7 @@ public class ExternalReferenceRepository
 		record.setRecord_ID(externalReference.getRecordId());
 		record.setVersion(externalReference.getVersion());
 		record.setExternalReferenceURL(externalReference.getExternalReferenceUrl());
+		record.setExternalSystem_Config_ID(ExternalSystemParentConfigId.toRepoId(externalSystemConfigId));
 
 		InterfaceWrapperHelper.saveRecord(record);
 
@@ -266,6 +270,7 @@ public class ExternalReferenceRepository
 				.recordId(record.getRecord_ID())
 				.version(record.getVersion())
 				.externalReferenceUrl(record.getExternalReferenceURL())
+				.externalSystemParentConfigId(record.getExternalSystem_Config_ID() > 0 ? record.getExternalSystem_Config_ID() : null)
 				.build();
 	}
 

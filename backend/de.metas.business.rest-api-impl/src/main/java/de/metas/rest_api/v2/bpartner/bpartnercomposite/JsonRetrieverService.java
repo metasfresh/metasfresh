@@ -570,6 +570,17 @@ public class JsonRetrieverService
 		else if (ExternalIdentifier.Type.METASFRESH_ID.equals(bpartnerIdentifier.getType()))
 		{
 			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofMetasfreshId(orgId, bpartnerIdentifier.asMetasfreshId());
+			final Optional<BPartnerComposite> bPartnerComposite = getBPartnerComposite(bpartnerIdLookupKey);
+
+			if (!bPartnerComposite.isPresent())
+			{
+				throw new InvalidIdentifierException("Given metasfreshId is not mapped to any BPartner!")
+						.appendParametersToMessage()
+						.setParameter("externalIdentifierType", bpartnerIdentifier.getType())
+						.setParameter("rawExternalIdentifier", bpartnerIdentifier.getRawValue());
+			}
+
+			return bPartnerComposite;
 		}
 		else
 		{
@@ -625,6 +636,7 @@ public class JsonRetrieverService
 				return bpartnersRepo.retrieveBPartnerIdBy(glnQuery);
 			default:
 				throw new InvalidIdentifierException("Given external identifier type is not supported!")
+						.appendParametersToMessage()
 						.setParameter("externalIdentifierType", bPartnerExternalIdentifier.getType())
 						.setParameter("rawExternalIdentifier", bPartnerExternalIdentifier.getRawValue());
 		}

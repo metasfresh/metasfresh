@@ -119,6 +119,7 @@ public class AFSProductLookupEnricher
 		final AvailableForSalesMultiQuery.AvailableForSalesMultiQueryBuilder result = AvailableForSalesMultiQuery.builder();
 
 		final AvailableForSalesQuery.AvailableForSalesQueryBuilder queryBuilder = AvailableForSalesQuery.builder()
+				.orgId(orgId)
 				.productId(productId)
 				.dateOfInterest(dateOfInterest)
 				.salesOrderLookBehindHours(salesOrderLookBehindHours)

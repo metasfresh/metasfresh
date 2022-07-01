@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
@@ -30,26 +29,19 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
 @JsonDeserialize(builder = MultiQueryRequest.MultiQueryRequestBuilder.class)
-public class MultiQueryRequest implements Shopware6QueryRequest
+public class MultiQueryRequest
 {
 	@NonNull
 	@JsonProperty("filter")
-	List<MultiJsonFilter> filterList;
-
-	@JsonIgnore
-	Boolean isQueryByDate;
+	List<JsonQuery> filterList;
 
 	@Builder
-	public MultiQueryRequest(
-			@NonNull @Singular @JsonProperty("filter") final List<MultiJsonFilter> filters,
-			@Nullable final Boolean isQueryByDate)
+	public MultiQueryRequest(@NonNull @Singular @JsonProperty("filter") final List<JsonQuery> filters)
 	{
 		this.filterList = filters;
-		this.isQueryByDate = isQueryByDate;
 	}
 }

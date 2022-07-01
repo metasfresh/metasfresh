@@ -45,6 +45,7 @@ import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
+import de.metas.common.externalsystem.JsonAvailableStock;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -66,6 +67,7 @@ import java.util.stream.Stream;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_AVAILABLE_STOCK;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
@@ -205,6 +207,39 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 				assertThat(jsonExternalSystemRequest).isNotNull();
 			}
+
+			final String expectedJsonAvailableStockParam = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + PARAM_JSON_AVAILABLE_STOCK);
+
+			if (Check.isNotBlank(expectedJsonAvailableStockParam))
+			{
+				final JsonAvailableStock expectedStock = objectMapper.readValue(expectedJsonAvailableStockParam, JsonAvailableStock.class);
+
+				final StringBuilder context = new StringBuilder();
+
+				final JsonAvailableStock actualStock = requests.stream()
+						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+						.map(req -> req.getParameters().get(ExternalSystemConstants.PARAM_JSON_AVAILABLE_STOCK))
+						.filter(Objects::nonNull)
+						.map(this::readJsonAvailableStock)
+						.peek(availStock -> {
+							try
+							{
+								context
+										.append("Received: [")
+										.append(objectMapper.writeValueAsString(availStock))
+										.append("]\n");
+							}
+							catch (final JsonProcessingException e)
+							{
+								throw new RuntimeException(e);
+							}
+						})
+						.filter(jsonAvailableStock -> matchStockAndExternalReference(expectedStock, jsonAvailableStock))
+						.findFirst()
+						.orElse(null);
+
+				assertThat(actualStock).as(context.toString()).isNotNull();
+			}
 		}
 	}
 
@@ -273,5 +308,29 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 					.appendParametersToMessage()
 					.setParameter("jsonExternalReferenceLookupRequest", jsonExternalReferenceLookupRequest);
 		}
+	}
+
+	@NonNull
+	private JsonAvailableStock readJsonAvailableStock(@NonNull final String jsonAvailableStock)
+	{
+		try
+		{
+			return objectMapper.readValue(jsonAvailableStock, JsonAvailableStock.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("jsonAvailableStock", jsonAvailableStock);
+		}
+	}
+
+	private boolean matchStockAndExternalReference(
+			@NonNull final JsonAvailableStock expectedAvailableStock,
+			@NonNull final JsonAvailableStock actualAvailableStock)
+	{
+		return expectedAvailableStock.getStock().equals(actualAvailableStock.getStock()) &&
+				expectedAvailableStock.getProductIdentifier().getExternalReference()
+						.equals(actualAvailableStock.getProductIdentifier().getExternalReference());
 	}
 }

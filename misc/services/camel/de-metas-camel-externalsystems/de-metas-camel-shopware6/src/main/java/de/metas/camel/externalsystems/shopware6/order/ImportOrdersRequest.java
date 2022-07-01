@@ -22,7 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.order;
 
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,7 +32,7 @@ import lombok.Value;
 public class ImportOrdersRequest
 {
 	@NonNull
-	Shopware6QueryRequest shopware6QueryRequest;
+	MultiQueryRequest shopware6QueryRequest;
 
 	boolean ignoreNextImportTimestamp;
 }

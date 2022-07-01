@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,8 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.material.cockpit.availableforsales;
 
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,17 +33,14 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class OrderAddressDetails
+public class RetrieveAvailableForSalesQuery
 {
 	@NonNull
-	JsonOrderAddress jsonOrderAddress;
+	ProductId productId;
 
 	@Nullable
-	String customShopwareId;
+	AttributesKeyPattern storageAttributesKeyPattern;
 
 	@Nullable
-	String customMetasfreshId;
-	
-	@Nullable
-	String customEmail;
+	OrgId orgId;
 }
