@@ -4,6 +4,8 @@
   "command": "getOrders",
   "adPInstanceId": 2,
   "externalSystemConfigId": 1,
+  "traceId": "traceId",
+  "externalSystemChildConfigValue": "ChildConfigValue",
   "parameters": {
     "OrderId": "testOrderId",
     "UpdatedAfterOverride": "2000-08-09T13:35:17Z",

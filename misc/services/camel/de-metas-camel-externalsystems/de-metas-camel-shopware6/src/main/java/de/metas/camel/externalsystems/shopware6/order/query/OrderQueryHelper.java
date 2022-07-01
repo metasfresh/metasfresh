@@ -67,6 +67,7 @@ public class OrderQueryHelper
 		{
 			return MultiQueryRequest.builder()
 					.filter(JsonQuery.builder()
+									.queryType(QueryType.MULTI)
 									.operatorType(OperatorType.AND)
 									.jsonQueries(queries)
 									.build())
