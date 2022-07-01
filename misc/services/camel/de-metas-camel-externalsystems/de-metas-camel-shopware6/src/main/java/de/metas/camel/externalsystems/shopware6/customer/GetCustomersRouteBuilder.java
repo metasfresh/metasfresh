@@ -83,10 +83,6 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(this::prepareContext).id(PREPARE_CONTEXT_PROCESSOR_ID)
 				.to(direct(PROCESS_CUSTOMER_PAGE_ROUTE_ID))
-				.process(new GetCustomersPageProcessor()).id(GET_CUSTOMERS_ROUTE_ID)
-				.split(body())
-
-				.end()
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.process((exchange) -> processLogger.logMessage("Shopware6:GetCustomers process ended!" + Instant.now(),
 																exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
@@ -97,7 +93,7 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 								.end()
 				.process(new GetCustomersPageProcessor()).id(GET_CUSTOMERS_PAGE_PROCESSOR_ID)
 				.split(body())
-
+					.to(direct(PROCESS_CUSTOMER_ROUTE_ID))
 				.end()
 				.choice()
 				.when(areMoreCustomersLeftToBeRetrieved())
