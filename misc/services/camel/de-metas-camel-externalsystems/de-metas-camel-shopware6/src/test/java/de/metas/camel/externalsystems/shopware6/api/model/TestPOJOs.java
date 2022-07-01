@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +72,9 @@ class TestPOJOs
 																		+ "        }\n"
 																		+ "      ]\n"
 																		+ "    }\n"
-																		+ "  ]\n"
+																		+ "  ],\n"
+																		+ "  \"limit\": 1,\n"
+																		+ "  \"page\": 1\n"
 																		+ "}");
 	}
 

@@ -17,7 +17,8 @@
         ],
         "customFields": {
           "externalReference": "customerId",
-          "customUserId": "userId1"
+          "customUserId": "userId1",
+          "customSalesRepId": "mockSalesRepIdentifier"
         }
       },
       "currencyId": "currencyId",
@@ -41,7 +42,8 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
-          "externalReference": "customerId"
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
         }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
@@ -65,7 +67,8 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
-          "externalReference": "customerId"
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
         }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
@@ -89,7 +92,8 @@
         "customerNumber": "willNotBeImportedDueToStateMachineState",
         "email": "orderCustomerEmail@example.com",
         "customFields": {
-          "externalReference": "customerId"
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
         }
       },
       "currencyId": "willNotBeImportedDueToStateMachineState",
