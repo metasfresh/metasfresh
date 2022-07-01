@@ -25,9 +25,10 @@ package de.metas.camel.externalsystems.shopware6.customer;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.customer.processor.CreateCustomerUpsertReqProcessor;
-import de.metas.camel.externalsystems.shopware6.customer.processor.GetCustomersProcessor;
+import de.metas.camel.externalsystems.shopware6.customer.processor.GetCustomersPageProcessor;
 import de.metas.camel.externalsystems.shopware6.customer.processor.RuntimeParametersProcessor;
 import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -36,6 +37,7 @@ import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +56,8 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 {
 	public static final String GET_CUSTOMERS_ROUTE_ID = "Shopware6-getCustomers";
 	public static final String PROCESS_CUSTOMER_ROUTE_ID = "Shopware6-processCustomer";
+	public static final String PROCESS_CUSTOMER_PAGE_ROUTE_ID = "Shopware6-processCustomerPage";
+	public static final String GET_CUSTOMERS_PAGE_PROCESSOR_ID = "Shopware6-GetCustomersPageProcessorId";
 	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Shopware6-upsertRuntimeParamsCustomers";
 
 	public static final String PREPARE_CONTEXT_PROCESSOR_ID = "Shopware6-prepareContextProcessorId";
@@ -78,13 +82,29 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 				.log("Route invoked")
 				.streamCaching()
 				.process(this::prepareContext).id(PREPARE_CONTEXT_PROCESSOR_ID)
-				.process(new GetCustomersProcessor()).id(GET_CUSTOMERS_ROUTE_ID)
+				.to(direct(PROCESS_CUSTOMER_PAGE_ROUTE_ID))
+				.process(new GetCustomersPageProcessor()).id(GET_CUSTOMERS_ROUTE_ID)
 				.split(body())
-					.to(direct(PROCESS_CUSTOMER_ROUTE_ID))
+
 				.end()
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.process((exchange) -> processLogger.logMessage("Shopware6:GetCustomers process ended!" + Instant.now(),
 																exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
+
+		from (direct(PROCESS_CUSTOMER_PAGE_ROUTE_ID))
+				.routeId(PROCESS_CUSTOMER_PAGE_ROUTE_ID)
+						.log("Route invoked")
+								.end()
+				.process(new GetCustomersPageProcessor()).id(GET_CUSTOMERS_PAGE_PROCESSOR_ID)
+				.split(body())
+
+				.end()
+				.choice()
+				.when(areMoreCustomersLeftToBeRetrieved())
+				.to(direct(PROCESS_CUSTOMER_PAGE_ROUTE_ID))
+				.otherwise()
+				.log(LoggingLevel.INFO, "Nothing to do! No additional orders to retrieve!")
+				.end();
 
 		from(direct(PROCESS_CUSTOMER_ROUTE_ID))
 				.routeId(PROCESS_CUSTOMER_ROUTE_ID)
@@ -153,6 +173,8 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 				.updatedAfter(updatedAfter)
 				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 				.skipNextImportTimestamp(skipNextImportTimestamp)
+				.responsePageIndex(1)
+				.pageLimit(ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE)
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, customersRouteContext);
@@ -162,5 +184,13 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 	{
 		final ImportCustomersRouteContext routeContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, ImportCustomersRouteContext.class);
 		routeContext.recomputeOldestFailingCustomer(routeContext.getCustomerUpdatedAt());
+	}
+
+	private Predicate areMoreCustomersLeftToBeRetrieved()
+	{
+		return (exchange) -> {
+			final ImportCustomersRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, ImportCustomersRouteContext.class);
+			return routeContext.isMoreCustomersAvailable();
+		};
 	}
 }

@@ -122,7 +122,7 @@ class TestPOJOs
 	@Test
 	void multiQueryRequest_getCustomers() throws JsonProcessingException
 	{
-		final MultiQueryRequest multiQueryRequest = buildShopware6GetCustomersQueryRequest("2020-10-26T06:32:45Z");
+		final MultiQueryRequest multiQueryRequest = buildShopware6GetCustomersQueryRequest("2020-10-26T06:32:45Z", PageAndLimit.of(1,100));
 		final String json = objectMapper.writeValueAsString(multiQueryRequest);
 
 		Assertions.assertThat(json)

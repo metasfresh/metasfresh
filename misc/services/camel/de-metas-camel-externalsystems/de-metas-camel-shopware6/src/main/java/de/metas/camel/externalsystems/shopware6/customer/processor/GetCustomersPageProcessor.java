@@ -26,6 +26,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryHelper;
 import de.metas.camel.externalsystems.shopware6.api.model.order.Customer;
 import de.metas.camel.externalsystems.shopware6.customer.ImportCustomersRouteContext;
+import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
@@ -34,14 +35,15 @@ import java.util.List;
 import static de.metas.camel.externalsystems.common.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT;
 
-public class GetCustomersProcessor implements Processor
+public class GetCustomersPageProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
 		final ImportCustomersRouteContext routeContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, ImportCustomersRouteContext.class);
 
-		final MultiQueryRequest getCustomerQueryRequest = QueryHelper.buildShopware6GetCustomersQueryRequest(routeContext.getUpdatedAfter());
+		final PageAndLimit pageAndLimitValues = PageAndLimit.of(routeContext.getResponsePageIndex(), routeContext.getPageLimit());
+		final MultiQueryRequest getCustomerQueryRequest = QueryHelper.buildShopware6GetCustomersQueryRequest(routeContext.getUpdatedAfter(),pageAndLimitValues);
 
 		final List<Customer> customerCandidateList = routeContext.getShopwareClient().getCustomerCandidates(getCustomerQueryRequest);
 

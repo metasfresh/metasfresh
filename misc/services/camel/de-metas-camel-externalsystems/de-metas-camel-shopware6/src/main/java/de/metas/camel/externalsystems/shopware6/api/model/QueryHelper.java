@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
+import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -120,10 +120,12 @@ public class QueryHelper
 	}
 
 	@NonNull
-	public static MultiQueryRequest buildShopware6GetCustomersQueryRequest(@NonNull final String updatedAfter)
+	public static MultiQueryRequest buildShopware6GetCustomersQueryRequest(@NonNull final String updatedAfter, final PageAndLimit pageAndLimitValues)
 	{
 		return MultiQueryRequest.builder()
 				.filter(buildUpdatedAfterJsonQueries(updatedAfter))
+				.page(pageAndLimitValues.getPageIndex())
+				.limit(pageAndLimitValues.getLimit())
 				.build();
 	}
 
