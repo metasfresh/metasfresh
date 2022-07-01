@@ -58,6 +58,7 @@ import de.metas.user.UserGroupId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -432,6 +433,7 @@ public class ExternalSystemConfigRepo
 				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
 				.shopwareIdJSONPath(config.getJSONPathShopwareID())
 				.syncStockToShopware6(config.isSyncStockToShopware6())
+				.percentageOfAvailableStockToSync(Percent.of(config.getPercentageOfAvailableStockToSync()))
 				.build();
 	}
 
