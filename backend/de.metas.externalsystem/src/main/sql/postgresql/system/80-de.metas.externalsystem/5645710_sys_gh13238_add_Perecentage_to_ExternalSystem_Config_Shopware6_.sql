@@ -198,3 +198,16 @@ UPDATE AD_Field SET DisplayLogic='@IsSyncStockToShopware6/N@=Y', IsDisplayed='Y'
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,700841,0,543838,545679,609686,'F',TO_TIMESTAMP('2022-07-01 14:26:26','YYYY-MM-DD HH24:MI:SS'),100,'Prozentsatz, der vom eigentlich verfügbaren Bestand abgezogen wird, bevor dieser an Shopware übertragen wird. Zum Beispiel werden mit 25% nur drei viertel des eigentlich verfügbaren Bestandes an den Shop gemeldet.','Y','N','N','Y','N','N','N',0,'PercentageOfAvailableStockToSync',30,0,0,TO_TIMESTAMP('2022-07-01 14:26:26','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- Column: ExternalSystem_Config_Shopware6.PercentageOfAvailableStockToSync
+-- 2022-07-01T12:32:26.502Z
+UPDATE AD_Column SET DefaultValue='0',Updated=TO_TIMESTAMP('2022-07-01 14:32:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583550
+;
+
+-- 2022-07-01T12:32:33.848Z
+INSERT INTO t_alter_column values('externalsystem_config_shopware6','PercentageOfAvailableStockToSync','NUMERIC',null,'0')
+;
+
+-- 2022-07-01T12:32:33.854Z
+UPDATE ExternalSystem_Config_Shopware6 SET PercentageOfAvailableStockToSync=0 WHERE PercentageOfAvailableStockToSync IS NULL
+;
+

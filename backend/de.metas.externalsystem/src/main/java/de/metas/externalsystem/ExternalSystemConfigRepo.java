@@ -433,7 +433,7 @@ public class ExternalSystemConfigRepo
 				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
 				.shopwareIdJSONPath(config.getJSONPathShopwareID())
 				.syncStockToShopware6(config.isSyncStockToShopware6())
-				.percentageOfAvailableStockToSync(Percent.of(config.getPercentageOfAvailableStockToSync()))
+				.percentageOfAvailableStockToSync(Percent.ofNullable(config.getPercentageOfAvailableStockToSync()))
 				.build();
 	}
 
