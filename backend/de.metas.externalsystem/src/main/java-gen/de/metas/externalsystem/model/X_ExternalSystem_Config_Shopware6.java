@@ -2,6 +2,7 @@
 package de.metas.externalsystem.model;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -12,7 +13,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1924972707L;
+	private static final long serialVersionUID = -611580115L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Shopware6 (final Properties ctx, final int ExternalSystem_Config_Shopware6_ID, @Nullable final String trxName)
@@ -41,7 +42,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getBaseURL()
+	public String getBaseURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_BaseURL);
 	}
@@ -53,7 +54,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getClient_Id()
+	public String getClient_Id() 
 	{
 		return get_ValueAsString(COLUMNNAME_Client_Id);
 	}
@@ -65,7 +66,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getClient_Secret()
+	public String getClient_Secret() 
 	{
 		return get_ValueAsString(COLUMNNAME_Client_Secret);
 	}
@@ -119,7 +120,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getExternalSystemValue()
+	public String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
 	}
@@ -131,7 +132,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getFreightCost_NormalVAT_Rates()
+	public String getFreightCost_NormalVAT_Rates() 
 	{
 		return get_ValueAsString(COLUMNNAME_FreightCost_NormalVAT_Rates);
 	}
@@ -143,7 +144,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getFreightCost_Reduced_VAT_Rates()
+	public String getFreightCost_Reduced_VAT_Rates() 
 	{
 		return get_ValueAsString(COLUMNNAME_FreightCost_Reduced_VAT_Rates);
 	}
@@ -167,7 +168,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getJSONPathConstantBPartnerLocationID()
+	public String getJSONPathConstantBPartnerLocationID() 
 	{
 		return get_ValueAsString(COLUMNNAME_JSONPathConstantBPartnerLocationID);
 	}
@@ -179,7 +180,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getJSONPathEmail()
+	public String getJSONPathEmail() 
 	{
 		return get_ValueAsString(COLUMNNAME_JSONPathEmail);
 	}
@@ -191,7 +192,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getJSONPathMetasfreshID()
+	public String getJSONPathMetasfreshID() 
 	{
 		return get_ValueAsString(COLUMNNAME_JSONPathMetasfreshID);
 	}
@@ -203,7 +204,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getJSONPathSalesRepID()
+	public String getJSONPathSalesRepID() 
 	{
 		return get_ValueAsString(COLUMNNAME_JSONPathSalesRepID);
 	}
@@ -215,7 +216,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getJSONPathShopwareID()
+	public String getJSONPathShopwareID() 
 	{
 		return get_ValueAsString(COLUMNNAME_JSONPathShopwareID);
 	}
@@ -265,6 +266,19 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 		return get_ValueAsInt(COLUMNNAME_M_PriceList_ID);
 	}
 
+	@Override
+	public void setPercentageOfAvailableStockToSync (final BigDecimal PercentageOfAvailableStockToSync)
+	{
+		set_Value (COLUMNNAME_PercentageOfAvailableStockToSync, PercentageOfAvailableStockToSync);
+	}
+
+	@Override
+	public BigDecimal getPercentageOfAvailableStockToSync() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PercentageOfAvailableStockToSync);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
 	/** 
 	 * ProductLookup AD_Reference_ID=541499
 	 * Reference name: _ProductLookup
@@ -281,7 +295,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public String getProductLookup()
+	public String getProductLookup() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductLookup);
 	}
