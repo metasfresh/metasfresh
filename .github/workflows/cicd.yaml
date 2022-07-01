@@ -165,6 +165,65 @@ jobs:
           docker push mazorn/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker logout
 
+  compatibility-images:
+    runs-on: ubuntu-latest
+    needs: [init, frontend, backend]
+    steps:
+      - uses: actions/checkout@v3
+      - name: build-api-compat
+        run: |
+          docker buildx build \
+          -f docker-builds/Dockerfile.backend.api.compat \
+          --cache-to type=inline \
+          --cache-from mazorn/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
+          -t mazorn/metas-api:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: build-app-compat
+        run: |
+          docker buildx build \
+          -f docker-builds/Dockerfile.backend.app.compat \
+          --cache-to type=inline \
+          --cache-from mazorn/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --build-arg VERSION=$(cat docker-builds/version.info)-${{ needs.init.outputs.tag-fixed }} \
+          -t mazorn/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
+          -t mazorn/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: build-mobile-compat
+        run: |
+          docker buildx build \
+          -f docker-builds/Dockerfile.mobile.compat \
+          --cache-to type=inline \
+          --cache-from mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          -t mazorn/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: build-frontend-compat
+        run: |
+          docker buildx build \
+          -f docker-builds/Dockerfile.frontend.compat \
+          --cache-to type=inline \
+          --cache-from mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          -t mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
+          -t mazorn/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
+      - name: push-images
+        run: |
+          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
+          docker push mazorn/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push mazorn/metas-api:${{ needs.init.outputs.tag-floating }}-compat
+          docker push mazorn/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push mazorn/metas-app:${{ needs.init.outputs.tag-floating }}-compat
+          docker push mazorn/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
+          docker push mazorn/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
+          docker logout
+
   junit:
     runs-on: ubuntu-latest
     needs: [init, java]
