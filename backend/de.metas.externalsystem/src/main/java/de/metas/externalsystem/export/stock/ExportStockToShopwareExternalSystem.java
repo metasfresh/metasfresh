@@ -232,7 +232,7 @@ public class ExportStockToShopwareExternalSystem
 
 		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(externalSystemParentConfig.getChildConfig());
 		
-		return shopware6Config.getPercentageOfAvailableStockToSync()
+		return shopware6Config.getPercentageToDeductFromAvailableStock()
 				.subtractFromBase(availableStock, availableStock.precision());
 	}
 
