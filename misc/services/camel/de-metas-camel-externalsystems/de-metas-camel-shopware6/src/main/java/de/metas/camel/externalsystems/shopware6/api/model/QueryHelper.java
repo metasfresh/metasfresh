@@ -123,12 +123,7 @@ public class QueryHelper
 	public static MultiQueryRequest buildShopware6GetCustomersQueryRequest(@NonNull final String updatedAfter)
 	{
 		return MultiQueryRequest.builder()
-				.filter(JsonQuery.builder()
-								.queryType(QueryType.MULTI)
-								.operatorType(OperatorType.AND)
-								.jsonQuery(buildUpdatedAfterJsonQueries(updatedAfter))
-								.jsonQuery(buildCustomerWithOrdersJsonQuery())
-								.build())
+				.filter(buildUpdatedAfterJsonQueries(updatedAfter))
 				.build();
 	}
 
@@ -152,20 +147,6 @@ public class QueryHelper
 								   .queryType(QueryType.RANGE)
 								   .parameters(parameters)
 								   .build())
-				.build();
-	}
-
-	@NonNull
-	@VisibleForTesting
-	public static JsonQuery buildCustomerWithOrdersJsonQuery()
-	{
-		final HashMap<String, String> parameters = new HashMap<>();
-		parameters.put(Shopware6Constants.PARAMETERS_GT, String.valueOf(0));
-
-		return JsonQuery.builder()
-				.field(Shopware6Constants.FIELD_ORDER_COUNT)
-				.queryType(QueryType.RANGE)
-				.parameters(parameters)
 				.build();
 	}
 }

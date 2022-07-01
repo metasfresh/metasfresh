@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_ORDER_NUMBER;
-import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildCustomerWithOrdersJsonQuery;
 import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildEqualsJsonQuery;
 import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildShopware6GetCustomersQueryRequest;
 import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildUpdatedAfterFilterQueryRequest;
@@ -118,62 +117,35 @@ class TestPOJOs
 	}
 
 	@Test
-	void jsonQuery_withOrders() throws IOException
-	{
-		final JsonQuery queryRequest = buildCustomerWithOrdersJsonQuery();
-		final String json = objectMapper.writeValueAsString(queryRequest);
-
-		Assertions.assertThat(json).isEqualToIgnoringWhitespace("{\n"
-																		+ "   \"field\":\"orderCount\",\n"
-																		+ "   \"type\":\"range\",\n"
-																		+ "   \"parameters\":{\n"
-																		+ "      \"gt\":\"0\"\n"
-																		+ "   }\n"
-																		+ "}");
-	}
-
-	@Test
 	void multiQueryRequest_getCustomers() throws JsonProcessingException
 	{
 		final MultiQueryRequest multiQueryRequest = buildShopware6GetCustomersQueryRequest("2020-10-26T06:32:45Z");
 		final String json = objectMapper.writeValueAsString(multiQueryRequest);
 
-		Assertions.assertThat(json).isEqualToIgnoringWhitespace("{\n"
-																		+ "   \"filter\":[\n"
-																		+ "      {\n"
-																		+ "         \"type\":\"multi\",\n"
-																		+ "         \"operator\":\"and\",\n"
-																		+ "         \"queries\":[\n"
-																		+ "            {\n"
-																		+ "               \"type\":\"multi\",\n"
-																		+ "               \"operator\":\"or\",\n"
-																		+ "               \"queries\":[\n"
-																		+ "                  {\n"
-																		+ "                     \"field\":\"updatedAt\",\n"
-																		+ "                     \"type\":\"range\",\n"
-																		+ "                     \"parameters\":{\n"
-																		+ "                        \"gte\":\"2020-10-26T06:32:45Z\"\n"
-																		+ "                     }\n"
-																		+ "                  },\n"
-																		+ "                  {\n"
-																		+ "                     \"field\":\"createdAt\",\n"
-																		+ "                     \"type\":\"range\",\n"
-																		+ "                     \"parameters\":{\n"
-																		+ "                        \"gte\":\"2020-10-26T06:32:45Z\"\n"
-																		+ "                     }\n"
-																		+ "                  }\n"
-																		+ "               ]\n"
-																		+ "            },\n"
-																		+ "            {\n"
-																		+ "               \"field\":\"orderCount\",\n"
-																		+ "               \"type\":\"range\",\n"
-																		+ "               \"parameters\":{\n"
-																		+ "                  \"gt\":\"0\"\n"
-																		+ "               }\n"
-																		+ "            }\n"
-																		+ "         ]\n"
-																		+ "      }\n"
-																		+ "   ]\n"
-																		+ "}");
+		Assertions.assertThat(json)
+				.isEqualToIgnoringWhitespace("{\n"
+						+ "  \"filter\": [\n"
+						+ "    {\n"
+						+ "      \"type\": \"multi\",\n"
+						+ "      \"operator\": \"or\",\n"
+						+ "      \"queries\": [\n"
+						+ "        {\n"
+						+ "          \"field\": \"updatedAt\",\n"
+						+ "          \"type\": \"range\",\n"
+						+ "          \"parameters\": {\n"
+						+ "            \"gte\": \"2020-10-26T06:32:45Z\"\n"
+						+ "          }\n"
+						+ "        },\n"
+						+ "        {\n"
+						+ "          \"field\": \"createdAt\",\n"
+						+ "          \"type\": \"range\",\n"
+						+ "          \"parameters\": {\n"
+						+ "            \"gte\": \"2020-10-26T06:32:45Z\"\n"
+						+ "          }\n"
+						+ "        }\n"
+						+ "      ]\n"
+						+ "    }\n"
+						+ "  ]\n"
+						+ "}");
 	}
 }
