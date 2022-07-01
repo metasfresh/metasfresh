@@ -1,5 +1,15 @@
+@echo off
+
 set "tag=local"
 set "registry=mazorn"
+set /P version=<docker-builds/version.info
+for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date -Format """"yyMMddHHmm""""}"') do (set buildnr=%%g)
+
+echo.
+echo --------------------------
+echo building %version%-%tag%.%buildnr%
+@echo on
+
 
 @echo.
 @echo --------------------------
@@ -33,7 +43,7 @@ docker build -f docker-builds/Dockerfile.db-preloaded -t %registry%/metas-db:%ta
 @echo building classic-compatible deployables
 @echo --------------------------
 docker build -f docker-builds/Dockerfile.backend.api.compat -t %registry%/metas-api:%tag%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.backend.app.compat -t %registry%/metas-app:%tag%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.app.compat --build-arg VERSION=%version%-%tag%.%buildnr% -t %registry%/metas-app:%tag%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.mobile.compat -t %registry%/metas-mobile:%tag%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.frontend.compat -t %registry%/metas-frontend:%tag%-compat . || @goto error
 
