@@ -22,7 +22,7 @@
 
 package com.adekia.exchange.amazonsp.util;
 
-import com.adekia.exchange.amazonsp.client.model.*;
+import com.adekia.exchange.amazonsp.client.orders.model.*;
 import com.helger.commons.string.StringHelper;
 import oasis.names.specification.ubl.schema.xsd.commonaggregatecomponents_23.*;
 import oasis.names.specification.ubl.schema.xsd.commonbasiccomponents_23.AmountType;
