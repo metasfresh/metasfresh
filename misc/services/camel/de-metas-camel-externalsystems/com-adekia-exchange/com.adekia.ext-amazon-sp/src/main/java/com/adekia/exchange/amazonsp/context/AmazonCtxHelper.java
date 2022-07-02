@@ -33,17 +33,17 @@ public class AmazonCtxHelper {
     public static Map<String, String> AmazonAuthProperties = Stream.of(new String[][] {
             //AWSAuthenticationCredentials
 //            { "basePath", "World" },
-            { "accessKeyId", "AKIAZVIDQXA3NBBTEUE4" },
-            { "secretKey", "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" },
+            { "accessKeyId", "accessKeyId" },
+            { "secretKey", "secretKey" },
             { "region", "eu-west-1" },
             //AWSAuthenticationCredentialsProvider
-            { "roleArn", "arn:aws:iam::664116705334:user/am187" },
-            { "roleSessionName", "AWSMarketplaceSellerFullAccess" },
+            { "roleArn", "roleArn" },
+            { "roleSessionName", "roleSessionName" },
             // LWAAuthorizationCredentials
-            { "clientId", "amzn1.application-oa2-client.2580e413e4244bf7b105191d077aa9a7" },
-            { "clientSecret", "9dc66603b2b07d713a43b042798c790c370735eae5d30dee6f54ed28b0862c69" },
-            { "refreshToken", "World" },
-            { "endpoint", "Doe" },
+            { "clientId", "clientId" },
+            { "clientSecret", "clientSecret" },
+//              { "refreshToken", "World" },
+//              { "endpoint", "Doe" },
             //OrdersApi
  //           { "endpoint", "World" }
     }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
