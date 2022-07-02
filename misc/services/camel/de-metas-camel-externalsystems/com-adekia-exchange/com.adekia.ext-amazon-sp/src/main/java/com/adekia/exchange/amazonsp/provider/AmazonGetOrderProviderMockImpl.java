@@ -22,10 +22,10 @@
 
 package com.adekia.exchange.amazonsp.provider;
 
-import com.adekia.exchange.amazonsp.client.orders.ApiClient;
 import com.adekia.exchange.amazonsp.client.orders.ApiException;
 import com.adekia.exchange.amazonsp.client.orders.api.OrdersV0Api;
 import com.adekia.exchange.amazonsp.client.orders.model.GetOrderResponse;
+import com.adekia.exchange.amazonsp.util.AmazonOrderApiHelper;
 import com.adekia.exchange.amazonsp.util.AmazonOrder;
 import com.adekia.exchange.context.Ctx;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
@@ -37,15 +37,12 @@ import org.springframework.stereotype.Service;
 public class AmazonGetOrderProviderMockImpl implements AmazonGetOrderProvider {
     @Override
     public OrderType getOrder(Ctx ctx) throws Exception {
-        OrdersV0Api apiInstance = new OrdersV0Api();
-        ApiClient apiClient = apiInstance.getApiClient()
-                .setBasePath("http://localhost:3001/sp-api")
-                //			.setDebugging(true)
-                ;
+        OrdersV0Api ordersApi = AmazonOrderApiHelper.getOrdersAPI(ctx);
+        //ApiClient apiClient = ordersApi.getApiClient().setBasePath("http://localhost:3101/sp-api");
 
         try {
             // /orders/v0/orders/{orderId}
-            GetOrderResponse result = apiInstance.getOrder("1");
+            GetOrderResponse result = ordersApi.getOrder("1");
 
             if (result != null && result.getPayload() != null)
                 return AmazonOrder.toOrderType(result.getPayload(), null);

@@ -22,21 +22,7 @@ import com.adekia.exchange.amazonsp.client.orders.Pair;
 import com.adekia.exchange.amazonsp.client.orders.ProgressRequestBody;
 import com.adekia.exchange.amazonsp.client.orders.ProgressResponseBody;
 import com.adekia.exchange.amazonsp.client.orders.StringUtil;
-
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-
-
-import com.adekia.exchange.amazonsp.client.orders.model.UpdateShipmentStatusErrorResponse;
 import com.adekia.exchange.amazonsp.client.orders.model.UpdateShipmentStatusRequest;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.amazon.SellingPartnerAPIAA.AWSAuthenticationCredentials;
 import com.amazon.SellingPartnerAPIAA.AWSAuthenticationCredentialsProvider;
 import com.amazon.SellingPartnerAPIAA.AWSSigV4Signer;
@@ -45,6 +31,12 @@ import com.amazon.SellingPartnerAPIAA.LWAAccessTokenCacheImpl;
 import com.amazon.SellingPartnerAPIAA.LWAAuthorizationCredentials;
 import com.amazon.SellingPartnerAPIAA.LWAAuthorizationSigner;
 import com.amazon.SellingPartnerAPIAA.RateLimitConfiguration;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ShipmentApi {
     private ApiClient apiClient;
@@ -103,7 +95,7 @@ public class ShipmentApi {
         if(progressListener != null) {
             apiClient.getHttpClient().networkInterceptors().add(new com.squareup.okhttp.Interceptor() {
                 @Override
-                public com.squareup.okhttp.Response intercept(com.squareup.okhttp.Interceptor.Chain chain) throws IOException {
+                public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
                     com.squareup.okhttp.Response originalResponse = chain.proceed(chain.request());
                     return originalResponse.newBuilder()
                     .body(new ProgressResponseBody(originalResponse.body(), progressListener))
