@@ -22,9 +22,9 @@
 
 package com.adekia.exchange.amazonsp.provider;
 
-import com.adekia.exchange.amazonsp.client.ApiException;
-import com.adekia.exchange.amazonsp.client.api.OrdersV0Api;
-import com.adekia.exchange.amazonsp.client.model.GetOrdersResponse;
+import com.adekia.exchange.amazonsp.client.orders.ApiException;
+import com.adekia.exchange.amazonsp.client.orders.api.OrdersV0Api;
+import com.adekia.exchange.amazonsp.client.orders.model.GetOrdersResponse;
 import com.adekia.exchange.amazonsp.util.AmazonOrder;
 import com.adekia.exchange.context.Ctx;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
@@ -43,7 +43,7 @@ public class AmazonGetOrdersProviderImpl implements AmazonGetOrdersProvider {
     public List<OrderType> getOrders(Ctx ctx) throws Exception {
         //final ImportOrdersRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 
-        OrdersV0Api apiInstance = new OrdersV0Api();
+        OrdersV0Api apiInstance = null; //new OrdersV0Api();
 
         /* Parameters used for selection */
         final List<String> marketplaceIds = Arrays.asList("marketplaceIds_example"); // List<String> | A list of MarketplaceId values. Used to select orders that were placed in the specified marketplaces.  See the [Selling Partner API Developer Guide](doc:marketplace-ids) for a complete list of marketplaceId values.
