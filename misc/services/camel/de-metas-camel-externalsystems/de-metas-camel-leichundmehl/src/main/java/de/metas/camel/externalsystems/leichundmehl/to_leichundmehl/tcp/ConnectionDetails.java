@@ -20,15 +20,30 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp;
 
-public interface LeichMehlConstants
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+public class ConnectionDetails
 {
-	String ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT = "ExportPPOrderRouteContext";
+	@NonNull
+	@JsonProperty("tcpPort")
+	int tcpPort;
 
-	String XML_ELEMENT_RI = "ri";
-	String XML_ELEMENT_RECV_PLU = "recvPLU";
+	@NonNull
+	@JsonProperty("tcpHost")
+	String tcpHost;
 
-	String XML_PROPERTY_PLU_FILE_ENCODING_VALUE = "Windows-1252";
-	String XML_PROPERTY_VALUE_YES = "yes";
+	@Builder
+	public ConnectionDetails(
+			@JsonProperty("tcpPort") @NonNull final int tcpPort,
+			@JsonProperty("tcpHost") @NonNull final String tcpHost)
+	{
+		this.tcpPort = tcpPort;
+		this.tcpHost = tcpHost;
+	}
 }

@@ -22,10 +22,6 @@
 
 package de.metas.cucumber.stepdefs.productionorder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.JsonObjectMapperHolder;
-import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -34,11 +30,15 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
-import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -54,6 +54,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -69,22 +71,15 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_ComponentType;
-import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_QtyBatch;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Order_StepDef
@@ -94,6 +89,9 @@ public class PP_Order_StepDef
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+
+	private final ExportPPOrderToExternalSystem exportPPOrderToExternalSystem = SpringContextHolder.instance.getBean(ExportPPOrderToExternalSystem.class);
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;
@@ -103,6 +101,7 @@ public class PP_Order_StepDef
 	private final S_Resource_StepDefData resourceTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final PP_Order_BOMLine_StepDefData ppOrderBomLineTable;
+	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -112,7 +111,8 @@ public class PP_Order_StepDef
 			@NonNull final PP_Order_StepDefData ppOrderTable,
 			@NonNull final S_Resource_StepDefData resourceTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
-			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable)
+			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBomLineTable,
+			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -122,6 +122,7 @@ public class PP_Order_StepDef
 		this.resourceTable = resourceTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ppOrderBomLineTable = ppOrderBomLineTable;
+		this.leichMehlConfigTable = leichMehlConfigTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -210,6 +211,23 @@ public class PP_Order_StepDef
 
 			trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())));
 		}
+	}
+
+	@And("export PP_Order to LeichMehl external system")
+	public void export_PP_Order_LeichMehl(@NonNull final DataTable dataTable)
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		final TableRecordReference ppOrderRecordReference = TableRecordReference.of(ppOrder);
+
+		final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
+				+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = leichMehlConfigTable.get(leichMehlConfigIdentifier);
+		final ExternalSystemLeichMehlConfigId leichMehlConfigId = ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
+
+		exportPPOrderToExternalSystem.exportToExternalSystem(leichMehlConfigId, ppOrderRecordReference, pinstanceDAO.createSelectionId());
 	}
 
 	private void validatePP_Order_BomLine(

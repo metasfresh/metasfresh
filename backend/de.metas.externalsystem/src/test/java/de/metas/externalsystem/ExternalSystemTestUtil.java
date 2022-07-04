@@ -22,10 +22,14 @@
 
 package de.metas.externalsystem;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -97,23 +101,40 @@ public class ExternalSystemTestUtil
 	private I_ExternalSystem_Config_LeichMehl createLeichMehlConfig(
 			final int externalSystemParentConfigId,
 			@NonNull final String value,
-			final String ftpHost,
-			final int ftpPort,
-			final String ftpUsername,
-			final String ftpPassword,
-			final String ftpDirectory)
+			@Nullable final String productBaseFolderName,
+			@Nullable final Integer tcpPort,
+			@Nullable final String tcpHost)
 	{
 		final I_ExternalSystem_Config_LeichMehl childRecord = newInstance(I_ExternalSystem_Config_LeichMehl.class);
 		childRecord.setExternalSystem_Config_ID(externalSystemParentConfigId);
 		childRecord.setExternalSystemValue(value);
-		childRecord.setFTP_Port(ftpPort);
-		childRecord.setFTP_Username(ftpUsername);
-		childRecord.setFTP_Password(ftpPassword);
-		childRecord.setFTP_Hostname(ftpHost);
-		childRecord.setFTP_Directory(ftpDirectory);
+		childRecord.setProduct_BaseFolderName(CoalesceUtil.coalesceNotNull(productBaseFolderName, "productBaseFolderName"));
+		childRecord.setTCP_PortNumber(CoalesceUtil.coalesceNotNull(tcpPort, 8080));
+		childRecord.setTCP_Host(CoalesceUtil.coalesceNotNull(tcpHost, "tcpHost"));
 
 		saveRecord(childRecord);
 
 		return childRecord;
+	}
+
+	@NonNull
+	@Builder(builderMethodName = "createLeichMehlProductMappingConfigBuilder", builderClassName = "leichMehlProductMappingConfigBuilder")
+	private I_ExternalSystem_Config_LeichMehl_ProductMapping createLeichMehlConfigProductMapping(
+			final int externalSystemLeichMehlConfigId,
+			final int seqNo,
+			@Nullable final ProductId productId,
+			@Nullable final ProductCategoryId productCategoryId,
+			@Nullable final BPartnerId bPartnerId)
+	{
+		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
+		productMappingRecord.setExternalSystem_Config_LeichMehl_ID(externalSystemLeichMehlConfigId);
+		productMappingRecord.setSeqNo(seqNo);
+		productMappingRecord.setM_Product_ID(ProductId.toRepoId(productId));
+		productMappingRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(productCategoryId));
+		productMappingRecord.setC_BPartner_ID(BPartnerId.toRepoId(bPartnerId));
+
+		saveRecord(productCategoryId);
+
+		return productMappingRecord;
 	}
 }

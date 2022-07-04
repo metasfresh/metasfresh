@@ -20,15 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 
-public interface LeichMehlConstants
+import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
+
+import java.io.IOException;
+import java.io.Writer;
+
+public class NoEscapeHandler implements CharacterEscapeHandler
 {
-	String ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT = "ExportPPOrderRouteContext";
+	private NoEscapeHandler()
+	{
+		super();
+	}
 
-	String XML_ELEMENT_RI = "ri";
-	String XML_ELEMENT_RECV_PLU = "recvPLU";
+	public static final NoEscapeHandler INSTANCE = new NoEscapeHandler();
 
-	String XML_PROPERTY_PLU_FILE_ENCODING_VALUE = "Windows-1252";
-	String XML_PROPERTY_VALUE_YES = "yes";
+	public void escape(char[] buf, int start, int len, boolean isAttValue, Writer out) throws IOException
+	{
+		for (int i = start; i < start + len; i++)
+		{
+			out.write(buf[i]);
+		}
+		return;
+	}
 }
+

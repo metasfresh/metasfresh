@@ -20,22 +20,33 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Builder
-@Value
-public class DispatchMessageRequest
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlValue;
+import java.io.Serializable;
+
+@Value(staticConstructor = "of")
+@XmlAccessorType(XmlAccessType.FIELD)
+public class XMLPluElement implements Serializable
 {
 	@NonNull
-	@JsonProperty("ftpPayload")
-	Object ftpPayload;
+	@XmlValue
+	String content;
 
-	@NonNull
-	@JsonProperty("ftpCredentials")
-	FTPCredentials ftpCredentials;
+	@Builder
+	public XMLPluElement(@NonNull final String content)
+	{
+		this.content = content;
+	}
+
+	public XMLPluElement()
+	{
+		throw new RuntimeException("Here just to please jaxb marshalling!");
+	}
 }
