@@ -48,5 +48,8 @@ public class GetCustomersPageProcessor implements Processor
 		final List<Customer> customerCandidateList = routeContext.getShopwareClient().getCustomerCandidates(getCustomerQueryRequest);
 
 		exchange.getIn().setBody(customerCandidateList);
+
+		routeContext.setMoreCustomersAvailable(customerCandidateList.size() >= pageAndLimitValues.getLimit());
+		routeContext.incrementPageIndex();
 	}
 }

@@ -270,13 +270,19 @@ public class BPartnerUpsertRequestProducer
 	private JsonRequestContactUpsert getUpsertContactRequest()
 	{
 		final JsonRequestContactUpsertBuilder upsertContactRequestBuilder = JsonRequestContactUpsert.builder();
+
+		// Only add the contact if there is no mapping OR if the mapping doesn't forbid to change the contact
+		// Note that we use the bpartner's sync-advice because logically the contact and bpartner are one in the show, whereas there can be many addresses per bpartner
+		final boolean addContactItem = matchingShopware6Mapping == null || !matchingShopware6Mapping.getBPartnerSyncAdvice().isLoadReadOnly();
+		if (addContactItem)
+		{
 		upsertContactRequestBuilder.requestItem(getUpsertContactItemRequest());
 
 		if (matchingShopware6Mapping != null)
 		{
-			upsertContactRequestBuilder.syncAdvise(matchingShopware6Mapping.getBPartnerLocationSyncAdvice());
+				upsertContactRequestBuilder.syncAdvise(matchingShopware6Mapping.getBPartnerSyncAdvice());
 		}
-
+		}
 		return upsertContactRequestBuilder.build();
 	}
 

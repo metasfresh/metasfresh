@@ -164,7 +164,7 @@ public class ShopwareClient
 
 		final Optional<JsonNode> rootJsonNodeOpt = readDataJsonNode(response);
 
-		if (rootJsonNodeOpt.isPresent())
+		if (rootJsonNodeOpt.isEmpty())
 		{
 			final int rawSize = 0;
 			return new GetOrdersResponse(orderCandidates.build(), response.getBody(), rawSize);
