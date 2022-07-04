@@ -37,6 +37,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -76,6 +77,12 @@ public class ImportCustomersRouteContext
 	@Getter(AccessLevel.NONE)
 	private Customer customer;
 
+	@Setter(AccessLevel.NONE)
+	private int responsePageIndex;
+
+	private boolean moreCustomersAvailable;
+	private final int pageLimit;
+
 	@Builder
 	public ImportCustomersRouteContext(
 			@NonNull final String orgCode,
@@ -83,7 +90,9 @@ public class ImportCustomersRouteContext
 			@NonNull final JsonExternalSystemRequest request,
 			@NonNull final String updatedAfter,
 			@Nullable final PriceListBasicInfo priceListBasicInfo,
-			final boolean skipNextImportTimestamp)
+			final boolean skipNextImportTimestamp,
+			@Nullable final Integer responsePageIndex,
+			@Nullable final Integer pageLimit)
 	{
 		this.orgCode = orgCode;
 		this.shopwareClient = shopwareClient;
@@ -94,6 +103,8 @@ public class ImportCustomersRouteContext
 
 		this.shopwareIdJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID);
 		this.metasfreshIdJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_METASFRESH_ID);
+		this.responsePageIndex = responsePageIndex != null ? responsePageIndex : 1;
+		this.pageLimit = pageLimit != null ? pageLimit : -1;
 	}
 
 	@Nullable
@@ -131,5 +142,10 @@ public class ImportCustomersRouteContext
 		{
 			this.oldestFailingCustomer = oldestFailingCustomer;
 		}
+	}
+
+	public void incrementPageIndex()
+	{
+		this.responsePageIndex++;
 	}
 }

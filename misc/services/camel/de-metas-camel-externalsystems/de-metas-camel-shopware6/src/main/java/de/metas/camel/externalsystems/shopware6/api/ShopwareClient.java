@@ -33,6 +33,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.GetBearerRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonOauthResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
@@ -137,7 +138,7 @@ public class ShopwareClient
 
 	@NonNull
 	public GetOrdersResponse getOrders(
-			@NonNull final MultiQueryRequest queryRequest,
+			@NonNull final Shopware6QueryRequest queryRequest,
 			@Nullable final String salesRepJSONPath)
 	{
 		final URI resourceURI;
