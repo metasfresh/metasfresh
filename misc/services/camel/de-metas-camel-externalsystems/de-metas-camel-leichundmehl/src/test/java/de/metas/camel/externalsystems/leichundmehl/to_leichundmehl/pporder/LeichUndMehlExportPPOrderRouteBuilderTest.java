@@ -26,9 +26,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.DispatchMessageRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +40,7 @@ import java.util.Properties;
 
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.LeichUndMehlExportPPOrderRouteBuilder.EXPORT_PPORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.SendToTCPRouteBuilder.SEND_TO_TCP_ROUTE_ID;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 {
@@ -79,14 +82,9 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	@Test
 	public void happyFlow() throws Exception
 	{
-		prepareRouteForTesting();
+		final MockTCPProcessor mockTCPProcessor = new MockTCPProcessor();
 
-		final MockEndpoint retrievePPOrderMockEndpoint = getMockEndpoint(MOCK_TCP_ENDPOINT);
-
-		//validate DispatchMessageRequest
-		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
-		final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
-		retrievePPOrderMockEndpoint.expectedBodiesReceived(expectedDispatchMessageRequest);
+		prepareRouteForTesting(mockTCPProcessor);
 
 		context.start();
 
@@ -98,14 +96,38 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + EXPORT_PPORDER_ROUTE_ID, invokeExternalSystemRequest);
 
 		//then
-		assertMockEndpointsSatisfied();
+		assertThat(mockTCPProcessor.called).isEqualTo(1);
+
+		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
+		final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
+		assertThat(mockTCPProcessor.actualRequest).isEqualTo(expectedDispatchMessageRequest);
 	}
 
-	private void prepareRouteForTesting() throws Exception
+	private void prepareRouteForTesting(@NonNull final MockTCPProcessor mockTCPProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, EXPORT_PPORDER_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + SEND_TO_TCP_ROUTE_ID)
 									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_TCP_ENDPOINT));
+									  .to(MOCK_TCP_ENDPOINT)
+									  .process(mockTCPProcessor));
+	}
+
+	private static class MockTCPProcessor implements Processor
+	{
+		private int called = 0;
+		private DispatchMessageRequest actualRequest;
+
+		@Override
+		public void process(final Exchange exchange) throws IOException
+		{
+			final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
+
+			final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
+			final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
+
+			actualRequest = expectedDispatchMessageRequest;
+
+			called++;
+		}
 	}
 }
