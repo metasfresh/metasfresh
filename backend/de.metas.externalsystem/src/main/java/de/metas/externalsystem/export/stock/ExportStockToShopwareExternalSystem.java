@@ -220,16 +220,20 @@ public class ExportStockToShopwareExternalSystem
 	{
 		final RetrieveAvailableForSalesQuery.RetrieveAvailableForSalesQueryBuilder retrieveAvailableForSalesQueryBuilder = RetrieveAvailableForSalesQuery.builder()
 				.productId(productId);
-
 		if (externalSystemParentConfig.getOrgId().isRegular())
 		{
 			retrieveAvailableForSalesQueryBuilder.orgId(externalSystemParentConfig.getOrgId());
 		}
 
-		return availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQueryBuilder.build())
+		final BigDecimal availableStock = availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQueryBuilder.build())
 				.stream()
 				.map(ExportStockToShopwareExternalSystem::getAvailableForSalesQty)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(externalSystemParentConfig.getChildConfig());
+		
+		return shopware6Config.getPercentageToDeductFromAvailableStock()
+				.subtractFromBase(availableStock, availableStock.precision());
 	}
 
 	@NonNull
