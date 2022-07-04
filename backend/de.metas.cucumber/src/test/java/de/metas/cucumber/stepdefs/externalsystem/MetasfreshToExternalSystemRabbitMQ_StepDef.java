@@ -36,6 +36,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonAvailableStock;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
@@ -45,7 +46,6 @@ import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.logging.LogManager;
-import de.metas.common.externalsystem.JsonAvailableStock;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -329,7 +329,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			@NonNull final JsonAvailableStock expectedAvailableStock,
 			@NonNull final JsonAvailableStock actualAvailableStock)
 	{
-		return expectedAvailableStock.getStock().equals(actualAvailableStock.getStock()) &&
+		return expectedAvailableStock.getStock().compareTo(actualAvailableStock.getStock()) == 0 &&
 				expectedAvailableStock.getProductIdentifier().getExternalReference()
 						.equals(actualAvailableStock.getProductIdentifier().getExternalReference());
 	}
