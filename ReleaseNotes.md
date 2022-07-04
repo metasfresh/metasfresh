@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13162](https://github.com/metasfresh/metasfresh/issues/13162) Available for sales qty from metasfresh to shopware
   * [#13176](https://github.com/metasfresh/metasfresh/pull/13176) assert_period_open: improve error reporting when document was not found
   * [#13175](https://github.com/metasfresh/metasfresh/pull/13175) fact_acct_summary_partial_from_date_functions
   * [#13192](https://github.com/metasfresh/metasfresh/issues/13192) Port stepdefs and implement material-receipt cucumber tests 
@@ -475,6 +476,7 @@ Here come the actual release notes:
 # metasfresh 5.174
 ## Features
 * metasfresh
+  * [#13234](https://github.com/metasfresh/metasfresh/issues/13234) Clicking outside a dropdown field w/o selection does not close the dropdown                                                                                                 
   * [#11508](https://github.com/metasfresh/metasfresh/issues/11508) Implement ESR payment action - duplicate payment
   * [#11679](https://github.com/metasfresh/metasfresh/issues/11679) New Cancel and recreate ("Stornieren und neu erstellen") process
   * [#11701](https://github.com/metasfresh/metasfresh/issues/11701) Add organization-based filter for currently logged-in user: `OrgAccessSql`
