@@ -71,6 +71,8 @@ public class OrderQueryHelper
 									.operatorType(OperatorType.AND)
 									.jsonQueries(queries)
 									.build())
+					.limit(pageAndLimitValues.getLimit())
+					.page(pageAndLimitValues.getPageIndex())
 					.build();
 		}
 		else
