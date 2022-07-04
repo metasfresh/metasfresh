@@ -39,7 +39,7 @@
       "deliveryViaRule": "S",
       "deliveryRule": "A",
       "orderLineGroup": {
-        "groupKey": "parentId",
+        "groupKey": "externalLineId2",
         "groupMainItem": false
       },
       "description": "lineDescription",
