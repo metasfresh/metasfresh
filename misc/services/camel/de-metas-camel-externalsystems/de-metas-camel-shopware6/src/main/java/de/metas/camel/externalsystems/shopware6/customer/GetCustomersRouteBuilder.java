@@ -99,7 +99,7 @@ public class GetCustomersRouteBuilder extends RouteBuilder
 				.when(areMoreCustomersLeftToBeRetrieved())
 				.to(direct(PROCESS_CUSTOMER_PAGE_ROUTE_ID))
 				.otherwise()
-				.log(LoggingLevel.INFO, "Nothing to do! No additional orders to retrieve!")
+				.log(LoggingLevel.INFO, "Nothing to do! No additional customers to retrieve!")
 				.end();
 
 		from(direct(PROCESS_CUSTOMER_ROUTE_ID))

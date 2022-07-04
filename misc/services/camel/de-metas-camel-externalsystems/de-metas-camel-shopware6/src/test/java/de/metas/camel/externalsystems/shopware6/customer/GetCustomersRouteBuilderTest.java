@@ -196,6 +196,7 @@ public class GetCustomersRouteBuilderTest extends CamelTestSupport
 					.updatedAfter(updatedAfter)
 					.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 					.skipNextImportTimestamp(skipNextImportTimestamp)
+					.pageLimit(2)
 					.build();
 
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, customersRouteContext);
