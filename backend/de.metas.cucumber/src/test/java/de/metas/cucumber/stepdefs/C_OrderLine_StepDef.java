@@ -353,6 +353,12 @@ public class C_OrderLine_StepDef
 				}
 			}
 
+			final BigDecimal updatedQtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyOrdered);
+			if (updatedQtyOrdered != null)
+			{
+				orderLine.setQtyOrdered(updatedQtyOrdered);
+			}
+
 			saveRecord(orderLine);
 
 			orderLineTable.putOrReplace(olIdentifier, orderLine);

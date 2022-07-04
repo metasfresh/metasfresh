@@ -1,7 +1,11 @@
 package de.metas.material.cockpit.availableforsales.interceptor;
 
-import java.util.List;
-
+import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo.ConfigQuery;
+import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
@@ -9,12 +13,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
-import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
-import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo.ConfigQuery;
-import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
-import de.metas.organization.OrgId;
-import lombok.NonNull;
+import java.util.List;
 
 /*
  * #%L
@@ -42,7 +41,6 @@ import lombok.NonNull;
 @Component
 public class C_Order
 {
-
 	private final AvailableForSalesUtil availableForSalesUtil;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
 
@@ -64,10 +62,12 @@ public class C_Order
 			return; // nothing to do
 		}
 
+		final OrgId orgId = OrgId.ofRepoId(orderRecord.getAD_Org_ID());
+
 		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
 				ConfigQuery.builder()
 						.clientId(ClientId.ofRepoId(orderRecord.getAD_Client_ID()))
-						.orgId(OrgId.ofRepoId(orderRecord.getAD_Org_ID()))
+						.orgId(orgId)
 						.build());
 		if (!config.isFeatureEnabled())
 		{
@@ -77,7 +77,31 @@ public class C_Order
 		// has to contain everything that the method to be invoked after commit needs
 		final List<CheckAvailableForSalesRequest> requests = availableForSalesUtil.createRequests(orderRecord);
 
-		availableForSalesUtil.checkAndUpdateOrderLineRecords(requests, config);
+		availableForSalesUtil.checkAndUpdateOrderLineRecords(requests, config, orgId);
 	}
 
+
+	@ModelChange( //
+			timings = ModelValidator.TYPE_AFTER_CHANGE,
+			ifColumnsChanged = I_C_Order.COLUMNNAME_PreparationDate)
+	public void syncAvailableForSales(@NonNull final I_C_Order orderRecord)
+	{
+		if (!availableForSalesUtil.isOrderEligibleForFeature(orderRecord))
+		{
+			return; // nothing to do
+		}
+
+		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
+				ConfigQuery.builder()
+						.clientId(ClientId.ofRepoId(orderRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(orderRecord.getAD_Org_ID()))
+						.build());
+
+		if (!config.isFeatureEnabled())
+		{
+			return; // nothing to do
+		}
+
+		availableForSalesUtil.syncAvailableForSalesForOrder(orderRecord, config);
+	}
 }
