@@ -142,9 +142,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
-      "syncExternalReferencesToRabbitMQ" : false,
       "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : false
+      "autoSendSubjectWhenCreatedByUserGroup" : false,
+      "syncExternalReferencesToRabbitMQ" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -163,9 +163,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
-    "syncExternalReferencesToRabbitMQ" : false,
     "syncBPartnerToRabbitMQ" : true,
-    "autoSendSubjectWhenCreatedByUserGroup" : false
+    "autoSendSubjectWhenCreatedByUserGroup" : false,
+    "syncExternalReferencesToRabbitMQ" : false
   }
 ]
 
@@ -188,9 +188,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : true,
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncBPartnerToRabbitMQ" : true,
       "autoSendSubjectWhenCreatedByUserGroup" : true,
-      "syncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true
+      "syncExternalReferencesToRabbitMQ" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -211,7 +211,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "baseUrl" : "baseUrl",
       "clientId" : "id",
       "clientSecret" : "secret",
-      "syncStockToShopware6" : false,
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [
         {
@@ -226,7 +225,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
       "syncStockToShopware6" : false,
-      "percentageOfAvailableStockToSync" : 0
+      "percentageToDeductFromAvailableStock" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -261,7 +260,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
       "syncStockToShopware6" : false,
-      "percentageOfAvailableStockToSync" : 0
+      "percentageToDeductFromAvailableStock" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -305,7 +304,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "value" : "testShopware6Value",
     "productLookup" : "ProductNumber",
     "syncStockToShopware6" : false,
-    "percentageOfAvailableStockToSync" : 0
+    "percentageToDeductFromAvailableStock" : 0
   }
 ]
 
@@ -337,7 +336,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
       "syncStockToShopware6" : false,
-      "percentageOfAvailableStockToSync" : 0
+      "percentageToDeductFromAvailableStock" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -366,7 +365,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "value" : "new-value",
       "productLookup" : "ProductNumber",
       "syncStockToShopware6" : false,
-      "percentageOfAvailableStockToSync" : 0
+      "percentageToDeductFromAvailableStock" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -429,9 +428,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isSyncBPartnerToRabbitMQ" : false,
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
+        "syncBPartnerToRabbitMQ" : false,
         "autoSendSubjectWhenCreatedByUserGroup" : false,
-        "syncExternalReferencesToRabbitMQ" : false,
-        "syncBPartnerToRabbitMQ" : false
+        "syncExternalReferencesToRabbitMQ" : false
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
