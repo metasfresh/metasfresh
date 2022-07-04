@@ -10,7 +10,7 @@
     "TCP_PortNumber": "445",
     "TCP_Host": "Host",
     "Product_BaseFolderName": "src",
-    "ConfigMappings": "{\"pluFile\":\"/test/resources/de/metas/camel/externalsystems/leichundmehl/to_leichundmehl/pporder/tcpExport/pluFile.xml\",\"productId\":22222}",
+    "ConfigMappings": "{\"pluFile\":\"test/resources/de/metas/camel/externalsystems/leichundmehl/to_leichundmehl/pporder/tcpExport/pluFile.xml\",\"productId\":22222}",
     "PP_Order_ID": "11111"
   }
 }
