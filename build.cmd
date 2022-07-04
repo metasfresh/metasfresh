@@ -1,13 +1,13 @@
 @echo off
 
-set "tag=local"
-set "registry=mazorn"
+set "mfversion=local"
+set "mfregistry=mazorn"
 set /P version=<docker-builds/version.info
 for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date -Format """"yyMMddHHmm""""}"') do (set buildnr=%%g)
 
 echo.
 echo --------------------------
-echo building %version%-%tag%.%buildnr%
+echo building %version%-%mfversion%.%buildnr%
 @echo on
 
 
@@ -16,12 +16,12 @@ echo building %version%-%tag%.%buildnr%
 @echo building maven artifacts
 @echo --------------------------
 
-docker build -f docker-builds/Dockerfile.common -t %registry%/metas-mvn-common:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.backend -t %registry%/metas-mvn-backend:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.camel -t %registry%/metas-mvn-camel:%tag% . || @goto error
+docker build -f docker-builds/Dockerfile.common -t %mfregistry%/metas-mvn-common:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.backend -t %mfregistry%/metas-mvn-backend:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.camel -t %mfregistry%/metas-mvn-camel:%mfversion% . || @goto error
 
-docker build -f docker-builds/Dockerfile.junit -t %registry%/metas-junit:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.cucumber -t %registry%/metas-cucumber:%tag% . || @goto error
+docker build -f docker-builds/Dockerfile.junit -t %mfregistry%/metas-junit:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.cucumber -t %mfregistry%/metas-cucumber:%mfversion% . || @goto error
 
 
 @echo.
@@ -29,27 +29,27 @@ docker build -f docker-builds/Dockerfile.cucumber -t %registry%/metas-cucumber:%
 @echo building deployables
 @echo --------------------------
 
-docker build -f docker-builds/Dockerfile.backend.api -t %registry%/metas-api:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.backend.app -t %registry%/metas-app:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.camel.externalsystems -t %registry%/metas-externalsystems:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.frontend -t %registry%/metas-frontend:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.mobile -t %registry%/metas-mobile:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.db-standalone -t %registry%/metas-db:%tag% . || @goto error
-docker build -f docker-builds/Dockerfile.db-preloaded -t %registry%/metas-db:%tag%-preloaded . || @goto error
+docker build -f docker-builds/Dockerfile.backend.api -t %mfregistry%/metas-api:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.backend.app -t %mfregistry%/metas-app:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.externalsystems -t %mfregistry%/metas-externalsystems:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.frontend -t %mfregistry%/metas-frontend:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.mobile -t %mfregistry%/metas-mobile:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.db-standalone -t %mfregistry%/metas-db:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.db-preloaded -t %mfregistry%/metas-db:%mfversion%-preloaded . || @goto error
 
 
 @echo.
 @echo --------------------------
 @echo building classic-compatible deployables
 @echo --------------------------
-docker build -f docker-builds/Dockerfile.backend.api.compat -t %registry%/metas-api:%tag%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.backend.app.compat --build-arg VERSION=%version%-%tag%.%buildnr% -t %registry%/metas-app:%tag%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.mobile.compat -t %registry%/metas-mobile:%tag%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.frontend.compat -t %registry%/metas-frontend:%tag%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.api.compat -t %mfregistry%/metas-api:%mfversion%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.app.compat --build-arg VERSION=%version%-%mfversion%.%buildnr% -t %mfregistry%/metas-app:%mfversion%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.mobile.compat -t %mfregistry%/metas-mobile:%mfversion%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.frontend.compat -t %mfregistry%/metas-frontend:%mfversion%-compat . || @goto error
 
 @REM ----- for a rainy day -----
-@REM docker build -f docker-builds/Dockerfile.e2e -t %registry%/metas-e2e:%tag% . || @goto error
-@REM docker build -f docker-builds/Dockerfile.procurement.frontend -t %registry%/metas-procurement-frontend:%tag% . || @goto error
+@REM docker build -f docker-builds/Dockerfile.e2e -t %mfregistry%/metas-e2e:%mfversion% . || @goto error
+@REM docker build -f docker-builds/Dockerfile.procurement.frontend -t %mfregistry%/metas-procurement-frontend:%mfversion% . || @goto error
 @REM ---------------------------
 
 
@@ -58,7 +58,7 @@ docker build -f docker-builds/Dockerfile.frontend.compat -t %registry%/metas-fro
 @echo --------------------------
 @echo success
 @echo --------------------------
-@docker images --filter=reference="%registry%/metas-*"
+@docker images --filter=reference="%mfregistry%/metas-*"
 @echo.
 @exit
 

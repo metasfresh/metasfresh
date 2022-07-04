@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: mazorn/metas-db:$mfversion-preloaded
+    image: $mfregistry/metas-db:$mfversion-preloaded
     ports:
       - "15432:5432"
     healthcheck:
@@ -43,7 +43,7 @@ services:
       replicas: 1
 
   webapi:
-    image: mazorn/metas-api:$mfversion
+    image: $mfregistry/metas-api:$mfversion
     ports:
       - "8080:8080"
       - "8789:8789"
@@ -68,7 +68,7 @@ services:
       replicas: 1
 
   app:
-    image: mazorn/metas-app:$mfversion
+    image: $mfregistry/metas-app:$mfversion
     ports:
       - "8282:8282"
       - "8788:8788"
@@ -92,7 +92,7 @@ services:
       replicas: 1
 
   external:
-    image: mazorn/metas-externalsystems:$mfversion
+    image: $mfregistry/metas-externalsystems:$mfversion
     environment:
       - METASFRESH_API_BASEURL=http://app:8282/api
       - METASFRESH_API_V2_BASEURL=http://app:8282/api/v2
@@ -109,7 +109,7 @@ services:
       replicas: 1
 
   webui:
-    image: mazorn/metas-frontend:$mfversion
+    image: $mfregistry/metas-frontend:$mfversion
     ports:
       - "80:80"
       - "443:443"
@@ -123,7 +123,7 @@ services:
       replicas: 1
 
   mobile:
-    image: mazorn/metas-mobile:$mfversion
+    image: $mfregistry/metas-mobile:$mfversion
     ports:
       - "8880:80"
     volumes:
