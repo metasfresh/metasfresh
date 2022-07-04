@@ -55,6 +55,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
+@Deprecated
 public class LeichUndMehlExportPPOrderRouteBuilderUnused extends RouteBuilder
 {
 	public static final String EXPORT_PPORDER_UNUSED_ROUTE_ID = "LeichUndMehl-exportPPOrderUnused";

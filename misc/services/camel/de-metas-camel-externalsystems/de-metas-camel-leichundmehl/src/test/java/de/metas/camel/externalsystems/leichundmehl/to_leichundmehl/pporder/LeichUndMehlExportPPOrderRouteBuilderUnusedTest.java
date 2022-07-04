@@ -48,6 +48,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.LeichUndMehlExportPPOrderRouteBuilderUnused.EXPORT_PPORDER_UNUSED_ROUTE_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@Deprecated
 public class LeichUndMehlExportPPOrderRouteBuilderUnusedTest extends CamelTestSupport
 {
 	private static final String MOCK_RETRIEVE_PP_ORDER_ENDPOINT = "mock:RetrievePPOrderEndpoint";

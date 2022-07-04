@@ -179,45 +179,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			final String ppOrderIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(ppOrderIdentifier))
 			{
-				final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
-
-				final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
-						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
-						.filter(request -> Integer.parseInt(request.getParameters().get(PARAM_PP_ORDER_ID)) == ppOrder.getPP_Order_ID())
-						.findFirst()
-						.orElse(null);
-
-				if (jsonExternalSystemRequest == null)
-				{
-					logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
-				}
-
-				assertThat(jsonExternalSystemRequest.getParameters()).isNotNull();
-
-				final Map<String, String> params = jsonExternalSystemRequest.getParameters();
-				assertThat(params).isNotEmpty();
-
-				final String portNumber = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
-				assertThat(params.get(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER)).isEqualTo(portNumber);
-
-				final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
-				assertThat(params.get(ExternalSystemConstants.PARAM_TCP_HOST)).isEqualTo(host);
-
-				final String product_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
-				assertThat(params.get(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME)).isEqualTo(product_BaseFolderName);
-
-				final String productMappingString = params.get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
-				assertThat(productMappingString).isNotNull();
-
-				final JsonExternalSystemLeichMehlConfigProductMapping productMapping = JsonObjectMapperHolder.sharedJsonObjectMapper()
-						.readValue(productMappingString, JsonExternalSystemLeichMehlConfigProductMapping.class);
-
-				final String pluFile = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.pluFile");
-				assertThat(productMapping.getPluFile()).isEqualTo(pluFile);
-
-				final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.M_Product_ID.Identifier");
-				final I_M_Product product = productTable.get(productIdentifier);
-				assertThat(productMapping.getProductId().getValue()).isEqualTo(product.getM_Product_ID());
+				validateExportPPOrderWithPLUFile(ppOrderIdentifier, requests, externalSystemConfig, tableRow);
 			}
 		}
 	}
@@ -261,5 +223,47 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 					}
 				})
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private void validateExportPPOrderWithPLUFile(
+			@NonNull final String ppOrderIdentifier,
+			@NonNull final List<JsonExternalSystemRequest> requests,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final Map<String, String> tableRow) throws JsonProcessingException
+	{
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+
+		final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+				.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+				.filter(request -> request.getParameters().get(PARAM_PP_ORDER_ID) != null)
+				.filter(request -> Integer.parseInt(request.getParameters().get(PARAM_PP_ORDER_ID)) == ppOrder.getPP_Order_ID())
+				.findFirst()
+				.orElse(null);
+
+		assertThat(jsonExternalSystemRequest).isNotNull();
+
+		final Map<String, String> params = jsonExternalSystemRequest.getParameters();
+
+		final String portNumber = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
+		assertThat(params.get(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER)).isEqualTo(portNumber);
+
+		final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
+		assertThat(params.get(ExternalSystemConstants.PARAM_TCP_HOST)).isEqualTo(host);
+
+		final String product_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
+		assertThat(params.get(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME)).isEqualTo(product_BaseFolderName);
+
+		final String productMappingString = params.get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
+		assertThat(productMappingString).isNotNull();
+
+		final JsonExternalSystemLeichMehlConfigProductMapping productMapping = JsonObjectMapperHolder.sharedJsonObjectMapper()
+				.readValue(productMappingString, JsonExternalSystemLeichMehlConfigProductMapping.class);
+
+		final String pluFile = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.pluFile");
+		assertThat(productMapping.getPluFile()).isEqualTo(pluFile);
+
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.M_Product_ID.Identifier");
+		final I_M_Product product = productTable.get(productIdentifier);
+		assertThat(productMapping.getProductId().getValue()).isEqualTo(product.getM_Product_ID());
 	}
 }

@@ -64,17 +64,17 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 		try (final Socket socket = new Socket(tcpConnection.getTcpHost(), tcpConnection.getTcpPort());
 				final DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream()))
 		{
-			sendFile(request.getPayload(), dataOutputStream);
+			sendContent(request.getPayload(), dataOutputStream);
 		}
 	}
 
-	private static void sendFile(
+	private static void sendContent(
 			@NonNull final String payload,
 			@NonNull final DataOutputStream dataOutputStream) throws Exception
 	{
 		try (final InputStream fileInputStream = new ByteArrayInputStream(payload.getBytes()))
 		{
-			// break file into chunks
+			// break payload into chunks
 			final byte[] buffer = new byte[4 * 1024];
 
 			int bytes;

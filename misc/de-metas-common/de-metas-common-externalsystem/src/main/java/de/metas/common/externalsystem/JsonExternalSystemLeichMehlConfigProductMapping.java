@@ -31,8 +31,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = JsonExternalSystemLeichMehlConfigProductMapping.JsonExternalSystemLeichMehlConfigProductMappingBuilder.class)
@@ -41,14 +39,14 @@ public class JsonExternalSystemLeichMehlConfigProductMapping
 	@NonNull
 	String pluFile;
 
-	@Nullable
+	@NonNull
 	JsonMetasfreshId productId;
 
 	@Builder
 	@JsonCreator
 	public JsonExternalSystemLeichMehlConfigProductMapping(
 			@JsonProperty("pluFile") @NonNull final String pluFile,
-			@JsonProperty("productId") @Nullable final JsonMetasfreshId productId)
+			@JsonProperty("productId") @NonNull final JsonMetasfreshId productId)
 	{
 		this.pluFile = pluFile;
 		this.productId = productId;

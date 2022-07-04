@@ -87,15 +87,13 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
 
-		final Optional<ExternalSystemLeichMehlConfigProductMapping> productMappingConfigOpt = matchProductMappingConfig(ppOrder, leichMehlConfig);
+		final ExternalSystemLeichMehlConfigProductMapping productMappingConfig = matchProductMappingConfig(ppOrder, leichMehlConfig).orElse(null);
 
-		if (!productMappingConfigOpt.isPresent())
+		if (productMappingConfig == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No config to export found for IExternalSystemChildConfigId: {} and PPOrderId: {}! No action is performed!", leichMehlConfig.getId(), ppOrderId);
 			return ImmutableMap.of();
 		}
-
-		final ExternalSystemLeichMehlConfigProductMapping productMappingConfig = productMappingConfigOpt.get();
 
 		final Map<String, String> parameters = new HashMap<>();
 

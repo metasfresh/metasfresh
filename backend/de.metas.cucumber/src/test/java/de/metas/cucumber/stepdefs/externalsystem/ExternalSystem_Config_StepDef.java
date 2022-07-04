@@ -200,6 +200,7 @@ public class ExternalSystem_Config_StepDef
 					+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_ExternalSystem_Config_LeichMehl leichMehlConfig = leichMehlConfigTable.get(leichMehlConfigIdentifier);
 
+
 			final I_ExternalSystem_Config_LeichMehl_ProductMapping productMapping = CoalesceUtil
 					.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
 											   .addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, leichMehlConfig.getExternalSystem_Config_LeichMehl_ID())
