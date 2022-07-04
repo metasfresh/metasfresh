@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
+import de.metas.camel.externalsystems.shopware6.order.query.PageAndLimit;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -120,15 +120,12 @@ public class QueryHelper
 	}
 
 	@NonNull
-	public static MultiQueryRequest buildShopware6GetCustomersQueryRequest(@NonNull final String updatedAfter)
+	public static MultiQueryRequest buildShopware6GetCustomersQueryRequest(@NonNull final String updatedAfter, final PageAndLimit pageAndLimitValues)
 	{
 		return MultiQueryRequest.builder()
-				.filter(JsonQuery.builder()
-								.queryType(QueryType.MULTI)
-								.operatorType(OperatorType.AND)
-								.jsonQuery(buildUpdatedAfterJsonQueries(updatedAfter))
-								.jsonQuery(buildCustomerWithOrdersJsonQuery())
-								.build())
+				.filter(buildUpdatedAfterJsonQueries(updatedAfter))
+				.page(pageAndLimitValues.getPageIndex())
+				.limit(pageAndLimitValues.getLimit())
 				.build();
 	}
 
@@ -152,20 +149,6 @@ public class QueryHelper
 								   .queryType(QueryType.RANGE)
 								   .parameters(parameters)
 								   .build())
-				.build();
-	}
-
-	@NonNull
-	@VisibleForTesting
-	public static JsonQuery buildCustomerWithOrdersJsonQuery()
-	{
-		final HashMap<String, String> parameters = new HashMap<>();
-		parameters.put(Shopware6Constants.PARAMETERS_GT, String.valueOf(0));
-
-		return JsonQuery.builder()
-				.field(Shopware6Constants.FIELD_ORDER_COUNT)
-				.queryType(QueryType.RANGE)
-				.parameters(parameters)
 				.build();
 	}
 }

@@ -116,6 +116,8 @@ public class ImportOrdersRouteContext
 	@Getter(AccessLevel.NONE)
 	private final boolean skipNextImportStartingTimestamp;
 
+	private final int pageLimit;
+
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
@@ -153,6 +155,11 @@ public class ImportOrdersRouteContext
 
 	@Nullable
 	private PriceListBasicInfo priceListBasicInfo;
+
+	@Setter(AccessLevel.NONE)
+	private int ordersResponsePageIndex;
+
+	private boolean moreOrdersAvailable;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -335,5 +342,10 @@ public class ImportOrdersRouteContext
 		}
 
 		return salutationInfoProvider.getDisplayNameBySalutationId(salutationId);
+	}
+
+	public void incrementPageIndex()
+	{
+		this.ordersResponsePageIndex++;
 	}
 }
