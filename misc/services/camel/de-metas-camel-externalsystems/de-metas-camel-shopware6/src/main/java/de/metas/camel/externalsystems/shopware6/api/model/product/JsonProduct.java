@@ -29,6 +29,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
 import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,12 +41,17 @@ import java.util.List;
 
 @Value
 @Builder
+@AllArgsConstructor
 @JsonDeserialize(builder = JsonProduct.JsonProductBuilder.class)
 public class JsonProduct
 {
 	@NonNull
 	@JsonProperty("id")
 	String id;
+
+	@Nullable
+	@JsonProperty("parentId")
+	String parentId;
 
 	@Nullable
 	@JsonProperty("name")
@@ -95,4 +102,5 @@ public class JsonProduct
 
 		return createdAt;
 	}
+
 }
