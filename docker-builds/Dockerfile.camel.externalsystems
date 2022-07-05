@@ -1,5 +1,5 @@
 ARG REFNAME=local
-FROM mazorn/metas-mvn-camel:$REFNAME as camel
+FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
 FROM adoptopenjdk:14.0.2_8-jdk-hotspot
 

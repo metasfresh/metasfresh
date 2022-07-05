@@ -1,5 +1,5 @@
 ARG REFNAME=local
-FROM mazorn/metas-db:$REFNAME as db
+FROM metasfresh/metas-db:$REFNAME as db
 
 # we are prepopulating the image with pgdata
 # https://cadu.dev/creating-a-docker-image-with-database-preloaded/

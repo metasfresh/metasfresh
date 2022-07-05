@@ -1,7 +1,7 @@
 @echo off
 
 set "mfversion=local"
-set "mfregistry=mazorn"
+set "mfregistry=metasfresh"
 set /P version=<docker-builds/version.info
 for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date -Format """"yyMMddHHmm""""}"') do (set buildnr=%%g)
 

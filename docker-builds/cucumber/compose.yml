@@ -3,7 +3,7 @@
 services:
 
   db:
-    image: mazorn/metas-db:${refname:-local}-preloaded
+    image: metasfresh/metas-db:${refname:-local}-preloaded
     ports:
       - "15432:5432"
     healthcheck:
@@ -30,7 +30,7 @@ services:
       replicas: 1
 
   cucumber:
-    image: mazorn/metas-cucumber:${refname:-local}
+    image: metasfresh/metas-cucumber:${refname:-local}
     depends_on:
       db:
         condition: service_healthy

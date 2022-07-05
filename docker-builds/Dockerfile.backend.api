@@ -1,5 +1,5 @@
 ARG REFNAME=local
-FROM mazorn/metas-mvn-backend:$REFNAME as backend
+FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
 FROM openjdk:8-jdk-oraclelinux7
 

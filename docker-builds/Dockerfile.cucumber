@@ -1,5 +1,5 @@
 ARG REFNAME=local
-FROM mazorn/metas-mvn-backend:$REFNAME as backend
+FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
 FROM maven:3.8.4-jdk-8
 

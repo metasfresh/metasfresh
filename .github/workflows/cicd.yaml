@@ -23,44 +23,46 @@ jobs:
     needs: init
     steps:
       - uses: actions/checkout@v3
+      - name: prepare
+        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
       - name: build-commons
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.common \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
+          --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-backend
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.backend \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
+          -t metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-camel
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.camel \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
+          -t metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         run: |
-          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
+          echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
+          docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
           docker logout
 
   frontend:
@@ -68,31 +70,32 @@ jobs:
     needs: init
     steps:
       - uses: actions/checkout@v3
+      - name: prepare
+        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
       - name: build-frontend
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.frontend \
           --cache-to type=inline \
-          --cache-from mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
+          --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-mobile
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.mobile \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         run: |
-          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-frontend:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
           docker logout
 
   backend:
@@ -100,69 +103,70 @@ jobs:
     needs: [init, java]
     steps:
       - uses: actions/checkout@v3
+      - name: prepare
+        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
       - name: build-api
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.backend.api \
           --cache-to type=inline \
-          --cache-from mazorn/metas-api:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-api:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-api:${{ needs.init.outputs.tag-fixed }} \
+          -t metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-app
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.backend.app \
           --cache-to type=inline \
-          --cache-from mazorn/metas-app:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-app:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-app:${{ needs.init.outputs.tag-fixed }} \
+          -t metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-externalsystems
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.camel.externalsystems \
           --cache-to type=inline \
-          --cache-from mazorn/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
+          -t metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-db
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.db-standalone \
           --cache-to type=inline \
-          --cache-from mazorn/metas-db:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-db:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-db:${{ needs.init.outputs.tag-fixed }} \
+          -t metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-db-preloaded
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.db-preloaded \
           --cache-to type=inline \
-          --cache-from mazorn/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
-          -t mazorn/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
+          -t metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          -t metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
           .
       - name: push-images
         run: |
-          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-api:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-api:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-app:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-app:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-db:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-db:${{ needs.init.outputs.tag-floating }}
-          docker push mazorn/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
-          docker push mazorn/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker logout
 
   compatibility-images:
@@ -170,58 +174,59 @@ jobs:
     needs: [init, frontend, backend]
     steps:
       - uses: actions/checkout@v3
+      - name: prepare
+        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
       - name: build-api-compat
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.backend.api.compat \
           --cache-to type=inline \
-          --cache-from mazorn/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
+          --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
-          -t mazorn/metas-api:${{ needs.init.outputs.tag-fixed }}-compat \
+          -t metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
+          -t metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: build-app-compat
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.backend.app.compat \
           --cache-to type=inline \
-          --cache-from mazorn/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
+          --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=$(cat docker-builds/version.info)-${{ needs.init.outputs.tag-fixed }} \
-          -t mazorn/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
-          -t mazorn/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
+          -t metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
+          -t metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: build-mobile-compat
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.mobile.compat \
           --cache-to type=inline \
-          --cache-from mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          -t mazorn/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: build-frontend-compat
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.frontend.compat \
           --cache-to type=inline \
-          --cache-from mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
+          --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
-          -t mazorn/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
+          -t metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
+          -t metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: push-images
         run: |
-          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push mazorn/metas-api:${{ needs.init.outputs.tag-floating }}-compat
-          docker push mazorn/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push mazorn/metas-app:${{ needs.init.outputs.tag-floating }}-compat
-          docker push mazorn/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push mazorn/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
-          docker push mazorn/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push mazorn/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
+          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
+          docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
           docker logout
 
   junit:
@@ -230,6 +235,8 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
+      - name: prepare
+        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
       - name: run-junit-tests
         env:
           mysecret: ${{ secrets.TESTMO_TOKEN }}
@@ -237,15 +244,14 @@ jobs:
           docker buildx build \
           -f docker-builds/Dockerfile.junit \
           --cache-to type=inline \
-          --cache-from mazorn/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --secret id=mysecret \
-          -t mazorn/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           .
       - name: push-result-image
         run: |
-          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
           docker logout
       - uses: testspace-com/setup-testspace@v1
         with:
@@ -254,7 +260,7 @@ jobs:
         env:
           runurl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          docker run --rm -v "$(pwd)/junit:/reports" mazorn/metas-junit:${{ needs.init.outputs.tag-floating }}
+          docker run --rm -v "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;
 
   cucumber:
@@ -263,19 +269,20 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
+      - name: prepare
+        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
       - name: build-cucumber
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.cucumber \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
-          -t mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
+          -t metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
+          -t metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         run: |
-          echo ${{ secrets.DOCKERHUB_RW_TOKEN }} | docker login --username mazorn --password-stdin
-          docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
-          docker push mazorn/metas-cucumber:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+          docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
           docker logout
       - name: run-tests
         env:
@@ -283,7 +290,7 @@ jobs:
         timeout-minutes: 60
         run: |
           mkdir cucumber
-          docker cp "$(docker create --name tempcopytainer mazorn/metas-cucumber:$refname):/compose.yml" . && docker rm tempcopytainer
+          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:$refname):/compose.yml" . && docker rm tempcopytainer
           docker-compose up --abort-on-container-exit --exit-code-from cucumber
           docker-compose down
       - uses: testspace-com/setup-testspace@v1
@@ -307,37 +314,3 @@ jobs:
           KUBE_CONFIG: ${{ secrets.K8S_CONFIG }}
         with:
           args: delete -n dev --all pods
-
-
-
-
-# DISCARDED CYPRESS
-# - name: build-e2e
-# run: |
-# docker buildx build \
-# -f docker-builds/Dockerfile.e2e \
-# --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-# -t mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }} \
-# -t mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }} \
-# .
-# ---
-# docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-fixed }}
-# docker push mazorn/metas-e2e:${{ needs.init.outputs.tag-floating }}
-# ---
-# cypress:
-# if: ${{ false }}  # disable for now
-# runs-on: ubuntu-latest
-# needs: [init, integration-tests]
-# environment: 'test'
-# continue-on-error: true
-# steps:
-# - name: run-cypress-tests
-# env:
-# mysecret: ${{ secrets.TESTMO_TOKEN }}
-# refname: ${{ needs.init.outputs.tag-fixed }}
-# timeout-minutes: 240
-# run: |
-# echo "$mysecret" > mysecret
-# docker cp "$(docker create --name tempcopytainer mazorn/metas-e2e:$refname):/compose.yml" . && docker rm tempcopytainer
-# docker-compose up --abort-on-container-exit --exit-code-from cucumber
-# docker-compose down

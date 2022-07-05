@@ -1,5 +1,5 @@
 ARG REFNAME=local
-FROM mazorn/metas-mvn-common:$REFNAME as common
+FROM metasfresh/metas-mvn-common:$REFNAME as common
 
 FROM alpine as poms
 
