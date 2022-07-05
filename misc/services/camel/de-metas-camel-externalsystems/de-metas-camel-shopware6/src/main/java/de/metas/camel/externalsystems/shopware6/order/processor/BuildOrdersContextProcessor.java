@@ -33,6 +33,7 @@ import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteHelper;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
+import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
