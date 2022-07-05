@@ -58,10 +58,12 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -163,11 +165,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 				final I_M_HU hu = huTable.get(huIdentifier);
 				assertThat(hu).isNotNull();
 
-				final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
-						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
-						.filter(request -> Integer.parseInt(request.getParameters().get(PARAM_HU_ID)) == hu.getM_HU_ID())
-						.findFirst()
-						.orElse(null);
+				final JsonExternalSystemRequest jsonExternalSystemRequest = findJsonExternalSystemRequestForHu(requests, externalSystemConfig, hu);
 
 				if (jsonExternalSystemRequest == null)
 				{
@@ -233,12 +231,12 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	{
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 
-		final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
-				.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
-				.filter(request -> request.getParameters().get(PARAM_PP_ORDER_ID) != null)
-				.filter(request -> Integer.parseInt(request.getParameters().get(PARAM_PP_ORDER_ID)) == ppOrder.getPP_Order_ID())
-				.findFirst()
-				.orElse(null);
+		final JsonExternalSystemRequest jsonExternalSystemRequest = findJsonExternalSystemRequestForPPOrder(requests, externalSystemConfig, ppOrder);
+
+		if (jsonExternalSystemRequest == null)
+		{
+			logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
+		}
 
 		assertThat(jsonExternalSystemRequest).isNotNull();
 
@@ -265,5 +263,101 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "ConfigMappings.M_Product_ID.Identifier");
 		final I_M_Product product = productTable.get(productIdentifier);
 		assertThat(productMapping.getProductId().getValue()).isEqualTo(product.getM_Product_ID());
+	}
+
+	@Nullable
+	private JsonExternalSystemRequest findJsonExternalSystemRequestForHu(
+			@NonNull final List<JsonExternalSystemRequest> requests,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final I_M_HU hu)
+	{
+		JsonExternalSystemRequest foundRequest = null;
+
+		for (final JsonExternalSystemRequest request : requests)
+		{
+			boolean found;
+
+			if (request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nExternalSystemConfigId:" + externalSystemConfig.getExternalSystem_Config_ID() + " does not match");
+				continue;
+			}
+
+			if (Integer.parseInt(request.getParameters().get(PARAM_HU_ID)) == hu.getM_HU_ID())
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nHUId:" + hu.getM_HU_ID() + " does not match");
+				continue;
+			}
+
+			if (found)
+			{
+				foundRequest = request;
+				break;
+			}
+		}
+
+		return Optional.ofNullable(foundRequest)
+				.orElse(null);
+	}
+
+	@Nullable
+	private JsonExternalSystemRequest findJsonExternalSystemRequestForPPOrder(
+			@NonNull final List<JsonExternalSystemRequest> requests,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final I_PP_Order ppOrder)
+	{
+		JsonExternalSystemRequest foundRequest = null;
+
+		for (final JsonExternalSystemRequest request : requests)
+		{
+			boolean found;
+
+			if (request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nExternalSystemConfigId:" + externalSystemConfig.getExternalSystem_Config_ID() + " does not match");
+				continue;
+			}
+
+			if (request.getParameters().get(PARAM_PP_ORDER_ID) != null)
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nParam PP_Order_ID:" + ppOrder.getPP_Order_ID() + " not present");
+				continue;
+			}
+
+			if (Integer.parseInt(request.getParameters().get(PARAM_PP_ORDER_ID)) == ppOrder.getPP_Order_ID())
+			{
+				found = true;
+			}
+			else
+			{
+				logger.info("*** JsonExternalSystemRequest:" + request + " skipped;\nParam PP_Order_ID:" + ppOrder.getPP_Order_ID() + " does not match");
+				continue;
+			}
+
+			if (found)
+			{
+				foundRequest = request;
+				break;
+			}
+		}
+
+		return Optional.ofNullable(foundRequest)
+				.orElse(null);
 	}
 }
