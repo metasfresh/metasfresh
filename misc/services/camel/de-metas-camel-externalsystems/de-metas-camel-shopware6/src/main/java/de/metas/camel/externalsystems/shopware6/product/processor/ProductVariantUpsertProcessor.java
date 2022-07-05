@@ -22,24 +22,17 @@
 
 package de.metas.camel.externalsystems.shopware6.product.processor;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
-import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
 import de.metas.camel.externalsystems.shopware6.product.ImportProductsRouteContext;
 import de.metas.camel.externalsystems.shopware6.product.ProductUpsertRequestProducer;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import springfox.documentation.spring.web.json.Json;
 
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
@@ -61,7 +54,8 @@ public class ProductVariantUpsertProcessor implements Processor
 		final JsonProduct productParent = context.getParentJsonProduct();
 		final JsonProduct product = context.getJsonProduct();
 
-		if(productParent == null) {
+		if (productParent == null)
+		{
 			exchange.getIn().setBody(null);
 			return;
 		}

@@ -35,7 +35,6 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder;
-import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilderTests;
 import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
 import de.metas.camel.externalsystems.shopware6.product.ImportProductsRouteContext;
 import de.metas.camel.externalsystems.shopware6.unit.UOMInfoProvider;
@@ -44,7 +43,6 @@ import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
-import net.bytebuddy.asm.Advice;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
@@ -76,7 +74,6 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.ATTACH_CONTEXT_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.GET_PRODUCTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.PROCESS_PRODUCT_ROUTE_ID;
-import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.PROCESS_PRODUCT_VARIANT_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.UPSERT_PRODUCT_PRICE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -86,15 +83,13 @@ import static org.mockito.ArgumentMatchers.eq;
 /**
  * This test simulates a shopware product api result which contains two products:
  * A parent product and one of its variants.
- *
+ * <p>
  * Metasfresh should import the parent as usual but treat the variant differently.
  * This test checks of both, parent and variant are upserted as expected.
  */
 public class GetProductVariantsRouteBuilderTests extends CamelTestSupport
 {
 	private static final String MOCK_UPSERT_PRODUCT = "mock:UpsertProduct";
-
-	private static final String MOCK_UPSERT_PRODUCT_VARIANT = "mock:UpsertProductVariant";
 	private static final String MOCK_UPSERT_PRODUCT_PRICE = "mock:UpsertProductPrice";
 	private static final String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
 
