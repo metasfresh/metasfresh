@@ -46,12 +46,6 @@
       "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
-      "orderLineGroup": {
-        "groupKey": "externalLineId2",
-        "groupMainItem": false
-      },
-      "description": "lineDescription",
-      "dateOrdered": "2021-01-12",
       "importWarningMessage": "The order had multiple shipping addresses, the process picked the last one!",
       "applySalesRepFrom": "CandidateFirst",
       "bpartnerName": "company\ndepartment\nsalutationDisplayName title firstName lastName",
