@@ -35,10 +35,12 @@ import de.metas.ServerBoot;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
 import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
 import de.metas.common.externalsystem.JsonExternalSystemMessageType;
+import de.metas.logging.LogManager;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
 import org.springframework.amqp.core.MessageProperties;
 
 import java.io.IOException;
@@ -53,9 +55,9 @@ import static org.assertj.core.api.Assertions.*;
 
 public class ExternalSystem_Authorization_StepDef
 {
-	private final ConnectionFactory externalSystemsAuthorizationFactory;
-
+	private static final Logger logger = LogManager.getLogger(ExternalSystem_Authorization_StepDef.class);
 	final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+	private final ConnectionFactory externalSystemsAuthorizationFactory;
 
 	public ExternalSystem_Authorization_StepDef()
 	{
@@ -70,7 +72,7 @@ public class ExternalSystem_Authorization_StepDef
 		externalSystemsAuthorizationFactory.setPassword(commandLineOptions.getRabbitPassword());
 	}
 
-	@And("send authorization request towards external system to metasfresh custom queue")
+	@And("Custom_ExternalSystem_To_Metasfresh queue receives an auth token request")
 	public void request_external_system_authorization() throws IOException, TimeoutException
 	{
 		final JsonExternalSystemMessage message = JsonExternalSystemMessage.builder()
@@ -88,14 +90,14 @@ public class ExternalSystem_Authorization_StepDef
 					.build();
 
 			channel.basicPublish("", QUEUE_NAME_ES_TO_MF_CUSTOM, properties, string.getBytes());
-			System.out.println("[x] Sent on queue '" + QUEUE_NAME_ES_TO_MF_CUSTOM + "': message= '" + string + "'");
+			logger.info("[x] Sent on queue '" + QUEUE_NAME_ES_TO_MF_CUSTOM + "': message= '" + string + "'");
 		}
 	}
 
-	@Then("receive authorization token reply from metasfresh to external system custom queue")
-	public void validate_authorization_token_obtained() throws InterruptedException, IOException, TimeoutException
+	@Then("^metasfresh replies on Custom_Metasfresh_To_ExternalSystem queue with (.*)$")
+	public void validate_authorization_token_obtained(@NonNull final String authToken) throws InterruptedException, IOException, TimeoutException
 	{
-		final JsonExternalSystemMessage message = receiveRequest(JsonExternalSystemMessage.class);
+		final JsonExternalSystemMessage message = receiveRequest();
 
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isNotBlank();
@@ -104,9 +106,10 @@ public class ExternalSystem_Authorization_StepDef
 
 		assertThat(messagePayload).isNotNull();
 		assertThat(messagePayload.getAuthToken()).isNotBlank();
+		assertThat(messagePayload.getAuthToken()).isEqualTo(authToken);
 	}
 
-	private <T extends JsonExternalSystemMessage> T receiveRequest(@NonNull final Class<T> clazz) throws IOException, TimeoutException, InterruptedException
+	private <T extends JsonExternalSystemMessage> T receiveRequest() throws IOException, TimeoutException, InterruptedException
 	{
 		final Connection connection = externalSystemsAuthorizationFactory.newConnection();
 		final Channel channel = connection.createChannel();
@@ -120,18 +123,18 @@ public class ExternalSystem_Authorization_StepDef
 			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
 			{
 				message[0] = new String(body, StandardCharsets.UTF_8);
-				System.out.println("\n[x] Received on queue '" + QUEUE_NAME_MF_TO_ES_CUSTOM + "': message= '" + message[0] + "'");
+				logger.info("\n[x] Received on queue '" + QUEUE_NAME_MF_TO_ES_CUSTOM + "': message= '" + message[0] + "'");
 				countDownLatch.countDown();
 			}
 		};
 		channel.basicConsume(QUEUE_NAME_MF_TO_ES_CUSTOM, true, consumer);
 
-		System.out.print("Waiting for message receipt");
+		logger.info("Waiting for message receipt");
 		final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS); // wait for the token reply to get added in the queue
 		assertThat(messageReceivedWithinTimeout).isTrue();
 
 		final JsonExternalSystemMessage requestToExternalSystemMessage = objectMapper.readValue(message[0], JsonExternalSystemMessage.class);
-		assertThat(requestToExternalSystemMessage).isInstanceOf(clazz);
+		assertThat(requestToExternalSystemMessage).isInstanceOf(JsonExternalSystemMessage.class);
 		return (T)requestToExternalSystemMessage;
 	}
 }

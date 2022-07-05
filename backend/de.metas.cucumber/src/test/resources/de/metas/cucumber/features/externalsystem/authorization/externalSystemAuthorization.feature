@@ -7,5 +7,9 @@ Feature: external system authorization
 
   @from:cucumber
   Scenario: obtain metasfresh authorization token for external system
-    Given send authorization request towards external system to metasfresh custom queue
-    Then receive authorization token reply from metasfresh to external system custom queue
+    Given metasfresh contains AD_User_AuthToken:
+      | AD_User_AuthToken.Identifier | AD_User.Identifier | AD_User_Roles.Identifier | AuthToken |
+      | cucumberUserAuthToken        | 100                | 540024                   | authToken |
+    And set sys config String value authToken for sys config de.metas.externalsystem.externalservice.authorization.authToken
+    And Custom_ExternalSystem_To_Metasfresh queue receives an auth token request
+    Then metasfresh replies on Custom_Metasfresh_To_ExternalSystem queue with authToken
