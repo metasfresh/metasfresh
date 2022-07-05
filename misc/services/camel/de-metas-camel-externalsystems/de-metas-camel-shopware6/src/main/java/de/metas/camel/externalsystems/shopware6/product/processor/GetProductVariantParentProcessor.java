@@ -25,8 +25,6 @@ package de.metas.camel.externalsystems.shopware6.product.processor;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
@@ -37,8 +35,8 @@ import org.apache.camel.Processor;
 
 import java.util.Optional;
 
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_PRODUCT_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildQueryParentProductRequest;
 
 public class GetProductVariantParentProcessor implements Processor
 {
@@ -64,7 +62,7 @@ public class GetProductVariantParentProcessor implements Processor
 			processLogger.logMessage("Getting variant parent", context.getPInstanceId());
 
 			//TODO - maybe add getSingleProduct to shopware client.
-			final MultiQueryRequest getProductsRequest = buildQueryProductsRequest(product.getParentId());
+			final MultiQueryRequest getProductsRequest = buildQueryParentProductRequest(product.getParentId());
 			final Optional<JsonProducts> jsonProductsOptional = shopwareClient.getProducts(getProductsRequest);
 
 			if (jsonProductsOptional.isEmpty())
@@ -84,18 +82,4 @@ public class GetProductVariantParentProcessor implements Processor
 
 	}
 
-	@NonNull
-	private MultiQueryRequest buildQueryProductsRequest(@NonNull final String parentId)
-	{
-		return MultiQueryRequest.builder()
-				.filter(MultiJsonFilter.builder()
-								.operatorType(MultiJsonFilter.OperatorType.OR)
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_PRODUCT_ID)
-												   .queryType(JsonQuery.QueryType.EQUALS)
-												   .value(parentId)
-												   .build())
-								.build())
-				.build();
-	}
 }

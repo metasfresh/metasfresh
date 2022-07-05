@@ -69,6 +69,17 @@ public class QueryHelper
 	}
 
 	@NonNull
+	public static MultiQueryRequest buildQueryParentProductRequest(@NonNull final String parentId)
+	{
+		return MultiQueryRequest.builder()
+				.filter(JsonQuery.builder()
+								.queryType(QueryType.EQUALS)
+								.value(parentId)
+								.build())
+				.build();
+	}
+
+	@NonNull
 	@VisibleForTesting
 	public static JsonQuery buildUpdatedAfterJsonQueries(@NonNull final String updatedAfter)
 	{
