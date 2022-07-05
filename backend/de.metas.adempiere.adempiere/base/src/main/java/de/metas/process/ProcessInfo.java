@@ -114,6 +114,7 @@ public final class ProcessInfo implements Serializable
 		adWorkflowId = builder.getWorkflowId();
 		invokedBySchedulerId = builder.getInvokedBySchedulerId();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
+		logWarning = builder.isLogWarning();
 
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -208,6 +209,9 @@ public final class ProcessInfo implements Serializable
 	 */
 	@Getter
 	private final boolean notifyUserAfterExecution;
+
+	@Getter
+	private final boolean logWarning;
 
 	/**
 	 * Process Instance ID
@@ -524,7 +528,10 @@ public final class ProcessInfo implements Serializable
 		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
-	public boolean isInvokedByScheduler() { return invokedBySchedulerId != null; }
+	public boolean isInvokedByScheduler()
+	{
+		return invokedBySchedulerId != null;
+	}
 
 	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
@@ -775,6 +782,8 @@ public final class ProcessInfo implements Serializable
 		private AdSchedulerId invokedBySchedulerId;
 
 		private Boolean notifyUserAfterExecution;
+
+		private Boolean logWarning;
 
 		private ProcessInfoBuilder()
 		{
@@ -1090,6 +1099,7 @@ public final class ProcessInfo implements Serializable
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
+			setLogWarning(adProcess.isLogWarning());
 			return this;
 		}
 
@@ -1544,7 +1554,7 @@ public final class ProcessInfo implements Serializable
 
 		public AdSchedulerId getInvokedBySchedulerId()
 		{
-			if(invokedBySchedulerId != null)
+			if (invokedBySchedulerId != null)
 			{
 				return invokedBySchedulerId;
 			}
@@ -1598,6 +1608,18 @@ public final class ProcessInfo implements Serializable
 				}
 			}
 			return notifyUserAfterExecution;
+		}
+
+		public ProcessInfoBuilder setLogWarning(final boolean logWarning)
+		{
+			this.logWarning = logWarning;
+
+			return this;
+		}
+
+		public boolean isLogWarning()
+		{
+			return logWarning;
 		}
 
 		private String getWhereClause()

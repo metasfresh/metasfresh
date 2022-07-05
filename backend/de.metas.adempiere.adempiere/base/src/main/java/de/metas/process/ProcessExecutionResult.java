@@ -35,12 +35,15 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.SQLWarning;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static org.reflections.util.ConfigurationBuilder.build;
 
 /*
  * #%L
@@ -748,7 +751,19 @@ public class ProcessExecutionResult
 	 */
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
-		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
+		addLog(Log_ID, P_Date, P_Number, P_Msg, null);
+	}
+
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final SQLWarning warning)
+	{
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.logId(Log_ID)
+				.pDate(P_Date)
+				.pNumber(P_Number)
+				.pMsg(P_Msg)
+				.pWarning(warning).
+				build();
+		addLog(new ProcessInfoLog(request));
 	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)

@@ -45,7 +45,6 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -81,6 +80,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -835,6 +835,18 @@ public class DB
 			final int timeOut,
 			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
+		final SQLUpdateResult result = executeUpdateWithWarning(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+
+		return result.getNumericResult();
+	}
+
+	public SQLUpdateResult executeUpdateWithWarning(final String sql,
+			final Object[] params,
+			@NonNull final OnFail onFail,
+			final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
+	{
 		if (Check.isEmpty(sql, true))
 		{
 			throw new IllegalArgumentException("Required parameter missing - " + sql);
@@ -842,6 +854,7 @@ public class DB
 
 		//
 		int no = -1;
+		SQLWarning warning = null;
 		CPreparedStatement cs = statementsFactory.newCPreparedStatement(
 				ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_UPDATABLE,
@@ -863,6 +876,11 @@ public class DB
 				int rows = 0;
 				try
 				{
+					// TODO can rs be null?
+					if(rs!=null)
+					{
+						warning = rs.getStatement().getWarnings();
+					}
 					while (rs.next())
 					{
 						updateReturnProcessor.process(rs);
@@ -963,7 +981,10 @@ public class DB
 			DB.close(cs);
 		}
 
-		return no;
+		return SQLUpdateResult.builder()
+				.numericResult(no)
+				.warning(warning)
+				.build();
 	}    // executeUpdate
 
 	/**
@@ -1006,6 +1027,16 @@ public class DB
 		final OnFail onFail = OnFail.ThrowException;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
 		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+	}    // executeUpdateEx
+
+
+	public SQLUpdateResult executeUpdateWithWarningEx(final String sql, @Nullable final String trxName) throws DBException
+	{
+		final Object[] params = null;
+		final int timeOut = 0;
+		final OnFail onFail = OnFail.ThrowException;
+		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
+		return executeUpdateWithWarning(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
 	}    // executeUpdateEx
 
 	/**
@@ -1269,7 +1300,16 @@ public class DB
 	 */
 	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
+		final SQLValueStringResult result = getSQLValueStringWithWarningEx(trxName,sql,params);
+
+		return result.getResult();
+	}
+
+	public SQLValueStringResult getSQLValueStringWithWarningEx(@Nullable final String trxName, final String sql, final Object... params)
+	{
 		String retValue = null;
+		SQLWarning warning =null;
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1280,6 +1320,7 @@ public class DB
 			if (rs.next())
 			{
 				retValue = rs.getString(1);
+				warning = rs.getStatement().getWarnings();
 			}
 			else
 			{
@@ -1296,7 +1337,9 @@ public class DB
 			rs = null;
 			pstmt = null;
 		}
-		return retValue;
+		return SQLValueStringResult.builder().
+				result(retValue).
+				warning(warning).build();
 	}
 
 	/**

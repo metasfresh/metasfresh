@@ -3,6 +3,7 @@ package de.metas.process;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
@@ -1007,7 +1008,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
-		getResult().addLog(id, date, number, msg);
+		addLog(id, date, number,  msg, null);
+	}
+
+	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable SQLWarning warning)
+	{
+		getResult().addLog(id, date, number, msg, warning);
 	}	// addLog
 
 	/**
@@ -1018,9 +1024,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	@Override
 	public final ILoggable addLog(final String msg, final Object... msgParameters)
 	{
+		return addLog(null, msg, msgParameters);
+	}
+
+	public final ILoggable addLog(final SQLWarning warning, final String msg, final Object... msgParameters)
+	{
 		if (msg != null)
 		{
-			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
+			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters), warning);
 		}
 		return this;
 	}	// addLog

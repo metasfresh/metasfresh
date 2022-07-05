@@ -42,6 +42,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -342,20 +343,40 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 
 		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
-				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg)"
-				+ " VALUES (?, ?, ?, ?, ?)";
+				+ " ("
+				+ I_AD_PInstance_Log.COLUMNNAME_AD_PInstance_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Log_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Date
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Number
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Msg
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Warnings
+				+ " )"
+				+ " VALUES (?, ?, ?, ?, ?, ?)";
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			for (final ProcessInfoLog log : logsToSave)
 			{
+				SQLWarning warning = log.getP_Warning();
+				final StringBuilder warningText = new StringBuilder();
+				while(warning!=null)
+				{
+					warningText.append(warning.getMessage());
+					warning = warning.getNextWarning();
+				}
 				final Object[] sqlParams = new Object[] {
 						pinstanceId,
 						log.getLog_ID(),
 						log.getP_Date(),
 						log.getP_Number(),
-						log.getP_Msg()
+						log.getP_Msg(),
+						warningText.toString()
 				};
 
 				DB.setParameters(pstmt, sqlParams);
