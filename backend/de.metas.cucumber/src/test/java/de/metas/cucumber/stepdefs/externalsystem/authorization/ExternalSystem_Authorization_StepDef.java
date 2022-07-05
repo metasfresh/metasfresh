@@ -34,7 +34,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
 import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
-import de.metas.common.externalsystem.JsonExternalSystemMessageTypeEnum;
+import de.metas.common.externalsystem.JsonExternalSystemMessageType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -74,7 +74,7 @@ public class ExternalSystem_Authorization_StepDef
 	public void request_external_system_authorization() throws IOException, TimeoutException
 	{
 		final JsonExternalSystemMessage message = JsonExternalSystemMessage.builder()
-				.type(JsonExternalSystemMessageTypeEnum.REQUEST_AUTHORIZATION)
+				.type(JsonExternalSystemMessageType.REQUEST_AUTHORIZATION)
 				.build();
 
 		final String string = objectMapper.writeValueAsString(message);

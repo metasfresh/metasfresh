@@ -68,6 +68,7 @@ public class Recipient
 				.build();
 	}
 
+	@NonNull
 	public static Recipient group(@NonNull final UserGroupId groupId)
 	{
 		return _builder()

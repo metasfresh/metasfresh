@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.core;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.authorization.MetasfreshAuthorizationTokenNotifier;
 import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
+import de.metas.common.util.Check;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.spring.boot.CamelContextConfiguration;
@@ -56,6 +57,12 @@ public class AppConfiguration
 		return camelContext.createProducerTemplate();
 	}
 
+	@Bean
+	public CustomRouteController customRouteController()
+	{
+		return new CustomRouteController(this.camelContext);
+	}
+
 	@PostConstruct
 	public void auditEventNotifier()
 	{
@@ -67,18 +74,19 @@ public class AppConfiguration
 	@PostConstruct
 	public void authorizationTokenNotifier()
 	{
-		final String baseUrlPropertyValue = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+		final String metasfreshAPIBaseURL = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
 
-		final String defaultAuthToken = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_AUTHORIZATION_TOKEN_PROPERTY);
+		if (Check.isBlank(metasfreshAPIBaseURL))
+		{
+			throw new RuntimeException("Missing mandatory property! property = " + ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+		}
+
 		final MetasfreshAuthProvider metasfreshAuthProvider = context.getBean(MetasfreshAuthProvider.class);
-		metasfreshAuthProvider.setPropertiesAuthToken(defaultAuthToken);
-
-		final CustomRouteController customRouteController = context.getBean(CustomRouteController.class);
-
-		final ProducerTemplate producerTemplate = context.getBean(ProducerTemplate.class);
+		final CustomRouteController customRouteController = customRouteController();
+		final ProducerTemplate producerTemplate = producerTemplate();
 
 		camelContext.getManagementStrategy()
-				.addEventNotifier(new MetasfreshAuthorizationTokenNotifier(metasfreshAuthProvider, baseUrlPropertyValue, customRouteController, producerTemplate));
+				.addEventNotifier(new MetasfreshAuthorizationTokenNotifier(metasfreshAuthProvider, metasfreshAPIBaseURL, customRouteController, producerTemplate));
 	}
 
 	@Bean
@@ -95,17 +103,10 @@ public class AppConfiguration
 			@Override
 			public void afterApplicationStart(final CamelContext camelContext)
 			{
-				try
-				{
-					context.getBean(CustomRouteController.class).startAuthRoutes(camelContext.getRouteController());
+				customRouteController().startAlwaysRunningRoutes();
 
-					context.getBean(ProducerTemplate.class)
-							.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "trigger external system authentication for metasfresh!");
-				}
-				catch (final Exception e)
-				{
-					throw new RuntimeException("Failed to start custom authorization routes!", e);
-				}
+				producerTemplate()
+						.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "Trigger external system authentication!");
 			}
 		};
 	}

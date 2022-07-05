@@ -23,8 +23,9 @@
 package de.metas.camel.externalsystems.core.authorization;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CustomRouteController;
 import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
@@ -41,25 +42,24 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 {
-	public final static String CUSTOM_FROM_MF_ROUTE_ID = "RabbitMQ_custom_from_MF_ID";
+	private final static String CUSTOM_FROM_MF_ROUTE_ID = "RabbitMQ_custom_from_MF_ID";
 
-	final MetasfreshAuthProvider authProvider;
-	final ObjectMapper objectMapper;
-	final CustomRouteController customRouteController;
+	@NonNull
+	private final MetasfreshAuthProvider authProvider;
+	@NonNull
+	private final CustomRouteController customRouteController;
 
 	public CustomMessageFromMFRouteBuilder(
 			@NonNull final MetasfreshAuthProvider authProvider,
-			@NonNull final ObjectMapper objectMapper,
 			@NonNull final CustomRouteController customRouteController
 	)
 	{
 		this.authProvider = authProvider;
-		this.objectMapper = objectMapper;
 		this.customRouteController = customRouteController;
 	}
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
@@ -68,7 +68,7 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 		from(CUSTOM_FROM_MF_ROUTE)
 				.routeId(CUSTOM_FROM_MF_ROUTE_ID)
 				.streamCaching()
-				.autoStartup(false)
+				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemMessage.class))
 				.process(this::processCustomMessage);
 	}
@@ -77,24 +77,25 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 	{
 		final JsonExternalSystemMessage message = exchange.getIn().getBody(JsonExternalSystemMessage.class);
 
-		if (message != null)
+		if (message == null)
 		{
-			switch (message.getType())
-			{
-				case AUTHORIZATION_REPLY:
-				{
-					if (message.getPayload() != null)
-					{
-						final JsonExternalSystemMessagePayload messagePayload = objectMapper.readValue(message.getPayload(), JsonExternalSystemMessagePayload.class);
+			throw new RuntimeException("Missing JsonExternalSystemMessage body!");
+		}
 
-						authProvider.setAuthToken(messagePayload.getAuthToken());
-
-						customRouteController.startAllRoutes(exchange);
-					}
-					break;
-				}
-			}
+		switch (message.getType())
+		{
+			case AUTHORIZATION_REPLY -> handleAuthorizationMessage(message);
+			default -> throw new RuntimeException("Unexpected message type! Type=" + message.getType());
 		}
 	}
 
+	private void handleAuthorizationMessage(@NonNull final JsonExternalSystemMessage authorizationMessage) throws JsonProcessingException
+	{
+		final JsonExternalSystemMessagePayload messagePayload = JsonObjectMapperHolder.sharedJsonObjectMapper()
+				.readValue(authorizationMessage.getPayload(), JsonExternalSystemMessagePayload.class);
+
+		authProvider.setAuthToken(messagePayload.getAuthToken());
+
+		customRouteController.startAllRoutes();
+	}
 }

@@ -22,42 +22,48 @@
 
 package de.metas.camel.externalsystems.common;
 
+import com.google.common.collect.ImmutableMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
+/**
+ * Used to keep evidence of the camel routes start up order.
+ */
 @AllArgsConstructor
 @Getter
-public enum CamelRoutesStartUpOrderEnum
+public enum CamelRoutesStartUpOrder
 {
-	/*
-	 * Group of routes that should be manually started
-	 * */
 	ONE(1);
 
-	private final Integer code;
+	private final Integer value;
 
 	@NonNull
-	public static CamelRoutesStartUpOrderEnum ofCode(@NonNull final Integer code)
+	public static CamelRoutesStartUpOrder ofValue(@NonNull final Integer value)
 	{
-		return ofCodeOptional(code)
-				.orElseThrow(() -> new RuntimeException("No JsonExternalSystemMessageTypeEnum could be found for code " + code + "!"));
+		return ofValueOptional(value)
+				.orElseThrow(() -> new RuntimeException("No CamelRoutesStartUpOrder could be found for value " + value + "!"));
 	}
 
 	@NonNull
-	public static Optional<CamelRoutesStartUpOrderEnum> ofCodeOptional(@Nullable final Integer code)
+	public static Optional<CamelRoutesStartUpOrder> ofValueOptional(@Nullable final Integer value)
 	{
-		if (code == null)
+		if (value == null)
 		{
 			return Optional.empty();
 		}
 
-		return Arrays.stream(values())
-				.filter(value -> value.getCode().equals(code))
-				.findFirst();
+		return Optional.ofNullable(valueToOrder.getOrDefault(value, null));
 	}
+
+	private final static ImmutableMap<Integer, CamelRoutesStartUpOrder> valueToOrder = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(
+					CamelRoutesStartUpOrder::getValue,
+					Function.identity()
+			));
 }

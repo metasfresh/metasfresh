@@ -22,43 +22,57 @@
 
 package de.metas.camel.externalsystems.common;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 @AllArgsConstructor
 @Getter
-public enum CamelRoutesGroupEnum
+public enum CamelRoutesGroup
 {
-	/*
-	 * Group of routes that should be manually started
-	 * */
-	START_ON_DEMAND("StartOnDemand");
+	START_ON_DEMAND("StartOnDemand"),
+	ALWAYS_ON("AlwaysOn");
 
 	private final String code;
 
 	@NonNull
-	public static CamelRoutesGroupEnum ofCode(@NonNull final String code)
+	public static CamelRoutesGroup ofCode(@NonNull final String code)
 	{
 		return ofCodeOptional(code)
-				.orElseThrow(() -> new RuntimeException("No JsonExternalSystemMessageTypeEnum could be found for code " + code + "!"));
+				.orElseThrow(() -> new RuntimeException("No CamelRoutesGroup could be found for code " + code + "!"));
 	}
 
 	@NonNull
-	public static Optional<CamelRoutesGroupEnum> ofCodeOptional(@Nullable final String code)
+	public static Optional<CamelRoutesGroup> ofCodeOptional(@Nullable final String code)
 	{
 		if (Check.isBlank(code))
 		{
 			return Optional.empty();
 		}
 
-		return Arrays.stream(values())
-				.filter(value -> value.getCode().equals(code))
-				.findFirst();
+		return Optional.ofNullable(code2Group.getOrDefault(code, null));
 	}
+
+	public boolean isStartOnDemand()
+	{
+		return this == START_ON_DEMAND;
+	}
+
+	public boolean isAlwaysOn()
+	{
+		return this == ALWAYS_ON;
+	}
+
+	private final static ImmutableMap<String, CamelRoutesGroup> code2Group = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(
+					CamelRoutesGroup::getCode,
+					Function.identity()
+			));
 }

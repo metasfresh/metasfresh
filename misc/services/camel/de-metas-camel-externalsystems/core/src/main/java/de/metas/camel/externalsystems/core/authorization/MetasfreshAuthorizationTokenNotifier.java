@@ -25,32 +25,40 @@ package de.metas.camel.externalsystems.core.authorization;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.camel.externalsystems.core.CustomRouteController;
 import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
-import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.apache.camel.Endpoint;
-import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.spi.CamelEvent;
 import org.apache.camel.support.EventNotifierSupport;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static de.metas.camel.externalsystems.core.authorization.CustomMessageToMFRouteBuilder.CUSTOM_TO_MF_ROUTE_ID;
 
 public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 {
+	private final Logger logger = Logger.getLogger(MetasfreshAuthorizationTokenNotifier.class.getName());
+
+	@NonNull
 	private final MetasfreshAuthProvider metasfreshAuthProvider;
-	private final String baseUrlPropertyValue;
+	@NonNull
+	private final String metasfreshAPIURL;
+	@NonNull
 	private final CustomRouteController customRouteController;
+	@NonNull
 	private final ProducerTemplate producerTemplate;
 
 	public MetasfreshAuthorizationTokenNotifier(
 			@NonNull final MetasfreshAuthProvider metasfreshAuthProvider,
-			@NonNull final String baseUrlPropertyValue,
+			@NonNull final String metasfreshAPIURL,
 			@NonNull final CustomRouteController customRouteController,
 			@NonNull final ProducerTemplate producerTemplate
 	)
 	{
 		this.metasfreshAuthProvider = metasfreshAuthProvider;
-		this.baseUrlPropertyValue = baseUrlPropertyValue;
+		this.metasfreshAPIURL = metasfreshAPIURL;
 		this.customRouteController = customRouteController;
 		this.producerTemplate = producerTemplate;
 	}
@@ -62,41 +70,53 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 		{
 			if (event instanceof CamelEvent.ExchangeSendingEvent)
 			{
-				final CamelEvent.ExchangeSendingEvent sendingEvent = (CamelEvent.ExchangeSendingEvent)event;
-
-				handleSendingEvent(sendingEvent.getEndpoint(), sendingEvent.getExchange());
+				handleSendingEvent((CamelEvent.ExchangeSendingEvent)event);
+			}
+			else if (event instanceof CamelEvent.ExchangeSentEvent)
+			{
+				handleSentEvent((CamelEvent.ExchangeSentEvent) event);
 			}
 		}
 		catch (final Exception exception)
 		{
-			customRouteController.stopAllRoutes(((CamelEvent.ExchangeSentEvent)event).getExchange());
-
-			try
-			{
-				customRouteController.startAuthRoutes(((CamelEvent.ExchangeSentEvent)event).getExchange().getContext().getRouteController());
-
-				producerTemplate.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "trigger external system authentication for metasfresh!");
-			}
-			catch (final Exception e)
-			{
-				throw new RuntimeException("Failed to start custom authorization routes!", e);
-			}
+			logger.log(Level.SEVERE, "Exception caught while trying to attach metasfresh Authorization header!");
 		}
 	}
 
-	private void handleSendingEvent(@NonNull final Endpoint endpoint, @NonNull final Exchange exchange)
+	private void handleSendingEvent(@NonNull final CamelEvent.ExchangeSendingEvent event)
 	{
-		if (endpoint.getEndpointUri() != null && baseUrlPropertyValue.contains(endpoint.getEndpointUri()))
+		final Endpoint endpoint = event.getEndpoint();
+
+		if (endpoint.getEndpointUri() == null || !metasfreshAPIURL.contains(endpoint.getEndpointUri()))
 		{
-			if (EmptyUtil.isNotBlank(metasfreshAuthProvider.getAuthToken()))
+			return;
+		}
+
+		final String authToken = metasfreshAuthProvider.getAuthToken();
+
+		event.getExchange().getIn().setHeader(CoreConstants.AUTHORIZATION, authToken);
+	}
+
+	private void handleSentEvent(@NonNull final CamelEvent.ExchangeSentEvent sentEvent)
+	{
+		final Endpoint endpoint = sentEvent.getEndpoint();
+
+		if (endpoint.getEndpointUri() == null || !metasfreshAPIURL.contains(endpoint.getEndpointUri()))
+		{
+			return;
+		}
+
+		final Exception exception = sentEvent.getExchange().getException();
+
+		if (exception instanceof HttpOperationFailedException)
+		{
+			final HttpOperationFailedException httpOperationFailedException = (HttpOperationFailedException)exception;
+
+			if (httpOperationFailedException.getStatusCode() == 401)
 			{
-				exchange.getIn().setHeader(CoreConstants.AUTHORIZATION, metasfreshAuthProvider.getAuthToken());
-			}
-			else if (EmptyUtil.isNotBlank(metasfreshAuthProvider.getPropertiesAuthToken()))
-			{
-				exchange.getIn().setHeader(CoreConstants.AUTHORIZATION, metasfreshAuthProvider.getPropertiesAuthToken());
+				this.customRouteController.stopAllRoutes();
+				producerTemplate.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "Trigger external system authentication for metasfresh!");
 			}
 		}
 	}
-
 }

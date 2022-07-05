@@ -22,9 +22,10 @@
 
 package de.metas.camel.externalsystems.core.authorization;
 
+import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
-import de.metas.common.externalsystem.JsonExternalSystemMessageTypeEnum;
+import de.metas.common.externalsystem.JsonExternalSystemMessageType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -40,7 +41,7 @@ public class CustomMessageToMFRouteBuilder extends RouteBuilder
 	public final static String CUSTOM_TO_MF_ROUTE_ID = "RabbitMQ_custom_to_MF_ID";
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
@@ -48,6 +49,7 @@ public class CustomMessageToMFRouteBuilder extends RouteBuilder
 
 		from(direct(CUSTOM_TO_MF_ROUTE_ID))
 				.routeId(CUSTOM_TO_MF_ROUTE_ID)
+				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
 				.streamCaching()
 				.process(this::postAuthorizationMessage)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemMessage.class))
@@ -57,7 +59,7 @@ public class CustomMessageToMFRouteBuilder extends RouteBuilder
 	private void postAuthorizationMessage(@NonNull final Exchange exchange)
 	{
 		final JsonExternalSystemMessage message = JsonExternalSystemMessage.builder()
-				.type(JsonExternalSystemMessageTypeEnum.REQUEST_AUTHORIZATION)
+				.type(JsonExternalSystemMessageType.REQUEST_AUTHORIZATION)
 				.build();
 
 		exchange.getIn().setBody(message);

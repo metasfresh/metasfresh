@@ -34,7 +34,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_
 public class CustomMFToExternalSystemQueueConfig
 {
 	@Bean(name = QUEUE_NAME_MF_TO_ES_CUSTOM)
-	public Queue externalSystemToMFQueue()
+	public Queue metasfreshToExternalSystemQueue()
 	{
 		return new Queue(QUEUE_NAME_MF_TO_ES_CUSTOM);
 	}

@@ -22,71 +22,105 @@
 
 package de.metas.camel.externalsystems.core;
 
-import de.metas.camel.externalsystems.common.CamelRoutesGroupEnum;
+import de.metas.camel.externalsystems.common.CamelRoutesGroup;
+import lombok.NonNull;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.apache.camel.Route;
 import org.apache.camel.spi.RouteController;
-import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import static de.metas.camel.externalsystems.core.authorization.CustomMessageFromMFRouteBuilder.CUSTOM_FROM_MF_ROUTE_ID;
-import static de.metas.camel.externalsystems.core.authorization.CustomMessageToMFRouteBuilder.CUSTOM_TO_MF_ROUTE_ID;
-
-@Service
 public class CustomRouteController
 {
-	public void startAllRoutes(final Exchange exchange)
+	@NonNull
+	private final CamelContext camelContext;
+
+	public CustomRouteController(final @NonNull CamelContext camelContext)
 	{
-		final RouteController routeController = exchange.getContext().getRouteController();
-
-		exchange.getContext().getRoutes().stream()
-				.filter(route -> (route.getGroup() == null
-						|| !route.getGroup().equals(CamelRoutesGroupEnum.START_ON_DEMAND.getCode()))
-						&& route.getStartupOrder() == null)
-				.forEach(route -> startRoute(route, routeController, "Failed to start routes that are supposed to be up first after authorization! The problematic route : " + route.getRouteId() + "."));
-
-		exchange.getContext().getRoutes().stream()
-				.filter(route -> route.getStartupOrder() != null)
-				.sorted(Comparator.comparing(Route::getStartupOrder))
-				.forEach(route -> startRoute(route, routeController, "Failed to start routes that are supposed to be up at the end after authorization! The problematic route : " + route.getRouteId() + "."));
+		this.camelContext = camelContext;
 	}
 
-	public void startAuthRoutes(final RouteController routeController) throws Exception
+	public void startAllRoutes()
 	{
-		routeController.startRoute(CUSTOM_TO_MF_ROUTE_ID);
-		routeController.startRoute(CUSTOM_FROM_MF_ROUTE_ID);
+		getRoutes()
+				.stream()
+				.filter(CustomRouteController::isReadyToStart)
+				.sorted(Comparator.comparing(Route::getStartupOrder, Comparator.nullsFirst(Comparator.naturalOrder())))
+				.forEach(this::start);
 	}
 
-	public void stopAllRoutes(final Exchange exchange)
+	public void stopAllRoutes()
 	{
-		final CamelContext currentEventContext = exchange.getContext();
-		final RouteController routeController = exchange.getContext().getRouteController();
-		currentEventContext.getRoutes().forEach(route -> {
-			try
-			{
-				if (routeController.getRouteStatus(route.getRouteId()).isStarted())
-				{
-					routeController.stopRoute(route.getRouteId());
-				}
-			}
-			catch (final Exception e)
-			{
-				throw new RuntimeException("Could not stop route : " + route.getRouteId() + ".", e);
-			}
-		});
+		getRoutes()
+				.stream()
+				.filter(CustomRouteController::canBeStopped)
+				.forEach(this::stop);
 	}
 
-	private void startRoute(final Route route, final RouteController routeController, final String errorMessage)
+	public void startAlwaysRunningRoutes()
+	{
+		getRoutes()
+				.stream()
+				.filter(CustomRouteController::isAlwaysRunning)
+				.forEach(this::start);
+	}
+
+	private void start(final Route route)
 	{
 		try
 		{
-			routeController.startRoute(route.getRouteId());
+			getRouteController().startRoute(route.getRouteId());
 		}
 		catch (final Exception e)
 		{
-			throw new RuntimeException(errorMessage, e);
+			throw new RuntimeException("Exception caught when trying to start route=" + route.getRouteId(), e);
 		}
+	}
+
+	private void stop(final Route route)
+	{
+		try
+		{
+			getRouteController().stopRoute(route.getRouteId(), 100, TimeUnit.MILLISECONDS);
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeException("Exception caught when trying to suspend route=" + route.getRouteId(), e);
+		}
+	}
+
+	@NonNull
+	private List<Route> getRoutes()
+	{
+		return camelContext.getRoutes();
+	}
+
+	@NonNull
+	private RouteController getRouteController()
+	{
+		return camelContext.getRouteController();
+	}
+
+	private static boolean isReadyToStart(@NonNull final Route route)
+	{
+		final boolean isStartOnDemand = CamelRoutesGroup.ofCodeOptional(route.getGroup())
+				.map(CamelRoutesGroup::isStartOnDemand)
+				.orElse(false);
+
+		return !isStartOnDemand;
+	}
+
+	private static boolean canBeStopped(@NonNull final Route route)
+	{
+		return !isAlwaysRunning(route);
+	}
+
+	private static boolean isAlwaysRunning(@NonNull final Route route)
+	{
+		return CamelRoutesGroup.ofCodeOptional(route.getGroup())
+				.map(CamelRoutesGroup::isAlwaysOn)
+				.orElse(false);
 	}
 }

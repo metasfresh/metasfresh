@@ -90,16 +90,6 @@ public class UserGroupRepository
 		return UserGroupsCollection.of(assignments);
 	}
 
-	public UserGroup getUserGroupByName(final String groupName)
-	{
-		final I_AD_UserGroup userGroupRecord = queryBL.createQueryBuilder(I_AD_UserGroup.class)
-				.addEqualsFilter(I_AD_UserGroup.COLUMNNAME_Name, groupName)
-				.create()
-				.firstOnlyNotNull(I_AD_UserGroup.class);
-
-		return toUserGroup(userGroupRecord);
-	}
-
 	@NonNull
 	private UserIdWithGroupsCollection retrieveUserAssignments(@NonNull final UserId userId)
 	{

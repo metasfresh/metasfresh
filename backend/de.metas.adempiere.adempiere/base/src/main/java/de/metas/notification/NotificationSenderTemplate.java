@@ -202,14 +202,6 @@ public class NotificationSenderTemplate
 					.stream()
 					.map(userId -> Recipient.userAndRole(userId, roleId));
 		}
-		else if (recipient.isGroup())
-		{
-			final UserGroupId groupId = recipient.getGroupId();
-			return userGroupRepository.getByUserGroupId(groupId)
-					.streamAssignmentsFor(groupId, Instant.now())
-					.map(UserGroupUserAssignment::getUserId)
-					.map(Recipient::user);
-		}
 		else if (recipient.isAllRolesContainingGroup())
 		{
 			final Set<RoleId> roleIds = roleNotificationsConfigRepository.getRoleIdsContainingNotificationGroupName(recipient.getNotificationGroupName());
@@ -217,6 +209,14 @@ public class NotificationSenderTemplate
 					.flatMap(roleId -> rolesRepo.retrieveUserIdsForRoleId(roleId)
 							.stream()
 							.map(userId -> Recipient.userAndRole(userId, roleId)));
+		}
+		else if (recipient.isGroup())
+		{
+			final UserGroupId groupId = recipient.getGroupId();
+			return userGroupRepository.getByUserGroupId(groupId)
+					.streamAssignmentsFor(groupId, Instant.now())
+					.map(UserGroupUserAssignment::getUserId)
+					.map(Recipient::user);
 		}
 		else
 		{
