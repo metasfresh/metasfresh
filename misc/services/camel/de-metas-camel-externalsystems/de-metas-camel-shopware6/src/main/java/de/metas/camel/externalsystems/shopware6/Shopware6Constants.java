@@ -33,6 +33,8 @@ public interface Shopware6Constants
 	String FIELD_ORDER_NUMBER = "orderNumber";
 	String FIELD_ORDER_ID = "id";
 
+	String FIELD_PRODUCT_ID = "id";
+
 	String PARAMETERS_DATE_GTE = "gte";
 
 	String SALUTATION_KEY_NOT_SPECIFIED = "not_specified";
