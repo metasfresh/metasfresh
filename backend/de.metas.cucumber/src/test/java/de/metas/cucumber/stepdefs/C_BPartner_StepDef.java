@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -177,14 +178,53 @@ public class C_BPartner_StepDef
 
 	private void changeBPartner(@NonNull final Map<String, String> row)
 	{
-		final String bpartner = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
-		final String name2 = DataTableUtil.extractStringOrNullForColumnName(row, "Name2");
+		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
 
-		final I_C_BPartner bPartner = bPartnerTable.get(bpartner);
+		final Integer bPartnerId = bPartnerTable.getOptional(bPartnerIdentifier)
+				.map(I_C_BPartner::getC_BPartner_ID)
+				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
 
-		bPartner.setName2(name2);
+		final de.metas.edi.model.I_C_BPartner bPartnerRecord = InterfaceWrapperHelper.load(bPartnerId, de.metas.edi.model.I_C_BPartner.class);
 
-		InterfaceWrapperHelper.save(bPartner);
+		final String name2 = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_Name2);
+
+		if (Check.isNotBlank(name2))
+		{
+			bPartnerRecord.setName2(DataTableUtil.nullToken2Null(name2));
+		}
+
+		final String vaTaxId = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_VATaxID);
+
+		if (Check.isNotBlank(vaTaxId))
+		{
+			bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId));
+		}
+
+		final String ediDesadvRecipientGLN = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
+
+		if (Check.isNotBlank(ediDesadvRecipientGLN))
+		{
+			bPartnerRecord.setEdiDesadvRecipientGLN(DataTableUtil.nullToken2Null(ediDesadvRecipientGLN));
+		}
+
+		final String ediInvoicRecipientGLN = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN);
+
+		if (Check.isNotBlank(ediInvoicRecipientGLN))
+		{
+			bPartnerRecord.setEdiInvoicRecipientGLN(DataTableUtil.nullToken2Null(ediInvoicRecipientGLN));
+		}
+
+		final boolean isInvoicRecipient = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient, false);
+		bPartnerRecord.setIsEdiInvoicRecipient(isInvoicRecipient);
+
+		final String deliveryRule = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule);
+
+		if (Check.isNotBlank(deliveryRule))
+		{
+			bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule));
+		}
+
+		InterfaceWrapperHelper.save(bPartnerRecord);
 	}
 
 	private void locate_bpartner_by_external_identifier(@NonNull final Map<String, String> row)

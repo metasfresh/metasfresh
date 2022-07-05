@@ -22,15 +22,19 @@
 
 package de.metas.cucumber.stepdefs.productionorder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
@@ -65,15 +69,22 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_ComponentType;
+import static org.eevolution.model.I_PP_Product_BOMLine.COLUMNNAME_QtyBatch;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Order_StepDef
@@ -242,8 +253,7 @@ public class PP_Order_StepDef
 			return true;
 		};
 
-		final boolean bomLineFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
-		assertThat(bomLineFound).isTrue();
+		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderBOMLineQueryExecutor);
 
 		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBomLineTable.get(ppOrderBOMLineIdentifier);
 		assertThat(ppOrderBOMLine).isNotNull();
@@ -316,8 +326,7 @@ public class PP_Order_StepDef
 			}
 		};
 
-		final boolean orderFound = StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
-		assertThat(orderFound).isTrue();
+		StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderQueryExecutor);
 
 		final I_PP_Order ppOrder = ppOrderTable.get(orderRecordIdentifier);
 		assertThat(ppOrder).isNotNull();

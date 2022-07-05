@@ -51,50 +51,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
-  {
-    "id" : 100001,
-    "type" : "RabbitMQ",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "testRabbitMQValue",
-      "routingKey" : "routingKey",
-      "remoteUrl" : "remoteURL",
-      "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
-  {
-    "id" : 100001,
-    "type" : "RabbitMQ",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "testRabbitMQValue",
-      "routingKey" : "routingKey",
-      "remoteUrl" : "remoteURL",
-      "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
@@ -165,6 +121,68 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
       "createBPartnerFolders" : false
     },
     "writeAudit" : false
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getActiveByType=[
+  [
+    {
+      "id" : 100001,
+      "type" : "LeichUndMehl",
+      "name" : "name",
+      "active" : true,
+      "orgId" : 0,
+      "childConfig" : {
+        "id" : 100002,
+        "parentId" : 100001,
+        "value" : "testLeichMehlValue",
+        "ftpHost" : "hostname",
+        "ftpPort" : 1111,
+        "ftpUsername" : "ftpUsername",
+        "ftpPassword" : "ftpPassword",
+        "ftpDirectory" : "directory"
+      },
+      "writeAudit" : true,
+      "auditFileFolder" : "auditFileFolder"
+    }
+  ]
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testLeichMehlValue",
+    "ftpHost" : "hostname",
+    "ftpPort" : 1111,
+    "ftpUsername" : "ftpUsername",
+    "ftpPassword" : "ftpPassword",
+    "ftpDirectory" : "directory"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_LeichMehl_getTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testLeichMehlValue",
+      "ftpHost" : "hostname",
+      "ftpPort" : 1111,
+      "ftpUsername" : "ftpUsername",
+      "ftpPassword" : "ftpPassword",
+      "ftpDirectory" : "directory"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
   }
 ]
 
@@ -429,6 +447,29 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testWoocommerceValue"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "ftpHost" : "hostname",
+      "ftpPort" : 1111,
+      "ftpUsername" : "ftpUsername",
+      "ftpPassword" : "ftpPassword",
+      "ftpDirectory" : "directory"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"

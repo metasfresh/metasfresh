@@ -102,8 +102,10 @@ public class C_OrderLine_StepDef
 			orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
-			final I_M_Product product = productTable.get(productIdentifier);
-			orderLine.setM_Product_ID(product.getM_Product_ID());
+			final Integer productID = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+			orderLine.setM_Product_ID(productID);
 			orderLine.setQtyEntered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyEntered));
 
 			final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -114,6 +116,10 @@ public class C_OrderLine_StepDef
 
 				orderLine.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
 			}
+
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
+			final I_C_Order order = orderTable.get(orderIdentifier);
+			orderLine.setC_Order_ID(order.getC_Order_ID());
 
 			final String itemProductIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (de.metas.util.Check.isNotBlank(itemProductIdentifier))
@@ -132,10 +138,6 @@ public class C_OrderLine_StepDef
 					orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductRecordID);
 				}
 			}
-
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
-			final I_C_Order order = orderTable.get(orderIdentifier);
-			orderLine.setC_Order_ID(order.getC_Order_ID());
 
 			saveRecord(orderLine);
 
