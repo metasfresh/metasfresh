@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.product;
+package de.metas.camel.externalsystems.shopware6.product.variants;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,12 +34,17 @@ import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder;
+import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilderTests;
+import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
+import de.metas.camel.externalsystems.shopware6.product.ImportProductsRouteContext;
 import de.metas.camel.externalsystems.shopware6.unit.UOMInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
+import net.bytebuddy.asm.Advice;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
@@ -71,22 +76,37 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.ATTACH_CONTEXT_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.GET_PRODUCTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.PROCESS_PRODUCT_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.PROCESS_PRODUCT_VARIANT_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.UPSERT_PRODUCT_PRICE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-public class GetVariantProductsRouteBuilderTests extends CamelTestSupport
+/**
+ * This test simulates a shopware product api result which contains two products:
+ * A parent product and one of its variants.
+ *
+ * Metasfresh should import the parent as usual but treat the variant differently.
+ * This test checks of both, parent and variant are upserted as expected.
+ */
+public class GetProductVariantsRouteBuilderTests extends CamelTestSupport
 {
 	private static final String MOCK_UPSERT_PRODUCT = "mock:UpsertProduct";
+
+	private static final String MOCK_UPSERT_PRODUCT_VARIANT = "mock:UpsertProductVariant";
 	private static final String MOCK_UPSERT_PRODUCT_PRICE = "mock:UpsertProductPrice";
 	private static final String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
 
 	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "10_JsonExternalSystemRequest.json";
-	private static final String JSON_PRODUCTS_RESOURCE_PATH = "21_JsonProductsWithVariants.json";
-	private static final String JSON_UPSERT_PRODUCT_REQUEST = "30_CamelUpsertProductRequest.json";
-	private static final String JSON_UPSERT_PRODUCT_PRICE_REQUEST = "40_UpsertProductPriceList.json";
+	private static final String JSON_PRODUCTS_RESOURCE_PATH = "20_JsonProductsWithVariants.json";
+
+	private static final String JSON_PRODUCT_PARENT_RESOURCE_PATH = "21_JsonProductParent.json";
+	private static final String JSON_UPSERT_PRODUCT_PARENT_REQUEST = "30_CamelUpsertProductParentRequest.json";
+	private static final String JSON_UPSERT_PRODUCT_VARIANT_REQUEST = "30_CamelUpsertProductVariantRequest.json";
+
+	private static final String JSON_UPSERT_PRODUCT_PRICE_REQUEST = "40_UpsertProductParentPriceList.json";
+	private static final String JSON_UPSERT_PRODUCT_VARIANT_PRICE_REQUEST = "40_UpsertProductVariantPriceList.json";
 	private static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = "50_JsonESRuntimeParameterUpsertRequest.json";
 
 	private final static ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -97,7 +117,7 @@ public class GetVariantProductsRouteBuilderTests extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(GetProductsRouteBuilderTests.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(GetProductVariantsRouteBuilderTests.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -123,9 +143,9 @@ public class GetVariantProductsRouteBuilderTests extends CamelTestSupport
 	@Test
 	void happyFlow() throws Exception
 	{
-		final GetVariantProductsRouteBuilderTests.MockUpsertProductProcessor mockUpsertProductProcessor = new GetVariantProductsRouteBuilderTests.MockUpsertProductProcessor();
-		final GetVariantProductsRouteBuilderTests.MockUpsertPriceProcessor mockUpsertPriceProcessor = new GetVariantProductsRouteBuilderTests.MockUpsertPriceProcessor();
-		final GetVariantProductsRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetVariantProductsRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final GetProductVariantsRouteBuilderTests.MockUpsertProductProcessor mockUpsertProductProcessor = new GetProductVariantsRouteBuilderTests.MockUpsertProductProcessor();
+		final GetProductVariantsRouteBuilderTests.MockUpsertPriceProcessor mockUpsertPriceProcessor = new GetProductVariantsRouteBuilderTests.MockUpsertPriceProcessor();
+		final GetProductVariantsRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetProductVariantsRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor();
 
 		//given
 		prepareRouteForTesting(mockUpsertProductProcessor,
@@ -134,13 +154,20 @@ public class GetVariantProductsRouteBuilderTests extends CamelTestSupport
 
 		context.start();
 
-		final InputStream expectedUpsertProductRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST);
+		//we expect both, parent and variant to be created.
+		final InputStream expectedUpsertProductRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_PARENT_REQUEST);
+		final InputStream expectedUpsertProductVariantRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_VARIANT_REQUEST);
 		final MockEndpoint productMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT);
-		productMockEndpoint.expectedBodiesReceived(mapper.readValue(expectedUpsertProductRequestIS, ProductUpsertCamelRequest.class));
+		productMockEndpoint.expectedBodiesReceived(mapper.readValue(expectedUpsertProductRequestIS, ProductUpsertCamelRequest.class),
+												   mapper.readValue(expectedUpsertProductVariantRequestIS, ProductUpsertCamelRequest.class)
+		);
 
+		//we expect both, price list for parent and variant.
 		final InputStream expectedUpsertProductPriceRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_PRICE_REQUEST);
+		final InputStream expectedUpsertProductVariantPriceRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_VARIANT_PRICE_REQUEST);
 		final MockEndpoint productPriceMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT_PRICE);
-		productPriceMockEndpoint.expectedBodiesReceived(mapper.readValue(expectedUpsertProductPriceRequestIS, UpsertProductPriceList.class));
+		productPriceMockEndpoint.expectedBodiesReceived(mapper.readValue(expectedUpsertProductPriceRequestIS, UpsertProductPriceList.class),
+														mapper.readValue(expectedUpsertProductVariantPriceRequestIS, UpsertProductPriceList.class));
 
 		final InputStream expectedRuntimeParamIS = this.getClass().getResourceAsStream(JSON_UPSERT_RUNTIME_PARAMS_REQUEST);
 		final MockEndpoint mockUpsertRuntimeParamEP = getMockEndpoint(MOCK_UPSERT_RUNTIME_PARAMETERS);
@@ -154,19 +181,20 @@ public class GetVariantProductsRouteBuilderTests extends CamelTestSupport
 
 		//then
 		assertMockEndpointsSatisfied();
-		assertThat(mockUpsertProductProcessor.called).isEqualTo(1);
-		assertThat(mockUpsertPriceProcessor.called).isEqualTo(1);
+		assertThat(mockUpsertProductProcessor.called).isEqualTo(2);
+		assertThat(mockUpsertPriceProcessor.called).isEqualTo(2);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
+
 	}
 
-	private void prepareRouteForTesting(final GetVariantProductsRouteBuilderTests.MockUpsertProductProcessor mockUpsertProductProcessor,
-			final GetVariantProductsRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
-			final GetVariantProductsRouteBuilderTests.MockUpsertPriceProcessor mockUpsertPriceProcessor) throws Exception
+	private void prepareRouteForTesting(final GetProductVariantsRouteBuilderTests.MockUpsertProductProcessor mockUpsertProductProcessor,
+			final GetProductVariantsRouteBuilderTests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
+			final GetProductVariantsRouteBuilderTests.MockUpsertPriceProcessor mockUpsertPriceProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_PRODUCTS_ROUTE_ID,
 							  advice -> advice.weaveById(ATTACH_CONTEXT_PROCESSOR_ID)
 									  .replace()
-									  .process(new GetVariantProductsRouteBuilderTests.BuildContextMockProcessor()));
+									  .process(new GetProductVariantsRouteBuilderTests.BuildContextMockProcessor()));
 
 		AdviceWith.adviceWith(context, PROCESS_PRODUCT_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + MF_UPSERT_PRODUCT_V2_CAMEL_URI)
@@ -233,8 +261,11 @@ public class GetVariantProductsRouteBuilderTests extends CamelTestSupport
 			Mockito.doNothing().when(shopwareClientSpy).refreshTokenIfExpired();
 
 			final String productsResponse = loadAsString(JSON_PRODUCTS_RESOURCE_PATH);
+			final String productParentResponse = loadAsString(JSON_PRODUCT_PARENT_RESOURCE_PATH);
 
+			//first return product list, then only parent for ID request.
 			Mockito.doReturn(ResponseEntity.ok(mapper.readValue(productsResponse, JsonProducts.class)))
+					.doReturn(ResponseEntity.ok(mapper.readValue(productParentResponse, JsonProducts.class)))
 					.when(shopwareClientSpy)
 					.performWithRetry(any(), eq(HttpMethod.POST), eq(JsonProducts.class), any());
 
@@ -244,7 +275,7 @@ public class GetVariantProductsRouteBuilderTests extends CamelTestSupport
 
 	private static String loadAsString(@NonNull final String name)
 	{
-		final InputStream inputStream = GetProductsRouteBuilderTests.class.getResourceAsStream(name);
+		final InputStream inputStream = GetProductVariantsRouteBuilderTests.class.getResourceAsStream(name);
 		return new BufferedReader(
 				new InputStreamReader(inputStream, StandardCharsets.UTF_8))
 				.lines()
@@ -252,6 +283,18 @@ public class GetVariantProductsRouteBuilderTests extends CamelTestSupport
 	}
 
 	private static class MockUpsertProductProcessor implements Processor
+	{
+		@Getter
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockUpsertProductVariantProcessor implements Processor
 	{
 		@Getter
 		private int called = 0;
