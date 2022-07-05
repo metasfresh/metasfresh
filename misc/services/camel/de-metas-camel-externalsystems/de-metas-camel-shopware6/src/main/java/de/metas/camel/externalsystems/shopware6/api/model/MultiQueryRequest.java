@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
@@ -34,7 +35,7 @@ import java.util.List;
 
 @Value
 @JsonDeserialize(builder = MultiQueryRequest.MultiQueryRequestBuilder.class)
-public class MultiQueryRequest
+public class MultiQueryRequest implements Shopware6QueryRequest
 {
 	@NonNull
 	@JsonProperty("filter")
@@ -42,10 +43,12 @@ public class MultiQueryRequest
 
 	@Nullable
 	@JsonProperty("limit")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Integer limit;
 
 	@Nullable
 	@JsonProperty("page")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Integer page;
 
 	@Builder

@@ -45,6 +45,7 @@ public interface Shopware6Constants
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
 	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
 	String ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT = "GetCustomersRouteContext";
+	String ROUTE_PROPERTY_EXPORT_STOCK_CONTEXT = "ExportStockRouteContext";
 
 	//nodes
 	String JSON_NODE_DATA = "data";
