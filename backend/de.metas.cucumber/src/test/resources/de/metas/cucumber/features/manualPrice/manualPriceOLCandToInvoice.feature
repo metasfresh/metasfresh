@@ -103,7 +103,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   Scenario: Order candidate to shipment and invoice flow and closed order with Reduced Vat Tax Category matching on C_Country_ID
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
-      | p_1        | noPriceProduct_06072022_1 | true      |
+      | p_1        | noPriceProduct_07072022_1 | true      |
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | C_BPartner_ID |
@@ -121,8 +121,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   """
 {
     "orgCode": "001",
-    "externalLineId": "externalLineId_06072022_1",
-    "externalHeaderId": "externalHeaderId_06072022_1",
+    "externalLineId": "externalLineId_07072022_1",
+    "externalHeaderId": "externalHeaderId_07072022_1",
     "dataSource": "int-Shopware",
     "dataDest": null,
     "bpartner": {
@@ -134,10 +134,10 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "dateOrdered": "2021-04-15",
     "dateCandidate": "2021-04-15",
     "orderDocType": "SalesOrder",
-    "productIdentifier": "val-noPriceProduct_06072022_1",
+    "productIdentifier": "val-noPriceProduct_07072022_1",
     "qty": 10,
     "uomCode": "PCE",
-    "poReference": "po_ref_06072022_1",
+    "poReference": "po_ref_07072022_1",
     "line": 1,
     "isManualPrice": true,
     "currencyCode": "EUR",
@@ -150,7 +150,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "externalHeaderId_06072022_1",
+    "externalHeaderId": "externalHeaderId_07072022_1",
     "inputDataSourceName": "int-Shopware",
     "ship": true,
     "invoice": true,
@@ -164,7 +164,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created orders
       | C_Order_ID.Identifier | OPT.ExternalId              | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference       | processed | docStatus |
-      | order_1               | externalHeaderId_06072022_1 | bpartner_1               | bpartnerLocation_1                | 2021-04-15  | SOO         | EUR          | F            | S               | po_ref_06072022_1 | true      | CL        |
+      | order_1               | externalHeaderId_07072022_1 | bpartner_1               | bpartnerLocation_1                | 2021-04-15  | SOO         | EUR          | F            | S               | po_ref_07072022_1 | true      | CL        |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_TaxCategory_ID.Identifier |
@@ -172,7 +172,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference   | processed | docStatus |
-      | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-04-15  | po_ref_06072022_1 | true      | CO        |
+      | shipment_1            | bpartner_1               | bpartnerLocation_1                | 2021-04-15  | po_ref_07072022_1 | true      | CO        |
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
@@ -180,7 +180,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm | processed | docStatus |
-      | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_06072022_1 | 10 Tage 1 % | true      | CO        |
+      | invoice_1               | bpartner_1               | bpartnerLocation_1                | po_ref_07072022_1 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_TaxCategory_ID.Identifier |
