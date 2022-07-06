@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.authorization;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.procurement.base.model.I_AD_User;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -33,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User_AuthToken;
-import org.compiere.model.I_AD_User_Roles;
 
 import java.util.Map;
 
@@ -58,8 +56,8 @@ public class AD_User_AuthToken_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String userAuthTokenIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User_AuthToken.Table_Name + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final int userId = DataTableUtil.extractIntForColumnName(row, I_AD_User.Table_Name + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final int roleId = DataTableUtil.extractIntForColumnName(row, I_AD_User_Roles.Table_Name + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final int userId = DataTableUtil.extractIntForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_User_ID);
+			final int roleId = DataTableUtil.extractIntForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_Role_ID);
 			final String authToken = DataTableUtil.extractStringForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AuthToken);
 
 			final I_AD_User_AuthToken userAuthToken = CoalesceUtil.coalesceSuppliers(
