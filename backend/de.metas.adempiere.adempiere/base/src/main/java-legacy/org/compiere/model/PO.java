@@ -75,6 +75,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
+import org.compiere.util.ExecuteUpdateRequest;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.compiere.util.Ini;
 import org.compiere.util.SecureEngine;
@@ -3816,14 +3817,17 @@ public abstract class PO
 			loadAfterInsertProcessor = null;
 		}
 
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sqlInsert.toString())
+				.params(null)
+				.onFail(OnFail.ThrowException)
+				.trxName(m_trxName)
+				.timeOut(0)
+				.updateReturnProcessor(loadAfterInsertProcessor)
+				.build();
 		//
 		// Execute actual database INSERT
-		final int no = DB.executeUpdate(sqlInsert.toString(),
-				(Object[])null,  // params,
-				OnFail.ThrowException,  // onFail
-				m_trxName,
-				0,  // timeOut,
-				loadAfterInsertProcessor);
+		final int no = DB.executeUpdate(executeUpdateRequest);
 		boolean ok = no == 1;
 
 		//

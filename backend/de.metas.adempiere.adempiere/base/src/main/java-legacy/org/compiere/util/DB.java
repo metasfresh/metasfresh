@@ -763,7 +763,7 @@ public class DB
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
 	}    // executeUpdate
 
 	/**
@@ -781,7 +781,7 @@ public class DB
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
 		final ISqlUpdateReturnProcessor updpateReturnProcessor = null;
-		return executeUpdate(sql, sqlParams, onFail, trxName, timeOut, updpateReturnProcessor);
+		return executeUpdate(new ExecuteUpdateRequest(sql, sqlParams, onFail, trxName, timeOut, updpateReturnProcessor));
 	}    // executeUpdate
 
 	/**
@@ -798,7 +798,8 @@ public class DB
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
 		final int timeOut = 0;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+
+		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
 	}    // executeUpdate
 
 	/**
@@ -815,41 +816,30 @@ public class DB
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
 	}
 
 	/**
 	 * Execute SQL Update.
 	 *
-	 * @param onFail                what to do if the update fails
-	 * @param updateReturnProcessor
-	 * @return update count
+	 *
+	 * @param executeUpdateRequest@return update count
 	 * @throws DBException if update fails and {@link OnFail#ThrowException}.
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int executeUpdate(final String sql,
-			final Object[] params,
-			@NonNull final OnFail onFail,
-			final String trxName,
-			final int timeOut,
-			final ISqlUpdateReturnProcessor updateReturnProcessor)
+	public int executeUpdate(final ExecuteUpdateRequest executeUpdateRequest)
 	{
-		final SQLUpdateResult result = executeUpdateWithWarning(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
 
 		return result.getNumericResult();
 	}
 
-	public SQLUpdateResult executeUpdateWithWarning(final String sql,
-			final Object[] params,
-			@NonNull final OnFail onFail,
-			final String trxName,
-			final int timeOut,
-			final ISqlUpdateReturnProcessor updateReturnProcessor)
+	public SQLUpdateResult executeUpdateWithWarning(final ExecuteUpdateRequest request)
 	{
-		if (Check.isEmpty(sql, true))
+		if (Check.isEmpty(request.getSql(), true))
 		{
-			throw new IllegalArgumentException("Required parameter missing - " + sql);
+			throw new IllegalArgumentException("Required parameter missing - " + request.getSql());
 		}
 
 		//
@@ -858,18 +848,18 @@ public class DB
 		CPreparedStatement cs = statementsFactory.newCPreparedStatement(
 				ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_UPDATABLE,
-				sql, // converted in call
-				trxName);
+				request.getSql(), // converted in call
+				request.getTrxName());
 
 		try
 		{
-			setParameters(cs, params);
-			if (timeOut > 0 && getDatabase().isQueryTimeoutSupported())
+			setParameters(cs, request.getParams());
+			if (request.getTimeOut() > 0 && getDatabase().isQueryTimeoutSupported())
 			{
-				cs.setQueryTimeout(timeOut);
+				cs.setQueryTimeout(request.getTimeOut());
 			}
 
-			if (updateReturnProcessor != null)
+			if (request.getUpdateReturnProcessor() != null)
 			{
 				// NOTE: this is an UPDATE query, so we shall log migration scripts
 				final ResultSet rs = cs.executeQueryAndLogMigationScripts();
@@ -883,7 +873,7 @@ public class DB
 					}
 					while (rs.next())
 					{
-						updateReturnProcessor.process(rs);
+						request.getUpdateReturnProcessor().process(rs);
 						rows++;
 					}
 				}
@@ -899,7 +889,7 @@ public class DB
 			}
 
 			// No Transaction - Commit
-			if (Services.get(ITrxManager.class).isNull(trxName))
+			if (Services.get(ITrxManager.class).isNull(request.getTrxName()))
 			{
 				cs.commit();    // Local commit
 				// Connection conn = cs.getConnection();
@@ -918,8 +908,8 @@ public class DB
 			if (sqlException instanceof SQLException
 					&& DBException.isUniqueContraintError(sqlException))
 			{
-				sqlException = new DBUniqueConstraintException((SQLException)sqlException, sql, params)
-						.setSqlIfAbsent(sql, params);
+				sqlException = new DBUniqueConstraintException((SQLException)sqlException, request.getSql(), request.getParams())
+						.setSqlIfAbsent(request.getSql(), request.getParams());
 			}
 			// metas-2009_0021_AP1_CR061: teo_sarca: end
 
@@ -930,7 +920,7 @@ public class DB
 				{
 					final Connection connection = cs.getConnection();
 					sqlException = new DBDeadLockDetectedException(sqlException, connection)
-							.setSqlIfAbsent(sql, params);
+							.setSqlIfAbsent(request.getSql(), request.getParams());
 				}
 				catch (final SQLException | DBException e1)
 				{
@@ -940,7 +930,7 @@ public class DB
 					e1.printStackTrace(); // printing the stacktrace (to err), just to make sure it's recorded somewhere
 					// now try to log it
 					log.error(
-							"Caught an additional exception while trying to get the connection of our DBDeadLockDetectedException: " + cs.getSql() + " [" + trxName + "] - " + e1.getMessage());
+							"Caught an additional exception while trying to get the connection of our DBDeadLockDetectedException: " + cs.getSql() + " [" + request.getTrxName() + "] - " + e1.getMessage());
 				}
 			}
 
@@ -948,31 +938,31 @@ public class DB
 					&& DBException.isForeignKeyViolation(sqlException))
 			{
 				sqlException = new DBForeignKeyConstraintException(sqlException)
-						.setSqlIfAbsent(sql, params);
+						.setSqlIfAbsent(request.getSql(), request.getParams());
 			}
 
 			//
 			// Handle the sqlException
-			if (onFail == OnFail.SaveError)
+			if (request.getOnFail() == OnFail.SaveError)
 			{
-				log.error(cs.getSql() + " [" + trxName + "]", sqlException);
+				log.error(cs.getSql() + " [" + request.getTrxName() + "]", sqlException);
 				MetasfreshLastError.saveError(log, "DBExecuteError", sqlException);
 			}
-			else if (onFail == OnFail.IgnoreButLog)
+			else if (request.getOnFail() == OnFail.IgnoreButLog)
 			{
-				log.error(cs.getSql() + " [" + trxName + "] - " + sqlException.getLocalizedMessage());
+				log.error(cs.getSql() + " [" + request.getTrxName() + "] - " + sqlException.getLocalizedMessage());
 			}
-			else if (onFail == OnFail.ThrowException)
+			else if (request.getOnFail() == OnFail.ThrowException)
 			{
 				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
-						.setSqlIfAbsent(sql, params);
+						.setSqlIfAbsent(request.getSql(), request.getParams());
 			}
 			// Unknown OnFail option
 			// => throw the exception
 			else
 			{
 				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
-						.setSqlIfAbsent(sql, params);
+						.setSqlIfAbsent(request.getSql(), request.getParams());
 			}
 		}
 		finally
@@ -1012,7 +1002,7 @@ public class DB
 	{
 		final OnFail onFail = OnFail.ThrowException;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
 	}
 
 	/**
@@ -1026,7 +1016,7 @@ public class DB
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.ThrowException;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
 	}    // executeUpdateEx
 
 
@@ -1036,7 +1026,7 @@ public class DB
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.ThrowException;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdateWithWarning(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+		return executeUpdateWithWarning(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
 	}    // executeUpdateEx
 
 	/**
@@ -1049,7 +1039,7 @@ public class DB
 		final Object[] params = null;
 		final OnFail onFail = OnFail.ThrowException;
 		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
 	}    // executeUpdateEx
 
 	public int executeUpdateEx(final String sql,
@@ -1058,7 +1048,7 @@ public class DB
 			final int timeOut,
 			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
-		return executeUpdate(sql, params, OnFail.ThrowException, trxName, timeOut, updateReturnProcessor);
+		return executeUpdate(new ExecuteUpdateRequest(sql, params, OnFail.ThrowException, trxName, timeOut, updateReturnProcessor));
 	}
 
 	/**

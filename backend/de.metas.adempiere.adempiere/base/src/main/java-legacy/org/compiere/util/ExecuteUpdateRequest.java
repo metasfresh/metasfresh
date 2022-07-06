@@ -1,10 +1,8 @@
-package org.compiere.util;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,24 +20,29 @@ package org.compiere.util;
  * #L%
  */
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+package org.compiere.util;
 
-import org.compiere.model.PO;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-/**
- * Used in conjunction with sql <code>RETURNING</code> dml statements.
- * And implementor can be passed to {@link DB#executeUpdate(ExecuteUpdateRequest)}.<br>
- * The implementors job is to process the returned values.
- * <p>
- * Hint: {@link PO} contains an inner class that implements this interface.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
+import javax.annotation.Nullable;
 
-@FunctionalInterface
-public interface ISqlUpdateReturnProcessor
+@Value
+@Builder
+public class ExecuteUpdateRequest
 {
-	void process(ResultSet rs) throws SQLException;
+	@Nullable
+	String sql;
+	@Nullable
+	Object[] params;
+	@NonNull
+	@Builder.Default
+	DB.OnFail onFail = DB.OnFail.ThrowException;
+	@Nullable
+	String trxName;
+	int timeOut;
+	@Nullable
+	ISqlUpdateReturnProcessor updateReturnProcessor;
+
 }
