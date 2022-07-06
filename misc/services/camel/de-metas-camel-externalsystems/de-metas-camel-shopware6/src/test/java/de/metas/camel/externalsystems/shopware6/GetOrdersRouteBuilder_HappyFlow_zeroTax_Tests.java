@@ -36,6 +36,7 @@ import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_
 import de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder_HappyFlow_Tests.MockUpsertBPartnerProcessor;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
@@ -383,7 +384,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 			//8. mock get orders
 			final String orders = loadAsString(JSON_ORDERS_RESOURCE_PATH);
 
-			final MultiQueryRequest shopware6QueryRequest = OrderQueryHelper
+			final Shopware6QueryRequest shopware6QueryRequest = OrderQueryHelper
 					.buildShopware6QueryRequest(externalSystemRequest, PageAndLimit.of(1, ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE));
 
 			Mockito.doReturn(ResponseEntity.ok(orders))
