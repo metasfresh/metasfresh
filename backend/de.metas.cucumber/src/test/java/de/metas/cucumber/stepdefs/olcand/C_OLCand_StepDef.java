@@ -206,6 +206,29 @@ public class C_OLCand_StepDef
 		}
 	}
 
+	@And("validate C_OLCand is with error")
+	public void validate_C_OLCand_has_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : rows)
+		{
+			validateOLCandError(row);
+		}
+	}
+
+	private void validateOLCandError(@NonNull final Map<String, String> row)
+	{
+		final String olCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_C_OLCand_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_OLCand olCand = olCandTable.get(olCandIdentifier);
+		InterfaceWrapperHelper.refresh(olCand);
+		assertThat(olCand).isNotNull();
+
+		assertThat(olCand.isError()).isTrue();
+
+		final String errorMsg = DataTableUtil.extractStringForColumnName(row, I_C_OLCand.COLUMNNAME_ErrorMsg);
+		assertThat(olCand.getErrorMsg()).contains(errorMsg);
+	}
+
 	@And("validate C_OLCand:")
 	public void validate_C_OLCand(@NonNull final DataTable dataTable)
 	{
