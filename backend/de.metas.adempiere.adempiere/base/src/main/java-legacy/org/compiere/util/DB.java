@@ -759,11 +759,19 @@ public class DB
 	@Deprecated
 	public int executeUpdate(final String sql, final String trxName)
 	{
-		final Object[] params = null;
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
-		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+
+		return result.getNumericResult();
 	}    // executeUpdate
 
 	/**
@@ -772,16 +780,24 @@ public class DB
 	 * @param ignoreError if true, no execution error is reported
 	 * @param trxName     transaction
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method.
+	 * @deprecated please use the {@code ...Ex} variant of this method.// TODO there is no such method!
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql, final boolean ignoreError, final String trxName)
 	{
-		final Object[] sqlParams = null;
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
-		final ISqlUpdateReturnProcessor updpateReturnProcessor = null;
-		return executeUpdate(new ExecuteUpdateRequest(sql, sqlParams, onFail, trxName, timeOut, updpateReturnProcessor));
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+
+		return result.getNumericResult();
 	}    // executeUpdate
 
 	/**
@@ -789,7 +805,7 @@ public class DB
 	 *
 	 * @param trxName transaction
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method.
+	 * @deprecated please use the {@code ...Ex} variant of this method. // TODO there is no such method!
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql, final int param, final String trxName)
@@ -797,10 +813,18 @@ public class DB
 		final Object[] params = new Object[] { param };
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
 		final int timeOut = 0;
-		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
 
-		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
-	}    // executeUpdate
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.params(params)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+		return result.getNumericResult();
+	}
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
@@ -808,20 +832,29 @@ public class DB
 	 * @param ignoreError if true, no execution error is reported
 	 * @param trxName     optional transaction name
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method.
+	 * @deprecated please use the {@code ...Ex} variant of this method. // TODO there is no such method!
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
 	{
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
-		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.params(params)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+
+		return result.getNumericResult();
 	}
 
 	/**
 	 * Execute SQL Update.
-	 *
 	 *
 	 * @param executeUpdateRequest@return update count
 	 * @throws DBException if update fails and {@link OnFail#ThrowException}.
@@ -867,7 +900,7 @@ public class DB
 				try
 				{
 					// TODO can rs be null?
-					if(rs!=null)
+					if (rs != null)
 					{
 						warning = rs.getStatement().getWarnings();
 					}
@@ -987,22 +1020,19 @@ public class DB
 	public int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
 	{
 		final int timeOut = 0;
-		return executeUpdateEx(sql, params, trxName, timeOut);
-	}
 
-	/**
-	 * Execute Update and throw exception.
-	 *
-	 * @param params  statement parameters
-	 * @param trxName transaction
-	 * @param timeOut optional timeOut parameter
-	 * @return number of rows updated
-	 */
-	public int executeUpdateEx(final String sql, final Object[] params, final String trxName, final int timeOut) throws DBException
-	{
-		final OnFail onFail = OnFail.ThrowException;
-		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.params(params)
+				.onFail(OnFail.ThrowException)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.updateReturnProcessor(null)
+				.build();
+
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+
+		return result.getNumericResult();
 	}
 
 	/**
@@ -1012,21 +1042,38 @@ public class DB
 	 */
 	public int executeUpdateEx(final String sql, @Nullable final String trxName) throws DBException
 	{
-		final Object[] params = null;
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.ThrowException;
-		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
-	}    // executeUpdateEx
 
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+
+		return result.getNumericResult();
+
+	}    // executeUpdateEx
 
 	public SQLUpdateResult executeUpdateWithWarningEx(final String sql, @Nullable final String trxName) throws DBException
 	{
-		final Object[] params = null;
+
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.ThrowException;
-		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdateWithWarning(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.build();
+
+		return executeUpdateWithWarning(executeUpdateRequest);
+
 	}    // executeUpdateEx
 
 	/**
@@ -1036,10 +1083,20 @@ public class DB
 	 */
 	public int executeUpdateEx(final String sql, final String trxName, final int timeOut) throws DBException
 	{
-		final Object[] params = null;
 		final OnFail onFail = OnFail.ThrowException;
-		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
-		return executeUpdate(new ExecuteUpdateRequest(sql, params, onFail, trxName, timeOut, updateReturnProcessor));
+
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.onFail(onFail)
+				.trxName(trxName)
+				.timeOut(timeOut)
+
+				.build();
+
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+
+		return result.getNumericResult();
+
 	}    // executeUpdateEx
 
 	public int executeUpdateEx(final String sql,
@@ -1048,7 +1105,18 @@ public class DB
 			final int timeOut,
 			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
-		return executeUpdate(new ExecuteUpdateRequest(sql, params, OnFail.ThrowException, trxName, timeOut, updateReturnProcessor));
+		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
+				.sql(sql)
+				.params(params)
+				.onFail(OnFail.ThrowException)
+				.trxName(trxName)
+				.timeOut(timeOut)
+				.updateReturnProcessor(updateReturnProcessor)
+				.build();
+
+		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+
+		return result.getNumericResult();
 	}
 
 	/**
@@ -1290,7 +1358,7 @@ public class DB
 	 */
 	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
-		final SQLValueStringResult result = getSQLValueStringWithWarningEx(trxName,sql,params);
+		final SQLValueStringResult result = getSQLValueStringWithWarningEx(trxName, sql, params);
 
 		return result.getResult();
 	}
@@ -1298,7 +1366,7 @@ public class DB
 	public SQLValueStringResult getSQLValueStringWithWarningEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
 		String retValue = null;
-		SQLWarning warning =null;
+		SQLWarning warning = null;
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -2278,7 +2346,7 @@ public class DB
 	}
 
 	public void createT_Selection(
-			@NonNull final PInstanceId selectionId, 
+			@NonNull final PInstanceId selectionId,
 			@NonNull final Collection<? extends RepoIdAware> selection,
 			@Nullable final String trxName)
 	{
@@ -2402,7 +2470,7 @@ public class DB
 	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
-	 * @param paramsOut  if null, the parameters will be embedded in returned SQL
+	 * @param paramsOut if null, the parameters will be embedded in returned SQL
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
@@ -2535,7 +2603,7 @@ public class DB
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
-				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
+					 SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
 
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
@@ -2553,11 +2621,11 @@ public class DB
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
-				1, // increment
-				1, // minvalue
-				Integer.MAX_VALUE, // maxvalue
-				1000000, // start
-				ITrx.TRXNAME_ThreadInherited);
+													   1, // increment
+													   1, // minvalue
+													   Integer.MAX_VALUE, // maxvalue
+													   1000000, // start
+													   ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -2601,7 +2669,7 @@ public class DB
 		else
 		{
 			throw new DBException("Failed to convert SQL: " + sql
-					+ "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
+										  + "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
 		}
 	}
 
@@ -2733,7 +2801,7 @@ public class DB
 		{
 			value = (AT)rs.getString(columnIndex);
 		}
-		else if(RepoIdAware.class.isAssignableFrom(returnType))
+		else if (RepoIdAware.class.isAssignableFrom(returnType))
 		{
 			@SuppressWarnings("unchecked")
 			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;

@@ -78,6 +78,7 @@ import org.compiere.util.Evaluatee2;
 import org.compiere.util.ExecuteUpdateRequest;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.compiere.util.Ini;
+import org.compiere.util.SQLUpdateResult;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
@@ -3825,9 +3826,11 @@ public abstract class PO
 				.timeOut(0)
 				.updateReturnProcessor(loadAfterInsertProcessor)
 				.build();
+
+		final int no =  DB.executeUpdate(executeUpdateRequest);
+
 		//
 		// Execute actual database INSERT
-		final int no = DB.executeUpdate(executeUpdateRequest);
 		boolean ok = no == 1;
 
 		//
