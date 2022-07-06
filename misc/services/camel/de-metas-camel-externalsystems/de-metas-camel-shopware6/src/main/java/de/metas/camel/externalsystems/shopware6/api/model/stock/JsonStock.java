@@ -30,8 +30,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
-
 @Value
 @Builder
 @JsonDeserialize(builder = JsonStock.JsonStockBuilder.class)
@@ -39,7 +37,7 @@ public class JsonStock
 {
 	@NonNull
 	@JsonProperty("stock")
-	BigDecimal stock;
+	Integer stock;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
