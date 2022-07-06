@@ -8,6 +8,7 @@ import de.metas.cache.CCache;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
+import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -23,6 +24,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -214,17 +216,24 @@ public class HUReservationRepository
 			@NonNull final I_M_HU_Reservation record,
 			@NonNull final HUReservationDocRef documentRef)
 	{
-		final OrderLineId orderLineId = documentRef.getSalesOrderLineId();
-		if (orderLineId != null)
-		{
-			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
-			record.setAD_Org_ID(orderLine.getAD_Org_ID());
-		}
-		
-		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(orderLineId));
+		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(documentRef.getSalesOrderLineId()));
 		record.setC_Project_ID(ProjectId.toRepoId(documentRef.getProjectId()));
 		record.setM_Picking_Job_Step_ID(PickingJobStepId.toRepoId(documentRef.getPickingJobStepId()));
 		record.setDD_OrderLine_ID(DDOrderLineId.toRepoId(documentRef.getDdOrderLineId()));
+
+		setOrgID(record, documentRef);
+	}
+
+	private static void setOrgID(@NonNull final I_M_HU_Reservation record, @NonNull final HUReservationDocRef documentRef)
+	{
+		final PickingJobStepId pickingJobStepId = documentRef.getPickingJobStepId();
+		if (pickingJobStepId != null)
+		{
+			final TableRecordReference recordReference = pickingJobStepId.toTableRecordReference();
+			final I_M_Picking_Job_Step stepRecord = recordReference.getModel(I_M_Picking_Job_Step.class);
+			record.setAD_Org_ID(stepRecord.getAD_Org_ID());
+		}
+
 	}
 
 	private I_M_HU_Reservation retrieveOrCreateRecordByVhuId(@NonNull final HuId vhuId)
