@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,11 @@
  * #L%
  */
 
-package de.metas.cucumber;
+package de.metas.cucumber.stepdefs.discount;
 
-import io.cucumber.junit.Cucumber;
-import io.cucumber.junit.CucumberOptions;
-import org.junit.runner.RunWith;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_M_DiscountSchema;
 
-@RunWith(Cucumber.class)
-@CucumberOptions(
-		glue = "de.metas.cucumber.stepdefs",
-		// tags = "not @ignore", // use this tag to temporatily ignore single scenarios
-		tags = "@dev:runThisOne", // use this tag to run only particular scenarios
-		plugin = {
-				"html:target/cucumber.html",
-				"json:target/cucumber.json" /* this json-output is needed for the Jenkins plugin that's supposed to publish it */,
-				"message:target/cucumber.message",
-				"de.metas.cucumber.CucumberLifeCycleSupport" })
-public class RunCucumberTest
+public class M_DiscountSchema_StepDefData extends StepDefData<I_M_DiscountSchema>
 {
 }

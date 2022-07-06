@@ -42,11 +42,13 @@ import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -54,6 +56,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,6 +71,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static de.metas.bpartner.api.impl.BPRelationDAO.queryBL;
 import static org.assertj.core.api.Assertions.*;
 
 public class CreatePurchaseCandidate_StepDef
@@ -77,9 +81,12 @@ public class CreatePurchaseCandidate_StepDef
 	private JsonPurchaseCandidateCreateItem.JsonPurchaseCandidateCreateItemBuilder jsonPurchaseCandidateCreateItem;
 	private final JsonPurchaseCandidateRequest.JsonPurchaseCandidateRequestBuilder jsonPurchaseCandidateRequest = JsonPurchaseCandidateRequest.builder();
 
-	public CreatePurchaseCandidate_StepDef(final TestContext testContext)
+	private final C_OrderLine_StepDefData orderLineTable;
+
+	public CreatePurchaseCandidate_StepDef(@NonNull final TestContext testContext, @NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.testContext = testContext;
+		this.orderLineTable = orderLineTable;
 		this.purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	}
 
@@ -163,6 +170,20 @@ public class CreatePurchaseCandidate_StepDef
 
 		assertThat(candidate.isProcessed()).isTrue();
 		assertThat(candidate.getPurchaseOrders()).hasSize(1);
+	}
+
+	@And("^validate no C_PurchaseCandidate found for orderLine (.*)$")
+	public void validate_no_C_PurchaseCandidate_found(@NonNull final String orderLineIdentifier)
+	{
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+		assertThat(orderLine).isNotNull();
+
+		final int noOfRecords = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, orderLine.getC_OrderLine_ID())
+				.create()
+				.count();
+
+		assertThat(noOfRecords).isEqualTo(0);
 	}
 
 	private JsonPrice mapPrice(final Map<String, String> map)

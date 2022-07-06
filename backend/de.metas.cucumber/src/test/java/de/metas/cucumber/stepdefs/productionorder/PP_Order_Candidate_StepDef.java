@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.productionorder;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -54,6 +55,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -93,6 +95,7 @@ public class PP_Order_Candidate_StepDef
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
 	private final PPOrderCandidateService ppOrderCandidateService;
@@ -111,7 +114,8 @@ public class PP_Order_Candidate_StepDef
 			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable)
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
@@ -123,6 +127,7 @@ public class PP_Order_Candidate_StepDef
 		this.ppOrderCandidateTable = ppOrderCandidateTable;
 		this.warehouseTable = warehouseTable;
 		this.huPiItemProductTable = huPiItemProductTable;
+		this.orderLineTable = orderLineTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Order_Candidates are found$")
@@ -241,6 +246,31 @@ public class PP_Order_Candidate_StepDef
 		{
 			createPPOrderCandidate(row);
 		}
+	}
+
+	@And("validate there is no simulated PP_Order_Candidate")
+	public void validate_no_simulated_PP_Order_Candidate()
+	{
+		final int noOfRecords = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsSimulated, true)
+				.create()
+				.count();
+
+		assertThat(noOfRecords).isEqualTo(0);
+	}
+
+	@And("^validate no PP_Order_Candidate found for orderLine (.*)$")
+	public void validate_no_PP_Order_Candidate_found(@NonNull final String orderLineIdentifier)
+	{
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+		assertThat(orderLine).isNotNull();
+
+		final int noOfRecords = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
+				.create()
+				.count();
+
+		assertThat(noOfRecords).isEqualTo(0);
 	}
 
 	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)
