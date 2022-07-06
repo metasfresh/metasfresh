@@ -22,23 +22,12 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonBPartner;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
-import de.metas.common.pricing.v2.productprice.JsonResponsePrice;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NonNull;
-import org.apache.camel.RuntimeCamelException;
-
-import javax.annotation.Nullable;
 
 @Data
 @Builder
@@ -51,60 +40,8 @@ public class ExportPPOrderRouteContext
 	private final ConnectionDetails connectionDetails;
 
 	@NonNull
-	String productBaseFolderName;
+	private final String productBaseFolderName;
 
 	@NonNull
 	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
-
-	@Nullable
-	@Getter(AccessLevel.NONE)
-	private JsonResponseManufacturingOrder jsonResponseManufacturingOrder;
-
-	@Nullable
-	private JsonProductInfo.JsonProductInfoBuilder jsonProductBuilder;
-
-	@Nullable
-	private JsonBPartner jsonBPartner;
-
-	@Nullable
-	private final ImmutableList<JsonResponsePrice> prices;
-
-	@Nullable
-	public JsonMetasfreshId getBPartnerId()
-	{
-		return getManufacturingOrderNonNull().getBpartnerId();
-	}
-
-	@NonNull
-	public JsonMetasfreshId getBPartnerIdNonNull()
-	{
-		if (this.getBPartnerId() == null)
-		{
-			throw new RuntimeCamelException("BPartnerId shouldn't be null at this stage!");
-		}
-
-		return this.getBPartnerId();
-	}
-
-	@NonNull
-	public JsonResponseManufacturingOrder getManufacturingOrderNonNull()
-	{
-		if (this.jsonResponseManufacturingOrder == null)
-		{
-			throw new RuntimeCamelException("JsonResponseManufacturingOrder cannot be null!");
-		}
-
-		return this.jsonResponseManufacturingOrder;
-	}
-
-	@NonNull
-	public JsonProductInfo.JsonProductInfoBuilder getProductInfoBuilderNonNull()
-	{
-		if (this.jsonProductBuilder == null)
-		{
-			throw new RuntimeCamelException("JsonProductInfo.JsonProductInfoBuilder cannot be null!");
-		}
-
-		return this.jsonProductBuilder;
-	}
 }

@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -91,27 +90,6 @@ public class ExternalSystemTestUtil
 		childRecord.setIsSyncBPartnersToRestEndpoint(isSyncBPartnersToRestEndpoint);
 		childRecord.setIsSyncHUsOnMaterialReceipt(isSyncHUsOnMaterialReceipt);
 		childRecord.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
-		saveRecord(childRecord);
-
-		return childRecord;
-	}
-
-	@NonNull
-	@Builder(builderMethodName = "createLeichMehlConfigBuilder", builderClassName = "leichMehlConfigBuilder")
-	private I_ExternalSystem_Config_LeichMehl createLeichMehlConfig(
-			final int externalSystemParentConfigId,
-			@NonNull final String value,
-			@Nullable final String productBaseFolderName,
-			@Nullable final Integer tcpPort,
-			@Nullable final String tcpHost)
-	{
-		final I_ExternalSystem_Config_LeichMehl childRecord = newInstance(I_ExternalSystem_Config_LeichMehl.class);
-		childRecord.setExternalSystem_Config_ID(externalSystemParentConfigId);
-		childRecord.setExternalSystemValue(value);
-		childRecord.setProduct_BaseFolderName(CoalesceUtil.coalesceNotNull(productBaseFolderName, "productBaseFolderName"));
-		childRecord.setTCP_PortNumber(CoalesceUtil.coalesceNotNull(tcpPort, 8080));
-		childRecord.setTCP_Host(CoalesceUtil.coalesceNotNull(tcpHost, "tcpHost"));
-
 		saveRecord(childRecord);
 
 		return childRecord;

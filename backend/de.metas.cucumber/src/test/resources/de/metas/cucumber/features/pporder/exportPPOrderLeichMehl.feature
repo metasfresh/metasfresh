@@ -1,9 +1,11 @@
+@from:cucumber
 Feature: Export PP_Order to LeichMehl config
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-03T13:30:13+01:00[Europe/Berlin]
 
+  @Id:S0162
   Scenario: Export PP_Order to LeichMehl when config is matched then a JsonExternalSystemRequest is sent to RabbitMQ
     Given load M_Product_Category:
       | M_Product_Category_ID.Identifier | Name     | Value    |

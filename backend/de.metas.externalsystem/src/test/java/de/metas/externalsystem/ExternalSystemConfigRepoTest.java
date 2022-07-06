@@ -723,10 +723,14 @@ class ExternalSystemConfigRepoTest
 				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
 				.build();
 
-		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value("LeichMehl")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("LeichMehl");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
 
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
@@ -746,10 +750,14 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testLeichMehlValue";
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value(value)
-				.build();
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue(value);
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
 
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.LeichUndMehl, value)
@@ -770,10 +778,14 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testLeichMehlValue";
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value(value)
-				.build();
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue(value);
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
 
 		// when
 		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
@@ -790,10 +802,14 @@ class ExternalSystemConfigRepoTest
 				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
 				.build();
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value("testLeichMehlValue")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("testLeichMehlValue");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 
@@ -814,10 +830,14 @@ class ExternalSystemConfigRepoTest
 				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
 				.build();
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecordActive.getExternalSystem_Config_ID())
-				.value("testLeichMehlValue")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl configLeichMehl = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		configLeichMehl.setExternalSystem_Config_ID(parentRecordActive.getExternalSystem_Config_ID());
+		configLeichMehl.setExternalSystemValue("testLeichMehlValue");
+		configLeichMehl.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehl.setTCP_PortNumber(8080);
+		configLeichMehl.setTCP_Host("tcpHost");
+
+		saveRecord(configLeichMehl);
 
 		// given
 		final I_ExternalSystem_Config parentRecordInactive = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
@@ -825,10 +845,14 @@ class ExternalSystemConfigRepoTest
 				.active(false)
 				.build();
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecordInactive.getExternalSystem_Config_ID())
-				.value("testLeichMehlValueInactive")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl configLeichMehlInactive = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		configLeichMehlInactive.setExternalSystem_Config_ID(parentRecordInactive.getExternalSystem_Config_ID());
+		configLeichMehlInactive.setExternalSystemValue("testLeichMehlValueInactive");
+		configLeichMehlInactive.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehlInactive.setTCP_PortNumber(8080);
+		configLeichMehlInactive.setTCP_Host("tcpHost");
+
+		saveRecord(configLeichMehlInactive);
 
 		// when
 		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.LeichUndMehl);
@@ -847,10 +871,14 @@ class ExternalSystemConfigRepoTest
 				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
 				.build();
 
-		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value("LeichMehl")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("LeichMehl");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
 
 		ExternalSystemTestUtil.createLeichMehlProductMappingConfigBuilder()
 				.externalSystemLeichMehlConfigId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID())
