@@ -49,7 +49,8 @@ Here come the actual release notes:
   * [#13045](https://github.com/metasfresh/metasfresh/pull/13045) log to loggables why an attribute based price is not applied
 
 ## Fixes
-* metasfresh 
+* metasfresh
+  * [#13257] https://github.com/metasfresh/metasfresh/pull/13257 available for sales stock fix
   * [#13215] https://github.com/metasfresh/metasfresh/issues/13215 Description and documentnote are not copied from doctype into shipment
   * [#13218] https://github.com/metasfresh/metasfresh/pull/13218 Show Adr attribute details
   * [#13201] https://github.com/metasfresh/metasfresh/pull/13201 add new accounts in Deckungsbeitragsrechnung 
