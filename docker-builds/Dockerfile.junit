@@ -16,10 +16,11 @@ COPY --from=backend /backend backend
 COPY --from=camel /camel camel
 COPY --from=camel /root/.m2 /root/.m2/
 
-RUN cd /java/commons && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee /java/junit.log
-RUN cd /java/backend && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
-RUN cd /java/camel && mvn surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
+SHELL ["/bin/bash", "-c"]
+
+RUN cd /java/commons && set -o pipefail && mvn surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee /java/junit.log
+RUN cd /java/backend && set -o pipefail && mvn surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
+RUN cd /java/camel && set -o pipefail && mvn surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
 
 VOLUME /reports
-SHELL ["/bin/bash", "-c"]
 CMD shopt -s globstar && find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p && mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml'
