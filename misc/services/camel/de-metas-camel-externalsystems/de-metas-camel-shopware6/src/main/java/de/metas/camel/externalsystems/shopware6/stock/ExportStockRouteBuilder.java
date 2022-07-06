@@ -95,7 +95,7 @@ public class ExportStockRouteBuilder extends RouteBuilder
 		final ExportStockRouteContext exportStockRouteContext = exchange.getProperty(ROUTE_PROPERTY_EXPORT_STOCK_CONTEXT, ExportStockRouteContext.class);
 
 		final JsonStock jsonStock = JsonStock.builder()
-				.stock(exportStockRouteContext.getJsonAvailableStock().getStock())
+				.stock(exportStockRouteContext.getJsonAvailableStock().getStock().intValueExact())
 				.build();
 
 		exchange.getIn().setBody(jsonStock);
