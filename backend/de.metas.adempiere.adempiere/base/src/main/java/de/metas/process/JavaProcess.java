@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -1013,8 +1014,17 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable SQLWarning warning)
 	{
-		getResult().addLog(id, date, number, msg, warning);
-	}	// addLog
+		final StringJoiner warningText = new StringJoiner(" ");
+
+		SQLWarning currentWarning = warning;
+		while (currentWarning != null)
+		{
+			warningText.add(currentWarning.getMessage());
+			currentWarning = currentWarning.getNextWarning();
+		}
+
+		getResult().addLog(id, date, number, msg, warningText.toString());
+	}
 
 	/**
 	 * Add Log, if the given <code>msg<code> is not <code>null</code>
