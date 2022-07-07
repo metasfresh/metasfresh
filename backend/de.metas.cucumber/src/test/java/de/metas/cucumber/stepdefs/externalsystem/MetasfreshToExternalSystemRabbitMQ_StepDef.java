@@ -36,7 +36,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.externalsystem.JsonAvailableStock;
+import de.metas.common.externalsystem.JsonAvailableAvailableForSales;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
@@ -67,7 +67,7 @@ import java.util.stream.Stream;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_AVAILABLE_STOCK;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_AVAILABLE_FOR_SALES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
@@ -208,17 +208,17 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 				assertThat(jsonExternalSystemRequest).isNotNull();
 			}
 
-			final String expectedJsonAvailableStockParam = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + PARAM_JSON_AVAILABLE_STOCK);
+			final String expectedJsonAvailableStockParam = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + PARAM_JSON_AVAILABLE_FOR_SALES);
 
 			if (Check.isNotBlank(expectedJsonAvailableStockParam))
 			{
-				final JsonAvailableStock expectedStock = objectMapper.readValue(expectedJsonAvailableStockParam, JsonAvailableStock.class);
+				final JsonAvailableAvailableForSales expectedStock = objectMapper.readValue(expectedJsonAvailableStockParam, JsonAvailableAvailableForSales.class);
 
 				final StringBuilder context = new StringBuilder();
 
-				final JsonAvailableStock actualStock = requests.stream()
+				final JsonAvailableAvailableForSales actualStock = requests.stream()
 						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
-						.map(req -> req.getParameters().get(ExternalSystemConstants.PARAM_JSON_AVAILABLE_STOCK))
+						.map(req -> req.getParameters().get(ExternalSystemConstants.PARAM_JSON_AVAILABLE_FOR_SALES))
 						.filter(Objects::nonNull)
 						.map(this::readJsonAvailableStock)
 						.peek(availStock -> {
@@ -234,7 +234,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 								throw new RuntimeException(e);
 							}
 						})
-						.filter(jsonAvailableStock -> matchStockAndExternalReference(expectedStock, jsonAvailableStock))
+						.filter(jsonAvailableAvailableForSales -> matchStockAndExternalReference(expectedStock, jsonAvailableAvailableForSales))
 						.findFirst()
 						.orElse(null);
 
@@ -311,11 +311,11 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	}
 
 	@NonNull
-	private JsonAvailableStock readJsonAvailableStock(@NonNull final String jsonAvailableStock)
+	private JsonAvailableAvailableForSales readJsonAvailableStock(@NonNull final String jsonAvailableStock)
 	{
 		try
 		{
-			return objectMapper.readValue(jsonAvailableStock, JsonAvailableStock.class);
+			return objectMapper.readValue(jsonAvailableStock, JsonAvailableAvailableForSales.class);
 		}
 		catch (final JsonProcessingException e)
 		{
@@ -326,8 +326,8 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 	}
 
 	private boolean matchStockAndExternalReference(
-			@NonNull final JsonAvailableStock expectedAvailableStock,
-			@NonNull final JsonAvailableStock actualAvailableStock)
+			@NonNull final JsonAvailableAvailableForSales expectedAvailableStock,
+			@NonNull final JsonAvailableAvailableForSales actualAvailableStock)
 	{
 		return expectedAvailableStock.getStock().compareTo(actualAvailableStock.getStock()) == 0 &&
 				expectedAvailableStock.getProductIdentifier().getExternalReference()

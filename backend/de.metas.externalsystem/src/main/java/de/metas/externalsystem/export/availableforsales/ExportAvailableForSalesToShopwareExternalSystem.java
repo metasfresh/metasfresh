@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.externalsystem.export.stock;
+package de.metas.externalsystem.export.availableforsales;
 
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.common.externalsystem.JsonAvailableStock;
+import de.metas.common.externalsystem.JsonAvailableAvailableForSales;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonProductIdentifier;
@@ -69,14 +69,14 @@ import java.util.Optional;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_PATH;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_SECRET;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_AVAILABLE_STOCK;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_AVAILABLE_FOR_SALES;
 
 @Service
-public class ExportStockToShopwareExternalSystem
+public class ExportAvailableForSalesToShopwareExternalSystem
 {
-	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_STOCK = "exportStock";
+	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_AVAILABLE_FOR_SALES = "exportStock";
 
-	private static final Logger logger = LogManager.getLogger(ExportStockToShopwareExternalSystem.class);
+	private static final Logger logger = LogManager.getLogger(ExportAvailableForSalesToShopwareExternalSystem.class);
 	private static final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -89,7 +89,7 @@ public class ExportStockToShopwareExternalSystem
 	private final AvailableForSalesRepository availableForSalesRepository;
 	private final Debouncer<ProductId> syncAvailableForSalesDebouncer;
 
-	protected ExportStockToShopwareExternalSystem(
+	protected ExportAvailableForSalesToShopwareExternalSystem(
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final ExternalReferenceRepository externalReferenceRepository,
@@ -102,11 +102,11 @@ public class ExportStockToShopwareExternalSystem
 		this.externalSystemConfigService = externalSystemConfigService;
 		this.availableForSalesRepository = availableForSalesRepository;
 		this.syncAvailableForSalesDebouncer = Debouncer.<ProductId>builder()
-				.name("exportStockToShopwareDebouncer")
+				.name("syncAvailableForSalesDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.export.stock.ExportStockToShopwareExternalSystem.debouncer.bufferMaxSize", 100))
 				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.export.stock.ExportStockToShopwareExternalSystem.debouncer.delayInMillis", 5000))
 				.distinct(true)
-				.consumer(this::exportAvailableStock)
+				.consumer(this::exportAvailableForSales)
 				.build();
 	}
 
@@ -117,7 +117,7 @@ public class ExportStockToShopwareExternalSystem
 		syncAvailableForSalesDebouncer.add(productId);
 	}
 
-	private void exportAvailableStock(@NonNull final Collection<ProductId> productIdList)
+	private void exportAvailableForSales(@NonNull final Collection<ProductId> productIdList)
 	{
 		if (productIdList.isEmpty())
 		{
@@ -151,46 +151,50 @@ public class ExportStockToShopwareExternalSystem
 	@NonNull
 	private Optional<JsonExternalSystemRequest> getExportExternalSystemRequest(@NonNull final ExternalReference productExternalRef)
 	{
-		final ExternalSystemParentConfigId externalReferenceParentConfigId = (ExternalSystemParentConfigId)productExternalRef
+		final ExternalSystemParentConfigId externalSystemParentConfigId = (ExternalSystemParentConfigId)productExternalRef
 				.getExternalSystemParentConfigId(ExternalSystemParentConfigId::ofRepoIdOrNull);
 
-		if (externalReferenceParentConfigId == null)
+		if (externalSystemParentConfigId == null)
 		{
 			return Optional.empty();
 		}
 
 		final String orgCode = orgDAO.getById(productExternalRef.getOrgId()).getValue();
 
-		final ExternalSystemType parentType = ExternalSystemType.ofCode(externalSystemConfigRepo.getParentTypeById(externalReferenceParentConfigId));
-		final IExternalSystemChildConfig externalSystemChildConfig = externalSystemConfigRepo.getChildByParentIdAndType(externalReferenceParentConfigId, parentType)
+		final ExternalSystemType parentType = ExternalSystemType.ofCode(externalSystemConfigRepo.getParentTypeById(externalSystemParentConfigId));
+	
+		final IExternalSystemChildConfig externalSystemChildConfig = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, parentType)
 				.orElseThrow(() -> new AdempiereException("Child config not found for ExternalSystemType and ParentConfigId!")
 						.appendParametersToMessage()
 						.setParameter("ExternalSystemType", parentType)
-						.setParameter("ParentConfigId", externalReferenceParentConfigId));
+						.setParameter("ParentConfigId", externalSystemParentConfigId));
 
-		if (!isSyncStockEnabled(externalSystemChildConfig))
+		if (!isSyncAvailableForSalesEnabled(externalSystemChildConfig))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {} isSyncStockEnabled to external system is false! No action is performed!", externalReferenceParentConfigId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ExternalSystemChildConfig: {} isSyncAvailableForSalesEnabled to external system is false! No action is performed!", externalSystemParentConfigId);
 
 			return Optional.empty();
 		}
 
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(externalSystemChildConfig.getId());
+		
 		return Optional.of(JsonExternalSystemRequest.builder()
 								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
-								   .externalSystemConfigId(JsonMetasfreshId.of(ExternalSystemParentConfigId.toRepoId(externalReferenceParentConfigId)))
+								   .externalSystemConfigId(JsonMetasfreshId.of(ExternalSystemParentConfigId.toRepoId(externalSystemParentConfigId)))
 								   .externalSystemChildConfigValue(externalSystemChildConfig.getValue())
 								   .orgCode(orgCode)
 								   .command(getExternalCommand())
 								   .parameters(buildParameters(productExternalRef, externalSystemChildConfig.getId()))
 								   .traceId(externalSystemConfigService.getTraceId())
+								   .writeAuditEndpoint(parentConfig.getAuditEndpointIfEnabled())
 								   .build());
 	}
 
-	private boolean isSyncStockEnabled(@NonNull final IExternalSystemChildConfig childConfig)
+	private boolean isSyncAvailableForSalesEnabled(@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(childConfig);
 
-		return shopware6Config.isSyncStockToShopware6();
+		return shopware6Config.isSyncAvailableForSalesToShopware6();
 	}
 
 	@NonNull
@@ -200,7 +204,7 @@ public class ExportStockToShopwareExternalSystem
 	{
 		final ExternalSystemParentConfig externalSystemParentConfig = externalSystemConfigRepo.getById(externalSystemChildConfigId);
 
-		final JsonAvailableStock jsonAvailableStock = buildJsonAvailableStock(externalReference, externalSystemParentConfig);
+		final JsonAvailableAvailableForSales jsonAvailableAvailableForSales = buildJsonAvailableStock(externalReference, externalSystemParentConfig);
 
 		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(externalSystemParentConfig.getChildConfig());
 
@@ -208,7 +212,7 @@ public class ExportStockToShopwareExternalSystem
 		parameters.put(PARAM_BASE_PATH, shopware6Config.getBaseUrl());
 		parameters.put(PARAM_CLIENT_SECRET, shopware6Config.getClientSecret());
 		parameters.put(PARAM_CLIENT_ID, shopware6Config.getClientId());
-		parameters.put(PARAM_JSON_AVAILABLE_STOCK, writeJsonAvailableStock(jsonAvailableStock));
+		parameters.put(PARAM_JSON_AVAILABLE_FOR_SALES, writeJsonAvailableStock(jsonAvailableAvailableForSales));
 
 		return parameters;
 	}
@@ -225,25 +229,25 @@ public class ExportStockToShopwareExternalSystem
 			retrieveAvailableForSalesQueryBuilder.orgId(externalSystemParentConfig.getOrgId());
 		}
 
-		final BigDecimal availableStock = availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQueryBuilder.build())
+		final BigDecimal availableForSalesQty = availableForSalesRepository.getRecordsByQuery(retrieveAvailableForSalesQueryBuilder.build())
 				.stream()
-				.map(ExportStockToShopwareExternalSystem::getAvailableForSalesQty)
+				.map(ExportAvailableForSalesToShopwareExternalSystem::getAvailableForSalesQty)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(externalSystemParentConfig.getChildConfig());
 		
-		return shopware6Config.getPercentageToDeductFromAvailableStock()
-				.subtractFromBase(availableStock, availableStock.precision());
+		return shopware6Config.getPercentageToDeductFromAvailableForSales()
+				.subtractFromBase(availableForSalesQty, availableForSalesQty.precision());
 	}
 
 	@NonNull
-	private JsonAvailableStock buildJsonAvailableStock(
+	private JsonAvailableAvailableForSales buildJsonAvailableStock(
 			@NonNull final ExternalReference productExternalReference,
 			@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
 	{
 		final BigDecimal stock = getAvailableStock(externalSystemParentConfig, ProductId.ofRepoId(productExternalReference.getRecordId()));
 
-		return JsonAvailableStock.builder()
+		return JsonAvailableAvailableForSales.builder()
 				.productIdentifier(JsonProductIdentifier.builder()
 										   .metasfreshId(JsonMetasfreshId.of(productExternalReference.getRecordId()))
 										   .externalReference(productExternalReference.getExternalReference())
@@ -253,17 +257,17 @@ public class ExportStockToShopwareExternalSystem
 	}
 
 	@NonNull
-	private String writeJsonAvailableStock(@NonNull final JsonAvailableStock jsonAvailableStock)
+	private String writeJsonAvailableStock(@NonNull final JsonAvailableAvailableForSales jsonAvailableAvailableForSales)
 	{
 		try
 		{
-			return objectMapper.writeValueAsString(jsonAvailableStock);
+			return objectMapper.writeValueAsString(jsonAvailableAvailableForSales);
 		}
 		catch (final JsonProcessingException jsonProcessingException)
 		{
 			throw AdempiereException.wrapIfNeeded(jsonProcessingException)
 					.appendParametersToMessage()
-					.setParameter("JsonAvailableStock", jsonAvailableStock);
+					.setParameter("JsonAvailableStock", jsonAvailableAvailableForSales);
 		}
 	}
 
@@ -286,7 +290,7 @@ public class ExportStockToShopwareExternalSystem
 	@NonNull
 	private String getExternalCommand()
 	{
-		return EXTERNAL_SYSTEM_COMMAND_EXPORT_STOCK;
+		return EXTERNAL_SYSTEM_COMMAND_EXPORT_AVAILABLE_FOR_SALES;
 	}
 
 	@NonNull

@@ -32,7 +32,7 @@ import java.math.BigDecimal;
 
 @Value
 @Builder
-public class JsonAvailableStock
+public class JsonAvailableAvailableForSales
 {
 	@NonNull
 	JsonProductIdentifier productIdentifier;
@@ -41,7 +41,7 @@ public class JsonAvailableStock
 	BigDecimal stock;
 
 	@JsonCreator
-	public JsonAvailableStock(
+	public JsonAvailableAvailableForSales(
 			@NonNull @JsonProperty("productIdentifier") final JsonProductIdentifier productIdentifier,
 			@NonNull @JsonProperty("stock") final BigDecimal stock)
 	{

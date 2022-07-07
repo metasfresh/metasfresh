@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.shopware6.interceptor;
 
-import de.metas.externalsystem.export.stock.ExportStockToShopwareExternalSystem;
+import de.metas.externalsystem.export.availableforsales.ExportAvailableForSalesToShopwareExternalSystem;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,11 +39,11 @@ public class MD_Available_For_Sales
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final ExportStockToShopwareExternalSystem exportStockToShopwareExternalSystem;
+	private final ExportAvailableForSalesToShopwareExternalSystem exportAvailableForSalesToShopwareExternalSystem;
 
-	public MD_Available_For_Sales(@NonNull final ExportStockToShopwareExternalSystem exportStockToShopwareExternalSystem)
+	public MD_Available_For_Sales(@NonNull final ExportAvailableForSalesToShopwareExternalSystem exportAvailableForSalesToShopwareExternalSystem)
 	{
-		this.exportStockToShopwareExternalSystem = exportStockToShopwareExternalSystem;
+		this.exportAvailableForSalesToShopwareExternalSystem = exportAvailableForSalesToShopwareExternalSystem;
 	}
 
 	@ModelChange( //
@@ -52,6 +52,6 @@ public class MD_Available_For_Sales
 	{
 		final ProductId productId = ProductId.ofRepoId(availableForSales.getM_Product_ID());
 
-		trxManager.runAfterCommit(() -> exportStockToShopwareExternalSystem.enqueueProductToBeExported(productId));
+		trxManager.runAfterCommit(() -> exportAvailableForSalesToShopwareExternalSystem.enqueueProductToBeExported(productId));
 	}
 }
