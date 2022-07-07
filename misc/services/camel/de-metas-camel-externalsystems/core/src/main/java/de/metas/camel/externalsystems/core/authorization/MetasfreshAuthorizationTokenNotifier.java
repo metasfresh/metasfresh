@@ -25,9 +25,11 @@ package de.metas.camel.externalsystems.core.authorization;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.camel.externalsystems.core.CustomRouteController;
 import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Endpoint;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.spi.CamelEvent;
 import org.apache.camel.support.EventNotifierSupport;
@@ -74,7 +76,7 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 			}
 			else if (event instanceof CamelEvent.ExchangeSentEvent)
 			{
-				handleSentEvent((CamelEvent.ExchangeSentEvent) event);
+				handleSentEvent((CamelEvent.ExchangeSentEvent)event);
 			}
 		}
 		catch (final Exception exception)
@@ -93,6 +95,11 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 		}
 
 		final String authToken = metasfreshAuthProvider.getAuthToken();
+
+		if (Check.isBlank(authToken))
+		{
+			throw new RuntimeCamelException("No authorization token provided by MetasfreshAuthProvider!");
+		}
 
 		event.getExchange().getIn().setHeader(CoreConstants.AUTHORIZATION, authToken);
 	}

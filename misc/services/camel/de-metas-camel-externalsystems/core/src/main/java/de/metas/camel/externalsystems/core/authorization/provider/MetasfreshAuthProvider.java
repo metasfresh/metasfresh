@@ -22,34 +22,17 @@
 
 package de.metas.camel.externalsystems.core.authorization.provider;
 
-import de.metas.common.util.Check;
+import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_API_AUTHORIZATION_TOKEN_PROPERTY;
-
 @Component
 public class MetasfreshAuthProvider
 {
-	@Value("${" + MF_API_AUTHORIZATION_TOKEN_PROPERTY + ":}")
-	@Nullable
-	private String defaultAuthToken;
-
 	@Nullable
 	@Setter
+	@Getter
 	private String authToken;
-
-	@Nullable
-	public String getAuthToken()
-	{
-		if (Check.isNotBlank(authToken))
-		{
-			return this.authToken;
-		}
-
-		return this.defaultAuthToken;
-	}
 }

@@ -81,3 +81,15 @@ UPDATE AD_Message_Trl SET MsgText='Er ging iets mis toen ik probeerde een autori
 -- 2022-07-05T15:52:22.496Z
 UPDATE AD_Message_Trl SET MsgText='Un problème est survenu lors de l''envoi d''un jeton d''autorisation à Camel-ExternalSystem. {0}',Updated=TO_TIMESTAMP('2022-07-05 18:52:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Message_ID=545141
 ;
+
+-- 2022-07-07T15:26:06.510Z
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Specifies the authorization token used by the External Systems when connecting to Metasfresh which is hardcoded from the AD_User_AuthToken.authToken associated to the AD_User with the name ''Support, IT''.',Updated=TO_TIMESTAMP('2022-07-07 18:26:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541464
+;
+
+-- 2022-07-07T15:26:48.986Z
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Specifies the user group id to be notified when the authorization process for the External Systems fails.',Updated=TO_TIMESTAMP('2022-07-07 18:26:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541465
+;
+
+-- 2022-07-07T15:43:57.961Z
+UPDATE AD_UserGroup SET Description='User group to be notified when the authorization process for the External Systems fails.',Updated=TO_TIMESTAMP('2022-07-07 18:43:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UserGroup_ID=540005
+;

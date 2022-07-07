@@ -130,7 +130,7 @@ public class ExternalSystemAuthorizationService
 	{
 		final int externalSystemAPIUserGroup = sysConfigBL.getIntValue(SYS_CONFIG_EXTERNAL_SYSTEM_NOTIFICATION_USER_GROUP, -1);
 
-		final UserGroupId userGroupId = UserGroupId.ofRepoIdOrNull(externalSystemAPIUserGroup); //todo mi: add sys config in DB
+		final UserGroupId userGroupId = UserGroupId.ofRepoIdOrNull(externalSystemAPIUserGroup);
 
 		if (userGroupId == null)
 		{
@@ -139,7 +139,7 @@ public class ExternalSystemAuthorizationService
 			return;
 		}
 
-		final String errorDetails = Optional.ofNullable(exception) //todo mi: change error message to include 1 param
+		final String errorDetails = Optional.ofNullable(exception)
 				.map(Util::dumpStackTraceToString)
 				.orElse("");
 
