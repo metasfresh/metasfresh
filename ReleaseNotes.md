@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13255](https://github.com/metasfresh/metasfresh/issues/13255) Add source infos to account sheet report 
   * [#13162](https://github.com/metasfresh/metasfresh/issues/13162) Available for sales qty from metasfresh to shopware
   * [#13176](https://github.com/metasfresh/metasfresh/pull/13176) assert_period_open: improve error reporting when document was not found
   * [#13175](https://github.com/metasfresh/metasfresh/pull/13175) fact_acct_summary_partial_from_date_functions
