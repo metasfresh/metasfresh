@@ -42,7 +42,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -363,20 +362,13 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			for (final ProcessInfoLog log : logsToSave)
 			{
-				SQLWarning warning = log.getP_Warning();
-				final StringBuilder warningText = new StringBuilder();
-				while(warning!=null)
-				{
-					warningText.append(warning.getMessage());
-					warning = warning.getNextWarning();
-				}
 				final Object[] sqlParams = new Object[] {
 						pinstanceId,
 						log.getLog_ID(),
 						log.getP_Date(),
 						log.getP_Number(),
 						log.getP_Msg(),
-						warningText.toString()
+						log.getWarning()
 				};
 
 				DB.setParameters(pstmt, sqlParams);
