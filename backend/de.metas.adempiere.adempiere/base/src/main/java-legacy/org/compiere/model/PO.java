@@ -70,15 +70,12 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
-import org.compiere.util.DB.OnFail;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
-import org.compiere.util.ExecuteUpdateRequest;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.compiere.util.Ini;
-import org.compiere.util.SQLUpdateResult;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
@@ -3818,19 +3815,13 @@ public abstract class PO
 			loadAfterInsertProcessor = null;
 		}
 
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sqlInsert.toString())
-				.params(null)
-				.onFail(OnFail.ThrowException)
-				.trxName(m_trxName)
-				.timeOut(0)
-				.updateReturnProcessor(loadAfterInsertProcessor)
-				.build();
-
-		final int no =  DB.executeUpdate(executeUpdateRequest);
-
 		//
 		// Execute actual database INSERT
+		final int no = DB.executeUpdateEx(sqlInsert.toString(),
+				(Object[])null,  // params,
+				m_trxName,
+				0,  // timeOut,
+				loadAfterInsertProcessor);
 		boolean ok = no == 1;
 
 		//

@@ -769,9 +769,9 @@ public class DB
 				.timeOut(timeOut)
 				.build();
 
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumericResult();
+		return result.getNumber();
 	}    // executeUpdate
 
 	/**
@@ -780,7 +780,7 @@ public class DB
 	 * @param ignoreError if true, no execution error is reported
 	 * @param trxName     transaction
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method.// TODO there is no such method!
+	 * @deprecated please use the {@code ...Ex} variant of this method.// 
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql, final boolean ignoreError, final String trxName)
@@ -795,9 +795,9 @@ public class DB
 				.timeOut(timeOut)
 				.build();
 
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumericResult();
+		return result.getNumber();
 	}    // executeUpdate
 
 	/**
@@ -822,8 +822,8 @@ public class DB
 				.timeOut(timeOut)
 				.build();
 
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
-		return result.getNumericResult();
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
+		return result.getNumber();
 	}
 
 	/**
@@ -832,7 +832,7 @@ public class DB
 	 * @param ignoreError if true, no execution error is reported
 	 * @param trxName     optional transaction name
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method. // TODO there is no such method!
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
@@ -848,27 +848,12 @@ public class DB
 				.timeOut(timeOut)
 				.build();
 
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumericResult();
+		return result.getNumber();
 	}
 
-	/**
-	 * Execute SQL Update.
-	 *
-	 * @param executeUpdateRequest@return update count
-	 * @throws DBException if update fails and {@link OnFail#ThrowException}.
-	 * @deprecated please use the {@code ...Ex} variant of this method.
-	 */
-	@Deprecated
-	public int executeUpdate(final ExecuteUpdateRequest executeUpdateRequest)
-	{
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
-
-		return result.getNumericResult();
-	}
-
-	public SQLUpdateResult executeUpdateWithWarning(final ExecuteUpdateRequest request)
+	public SQLUpdateResult executeUpdate(final ExecuteUpdateRequest request)
 	{
 		if (Check.isEmpty(request.getSql(), true))
 		{
@@ -881,7 +866,7 @@ public class DB
 		CPreparedStatement cs = statementsFactory.newCPreparedStatement(
 				ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_UPDATABLE,
-				request.getSql(), // converted in call
+				request.getSql(),
 				request.getTrxName());
 
 		try
@@ -899,11 +884,8 @@ public class DB
 				int rows = 0;
 				try
 				{
-					// TODO can rs be null?
-					if (rs != null)
-					{
-						warning = rs.getStatement().getWarnings();
-					}
+					warning = rs.getStatement().getWarnings();
+
 					while (rs.next())
 					{
 						request.getUpdateReturnProcessor().process(rs);
@@ -1005,7 +987,7 @@ public class DB
 		}
 
 		return SQLUpdateResult.builder()
-				.numericResult(no)
+				.number(no)
 				.warning(warning)
 				.build();
 	}    // executeUpdate
@@ -1030,9 +1012,9 @@ public class DB
 				.updateReturnProcessor(null)
 				.build();
 
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumericResult();
+		return result.getNumber();
 	}
 
 	/**
@@ -1052,15 +1034,14 @@ public class DB
 				.timeOut(timeOut)
 				.build();
 
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumericResult();
+		return result.getNumber();
 
 	}    // executeUpdateEx
 
 	public SQLUpdateResult executeUpdateWithWarningEx(final String sql, @Nullable final String trxName) throws DBException
 	{
-
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.ThrowException;
 
@@ -1072,7 +1053,7 @@ public class DB
 				.timeOut(timeOut)
 				.build();
 
-		return executeUpdateWithWarning(executeUpdateRequest);
+		return executeUpdate(executeUpdateRequest);
 
 	}    // executeUpdateEx
 
@@ -1093,9 +1074,9 @@ public class DB
 
 				.build();
 
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumericResult();
+		return result.getNumber();
 
 	}    // executeUpdateEx
 
@@ -1114,9 +1095,9 @@ public class DB
 				.updateReturnProcessor(updateReturnProcessor)
 				.build();
 
-		final SQLUpdateResult result = executeUpdateWithWarning(executeUpdateRequest);
+		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumericResult();
+		return result.getNumber();
 	}
 
 	/**

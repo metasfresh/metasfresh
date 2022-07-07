@@ -37,7 +37,7 @@ public class ExecuteUpdateSQL extends JavaProcess
 			final SQLUpdateResult sqlUpdateResult = DB.executeUpdateWithWarningEx(sqlParsed, ITrx.TRXNAME_ThreadInherited);
 			stopwatch.stop();
 
-			msg = "Result: " + sqlUpdateResult.getNumericResult() + "; Runtime: " + stopwatch;
+			msg = "Result: " + sqlUpdateResult.getNumber() + "; Runtime: " + stopwatch;
 			warning = sqlUpdateResult.getWarning();
 		}
 		else
