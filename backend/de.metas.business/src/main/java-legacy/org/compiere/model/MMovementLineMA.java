@@ -24,11 +24,8 @@ import java.util.Properties;
 
 import org.compiere.util.DB;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
-
 
 /**
  *	Movement Material Allocation
@@ -100,7 +97,7 @@ public class MMovementLineMA extends X_M_MovementLineMA
 		String sql = "DELETE FROM M_MovementLineMA ma WHERE EXISTS "
 			+ "(SELECT * FROM M_MovementLine l WHERE l.M_MovementLine_ID=ma.M_MovementLine_ID"
 			+ " AND M_Movement_ID=" + M_Movement_ID + ")";
-		return DB.executeUpdate(sql, trxName);
+		return DB.executeUpdateAndSaveErrorOnFail(sql, trxName);
 	}	//	deleteInOutMA
 
 	/**	Logger	*/

@@ -58,7 +58,7 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 		try
 		{
 			final String sql = "UPDATE AD_System SET LastBuildInfo = ?";
-			DB.executeUpdateEx(sql, new Object[] { lastBuildInfo }, ITrx.TRXNAME_None);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { lastBuildInfo }, ITrx.TRXNAME_None);
 		}
 		catch (final Exception ex)
 		{

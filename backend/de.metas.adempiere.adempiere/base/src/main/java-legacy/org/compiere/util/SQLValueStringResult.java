@@ -33,7 +33,7 @@ import java.sql.SQLWarning;
 public class SQLValueStringResult
 {
 	@Nullable
-	String result;
+	String returnedValue;
 
 	@Nullable
 	SQLWarning warning;

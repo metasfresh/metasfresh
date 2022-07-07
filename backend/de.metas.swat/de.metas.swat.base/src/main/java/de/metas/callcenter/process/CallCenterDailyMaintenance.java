@@ -67,9 +67,9 @@ public class CallCenterDailyMaintenance extends JavaProcess
 			+" AND addDays("+I_R_Group_Prospect.COLUMNNAME_LockedDate+",?) > getDate()"
 		;
 		int expireDays = (int)Math.round( (double)MRGroupProspect.LOCK_EXPIRE_MIN / (double)60 + 0.5 );
-		int count = DB.executeUpdateEx(sql,
-				new Object[]{false, null, null, getAD_Client_ID(), true, expireDays},
-				get_TrxName());
+		int count = DB.executeUpdateAndThrowExceptionOnFail(sql,
+															new Object[]{false, null, null, getAD_Client_ID(), true, expireDays},
+															get_TrxName());
 		addLog("Unlocked #"+count);
 		return count;
 	}

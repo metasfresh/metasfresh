@@ -32,7 +32,7 @@ import java.sql.SQLWarning;
 @Value
 public class SQLUpdateResult
 {
-	int number;
+	int returnedValue;
 	@Nullable
 	SQLWarning warning;
 }

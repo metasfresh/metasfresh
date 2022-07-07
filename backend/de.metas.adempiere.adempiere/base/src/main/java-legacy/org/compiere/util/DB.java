@@ -757,7 +757,7 @@ public class DB
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int executeUpdate(final String sql, final String trxName)
+	public int executeUpdateAndSaveErrorOnFail(final String sql, final String trxName)
 	{
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
@@ -771,19 +771,18 @@ public class DB
 
 		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumber();
-	}    // executeUpdate
+		return result.getReturnedValue();
+	}
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
-	 * @param trxName     transaction
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.// 
 	 */
 	@Deprecated
-	public int executeUpdate(final String sql, final boolean ignoreError, final String trxName)
+	public int executeUpdateAndIgnoreErrorOnFail(final String sql, final boolean ignoreError, final String trxName)
 	{
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
@@ -797,18 +796,17 @@ public class DB
 
 		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumber();
-	}    // executeUpdate
+		return result.getReturnedValue();
+	}
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
-	 * @param trxName transaction
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method. // TODO there is no such method!
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int executeUpdate(final String sql, final int param, final String trxName)
+	public int executeUpdateAndSaveErrorOnFail(final String sql, final int param, final String trxName)
 	{
 		final Object[] params = new Object[] { param };
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
@@ -823,19 +821,18 @@ public class DB
 				.build();
 
 		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-		return result.getNumber();
+		return result.getReturnedValue();
 	}
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
-	 * @param trxName     optional transaction name
 	 * @return number of rows updated or -1 if error
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int executeUpdate(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
+	public int executeUpdateAndIgnoreErrorOnFail(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
 	{
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
@@ -850,10 +847,10 @@ public class DB
 
 		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumber();
+		return result.getReturnedValue();
 	}
 
-	public SQLUpdateResult executeUpdate(final ExecuteUpdateRequest request)
+	private SQLUpdateResult executeUpdate(final ExecuteUpdateRequest request)
 	{
 		if (Check.isEmpty(request.getSql(), true))
 		{
@@ -987,10 +984,10 @@ public class DB
 		}
 
 		return SQLUpdateResult.builder()
-				.number(no)
+				.returnedValue(no)
 				.warning(warning)
 				.build();
-	}    // executeUpdate
+	}
 
 	/**
 	 * Execute Update and throw exception.
@@ -999,7 +996,7 @@ public class DB
 	 * @param trxName transaction
 	 * @return number of rows updated
 	 */
-	public int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
+	public int executeUpdateAndThrowExceptionOnFail(final String sql, final Object[] params, final String trxName) throws DBException
 	{
 		final int timeOut = 0;
 
@@ -1014,15 +1011,15 @@ public class DB
 
 		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumber();
+		return result.getReturnedValue();
 	}
 
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @see {@link #executeUpdateEx(String, Object[], String)}
+	 * @see {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
 	 */
-	public int executeUpdateEx(final String sql, @Nullable final String trxName) throws DBException
+	public int executeUpdateAndThrowExceptionOnFail(final String sql, @Nullable final String trxName) throws DBException
 	{
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.ThrowException;
@@ -1036,9 +1033,9 @@ public class DB
 
 		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumber();
+		return result.getReturnedValue();
 
-	}    // executeUpdateEx
+	}
 
 	public SQLUpdateResult executeUpdateWithWarningEx(final String sql, @Nullable final String trxName) throws DBException
 	{
@@ -1055,14 +1052,14 @@ public class DB
 
 		return executeUpdate(executeUpdateRequest);
 
-	}    // executeUpdateEx
+	}
 
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @see {@link #executeUpdateEx(String, Object[], String)}
+	 * @see {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
 	 */
-	public int executeUpdateEx(final String sql, final String trxName, final int timeOut) throws DBException
+	public int executeUpdateAndThrowExceptionOnFail(final String sql, final String trxName, final int timeOut) throws DBException
 	{
 		final OnFail onFail = OnFail.ThrowException;
 
@@ -1076,11 +1073,11 @@ public class DB
 
 		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumber();
+		return result.getReturnedValue();
 
-	}    // executeUpdateEx
+	}
 
-	public int executeUpdateEx(final String sql,
+	public int executeUpdateAndThrowExceptionOnFail(final String sql,
 			final Object[] params,
 			final String trxName,
 			final int timeOut,
@@ -1097,7 +1094,7 @@ public class DB
 
 		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
 
-		return result.getNumber();
+		return result.getReturnedValue();
 	}
 
 	/**
@@ -1341,7 +1338,7 @@ public class DB
 	{
 		final SQLValueStringResult result = getSQLValueStringWithWarningEx(trxName, sql, params);
 
-		return result.getResult();
+		return result.getReturnedValue();
 	}
 
 	public SQLValueStringResult getSQLValueStringWithWarningEx(@Nullable final String trxName, final String sql, final Object... params)
@@ -1377,7 +1374,7 @@ public class DB
 			pstmt = null;
 		}
 		return SQLValueStringResult.builder().
-				result(retValue).
+				returnedValue(retValue).
 				warning(warning).build();
 	}
 
@@ -2296,7 +2293,7 @@ public class DB
 
 			if (counter >= 1000)
 			{
-				DB.executeUpdateEx(insert.toString(), trxName);
+				DB.executeUpdateAndThrowExceptionOnFail(insert.toString(), trxName);
 				insert = new StringBuilder();
 				insert.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ");
 				counter = 0;
@@ -2304,7 +2301,7 @@ public class DB
 		}
 		if (counter > 0)
 		{
-			DB.executeUpdateEx(insert.toString(), trxName);
+			DB.executeUpdateAndThrowExceptionOnFail(insert.toString(), trxName);
 		}
 	}
 
@@ -2361,7 +2358,7 @@ public class DB
 	public int deleteT_Selection(final PInstanceId pinstanceId, final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
-		final int no = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { pinstanceId }, trxName);
 		return no;
 	}
 

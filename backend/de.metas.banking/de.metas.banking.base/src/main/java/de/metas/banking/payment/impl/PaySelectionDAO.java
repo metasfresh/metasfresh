@@ -250,7 +250,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				+ "FROM C_PaySelectionLine psl "
 				+ "WHERE ps.C_PaySelection_ID=psl.C_PaySelection_ID AND psl.IsActive='Y') "
 				+ "WHERE C_PaySelection_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { paySelectionId }, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { paySelectionId }, ITrx.TRXNAME_ThreadInherited);
 		// note: no point in sending a cache-invalidation event just yet, because it wasn't committed
 	}
 
