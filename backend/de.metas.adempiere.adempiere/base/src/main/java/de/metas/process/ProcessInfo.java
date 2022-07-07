@@ -783,7 +783,7 @@ public final class ProcessInfo implements Serializable
 
 		private Boolean notifyUserAfterExecution;
 
-		private boolean logWarning = false;
+		private Boolean logWarning;
 
 		private ProcessInfoBuilder()
 		{
@@ -1619,6 +1619,22 @@ public final class ProcessInfo implements Serializable
 
 		public boolean isLogWarning()
 		{
+			if (logWarning == null)
+			{
+
+					final I_AD_Process processRecord = getAD_ProcessOrNull();
+					if (processRecord != null)
+					{
+						this.logWarning = processRecord.isLogWarning();
+						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
+					}
+					else
+					{
+						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+						this.logWarning = false;
+					}
+				}
+
 			return logWarning;
 		}
 

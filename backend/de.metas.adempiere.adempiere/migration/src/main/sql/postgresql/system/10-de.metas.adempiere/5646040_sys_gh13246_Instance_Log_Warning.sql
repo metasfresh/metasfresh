@@ -201,3 +201,10 @@ UPDATE AD_Field SET IsDisplayedGrid='Y', SeqNo=70,Updated=TO_TIMESTAMP('2022-07-
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2022-07-05 18:09:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=610028
 ;
 
+
+
+-- 2022-07-07T15:31:26.478Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541395, SeqNo=100,Updated=TO_TIMESTAMP('2022-07-07 18:31:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=610029
+;
+
