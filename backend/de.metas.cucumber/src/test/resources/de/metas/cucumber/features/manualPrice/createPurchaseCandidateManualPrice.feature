@@ -9,6 +9,7 @@ Feature: create Purchase Candidate having manual price set
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
+  @Id:S0163_400
   Scenario:  The purchase candidate is created with manual price, on a product which does not have a product price
     Given load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -115,6 +116,7 @@ Feature: create Purchase Candidate having manual price set
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            |
 
   @from:cucumber
+  @Id:S0163_1000
   Scenario:  The purchase candidate is created with manual price, on a product which does not have a product price but has Reduced Vat Tax Category matching on C_Country_ID
     Given load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -223,6 +225,7 @@ Feature: create Purchase Candidate having manual price set
 
 
   @from:cucumber
+  @Id:S0163_1100
   Scenario: Purchase candidate with error due to missing tax category
   Product doesn't have a M_ProductPrice
   There is a M_Product_TaxCategory for it but on a different country
@@ -274,6 +277,7 @@ Feature: create Purchase Candidate having manual price set
 
 
   @from:cucumber
+  @Id:S0163_1200
   Scenario: Purchase candidate with error due to missing tax category
   Product doesn't have a M_ProductPrice
   There is a M_Product_TaxCategory for it but with validFrom in the future

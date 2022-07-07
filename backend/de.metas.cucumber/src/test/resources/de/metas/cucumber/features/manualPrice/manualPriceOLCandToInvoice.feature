@@ -12,6 +12,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @from:cucumber
   @topic:orderCandidate
+  @Id:S0163_100
   Scenario: Order candidate to shipment and invoice flow and closed order
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
@@ -100,6 +101,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @from:cucumber
   @topic:orderCandidate
+  @Id:S0163_900
   Scenario: Order candidate to shipment and invoice flow and closed order with Reduced Vat Tax Category matching on C_Country_ID
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
@@ -189,6 +191,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @from:cucumber
   @topic:orderCandidate
+  @Id:S0163_700
   Scenario: Order candidate with error due to missing tax category
   Product doesn't have a M_ProductPrice
   There is a M_Product_TaxCategory for it but on a different country
@@ -246,6 +249,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   @from:cucumber
   @topic:orderCandidate
+  @Id:S0163_800
   Scenario: Order candidate with error due to missing tax category
   Product doesn't have a M_ProductPrice
   There is a M_Product_TaxCategory for it but with ValidFrom in the future
