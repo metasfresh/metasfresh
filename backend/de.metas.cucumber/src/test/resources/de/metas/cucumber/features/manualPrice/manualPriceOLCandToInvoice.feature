@@ -194,7 +194,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   There is a M_Product_TaxCategory for it but on a different country
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
-      | p_1        | noPriceProduct_06072022_2 | true      |
+      | p_1        | noPriceProduct_07072022_2 | true      |
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | C_BPartner_ID |
@@ -211,8 +211,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   """
 {
     "orgCode": "001",
-    "externalLineId": "externalLineId_06072022_2",
-    "externalHeaderId": "externalHeaderId_06072022_2",
+    "externalLineId": "externalLineId_07072022_2",
+    "externalHeaderId": "externalHeaderId_07072022_2",
     "dataSource": "int-Shopware",
     "dataDest": null,
     "bpartner": {
@@ -224,10 +224,10 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "dateOrdered": "2021-04-15",
     "dateCandidate": "2021-04-15",
     "orderDocType": "SalesOrder",
-    "productIdentifier": "val-noPriceProduct_06072022_2",
+    "productIdentifier": "val-noPriceProduct_07072022_2",
     "qty": 10,
     "uomCode": "PCE",
-    "poReference": "po_ref_06072022_2",
+    "poReference": "po_ref_07072022_2",
     "line": 1,
     "isManualPrice": true,
     "currencyCode": "EUR",
@@ -251,7 +251,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   There is a M_Product_TaxCategory for it but with ValidFrom in the future
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
-      | p_1        | noPriceProduct_06072022_3 | true      |
+      | p_1        | noPriceProduct_07072022_3 | true      |
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | C_BPartner_ID |
@@ -268,8 +268,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   """
 {
     "orgCode": "001",
-    "externalLineId": "externalLineId_06072022_3",
-    "externalHeaderId": "externalHeaderId_06072022_3",
+    "externalLineId": "externalLineId_07072022_3",
+    "externalHeaderId": "externalHeaderId_07072022_3",
     "dataSource": "int-Shopware",
     "dataDest": null,
     "bpartner": {
@@ -281,10 +281,10 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "dateOrdered": "2021-04-15",
     "dateCandidate": "2021-04-15",
     "orderDocType": "SalesOrder",
-    "productIdentifier": "val-noPriceProduct_06072022_3",
+    "productIdentifier": "val-noPriceProduct_07072022_3",
     "qty": 10,
     "uomCode": "PCE",
-    "poReference": "po_ref_06072022_3",
+    "poReference": "po_ref_07072022_3",
     "line": 1,
     "isManualPrice": true,
     "currencyCode": "EUR",
