@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag-floating: ${{ steps.sanitize.outputs.refname }}
-      tag-fixed: ${{ steps.sanitize.outputs.refname }}-${{ github.run_number }}.${{ github.run_attempt }}
+      tag-fixed: ${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
     steps:
       - name: print-vars
         run: env
