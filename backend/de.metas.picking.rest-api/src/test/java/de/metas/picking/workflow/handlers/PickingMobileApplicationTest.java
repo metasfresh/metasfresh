@@ -22,6 +22,7 @@ import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
+import de.metas.picking.workflow.handlers.activity_handlers.RequestReviewWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -99,6 +100,7 @@ class PickingMobileApplicationTest
 				new WFActivityHandlersRegistry(Optional.of(ImmutableList.of(
 						new SetPickingSlotWFActivityHandler(pickingJobRestService),
 						new ActualPickingWFActivityHandler(pickingJobRestService),
+						new RequestReviewWFActivityHandler(pickingJobRestService),
 						new CompletePickingWFActivityHandler(pickingJobRestService)
 				)))
 		);
