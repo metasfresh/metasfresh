@@ -204,7 +204,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
 				.build());
 
-		if (pickingJob.isPickingReviewRequired())
+		// if (pickingJob.isPickingReviewRequired())
 		{
 			activities.add(WFActivity.builder()
 					.id(WFActivityId.ofString("A80"))
@@ -213,7 +213,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 					.status(RequestReviewWFActivityHandler.computeActivityState(pickingJob))
 					.build());
 		}
-		else
+		// else
 		{
 			activities.add(WFActivity.builder()
 					.id(WFActivityId.ofString("A90"))
