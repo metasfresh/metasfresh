@@ -26,7 +26,7 @@ import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.sql.SQLWarning;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @UtilityClass
@@ -34,7 +34,7 @@ public class SQLUtil
 {
 	public List<String> extractWarningMessages(@Nullable SQLWarning warning)
 	{
-		final List<String> warningMessages = Collections.emptyList();
+		final List<String> warningMessages = new ArrayList<>();
 
 		SQLWarning currentWarning = warning;
 		while (currentWarning != null)
