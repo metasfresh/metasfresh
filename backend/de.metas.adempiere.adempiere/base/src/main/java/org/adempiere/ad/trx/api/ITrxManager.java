@@ -335,12 +335,12 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * @return true if transaction is not null and it's active (e.g. not already committed/closed)
 	 */
-	default boolean isActive(final ITrx trx)
+	default boolean isActive(@Nullable final ITrx trx)
 	{
-		return !isNull(trx) && trx.isActive();
+		return trx != null && !isNull(trx) && trx.isActive();
 	}
 
-	default boolean isActive(final String trxName)
+	default boolean isActive(@Nullable final String trxName)
 	{
 		if (isNull(trxName))
 		{
