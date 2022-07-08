@@ -141,7 +141,7 @@ public class ExternalSystemAuthorizationService
 
 		final String errorDetails = Optional.ofNullable(exception)
 				.map(Util::dumpStackTraceToString)
-				.orElse("");
+				.orElse(null);
 
 		final Recipient recipient = Recipient.group(userGroupId);
 
