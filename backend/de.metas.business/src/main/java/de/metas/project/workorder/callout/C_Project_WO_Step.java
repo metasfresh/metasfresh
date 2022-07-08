@@ -36,7 +36,8 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.time.ZonedDateTime;
+import java.time.Duration;
+import java.time.Instant;
 
 @Callout(I_C_Project_WO_Step.class)
 @TabCallout(I_C_Project_WO_Step.class)
@@ -44,6 +45,8 @@ import java.time.ZonedDateTime;
 public class C_Project_WO_Step implements ITabCallout
 {
 	private final WOProjectStepRepository woProjectStepRepository;
+
+	private static final Duration DEFAULT_DURATION = Duration.ofDays(1);
 
 	public C_Project_WO_Step(final WOProjectStepRepository woProjectStepRepository) {this.woProjectStepRepository = woProjectStepRepository;}
 
@@ -65,32 +68,32 @@ public class C_Project_WO_Step implements ITabCallout
 	@CalloutMethod(columnNames = I_C_Project_WO_Step.COLUMNNAME_DateStart)
 	public void onDateStart(final I_C_Project_WO_Step record)
 	{
-		final ZonedDateTime dateStart = TimeUtil.asZonedDateTime(record.getDateStart());
+		final Instant dateStart = TimeUtil.asInstant(record.getDateStart());
 		if (dateStart == null)
 		{
 			return;
 		}
 
-		final ZonedDateTime dateEnd = TimeUtil.asZonedDateTime(record.getDateEnd());
+		final Instant dateEnd = TimeUtil.asInstant(record.getDateEnd());
 		if (dateEnd == null || dateStart.compareTo(dateEnd) >= 0)
 		{
-			record.setDateEnd(TimeUtil.asTimestamp(dateStart.plusDays(1)));
+			record.setDateEnd(TimeUtil.asTimestamp(dateStart.plus(DEFAULT_DURATION)));
 		}
 	}
 
 	@CalloutMethod(columnNames = I_C_Project_WO_Step.COLUMNNAME_DateEnd)
 	public void onDateEnd(final I_C_Project_WO_Step record)
 	{
-		final ZonedDateTime dateEnd = TimeUtil.asZonedDateTime(record.getDateEnd());
+		final Instant dateEnd = TimeUtil.asInstant(record.getDateEnd());
 		if (dateEnd == null)
 		{
 			return;
 		}
 
-		final ZonedDateTime dateStart = TimeUtil.asZonedDateTime(record.getDateStart());
+		final Instant dateStart = TimeUtil.asInstant(record.getDateStart());
 		if (dateStart == null || dateStart.compareTo(dateEnd) >= 0)
 		{
-			record.setDateStart(TimeUtil.asTimestamp(dateEnd.minusDays(1)));
+			record.setDateStart(TimeUtil.asTimestamp(dateEnd.minus(DEFAULT_DURATION)));
 		}
 	}
 }

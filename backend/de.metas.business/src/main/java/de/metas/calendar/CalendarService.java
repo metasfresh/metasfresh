@@ -24,6 +24,7 @@ package de.metas.calendar;
 
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.user.UserId;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.stream.Stream;
@@ -41,6 +42,10 @@ public interface CalendarService
 	CalendarEntryUpdateResult updateEntry(CalendarEntryUpdateRequest request);
 
 	void deleteEntryById(
-			CalendarEntryId entryId,
+			@NonNull CalendarEntryId entryId,
+			@Nullable SimulationPlanId simulationId);
+
+	CalendarEntry getEntryById(
+			@NonNull CalendarEntryId entryId,
 			@Nullable SimulationPlanId simulationId);
 }

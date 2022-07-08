@@ -222,6 +222,15 @@ public class ResourceGroupAssignmentCalendarService implements CalendarService
 		resourceService.deleteResourceGroupAssignment(toResourceGroupAssignmentId(entryId));
 	}
 
+	@Override
+	public CalendarEntry getEntryById(
+			@NonNull final CalendarEntryId entryId,
+			@Nullable final SimulationPlanId simulationId)
+	{
+		// TODO maybe
+		throw new UnsupportedOperationException();
+	}
+
 	private static ResourceGroupAssignment updateResourceAssignment(
 			@NonNull final ResourceGroupAssignment assignment,
 			@NonNull final CalendarEntryUpdateRequest request)

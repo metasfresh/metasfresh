@@ -33,7 +33,6 @@ import de.metas.util.StringUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.springframework.stereotype.Repository;
 
@@ -71,17 +70,6 @@ public class WOProjectResourceRepository
 	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)
 	{
 		return getByProjectIds(ImmutableSet.of(projectId)).get(projectId);
-	}
-
-	public WOProjectResource getById(@NonNull final ProjectId projectId, @NonNull final WOProjectResourceId projectResourceId)
-	{
-		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
-				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectId)
-				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceId)
-				.create()
-				.firstOnlyOptional(I_C_Project_WO_Resource.class)
-				.map(WOProjectResourceRepository::fromRecord)
-				.orElseThrow(() -> new AdempiereException("No project resource found for " + projectId + ", " + projectResourceId));
 	}
 
 	public static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)

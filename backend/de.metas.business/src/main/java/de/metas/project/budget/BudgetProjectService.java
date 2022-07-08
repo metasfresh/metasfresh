@@ -67,6 +67,11 @@ public class BudgetProjectService
 		return resourceBudgetRepository.getByProjectId(projectId).getBudgetById(id);
 	}
 
+	public BudgetProjectResource getBudgetsById(@NonNull final BudgetProjectAndResourceId id)
+	{
+		return resourceBudgetRepository.getByProjectId(id.getProjectId()).getBudgetById(id.getProjectResourceId());
+	}
+
 	public Optional<BudgetProjectResource> findBudgetForResource(
 			@NonNull final ProjectId budgetProjectId,
 			@NonNull final ResourceId resourceId)

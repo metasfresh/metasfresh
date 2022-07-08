@@ -243,6 +243,15 @@ public class ResourceAssignmentCalendarService implements CalendarService
 		resourceService.deleteResourceAssignment(toResourceAssignmentId(entryId));
 	}
 
+	@Override
+	public CalendarEntry getEntryById(
+			@NonNull final CalendarEntryId entryId,
+			@Nullable final SimulationPlanId simulationId)
+	{
+		// TODO maybe
+		throw new UnsupportedOperationException();
+	}
+
 	private static ResourceAssignment updateResourceAssignment(
 			@NonNull final ResourceAssignment resourceAssignment,
 			@NonNull final CalendarEntryUpdateRequest request)

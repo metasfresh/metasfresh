@@ -50,8 +50,7 @@ public class CalendarQuery
 
 	public boolean isMatchingSimulationId(@Nullable final SimulationPlanId simulationId)
 	{
-		return simulationId == null // actual data is matching any simulation
-				|| SimulationPlanId.equals(this.simulationId, simulationId);
+		return SimulationPlanId.equals(this.simulationId, simulationId);
 	}
 
 	public boolean isMatchingCalendarServiceId(@NonNull final CalendarServiceId calendarServiceId)

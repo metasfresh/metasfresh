@@ -1,10 +1,14 @@
 package de.metas.ui.web.calendar.websocket;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.calendar.CalendarContinuousQuery;
 import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.MultiCalendarService;
+import de.metas.calendar.continuous_query.CalendarContinuousQuery;
+import de.metas.calendar.continuous_query.CalendarContinuousQueryListener;
+import de.metas.calendar.continuous_query.EntryChangedEvent;
+import de.metas.calendar.continuous_query.EntryDeletedEvent;
+import de.metas.calendar.continuous_query.Event;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.Language;
@@ -20,7 +24,12 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.List;
 
-class CalendarWebSocketProducer implements WebSocketProducer, CalendarContinuousQuery.Listener
+/**
+ * When the websocket client connects to our topic,
+ * it listens to {@link CalendarContinuousQuery} changes
+ * and forwards them to websocket topic.
+ */
+class CalendarWebSocketProducer implements WebSocketProducer, CalendarContinuousQueryListener
 {
 	private final MultiCalendarService multiCalendarService;
 	@NonNull final WebsocketTopicName topicName;
@@ -75,30 +84,32 @@ class CalendarWebSocketProducer implements WebSocketProducer, CalendarContinuous
 	}
 
 	@Override
-	public void onEvents(final @NonNull List<CalendarContinuousQuery.Event> events)
-	{
-		final JsonWebsocketEventsList wsEvents = JsonWebsocketEventsList.builder()
-				.events(events.stream()
-						.map(this::toJsonWebsocketEvent)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+	public void onEvents(final @NonNull List<Event> events) {forwardQueryEventsToWebsocket(events);}
 
-		websocketSender.convertAndSend(topicName, wsEvents);
+	private void forwardQueryEventsToWebsocket(final @NonNull List<Event> events)
+	{
+		websocketSender.convertAndSend(
+				topicName,
+				JsonWebsocketEventsList.builder()
+						.events(events.stream()
+								.map(this::toJsonWebsocketEvent)
+								.collect(ImmutableList.toImmutableList()))
+						.build());
 	}
 
-	private JsonWebsocketEvent toJsonWebsocketEvent(final CalendarContinuousQuery.Event event)
+	private JsonWebsocketEvent toJsonWebsocketEvent(final Event event)
 	{
-		if (event instanceof CalendarContinuousQuery.EntryChangedEvent)
+		if (event instanceof EntryChangedEvent)
 		{
-			final CalendarEntry entry = ((CalendarContinuousQuery.EntryChangedEvent)event).getEntry();
+			final CalendarEntry entry = ((EntryChangedEvent)event).getEntry();
 			return JsonWebsocketEvent.builder()
 					.type(JsonWebsocketEvent.Type.addOrChange)
 					.entry(JsonCalendarEntry.of(entry, SystemTime.zoneId(), adLanguage))
 					.build();
 		}
-		else if (event instanceof CalendarContinuousQuery.EntryDeletedEvent)
+		else if (event instanceof EntryDeletedEvent)
 		{
-			final CalendarContinuousQuery.EntryDeletedEvent entryDeletedEvent = (CalendarContinuousQuery.EntryDeletedEvent)event;
+			final EntryDeletedEvent entryDeletedEvent = (EntryDeletedEvent)event;
 			return JsonWebsocketEvent.builder()
 					.type(JsonWebsocketEvent.Type.remove)
 					.entryId(entryDeletedEvent.getEntryId())

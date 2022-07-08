@@ -22,15 +22,13 @@
 
 package de.metas.calendar;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import de.metas.calendar.continuous_query.CalendarContinuousQuery;
+import de.metas.calendar.continuous_query.CalendarContinuousQueryDispatcher;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -41,26 +39,15 @@ import java.util.stream.Stream;
 public class MultiCalendarService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final ImmutableList<CalendarService> calendarServices;
-	private final ImmutableMap<CalendarServiceId, CalendarService> calendarServicesById;
+	private final CalendarServicesMap calendarServices;
 
-	private final CalendarContinuousQueryDispatcher continuousQueriesDispatcher = new CalendarContinuousQueryDispatcher(trxManager);
+	private final CalendarContinuousQueryDispatcher continuousQueriesDispatcher;
 
 	public MultiCalendarService(
 			@NonNull final List<CalendarService> calendarServices)
 	{
-		this.calendarServices = ImmutableList.copyOf(calendarServices);
-		this.calendarServicesById = Maps.uniqueIndex(calendarServices, CalendarService::getCalendarServiceId);
-	}
-
-	private CalendarService getCalendarServiceById(@NonNull final CalendarServiceId calendarServiceId)
-	{
-		final CalendarService calendarService = calendarServicesById.get(calendarServiceId);
-		if (calendarService == null)
-		{
-			throw new AdempiereException("No calendar service found for " + calendarServiceId);
-		}
-		return calendarService;
+		this.calendarServices = CalendarServicesMap.of(calendarServices);
+		this.continuousQueriesDispatcher = new CalendarContinuousQueryDispatcher(trxManager, this.calendarServices);
 	}
 
 	public Stream<CalendarRef> streamAvailableCalendars(@NonNull final UserId userId)
@@ -77,12 +64,12 @@ public class MultiCalendarService
 
 	public CalendarContinuousQuery continuousQuery(@NonNull final CalendarQuery query)
 	{
-		return continuousQueriesDispatcher.get(query);
+		return continuousQueriesDispatcher.getOrCreate(query);
 	}
 
 	public CalendarEntry addEntry(@NonNull final CalendarEntryAddRequest request)
 	{
-		final CalendarService calendarService = getCalendarServiceById(request.getCalendarId().getCalendarServiceId());
+		final CalendarService calendarService = calendarServices.getById(request.getCalendarId().getCalendarServiceId());
 		return trxManager.callInThreadInheritedTrx(() -> {
 			final CalendarEntry result = calendarService.addEntry(request);
 			continuousQueriesDispatcher.onEntryAdded(result);
@@ -92,7 +79,7 @@ public class MultiCalendarService
 
 	public CalendarEntryUpdateResult updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
-		final CalendarService calendarService = getCalendarServiceById(request.getCalendarServiceId());
+		final CalendarService calendarService = calendarServices.getById(request.getCalendarServiceId());
 		return trxManager.callInThreadInheritedTrx(() -> {
 			final CalendarEntryUpdateResult result = calendarService.updateEntry(request);
 			continuousQueriesDispatcher.onEntryUpdated(result);
@@ -102,10 +89,20 @@ public class MultiCalendarService
 
 	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable SimulationPlanId simulationId)
 	{
-		final CalendarService calendarService = getCalendarServiceById(entryId.getCalendarServiceId());
+		final CalendarService calendarService = calendarServices.getById(entryId.getCalendarServiceId());
 		trxManager.runInThreadInheritedTrx(() -> {
 			calendarService.deleteEntryById(entryId, simulationId);
 			continuousQueriesDispatcher.onEntryDeleted(entryId, simulationId);
 		});
+	}
+
+	public void notifyEntryUpdatedByUser(@NonNull final CalendarEntryId entryId)
+	{
+		continuousQueriesDispatcher.onEntryUpdated(entryId);
+	}
+
+	public void notifyEntryDeletedByUser(@NonNull final CalendarEntryId entryId)
+	{
+		continuousQueriesDispatcher.onEntryDeleted(entryId, null);
 	}
 }
