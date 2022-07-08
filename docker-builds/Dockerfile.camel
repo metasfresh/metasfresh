@@ -1,0 +1,11 @@
+ARG REFNAME=local
+FROM metasfresh/metas-mvn-common:$REFNAME as common
+
+FROM maven:3.6.3-adoptopenjdk-14 as build
+
+COPY --from=common /root/.m2 /root/.m2/
+
+WORKDIR /camel
+COPY misc/services/camel .
+
+RUN mvn clean install -Dmaven.gitcommitid.skip=true -Djib.skip=true -DskipTests
