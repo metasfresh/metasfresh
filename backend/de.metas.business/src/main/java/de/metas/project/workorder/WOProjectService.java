@@ -45,7 +45,8 @@ public class WOProjectService
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
-			final WOProjectResourceRepository woProjectResourceRepository, final WOProjectStepRepository woProjectStepRepository)
+			final WOProjectResourceRepository woProjectResourceRepository,
+			final WOProjectStepRepository woProjectStepRepository)
 	{
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;
@@ -90,9 +91,9 @@ public class WOProjectService
 		}
 
 		final ImmutableSet<ProjectId> projectIds = projectAndStepIds.stream().map(WOProjectAndStepId::getProjectId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<ProjectId, WOProjectResources> resourcesByProjectId = woProjectResourceRepository.getByProjectIds(projectIds);
 
 		final HashMap<WOProjectStepId, CalendarDateRange> stepDateRanges = new HashMap<>();
-		final ImmutableMap<ProjectId, WOProjectResources> resourcesByProjectId = woProjectResourceRepository.getByProjectIds(projectIds);
 		for (final WOProjectAndStepId projectAndStepId : projectAndStepIds)
 		{
 			final ImmutableList<CalendarDateRange> resourceDateRanges = resourcesByProjectId
@@ -102,8 +103,11 @@ public class WOProjectService
 					.distinct()
 					.collect(ImmutableList.toImmutableList());
 
-			final CalendarDateRange stepDateRange = CalendarDateRange.computeDateRangeToFitAll(resourceDateRanges);
-			stepDateRanges.put(projectAndStepId.getStepId(), stepDateRange);
+			if (!resourceDateRanges.isEmpty())
+			{
+				final CalendarDateRange stepDateRange = CalendarDateRange.computeDateRangeToFitAll(resourceDateRanges);
+				stepDateRanges.put(projectAndStepId.getStepId(), stepDateRange);
+			}
 		}
 
 		woProjectStepRepository.updateStepDateRanges(stepDateRanges);
