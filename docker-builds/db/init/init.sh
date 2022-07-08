@@ -37,6 +37,11 @@ echo ""
 echo "======================================="
 echo " Applying migrations ..."
 echo "======================================="
+# We want to use the regular postgres container init and do not want to override the original entrypoint.
+# Therefore we cannot use our metasfresh java migration tool here since it wants to open a JDBC connection via TCP socket, which is not open during postgres init for security reasons.
+# Only a local unix socket is available, which allows us to use psql command line.
+# We emulate what the java migration tool would do, by iterating over the migration sqls in the right order, checking whether they need applying and marking each applied migration in the database.
+
 find /docker-entrypoint-initdb.d/migrations -type f -printf '%f\n' | sort | while read f; do
   case "$f" in
     *.sql)
