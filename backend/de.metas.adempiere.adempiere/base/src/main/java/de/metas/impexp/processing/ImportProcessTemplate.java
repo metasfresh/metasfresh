@@ -406,7 +406,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		//
 		// Delete
-		final int deletedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int deletedCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		return deletedCount;
 	}
 
@@ -446,9 +446,9 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) ")
 				.append(" ").append(getImportRecordsSelection().toSqlWhereClause());
-		final int no = DB.executeUpdateEx(sql.toString(),
-				sqlParams.toArray(),
-				ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(),
+															   sqlParams.toArray(),
+															   ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Reset={}", no);
 
 	}
@@ -657,7 +657,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 
 		//
 		// Execute
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited,
@@ -685,7 +685,7 @@ public abstract class ImportProcessTemplate<ImportRecordType, ImportGroupKey>
 				+ " SET " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N', Updated=now() "
 				+ " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' "
 				+ " " + getImportRecordsSelection().toSqlWhereClause();
-		final int countNotImported = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		final int countNotImported = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		return countNotImported >= 0 ? countNotImported : 0;
 	}
 

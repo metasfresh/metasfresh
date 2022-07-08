@@ -147,7 +147,7 @@ public class InvoiceNGL extends JavaProcess
 		
 		//	Delete - just to be sure
 		String sql = "DELETE FROM T_InvoiceGL WHERE AD_PInstance_ID=" + getAD_PInstance_ID();
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no > 0)
 		{
 			log.info("Deleted #" + no);
@@ -196,7 +196,7 @@ public class InvoiceNGL extends JavaProcess
 			sql += " AND i.C_Currency_ID=" + p_C_Currency_ID;
 		}
 		
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 		{
 			log.info("Inserted #" + no);
@@ -217,7 +217,7 @@ public class InvoiceNGL extends JavaProcess
 				+ "FROM Fact_Acct fa "
 				+ "WHERE gl.Fact_Acct_ID=fa.Fact_Acct_ID) "
 			+ "WHERE AD_PInstance_ID=" + getAD_PInstance_ID());
-		int noT = DB.executeUpdate(sql, get_TrxName());
+		int noT = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (noT > 0)
 		{
 			log.info("Difference #" + noT);
@@ -226,7 +226,7 @@ public class InvoiceNGL extends JavaProcess
 		//	Percentage
 		sql = "UPDATE T_InvoiceGL SET Percent = 100 "
 			+ "WHERE GrandTotal=OpenAmt AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no > 0)
 		{
 			log.info("Not Paid #" + no);
@@ -234,7 +234,7 @@ public class InvoiceNGL extends JavaProcess
 
 		sql = "UPDATE T_InvoiceGL SET Percent = ROUND(OpenAmt*100/GrandTotal,6) "
 			+ "WHERE GrandTotal<>OpenAmt AND GrandTotal <> 0 AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no > 0)
 		{
 			log.info("Partial Paid #" + no);
@@ -245,7 +245,7 @@ public class InvoiceNGL extends JavaProcess
 			+ " AmtRevalDrDiff = AmtRevalDrDiff * Percent/100,"
 			+ " AmtRevalCrDiff = AmtRevalCrDiff * Percent/100 "
 			+ "WHERE Percent <> 100 AND AD_PInstance_ID=" + getAD_PInstance_ID();
-		no = DB.executeUpdate(sql, get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no > 0)
 		{
 			log.info("Partial Calc #" + no);

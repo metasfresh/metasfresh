@@ -238,7 +238,7 @@ public class MMovement extends X_M_Movement implements IDocument
 			return;
 		}
 		final String sql = "UPDATE M_MovementLine SET Processed=? WHERE M_Movement_ID=?";
-		int noLine = DB.executeUpdateEx(sql, new Object[]{processed, get_ID()}, get_TrxName());
+		int noLine = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[]{processed, get_ID()}, get_TrxName());
 		m_lines = null;
 		log.debug("Processed={} - Lines={}", processed, noLine);
 	}	//	setProcessed

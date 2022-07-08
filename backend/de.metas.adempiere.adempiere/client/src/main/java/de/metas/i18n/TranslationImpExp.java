@@ -33,7 +33,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
@@ -537,7 +536,7 @@ public class TranslationImpExp
 				m_sql.insert(0, m_updateSQL);
 
 				// Execute
-				final int no = DB.executeUpdate(m_sql.toString(), null);
+				final int no = DB.executeUpdateAndSaveErrorOnFail(m_sql.toString(), null);
 				if (no == 1)
 				{
 					if (LogManager.isLevelFinest())

@@ -136,7 +136,7 @@ public class MWorkflowProcessor extends X_AD_WorkflowProcessor
 		String sql = "DELETE FROM AD_WorkflowProcessorLog "
 				+ "WHERE AD_WorkflowProcessor_ID=" + getAD_WorkflowProcessor_ID()
 				+ " AND (Created+" + getKeepLogDays() + ") < now()";
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		return no;
 	}	// deleteLog
 

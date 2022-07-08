@@ -35,7 +35,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pdf.Document;
 import org.adempiere.print.export.PrintDataExcelExporter;
 import org.apache.ecs.XhtmlDocument;
 import org.apache.ecs.xhtml.a;
@@ -1188,7 +1187,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		//
 		if (sql.length() > 0)
 		{
-			final int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_None);
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), ITrx.TRXNAME_None);
 			if (no != 1)
 			{
 				log.error("Updated records={} - should be just one for SQL={}", no, sql);

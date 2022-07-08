@@ -3,6 +3,7 @@ package de.metas.process;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -1007,8 +1009,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
-		getResult().addLog(id, date, number, msg);
-	}	// addLog
+		addLog(id, date, number,  msg, null);
+	}
+
+	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable List<String> warningMessages)
+	{
+
+		getResult().addLog(id, date, number, msg, warningMessages);
+	}
 
 	/**
 	 * Add Log, if the given <code>msg<code> is not <code>null</code>
@@ -1018,9 +1026,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	@Override
 	public final ILoggable addLog(final String msg, final Object... msgParameters)
 	{
+		return addLog(null, msg, msgParameters);
+	}
+
+	public final ILoggable addLog(final List<String> warningMessages, final String msg, final Object... msgParameters)
+	{
 		if (msg != null)
 		{
-			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
+			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters), warningMessages);
 		}
 		return this;
 	}	// addLog

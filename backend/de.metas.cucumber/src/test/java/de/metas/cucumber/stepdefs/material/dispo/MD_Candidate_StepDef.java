@@ -96,13 +96,13 @@ public class MD_Candidate_StepDef
 
 	private void truncateMDCandidateData()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("metasfresh initially has no MD_Candidate_StockChange_detail data")
 	public void setupMD_Candidate_StockChange_detail_Data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE md_candidate_stockChange_detail cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE md_candidate_stockChange_detail cascade", ITrx.TRXNAME_None);
 	}
 
 	@When("metasfresh receives a ShipmentScheduleCreatedEvent")

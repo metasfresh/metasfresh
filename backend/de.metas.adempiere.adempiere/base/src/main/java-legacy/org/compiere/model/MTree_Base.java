@@ -546,7 +546,7 @@ public class MTree_Base extends X_AD_Tree
 				.append(" WHERE ")
 				.append(" Node_ID=").append(nodeId)
 				.append(" AND AD_Tree_ID=").append(AD_Tree_ID);
-		int no = DB.executeUpdateEx(sql.toString(), trxName);
+		int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		if (no == 0)
 		{
 			// TODO: Insert
@@ -623,7 +623,7 @@ public class MTree_Base extends X_AD_Tree
 		sb.append(" AND NOT EXISTS (SELECT * FROM ").append(treeTableName).append(" e ")
 				.append("WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=").append(id).append(")");
 		//
-		int no = DB.executeUpdateEx(sb.toString(), trxName);
+		int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), trxName);
 		if (no < 0)
 		{
 			log.warn("#" + no + " - AD_Table_ID=" + AD_Table_ID);
@@ -672,7 +672,7 @@ public class MTree_Base extends X_AD_Tree
 				.append("WHERE t.AD_Tree_ID=n.AD_Tree_ID AND t.AD_Table_ID=")
 				.append(AD_Table_ID).append(")");
 		//
-		final int no = DB.executeUpdateEx(sb.toString(), trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), trxName);
 		if (no <= 0)
 		{
 			log.warn("#" + no + " - AD_Table_ID=" + AD_Table_ID);
@@ -830,7 +830,7 @@ public class MTree_Base extends X_AD_Tree
 		sql.append(")");
 		log.trace(sql.toString());
 		//
-		final int deletes = DB.executeUpdateEx(sql.toString(), get_TrxName());
+		final int deletes = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), get_TrxName());
 		log.info(getName() + " Deleted #" + deletes);
 
 		// Check and create root node
