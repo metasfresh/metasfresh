@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,38 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.ftp;
+package de.metas.externalsystem.leichmehl;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class FTPCredentials
+public class LeichMehlProductMappingQuery
 {
-	@NonNull
-	@JsonProperty("ftpHost")
-	String ftpHost;
+	@Nullable
+	BPartnerId bPartnerId;
 
-	@NonNull
-	@JsonProperty("ftpPort")
-	String ftpPort;
+	@Nullable
+	ProductId productId;
 
-	@NonNull
-	@JsonProperty("ftpDirectory")
-	String ftpDirectory;
-
-	@NonNull
-	@JsonProperty("ftpFilename")
-	String ftpFilename;
-
-	@NonNull
-	@JsonProperty("ftpUsername")
-	String ftpUsername;
-
-	@NonNull
-	@JsonProperty("ftpPassword")
-	String ftpPassword;
+	@Nullable
+	ProductCategoryId productCategoryId;
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,15 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl;
+package de.metas.cucumber.stepdefs.externalsystem;
 
-public interface LeichMehlConstants
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+
+public class ExternalSystem_Config_LeichMehl_StepDefData extends StepDefData<I_ExternalSystem_Config_LeichMehl>
 {
-	String ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT = "ExportPPOrderRouteContext";
-
-	String XML_ELEMENT_RI = "ri";
-	String XML_ELEMENT_RECV_PLU = "recvPLU";
-
-	String XML_PROPERTY_PLU_FILE_ENCODING_VALUE = "Windows-1252";
-	String XML_PROPERTY_VALUE_YES = "yes";
 }

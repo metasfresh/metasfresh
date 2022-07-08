@@ -20,28 +20,30 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp;
 
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-@Data
-@Builder
-public class ExportPPOrderRouteContext
+@Value
+public class DispatchMessageRequest
 {
 	@NonNull
-	private final JsonExternalSystemRequest jsonExternalSystemRequest;
+	@JsonProperty("connectionDetails")
+	ConnectionDetails connectionDetails;
 
 	@NonNull
-	private final ConnectionDetails connectionDetails;
+	@JsonProperty("payload")
+	String payload;
 
-	@NonNull
-	private final String productBaseFolderName;
-
-	@NonNull
-	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
+	@Builder
+	public DispatchMessageRequest(
+			@JsonProperty("connectionDetails") @NonNull final ConnectionDetails connectionDetails,
+			@JsonProperty("payload") @NonNull final String payload)
+	{
+		this.connectionDetails = connectionDetails;
+		this.payload = payload;
+	}
 }
