@@ -93,3 +93,7 @@ UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Specifies the user 
 -- 2022-07-07T15:43:57.961Z
 UPDATE AD_UserGroup SET Description='User group to be notified when the authorization process for the External Systems fails.',Updated=TO_TIMESTAMP('2022-07-07 18:43:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UserGroup_ID=540005
 ;
+
+-- 2022-07-08T15:22:54.157Z
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Specifies the authorization token used by the External Systems when connecting to Metasfresh. The value is put into an AuthToken-Record of the User ''''Support, IT'''' (AD_User_ID=2188223).',Updated=TO_TIMESTAMP('2022-07-08 18:22:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541464
+;
