@@ -97,6 +97,7 @@ public class InfrastructureSupport
 
         cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
 
+	// TODO replace runAgainstDockerizedDatabase and cucumberIsUsingProvidedInfrastructure with an enum
         if (cucumberIsUsingProvidedInfrastructure) {
             logger.info("using provided infrasstructure, not starting any containers");
 
