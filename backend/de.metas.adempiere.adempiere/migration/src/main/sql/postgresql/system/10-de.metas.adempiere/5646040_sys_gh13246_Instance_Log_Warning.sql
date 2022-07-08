@@ -208,3 +208,98 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541395, SeqNo=100,Updated=TO_TIMESTAMP('2022-07-07 18:31:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=610029
 ;
 
+
+
+
+-- 2022-07-08T08:06:00.422Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.',Updated=TO_TIMESTAMP('2022-07-08 11:06:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='en_US'
+;
+
+-- 2022-07-08T08:06:00.454Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'en_US') 
+;
+
+-- 2022-07-08T08:06:17.875Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', IsTranslated='Y',Updated=TO_TIMESTAMP('2022-07-08 11:06:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_DE'
+;
+
+-- 2022-07-08T08:06:17.876Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_DE') 
+;
+
+-- 2022-07-08T08:06:17.886Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581085,'de_DE') 
+;
+
+-- 2022-07-08T08:06:17.887Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID=581085
+;
+
+-- 2022-07-08T08:06:17.889Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', AD_Element_ID=581085 WHERE UPPER(ColumnName)='ISLOGWARNING' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-07-08T08:06:17.890Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID=581085 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-07-08T08:06:17.891Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581085) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581085)
+;
+
+-- 2022-07-08T08:06:17.902Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', CommitWarning = NULL WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:06:17.904Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:06:17.906Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Log Warning', Description = 'Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:06:24.421Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', IsTranslated='Y',Updated=TO_TIMESTAMP('2022-07-08 11:06:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_CH'
+;
+
+-- 2022-07-08T08:06:24.422Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_CH') 
+;
+
+-- 2022-07-08T08:06:31.925Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-07-08 11:06:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='en_US'
+;
+
+-- 2022-07-08T08:06:31.926Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'en_US') 
+;
+
+
+
+
