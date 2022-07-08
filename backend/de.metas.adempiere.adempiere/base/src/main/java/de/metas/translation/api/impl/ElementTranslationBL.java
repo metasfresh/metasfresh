@@ -386,7 +386,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(", ").append(I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb).append(" = ").append(DB.TO_STRING(event.getWebuiNameNewBreadcrumb()))
 				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
-		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updateResultsCounter = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		log.debug("Menus updated #{}", updateResultsCounter);
 	}
@@ -399,7 +399,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
 				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
-		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updateResultsCounter = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		log.debug("Windows updated #{}", updateResultsCounter);
 	}
@@ -413,7 +413,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(", ").append(I_AD_Element.COLUMNNAME_CommitWarning).append(" = ").append(DB.TO_STRING(event.getCommitWarning()))
 				.append(" WHERE AD_Element_ID = ").append(event.getAdElementId().getRepoId());
 
-		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updateResultsCounter = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		log.debug("Tabs updated #{}", updateResultsCounter);
 	}
@@ -427,7 +427,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(" AND EXISTS (SELECT * FROM AD_Column c ")
 				.append(" WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
 				.append(event.getAdElementId().getRepoId()).append(")");
-		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updateResultsCounter = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		log.debug("PrintFormatItem updated #{}", updateResultsCounter);
 	}
@@ -448,7 +448,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append("(")
 				.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(event.getAdElementId().getRepoId())
 				.append(")");
-		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updateResultsCounter = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		log.debug("Fields updated #{}", updateResultsCounter);
 	}
@@ -469,7 +469,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 					.append(" WHERE UPPER(ColumnName)=")
 					.append(DB.TO_STRING(event.getColumnName().toUpperCase()))
 					.append(" AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL");
-			updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+			updateResultsCounter = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		}
 
 		final StringBuilder sql = new StringBuilder("UPDATE AD_Process_Para SET ColumnName=")
@@ -479,7 +479,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
 				.append(" WHERE AD_Element_ID=").append(event.getAdElementId().getRepoId())
 				.append(" AND IsCentrallyMaintained='Y'");
-		updateResultsCounter += DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		updateResultsCounter += DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		log.debug("Parameters updated #{}", updateResultsCounter);
 	}
@@ -492,7 +492,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 				.append(", Description=").append(DB.TO_STRING(event.getDescription()))
 				.append(", Help=").append(DB.TO_STRING(event.getHelp()))
 				.append(" WHERE AD_Element_ID=").append(event.getAdElementId().getRepoId());
-		final int updateResultsCounter = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updateResultsCounter = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		log.debug("Columns updated #{}", updateResultsCounter);
 	}

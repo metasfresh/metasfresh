@@ -100,7 +100,7 @@ public class MStatusCategory extends X_R_StatusCategory
 			return null;
 		String sql = "UPDATE R_Status SET R_StatusCategory_ID=" + retValue.getR_StatusCategory_ID()
 			+ " WHERE R_StatusCategory_ID IS NULL AND AD_Client_ID=" + AD_Client_ID;
-		int no = DB.executeUpdate(sql, null);
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
 		s_log.info("Default for AD_Client_ID=" + AD_Client_ID + " - Status #" + no);
 		return retValue;
 	}	//	createDefault

@@ -377,10 +377,10 @@ public class ColumnEncryption extends JavaProcess
 			if (rs.next())
 			{
 				// Change the column size physically.
-				DB.executeUpdateEx(alterSql, ITrx.TRXNAME_ThreadInherited);
+				DB.executeUpdateAndThrowExceptionOnFail(alterSql, ITrx.TRXNAME_ThreadInherited);
 
 				// Change the column size in AD.
-				DB.executeUpdateEx(updateSql, ITrx.TRXNAME_ThreadInherited);
+				DB.executeUpdateAndThrowExceptionOnFail(updateSql, ITrx.TRXNAME_ThreadInherited);
 			}
 		}
 		catch (final SQLException ex)

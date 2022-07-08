@@ -450,7 +450,7 @@ public class ADProcessDAO implements IADProcessDAO
 		// NOTE: don't use parameterized SQL queries because this script will be logged as a migration script (task
 
 		final String sqlDelete = "DELETE FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + targetProcessParaId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Process_Para_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language, " +
@@ -459,7 +459,7 @@ public class ADProcessDAO implements IADProcessDAO
 				" SELECT " + targetProcessParaId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + sourceProcessParaId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Process_Para_Trl inserted: {}", countInsert);
 	}
 
