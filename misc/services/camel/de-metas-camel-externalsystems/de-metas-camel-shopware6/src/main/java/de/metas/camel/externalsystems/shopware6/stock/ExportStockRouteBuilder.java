@@ -37,6 +37,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
@@ -94,8 +96,12 @@ public class ExportStockRouteBuilder extends RouteBuilder
 	{
 		final ExportStockRouteContext exportStockRouteContext = exchange.getProperty(ROUTE_PROPERTY_EXPORT_STOCK_CONTEXT, ExportStockRouteContext.class);
 
+		final BigDecimal stockBD = exportStockRouteContext.getJsonAvailableStock()
+				.getStock()
+				.setScale(0, RoundingMode.CEILING);
+
 		final JsonStock jsonStock = JsonStock.builder()
-				.stock(exportStockRouteContext.getJsonAvailableStock().getStock())
+				.stock(stockBD.intValueExact())
 				.build();
 
 		exchange.getIn().setBody(jsonStock);

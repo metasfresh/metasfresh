@@ -20,28 +20,8 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.stock;
+package de.metas.camel.externalsystems.shopware6.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-@JsonDeserialize(builder = JsonStock.JsonStockBuilder.class)
-public class JsonStock
+public interface Shopware6QueryRequest
 {
-	@NonNull
-	@JsonProperty("stock")
-	Integer stock;
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonStockBuilder
-	{
-	}
 }

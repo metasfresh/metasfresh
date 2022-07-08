@@ -156,15 +156,19 @@ public class ShopwareClient
 
 		if (response == null || Check.isBlank(response.getBody()))
 		{
-			return new GetOrdersResponse(ImmutableList.of(), null);
+			final int rawSize = 0;
+			return new GetOrdersResponse(ImmutableList.of(), null, rawSize);
 		}
 
 		final ImmutableList.Builder<OrderCandidate> orderCandidates = ImmutableList.builder();
 
 		final Optional<JsonNode> rootJsonNodeOpt = readDataJsonNode(response);
 
-		if (rootJsonNodeOpt.isPresent())
+		if (rootJsonNodeOpt.isEmpty())
 		{
+			final int rawSize = 0;
+			return new GetOrdersResponse(orderCandidates.build(), response.getBody(), rawSize);
+		}
 			final JsonNode rootJsonNode = rootJsonNodeOpt.get();
 
 			for (final JsonNode orderCustomerNode : rootJsonNode)
@@ -172,15 +176,18 @@ public class ShopwareClient
 				getOrderCandidate(orderCustomerNode, salesRepJSONPath)
 						.ifPresent(orderCandidates::add);
 			}
+
+			final int rawSize = Optional.ofNullable(rootJsonNode).map(JsonNode::size).orElse(0);
+
+			return new GetOrdersResponse(orderCandidates.build(), response.getBody(), rawSize);
 		}
-		return new GetOrdersResponse(orderCandidates.build(), response.getBody());
-	}
 
 	@Value
 	public static class GetOrdersResponse
 	{
 		ImmutableList<OrderCandidate> orderCandidates;
 		String rawData;
+		int rawSize;
 	}
 
 	@NonNull
@@ -695,7 +702,6 @@ public class ShopwareClient
 					throw new RuntimeException("Custom Identifier path provided for Location, but no custom identifier found. Location default identifier:" + jsonAddress.getId());
 				}
 			}
-
 			if (Check.isNotBlank(customMetasfreshIdJSONPath))
 			{
 				final JsonNode node = orderAddressJson.at(customMetasfreshIdJSONPath);

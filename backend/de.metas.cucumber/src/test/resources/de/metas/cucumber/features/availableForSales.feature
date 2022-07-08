@@ -279,9 +279,10 @@ Feature: available for sales
       | M_Product_ID.Identifier | QtyOnHandStock | QtyToBeShipped | StorageAttributesKey.Identifier |
       | p_1                     | 10             | 8              | -1002                           |
 
+    # note: the productIdentifier's metasfreshId doesn't matter; the step only evaluates the externalReference and stock.
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.JsonAvailableStock                                                                           |
-      | config_1                            | {"productIdentifier": {"metasfreshId":1,"externalReference":"stockProduct_reference"},"stock":2} |
+      | config_1                            | {"productIdentifier": {"metasfreshId":999999,"externalReference":"stockProduct_reference"},"stock":2} |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

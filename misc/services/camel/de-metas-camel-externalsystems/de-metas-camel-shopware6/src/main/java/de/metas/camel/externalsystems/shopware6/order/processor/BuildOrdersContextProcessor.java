@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,13 +28,12 @@ import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
-import de.metas.camel.externalsystems.shopware6.api.model.QueryHelper;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteHelper;
-import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.product.GetProductsRouteHelper;
+import de.metas.camel.externalsystems.shopware6.order.query.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.salutation.GetSalutationsRequest;
 import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -65,19 +64,21 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 
-public class GetOrdersProcessor implements Processor
+
+public class BuildOrdersContextProcessor implements Processor
 {
+
 	private final ProcessLogger processLogger;
 	private final ProducerTemplate producerTemplate;
 
-	public GetOrdersProcessor(@NonNull final ProcessLogger processLogger, @NonNull final ProducerTemplate producerTemplate)
+	public BuildOrdersContextProcessor(@NonNull final ProcessLogger processLogger, @NonNull final ProducerTemplate producerTemplate)
 	{
 		this.processLogger = processLogger;
 		this.producerTemplate = producerTemplate;
 	}
 
 	@Override
-	public void process(final Exchange exchange)
+	public void process(final Exchange exchange) throws Exception
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
@@ -90,11 +91,8 @@ public class GetOrdersProcessor implements Processor
 		}
 
 		final String clientId = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_ID);
-		final String clientSecret = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_SECRET);
-
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
-
-		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
+		final String clientSecret = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_SECRET);
 
 		final PInstanceLogger pInstanceLogger = PInstanceLogger.builder()
 				.processLogger(processLogger)
@@ -103,17 +101,15 @@ public class GetOrdersProcessor implements Processor
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath, pInstanceLogger);
 
-		final ImportOrdersRequest importOrdersRequest = QueryHelper.buildShopware6QueryRequest(request);
-
-		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(importOrdersRequest.getShopware6QueryRequest(), salesRepJSONPath);
-
-		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
-
 		final CurrencyInfoProvider currencyInfoProvider = getCurrencyInfoProvider(basePath, clientId, clientSecret);
 
 		final SalutationInfoProvider salutationInfoProvider = getSalutationInfoProvider(basePath, clientId, clientSecret);
 
-		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider, salutationInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
+		final ImportOrdersRouteContext ordersContext = buildContext(request,
+																	shopwareClient,
+																	currencyInfoProvider,
+																	salutationInfoProvider,
+																	ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE);
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}
@@ -124,7 +120,7 @@ public class GetOrdersProcessor implements Processor
 			@NonNull final ShopwareClient shopwareClient,
 			@NonNull final CurrencyInfoProvider currencyInfoProvider,
 			@NonNull final SalutationInfoProvider salutationInfoProvider,
-			final boolean skipNextImportStartingTimestamp)
+			final int pageLimit)
 	{
 		final String bpLocationCustomJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
 		final String emailJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_EMAIL);
@@ -144,11 +140,13 @@ public class GetOrdersProcessor implements Processor
 				.currencyInfoProvider(currencyInfoProvider)
 				.salutationInfoProvider(salutationInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
-				.skipNextImportStartingTimestamp(skipNextImportStartingTimestamp)
+				.skipNextImportStartingTimestamp(OrderQueryHelper.shouldIgnoreNextImportTimestamp(request))
 				.jsonProductLookup(JsonProductLookup.valueOf(productLookup))
 				.metasfreshIdJsonPath(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_METASFRESH_ID))
 				.shopwareIdJsonPath(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID))
 				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
+				.ordersResponsePageIndex(1)
+				.pageLimit(pageLimit)
 				.build();
 	}
 

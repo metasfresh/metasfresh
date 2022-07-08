@@ -84,7 +84,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	 * Can be used to maintain a safety margin.
 	 */
 	@NonNull
-	Percent percentageOfAvailableStockToSync;
+	Percent percentageToDeductFromAvailableStock;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -106,7 +106,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @Nullable String metasfreshIdJSONPath,
 			final @Nullable String shopwareIdJSONPath,
 			final boolean syncStockToShopware6,
-			final @Nullable Percent percentageOfAvailableStockToSync)
+			final @Nullable Percent percentageToDeductFromAvailableStock)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -127,7 +127,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.metasfreshIdJSONPath = metasfreshIdJSONPath;
 		this.shopwareIdJSONPath = shopwareIdJSONPath;
 		this.syncStockToShopware6 = syncStockToShopware6;
-		this.percentageOfAvailableStockToSync = CoalesceUtil.coalesceNotNull(percentageOfAvailableStockToSync, Percent.ZERO);
+		this.percentageToDeductFromAvailableStock = CoalesceUtil.coalesceNotNull(percentageToDeductFromAvailableStock, Percent.ZERO);
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

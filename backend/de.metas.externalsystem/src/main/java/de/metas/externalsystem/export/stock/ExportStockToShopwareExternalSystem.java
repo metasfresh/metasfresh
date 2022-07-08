@@ -175,6 +175,8 @@ public class ExportStockToShopwareExternalSystem
 			return Optional.empty();
 		}
 
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(externalSystemChildConfig.getId());
+
 		return Optional.of(JsonExternalSystemRequest.builder()
 								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(ExternalSystemParentConfigId.toRepoId(externalReferenceParentConfigId)))
@@ -182,6 +184,7 @@ public class ExportStockToShopwareExternalSystem
 								   .orgCode(orgCode)
 								   .command(getExternalCommand())
 								   .parameters(buildParameters(productExternalRef, externalSystemChildConfig.getId()))
+								   .writeAuditEndpoint(parentConfig.getAuditEndpointIfEnabled())
 								   .traceId(externalSystemConfigService.getTraceId())
 								   .build());
 	}
@@ -232,7 +235,7 @@ public class ExportStockToShopwareExternalSystem
 
 		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(externalSystemParentConfig.getChildConfig());
 		
-		return shopware6Config.getPercentageOfAvailableStockToSync()
+		return shopware6Config.getPercentageToDeductFromAvailableStock()
 				.subtractFromBase(availableStock, availableStock.precision());
 	}
 

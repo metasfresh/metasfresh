@@ -51,6 +51,7 @@ public interface ShopwareTestConstants
 	String MOCK_TARGET_PRICE_LIST_ID = "121";
 	String MOCK_IS_TAX_INCLUDED = "true";
 	String MOCK_BILLING_ADDRESS_HTTP_URL = "https://www.matter.com/api/order-address/billingAddressId";
+	String MOCK_JSON_PATH_SALES_REP_ID = "/orderCustomer/customFields/customSalesRepId";
 
 	String MOCK_GET_CUSTOMERS_HTTP_URL = "https://www.matter.com/api/search/customer";
 	String MOCK_CUSTOMER_ADDRESS_HTTP_URL = "https://www.matter.com/api/customer-address/customerAddressId";

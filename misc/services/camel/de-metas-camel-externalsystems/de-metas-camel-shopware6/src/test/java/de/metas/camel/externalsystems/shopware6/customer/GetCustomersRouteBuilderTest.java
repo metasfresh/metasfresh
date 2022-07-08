@@ -196,6 +196,7 @@ public class GetCustomersRouteBuilderTest extends CamelTestSupport
 					.updatedAfter(updatedAfter)
 					.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 					.skipNextImportTimestamp(skipNextImportTimestamp)
+					.pageLimit(2) // this is a bit of a hack; we go with a page-size of two, knowing that our mocked paginated endpoint with return just one partner. so we'll invoke that EP just once
 					.build();
 
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_CUSTOMERS_CONTEXT, customersRouteContext);
