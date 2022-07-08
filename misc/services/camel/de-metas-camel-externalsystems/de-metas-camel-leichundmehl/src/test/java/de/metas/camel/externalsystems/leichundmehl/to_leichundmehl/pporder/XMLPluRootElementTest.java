@@ -22,26 +22,28 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluElement;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.util.SerializationUtils;
 
-@Data
-@Builder
-public class ExportPPOrderRouteContext
+public class XMLPluRootElementTest
 {
-	@NonNull
-	private final JsonExternalSystemRequest jsonExternalSystemRequest;
+	@Test
+	public void test()
+	{
+		final XMLPluElement element = XMLPluElement.builder()
+				.content("element")
+				.build();
 
-	@NonNull
-	private final ConnectionDetails connectionDetails;
+		final XMLPluRootElement root = XMLPluRootElement.builder()
+				.xmlPluElement(element)
+				.build();
 
-	@NonNull
-	private final String productBaseFolderName;
+		final byte[] data = SerializationUtils.serialize(root);
+		final Object deserializedRoot = SerializationUtils.deserialize(data);
 
-	@NonNull
-	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
+		Assertions.assertThat(root).isEqualTo(deserializedRoot);
+	}
 }

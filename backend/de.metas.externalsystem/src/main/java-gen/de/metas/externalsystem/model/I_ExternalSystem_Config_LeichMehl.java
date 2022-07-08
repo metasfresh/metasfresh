@@ -2,6 +2,8 @@ package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for ExternalSystem_Config_LeichMehl
  *  @author metasfresh (generated) 
  */
@@ -100,7 +102,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
-	 * Set ExternalSystem_Config_LeichMehl.
+	 * Set LeichUndMehl.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -109,7 +111,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	void setExternalSystem_Config_LeichMehl_ID (int ExternalSystem_Config_LeichMehl_ID);
 
 	/**
-	 * Get ExternalSystem_Config_LeichMehl.
+	 * Get LeichUndMehl.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -142,111 +144,6 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
 
 	/**
-	 * Set FTP Directory.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setFTP_Directory (java.lang.String FTP_Directory);
-
-	/**
-	 * Get FTP Directory.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getFTP_Directory();
-
-	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_FTP_Directory = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "FTP_Directory", null);
-	String COLUMNNAME_FTP_Directory = "FTP_Directory";
-
-	/**
-	 * Set FTP Host.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setFTP_Hostname (java.lang.String FTP_Hostname);
-
-	/**
-	 * Get FTP Host.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getFTP_Hostname();
-
-	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_FTP_Hostname = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "FTP_Hostname", null);
-	String COLUMNNAME_FTP_Hostname = "FTP_Hostname";
-
-	/**
-	 * Set FTP Password.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setFTP_Password (java.lang.String FTP_Password);
-
-	/**
-	 * Get FTP Password.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getFTP_Password();
-
-	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_FTP_Password = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "FTP_Password", null);
-	String COLUMNNAME_FTP_Password = "FTP_Password";
-
-	/**
-	 * Set FTP Port.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setFTP_Port (int FTP_Port);
-
-	/**
-	 * Get FTP Port.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getFTP_Port();
-
-	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_FTP_Port = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "FTP_Port", null);
-	String COLUMNNAME_FTP_Port = "FTP_Port";
-
-	/**
-	 * Set FTP Username.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setFTP_Username (java.lang.String FTP_Username);
-
-	/**
-	 * Get FTP Username.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getFTP_Username();
-
-	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_FTP_Username = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "FTP_Username", null);
-	String COLUMNNAME_FTP_Username = "FTP_Username";
-
-	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -268,6 +165,69 @@ public interface I_ExternalSystem_Config_LeichMehl
 
 	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Product_BaseFolderName.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProduct_BaseFolderName (java.lang.String Product_BaseFolderName);
+
+	/**
+	 * Get Product_BaseFolderName.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getProduct_BaseFolderName();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_Product_BaseFolderName = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "Product_BaseFolderName", null);
+	String COLUMNNAME_Product_BaseFolderName = "Product_BaseFolderName";
+
+	/**
+	 * Set TCP_Host.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTCP_Host (@Nullable java.lang.String TCP_Host);
+
+	/**
+	 * Get TCP_Host.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTCP_Host();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_TCP_Host = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "TCP_Host", null);
+	String COLUMNNAME_TCP_Host = "TCP_Host";
+
+	/**
+	 * Set TCP_PortNumber.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTCP_PortNumber (int TCP_PortNumber);
+
+	/**
+	 * Get TCP_PortNumber.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getTCP_PortNumber();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_TCP_PortNumber = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "TCP_PortNumber", null);
+	String COLUMNNAME_TCP_PortNumber = "TCP_PortNumber";
 
 	/**
 	 * Get Updated.

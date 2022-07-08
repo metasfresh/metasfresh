@@ -36,12 +36,15 @@ import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
@@ -61,6 +64,7 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;
@@ -996,15 +1000,45 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	private ExternalSystemLeichMehlConfig buildExternalSystemLeichMehlConfig(@NonNull final I_ExternalSystem_Config_LeichMehl config)
 	{
+		final ExternalSystemLeichMehlConfigId id = ExternalSystemLeichMehlConfigId.ofRepoId(config.getExternalSystem_Config_LeichMehl_ID());
+
 		return ExternalSystemLeichMehlConfig.builder()
-				.id(ExternalSystemLeichMehlConfigId.ofRepoId(config.getExternalSystem_Config_LeichMehl_ID()))
+				.id(id)
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
 				.value(config.getExternalSystemValue())
-				.ftpHost(config.getFTP_Hostname())
-				.ftpPort(config.getFTP_Port())
-				.ftpUsername(config.getFTP_Username())
-				.ftpPassword(config.getFTP_Password())
-				.ftpDirectory(config.getFTP_Directory())
+				.productBaseFolderName(config.getProduct_BaseFolderName())
+				.tcpPort(config.getTCP_PortNumber())
+				.tcpHost(config.getTCP_Host())
+				.externalSystemLeichMehlConfigProductMappingList(getExternalSystemLeichMehlConfigProductMappings(id))
+				.build();
+	}
+
+	@NonNull
+	private List<ExternalSystemLeichMehlConfigProductMapping> getExternalSystemLeichMehlConfigProductMappings(@NonNull final ExternalSystemLeichMehlConfigId externalSystemLeichMehlConfigId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, externalSystemLeichMehlConfigId.getRepoId())
+				.create()
+				.stream()
+				.map(ExternalSystemConfigRepo::toExternalSystemLeichMehlConfigProductMapping)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static ExternalSystemLeichMehlConfigProductMapping toExternalSystemLeichMehlConfigProductMapping(@NonNull final I_ExternalSystem_Config_LeichMehl_ProductMapping record)
+	{
+		final ExternalSystemLeichMehlConfigId configId = ExternalSystemLeichMehlConfigId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ID());
+
+		final ExternalSystemLeichMehlConfigProductMappingId productMappingId = ExternalSystemLeichMehlConfigProductMappingId.ofRepoId(configId, record.getExternalSystem_Config_LeichMehl_ProductMapping_ID());
+
+		return ExternalSystemLeichMehlConfigProductMapping.builder()
+				.id(productMappingId)
+				.seqNo(record.getSeqNo())
+				.pluFile(record.getPLU_File())
+				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.build();
 	}
 }

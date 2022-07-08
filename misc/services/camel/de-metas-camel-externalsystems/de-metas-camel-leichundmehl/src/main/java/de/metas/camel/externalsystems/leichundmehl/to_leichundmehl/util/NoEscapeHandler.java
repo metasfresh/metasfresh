@@ -20,28 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
 
-@Data
-@Builder
-public class ExportPPOrderRouteContext
+import java.io.IOException;
+import java.io.Writer;
+
+public class NoEscapeHandler implements CharacterEscapeHandler
 {
-	@NonNull
-	private final JsonExternalSystemRequest jsonExternalSystemRequest;
+	private NoEscapeHandler()
+	{
+		super();
+	}
 
-	@NonNull
-	private final ConnectionDetails connectionDetails;
+	public static final NoEscapeHandler INSTANCE = new NoEscapeHandler();
 
-	@NonNull
-	private final String productBaseFolderName;
-
-	@NonNull
-	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
+	public void escape(char[] buf, int start, int len, boolean isAttValue, Writer out) throws IOException
+	{
+		for (int i = start; i < start + len; i++)
+		{
+			out.write(buf[i]);
+		}
+		return;
+	}
 }
+
