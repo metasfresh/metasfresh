@@ -1012,18 +1012,10 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		addLog(id, date, number,  msg, null);
 	}
 
-	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable SQLWarning warning)
+	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable List<String> warningMessages)
 	{
-		final StringJoiner warningText = new StringJoiner(" ");
 
-		SQLWarning currentWarning = warning;
-		while (currentWarning != null)
-		{
-			warningText.add(currentWarning.getMessage());
-			currentWarning = currentWarning.getNextWarning();
-		}
-
-		getResult().addLog(id, date, number, msg, warningText.toString());
+		getResult().addLog(id, date, number, msg, warningMessages);
 	}
 
 	/**
@@ -1037,11 +1029,11 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return addLog(null, msg, msgParameters);
 	}
 
-	public final ILoggable addLog(final SQLWarning warning, final String msg, final Object... msgParameters)
+	public final ILoggable addLog(final List<String> warningMessages, final String msg, final Object... msgParameters)
 	{
 		if (msg != null)
 		{
-			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters), warning);
+			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters), warningMessages);
 		}
 		return this;
 	}	// addLog

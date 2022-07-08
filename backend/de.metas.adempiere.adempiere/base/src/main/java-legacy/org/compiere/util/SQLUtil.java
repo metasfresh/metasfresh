@@ -22,18 +22,27 @@
 
 package org.compiere.util;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.sql.SQLWarning;
+import java.util.Collections;
 import java.util.List;
 
-@Builder
-@Value
-public class SQLUpdateResult
+@UtilityClass
+public class SQLUtil
 {
-	int returnedValue;
-	@Nullable
-	List<String> warningMessages;
+	public List<String> extractWarningMessages(@Nullable SQLWarning warning)
+	{
+		final List<String> warningMessages = Collections.emptyList();
+
+		SQLWarning currentWarning = warning;
+		while (currentWarning != null)
+		{
+			warningMessages.add(currentWarning.getMessage());
+			currentWarning = currentWarning.getNextWarning();
+		}
+
+		return warningMessages;
+	}
 }

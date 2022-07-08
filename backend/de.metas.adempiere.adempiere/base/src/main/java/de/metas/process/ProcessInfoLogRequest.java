@@ -28,6 +28,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Value
 @Builder
@@ -45,5 +46,5 @@ public class ProcessInfoLogRequest
 	String pMsg;
 
 	@Nullable
-	String warning;
+	List<String> warningMessages;
 }

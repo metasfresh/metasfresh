@@ -751,15 +751,15 @@ public class ProcessExecutionResult
 		addLog(Log_ID, P_Date, P_Number, P_Msg, null);
 	}
 
-	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final String warning)
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final List<String> warningMessages)
 	{
 		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
 				.logId(Log_ID)
 				.pDate(P_Date)
 				.pNumber(P_Number)
 				.pMsg(P_Msg)
-				.warning(warning).
-				build();
+				.warningMessages(warningMessages)
+				.build();
 		addLog(new ProcessInfoLog(request));
 	}    // addLog
 

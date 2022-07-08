@@ -362,17 +362,38 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			for (final ProcessInfoLog log : logsToSave)
 			{
-				final Object[] sqlParams = new Object[] {
-						pinstanceId,
-						log.getLog_ID(),
-						log.getP_Date(),
-						log.getP_Number(),
-						log.getP_Msg(),
-						log.getWarning()
-				};
+				final List<String> warningMessages = log.getWarningMessages();
+				if(Check.isEmpty(warningMessages))
+				{
+					final Object[] sqlParams = new Object[] {
+							pinstanceId,
+							log.getLog_ID(),
+							log.getP_Date(),
+							log.getP_Number(),
+							log.getP_Msg(),
+							null
+					};
 
-				DB.setParameters(pstmt, sqlParams);
-				pstmt.addBatch();
+					DB.setParameters(pstmt, sqlParams);
+					pstmt.addBatch();
+				}
+				else
+				{
+					for(final String warningMessage : warningMessages)
+					{
+						final Object[] sqlParams = new Object[] {
+								pinstanceId,
+								log.getLog_ID(),
+								log.getP_Date(),
+								log.getP_Number(),
+								log.getP_Msg(),
+								warningMessage
+						};
+
+						DB.setParameters(pstmt, sqlParams);
+						pstmt.addBatch();
+					}
+				}
 			}
 
 			pstmt.executeBatch();

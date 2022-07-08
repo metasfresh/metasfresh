@@ -27,6 +27,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.sql.SQLWarning;
+import java.util.List;
 
 @Value
 @Builder
@@ -36,5 +37,5 @@ public class SQLValueStringResult
 	String returnedValue;
 
 	@Nullable
-	SQLWarning warning;
+	List<String> warningMessages;
 }

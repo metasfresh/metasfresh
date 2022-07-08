@@ -303,3 +303,243 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-07-08 11:0
 
 
 
+
+-- 2022-07-08T08:40:23.027Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should have a maximum of 5000 characters.',Updated=TO_TIMESTAMP('2022-07-08 11:40:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_CH'
+;
+
+-- 2022-07-08T08:40:23.032Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_CH') 
+;
+
+-- 2022-07-08T08:40:52.710Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='',Updated=TO_TIMESTAMP('2022-07-08 11:40:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_CH'
+;
+
+-- 2022-07-08T08:40:52.712Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_CH') 
+;
+
+-- 2022-07-08T08:41:39.501Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.',Updated=TO_TIMESTAMP('2022-07-08 11:41:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_CH'
+;
+
+-- 2022-07-08T08:41:39.503Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_CH') 
+;
+
+-- 2022-07-08T08:42:15.962Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.',Updated=TO_TIMESTAMP('2022-07-08 11:42:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_DE'
+;
+
+-- 2022-07-08T08:42:15.963Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_DE') 
+;
+
+-- 2022-07-08T08:42:15.970Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581085,'de_DE') 
+;
+
+-- 2022-07-08T08:42:15.974Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID=581085
+;
+
+-- 2022-07-08T08:42:15.975Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', AD_Element_ID=581085 WHERE UPPER(ColumnName)='ISLOGWARNING' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-07-08T08:42:15.976Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID=581085 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-07-08T08:42:15.977Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581085) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581085)
+;
+
+-- 2022-07-08T08:42:15.987Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', CommitWarning = NULL WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:42:15.988Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:42:15.989Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Log Warning', Description = 'Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:42:20.551Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars) will be logged, while the ones returned with "Raise Notice" will be ignored.',Updated=TO_TIMESTAMP('2022-07-08 11:42:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='en_US'
+;
+
+-- 2022-07-08T08:42:20.552Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'en_US') 
+;
+
+-- 2022-07-08T08:42:51.929Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.',Updated=TO_TIMESTAMP('2022-07-08 11:42:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_CH'
+;
+
+-- 2022-07-08T08:42:51.930Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_CH') 
+;
+
+-- 2022-07-08T08:42:55.498Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.',Updated=TO_TIMESTAMP('2022-07-08 11:42:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_DE'
+;
+
+-- 2022-07-08T08:42:55.499Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_DE') 
+;
+
+-- 2022-07-08T08:42:55.507Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581085,'de_DE') 
+;
+
+-- 2022-07-08T08:42:55.509Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID=581085
+;
+
+-- 2022-07-08T08:42:55.510Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', AD_Element_ID=581085 WHERE UPPER(ColumnName)='ISLOGWARNING' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-07-08T08:42:55.511Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID=581085 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-07-08T08:42:55.512Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581085) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581085)
+;
+
+-- 2022-07-08T08:42:55.521Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.', CommitWarning = NULL WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:42:55.522Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.' WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:42:55.523Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Log Warning', Description = 'Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:42:58.954Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.',Updated=TO_TIMESTAMP('2022-07-08 11:42:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='en_US'
+;
+
+-- 2022-07-08T08:42:58.955Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'en_US') 
+;
+
+-- 2022-07-08T08:43:10.939Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.',Updated=TO_TIMESTAMP('2022-07-08 11:43:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='de_DE'
+;
+
+-- 2022-07-08T08:43:10.940Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'de_DE') 
+;
+
+-- 2022-07-08T08:43:10.945Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581085,'de_DE') 
+;
+
+-- 2022-07-08T08:43:10.946Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.' WHERE AD_Element_ID=581085
+;
+
+-- 2022-07-08T08:43:10.948Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.', AD_Element_ID=581085 WHERE UPPER(ColumnName)='ISLOGWARNING' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-07-08T08:43:10.949Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLogWarning', Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.' WHERE AD_Element_ID=581085 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-07-08T08:43:10.950Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581085) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581085)
+;
+
+-- 2022-07-08T08:43:10.958Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.', CommitWarning = NULL WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:43:10.960Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Log Warning', Description='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.' WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:43:10.961Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Log Warning', Description = 'Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581085
+;
+
+-- 2022-07-08T08:43:14.137Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Help='Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log.
+Only the messages returned with "Raise Warning" will be logged, while the ones returned with "Raise Notice" will be ignored.
+A single warning message should contain a maximum of 5000 characters.',Updated=TO_TIMESTAMP('2022-07-08 11:43:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581085 AND AD_Language='en_US'
+;
+
+-- 2022-07-08T08:43:14.139Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581085,'en_US') 
+;

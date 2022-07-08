@@ -30,7 +30,7 @@ public class ExecuteUpdateSQL extends JavaProcess
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final String msg;
-		final SQLWarning warning;
+		final List<String> warningMessages;
 		addLog("Executing: " + sqlParsed);
 		if (!sqlParsed.trim().toUpperCase().startsWith("SELECT"))
 		{
@@ -38,7 +38,7 @@ public class ExecuteUpdateSQL extends JavaProcess
 			stopwatch.stop();
 
 			msg = "Result: " + sqlUpdateResult.getReturnedValue() + "; Runtime: " + stopwatch;
-			warning = sqlUpdateResult.getWarning();
+			warningMessages = sqlUpdateResult.getWarningMessages();
 		}
 		else
 		{
@@ -47,13 +47,13 @@ public class ExecuteUpdateSQL extends JavaProcess
 			stopwatch.stop();
 
 			msg = "Runtime: " + stopwatch;
-			warning = sqlValueStringResult.getWarning();
+			warningMessages = sqlValueStringResult.getWarningMessages();
 		}
 
 		final boolean isLogWarning = getProcessInfo().isLogWarning();
 		if (isLogWarning)
 		{
-			addLog(warning, msg);
+			addLog(warningMessages, msg);
 		}
 		else
 		{

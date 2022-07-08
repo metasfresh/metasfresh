@@ -21,6 +21,7 @@ import lombok.NonNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -65,7 +66,7 @@ public final class ProcessInfoLog implements Serializable
 		m_P_Date = P_Date;
 		m_P_Number = P_Number;
 		m_P_Msg = P_Msg;
-		warning = null;
+		warningMessages = null;
 	}
 
 
@@ -75,7 +76,7 @@ public final class ProcessInfoLog implements Serializable
 		m_P_Date = request.getPDate();
 		m_P_Number = request.getPNumber();
 		m_P_Msg = request.getPMsg();
-		warning = request.getWarning();
+		warningMessages = request.getWarningMessages();
 	}
 
 	private static final AtomicInteger nextLogId = new AtomicInteger(1);
@@ -84,7 +85,7 @@ public final class ProcessInfoLog implements Serializable
 	private final Timestamp m_P_Date;
 	private final BigDecimal m_P_Number;
 	private final String m_P_Msg;
-	private final String warning;
+	private final List<String> warningMessages;
 	private boolean savedInDB = false;
 
 	public int getLog_ID()
@@ -107,9 +108,9 @@ public final class ProcessInfoLog implements Serializable
 		return m_P_Msg;
 	}
 
-	public String getWarning()
+	public List<String> getWarningMessages()
 	{
-		return warning;
+		return warningMessages;
 	}
 
 	public void markAsSavedInDB()

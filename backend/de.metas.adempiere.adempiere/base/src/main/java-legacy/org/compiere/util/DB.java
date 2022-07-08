@@ -754,7 +754,7 @@ public class DB
 	 *
 	 * @param trxName optional transaction name
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method.
+	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}.
 	 */
 	@Deprecated
 	public int executeUpdateAndSaveErrorOnFail(final String sql, final String trxName)
@@ -779,7 +779,7 @@ public class DB
 	 *
 	 * @param ignoreError if true, no execution error is reported
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method.// 
+	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}
 	 */
 	@Deprecated
 	public int executeUpdateAndIgnoreErrorOnFail(final String sql, final boolean ignoreError, final String trxName)
@@ -803,7 +803,7 @@ public class DB
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method.
+	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}
 	 */
 	@Deprecated
 	public int executeUpdateAndSaveErrorOnFail(final String sql, final int param, final String trxName)
@@ -829,7 +829,7 @@ public class DB
 	 *
 	 * @param ignoreError if true, no execution error is reported
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use the {@code ...Ex} variant of this method.
+	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
 	 */
 	@Deprecated
 	public int executeUpdateAndIgnoreErrorOnFail(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
@@ -850,7 +850,7 @@ public class DB
 		return result.getReturnedValue();
 	}
 
-	private SQLUpdateResult executeUpdate(final ExecuteUpdateRequest request)
+	private SQLUpdateResult executeUpdate(@NonNull final ExecuteUpdateRequest request)
 	{
 		if (Check.isEmpty(request.getSql(), true))
 		{
@@ -983,9 +983,11 @@ public class DB
 			DB.close(cs);
 		}
 
+		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
+
 		return SQLUpdateResult.builder()
 				.returnedValue(no)
-				.warning(warning)
+				.warningMessages(warningMessages)
 				.build();
 	}
 
@@ -1373,9 +1375,12 @@ public class DB
 			rs = null;
 			pstmt = null;
 		}
+
+		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
+
 		return SQLValueStringResult.builder().
 				returnedValue(retValue).
-				warning(warning).build();
+				warningMessages(warningMessages).build();
 	}
 
 	/**
