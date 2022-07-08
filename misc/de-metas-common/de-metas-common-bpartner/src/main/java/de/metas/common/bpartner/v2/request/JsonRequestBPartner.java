@@ -56,6 +56,22 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
+
+	@ApiModelProperty(position = 28,  //
+			value = "This translates to `C_BPartner.FirstName`.\n")
+	private String firstName;
+
+	@ApiModelProperty(hidden = true)
+	private boolean firstNameSet;
+
+	@ApiModelProperty(position = 29,  //
+			value = "This translates to `C_BPartner.LastName`.\n")
+	private String lastName;
+
+	@ApiModelProperty(hidden = true)
+	private boolean lastNameSet;
+
+
 	@ApiModelProperty(position = 30,  //
 			value = "This translates to `C_BPartner.Name`.\n"
 					+ "If this is empty, and a BPartner with the given `name` does not yet exist, then the request will fail.")
@@ -224,6 +240,20 @@ public class JsonRequestBPartner
 	{
 		this.companyName = companyName;
 		this.companyNameSet = true;
+	}
+
+
+	public void setFirstName(final String firstName)
+	{
+		this.firstName = firstName;
+		this.firstNameSet = true;
+	}
+
+
+	public void setLastName(final String lastName)
+	{
+		this.lastName = lastName;
+		this.lastNameSet = true;
 	}
 
 	public void setVendor(final Boolean vendor)

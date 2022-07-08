@@ -176,6 +176,9 @@ public class BPartnerUpsertRequestProducer
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(customer.getFirstName() + " " + customer.getLastName());
+
+		jsonRequestBPartner.setFirstName(customer.getFirstName());
+		jsonRequestBPartner.setLastName(customer.getLastName());
 		jsonRequestBPartner.setCompanyName(customer.getCompany());
 		jsonRequestBPartner.setCode(ExternalIdentifierFormat.formatExternalId(customer.getCustomerNumber()));
 		jsonRequestBPartner.setCustomer(true);

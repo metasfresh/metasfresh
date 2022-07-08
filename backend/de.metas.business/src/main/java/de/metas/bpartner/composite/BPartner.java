@@ -98,8 +98,8 @@ public class BPartner
 	private final GreetingId greetingId;
 
 	private final DocTypeId soDocTypeTargetId;
-	private final String firstName;
-	private final String lastName;
+	private String firstName;
+	private String lastName;
 
 	/**
 	 * non-empty value implies that the bpartner is also a company

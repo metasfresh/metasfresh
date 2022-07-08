@@ -804,6 +804,17 @@ public class JsonPersisterService
 			bpartner.setCompany(Check.isNotBlank(jsonBPartner.getCompanyName()));
 		}
 
+
+		if(jsonBPartner.isFirstNameSet())
+		{
+			bpartner.setFirstName(jsonBPartner.getFirstName());
+		}
+
+		if(jsonBPartner.isLastNameSet())
+		{
+			bpartner.setLastName(jsonBPartner.getLastName());
+		}
+
 		// name
 		if (jsonBPartner.isNameSet())
 		{
@@ -833,6 +844,7 @@ public class JsonPersisterService
 				bpartner.setCustomer(jsonBPartner.getCustomer());
 			}
 		}
+
 		if (jsonBPartner.isVendorSet())
 		{
 			if (jsonBPartner.getVendor() == null)

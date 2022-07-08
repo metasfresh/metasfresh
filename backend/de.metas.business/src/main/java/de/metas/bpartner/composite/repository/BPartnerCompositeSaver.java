@@ -198,7 +198,7 @@ final class BPartnerCompositeSaver
 			bpartnerRecord.setInvoiceRule(bpartner.getCustomerInvoiceRule().getCode());
 		}
 
-		if(bpartner.getVendorInvoiceRule() != null)
+		if (bpartner.getVendorInvoiceRule() != null)
 		{
 			bpartnerRecord.setPO_InvoiceRule(bpartner.getVendorInvoiceRule().getCode());
 		}
@@ -234,19 +234,19 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
-		if(bpartner.getPaymentRule() != null)
+		if (bpartner.getPaymentRule() != null)
 		{
 			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());
 		}
-		if(bpartner.getSoDocTypeTargetId() != null)
+		if (bpartner.getSoDocTypeTargetId() != null)
 		{
 			bpartnerRecord.setSO_DocTypeTarget_ID(DocTypeId.toRepoId(bpartner.getSoDocTypeTargetId()));
 		}
-		if(bpartner.getFirstName() != null)
+		if (bpartner.getFirstName() != null)
 		{
 			bpartnerRecord.setFirstname(bpartner.getFirstName());
 		}
-	if(bpartner.getLastName() != null)
+		if (bpartner.getLastName() != null)
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}

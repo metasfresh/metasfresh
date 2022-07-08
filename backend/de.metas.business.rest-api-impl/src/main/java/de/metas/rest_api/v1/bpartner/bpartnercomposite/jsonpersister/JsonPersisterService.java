@@ -646,6 +646,15 @@ public class JsonPersisterService
 			bpartner.setCompany(false);
 		}
 
+		if (jsonBPartner.isNameSet())
+		{
+			bpartner.setName(StringUtils.trim(jsonBPartner.getName()));
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setName(null);
+		}
+
 		// name
 		if (jsonBPartner.isNameSet())
 		{
