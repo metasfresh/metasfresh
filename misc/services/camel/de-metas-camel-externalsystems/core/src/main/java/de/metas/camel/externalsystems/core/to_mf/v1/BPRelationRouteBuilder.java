@@ -26,7 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -63,7 +62,6 @@ public class BPRelationRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPRelationsUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-bprelation.api.uri}}/${header.bpartnerIdentifier}");
 

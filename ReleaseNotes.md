@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13198](https://github.com/metasfresh/metasfresh/issues/13198) Tell camel which auth token to use when connecting to MF
   * [#13242](https://github.com/metasfresh/metasfresh/pull/13242) build metasfresh via dockerbuilds
   * [#13255](https://github.com/metasfresh/metasfresh/issues/13255) Add source infos to account sheet report 
   * [#13162](https://github.com/metasfresh/metasfresh/issues/13162) Available for sales qty from metasfresh to shopware
