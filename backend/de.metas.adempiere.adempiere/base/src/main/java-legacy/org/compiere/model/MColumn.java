@@ -329,7 +329,7 @@ public class MColumn extends X_AD_Column
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
 						.append(" WHERE AD_Column_ID=").append(get_ID());
-				int no = DB.executeUpdate(sql.toString(), get_TrxName());
+				int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 				log.debug("afterSave - Fields updated #" + no);
 			}
 		}
@@ -788,7 +788,7 @@ public class MColumn extends X_AD_Column
 		}
 		else
 		{
-			DB.executeUpdateEx(sqlStatement, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sqlStatement, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 

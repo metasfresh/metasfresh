@@ -45,19 +45,16 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.workflow.WFDurationUnit;
-import lombok.NonNull;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MTransaction;
@@ -82,7 +79,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Properties;
 
@@ -140,7 +136,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			return;
 		}
 		final String sql = "UPDATE PP_Cost_Collector SET Processed=? WHERE PP_Cost_Collector_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	}
 
 	@Override

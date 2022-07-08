@@ -277,7 +277,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	private void deleteInvoicePaySchedule (int C_Invoice_ID)
 	{
 		String sql = "DELETE FROM C_InvoicePaySchedule WHERE C_Invoice_ID=" + C_Invoice_ID;
-		int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		log.debug("C_Invoice_ID=" + C_Invoice_ID + " - #" + no);
 	}	//	deleteInvoicePaySchedule
 
