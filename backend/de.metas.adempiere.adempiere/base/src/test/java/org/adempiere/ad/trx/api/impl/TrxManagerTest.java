@@ -1,5 +1,6 @@
 package org.adempiere.ad.trx.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,10 +27,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TrxManagerTest
 {
-	/** Service under test */
+	/**
+	 * Service under test
+	 */
 	private MockedTrxManager trxManager;
 
-	/** A custom {@link AdempiereException} extension which we are using to test exceptions propagation through transactions management module */
+	/**
+	 * A custom {@link AdempiereException} extension which we are using to test exceptions propagation through transactions management module
+	 */
 	public static final class MyCustomAdempiereException extends AdempiereException
 	{
 		private static final long serialVersionUID = 1L;
@@ -111,7 +117,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName=null, manageTrx=N/A
-	 *
+	 * <p>
 	 * Expectation: create a new trxName (and thus a new local trx) with prefix <code>"TrxRun"</code>
 	 */
 	@Test
@@ -137,7 +143,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName!=null, manageTrx=true
-	 *
+	 * <p>
 	 * Expectation: create a new trxName (and thus a new local trx) with prefix being the given <code>trxName</code>
 	 */
 	@Test
@@ -165,7 +171,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName!=null, manageTrx=false
-	 *
+	 * <p>
 	 * Expectation: use the trx with the the given trxName; create a savepoint and to roll back to in case of problems. don't commit in case of success.
 	 */
 	@Test
@@ -308,7 +314,7 @@ public class TrxManagerTest
 	 * <li>running an {@link TrxRunnable} on following configuration: NESTED transaction, OnSuccess=DONT_COMMIT, OnFail=DONT_ROLLBACK
 	 * <li>the runnable throws a custom exception
 	 * </ul>
-	 *
+	 * <p>
 	 * Expectations:
 	 * <ul>
 	 * <li>our custom exception is propagated
@@ -357,7 +363,7 @@ public class TrxManagerTest
 
 	/**
 	 * Case: we are running with {@link TrxPropagation#NESTED} but we are not providing any transaction.
-	 *
+	 * <p>
 	 * Expection: shall fail
 	 */
 	@Test
@@ -422,9 +428,9 @@ public class TrxManagerTest
 	 * <li>Propagation=NESTED, OnSuccess=DONT_COMMIT, OnFail=DONT_ROLLBACK, trxName= {@link ITrx#TRXNAME_ThreadInherited}
 	 * <li>the thread inerited transaction is set but it does not actually exists
 	 * </ul>
-	 *
+	 * <p>
 	 * Expectations: an exception will be thrown
-	 *
+	 * <p>
 	 * Production code expectations (NOT tested here):
 	 * <ul>
 	 * <li>system will create the transaction using that provided trxName and will execute the runnable
@@ -454,7 +460,7 @@ public class TrxManagerTest
 
 	/**
 	 * Corner (possible invalid) case: propagation=NESTED, onSuccess=COMMIT.
-	 *
+	 * <p>
 	 * Expectation: at least, in JUnit/Developer Mode we expect to fail.
 	 */
 	@Test
@@ -663,5 +669,28 @@ public class TrxManagerTest
 			assertThat(trxRunnable.getLastTrxNameEffective()).isEqualTo("AlreadyRunningTrx");
 		}
 
+	}
+
+	@Test
+	void trx_accumulateAndProcessAfterCommit()
+	{
+		final ArrayList<String> flushedItems = new ArrayList<>();
+
+		trxManager.runInThreadInheritedTrx(() -> {
+			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail);
+			trx.accumulateAndProcessAfterCommit(
+					"propName",
+					ImmutableList.of("1", "2"),
+					flushedItems::addAll);
+
+			trx.accumulateAndProcessAfterCommit(
+					"propName",
+					ImmutableList.of("3", "4"),
+					flushedItems::addAll);
+
+			assertThat(flushedItems).isEmpty();
+		});
+
+		assertThat(flushedItems).containsExactly("1", "2", "3", "4");
 	}
 }
