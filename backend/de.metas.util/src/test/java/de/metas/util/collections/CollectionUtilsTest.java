@@ -129,4 +129,58 @@ class CollectionUtilsTest
 		}
 
 	}
+
+	@Nested
+	class filter
+	{
+		@Test
+		void acceptAll()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4, 5, 6);
+			assertThat(CollectionUtils.filter(list, item -> true)).isSameAs(list);
+		}
+
+		@Test
+		void acceptAll_on_emptyList()
+		{
+			ImmutableList<Integer> list = ImmutableList.of();
+			assertThat(CollectionUtils.filter(list, item -> true)).isSameAs(list);
+		}
+
+		@Test
+		void acceptNone()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4, 5, 6);
+			assertThat(CollectionUtils.filter(list, item -> false)).isEmpty();
+		}
+
+		@Test
+		void acceptNone_on_emptyList()
+		{
+			ImmutableList<Integer> list = ImmutableList.of();
+			assertThat(CollectionUtils.filter(list, item -> false)).isEmpty();
+		}
+
+		@Test
+		void acceptEvenNumbers()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4, 5, 6);
+			assertThat(CollectionUtils.filter(list, item -> item % 2 == 0)).containsExactly(2, 4, 6);
+		}
+
+		@Test
+		void acceptFirst()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4, 5, 6);
+			assertThat(CollectionUtils.filter(list, item -> item == 1)).containsExactly(1);
+		}
+
+		@Test
+		void acceptLast()
+		{
+			ImmutableList<Integer> list = ImmutableList.of(1, 2, 3, 4, 5, 6);
+			assertThat(CollectionUtils.filter(list, item -> item == 6)).containsExactly(6);
+		}
+
+	}
 }

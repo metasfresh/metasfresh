@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -304,6 +305,44 @@ public final class CollectionUtils
 
 		//noinspection unchecked
 		return hasChanges ? result.build() : (ImmutableList<R>)collection;
+	}
+
+	public static <T> ImmutableList<T> filter(
+			@NonNull final ImmutableList<T> list,
+			@NonNull final Predicate<T> predicate)
+	{
+		if (list.isEmpty())
+		{
+			return list;
+		}
+
+		ImmutableList.Builder<T> result = null;
+		for (int i = 0, size = list.size(); i < size; i++)
+		{
+			final T item = list.get(i);
+			if (!predicate.test(item))
+			{
+				if (result == null)
+				{
+					result = ImmutableList.builder();
+					result.addAll(list.subList(0, i));
+				}
+			}
+			else
+			{
+				if (result != null)
+				{
+					result.add(item);
+				}
+			}
+		}
+
+		if (result == null)
+		{
+			return list;
+		}
+
+		return result.build();
 	}
 
 	public static <K, V> ImmutableMap<K, V> mapValue(
