@@ -6,7 +6,6 @@ Feature: create distribution simulation
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
     And metasfresh initially has no MD_Candidate data
 
-  @dev:runThisOne
   @from:cucumber
   Scenario: create distribution simulation
     Given metasfresh contains M_Products:
