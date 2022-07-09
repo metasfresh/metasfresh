@@ -37,6 +37,9 @@ Feature: create distribution simulation
       | M_Warehouse_ID.Identifier | Name             | Value            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.IsInTransit |
       | warehouse_1               | WarehouseTransit | WarehouseTransit | bpartner_1               | location_1                        | true            |
       | warehouse_2               | WarehouseSource  | WarehouseSource  | bpartner_1               | location_1                        | false           |
+    And metasfresh contains M_Locator
+      | M_Locator_ID.Identifier | Value    | M_Warehouse_ID.Identifier |
+      | locator_1               | Standard | warehouse_2               |
     And load M_Shipper
       | M_Shipper_ID.Identifier | M_Shipper_ID |
       | shipper_1               | 540006       |
@@ -62,6 +65,10 @@ Feature: create distribution simulation
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.simulated |
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -14                    | true          |
       | c_2        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 14  | 0                      | true          |
-      | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 14  | -14                    | true          |
-    And delete C_OrderLine identified by ol_1
-    And validate no DD_OrderLine found for orderLine ol_1
+      | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | -14 | -14                    | true          |
+      | c_4        | SUPPLY            |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 0                      | true          |
+    And after not more than 30s, DD_OrderLine found for orderLine ol_1
+      | Identifier |
+      | ddol_1     |
+    And delete C_OrderLine identified by ol_1, but keep its id into identifierIds table
+    And after not more than 30s, no DD_OrderLine found for orderLine ol_1

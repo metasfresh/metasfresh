@@ -179,7 +179,7 @@ public class C_BPartner_StepDef
 		}
 
 		final String discountSchemaIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if(Check.isNotBlank(discountSchemaIdentifier))
+		if (Check.isNotBlank(discountSchemaIdentifier))
 		{
 			final I_M_DiscountSchema discountSchema = discountSchemaTable.get(discountSchemaIdentifier);
 			assertThat(discountSchema).isNotNull();

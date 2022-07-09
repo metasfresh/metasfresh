@@ -369,6 +369,9 @@ public class MD_Candidate_StepDef
 					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getQuantity().equals(tableRow.getQty()))
 					.filter(materialDispoRecord -> materialDispoRecord.getAtp().equals(tableRow.getAtp()))
 					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
+					.filter(tableRow.getBusinessCase() != null
+									? materialDispoRecord -> tableRow.getBusinessCase().equals(materialDispoRecord.getBusinessCase())
+									: materialDispoRecord -> materialDispoRecord.getBusinessCase() == null)
 					.findFirst();
 			final MaterialDispoDataItem materialDispoRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, candidateCreated, () -> logCurrentContext(tableRow));
 

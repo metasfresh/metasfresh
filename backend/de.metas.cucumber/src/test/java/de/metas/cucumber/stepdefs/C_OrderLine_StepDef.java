@@ -79,6 +79,7 @@ public class C_OrderLine_StepDef
 	private final C_Flatrate_Term_StepDefData contractTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_Warehouse_StepDefData warehouseTable;
+	private final IdentifierIds_StepDefData identifierIdsTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -88,7 +89,8 @@ public class C_OrderLine_StepDef
 			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable)
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final IdentifierIds_StepDefData identifierIdsTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
@@ -98,6 +100,7 @@ public class C_OrderLine_StepDef
 		this.contractTable = contractTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.warehouseTable = warehouseTable;
+		this.identifierIdsTable = identifierIdsTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -154,7 +157,7 @@ public class C_OrderLine_StepDef
 			}
 
 			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if(Check.isNotBlank(warehouseIdentifier))
+			if (Check.isNotBlank(warehouseIdentifier))
 			{
 				final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
 				assertThat(warehouse).isNotNull();
@@ -295,13 +298,14 @@ public class C_OrderLine_StepDef
 		}
 	}
 
-	@And("^delete C_OrderLine identified by (.*)$")
+	@And("^delete C_OrderLine identified by (.*), but keep its id into identifierIds table$")
 	public void delete_orderLine(@NonNull final String orderLineIdentifier)
 	{
-			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-			assertThat(orderLine).isNotNull();
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+		assertThat(orderLine).isNotNull();
 
-			InterfaceWrapperHelper.delete(orderLine);
+		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
+		InterfaceWrapperHelper.delete(orderLine);
 	}
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)

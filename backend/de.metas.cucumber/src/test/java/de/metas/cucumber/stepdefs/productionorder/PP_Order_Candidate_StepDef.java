@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.productionorder;
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -37,7 +38,9 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.order.OrderLineId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -55,7 +58,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -69,7 +72,9 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -88,6 +93,8 @@ import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeS
 
 public class PP_Order_Candidate_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(PP_Order_Candidate_StepDef.class);
+
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_Bom_StepDefData productBOMTable;
 	private final PP_Product_Planning_StepDefData productPlanningTable;
@@ -95,6 +102,7 @@ public class PP_Order_Candidate_StepDef
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final IdentifierIds_StepDefData identifierIdsTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer;
@@ -115,6 +123,7 @@ public class PP_Order_Candidate_StepDef
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final IdentifierIds_StepDefData identifierIdsTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
@@ -127,6 +136,7 @@ public class PP_Order_Candidate_StepDef
 		this.ppOrderCandidateTable = ppOrderCandidateTable;
 		this.warehouseTable = warehouseTable;
 		this.huPiItemProductTable = huPiItemProductTable;
+		this.identifierIdsTable = identifierIdsTable;
 		this.orderLineTable = orderLineTable;
 	}
 
@@ -259,18 +269,41 @@ public class PP_Order_Candidate_StepDef
 		assertThat(noOfRecords).isEqualTo(0);
 	}
 
-	@And("^validate no PP_Order_Candidate found for orderLine (.*)$")
-	public void validate_no_PP_Order_Candidate_found(@NonNull final String orderLineIdentifier)
+	@And("^after not more than (.*)s, no PP_Order_Candidate found for orderLine (.*)$")
+	public void validate_no_PP_Order_Candidate_found(
+			final int timeoutSec,
+			@NonNull final String orderLineIdentifier) throws InterruptedException
 	{
-		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-		assertThat(orderLine).isNotNull();
+		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
+		assertThat(orderLineId).isNotNull();
 
-		final int noOfRecords = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
-				.create()
-				.count();
+		final Supplier<Boolean> noRecordsFound = () -> getQueryByOrderLineId(orderLineId)
+				.count() == 0;
 
-		assertThat(noOfRecords).isEqualTo(0);
+		StepDefUtil.tryAndWait(timeoutSec, 500, noRecordsFound, () -> logCurrentContextExpectedNoRecords(orderLineId));
+	}
+
+	@And("^after not more than (.*)s, PP_Order_Candidate found for orderLine (.*)$")
+	public void validate_PP_Order_Candidate_found_for_OrderLine(
+			final int timeoutSec,
+			@NonNull final String orderLineIdentifier,
+			@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final Map<String, String> tableRow = dataTable.asMaps().get(0);
+
+		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
+		assertThat(orderLineId).isNotNull();
+
+		final Supplier<Boolean> recordFound = () -> getQueryByOrderLineId(orderLineId)
+				.first() != null;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, recordFound);
+
+		final I_PP_Order_Candidate orderCandidateRecord = getQueryByOrderLineId(orderLineId)
+				.firstOnlyNotNull(I_PP_Order_Candidate.class);
+
+		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		ppOrderCandidateTable.putOrReplace(ppOrderCandidateIdentifier, orderCandidateRecord);
 	}
 
 	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)
@@ -385,7 +418,7 @@ public class PP_Order_Candidate_StepDef
 
 			assertThat(ppOrderCandidate.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductRecordID);
 		}
-}
+	}
 
 	private void updateQtyEnteredAndExpectForException(@NonNull final Map<String, String> tableRow)
 	{
@@ -518,5 +551,38 @@ public class PP_Order_Candidate_StepDef
 		InterfaceWrapperHelper.save(ppOrderCandidateRecord);
 
 		ppOrderCandidateTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Order_Candidate.Table_Name), ppOrderCandidateRecord);
+	}
+
+	@NonNull
+	private IQuery<I_PP_Order_Candidate> getQueryByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create();
+	}
+
+	private void logCurrentContextExpectedNoRecords(@NonNull final OrderLineId orderLineId)
+	{
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Validating no records found for orderLineID :").append("\n")
+				.append(I_PP_Order_Candidate.COLUMNNAME_C_OrderLine_ID).append(" : ").append(orderLineId).append("\n");
+
+		message.append("PP_Order_Candidate records:").append("\n");
+
+		getQueryByOrderLineId(orderLineId)
+				.stream(I_PP_Order_Candidate.class)
+				.forEach(ppOrderCandidate -> message
+						.append(COLUMNNAME_PP_Order_Candidate_ID).append(" : ").append(ppOrderCandidate.getPP_Order_Candidate_ID()).append(" ; ")
+						.append("\n"));
+
+		logger.error("*** Error while validating no PP_Order_Candidate found for orderLineId: " + orderLineId + ", see found records: \n" + message);
+	}
+
+	@Nullable
+	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String orderLineIdentifier)
+	{
+		return OrderLineId.ofRepoIdOrNull(identifierIdsTable.getOptional(orderLineIdentifier)
+												  .orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
 	}
 }

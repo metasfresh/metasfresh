@@ -39,7 +39,7 @@ public class M_DiscountSchema_StepDef
 {
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 
-	public M_DiscountSchema_StepDef(final M_DiscountSchema_StepDefData discountSchemaTable)
+	public M_DiscountSchema_StepDef(@NonNull final M_DiscountSchema_StepDefData discountSchemaTable)
 	{
 		this.discountSchemaTable = discountSchemaTable;
 	}

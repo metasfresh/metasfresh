@@ -19,7 +19,6 @@ Feature: create production simulation
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
-#  @dev:runThisOne
   Scenario:  The simulation for qty 100 is created, with duration to produce 1 qty set to 1 day, having a stock of 99 after demand date and before 'finished production' date
     Given metasfresh contains M_Products:
       | Identifier | Name                                 | OPT.M_Product_Category_ID.Identifier |
@@ -133,7 +132,6 @@ Feature: create production simulation
 
 
   @from:cucumber
-#  @dev:runThisOne
   Scenario: The simulation for qty 14 is created with duration to produce 1 qty set to 1 day,
   having both supplies and other demand in between demand date and initial 'production finished' date
     Given metasfresh contains M_Products:
@@ -193,7 +191,7 @@ Feature: create production simulation
   {
     "attributeInstances":[
       {
-        "attributeCode":"10000011",
+        "attributeCode":"1000002",
           "valueStr":"Bio"
       }
     ]
@@ -242,8 +240,12 @@ Feature: create production simulation
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-23T08:00:00Z | 9   | 11                     | productPlanningASI                       | true          |
       | c_l_3      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-14T08:00:00Z | -1  | -1                     | bomLineASI                               | true          |
       | c_l_4      | SUPPLY            |                               | p_2                     | 2021-04-14T08:00:00Z | 1   | 0                      | bomLineASI                               | true          |
-    And delete C_OrderLine identified by ol_2
-    And validate no PP_Order_Candidate found for orderLine ol_2
+
+    And after not more than 30s, PP_Order_Candidate found for orderLine ol_2
+      | Identifier |
+      | ppoc_1     |
+    And delete C_OrderLine identified by ol_2, but keep its id into identifierIds table
+    And after not more than 30s, no PP_Order_Candidate found for orderLine ol_2
 
 
   @from:cucumber

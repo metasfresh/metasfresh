@@ -20,51 +20,50 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.ddorder;
+package de.metas.cucumber.stepdefs.purchasecandidate;
 
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.purchasecandidate.v2.CreatePurchaseCandidate_StepDef;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
-import de.metas.util.Services;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.IQuery;
-import org.eevolution.model.I_DD_OrderLine;
 import org.slf4j.Logger;
+import org.springframework.lang.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static de.metas.bpartner.api.impl.BPRelationDAO.queryBL;
 import static org.assertj.core.api.Assertions.*;
 
-public class DD_OrderLine_StepDef
+public class C_PurchaseCandidate_StepDef
 {
-	private final static Logger logger = LogManager.getLogger(DD_OrderLine_StepDef.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final static Logger logger = LogManager.getLogger(CreatePurchaseCandidate_StepDef.class);
 
 	private final IdentifierIds_StepDefData identifierIdsTable;
+	private final C_PurchaseCandidate_StepDefData purchaseCandidateTable;
 	private final C_OrderLine_StepDefData orderLineTable;
-	private final DD_OrderLine_StepDefData ddOrderTable;
 
-	public DD_OrderLine_StepDef(
+	public C_PurchaseCandidate_StepDef(
 			@NonNull final IdentifierIds_StepDefData identifierIdsTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final DD_OrderLine_StepDefData ddOrderTable)
+			@NonNull final C_PurchaseCandidate_StepDefData purchaseCandidateTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.identifierIdsTable = identifierIdsTable;
+		this.purchaseCandidateTable = purchaseCandidateTable;
 		this.orderLineTable = orderLineTable;
-		this.ddOrderTable = ddOrderTable;
 	}
 
-	@And("^after not more than (.*)s, no DD_OrderLine found for orderLine (.*)$")
-	public void validate_no_DD_OrderLine_found(
+	@And("^after not more than (.*)s, no C_PurchaseCandidate found for orderLine (.*)$")
+	public void validate_no_C_PurchaseCandidate_found(
 			final int timeoutSec,
 			@NonNull final String orderLineIdentifier) throws InterruptedException
 	{
@@ -77,7 +76,7 @@ public class DD_OrderLine_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, noRecordsFound, () -> logCurrentContextExpectedNoRecords(orderLineId));
 	}
 
-	@And("^after not more than (.*)s, DD_OrderLine found for orderLine (.*)$")
+	@And("^after not more than (.*)s, C_PurchaseCandidate found for orderLine (.*)$")
 	public void validate_PP_Order_Candidate_found_for_OrderLine(
 			final int timeoutSec,
 			@NonNull final String orderLineIdentifier,
@@ -89,15 +88,23 @@ public class DD_OrderLine_StepDef
 		assertThat(orderLineId).isNotNull();
 
 		final Supplier<Boolean> recordFound = () -> getQueryByOrderLineId(orderLineId)
-				.firstOnly(I_DD_OrderLine.class) != null;
+				.first() != null;
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, recordFound);
 
-		final I_DD_OrderLine ddOrderLineRecord = getQueryByOrderLineId(orderLineId)
-				.firstOnlyNotNull(I_DD_OrderLine.class);
+		final I_C_PurchaseCandidate purchaseCandidateRecord = getQueryByOrderLineId(orderLineId)
+				.firstOnlyNotNull(I_C_PurchaseCandidate.class);
 
-		final String ddOrderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		ddOrderTable.putOrReplace(ddOrderLineIdentifier, ddOrderLineRecord);
+		final String purchaseCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		purchaseCandidateTable.putOrReplace(purchaseCandidateIdentifier, purchaseCandidateRecord);
+	}
+
+	@NonNull
+	private IQuery<I_C_PurchaseCandidate> getQueryByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, orderLineId)
+				.create();
 	}
 
 	private void logCurrentContextExpectedNoRecords(@NonNull final OrderLineId orderLineId)
@@ -105,25 +112,17 @@ public class DD_OrderLine_StepDef
 		final StringBuilder message = new StringBuilder();
 
 		message.append("Validating no records found for orderLineID :").append("\n")
-				.append(I_DD_OrderLine.COLUMNNAME_C_OrderLineSO_ID).append(" : ").append(orderLineId).append("\n");
+				.append(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID).append(" : ").append(orderLineId).append("\n");
 
-		message.append("DD_OrderLine records:").append("\n");
+		message.append("C_PurchaseCandidate records:").append("\n");
 
 		getQueryByOrderLineId(orderLineId)
-				.stream(I_DD_OrderLine.class)
-				.forEach(ddOrderLine -> message
-						.append(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID).append(" : ").append(ddOrderLine.getDD_OrderLine_ID()).append(" ; ")
+				.stream(I_C_PurchaseCandidate.class)
+				.forEach(purchaseCandidate -> message
+						.append(I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID).append(" : ").append(purchaseCandidate.getC_PurchaseCandidate_ID()).append(" ; ")
 						.append("\n"));
 
-		logger.error("*** Error while validating no DD_OrderLine found for orderLineId: " + orderLineId + ", see found records: \n" + message);
-	}
-
-	@NonNull
-	private IQuery<I_DD_OrderLine> getQueryByOrderLineId(@NonNull final OrderLineId orderLineId)
-	{
-		return queryBL.createQueryBuilder(I_DD_OrderLine.class)
-				.addEqualsFilter(I_DD_OrderLine.COLUMN_C_OrderLineSO_ID, orderLineId)
-				.create();
+		logger.error("*** Error while validating no C_PurchaseCandidate found for orderLineId: " + orderLineId + ", see found records: \n" + message);
 	}
 
 	@Nullable
