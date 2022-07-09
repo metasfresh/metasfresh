@@ -24,8 +24,8 @@ Feature: create Purchase Candidate having manual price set
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_17052022_1 | true      |
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 101                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000009                     | DE                       | 2000-04-01 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '200' status code
   """
@@ -137,8 +137,8 @@ Feature: create Purchase Candidate having manual price set
       | p_1                     | PCE                    | KGM                  | 0.25         |
 
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 101                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000009                     | DE                       | 2000-04-01 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '200' status code
   """
@@ -244,9 +244,9 @@ Feature: create Purchase Candidate having manual price set
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_06072022_1 | true      |
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000010                     | 101                     | 2000-04-01 |
-      | ptc_2      | p_1                     | 1000009                     | 111                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000010                     | DE                       | 2000-04-01 |
+      | ptc_2      | p_1                     | 1000009                     | AL                       | 2000-04-01 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '200' status code
   """
@@ -352,8 +352,8 @@ Feature: create Purchase Candidate having manual price set
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_06072022_2 | true      |
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 106                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000009                     | ES                       | 2000-04-01 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '422' status code
   """
@@ -404,8 +404,8 @@ Feature: create Purchase Candidate having manual price set
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_06072022_3 | true      |
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 101                     | 2023-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000009                     | DE                       | 4023-04-01 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '422' status code
   """

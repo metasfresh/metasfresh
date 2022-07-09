@@ -26,8 +26,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
 
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 101                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000009                     | DE                       | 2000-04-01 |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -115,8 +115,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
 
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 101                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000009                     | DE                       | 2000-04-01 |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -212,8 +212,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
 
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 101                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000009                     | DE                       | 2000-04-01 |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -301,8 +301,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
 
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000009                     | 101                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000009                     | DE                       | 2000-04-01 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -378,9 +378,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
 
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000010                     | 101                     | 2000-04-01 |
-      | ptc_2      | p_1                     | 1000009                     | 111                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000010                     | DE                       | 2000-04-01 |
+      | ptc_2      | p_1                     | 1000009                     | AL                       | 2000-04-01 |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -470,8 +470,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
 
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000010                     | 106                     | 2000-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000010                     | ES                       | 2000-04-01 |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -528,8 +528,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
 
     And metasfresh contains M_Product_TaxCategory:
-      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.Identifier | ValidFrom  |
-      | ptc_1      | p_1                     | 1000010                     | 106                     | 2023-04-01 |
+      | Identifier | M_Product_ID.Identifier | C_TaxCategory_ID.Identifier | C_Country_ID.CountryCode | ValidFrom  |
+      | ptc_1      | p_1                     | 1000010                     | ES                       | 2023-04-01 |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
