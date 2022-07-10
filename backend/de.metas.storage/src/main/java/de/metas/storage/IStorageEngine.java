@@ -22,12 +22,12 @@ package de.metas.storage;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Use {@link IStorageEngineService#getStorageEngine()} to get an instance.
