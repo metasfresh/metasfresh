@@ -71,6 +71,10 @@ public class ExternalSystemConstants
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
+	public static final String QUEUE_NAME_ES_TO_MF_CUSTOM = "Custom_ExternalSystem_To_Metasfresh";
+
+	public static final String QUEUE_NAME_MF_TO_ES_CUSTOM = "Custom_Metasfresh_To_ExternalSystem";
+
 
 	public static final String PARAM_APP_ID = "AppId";
 	public static final String PARAM_CERT_ID = "CertId";
@@ -90,11 +94,9 @@ public class ExternalSystemConstants
 	public static final String PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "JsonExternalReferenceLookupRequest";
 
 	public static final String PARAM_PP_ORDER_ID = "PP_Order_ID";
-	public static final String PARAM_FTP_HOST = "FTP_Host";
-	public static final String PARAM_FTP_PORT = "FTP_Port";
-	public static final String PARAM_FTP_USERNAME = "FTP_Username";
-	public static final String PARAM_FTP_PASSWORD = "FTP_Password";
-	public static final String PARAM_FTP_DIRECTORY = "FTP_Directory";
+	public static final String PARAM_PRODUCT_BASE_FOLDER_NAME = "Product_BaseFolderName";
+	public static final String PARAM_TCP_PORT_NUMBER = "TCP_PortNumber";
+	public static final String PARAM_TCP_HOST = "TCP_Host";
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
