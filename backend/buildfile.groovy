@@ -89,7 +89,7 @@ Map build(
 final DockerConf appDockerConf = reportDockerConf
                         .withArtifactName('metasfresh-app')
                         .withWorkDir('metasfresh-dist/dist/target/docker/app');
-                final String publishedAppImageName = dockerBuildAndPush(appDockerConf)//                // postgres DB init container
+                final String publishedAppImageName = dockerBuildAndPush(appDockerConf)//                // // postgres DB init container
 //                final DockerConf dbInitDockerConf = reportDockerConf
 //                        .withArtifactName('metasfresh-db-init-pg-14-2')
 //                        .withWorkDir('metasfresh-dist/dist/target/docker/db-init')
