@@ -105,7 +105,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" WHERE	l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'"
 				+" AND	AD_Element_ID || AD_LANGUAGE NOT IN "
 				+" (SELECT AD_Element_ID || AD_LANGUAGE FROM AD_ELEMENT_TRL)";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 
@@ -115,7 +115,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 	(SELECT AD_Element_ID FROM AD_ELEMENT e" 
 				+" 	WHERE UPPER(c.ColumnName)=UPPER(e.ColumnName))"
 				+" 	WHERE AD_Element_ID IS NULL";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 
@@ -127,7 +127,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 	(SELECT 1 FROM AD_COLUMN c WHERE UPPER(e.ColumnName)=UPPER(c.ColumnName))"
 				+" 	AND NOT EXISTS"
 				+" 	(SELECT 1 FROM AD_PROCESS_PARA p WHERE UPPER(e.ColumnName)=UPPER(p.ColumnName)))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows deleted: "+no);
 
 			sql="DELETE	AD_ELEMENT e"
@@ -135,7 +135,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 	(SELECT 1 FROM AD_COLUMN c WHERE UPPER(e.ColumnName)=UPPER(c.ColumnName))"
 				+" 	AND NOT EXISTS"
 				+" 	(SELECT 1 FROM AD_PROCESS_PARA p WHERE UPPER(e.ColumnName)=UPPER(p.ColumnName))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows deleted: "+no);
 
 
@@ -150,7 +150,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 				WHERE c.AD_Element_ID=e.AD_Element_ID"
 				+" 				  AND (c.ColumnName <> e.ColumnName OR c.Name <> e.Name "
 				+" 					OR COALESCE(c.Description,' ') <> COALESCE(e.Description,' ') OR COALESCE(c.Help,' ') <> COALESCE(e.Help,' ')))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Fields should now be synchronized
@@ -166,7 +166,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 				WHERE f.AD_Column_ID=c.AD_Column_ID"
 				+" 				  AND c.AD_Element_ID=e.AD_Element_ID AND c.AD_Process_ID IS NULL"
 				+" 				  AND (f.Name <> e.Name OR COALESCE(f.Description,' ') <> COALESCE(e.Description,' ') OR COALESCE(f.Help,' ') <> COALESCE(e.Help,' ')))");
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Field Translations
@@ -192,7 +192,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+"		  AND trl.AD_LANGUAGE=e.AD_LANGUAGE"
 				+"		  AND f.IsCentrallyMaintained='Y' AND f.IsActive='Y'"
 				+"		  AND (trl.Name <> e.Name OR COALESCE(trl.Description,' ') <> COALESCE(e.Description,' ') OR COALESCE(trl.Help,' ') <> COALESCE(e.Help,' ')))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Fields should now be synchronized
@@ -215,7 +215,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 		WHERE f.AD_Tab_ID=t.AD_Tab_ID"
 				+" 		  AND t.AD_Window_ID=w.AD_Window_ID"
 				+" 		  AND w.IsSOTrx='N')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Field Translations
@@ -247,7 +247,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 	  AND f.AD_Tab_ID=t.AD_Tab_ID"
 				+" 	  AND t.AD_Window_ID=w.AD_Window_ID"
 				+" 	  AND w.IsSOTrx='N')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 
@@ -265,7 +265,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND EXISTS (SELECT 1 FROM AD_PROCESS p, AD_COLUMN c"
 				+" 		WHERE c.AD_Process_ID=p.AD_Process_ID AND f.AD_Column_ID=c.AD_Column_ID"
 				+" 		AND (f.Name<>p.Name OR COALESCE(f.Description,' ')<>COALESCE(p.Description,' ') OR COALESCE(f.Help,' ')<>COALESCE(p.Help,' ')))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Field Translations from Process
@@ -289,7 +289,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 		AND f.AD_Field_ID=trl.AD_Field_ID AND p.AD_LANGUAGE=trl.AD_LANGUAGE"
 				+" 		AND f.IsCentrallyMaintained='Y' AND f.IsActive='Y'"
 				+" 		AND (trl.Name<>p.Name OR COALESCE(trl.Description,' ')<>COALESCE(p.Description,' ') OR COALESCE(trl.Help,' ')<>COALESCE(p.Help,' ')))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Sync Parameter ColumnName
@@ -301,7 +301,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND EXISTS (SELECT 1 FROM AD_ELEMENT e"
 				+" WHERE UPPER(e.ColumnName)=UPPER(f.ColumnName)"
 				+" AND e.ColumnName<>f.ColumnName)";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Parameter Fields
@@ -309,7 +309,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" SET	IsCentrallyMaintained = 'N'"
 				+" WHERE	IsCentrallyMaintained <> 'N'"
 				+" AND NOT EXISTS (SELECT 1 FROM AD_ELEMENT e WHERE p.ColumnName=e.ColumnName)"; 
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Parameter Fields
@@ -326,7 +326,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND EXISTS (SELECT 1 FROM AD_ELEMENT e"
 				+" 		WHERE e.ColumnName=f.ColumnName"
 				+" 		  AND (f.Name <> e.Name OR COALESCE(f.Description,' ') <> COALESCE(e.Description,' ') OR COALESCE(f.Help,' ') <> COALESCE(e.Help,' ')))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Parameter Translations
@@ -350,7 +350,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 			  AND e.ColumnName=f.ColumnName AND f.AD_Process_Para_ID=trl.AD_Process_Para_ID"
 				+" 			  AND f.IsCentrallyMaintained='Y' AND f.IsActive='Y'"
 				+" 			  AND (trl.Name <> et.Name OR COALESCE(trl.Description,' ') <> COALESCE(et.Description,' ') OR COALESCE(trl.Help,' ') <> COALESCE(et.Help,' ')))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Workflow Node - Window
@@ -366,7 +366,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+"  AND EXISTS  (SELECT 1 FROM AD_WINDOW w"
 				+" 		WHERE w.AD_Window_ID=n.AD_Window_ID"
 				+" 		  AND (w.Name <> n.Name OR COALESCE(w.Description,' ') <> COALESCE(n.Description,' ') OR COALESCE(w.Help,' ') <> COALESCE(n.Help,' ')))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Workflow Translations - Window
@@ -385,7 +385,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 		WHERE trl.AD_WF_Node_ID=n.AD_WF_Node_ID AND n.AD_Window_ID=t.AD_Window_ID"
 				+" 		  AND trl.AD_LANGUAGE=t.AD_LANGUAGE AND n.IsCentrallyMaintained='Y' AND n.IsActive='Y'"
 				+" 		  AND (trl.Name <> t.Name OR COALESCE(trl.Description,' ') <> COALESCE(t.Description,' ') OR COALESCE(trl.Help,' ') <> COALESCE(t.Help,' ')))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Workflow Node - Form
@@ -398,7 +398,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND EXISTS  (SELECT 1 FROM AD_FORM f"
 				+" 		WHERE f.AD_Form_ID=n.AD_Form_ID"
 				+" 		  AND (f.Name <> n.Name OR COALESCE(f.Description,' ') <> COALESCE(n.Description,' ') OR COALESCE(f.Help,' ') <> COALESCE(n.Help,' ')))");
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Workflow Translations - Form
@@ -412,7 +412,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" 		WHERE trl.AD_WF_Node_ID=n.AD_WF_Node_ID AND n.AD_Form_ID=t.AD_Form_ID"
 				+" 		  AND trl.AD_LANGUAGE=t.AD_LANGUAGE AND n.IsCentrallyMaintained='Y' AND n.IsActive='Y'"
 				+" 		  AND (trl.Name <> t.Name OR COALESCE(trl.Description,' ') <> COALESCE(t.Description,' ') OR COALESCE(trl.Help,' ') <> COALESCE(t.Help,' ')))");
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Workflow Node - Report
@@ -425,7 +425,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND EXISTS  (SELECT 1 FROM AD_PROCESS f"
 				+" 		WHERE f.AD_Process_ID=n.AD_Process_ID"
 				+" 		  AND (f.Name <> n.Name OR COALESCE(f.Description,' ') <> COALESCE(n.Description,' ') OR COALESCE(f.Help,' ') <> COALESCE(n.Help,' ')))");
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Workflow Translations - Form
@@ -439,7 +439,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" WHERE trl.AD_WF_Node_ID=n.AD_WF_Node_ID AND n.AD_Process_ID=t.AD_Process_ID"
 				+"  AND trl.AD_LANGUAGE=t.AD_LANGUAGE AND n.IsCentrallyMaintained='Y' AND n.IsActive='Y'"
 				+"  AND (trl.Name <> t.Name OR COALESCE(trl.Description,' ') <> COALESCE(t.Description,' ') OR COALESCE(trl.Help,' ') <> COALESCE(t.Help,' ')))");
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//  Need centrally maintained flag here!
@@ -457,7 +457,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND e.Name<>pfi.Name)"
 				+" AND EXISTS (SELECT 1 FROM AD_CLIENT" 
 				+" WHERE AD_Client_ID=pfi.AD_Client_ID AND IsMultiLingualDocument='Y')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			log.info("Synchronize PrintFormatItem PrintName from Element");
@@ -477,7 +477,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND pf.IsForm='N' AND IsTableBased='Y')"
 				+" AND EXISTS (SELECT 1 FROM AD_CLIENT "
 				+" WHERE AD_Client_ID=pfi.AD_Client_ID AND IsMultiLingualDocument='Y')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			log.info("Synchronize PrintFormatItem Trl from Element Trl (Multi-Lingual)");
@@ -501,7 +501,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND pf.IsForm='N' AND IsTableBased='Y')"
 				+" AND EXISTS (SELECT 1 FROM AD_CLIENT "
 				+" WHERE AD_Client_ID=trl.AD_Client_ID AND IsMultiLingualDocument='Y')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			log.info("Synchronize PrintFormatItem Trl (Not Multi-Lingual)");
@@ -519,7 +519,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND pf.IsForm='N' AND pf.IsTableBased='Y')"
 				+" AND EXISTS (SELECT 1 FROM AD_CLIENT "
 				+" WHERE AD_Client_ID=trl.AD_Client_ID AND IsMultiLingualDocument='N')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			log.info("Reset PrintFormatItem Trl where not used in base table");
@@ -531,7 +531,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" WHERE pfi.AD_PrintFormatItem_ID=trl.AD_PrintFormatItem_ID" 
 				+" AND pfi.IsCentrallyMaintained='Y'"
 				+" AND (LENGTH (pfi.PrintName) = 0 OR pfi.PrintName IS NULL))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			/**
@@ -550,7 +550,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" Description = (SELECT Description FROM AD_WINDOW w WHERE m.AD_Window_ID=w.AD_Window_ID)"
 				+" WHERE	AD_Window_ID IS NOT NULL"
 				+" AND Action = 'W'";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			sql="UPDATE	AD_MENU_TRL mt"
@@ -568,7 +568,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND mt.AD_LANGUAGE=wt.AD_LANGUAGE"
 				+" AND m.AD_Window_ID IS NOT NULL"
 				+" AND m.Action = 'W')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			// Sync Names - Process
@@ -578,7 +578,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" Description = (SELECT p.Description FROM AD_PROCESS p WHERE m.AD_Process_ID=p.AD_Process_ID)"
 				+" WHERE	m.AD_Process_ID IS NOT NULL"
 				+" AND	m.Action IN ('R', 'P')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			sql="UPDATE	AD_MENU_TRL mt"
@@ -596,7 +596,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND mt.AD_LANGUAGE=pt.AD_LANGUAGE"
 				+" AND m.AD_Process_ID IS NOT NULL"
 				+" AND	Action IN ('R', 'P'))";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Sync Names = Form
@@ -606,7 +606,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" Description = (SELECT Description FROM AD_FORM f WHERE m.AD_Form_ID=f.AD_Form_ID)"
 				+" WHERE	AD_Form_ID IS NOT NULL"
 				+" AND	Action = 'X'";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			sql="UPDATE	AD_MENU_TRL mt"
@@ -624,7 +624,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND mt.AD_LANGUAGE=ft.AD_LANGUAGE"
 				+" AND m.AD_Form_ID IS NOT NULL"
 				+" AND	Action = 'X')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Sync Names - Workflow
@@ -634,7 +634,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" Description = (SELECT p.Description FROM AD_WORKFLOW p WHERE m.AD_Workflow_ID=p.AD_Workflow_ID)"
 				+" WHERE	m.AD_Workflow_ID IS NOT NULL"
 				+" AND	m.Action = 'F'";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			sql="UPDATE	AD_MENU_TRL mt"
@@ -652,7 +652,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND mt.AD_LANGUAGE=pt.AD_LANGUAGE"
 				+" AND m.AD_Workflow_ID IS NOT NULL"
 				+" AND	Action = 'F')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//	Sync Names = Task
@@ -662,7 +662,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" Description = (SELECT Description FROM AD_TASK f WHERE m.AD_Task_ID=f.AD_Task_ID)"
 				+" WHERE	AD_Task_ID IS NOT NULL"
 				+" AND	Action = 'T'";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			sql="UPDATE	AD_MENU_TRL mt"
@@ -680,7 +680,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND mt.AD_LANGUAGE=ft.AD_LANGUAGE"
 				+" AND m.AD_Task_ID IS NOT NULL"
 				+" AND	Action = 'T')";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 			//  Column Name + Element
@@ -693,7 +693,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" (SELECT 1 FROM AD_ELEMENT e "
 				+" WHERE c.AD_Element_ID=e.AD_Element_ID"
 				+" AND c.Name<>e.Name)");
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 			sql="UPDATE AD_COLUMN_TRL ct"
 				+" SET Name = (SELECT e.Name"
@@ -703,7 +703,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" (SELECT 1 FROM AD_COLUMN c INNER JOIN AD_ELEMENT_TRL e ON (c.AD_Element_ID=e.AD_Element_ID)"
 				+" WHERE ct.AD_Column_ID=c.AD_Column_ID AND ct.AD_LANGUAGE=e.AD_LANGUAGE"
 				+" AND ct.Name<>e.Name)";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  rows updated: "+no);
 
 
@@ -715,7 +715,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+"WHERE EXISTS (SELECT 1 FROM AD_ELEMENT e " 
 				+"WHERE t.TableName||'_ID'=e.ColumnName "
 				+"AND t.Name<>e.Name)");
-			no = DB.executeUpdate(sql, false, get_TrxName());
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 
 			log.info("  rows updated: " +no);
 			sql="UPDATE AD_TABLE_TRL tt" 
@@ -728,7 +728,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" INNER JOIN AD_ELEMENT_TRL e ON (ex.AD_Element_ID=e.AD_Element_ID)"
 				+" WHERE tt.AD_Table_ID=t.AD_Table_ID AND tt.AD_LANGUAGE=e.AD_LANGUAGE"
 				+" AND tt.Name<>e.Name)";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  trl rows updated: "+no);
 
 			//  Trl Table Name + Element
@@ -740,7 +740,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" AND EXISTS (SELECT 1 FROM AD_ELEMENT e "
 				+" WHERE SUBSTR(t.TableName,1,LENGTH(t.TableName)-4)||'_ID'=e.ColumnName"
 				+" AND t.Name<>e.Name)");
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  trl rows updated: "+no);
 			sql=" UPDATE AD_TABLE_TRL tt"
 				+" SET Name = (SELECT e.Name || ' **'"
@@ -753,7 +753,7 @@ public class SynchronizeTerminology extends JavaProcess
 				+" WHERE tt.AD_Table_ID=t.AD_Table_ID AND tt.AD_LANGUAGE=e.AD_LANGUAGE"
 				+" AND t.TableName LIKE '%_Trl'"
 				+" AND tt.Name<>e.Name)";
-			no = DB.executeUpdate(sql, false, get_TrxName());	  	
+			no = DB.executeUpdateAndIgnoreErrorOnFail(sql, false, get_TrxName());
 			log.info("  trl rows updated: "+no);
 		} catch (Exception e) {
 			log.error("@Failed@: "+e.getLocalizedMessage(), e);

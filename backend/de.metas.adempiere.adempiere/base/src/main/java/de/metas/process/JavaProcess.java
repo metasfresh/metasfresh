@@ -1005,8 +1005,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
-		getResult().addLog(id, date, number, msg);
-	}	// addLog
+		addLog(id, date, number,  msg, null);
+	}
+
+	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable List<String> warningMessages)
+	{
+
+		getResult().addLog(id, date, number, msg, warningMessages);
+	}
 
 	/**
 	 * Add Log, if the given <code>msg<code> is not <code>null</code>
@@ -1015,6 +1021,11 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	@Override
 	public final ILoggable addLog(final String msg, final Object... msgParameters)
+	{
+		return addLog(null, msg, msgParameters);
+	}
+
+	public final ILoggable addLog(final List<String> warningMessages, final String msg, final Object... msgParameters)
 	{
 		final String actualMsg;
 
@@ -1033,11 +1044,17 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 		final LoggableWithThrowableUtil.FormattedMsgWithAdIssueId msgAndIssue = LoggableWithThrowableUtil.extractMsgAndAdIssue(actualMsg, msgParameters);
 
-		getResult().addLog(0,
-						   SystemTime.asTimestamp(),
-						   null,
-						   msgAndIssue.getFormattedMessage(),
-						   msgAndIssue.getAdIsueId().orElse(null));
+		ProcessInfoLogRequest request = ProcessInfoLogRequest
+				.builder()
+				.log_ID(0)
+				.pDate(SystemTime.asTimestamp())
+				.p_Number(null)
+				.p_Msg(msgAndIssue.getFormattedMessage())
+				.ad_Issue_ID(msgAndIssue.getAdIsueId().orElse(null))
+				.warningMessages(warningMessages)
+				.build();
+
+		getResult().addLog(new ProcessInfoLog(request));
 
 		return this;
 	}    // addLog

@@ -18,12 +18,14 @@ package de.metas.process;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
+import lombok.NonNull;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -100,14 +102,28 @@ public final class ProcessInfoLog implements Serializable
 		m_Table_Record_Ref = tableRecordReference;
 		m_Ad_Issue_ID = ad_Issue_ID;
 		this.trxName = trxName;
+		warningMessages = null;
 	}
 
+
+	public ProcessInfoLog(@NonNull final  ProcessInfoLogRequest request)
+	{
+		m_Log_ID = request.getLog_ID();
+		m_P_Date = request.getPDate();
+		m_P_Number = request.getP_Number();
+		m_P_Msg = request.getP_Msg();
+		m_Ad_Issue_ID = request.getAd_Issue_ID();
+		m_Table_Record_Ref = request.getTableRecordReference();
+		trxName = request.getTrxName();
+		warningMessages = request.getWarningMessages();
+	}
 	private static final AtomicInteger nextLogId = new AtomicInteger(1);
 
 	private final int m_Log_ID;
 	private final Timestamp m_P_Date;
 	private final BigDecimal m_P_Number;
 	private final String m_P_Msg;
+	private final List<String> warningMessages;
 	private boolean savedInDB = false;
 
 	@Nullable
@@ -137,6 +153,11 @@ public final class ProcessInfoLog implements Serializable
 	public String getP_Msg()
 	{
 		return m_P_Msg;
+	}
+
+	public List<String> getWarningMessages()
+	{
+		return warningMessages;
 	}
 
 	public void markAsSavedInDB()

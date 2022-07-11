@@ -610,8 +610,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String set = "SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_Invoice_ID=" + getC_Invoice_ID();
-		final int noLine = DB.executeUpdate("UPDATE C_InvoiceLine " + set, get_TrxName());
-		final int noTax = DB.executeUpdate("UPDATE C_InvoiceTax " + set, get_TrxName());
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceLine " + set, get_TrxName());
+		final int noTax = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceTax " + set, get_TrxName());
 		m_lines = null;
 		m_taxes = null;
 		log.debug(processed + " - Lines=" + noLine + ", Tax=" + noTax);
@@ -774,7 +774,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM C_Invoice o WHERE ol.C_Invoice_ID=o.C_Invoice_ID) "
 					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID();
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Lines -> #" + no);
 		}
 		return true;
@@ -934,7 +934,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final String trxName = get_TrxName();
 
 		// Delete Taxes
-		DB.executeUpdateEx("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM C_InvoiceTax WHERE C_Invoice_ID=" + getC_Invoice_ID(), trxName);
 		m_taxes = null;
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);

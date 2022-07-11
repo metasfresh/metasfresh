@@ -247,7 +247,7 @@ public class DunningDAO extends AbstractDunningDAO
 			@Override
 			public void run(final String localTrxName)
 			{
-				result[0] = DB.executeUpdateEx(deleteSQL, new Object[] { Env.getAD_Client_ID(context.getCtx()), dunningLevel.getC_DunningLevel_ID() }, localTrxName);
+				result[0] = DB.executeUpdateAndThrowExceptionOnFail(deleteSQL, new Object[] { Env.getAD_Client_ID(context.getCtx()), dunningLevel.getC_DunningLevel_ID() }, localTrxName);
 			}
 		});
 		return result[0];

@@ -64,7 +64,7 @@ public class MAttributeUse extends X_M_AttributeUse
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
 					+ " AND ma.IsInstanceAttribute='Y')"
 					+ ")";
-			DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		}
 
 		// Update M_AttributeSet.IsInstanceAttribute='N'
@@ -79,7 +79,7 @@ public class MAttributeUse extends X_M_AttributeUse
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
 					+ " AND ma.IsInstanceAttribute='Y')";
-			DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 

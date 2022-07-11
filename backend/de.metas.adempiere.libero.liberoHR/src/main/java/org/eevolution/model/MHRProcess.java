@@ -130,7 +130,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 			return;
 		}
 		final String sql = "UPDATE HR_Process SET Processed=? WHERE HR_Process_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	}	// setProcessed
 
 	@Override
@@ -400,7 +400,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 		// Delete
 		String sql = "DELETE FROM HR_Movement WHERE HR_Process_ID =" + this.getHR_Process_ID() + " AND IsRegistered = 'N'";
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		log.debug("HR_Process deleted #" + no);
 
 		setDocAction(DOCACTION_Complete);
@@ -745,9 +745,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		}
 
 		// RE-Process, delete movement except concept type Incidence
-		int no = DB.executeUpdateEx("DELETE FROM HR_Movement m WHERE HR_Process_ID=? AND IsRegistered<>?",
-				new Object[] { getHR_Process_ID(), true },
-				get_TrxName());
+		int no = DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM HR_Movement m WHERE HR_Process_ID=? AND IsRegistered<>?",
+														 new Object[] { getHR_Process_ID(), true },
+														 get_TrxName());
 		log.info("HR_Movement deleted #" + no);
 
 		linesConcept = MHRPayrollConcept.getPayrollConcepts(this);

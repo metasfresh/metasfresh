@@ -1340,7 +1340,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					+ " SET TotalLines="
 					+ " (SELECT COALESCE(SUM(LineNetAmt),0) FROM C_InvoiceLine il WHERE i.C_Invoice_ID=il.C_Invoice_ID) "
 					+ " WHERE C_Invoice_ID=?";
-			final int no = DB.executeUpdateEx(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
 			if (no != 1)
 			{
 				throw new AdempiereException("Updating TotalLines failed; updated records=" + no + "; sql=" + sql);
@@ -1355,7 +1355,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					// SUM up C_InvoiceTax.TaxAmt only for those lines which does not have Tax Included
 					+ " (SELECT COALESCE(SUM(TaxAmt),0) FROM C_InvoiceTax it WHERE i.C_Invoice_ID=it.C_Invoice_ID AND it.IsActive='Y' AND it.IsTaxIncluded='N') "
 					+ " WHERE C_Invoice_ID=?";
-			final int no = DB.executeUpdateEx(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
 			if (no != 1)
 			{
 				throw new AdempiereException("Updating GrandTotal failed; updated records=" + no + "; sql=" + sql);
@@ -1383,7 +1383,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			return "";
 		}
 		String sql = "DELETE FROM C_LandedCostAllocation WHERE C_InvoiceLine_ID=" + getC_InvoiceLine_ID();
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 		{
 			log.debug("Deleted #" + no);
