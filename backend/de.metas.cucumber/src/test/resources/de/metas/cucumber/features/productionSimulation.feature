@@ -245,7 +245,7 @@ Feature: create production simulation
       | Identifier |
       | ppoc_1     |
     And delete C_OrderLine identified by ol_2, but keep its id into identifierIds table
-    And after not more than 30s, no PP_Order_Candidate found for orderLine ol_2
+    And no PP_Order_Candidate found for orderLine ol_2
 
 
   @from:cucumber

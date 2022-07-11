@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.springframework.lang.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.bpartner.api.impl.BPRelationDAO.queryBL;
@@ -62,22 +63,24 @@ public class C_PurchaseCandidate_StepDef
 		this.orderLineTable = orderLineTable;
 	}
 
-	@And("^after not more than (.*)s, no C_PurchaseCandidate found for orderLine (.*)$")
-	public void validate_no_C_PurchaseCandidate_found(
-			final int timeoutSec,
-			@NonNull final String orderLineIdentifier) throws InterruptedException
+	@And("^no C_PurchaseCandidate found for orderLine (.*)$")
+	public void validate_no_C_PurchaseCandidate_found(@NonNull final String orderLineIdentifier)
 	{
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Supplier<Boolean> noRecordsFound = () -> getQueryByOrderLineId(orderLineId)
-				.count() == 0;
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, noRecordsFound, () -> logCurrentContextExpectedNoRecords(orderLineId));
+		try
+		{
+			assertThat(getQueryByOrderLineId(orderLineId).count() == 0).isTrue();
+		}
+		catch (final Throwable throwable)
+		{
+			logCurrentContextExpectedNoRecords(orderLineId);
+		}
 	}
 
 	@And("^after not more than (.*)s, C_PurchaseCandidate found for orderLine (.*)$")
-	public void validate_PP_Order_Candidate_found_for_OrderLine(
+	public void validate_C_PurchaseCandidate_found_for_OrderLine(
 			final int timeoutSec,
 			@NonNull final String orderLineIdentifier,
 			@NonNull final DataTable dataTable) throws InterruptedException
@@ -87,13 +90,9 @@ public class C_PurchaseCandidate_StepDef
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Supplier<Boolean> recordFound = () -> getQueryByOrderLineId(orderLineId)
-				.first() != null;
+		final Supplier<Optional<I_C_PurchaseCandidate>> recordFound = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId).first());
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, recordFound);
-
-		final I_C_PurchaseCandidate purchaseCandidateRecord = getQueryByOrderLineId(orderLineId)
-				.firstOnlyNotNull(I_C_PurchaseCandidate.class);
+		final I_C_PurchaseCandidate purchaseCandidateRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, recordFound);
 
 		final String purchaseCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		purchaseCandidateTable.putOrReplace(purchaseCandidateIdentifier, purchaseCandidateRecord);

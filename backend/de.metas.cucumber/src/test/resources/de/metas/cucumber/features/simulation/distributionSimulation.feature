@@ -24,8 +24,8 @@ Feature: create distribution simulation
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerName | N            | Y              | ps_1                          |
+      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_1 | BPartnerName_Dist_06-07_2022 | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
@@ -70,4 +70,4 @@ Feature: create distribution simulation
       | Identifier |
       | ddol_1     |
     And delete C_OrderLine identified by ol_1, but keep its id into identifierIds table
-    And after not more than 30s, no DD_OrderLine found for orderLine ol_1
+    And no DD_OrderLine found for orderLine ol_1

@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
@@ -63,22 +64,24 @@ public class DD_OrderLine_StepDef
 		this.ddOrderTable = ddOrderTable;
 	}
 
-	@And("^after not more than (.*)s, no DD_OrderLine found for orderLine (.*)$")
-	public void validate_no_DD_OrderLine_found(
-			final int timeoutSec,
-			@NonNull final String orderLineIdentifier) throws InterruptedException
+	@And("^no DD_OrderLine found for orderLine (.*)$")
+	public void validate_no_DD_OrderLine_found(@NonNull final String orderLineIdentifier)
 	{
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Supplier<Boolean> noRecordsFound = () -> getQueryByOrderLineId(orderLineId)
-				.count() == 0;
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, noRecordsFound, () -> logCurrentContextExpectedNoRecords(orderLineId));
+		try
+		{
+			assertThat(getQueryByOrderLineId(orderLineId).count() == 0).isTrue();
+		}
+		catch (final Throwable throwable)
+		{
+			logCurrentContextExpectedNoRecords(orderLineId);
+		}
 	}
 
 	@And("^after not more than (.*)s, DD_OrderLine found for orderLine (.*)$")
-	public void validate_PP_Order_Candidate_found_for_OrderLine(
+	public void validate_DD_OrderLine_found_for_OrderLine(
 			final int timeoutSec,
 			@NonNull final String orderLineIdentifier,
 			@NonNull final DataTable dataTable) throws InterruptedException
@@ -88,13 +91,10 @@ public class DD_OrderLine_StepDef
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Supplier<Boolean> recordFound = () -> getQueryByOrderLineId(orderLineId)
-				.firstOnly(I_DD_OrderLine.class) != null;
+		final Supplier<Optional<I_DD_OrderLine>> locateDDOrderLine = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId)
+				.firstOnly(I_DD_OrderLine.class));
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, recordFound);
-
-		final I_DD_OrderLine ddOrderLineRecord = getQueryByOrderLineId(orderLineId)
-				.firstOnlyNotNull(I_DD_OrderLine.class);
+		final I_DD_OrderLine ddOrderLineRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, locateDDOrderLine);
 
 		final String ddOrderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		ddOrderTable.putOrReplace(ddOrderLineIdentifier, ddOrderLineRecord);

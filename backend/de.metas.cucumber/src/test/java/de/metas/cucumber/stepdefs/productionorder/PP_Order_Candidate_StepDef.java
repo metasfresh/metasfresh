@@ -82,6 +82,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -269,18 +270,20 @@ public class PP_Order_Candidate_StepDef
 		assertThat(noOfRecords).isEqualTo(0);
 	}
 
-	@And("^after not more than (.*)s, no PP_Order_Candidate found for orderLine (.*)$")
-	public void validate_no_PP_Order_Candidate_found(
-			final int timeoutSec,
-			@NonNull final String orderLineIdentifier) throws InterruptedException
+	@And("^no PP_Order_Candidate found for orderLine (.*)$")
+	public void validate_no_PP_Order_Candidate_found(@NonNull final String orderLineIdentifier)
 	{
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Supplier<Boolean> noRecordsFound = () -> getQueryByOrderLineId(orderLineId)
-				.count() == 0;
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, noRecordsFound, () -> logCurrentContextExpectedNoRecords(orderLineId));
+		try
+		{
+			assertThat(getQueryByOrderLineId(orderLineId).count() == 0).isTrue();
+		}
+		catch (final Throwable throwable)
+		{
+			logCurrentContextExpectedNoRecords(orderLineId);
+		}
 	}
 
 	@And("^after not more than (.*)s, PP_Order_Candidate found for orderLine (.*)$")
@@ -294,16 +297,13 @@ public class PP_Order_Candidate_StepDef
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Supplier<Boolean> recordFound = () -> getQueryByOrderLineId(orderLineId)
-				.first() != null;
+		final Supplier<Optional<I_PP_Order_Candidate>> ppOrderCandSupplier = () -> getQueryByOrderLineId(orderLineId)
+				.first();
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, recordFound);
-
-		final I_PP_Order_Candidate orderCandidateRecord = getQueryByOrderLineId(orderLineId)
-				.firstOnlyNotNull(I_PP_Order_Candidate.class);
+		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, ppOrderCandSupplier);
 
 		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		ppOrderCandidateTable.putOrReplace(ppOrderCandidateIdentifier, orderCandidateRecord);
+		ppOrderCandidateTable.putOrReplace(ppOrderCandidateIdentifier, ppOrderCandidate);
 	}
 
 	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)

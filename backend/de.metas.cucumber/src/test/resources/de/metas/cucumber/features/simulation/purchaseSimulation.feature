@@ -56,4 +56,4 @@ Feature: create purchase simulation
       | Identifier |
       | pc_1       |
     And delete C_OrderLine identified by ol_1, but keep its id into identifierIds table
-    And after not more than 30s, no C_PurchaseCandidate found for orderLine ol_1
+    And no C_PurchaseCandidate found for orderLine ol_1

@@ -86,6 +86,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -369,9 +370,7 @@ public class MD_Candidate_StepDef
 					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getQuantity().equals(tableRow.getQty()))
 					.filter(materialDispoRecord -> materialDispoRecord.getAtp().equals(tableRow.getAtp()))
 					.filter(materialDispoRecord -> materialDispoRecord.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
-					.filter(tableRow.getBusinessCase() != null
-									? materialDispoRecord -> tableRow.getBusinessCase().equals(materialDispoRecord.getBusinessCase())
-									: materialDispoRecord -> materialDispoRecord.getBusinessCase() == null)
+					.filter(materialDispoRecord -> Objects.equals(materialDispoRecord.getBusinessCase(), tableRow.getBusinessCase()))
 					.findFirst();
 			final MaterialDispoDataItem materialDispoRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, candidateCreated, () -> logCurrentContext(tableRow));
 
