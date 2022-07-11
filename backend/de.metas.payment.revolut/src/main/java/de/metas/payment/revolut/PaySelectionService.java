@@ -33,6 +33,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.EmptyUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -99,7 +100,6 @@ public class PaySelectionService
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		final I_C_BPartner bPartner = bpartnerBL.getById(bPartnerId);
 
-		revolutPaymentExportBuilder.name(bPartner.getName());
 		revolutPaymentExportBuilder.recipientType(bPartner.isCompany() ? RecipientType.COMPANY : RecipientType.INDIVIDUAL);
 
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, invoice.getC_BPartner_Location_ID());
@@ -126,7 +126,16 @@ public class PaySelectionService
 						.appendParametersToMessage()
 						.setParameter("bankAccountId", bankAccountId));
 
-		if(bpBankAccount.getBankId() != null)
+		if (EmptyUtil.isNotBlank(bpBankAccount.getAccountName()))
+		{
+			revolutPaymentExportBuilder.name(bpBankAccount.getAccountName().trim());
+		}
+		else
+		{
+			revolutPaymentExportBuilder.name(bPartner.getName().trim());
+		}
+
+		if (bpBankAccount.getBankId() != null)
 		{
 			final Bank bank = bankRepository.getById(bpBankAccount.getBankId());
 			if (bank.getLocationId() != null)
