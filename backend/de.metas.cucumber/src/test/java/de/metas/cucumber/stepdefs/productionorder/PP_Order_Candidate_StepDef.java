@@ -297,8 +297,8 @@ public class PP_Order_Candidate_StepDef
 		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
 		assertThat(orderLineId).isNotNull();
 
-		final Supplier<Optional<I_PP_Order_Candidate>> ppOrderCandSupplier = () -> getQueryByOrderLineId(orderLineId)
-				.first();
+		final Supplier<Optional<I_PP_Order_Candidate>> ppOrderCandSupplier = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId)
+				.first());
 
 		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, ppOrderCandSupplier);
 
