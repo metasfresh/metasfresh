@@ -84,8 +84,8 @@ public final class PickingJob
 			final @NonNull ImmutableList<PickingJobLine> lines,
 			final @NonNull ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives,
 			final @NonNull PickingJobDocStatus docStatus,
-			boolean isReadyToReview,
-			boolean isApproved)
+			final boolean isReadyToReview,
+			final boolean isApproved)
 	{
 		Check.assumeNotEmpty(lines, "lines not empty");
 
