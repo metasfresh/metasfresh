@@ -121,7 +121,7 @@ public class PickingJobRepository
 				.map(pickingJobId -> PickingJobLoaderAndSaver.forLoading(loadingSupportServices).loadById(pickingJobId));
 	}
 
-	public boolean hasReadyToReview(final ImmutableSet<PickingJobId> pickingJobIds)
+	public boolean hasReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)
 	{
 		if (pickingJobIds.isEmpty())
 		{
@@ -150,6 +150,7 @@ public class PickingJobRepository
 		Check.assumeNotEmpty(pickingJobIds, "pickingJobIds is not empty");
 
 		return queryBL.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_IsReadyToReview, true)
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_IsApproved, false)
