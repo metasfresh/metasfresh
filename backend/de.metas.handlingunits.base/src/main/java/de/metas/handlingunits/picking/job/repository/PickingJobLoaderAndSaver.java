@@ -372,9 +372,12 @@ class PickingJobLoaderAndSaver
 						.deliveryBPLocationId(deliveryBPLocationId)
 						.deliveryRenderedAddress(record.getDeliveryToAddress())
 						.lockedBy(UserId.ofRepoId(record.getPicking_User_ID()))
+						.isPickingReviewRequired(record.isPickingReviewRequired())
 						.build())
 				.pickingSlot(pickingSlot)
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
+				.isReadyToReview(record.isReadyToReview())
+				.isApproved(record.isApproved())
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
 						.map(this::loadLine)
@@ -391,6 +394,8 @@ class PickingJobLoaderAndSaver
 		record.setM_PickingSlot_ID(from.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.getDocStatus().isProcessed());
+		record.setIsReadyToReview(from.isReadyToReview());
+		record.setIsApproved(from.isApproved());
 	}
 
 	private PickingJobLine loadLine(@NonNull final I_M_Picking_Job_Line record)
