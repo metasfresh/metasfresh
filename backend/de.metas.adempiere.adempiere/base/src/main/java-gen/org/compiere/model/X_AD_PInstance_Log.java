@@ -173,4 +173,16 @@ public class X_AD_PInstance_Log extends org.compiere.model.PO implements I_AD_PI
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
+
+	@Override
+	public void setWarnings (final @Nullable java.lang.String Warnings)
+	{
+		set_Value (COLUMNNAME_Warnings, Warnings);
+	}
+
+	@Override
+	public java.lang.String getWarnings()
+	{
+		return get_ValueAsString(COLUMNNAME_Warnings);
+	}
 }

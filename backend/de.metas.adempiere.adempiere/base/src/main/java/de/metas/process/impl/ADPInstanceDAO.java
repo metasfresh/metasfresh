@@ -698,9 +698,28 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 	private void insertLogs(@NonNull final PInstanceId pInstanceId, @NonNull final List<ProcessInfoLog> logsToSave, @Nullable final String trxName)
 	{
+
 		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
-				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg, AD_Table_ID, Record_ID, AD_Issue_ID)"
-				+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+				+ " ("
+				+ I_AD_PInstance_Log.COLUMNNAME_AD_PInstance_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Log_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Date
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Number
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Msg
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_AD_Table_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Record_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_AD_Issue_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Warnings
+				+ ")"
+				+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		PreparedStatement pstmt = null;
 
 		try
@@ -728,7 +747,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 						log.getP_Msg(),
 						tableId,
 						recordId,
-						adIssueId
+						adIssueId,
+						log.getWarningMessages()
 				};
 
 				DB.setParameters(pstmt, sqlParams);
