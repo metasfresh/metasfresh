@@ -693,7 +693,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 	private void deleteSelectedIncludedRecords(final PInstanceId pinstanceId)
 	{
-		DB.executeUpdateEx(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pinstanceId }, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void insertLogs(@NonNull final PInstanceId pInstanceId, @NonNull final List<ProcessInfoLog> logsToSave, @Nullable final String trxName)

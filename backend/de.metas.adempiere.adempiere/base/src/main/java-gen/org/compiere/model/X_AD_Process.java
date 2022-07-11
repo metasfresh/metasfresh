@@ -608,4 +608,17 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	{
 		return get_ValueAsString(COLUMNNAME_WorkflowValue);
 	}
+
+	@Override
+	public void setIsLogWarning (final boolean IsLogWarning)
+	{
+		set_Value (COLUMNNAME_IsLogWarning, IsLogWarning);
+	}
+
+	@Override
+	public boolean isLogWarning()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
+	}
+
 }

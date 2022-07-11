@@ -985,4 +985,26 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_WorkflowValue = new ModelColumn<>(I_AD_Process.class, "WorkflowValue", null);
 	String COLUMNNAME_WorkflowValue = "WorkflowValue";
+
+	/**
+	 * Set Log Warning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsLogWarning (boolean IsLogWarning);
+
+	/**
+	 * Get Log Warning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLogWarning();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsLogWarning = new ModelColumn<>(I_AD_Process.class, "IsLogWarning", null);
+	String COLUMNNAME_IsLogWarning = "IsLogWarning";
+
 }

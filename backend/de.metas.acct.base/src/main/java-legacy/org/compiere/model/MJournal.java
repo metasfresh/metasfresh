@@ -306,7 +306,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		String sql = "UPDATE GL_JournalLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE GL_Journal_ID=" + getGL_Journal_ID();
-		int noLine = DB.executeUpdate(sql, get_TrxName());
+		int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		log.debug(processed + " - Lines=" + noLine);
 	}	// setProcessed
 
@@ -398,7 +398,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 				+ " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(TotalDr),0), COALESCE(SUM(TotalCr),0)"
 				+ " FROM GL_Journal j WHERE j.IsActive='Y' AND jb.GL_JournalBatch_ID=j.GL_JournalBatch_ID) "
 				+ "WHERE GL_JournalBatch_ID=?");
-		final int no = DB.executeUpdateEx(sql, new Object[] { glJournalBatchId }, get_TrxName());
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { glJournalBatchId }, get_TrxName());
 		if (no != 1)
 		{
 			throw new AdempiereException("Failed updating GL_JournalBatch_ID=" + glJournalBatchId);

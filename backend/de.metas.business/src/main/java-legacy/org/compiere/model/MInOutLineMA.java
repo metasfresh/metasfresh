@@ -65,7 +65,7 @@ public class MInOutLineMA extends X_M_InOutLineMA
 		String sql = "DELETE FROM M_InOutLineMA ma WHERE EXISTS "
 			+ "(SELECT * FROM M_InOutLine l WHERE l.M_InOutLine_ID=ma.M_InOutLine_ID"
 			+ " AND M_InOut_ID=" + M_InOut_ID + ")";
-		return DB.executeUpdate(sql, trxName);
+		return DB.executeUpdateAndSaveErrorOnFail(sql, trxName);
 	}	//	deleteInOutMA
 
 	/**
@@ -77,7 +77,7 @@ public class MInOutLineMA extends X_M_InOutLineMA
 	public static int deleteInOutLineMA (int M_InOutLine_ID, String trxName)
 	{
 		String sql = "DELETE FROM M_InOutLineMA ma WHERE ma.M_InOutLine_ID=?";
-		return DB.executeUpdate(sql, M_InOutLine_ID, trxName);
+		return DB.executeUpdateAndSaveErrorOnFail(sql, M_InOutLine_ID, trxName);
 	}	//	deleteInOutLineMA
 
 

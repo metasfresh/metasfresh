@@ -201,9 +201,9 @@ public class MPaymentAllocate extends X_C_PaymentAllocate
 				+ " OverUnderAmt = (SELECT SUM(OverUnderAmt) from C_PaymentAllocate WHERE C_Payment_ID=?), "
 				+ " IsOverUnderPayment = (SELECT CASE WHEN sum(OverUnderAmt)!=0 THEN 'Y' ELSE 'N' END FROM C_PaymentAllocate WHERE C_Payment_ID=?) "
 				+ " WHERE C_Payment_ID=?";
-		DB.executeUpdate(updateSQL, new Object[] { getC_Payment_ID(), getC_Payment_ID(), getC_Payment_ID(),
+		DB.executeUpdateAndIgnoreErrorOnFail(updateSQL, new Object[] { getC_Payment_ID(), getC_Payment_ID(), getC_Payment_ID(),
 				getC_Payment_ID(), getC_Payment_ID(), getC_Payment_ID() },
-				false, get_TrxName());
+											 false, get_TrxName());
 	}
 	
 }	//	MPaymentAllocate

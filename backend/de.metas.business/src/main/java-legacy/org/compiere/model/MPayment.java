@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
@@ -72,7 +71,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentTrxType;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.impl.PaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -1758,7 +1756,7 @@ public final class MPayment extends X_C_Payment
 					+ "SET C_Payment_ID = NULL "
 					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID()
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
-						int no = DB.executeUpdate(sql, get_TrxName());
+						int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			if (no != 0)
 			{
 				CacheMgt.get().reset(I_C_Invoice.Table_Name, getC_Invoice_ID());
@@ -1770,7 +1768,7 @@ public final class MPayment extends X_C_Payment
 					+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + getC_Invoice_ID() + ")"
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
-			no = DB.executeUpdate(sql, get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			if (no != 0)
 			{
 				log.debug("Unlink Order #" + no);

@@ -70,7 +70,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
-import org.compiere.util.DB.OnFail;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -3426,11 +3425,11 @@ public abstract class PO
 			final int no;
 			if (isUseTimeoutForUpdate())
 			{
-				no = DB.executeUpdateEx(sql.toString(), m_trxName, QUERY_TIME_OUT);
+				no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), m_trxName, QUERY_TIME_OUT);
 			}
 			else
 			{
-				no = DB.executeUpdateEx(sql.toString(), m_trxName);
+				no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), m_trxName);
 			}
 			boolean ok = no == 1;
 
@@ -3825,12 +3824,11 @@ public abstract class PO
 
 		//
 		// Execute actual database INSERT
-		final int no = DB.executeUpdate(sqlInsert.toString(),
-				(Object[])null,  // params,
-				OnFail.ThrowException,  // onFail
-				m_trxName,
-				0,  // timeOut,
-				loadAfterInsertProcessor);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert.toString(),
+															   (Object[])null,  // params,
+															   m_trxName,
+															   0,  // timeOut,
+															   loadAfterInsertProcessor);
 		boolean ok = no == 1;
 
 		//
@@ -4163,11 +4161,11 @@ public abstract class PO
 		final int no;
 		if (isUseTimeoutForUpdate())
 		{
-			no = DB.executeUpdateEx(sql.toString(), trxName, QUERY_TIME_OUT);
+			no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName, QUERY_TIME_OUT);
 		}
 		else
 		{
-			no = DB.executeUpdateEx(sql.toString(), trxName);
+			no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
 		}
 		if (no != 1)
 		{
@@ -4432,7 +4430,7 @@ public abstract class PO
 				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
 				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
 		//
-		final int no = DB.executeUpdateEx(sb.toString(), get_TrxName());
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sb.toString(), get_TrxName());
 		return no > 0;
 	}	// insert_Accounting
 
@@ -4491,10 +4489,10 @@ public abstract class PO
 			boolean success = false;
 			if (isUseTimeoutForUpdate())
 			{
-				success = DB.executeUpdateEx(sql, null, QUERY_TIME_OUT) == 1;	// outside trx
+				success = DB.executeUpdateAndThrowExceptionOnFail(sql, null, QUERY_TIME_OUT) == 1;	// outside trx
 			}
 			else {
-				success = DB.executeUpdate(sql, null) == 1;	// outside trx
+				success = DB.executeUpdateAndSaveErrorOnFail(sql, null) == 1;	// outside trx
 			}
 			if (success)
 			{
@@ -4537,11 +4535,11 @@ public abstract class PO
 			boolean success = false;
 			if (isUseTimeoutForUpdate())
 			{
-				success = DB.executeUpdateEx(sql, trxName, QUERY_TIME_OUT) == 1;
+				success = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName, QUERY_TIME_OUT) == 1;
 			}
 			else
 			{
-				success = DB.executeUpdate(sql, trxName) == 1;
+				success = DB.executeUpdateAndSaveErrorOnFail(sql, trxName) == 1;
 			}
 			if (success)
 			{

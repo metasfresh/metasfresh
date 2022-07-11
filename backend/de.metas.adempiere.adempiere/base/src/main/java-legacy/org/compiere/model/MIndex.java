@@ -76,7 +76,7 @@ public class MIndex extends X_K_Index
 			+ "WHERE AD_Client_ID=" + AD_Client_ID + " AND "
 			+ "AD_Table_ID=" + AD_Table_ID + " AND "
 			+ "Record_ID=" + Record_ID);
-		int no = DB.executeUpdate(sb.toString(), trxName);
+		int no = DB.executeUpdateAndSaveErrorOnFail(sb.toString(), trxName);
 		return no;
 	}
 	

@@ -764,7 +764,17 @@ public class ProcessExecutionResult
 		final ITableRecordReference tableRecordReference = null;
 		final String trxName = null;
 
-		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg, tableRecordReference, adIssueId, trxName));
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.log_ID(Log_ID)
+				.pDate(P_Date)
+				.p_Number(P_Number)
+				.p_Msg(P_Msg)
+				.ad_Issue_ID(adIssueId)
+				.trxName(trxName)
+				.tableRecordReference(tableRecordReference)
+				.warningMessages(null)
+				.build();
+		addLog(new ProcessInfoLog(request));
 	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
@@ -773,8 +783,34 @@ public class ProcessExecutionResult
 		final ITableRecordReference tableRecordReference = null;
 		final String trxName = null;
 
-		addLog(new ProcessInfoLog(Log_ID != null ? Log_ID.getRepoId() : -1, P_Date, P_Number, P_Msg, tableRecordReference, adIssueId, trxName));
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.log_ID(Log_ID != null ? Log_ID.getRepoId() : -1)
+				.pDate(P_Date)
+				.p_Number(P_Number)
+				.p_Msg(P_Msg)
+				.ad_Issue_ID(adIssueId)
+				.trxName(trxName)
+				.tableRecordReference(tableRecordReference)
+				.warningMessages(null)
+				.build();
+
+		addLog(new ProcessInfoLog(request));
 	}    // addLog
+
+	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg, @Nullable final List<String> warningMessages)
+	{
+		final ProcessInfoLogRequest request = ProcessInfoLogRequest.builder()
+				.log_ID(Log_ID)
+				.pDate(P_Date)
+				.p_Number(P_Number)
+				.p_Msg(P_Msg)
+				.ad_Issue_ID(null)
+				.trxName(null)
+				.tableRecordReference(null)
+				.warningMessages(warningMessages)
+				.build();
+		addLog(new ProcessInfoLog(request));
+	}
 
 	/**
 	 * Add to Log.

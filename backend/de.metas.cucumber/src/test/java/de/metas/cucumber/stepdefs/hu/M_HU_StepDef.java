@@ -159,7 +159,7 @@ public class M_HU_StepDef
 	@And("all the hu data is reset")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("validate M_HUs:")
