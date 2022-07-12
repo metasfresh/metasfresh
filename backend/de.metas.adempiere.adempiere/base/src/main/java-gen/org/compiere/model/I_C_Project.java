@@ -1165,4 +1165,25 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_Value = new ModelColumn<>(I_C_Project.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Creator of test order.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOOwner (@Nullable java.lang.String WOOwner);
+
+	/**
+	 * Get Creator of test order.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWOOwner();
+
+	ModelColumn<I_C_Project, Object> COLUMN_WOOwner = new ModelColumn<>(I_C_Project.class, "WOOwner", null);
+	String COLUMNNAME_WOOwner = "WOOwner";
 }

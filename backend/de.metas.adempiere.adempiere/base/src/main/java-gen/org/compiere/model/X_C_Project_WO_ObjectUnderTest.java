@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Project_WO_ObjectUnderTest extends org.compiere.model.PO implements I_C_Project_WO_ObjectUnderTest, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -669132486L;
+	private static final long serialVersionUID = -1675901874L;
 
     /** Standard Constructor */
     public X_C_Project_WO_ObjectUnderTest (final Properties ctx, final int C_Project_WO_ObjectUnderTest_ID, @Nullable final String trxName)
@@ -62,6 +62,18 @@ public class X_C_Project_WO_ObjectUnderTest extends org.compiere.model.PO implem
 	public int getC_Project_WO_ObjectUnderTest_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_WO_ObjectUnderTest_ID);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override
