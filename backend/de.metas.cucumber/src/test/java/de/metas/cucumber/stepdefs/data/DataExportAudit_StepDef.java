@@ -30,7 +30,9 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Location_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -63,8 +65,8 @@ import static org.assertj.core.api.Assertions.*;
 public class DataExportAudit_StepDef
 {
 	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-	private final StepDefData<I_C_Location> locationTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final C_Location_StepDefData locationTable;
 	private final StepDefData<I_Data_Export_Audit> dataExportAuditTable;
 	private final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable;
 	private final StepDefData<I_AD_PInstance> pinstanceTable;
@@ -75,8 +77,8 @@ public class DataExportAudit_StepDef
 
 	public DataExportAudit_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
-			@NonNull final StepDefData<I_C_Location> locationTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final C_Location_StepDefData locationTable,
 			@NonNull final StepDefData<I_Data_Export_Audit> dataExportAuditTable,
 			@NonNull final StepDefData<I_ExternalSystem_Config> externalSystemConfigTable,
 			@NonNull final StepDefData<I_AD_PInstance> pinstanceTable,

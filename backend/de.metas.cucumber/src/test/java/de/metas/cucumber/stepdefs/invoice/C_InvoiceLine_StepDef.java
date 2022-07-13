@@ -23,8 +23,8 @@
 package de.metas.cucumber.stepdefs.invoice;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -37,7 +37,6 @@ import org.compiere.model.I_M_Product;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -46,11 +45,11 @@ public class C_InvoiceLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	final C_Invoice_StepDefData invoiceTable;
-	final StepDefData<I_M_Product> productTable;
+	final M_Product_StepDefData productTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final StepDefData<I_M_Product> productTable)
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.productTable = productTable;

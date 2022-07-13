@@ -54,8 +54,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 1444       | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 1444       | 2156425                  | 2205175                           | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        |
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -124,8 +124,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 222        | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 222        | 2156425                  | 2205175                           | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -154,8 +154,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | null                  | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 222        | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 222        | 2156425                  | 2205175                           | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        |
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -215,8 +215,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | null                  | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 444        | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 444        | 2156425                  | 2205175                           | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -326,8 +326,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 9999       | 2156425       | 2205175                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 9999       | 2156425                  | 2205175                           | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CO        |
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -462,8 +462,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 744777     | 2156425       | 2205175                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 744777     | 2156425                  | 2205175                           | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        |
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -540,8 +540,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | null                    |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 888        | 2156425       | 2205175                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 888        | 2156425                  | 2205175                           | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CO        |
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -570,8 +570,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | null                  | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | c_bpartner_id | c_bpartner_location_id | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
-      | order_1               | 888        | 2156425       | 2205175                | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
+      | order_1               | 888        | 2156425                  | 2205175                           | 2021-10-13  | SOO         | EUR          | A            | S               | po_ref_mock | true      | CL        |
 
     And validate the created order lines
       | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | qtyordered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -583,5 +583,5 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate created invoice lines
       | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1          | 2005577                 | 8           | true      |
+      | invoice_1               | 2005577                 | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
