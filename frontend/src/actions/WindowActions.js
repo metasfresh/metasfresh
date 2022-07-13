@@ -49,7 +49,11 @@ import {
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
-import { getScope, parseToDisplay, getInvalidDataItem } from '../utils/documentListHelper';
+import {
+  getScope,
+  parseToDisplay,
+  getInvalidDataItem,
+} from '../utils/documentListHelper';
 
 import {
   getData,
