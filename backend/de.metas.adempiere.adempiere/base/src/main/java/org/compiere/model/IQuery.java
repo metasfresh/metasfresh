@@ -495,7 +495,7 @@ public interface IQuery<T>
 	 * @param valueType value type
 	 * @see #listColumns(String...)
 	 */
-	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
+	<AT> ImmutableList<AT> listDistinct(String columnName, Class<AT> valueType);
 
 	/**
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
