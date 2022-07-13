@@ -2,11 +2,12 @@ package de.metas.project.workorder.interceptor;
 
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.MultiCalendarService;
+import de.metas.product.ResourceId;
 import de.metas.project.workorder.WOProjectAndStepId;
 import de.metas.project.workorder.WOProjectResourceRepository;
 import de.metas.project.workorder.WOProjectService;
-import de.metas.project.workorder.WOProjectStepAndResourceId;
 import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
+import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -27,13 +28,16 @@ public class C_Project_WO_Resource
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final WOProjectService woProjectService;
+	private final WOProjectConflictService woProjectConflictService;
 	private final MultiCalendarService multiCalendarService;
 
 	public C_Project_WO_Resource(
 			@NonNull final WOProjectService woProjectService,
+			@NonNull final WOProjectConflictService woProjectConflictService,
 			@NonNull final MultiCalendarService multiCalendarService)
 	{
 		this.woProjectService = woProjectService;
+		this.woProjectConflictService = woProjectConflictService;
 		this.multiCalendarService = multiCalendarService;
 	}
 
@@ -47,15 +51,17 @@ public class C_Project_WO_Resource
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
-		updateStepDatesAfterCommit(WOProjectAndStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
 		notifyIfUserChange(record, changeType);
+		updateStepDatesAfterCommit(WOProjectAndStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
+		checkConflictsAfterCommitIfUserChange(record);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void afterDelete(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
-		updateStepDatesAfterCommit(WOProjectAndStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
 		notifyIfUserChange(record, changeType);
+		updateStepDatesAfterCommit(WOProjectAndStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
+		checkConflictsAfterCommitIfUserChange(record);
 	}
 
 	private void updateStepDatesAfterCommit(@NonNull final WOProjectAndStepId stepId)
@@ -92,7 +98,28 @@ public class C_Project_WO_Resource
 	@NonNull
 	private static CalendarEntryId extractCalendarEntryId(final I_C_Project_WO_Resource record)
 	{
-		final WOProjectStepAndResourceId woProjectStepAndResourceId = WOProjectResourceRepository.fromRecord(record).getWOProjectStepAndResourceId();
-		return BudgetAndWOCalendarEntryIdConverters.from(woProjectStepAndResourceId);
+		return BudgetAndWOCalendarEntryIdConverters.from(WOProjectResourceRepository.fromRecord(record).getWOProjectAndResourceId());
+	}
+
+	private void checkConflictsAfterCommitIfUserChange(@NonNull final I_C_Project_WO_Resource record)
+	{
+		if (!InterfaceWrapperHelper.isUIAction(record))
+		{
+			return;
+		}
+
+		trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail)
+				.getPropertyAndProcessAfterCommit(
+						"C_Project_WO_Resource.checkConflicts",
+						HashSet::new,
+						woProjectConflictService::checkConflicts
+				)
+				.add(getResourceId(record));
+
+	}
+
+	private static ResourceId getResourceId(final I_C_Project_WO_Resource record)
+	{
+		return WOProjectResourceRepository.fromRecord(record).getResourceId();
 	}
 }

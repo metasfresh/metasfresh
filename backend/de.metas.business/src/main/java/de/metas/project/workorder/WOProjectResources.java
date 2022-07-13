@@ -81,6 +81,11 @@ public class WOProjectResources
 		return projectResource;
 	}
 
+	public Stream<WOProjectResourceId> streamIds()
+	{
+		return resourcesById.keySet().stream();
+	}
+
 	public Stream<WOProjectResource> stream()
 	{
 		return resourcesById.values().stream();
@@ -89,5 +94,10 @@ public class WOProjectResources
 	public Stream<WOProjectResource> streamByStepId(@NonNull final WOProjectStepId stepId)
 	{
 		return stream().filter(resource -> WOProjectStepId.equals(resource.getStepId(), stepId));
+	}
+
+	public WOProjectStepId getStepId(final WOProjectResourceId projectResourceId)
+	{
+		return getById(projectResourceId).getStepId();
 	}
 }

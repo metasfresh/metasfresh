@@ -53,12 +53,12 @@ public class WOProjectResource
 
 	@Nullable String description;
 
-	public WOProjectStepAndResourceId getWOProjectStepAndResourceId()
+	public WOProjectAndResourceId getWOProjectAndResourceId()
 	{
-		return WOProjectStepAndResourceId.of(projectId, stepId, id);
+		return WOProjectAndResourceId.of(projectId, id);
 	}
 
-	public static CalendarDateRange computeDateRangeToFitAll(@NonNull List<WOProjectResource> projectResources)
+	public static CalendarDateRange computeDateRangeToEncloseAll(@NonNull List<WOProjectResource> projectResources)
 	{
 		if (projectResources.isEmpty())
 		{
@@ -70,7 +70,7 @@ public class WOProjectResource
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 
-		return CalendarDateRange.computeDateRangeToFitAll(dateRanges);
+		return CalendarDateRange.span(dateRanges);
 	}
 
 }

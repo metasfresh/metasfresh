@@ -1,13 +1,15 @@
 package de.metas.project.workorder.calendar;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceSimulation;
-import de.metas.project.workorder.WOProjectStepAndResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.WOProjectStepSimulation;
 import de.metas.util.GuavaCollectors;
@@ -21,29 +23,61 @@ import org.compiere.model.I_C_Project_WO_Step_Simulation;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 @Repository
 public class WOProjectSimulationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<SimulationPlanId, WOProjectSimulationPlan> simulationPlans = CCache.<SimulationPlanId, WOProjectSimulationPlan>builder()
+	private final CCache<SimulationPlanId, WOProjectSimulationPlan> cacheById = CCache.<SimulationPlanId, WOProjectSimulationPlan>builder()
 			.tableName(I_C_Project_WO_Step_Simulation.Table_Name)
 			.additionalTableNameToResetFor(I_C_Project_WO_Resource_Simulation.Table_Name)
 			.build();
 
-	public WOProjectSimulationPlan getSimulationPlanById(@NonNull SimulationPlanId simulationPlanId)
+	public WOProjectSimulationPlan getById(@NonNull final SimulationPlanId simulationPlanId)
 	{
-		return simulationPlans.getOrLoad(simulationPlanId, this::retrieveSimulationPlanById);
+		final Collection<WOProjectSimulationPlan> simulationPlans = cacheById.getAllOrLoad(ImmutableSet.of(simulationPlanId), this::retrieveSimulationPlansByIds);
+		if (simulationPlans.size() != 1)
+		{
+			throw new AdempiereException("No simulation plan found for " + simulationPlanId);
+		}
+		else
+		{
+			return simulationPlans.iterator().next();
+		}
+	}
+
+	public Collection<WOProjectSimulationPlan> getByResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
+	{
+		if (projectResourceIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList<SimulationPlanId> simulationIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource_Simulation.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Project_WO_Resource_Simulation.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
+				.create()
+				.listDistinct(I_C_Project_WO_Resource_Simulation.COLUMNNAME_C_SimulationPlan_ID, SimulationPlanId.class);
+		if (simulationIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return cacheById.getAllOrLoad(simulationIds, this::retrieveSimulationPlansByIds);
 	}
 
 	private void changeSimulationPlanById(
 			@NonNull SimulationPlanId simulationPlanId,
 			@NonNull UnaryOperator<WOProjectSimulationPlan> mapper)
 	{
-		WOProjectSimulationPlan simulationPlan = getSimulationPlanById(simulationPlanId);
+		WOProjectSimulationPlan simulationPlan = getById(simulationPlanId);
 		final WOProjectSimulationPlan changedSimulationPlan = mapper.apply(simulationPlan);
 		if (changedSimulationPlan == null)
 		{
@@ -53,34 +87,67 @@ public class WOProjectSimulationRepository
 		savePlan(changedSimulationPlan);
 	}
 
-	private WOProjectSimulationPlan retrieveSimulationPlanById(@NonNull SimulationPlanId simulationPlanId)
+	private Map<SimulationPlanId, WOProjectSimulationPlan> retrieveSimulationPlansByIds(@NonNull Set<SimulationPlanId> simulationPlanIds)
 	{
-		final ImmutableMap<WOProjectStepId, WOProjectStepSimulation> stepsById = queryBL
+		if (simulationPlanIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final Map<SimulationPlanId, ImmutableMap<WOProjectStepId, WOProjectStepSimulation>> steps = queryBL
 				.createQueryBuilder(I_C_Project_WO_Step_Simulation.class)
-				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_SimulationPlan_ID, simulationPlanId)
+				.addInArrayFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_SimulationPlan_ID, simulationPlanIds)
 				.stream()
-				.map(WOProjectSimulationRepository::fromRecord)
-				.collect(ImmutableMap.toImmutableMap(WOProjectStepSimulation::getStepId, step -> step));
+				.collect(Collectors.groupingBy(
+						record -> SimulationPlanId.ofRepoId(record.getC_SimulationPlan_ID()),
+						ImmutableMap.toImmutableMap(
+								WOProjectSimulationRepository::extractWOProjectStepId,
+								WOProjectSimulationRepository::fromRecord)
+				));
 
-		final ImmutableMap<WOProjectResourceId, WOProjectResourceSimulation> projectResourcesById = queryBL
+		final Map<SimulationPlanId, ImmutableMap<WOProjectResourceId, WOProjectResourceSimulation>> projectResources = queryBL
 				.createQueryBuilder(I_C_Project_WO_Resource_Simulation.class)
-				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_SimulationPlan_ID, simulationPlanId)
+				.addInArrayFilter(I_C_Project_WO_Resource_Simulation.COLUMNNAME_C_SimulationPlan_ID, simulationPlanIds)
 				.stream()
-				.map(WOProjectSimulationRepository::fromRecord)
-				.collect(ImmutableMap.toImmutableMap(WOProjectResourceSimulation::getProjectResourceId, resource -> resource));
+				.collect(Collectors.groupingBy(
+						record -> SimulationPlanId.ofRepoId(record.getC_SimulationPlan_ID()),
+						ImmutableMap.toImmutableMap(
+								WOProjectSimulationRepository::extractWOProjectResourceId,
+								WOProjectSimulationRepository::fromRecord)
+				));
 
-		return WOProjectSimulationPlan.builder()
-				.simulationPlanId(simulationPlanId)
-				.stepsById(stepsById)
-				.projectResourcesById(projectResourcesById)
-				.build();
+		final ImmutableMap.Builder<SimulationPlanId, WOProjectSimulationPlan> result = ImmutableMap.builder();
+		for (final SimulationPlanId simulationPlanId : simulationPlanIds)
+		{
+			result.put(
+					simulationPlanId,
+					WOProjectSimulationPlan.builder()
+							.simulationPlanId(simulationPlanId)
+							.stepsById(steps.get(simulationPlanId))
+							.projectResourcesById(projectResources.get(simulationPlanId))
+							.build());
+		}
+
+		return result.build();
+	}
+
+	@NonNull
+	private static WOProjectResourceId extractWOProjectResourceId(final I_C_Project_WO_Resource_Simulation record)
+	{
+		return WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID());
+	}
+
+	@NonNull
+	private static WOProjectStepId extractWOProjectStepId(final I_C_Project_WO_Step_Simulation record)
+	{
+		return WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID());
 	}
 
 	private static WOProjectStepSimulation fromRecord(@NonNull final I_C_Project_WO_Step_Simulation record)
 	{
 		return WOProjectStepSimulation.builder()
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
-				.stepId(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
+				.stepId(extractWOProjectStepId(record))
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getDateStart().toInstant())
 						.endDate(record.getDateEnd().toInstant())
@@ -100,10 +167,9 @@ public class WOProjectSimulationRepository
 	private static WOProjectResourceSimulation fromRecord(@NonNull final I_C_Project_WO_Resource_Simulation record)
 	{
 		return WOProjectResourceSimulation.builder()
-				.projectStepAndResourceId(WOProjectStepAndResourceId.of(
+				.projectAndResourceId(WOProjectAndResourceId.of(
 						ProjectId.ofRepoId(record.getC_Project_ID()),
-						WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()),
-						WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID())))
+						extractWOProjectResourceId(record)))
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getAssignDateFrom().toInstant())
 						.endDate(record.getAssignDateTo().toInstant())
@@ -114,9 +180,8 @@ public class WOProjectSimulationRepository
 
 	private void updateRecord(final I_C_Project_WO_Resource_Simulation record, final WOProjectResourceSimulation from)
 	{
-		record.setC_Project_ID(from.getProjectStepAndResourceId().getProjectId().getRepoId());
-		record.setC_Project_WO_Step_ID(from.getProjectStepAndResourceId().getStepId().getRepoId());
-		record.setC_Project_WO_Resource_ID(from.getProjectStepAndResourceId().getProjectResourceId().getRepoId());
+		record.setC_Project_ID(from.getProjectAndResourceId().getProjectId().getRepoId());
+		record.setC_Project_WO_Resource_ID(from.getProjectAndResourceId().getProjectResourceId().getRepoId());
 		//
 		record.setAssignDateFrom(TimeUtil.asTimestamp(from.getDateRange().getStartDate()));
 		record.setAssignDateTo(TimeUtil.asTimestamp(from.getDateRange().getEndDate()));
@@ -129,13 +194,13 @@ public class WOProjectSimulationRepository
 				.createQueryBuilder(I_C_Project_WO_Step_Simulation.class)
 				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_SimulationPlan_ID, plan.getSimulationPlanId())
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(record -> WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID())));
+				.collect(GuavaCollectors.toHashMapByKey(WOProjectSimulationRepository::extractWOProjectStepId));
 
 		final HashMap<WOProjectResourceId, I_C_Project_WO_Resource_Simulation> existingProjectResourceRecordsById = queryBL
 				.createQueryBuilder(I_C_Project_WO_Resource_Simulation.class)
 				.addEqualsFilter(I_C_Project_WO_Step_Simulation.COLUMNNAME_C_SimulationPlan_ID, plan.getSimulationPlanId())
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(record -> WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID())));
+				.collect(GuavaCollectors.toHashMapByKey(WOProjectSimulationRepository::extractWOProjectResourceId));
 
 		for (final WOProjectStepSimulation step : plan.getStepsById().values())
 		{
@@ -166,14 +231,15 @@ public class WOProjectSimulationRepository
 		InterfaceWrapperHelper.deleteAll(existingStepRecordsById.entrySet());
 		InterfaceWrapperHelper.deleteAll(existingProjectResourceRecordsById.entrySet());
 
-		// NOTE: cache will be invalidated automatically
+		// NOTE: cache will be invalidated automatically after trx commit
+		//cacheById.remove(plan.getSimulationPlanId());
 	}
 
 	public void copySimulationDataTo(
 			@NonNull final SimulationPlanId fromSimulationId,
 			@NonNull final SimulationPlanId toSimulationId)
 	{
-		final WOProjectSimulationPlan fromSimulationPlan = getSimulationPlanById(fromSimulationId);
+		final WOProjectSimulationPlan fromSimulationPlan = getById(fromSimulationId);
 		changeSimulationPlanById(
 				toSimulationId,
 				toSimulation -> toSimulation.mergeFrom(fromSimulationPlan));

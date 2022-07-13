@@ -23,14 +23,12 @@
 package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,9 +61,9 @@ public class WOProjectService
 		return woProjectRepository.getAllActiveProjects();
 	}
 
-	public Collection<WOProjectResources> getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public WOProjectResourcesCollection getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
-		return woProjectResourceRepository.getByProjectIds(projectIds).values();
+		return woProjectResourceRepository.getByProjectIds(projectIds);
 	}
 
 	public WOProjectResources getResourcesByProjectId(@NonNull final ProjectId projectId)
@@ -91,7 +89,7 @@ public class WOProjectService
 		}
 
 		final ImmutableSet<ProjectId> projectIds = projectAndStepIds.stream().map(WOProjectAndStepId::getProjectId).collect(ImmutableSet.toImmutableSet());
-		final ImmutableMap<ProjectId, WOProjectResources> resourcesByProjectId = woProjectResourceRepository.getByProjectIds(projectIds);
+		final WOProjectResourcesCollection resourcesByProjectId = woProjectResourceRepository.getByProjectIds(projectIds);
 
 		final HashMap<WOProjectStepId, CalendarDateRange> stepDateRanges = new HashMap<>();
 		for (final WOProjectAndStepId projectAndStepId : projectAndStepIds)
@@ -105,7 +103,7 @@ public class WOProjectService
 
 			if (!resourceDateRanges.isEmpty())
 			{
-				final CalendarDateRange stepDateRange = CalendarDateRange.computeDateRangeToFitAll(resourceDateRanges);
+				final CalendarDateRange stepDateRange = CalendarDateRange.span(resourceDateRanges);
 				stepDateRanges.put(projectAndStepId.getStepId(), stepDateRange);
 			}
 		}

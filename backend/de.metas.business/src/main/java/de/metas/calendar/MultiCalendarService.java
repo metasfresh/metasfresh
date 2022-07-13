@@ -22,6 +22,9 @@
 
 package de.metas.calendar;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.calendar.conflicts.CalendarConflictsService;
+import de.metas.calendar.conflicts.CalendarEntryConflicts;
 import de.metas.calendar.continuous_query.CalendarContinuousQuery;
 import de.metas.calendar.continuous_query.CalendarContinuousQueryDispatcher;
 import de.metas.calendar.simulation.SimulationPlanId;
@@ -40,13 +43,16 @@ public class MultiCalendarService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final CalendarServicesMap calendarServices;
+	private final ImmutableList<CalendarConflictsService> calendarConflictsServices;
 
 	private final CalendarContinuousQueryDispatcher continuousQueriesDispatcher;
 
 	public MultiCalendarService(
-			@NonNull final List<CalendarService> calendarServices)
+			@NonNull final List<CalendarService> calendarServices,
+			@NonNull final List<CalendarConflictsService> calendarConflictsServices)
 	{
 		this.calendarServices = CalendarServicesMap.of(calendarServices);
+		this.calendarConflictsServices = ImmutableList.copyOf(calendarConflictsServices);
 		this.continuousQueriesDispatcher = new CalendarContinuousQueryDispatcher(trxManager, this.calendarServices);
 	}
 
@@ -105,4 +111,13 @@ public class MultiCalendarService
 	{
 		continuousQueriesDispatcher.onEntryDeleted(entryId, null);
 	}
+
+	public CalendarEntryConflicts getConflicts(@Nullable SimulationPlanId simulationId)
+	{
+		return calendarConflictsServices.stream()
+				.map(conflictsService -> conflictsService.query(simulationId))
+				.reduce(CalendarEntryConflicts::mergeFrom)
+				.orElse(CalendarEntryConflicts.EMPTY);
+	}
+
 }

@@ -164,31 +164,6 @@ public interface I_C_Project_WO_Resource_Simulation
 	String COLUMNNAME_C_Project_WO_Resource_Simulation_ID = "C_Project_WO_Resource_Simulation_ID";
 
 	/**
-	 * Set Project Step.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project_WO_Step_ID (int C_Project_WO_Step_ID);
-
-	/**
-	 * Get Project Step.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Project_WO_Step_ID();
-
-	org.compiere.model.I_C_Project_WO_Step getC_Project_WO_Step();
-
-	void setC_Project_WO_Step(org.compiere.model.I_C_Project_WO_Step C_Project_WO_Step);
-
-	ModelColumn<I_C_Project_WO_Resource_Simulation, org.compiere.model.I_C_Project_WO_Step> COLUMN_C_Project_WO_Step_ID = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "C_Project_WO_Step_ID", org.compiere.model.I_C_Project_WO_Step.class);
-	String COLUMNNAME_C_Project_WO_Step_ID = "C_Project_WO_Step_ID";
-
-	/**
 	 * Set Simulation Plan.
 	 *
 	 * <br>Type: Search

@@ -15,9 +15,9 @@ public class WOProjectSimulationService
 		this.woProjectSimulationRepository = woProjectSimulationRepository;
 	}
 
-	public WOProjectSimulationPlan getSimulationPlanById(final SimulationPlanId simulationId)
+	public WOProjectSimulationPlan getSimulationPlanById(@NonNull final SimulationPlanId simulationId)
 	{
-		return woProjectSimulationRepository.getSimulationPlanById(simulationId);
+		return woProjectSimulationRepository.getById(simulationId);
 	}
 
 	public void savePlan(final WOProjectSimulationPlan plan)

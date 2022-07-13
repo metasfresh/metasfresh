@@ -5,9 +5,8 @@ import de.metas.calendar.CalendarEntryId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProjectAndResourceId;
 import de.metas.project.budget.BudgetProjectResourceId;
+import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectStepAndResourceId;
-import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -24,7 +23,7 @@ public final class BudgetAndWOCalendarEntryIdConverters
 	public static <T> T withProjectResourceId(
 			@NonNull final CalendarEntryId entryId,
 			@NonNull final Function<BudgetProjectAndResourceId, T> budgetResourceIdMapper,
-			@NonNull final Function<WOProjectStepAndResourceId, T> woProjectResourceIdMapper)
+			@NonNull final Function<WOProjectAndResourceId, T> woProjectResourceIdMapper)
 	{
 		WOProjectCalendarService.CALENDAR_ID.assertEqualsTo(entryId.getCalendarId());
 		try
@@ -41,10 +40,9 @@ public final class BudgetAndWOCalendarEntryIdConverters
 			else if (TYPE_WorkOrder.equals(type))
 			{
 				return woProjectResourceIdMapper.apply(
-						WOProjectStepAndResourceId.of(
+						WOProjectAndResourceId.of(
 								RepoIdAwares.ofObject(entryLocalIds.get(1), ProjectId.class),
-								RepoIdAwares.ofObject(entryLocalIds.get(2), WOProjectStepId.class),
-								RepoIdAwares.ofObject(entryLocalIds.get(3), WOProjectResourceId.class)));
+								RepoIdAwares.ofObject(entryLocalIds.get(2), WOProjectResourceId.class)));
 			}
 			else
 			{
@@ -61,18 +59,17 @@ public final class BudgetAndWOCalendarEntryIdConverters
 		}
 	}
 
-	public static CalendarEntryId from(@NonNull WOProjectStepAndResourceId woProjectResourceId)
+	public static CalendarEntryId from(@NonNull WOProjectAndResourceId woProjectResourceId)
 	{
-		return from(woProjectResourceId.getProjectId(), woProjectResourceId.getStepId(), woProjectResourceId.getProjectResourceId());
+		return from(woProjectResourceId.getProjectId(), woProjectResourceId.getProjectResourceId());
 	}
 
-	public static CalendarEntryId from(@NonNull ProjectId projectId, @NonNull WOProjectStepId stepId, @NonNull WOProjectResourceId projectResourceId)
+	public static CalendarEntryId from(@NonNull ProjectId projectId, @NonNull WOProjectResourceId projectResourceId)
 	{
 		return CalendarEntryId.ofCalendarAndLocalIds(
 				WOProjectCalendarService.CALENDAR_ID,
 				TYPE_WorkOrder,
 				String.valueOf(projectId.getRepoId()),
-				String.valueOf(stepId.getRepoId()),
 				String.valueOf(projectResourceId.getRepoId()));
 	}
 

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO implements I_C_Project_WO_Resource_Simulation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1888501232L;
+	private static final long serialVersionUID = -2088479782L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource_Simulation (final Properties ctx, final int C_Project_WO_Resource_Simulation_ID, @Nullable final String trxName)
@@ -113,33 +113,6 @@ public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO im
 	public int getC_Project_WO_Resource_Simulation_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_WO_Resource_Simulation_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Project_WO_Step getC_Project_WO_Step()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_WO_Step_ID, org.compiere.model.I_C_Project_WO_Step.class);
-	}
-
-	@Override
-	public void setC_Project_WO_Step(final org.compiere.model.I_C_Project_WO_Step C_Project_WO_Step)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_WO_Step_ID, org.compiere.model.I_C_Project_WO_Step.class, C_Project_WO_Step);
-	}
-
-	@Override
-	public void setC_Project_WO_Step_ID (final int C_Project_WO_Step_ID)
-	{
-		if (C_Project_WO_Step_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Project_WO_Step_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Project_WO_Step_ID, C_Project_WO_Step_ID);
-	}
-
-	@Override
-	public int getC_Project_WO_Step_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Project_WO_Step_ID);
 	}
 
 	@Override

@@ -13,13 +13,13 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class WOProjectResourceSimulation
 {
-	@NonNull WOProjectStepAndResourceId projectStepAndResourceId;
+	@NonNull WOProjectAndResourceId projectAndResourceId;
 
 	@NonNull CalendarDateRange dateRange;
 
 	public WOProjectResourceId getProjectResourceId()
 	{
-		return getProjectStepAndResourceId().getProjectResourceId();
+		return getProjectAndResourceId().getProjectResourceId();
 	}
 
 	public static WOProjectResourceSimulation reduce(@Nullable WOProjectResourceSimulation simulation, @NonNull UpdateRequest updateRequest)
@@ -27,13 +27,13 @@ public class WOProjectResourceSimulation
 		if (simulation == null)
 		{
 			return builder()
-					.projectStepAndResourceId(updateRequest.getProjectStepAndResourceId())
+					.projectAndResourceId(updateRequest.getProjectAndResourceId())
 					.dateRange(updateRequest.getDateRange())
 					.build();
 		}
 		else
 		{
-			Check.assumeEquals(simulation.getProjectStepAndResourceId(), updateRequest.getProjectStepAndResourceId(), "expected same projectStepAndResourceId: {}, {}", simulation, updateRequest);
+			Check.assumeEquals(simulation.getProjectAndResourceId(), updateRequest.getProjectAndResourceId(), "expected same projectAndResourceId: {}, {}", simulation, updateRequest);
 
 			return simulation.toBuilder()
 					.dateRange(updateRequest.getDateRange())
@@ -43,7 +43,7 @@ public class WOProjectResourceSimulation
 
 	public WOProjectResource applyOn(@NonNull final WOProjectResource resource)
 	{
-		Check.assumeEquals(resource.getWOProjectStepAndResourceId(), projectStepAndResourceId, "expected same project and step and projectResourceId: {}, {}", resource, this);
+		Check.assumeEquals(resource.getWOProjectAndResourceId(), projectAndResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
 
 		return resource.toBuilder()
 				.dateRange(dateRange)
@@ -60,7 +60,7 @@ public class WOProjectResourceSimulation
 	public static class UpdateRequest
 	{
 		@NonNull SimulationPlanId simulationId;
-		@NonNull WOProjectStepAndResourceId projectStepAndResourceId;
+		@NonNull WOProjectAndResourceId projectAndResourceId;
 
 		@NonNull CalendarDateRange dateRange;
 	}

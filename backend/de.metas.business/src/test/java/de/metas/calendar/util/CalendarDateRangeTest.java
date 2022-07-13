@@ -1,6 +1,7 @@
 package de.metas.calendar.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -29,6 +30,13 @@ class CalendarDateRangeTest
 				.build();
 	}
 
+	@Test
+	void check_toRange_returns_a_closed_interval()
+	{
+		assertThat(allDay(1, 2).toRange())
+				.isEqualTo(Range.closed(instant(1), instant(2)));
+	}
+
 	@Nested
 	class constructor
 	{
@@ -43,13 +51,13 @@ class CalendarDateRangeTest
 	}
 
 	@Nested
-	class computeDateRangeToFitAll
+	class span
 	{
 		@Test
 		void singleRange()
 		{
 			final CalendarDateRange range = allDay(3, 7);
-			assertThat(CalendarDateRange.computeDateRangeToFitAll(ImmutableList.of(range)))
+			assertThat(CalendarDateRange.span(ImmutableList.of(range)))
 					.isSameAs(range);
 		}
 
@@ -57,7 +65,7 @@ class CalendarDateRangeTest
 		void standardTest()
 		{
 			assertThat(
-					CalendarDateRange.computeDateRangeToFitAll(ImmutableList.of(
+					CalendarDateRange.span(ImmutableList.of(
 							allDay(3, 7),
 							allDay(2, 3),
 							allDay(1, 4),
@@ -108,4 +116,24 @@ class CalendarDateRangeTest
 		void included() {assertThat(allDay(2, 10).isConnectedTo(instant(1), instant(11))).isTrue();}
 
 	}
+
+	@Nested
+	class isOverlappingWith
+	{
+		@Test
+		void notIntersecting() {assertThat(allDay(2, 3).isOverlappingWith(allDay(4, 5))).isFalse();}
+
+		@Test
+		void adjacent() {assertThat(allDay(2, 3).isOverlappingWith(allDay(3, 4))).isFalse();}
+
+		@Test
+		void intersecting() {assertThat(allDay(2, 4).isOverlappingWith(allDay(3, 5))).isTrue();}
+
+		@Test
+		void including() {assertThat(allDay(2, 10).isOverlappingWith(allDay(3, 5))).isTrue();}
+
+		@Test
+		void included() {assertThat(allDay(2, 10).isOverlappingWith(allDay(1, 11))).isTrue();}
+	}
+
 }

@@ -22,6 +22,7 @@
 
 package de.metas.calendar.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import de.metas.util.time.DurationUtils;
 import lombok.Builder;
@@ -91,7 +92,10 @@ public class CalendarDateRange
 		return plus(duration.negated());
 	}
 
-	public static CalendarDateRange computeDateRangeToFitAll(@NonNull List<CalendarDateRange> dateRanges)
+	/**
+	 * Returns the minimal range that encloses both this range and other.
+	 */
+	public static CalendarDateRange span(@NonNull List<CalendarDateRange> dateRanges)
 	{
 		if (dateRanges.isEmpty())
 		{
@@ -134,11 +138,34 @@ public class CalendarDateRange
 		}
 	}
 
+	@VisibleForTesting
+	Range<Instant> toRange() {return DateIntervalIntersectionQueryFilter.range(this.startDate, this.endDate);}
+
 	public boolean isConnectedTo(@Nullable final Instant otherRangeStart, @Nullable final Instant otherRangeEnd)
 	{
 		final Range<Instant> otherGuavaRange = DateIntervalIntersectionQueryFilter.range(otherRangeStart, otherRangeEnd);
-		final Range<Instant> thisGuavaRange = DateIntervalIntersectionQueryFilter.range(this.startDate, this.endDate);
+		final Range<Instant> thisGuavaRange = this.toRange();
 		return thisGuavaRange.isConnected(otherGuavaRange);
+	}
+
+	public boolean isOverlappingWith(@NonNull final CalendarDateRange other)
+	{
+		final Range<Instant> thisGuavaRange = this.toRange();
+		final Range<Instant> otherGuavaRange = other.toRange();
+
+		if (thisGuavaRange.isConnected(otherGuavaRange))
+		{
+			final Range<Instant> intersection = thisGuavaRange.intersection(otherGuavaRange);
+
+			// NOTE: we calculate and check duration instead of calling Range.isEmpty() because Range.isEmpty() is returning false for an [v, v] interval!?
+			// NOTE2: we assume the bounds are always finite because our ranges are always bounded
+			final Duration duration = Duration.between(intersection.lowerEndpoint(), intersection.upperEndpoint());
+			return !duration.isZero();
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 }

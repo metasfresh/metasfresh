@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 @ToString
-final class WOProjectSimulationPlan
+public final class WOProjectSimulationPlan
 {
 	@Getter
 	@NonNull

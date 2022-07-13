@@ -1,16 +1,18 @@
 package de.metas.project.workorder.calendar;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProject;
+import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceSimulation;
 import de.metas.project.workorder.WOProjectResources;
 import de.metas.project.workorder.WOProjectStep;
-import de.metas.project.workorder.WOProjectStepAndResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.WOProjectStepSimulation;
 import de.metas.project.workorder.WOProjectSteps;
@@ -67,20 +69,21 @@ class WOProjectSimulationPlanEditor
 	}
 
 	public void changeResourceDateRangeAndShiftSteps(
-			@NonNull final WOProjectStepAndResourceId projectStepAndResourceId,
-			@NonNull final CalendarDateRange newDateRange)
+			@NonNull final WOProjectAndResourceId projectAndResourceId,
+			@NonNull final CalendarDateRange newDateRange,
+			@NonNull final WOProjectStepId stepId)
 	{
-		changeResource(projectStepAndResourceId, newDateRange);
-		updateStepDateRangeFromResources(projectStepAndResourceId.getStepId());
+		changeResource(projectAndResourceId, newDateRange);
+		updateStepDateRangeFromResources(stepId);
 
-		shiftLeftAllStepsBefore(projectStepAndResourceId.getStepId());
-		shiftRightAllStepsAfter(projectStepAndResourceId.getStepId());
+		shiftLeftAllStepsBefore(stepId);
+		shiftRightAllStepsAfter(stepId);
 	}
 
 	private void updateStepDateRangeFromResources(@NonNull final WOProjectStepId stepId)
 	{
 		final ImmutableList<WOProjectResource> projectResources = getProjectResourcesByStepId(stepId);
-		final CalendarDateRange newDateRange = WOProjectResource.computeDateRangeToFitAll(projectResources);
+		final CalendarDateRange newDateRange = WOProjectResource.computeDateRangeToEncloseAll(projectResources);
 		changeStep(stepId, newDateRange);
 	}
 
@@ -135,11 +138,6 @@ class WOProjectSimulationPlanEditor
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public WOProjectResource getProjectResourceById(final @NonNull WOProjectResourceId projectResourceId)
-	{
-		return adjustBySimulation(this._originalProjectResources.getById(projectResourceId));
-	}
-
 	public OldAndNewValues<WOProjectResource> getProjectResourceInitialAndNow(final @NonNull WOProjectResourceId projectResourceId)
 	{
 		final WOProjectResource original = this._originalProjectResources.getById(projectResourceId);
@@ -159,13 +157,6 @@ class WOProjectSimulationPlanEditor
 	public Stream<WOProjectResourceId> streamChangedProjectResourceIds()
 	{
 		return changedProjectResourceIds.stream();
-	}
-
-	public Stream<WOProjectResource> getChangedProjectResources()
-	{
-		return streamChangedProjectResourceIds()
-				.map(this._originalProjectResources::getById)
-				.map(this::adjustBySimulation);
 	}
 
 	private WOProjectStep adjustBySimulation(@NonNull final WOProjectStep step)
@@ -208,17 +199,17 @@ class WOProjectSimulationPlanEditor
 	}
 
 	private void changeResource(
-			@NonNull final WOProjectStepAndResourceId projectStepAndResourceId,
+			@NonNull final WOProjectAndResourceId projectAndResourceId,
 			@NonNull final CalendarDateRange newDateRange)
 	{
 		simulationProjectResourcesById.compute(
-				projectStepAndResourceId.getProjectResourceId(),
+				projectAndResourceId.getProjectResourceId(),
 				(k, existingSimulation) -> {
 					final WOProjectResourceSimulation.WOProjectResourceSimulationBuilder builder;
 					if (existingSimulation == null)
 					{
 						builder = WOProjectResourceSimulation.builder()
-								.projectStepAndResourceId(projectStepAndResourceId);
+								.projectAndResourceId(projectAndResourceId);
 					}
 					else
 					{
@@ -228,7 +219,7 @@ class WOProjectSimulationPlanEditor
 					return builder.dateRange(newDateRange).build();
 				});
 
-		changedProjectResourceIds.add(projectStepAndResourceId.getProjectResourceId());
+		changedProjectResourceIds.add(projectAndResourceId.getProjectResourceId());
 	}
 
 	private void shiftLeftAllStepsBefore(@NonNull final WOProjectStepId stepId)
@@ -281,8 +272,15 @@ class WOProjectSimulationPlanEditor
 		for (final WOProjectResource projectResource : getProjectResourcesByStepId(stepId))
 		{
 			final CalendarDateRange newDateRange = projectResource.getDateRange().plus(offset);
-			changeResource(projectResource.getWOProjectStepAndResourceId(), newDateRange);
+			changeResource(projectResource.getWOProjectAndResourceId(), newDateRange);
 		}
 	}
 
+	public ImmutableSet<ResourceId> getAffectedResourceIds()
+	{
+		return changedProjectResourceIds.stream()
+				.map(_originalProjectResources::getById)
+				.map(WOProjectResource::getResourceId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

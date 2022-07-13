@@ -35,6 +35,8 @@ import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.ui.web.calendar.json.JsonCalendarConflict;
+import de.metas.ui.web.calendar.json.JsonCalendarConflictsQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
@@ -107,11 +109,10 @@ public class CalendarRestController
 	{
 		userSession.assertLoggedIn();
 
-		final UserId loggedUserId = userSession.getLoggedUserId();
 		final ZoneId timeZone = userSession.getTimeZone();
 		final String adLanguage = userSession.getAD_Language();
 
-		final ImmutableList<JsonCalendarEntry> jsonEntries = calendarService.query(toCalendarQuery(query, loggedUserId))
+		final ImmutableList<JsonCalendarEntry> jsonEntries = calendarService.query(toCalendarQuery(query))
 				.map(entry -> JsonCalendarEntry.of(entry, timeZone, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 
@@ -120,7 +121,7 @@ public class CalendarRestController
 				.build();
 	}
 
-	private static CalendarQuery toCalendarQuery(@Nullable final JsonCalendarEntriesQuery query, @NonNull final UserId loggedUserId)
+	private static CalendarQuery toCalendarQuery(@Nullable final JsonCalendarEntriesQuery query)
 	{
 		final CalendarQuery.CalendarQueryBuilder result = CalendarQuery.builder();
 
@@ -244,6 +245,24 @@ public class CalendarRestController
 								.map(JsonSimulationRef::of)
 								.sorted(Comparator.comparing(JsonSimulationRef::getName))
 								.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	@GetMapping("/conflicts/query")
+	public JsonCalendarConflictsQueryResponse queryConflicts(
+			@RequestParam(name = "simulationId", required = false) final String simulationIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		final SimulationPlanId simulationId = SimulationPlanId.ofNullableObject(simulationIdStr);
+
+		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(simulationId)
+				.stream()
+				.map(JsonCalendarConflict::of)
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonCalendarConflictsQueryResponse.builder()
+				.conflicts(jsonConflicts)
 				.build();
 	}
 

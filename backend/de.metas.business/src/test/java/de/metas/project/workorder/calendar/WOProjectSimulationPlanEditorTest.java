@@ -6,11 +6,11 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProject;
+import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResources;
 import de.metas.project.workorder.WOProjectStep;
-import de.metas.project.workorder.WOProjectStepAndResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.WOProjectSteps;
 import de.metas.test.SnapshotFunctionFactory;
@@ -129,8 +129,9 @@ class WOProjectSimulationPlanEditorTest
 				.build();
 
 		planEditor.changeResourceDateRangeAndShiftSteps(
-				WOProjectStepAndResourceId.of(ProjectId.ofRepoId(1), WOProjectStepId.ofRepoId(1), WOProjectResourceId.ofRepoId(1)),
-				allDay(11, 13));
+				WOProjectAndResourceId.of(ProjectId.ofRepoId(1), WOProjectResourceId.ofRepoId(1)),
+				allDay(11, 13),
+				WOProjectStepId.ofRepoId(1));
 
 		final WOProjectSimulationPlan newSimulationPlan = planEditor.toNewSimulationPlan();
 		System.out.println(newSimulationPlan);
