@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Project_WO_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1884120826L;
+	private static final long serialVersionUID = -1053617724L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Step (final Properties ctx, final int C_Project_WO_Step_ID, @Nullable final String trxName)
@@ -131,7 +131,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public java.sql.Timestamp getWODeliveryDate()
+	public java.sql.Timestamp getWODeliveryDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_WODeliveryDate);
 	}
@@ -143,7 +143,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public java.sql.Timestamp getWOFindingsCreatedDate()
+	public java.sql.Timestamp getWOFindingsCreatedDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_WOFindingsCreatedDate);
 	}
@@ -155,7 +155,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public java.sql.Timestamp getWOFindingsReleasedDate()
+	public java.sql.Timestamp getWOFindingsReleasedDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_WOFindingsReleasedDate);
 	}
@@ -167,7 +167,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public java.sql.Timestamp getWOPartialReportDate()
+	public java.sql.Timestamp getWOPartialReportDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_WOPartialReportDate);
 	}
@@ -179,7 +179,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public int getWOPlannedPersonDurationHours()
+	public int getWOPlannedPersonDurationHours() 
 	{
 		return get_ValueAsInt(COLUMNNAME_WOPlannedPersonDurationHours);
 	}
@@ -191,12 +191,12 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public int getWOPlannedResourceDurationHours()
+	public int getWOPlannedResourceDurationHours() 
 	{
 		return get_ValueAsInt(COLUMNNAME_WOPlannedResourceDurationHours);
 	}
 
-	/**
+	/** 
 	 * WOStepStatus AD_Reference_ID=541599
 	 * Reference name: WOStepStatus
 	 */
@@ -226,7 +226,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public java.lang.String getWOStepStatus()
+	public java.lang.String getWOStepStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_WOStepStatus);
 	}
@@ -238,7 +238,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public java.sql.Timestamp getWOTargetEndDate()
+	public java.sql.Timestamp getWOTargetEndDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_WOTargetEndDate);
 	}
@@ -250,7 +250,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public java.sql.Timestamp getWOTargetStartDate()
+	public java.sql.Timestamp getWOTargetStartDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_WOTargetStartDate);
 	}
