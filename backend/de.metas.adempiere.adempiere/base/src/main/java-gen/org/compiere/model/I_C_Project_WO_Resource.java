@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Project_WO_Resource
  *  @author metasfresh (generated) 
@@ -392,4 +393,25 @@ public interface I_C_Project_WO_Resource
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Test facility group.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOTestFacilityGroupName (@Nullable java.lang.String WOTestFacilityGroupName);
+
+	/**
+	 * Get Test facility group.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getWOTestFacilityGroupName();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_WOTestFacilityGroupName = new ModelColumn<>(I_C_Project_WO_Resource.class, "WOTestFacilityGroupName", null);
+	String COLUMNNAME_WOTestFacilityGroupName = "WOTestFacilityGroupName";
 }
