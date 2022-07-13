@@ -64,7 +64,7 @@ public class WOProject
 	String value;
 
 	@Nullable
-	Boolean active;
+	Boolean isActive;
 
 	@Nullable
 	PriceListVersionId priceListVersionId;
@@ -142,7 +142,7 @@ public class WOProject
 				.description(request.getDescription())
 				.dateContract(request.getDateContract())
 				.dateFinish(request.getDateFinish())
-				.active(request.getIsActive())
+				.isActive(request.getIsActive())
 				.build();
 	}
 
@@ -159,7 +159,7 @@ public class WOProject
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(projectRecord.getC_BPartner_ID()))
 				.currencyId(CurrencyId.ofRepoIdOrNull(projectRecord.getC_Currency_ID()))
 				.projectParentId(ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_Parent_ID()))
-				.active(projectRecord.isActive())
+				.isActive(projectRecord.isActive())
 				.description(projectRecord.getDescription())
 				.projectTypeId(ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID()))
 				.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(projectRecord.getM_PriceList_Version_ID()))

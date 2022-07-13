@@ -104,9 +104,9 @@ public class WorkOrderProjectRepository
 		{
 			projectRecord.setName(woProject.getName());
 		}
-		if (woProject.getActive() != null)
+		if (woProject.getIsActive() != null)
 		{
-			projectRecord.setIsActive(woProject.getActive());
+			projectRecord.setIsActive(woProject.getIsActive());
 		}
 		else
 		{

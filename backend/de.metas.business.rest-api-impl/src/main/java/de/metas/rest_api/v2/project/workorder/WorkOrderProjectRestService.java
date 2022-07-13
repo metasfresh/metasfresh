@@ -332,11 +332,11 @@ public class WorkOrderProjectRestService
 
 		if (request.isActiveSet())
 		{
-			updatedWOProjectBuilder.active(request.getIsActive());
+			updatedWOProjectBuilder.isActive(request.getIsActive());
 		}
 		else
 		{
-			updatedWOProjectBuilder.active(existingWOProject.getActive());
+			updatedWOProjectBuilder.isActive(existingWOProject.getIsActive());
 		}
 
 		return updatedWOProjectBuilder.build();
@@ -717,7 +717,7 @@ public class WorkOrderProjectRestService
 				.projectReferenceExt(projectData.getProjectReferenceExt())
 				.name(projectData.getNameNonNull())
 				.salesRepId(JsonMetasfreshId.of(UserId.toRepoId(projectData.getSalesRepId())))
-				.isActive(projectData.getActive())
+				.isActive(projectData.getIsActive())
 				.value(projectData.getValueNonNull())
 				.steps(stepsResponseBuilder.build())
 				.resources(resourcesResponseBuilder.build())

@@ -129,6 +129,7 @@ public class JsonWorkOrderProjectRequest
 	String orgCode;
 
 	@Getter
+	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	Boolean isActive;
 
 	@ApiModelProperty(hidden = true)
