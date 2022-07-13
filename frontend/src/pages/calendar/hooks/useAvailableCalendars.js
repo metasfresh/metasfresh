@@ -8,7 +8,7 @@ export const useAvailableCalendars = () => {
 
   return {
     setFromArray: (calendarsArray) => {
-      console.log('setCalendarsArray', { calendarsArray, state });
+      //console.log('setCalendarsArray', { calendarsArray, state });
       setState({
         calendarsArray: calendarsArray || [],
         resourcesArray: extractResourcesFromCalendarsArray(calendarsArray),
