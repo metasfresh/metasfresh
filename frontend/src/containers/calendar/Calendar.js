@@ -36,19 +36,16 @@ const Calendar = ({
   }, []);
 
   if (onParamsChanged) {
+    const simulationId = simulations.getSelectedSimulationId();
     useEffect(() => {
-      onParamsChanged({
-        simulationId: simulations.getSelectedSimulationId(),
-      });
-    }, [simulations.getSelectedSimulationId()]);
+      onParamsChanged({ simulationId });
+    }, [simulationId]);
   }
 
-  useEffect(() => {
-    return api.connectToWS({
-      simulationId: simulations.getSelectedSimulationId(),
-      onWSEventsArray: calendarEvents.applyWSEventsArray,
-    });
-  }, [simulations.getSelectedSimulationId()]);
+  api.useWebsocketEvents({
+    simulationId: simulations.getSelectedSimulationId(),
+    onWSEventsArray: calendarEvents.applyWSEventsArray,
+  });
 
   const fetchCalendarEvents = (params) => {
     const calendarIds = availableCalendars.getCalendarIds();

@@ -2,6 +2,9 @@ import axios from 'axios';
 
 import * as StompJs from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { useEffect } from 'react';
+
+const WS_DEBUG = true;
 
 const extractAxiosResponseData = (axiosReponse) => axiosReponse.data;
 
@@ -75,8 +78,13 @@ export const createSimulation = ({ copyFromSimulationId }) => {
     .then((simulation) => converters.fromAPISimulation(simulation));
 };
 
-const WS_DEBUG = true;
-export const connectToWS = ({ simulationId, onWSEventsArray }) => {
+export const useWebsocketEvents = ({ simulationId, onWSEventsArray }) => {
+  useEffect(() => {
+    return connectToWS({ simulationId, onWSEventsArray });
+  }, [simulationId]);
+};
+
+const connectToWS = ({ simulationId, onWSEventsArray }) => {
   const wsTopicName = `/v2/calendar/${simulationId || 'actual'}`;
 
   const stompJsConfig = {
