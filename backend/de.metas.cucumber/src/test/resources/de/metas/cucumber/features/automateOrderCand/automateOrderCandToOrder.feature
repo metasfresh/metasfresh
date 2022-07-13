@@ -59,7 +59,7 @@ Feature: Process order candidate and validate created order
 
   @from:cucumber
   @topic:orderCandidate
-  Scenario: Order candidate to closed order - different dropShip partner&location&contact
+  Scenario: Order candidate to order - different dropShip partner&location&contact
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
  """
 {
@@ -110,7 +110,7 @@ Feature: Process order candidate and validate created order
 
   @from:cucumber
   @topic:orderCandidate
-  Scenario: Order candidate to closed order - same dropShip partner but different location&contact
+  Scenario: Order candidate to order - same dropShip partner but different location&contact
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
  """
 {
