@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.rest_api.v2.project.JsonRequestProjectUpsert;
@@ -33,28 +32,26 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PROJECT_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_RPROJECT_V2_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class ProjectRouteBuilder extends RouteBuilder
 {
-	@VisibleForTesting
-	static final String ROUTE_ID = "To-MF_Upsert-Project_V2";
-
 	@Override
 	public void configure()
 	{
 		errorHandler(noErrorHandler());
 
-		from("{{" + MF_UPSERT_PROJECT_V2_CAMEL_URI + "}}")
-				.routeId(ROUTE_ID)
+		from(direct(MF_UPSERT_RPROJECT_V2_ROUTE_ID))
+				.routeId(MF_UPSERT_RPROJECT_V2_ROUTE_ID)
 				.streamCaching()
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
 					if (!(lookupRequest instanceof JsonRequestProjectUpsert))
 					{
-						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof JsonRequestProjectUpsert V2."
+						throw new RuntimeCamelException("The route " + MF_UPSERT_RPROJECT_V2_ROUTE_ID + " requires the body to be instanceof JsonRequestProjectUpsert V2."
 																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
 					
