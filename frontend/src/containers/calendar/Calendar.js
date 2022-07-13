@@ -31,8 +31,8 @@ const Calendar = ({
 
   useEffect(() => {
     console.log('Loading simulations and calendars');
-    api.getAvailableSimulations().then(simulations.setFromArray);
-    api.getAvailableCalendars().then(availableCalendars.setFromArray);
+    api.fetchAvailableSimulations().then(simulations.setFromArray);
+    api.fetchAvailableCalendars().then(availableCalendars.setFromArray);
   }, []);
 
   if (onParamsChanged) {
@@ -58,7 +58,7 @@ const Calendar = ({
       startDate,
       endDate,
       simulationId,
-      newEventsSupplier: api.getCalendarEvents,
+      newEventsSupplier: api.fetchCalendarEvents,
     });
   };
 

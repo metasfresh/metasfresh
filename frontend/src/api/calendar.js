@@ -8,14 +8,14 @@ const WS_DEBUG = true;
 
 const extractAxiosResponseData = (axiosReponse) => axiosReponse.data;
 
-export const getAvailableCalendars = () => {
+export const fetchAvailableCalendars = () => {
   return axios
     .get(`${config.API_URL}/calendars/available`)
     .then(extractAxiosResponseData)
     .then(({ calendars }) => calendars.map(converters.fromAPICalendar));
 };
 
-export const getCalendarEvents = ({
+export const fetchCalendarEvents = ({
   calendarIds = null,
   simulationId = null,
   startDate = null,
@@ -61,7 +61,7 @@ export const addOrUpdateCalendarEvent = ({
     .then(converters.fromAPIUpdateResult);
 };
 
-export const getAvailableSimulations = () => {
+export const fetchAvailableSimulations = () => {
   return axios
     .get(`${config.API_URL}/calendars/simulations`)
     .then(extractAxiosResponseData)
