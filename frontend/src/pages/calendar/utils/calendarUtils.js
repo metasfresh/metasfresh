@@ -1,7 +1,7 @@
-import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
+import { DATE_TIMEZONE_FORMAT } from '../../../constants/Constants';
 import Moment from 'moment-timezone';
 import MomentTZ from 'moment-timezone';
-import { getCurrentActiveLocale } from '../../utils/locale';
+import { getCurrentActiveLocale } from '../../../utils/locale';
 
 const FULLCALENDAR_IO_DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ';
 

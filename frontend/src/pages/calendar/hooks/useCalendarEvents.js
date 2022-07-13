@@ -1,5 +1,5 @@
 import React from 'react';
-import { isSameMoment } from './calendarUtils';
+import { isSameMoment } from '../utils/calendarUtils';
 
 export const useCalendarEvents = () => {
   const [state, setState] = React.useState({

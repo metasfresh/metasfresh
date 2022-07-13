@@ -12,14 +12,15 @@ import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 import deLocale from '@fullcalendar/core/locales/de';
 
-import * as api from '../../api/calendar';
-import { normalizeDateTime } from './calendarUtils';
+import * as api from './api/calendar';
+import { normalizeDateTime } from './utils/calendarUtils';
 
-import SimulationsDropDown from '../../components/calendar/SimulationsDropDown';
+import SimulationsDropDown from './components/SimulationsDropDown';
 import { getCurrentActiveLanguage } from '../../utils/locale';
-import { useCalendarEvents } from './useCalendarEvents';
-import { useAvailableCalendars } from './useAvailableCalendars';
-import { useSimulations } from './useSimulations';
+import { useCalendarEvents } from './hooks/useCalendarEvents';
+import { useAvailableCalendars } from './hooks/useAvailableCalendars';
+import { useSimulations } from './hooks/useSimulations';
+import { useCalendarWebsocketEvents } from './hooks/useCalendarWebsocketEvents';
 
 const Calendar = ({
   simulationId: initialSelectedSimulationId,
@@ -42,7 +43,7 @@ const Calendar = ({
     }, [simulationId]);
   }
 
-  api.useWebsocketEvents({
+  useCalendarWebsocketEvents({
     simulationId: simulations.getSelectedSimulationId(),
     onWSEventsArray: calendarEvents.applyWSEventsArray,
   });
