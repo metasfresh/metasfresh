@@ -39,9 +39,18 @@ const converters = {
     simulationId: wsEvent.simulationId,
   }),
 
-  /**
-   * https://fullcalendar.io converters
-   */
+  fromAPIConflict: (conflict) => ({
+    entryId1: conflict.entryId1,
+    entryId2: conflict.entryId2,
+    simulationId: conflict.simulationId,
+    status: conflict.status,
+  }),
+
+  //
+  //
+  // https://fullcalendar.io converters
+  //
+  //
   fullcalendar_io: {
     fromAPIResource: (apiResource) => {
       const resource = {

@@ -27,6 +27,7 @@ const Calendar = ({
   onParamsChanged,
 }) => {
   const simulations = useSimulations(initialSelectedSimulationId);
+  const simulationId = simulations.getSelectedSimulationId();
   const availableCalendars = useAvailableCalendars();
   const calendarEvents = useCalendarEvents();
 
@@ -36,30 +37,30 @@ const Calendar = ({
     api.fetchAvailableCalendars().then(availableCalendars.setFromArray);
   }, []);
 
+  useEffect(() => {
+    api.fetchConflicts({ simulationId }).then(calendarEvents.setConflicts);
+  }, [simulationId]);
+
   if (onParamsChanged) {
-    const simulationId = simulations.getSelectedSimulationId();
     useEffect(() => {
       onParamsChanged({ simulationId });
     }, [simulationId]);
   }
 
   useCalendarWebsocketEvents({
-    simulationId: simulations.getSelectedSimulationId(),
+    simulationId,
     onWSEventsArray: calendarEvents.applyWSEventsArray,
   });
 
-  const fetchCalendarEvents = (params) => {
-    const calendarIds = availableCalendars.getCalendarIds();
-    const startDate = normalizeDateTime(params.startStr);
-    const endDate = normalizeDateTime(params.endStr);
-    const simulationId = simulations.getSelectedSimulationId();
-
-    return calendarEvents.updateEventsAndGet({
-      calendarIds,
-      startDate,
-      endDate,
+  const fetchCalendarEvents = (fetchInfo, successCallback, failureCallback) => {
+    calendarEvents.updateEventsFromAPI({
+      calendarIds: availableCalendars.getCalendarIds(),
+      startDate: normalizeDateTime(fetchInfo.startStr),
+      endDate: normalizeDateTime(fetchInfo.endStr),
       simulationId,
-      newEventsSupplier: api.fetchCalendarEvents,
+      fetchFromAPI: api.fetchCalendarEvents,
+      onFetchSuccess: successCallback,
+      onFetchError: failureCallback,
     });
   };
 
@@ -83,7 +84,7 @@ const Calendar = ({
     api
       .addOrUpdateCalendarEvent({
         id: params.event.id,
-        simulationId: simulations.getSelectedSimulationId(),
+        simulationId,
         startDate: params.event.start,
         endDate: params.event.end,
         allDay: params.event.allDay,
@@ -103,15 +104,13 @@ const Calendar = ({
         <div className="calendar-top-right">
           <SimulationsDropDown
             simulations={simulations.toArray()}
-            selectedSimulationId={simulations.getSelectedSimulationId()}
+            selectedSimulationId={simulationId}
             onSelect={(simulation) => {
               simulations.setSelectedSimulationId(simulation?.simulationId);
             }}
             onNew={() => {
               api
-                .createSimulation({
-                  copyFromSimulationId: simulations.getSelectedSimulationId(),
-                })
+                .createSimulation({ copyFromSimulationId: simulationId })
                 .then(simulations.addSimulationAndSelect);
             }}
           />
@@ -145,7 +144,12 @@ const Calendar = ({
         }}
         resourceAreaHeaderContent="Resources"
         resources={availableCalendars.getResourcesArray()}
-        events={fetchCalendarEvents}
+        eventSources={[
+          {
+            events: fetchCalendarEvents,
+          },
+        ]}
+        //events={fetchCalendarEvents}
         //dateClick={handleDateClick}
         eventClick={handleEventClick}
         eventContent={(params) => {

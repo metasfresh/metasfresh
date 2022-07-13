@@ -1,26 +1,45 @@
-import React from 'react';
+import { useState } from 'react';
 import { isSameMoment } from '../utils/calendarUtils';
 
 export const useCalendarEvents = () => {
-  const [state, setState] = React.useState({
+  const [state, setState] = useState({
     startDate: null,
     endDate: null,
     simulationId: null,
+    eventsLoading: false,
     events: [],
+    conflicts: [],
   });
 
-  const setStateEvents = (eventsMapper) => {
+  const updateStateEvents = (eventsMapper) => {
     setState((prevState) => {
       const prevEvents = prevState.events;
-      const newEvents = eventsMapper(prevEvents);
+      let newEvents = eventsMapper(prevEvents);
       if (prevEvents === newEvents) {
-        console.log('NO events changed', { prevEvents });
         return prevState;
-      } else {
-        console.log('changed events', { newEvents, prevEvents });
       }
 
+      newEvents = updateEventsFromConflicts(newEvents, prevState.conflicts);
+
       return { ...prevState, events: newEvents };
+    });
+  };
+
+  const updateStateConflicts = (conflictsMapper) => {
+    setState((prevState) => {
+      const prevConflicts = prevState.conflicts;
+      const newConflicts = conflictsMapper(prevConflicts);
+      if (prevConflicts === newConflicts) {
+        //console.log('NO conflicts changed', { prevConflicts });
+        return prevState;
+      }
+
+      //console.log('changed conflicts', { newConflicts, prevConflicts });
+      return {
+        ...prevState,
+        conflicts: newConflicts,
+        events: updateEventsFromConflicts(prevState.events, newConflicts),
+      };
     });
   };
 
@@ -34,56 +53,82 @@ export const useCalendarEvents = () => {
 
   const addEventsArray = (eventsArrayToAdd) => {
     console.log('addEventsArray', { eventsArrayToAdd });
-    setStateEvents((prevEvents) =>
+    updateStateEvents((prevEvents) =>
       mergeCalendarEventsArrayToArray(prevEvents, eventsArrayToAdd)
     );
   };
 
   const applyWSEventsArray = (wsEventsArray) => {
     console.log('applyWSEvents', { wsEventsArray });
-    setStateEvents((prevEvents) =>
+    updateStateEvents((prevEvents) =>
       mergeWSEventsToCalendarEvents(prevEvents, wsEventsArray)
     );
   };
 
-  const updateEventsAndGet = ({
+  const updateEventsFromAPI = ({
     calendarIds,
     startDate,
     endDate,
     simulationId,
-    newEventsSupplier,
+    fetchFromAPI,
+    onFetchSuccess,
+    onFetchError,
   }) => {
-    if (isStateMatchingQuery({ startDate, endDate, simulationId })) {
+    if (
+      state.eventsLoading ||
+      isStateMatchingQuery({ startDate, endDate, simulationId })
+    ) {
       //console.log('updateEventsAndGet: already fetched');
 
       // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-      return Promise.resolve(state.events);
+      onFetchSuccess(state.events);
     } else {
       //console.log('updateEventsAndGet: start fetching from supplier: ', newEventsSupplier);
 
-      newEventsSupplier({
+      setState((prevState) => ({ ...prevState, eventsLoading: true }));
+
+      fetchFromAPI({
         calendarIds,
         simulationId,
         startDate,
         endDate,
-      }).then((events) => {
-        //console.log('fetchCalendarEvents: got result', { events });
-        setState({
-          startDate,
-          endDate,
-          simulationId,
-          events,
-        });
+      })
+        .then((eventsFromAPI) => {
+          //console.log('fetchCalendarEvents: got result', { events });
 
-        return events;
-      });
+          setState((prevState) => {
+            const conflicts = prevState.conflicts;
+            const events = updateEventsFromConflicts(eventsFromAPI, conflicts);
+            //onFetchSuccess(events);
+
+            return {
+              startDate,
+              endDate,
+              simulationId,
+              events,
+              eventsLoading: false,
+              conflicts,
+            };
+          });
+        })
+        .catch((error) => {
+          console.log('got error', error);
+          setState((prevState) => ({ ...prevState, eventsLoading: false }));
+          onFetchError(error);
+        });
     }
+  };
+
+  const setConflicts = (conflictsArray) => {
+    console.log('conflictsArray', conflictsArray);
+    updateStateConflicts(() => conflictsArray);
   };
 
   return {
     addEventsArray,
     applyWSEventsArray,
-    updateEventsAndGet,
+    updateEventsFromAPI,
+    setConflicts,
   };
 };
 
@@ -198,6 +243,51 @@ const isEqualEvents = (event1, event2) => {
     event1.allDay === event2.allDay &&
     event1.editable === event2.editable &&
     event1.color === event2.color &&
-    event1.url === event2.url
+    event1.borderColor === event2.borderColor &&
+    event1.url === event2.url &&
+    !!event1.conflict === !!event2.conflict
   );
+};
+
+const updateEventsFromConflicts = (eventsArray, conflictsArray) => {
+  if (!eventsArray) {
+    return eventsArray;
+  }
+
+  const entryIdsWithConflicts = [];
+  if (conflictsArray) {
+    conflictsArray.forEach((conflict) => {
+      if (conflict.status === 'CONFLICT') {
+        entryIdsWithConflicts.push(conflict.entryId1);
+        entryIdsWithConflicts.push(conflict.entryId2);
+      }
+    });
+  }
+
+  let hasChanges = false;
+  const changedEvents = eventsArray.map((event) => {
+    const conflictFlagNew = entryIdsWithConflicts.includes(event.id);
+    if (!!event.conflict === conflictFlagNew) {
+      return event;
+    } else {
+      const newEvent = {
+        ...event,
+        conflict: conflictFlagNew,
+        borderColor: conflictFlagNew ? 'red' : undefined,
+      };
+      hasChanges = true;
+      return newEvent;
+    }
+  });
+
+  if (!hasChanges) {
+    return eventsArray;
+  }
+
+  console.log('updateEventsFromConflicts', {
+    changedEvents,
+    eventsArray,
+    conflictsArray,
+  });
+  return changedEvents;
 };

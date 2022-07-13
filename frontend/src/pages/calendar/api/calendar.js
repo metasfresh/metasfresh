@@ -1,11 +1,14 @@
 import axios from 'axios';
 import converters from './converters';
+import { getQueryString } from '../../../utils';
+
+const API_URL = `${config.API_URL}/calendars`;
 
 const extractAxiosResponseData = (axiosReponse) => axiosReponse.data;
 
 export const fetchAvailableCalendars = () => {
   return axios
-    .get(`${config.API_URL}/calendars/available`)
+    .get(`${API_URL}/available`)
     .then(extractAxiosResponseData)
     .then(({ calendars }) => calendars.map(converters.fromAPICalendar));
 };
@@ -17,7 +20,7 @@ export const fetchCalendarEvents = ({
   endDate = null,
 }) => {
   return axios
-    .post(`${config.API_URL}/calendars/entries/query`, {
+    .post(`${API_URL}/entries/query`, {
       calendarIds: calendarIds || [],
       simulationId,
       startDate,
@@ -38,9 +41,7 @@ export const addOrUpdateCalendarEvent = ({
   endDate = null,
   allDay = null,
 }) => {
-  const url = !id
-    ? `${config.API_URL}/calendars/entries/add`
-    : `${config.API_URL}/calendars/entries/${id}`;
+  const url = !id ? `${API_URL}/entries/add` : `${API_URL}/entries/${id}`;
 
   return axios
     .post(url, {
@@ -58,17 +59,25 @@ export const addOrUpdateCalendarEvent = ({
 
 export const fetchAvailableSimulations = () => {
   return axios
-    .get(`${config.API_URL}/calendars/simulations`)
+    .get(`${API_URL}/simulations`)
     .then(extractAxiosResponseData)
     .then(({ simulations }) => simulations.map(converters.fromAPISimulation));
 };
 
 export const createSimulation = ({ copyFromSimulationId }) => {
   return axios
-    .post(`${config.API_URL}/calendars/simulations/new`, {
+    .post(`${API_URL}/simulations/new`, {
       name: null, // to be generated
       copyFromSimulationId,
     })
     .then(extractAxiosResponseData)
     .then((simulation) => converters.fromAPISimulation(simulation));
+};
+
+export const fetchConflicts = ({ simulationId = null }) => {
+  const queryParams = getQueryString({ simulationId });
+  return axios
+    .get(`${API_URL}/conflicts/query?${queryParams}`)
+    .then(extractAxiosResponseData)
+    .then(({ conflicts }) => conflicts.map(converters.fromAPIConflict));
 };
