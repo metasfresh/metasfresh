@@ -24,5 +24,10 @@
 }
 
 .fc-event.has-conflict {
-  border: 3px solid red !important;
+  border: 2px solid red !important;
+}
+
+.conflicts-indicator {
+  color: red !important;
+  font-weight: bold;
 }

@@ -23,6 +23,7 @@ import { useSimulations } from './hooks/useSimulations';
 import { useCalendarWebsocketEvents } from './hooks/useCalendarWebsocketEvents';
 
 import './calendar.scss';
+import ConflictsSummary from './components/ConflictsSummary';
 
 const Calendar = ({
   simulationId: initialSelectedSimulationId,
@@ -101,7 +102,11 @@ const Calendar = ({
   return (
     <div className="calendar-container">
       <div className="calendar-top">
-        <div className="calendar-top-left" />
+        <div className="calendar-top-left">
+          <ConflictsSummary
+            conflictsCount={calendarEvents.getConflictsCount()}
+          />
+        </div>
         <div className="calendar-top-center" />
         <div className="calendar-top-right">
           <SimulationsDropDown

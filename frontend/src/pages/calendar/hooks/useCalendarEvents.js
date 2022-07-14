@@ -133,11 +133,16 @@ export const useCalendarEvents = () => {
     console.groupEnd();
   };
 
+  const getConflictsCount = () => {
+    return state.conflicts?.length ?? 0;
+  };
+
   return {
     addEventsArray,
     applyWSEvents,
     updateEventsFromAPI,
     setConflicts,
+    getConflictsCount,
   };
 };
 
