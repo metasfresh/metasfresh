@@ -34,6 +34,10 @@ Feature: Export PP_Order to LeichMehl config
     And metasfresh contains ExternalSystem_Config_LeichMehl_ProductMapping:
       | ExternalSystem_Config_LeichMehl_ID.Identifier | SeqNo | PLU_File    | OPT.M_Product_ID.Identifier  | OPT.M_Product_Category_ID.Identifier |
       | leichMehlConfig                               | 10    | pluFilename | manufacturedProduct_27062022 | standard_category                    |
+    And metasfresh contains LeichMehl_PluFile_Config:
+      | ExternalSystem_Config_LeichMehl_ID.Identifier | TargetFieldName | TargetFieldType | Replacement          | ReplaceRegExp | ReplacementSource |
+      | leichMehlConfig                               | TestField-01    | numberField     | @JsonPath=productNo@ | .*            | Product           |
+
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     When export PP_Order to LeichMehl external system
@@ -41,6 +45,6 @@ Feature: Export PP_Order to LeichMehl config
       | ppOrder                | leichMehlConfig                               |
 
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
-      | ExternalSystem_Config_ID.Identifier | OPT.PP_Order_ID.Identifier | TCP_PortNumber | TCP_Host      | Product_BaseFolderName | ConfigMappings.pluFile | ConfigMappings.M_Product_ID.Identifier |
-      | leichMehlConfig_27062022            | ppOrder                    | 123            | doesNotMatter | ProductBaseFolderName  | pluFilename            | manufacturedProduct_27062022           |
+      | ExternalSystem_Config_ID.Identifier | OPT.PP_Order_ID.Identifier | TCP_PortNumber | TCP_Host      | Product_BaseFolderName | ConfigMappings.pluFile | ConfigMappings.M_Product_ID.Identifier | PluFileConfig                                                                                                                                                                    |
+      | leichMehlConfig_27062022            | ppOrder                    | 123            | doesNotMatter | ProductBaseFolderName  | pluFilename            | manufacturedProduct_27062022           | {"pluFileConfigs":[{"targetFieldName":"TestField-01","targetFieldType":"numberField","replacePattern":".*","replacement":"@JsonPath=productNo@","replacementSource":"Product"}]} |
 
