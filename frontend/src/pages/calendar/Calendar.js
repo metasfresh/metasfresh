@@ -154,6 +154,11 @@ const Calendar = ({
         //events={fetchCalendarEvents}
         //dateClick={handleDateClick}
         eventClick={handleEventClick}
+        eventClassNames={(params) => {
+          if (params.event.extendedProps.conflict) {
+            return ['has-conflict'];
+          }
+        }}
         eventContent={(params) => {
           //console.log('eventContent', { params });
           return <div>{params.event.title}</div>;

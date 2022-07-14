@@ -259,7 +259,6 @@ const isEqualEvents = (event1, event2) => {
     event1.allDay === event2.allDay &&
     event1.editable === event2.editable &&
     event1.color === event2.color &&
-    event1.borderColor === event2.borderColor &&
     event1.url === event2.url &&
     !!event1.conflict === !!event2.conflict
   );
@@ -289,7 +288,6 @@ const updateEventsFromConflicts = (eventsArray, conflictsArray) => {
       const newEvent = {
         ...event,
         conflict: conflictFlagNew,
-        borderColor: conflictFlagNew ? 'red' : undefined,
       };
       hasChanges = true;
       return newEvent;
