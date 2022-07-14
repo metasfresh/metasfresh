@@ -77,9 +77,11 @@ public class WOProjectStepRepository
 
 	private static WOProjectStep fromRecord(@NonNull final I_C_Project_WO_Step record)
 	{
+		final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
+
 		return WOProjectStep.builder()
-				.id(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
-				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.id(WOProjectStepId.ofRepoId(projectId, record.getC_Project_WO_Step_ID()))
+				.projectId(projectId)
 				.seqNo(record.getSeqNo())
 				.name(record.getName())
 				.build();

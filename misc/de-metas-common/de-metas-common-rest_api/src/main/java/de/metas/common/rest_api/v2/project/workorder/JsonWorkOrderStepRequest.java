@@ -22,67 +22,94 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+@Getter
 @ToString
 @EqualsAndHashCode
 public class JsonWorkOrderStepRequest
 {
-	@Getter
-	JsonMetasfreshId stepId;
-
-	@ApiModelProperty(hidden = true)
-	@Getter
-	boolean stepIdSet;
-
 	@ApiModelProperty(required = true)
 	String name;
 
-	@Getter
 	String description;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean descriptionSet;
 
-	@Getter
 	Integer seqNo;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean seqNoSet;
 
-	@Getter
 	LocalDate dateStart;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean dateStartSet;
 
-	@Getter
 	LocalDate dateEnd;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean dateEndSet;
 
+	LocalDate woPartialReportDate;
+	@ApiModelProperty(hidden = true)
+	boolean woPartialReportDateSet;
+
+	private Integer woPlannedResourceDurationHours;
+	@ApiModelProperty(hidden = true)
+	boolean woPlannedResourceDurationHoursSet;
+
+	LocalDate deliveryDate;
+	@ApiModelProperty(hidden = true)
+	boolean deliveryDateSet;
+
+	LocalDate woTargetStartDate;
+	@ApiModelProperty(hidden = true)
+	boolean woTargetStartDateSet;
+
+	LocalDate woTargetEndDate;
+	@ApiModelProperty(hidden = true)
+	boolean woTargetEndDateSet;
+
+	Integer woPlannedPersonDurationHours;
+	@ApiModelProperty(hidden = true)
+	boolean woPlannedPersonDurationHoursSet;
+
+	Integer woStepStatus;
+	@ApiModelProperty(hidden = true)
+	boolean woStepStatusSet;
+
+	LocalDate woFindingsReleasedDate;
+	@ApiModelProperty(hidden = true)
+	boolean woFindingsReleasedDateSet;
+
+	LocalDate woFindingsCreatedDate;
+	@ApiModelProperty(hidden = true)
+	boolean woFindingsCreatedDateSet;
+	
+	@Setter
+	@ApiModelProperty(required = true)
+	JsonExternalId externalId;
+	
+	@Setter
+	@ApiModelProperty("Optional resource allocations that reference to this step")
+	List<JsonWorkOrderResourceRequest> resourceRequests = new ArrayList<>();
+
+	@Setter
 	@ApiModelProperty(required = true)
 	SyncAdvise syncAdvise;
-
-	public void setStepId(final JsonMetasfreshId stepId)
-	{
-		this.stepId = stepId;
-		this.stepIdSet = true;
-	}
-
+	
 	public void setName(final String name)
 	{
 		this.name = name;
@@ -112,20 +139,57 @@ public class JsonWorkOrderStepRequest
 		this.dateEndSet = true;
 	}
 
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
+	public void setWoPartialReportDate(final LocalDate woPartialReportDate)
 	{
-		this.syncAdvise = syncAdvise;
+		this.woPartialReportDate = dateEnd;
+		this.woPartialReportDateSet = true;
 	}
 
-	@NonNull
-	public String getName()
+	public void setWoPartialReportDate(final Integer woPlannedResourceDurationHours)
 	{
-		return name;
+		this.woPlannedResourceDurationHours = woPlannedResourceDurationHours;
+		this.woPlannedResourceDurationHoursSet = true;
 	}
 
-	@NonNull
-	public SyncAdvise getSyncAdvise()
+	public void setDeliveryDate(final LocalDate deliveryDate)
 	{
-		return syncAdvise;
+		this.deliveryDate = deliveryDate;
+		this.deliveryDateSet = true;
+	}
+
+	public void setWOTargetStartDate(final LocalDate woTargetStartDate)
+	{
+		this.woTargetStartDate = woTargetStartDate;
+		this.woTargetStartDateSet = true;
+	}
+
+	public void setWOTargetEndDate(final LocalDate woTargetEndDate)
+	{
+		this.woTargetEndDate = woTargetEndDate;
+		this.woTargetEndDateSet = true;
+	}
+
+	public void setWOPlannedPersonDurationHours(final Integer woPlannedPersonDurationHours)
+	{
+		this.woPlannedPersonDurationHours = woPlannedPersonDurationHours;
+		this.woPlannedPersonDurationHoursSet = true;
+	}
+
+	public void setWOStepStatus(final Integer woStepStatus)
+	{
+		this.woStepStatus = woStepStatus;
+		this.woStepStatusSet = true;
+	}
+
+	public void setWOFindingsReleasedDate(final LocalDate woFindingsReleasedDate)
+	{
+		this.woFindingsReleasedDate = woFindingsReleasedDate;
+		this.woFindingsReleasedDateSet = true;
+	}
+
+	public void setWOFindingsCreatedDate(final LocalDate woFindingsCreatedDate)
+	{
+		this.woFindingsCreatedDate = woFindingsCreatedDate;
+		this.woFindingsCreatedDateSet = true;
 	}
 }

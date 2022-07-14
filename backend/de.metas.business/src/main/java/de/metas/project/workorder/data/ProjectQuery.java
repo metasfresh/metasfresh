@@ -22,7 +22,10 @@
 
 package de.metas.project.workorder.data;
 
-import de.metas.project.ProjectId;
+import de.metas.common.util.EmptyUtil;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,12 +33,22 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Builder(toBuilder = true)
-public class WorkOrderProject
+public class ProjectQuery
 {
-	@Nullable
-	ProjectId projectId;
+	OrgId orgId;
+	String value;
+	ExternalId externalProjectReference;
 
-	@NonNull
-	WOProject projectData;
+	@Builder
+	public ProjectQuery(
+			@NonNull final OrgId orgId,
+			@Nullable final String value,
+			@Nullable final ExternalId externalProjectReference)
+	{
+		this.orgId = orgId;
+		
+		this.value = value;
+		this.externalProjectReference = externalProjectReference;
+		Check.errorIf(EmptyUtil.isBlank(value) && externalProjectReference == null, "At least one of value or externalProjectReference need to be specified");
+	}
 }

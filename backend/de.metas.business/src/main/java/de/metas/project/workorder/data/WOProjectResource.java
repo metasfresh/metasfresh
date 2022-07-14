@@ -22,22 +22,18 @@
 
 package de.metas.project.workorder.data;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceRequest;
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
-import lombok.AccessLevel;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Project_WO_Resource;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -48,16 +44,11 @@ import java.time.LocalDate;
 public class WOProjectResource
 {
 	@Nullable
-	@Getter(AccessLevel.NONE)
+	@Getter
 	WOProjectResourceId woProjectResourceId;
 
-	@NonNull
-	ProjectId projectId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
+	@With
+	@Nullable
 	WOProjectStepId woProjectStepId;
 
 	@NonNull
@@ -87,6 +78,9 @@ public class WOProjectResource
 	@Nullable
 	BudgetProjectResourceId projectResourceBudgetId;
 
+	@Nullable
+	ExternalId externalId;
+	
 	@NonNull
 	public WOProjectResourceId getWOProjectResourceIdNotNull()
 	{
@@ -95,61 +89,5 @@ public class WOProjectResource
 			throw new AdempiereException("WOProjectResourceId cannot be null at this stage!");
 		}
 		return woProjectResourceId;
-	}
-
-	@NonNull
-	public static WOProjectResource ofRecord(@NonNull final I_C_Project_WO_Resource resourceRecord)
-	{
-		final OrgId orgId = OrgId.ofRepoId(resourceRecord.getAD_Org_ID());
-		final LocalDate assignDateFrom = TimeUtil.asLocalDate(resourceRecord.getAssignDateFrom(), orgId);
-		final LocalDate assignDateTo = TimeUtil.asLocalDate(resourceRecord.getAssignDateTo(), orgId);
-		if (assignDateTo == null || assignDateFrom == null)
-		{
-			throw new AdempiereException("I_C_Project_WO_Resource.assignDateFrom and I_C_Project_WO_Resource.assignDateTo should be set on the record at this point!");
-		}
-
-		return WOProjectResource.builder()
-				.woProjectStepId(WOProjectStepId.ofRepoId(resourceRecord.getC_Project_WO_Step_ID()))
-				.woProjectResourceId(WOProjectResourceId.ofRepoId(resourceRecord.getC_Project_WO_Resource_ID()))
-				.orgId(orgId)
-				.projectId(ProjectId.ofRepoId(resourceRecord.getC_Project_ID()))
-				.isAllDay(resourceRecord.isAllDay())
-				.isActive(resourceRecord.isActive())
-				.resourceId(ResourceId.ofRepoIdOrNull(resourceRecord.getS_Resource_ID()))
-				.assignDateFrom(assignDateFrom)
-				.assignDateTo(assignDateTo)
-				.duration(resourceRecord.getDuration())
-				.durationUnit(resourceRecord.getDurationUnit())
-				.budgetProjectId(ProjectId.ofRepoIdOrNull(resourceRecord.getBudget_Project_ID()))
-				.projectResourceBudgetId(BudgetProjectResourceId.ofRepoIdOrNull(resourceRecord.getC_Project_Resource_Budget_ID()))
-				.build();
-
-	}
-
-	@NonNull
-	public static WOProjectResource fromJson(
-			@NonNull final JsonWorkOrderResourceRequest jsonWorkOrderResourceRequest,
-			@NonNull final OrgId orgId,
-			@NonNull final ProjectId projectId,
-			@NonNull final BigDecimal duration,
-			@NonNull final String durationUnit,
-			@Nullable final ProjectId budgetProjectId,
-			@Nullable final BudgetProjectResourceId budgetProjectResourceId)
-	{
-		return WOProjectResource.builder()
-				.woProjectResourceId(WOProjectResourceId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(jsonWorkOrderResourceRequest.getWoResourceId())))
-				.projectId(projectId)
-				.resourceId(ResourceId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(jsonWorkOrderResourceRequest.getResourceId())))
-				.woProjectStepId(WOProjectStepId.ofRepoId(jsonWorkOrderResourceRequest.getStepId().getValue()))
-				.isActive(jsonWorkOrderResourceRequest.getIsActive())
-				.isAllDay(jsonWorkOrderResourceRequest.getIsAllDay())
-				.assignDateFrom(jsonWorkOrderResourceRequest.getAssignDateFrom())
-				.assignDateTo(jsonWorkOrderResourceRequest.getAssignDateTo())
-				.orgId(orgId)
-				.duration(duration)
-				.durationUnit(durationUnit)
-				.budgetProjectId(budgetProjectId)
-				.projectResourceBudgetId(budgetProjectResourceId)
-				.build();
 	}
 }

@@ -39,7 +39,8 @@ public class WOProjectService
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
-			final WOProjectResourceRepository woProjectResourceRepository, final WOProjectStepRepository woProjectStepRepository)
+			final WOProjectResourceRepository woProjectResourceRepository, 
+			final WOProjectStepRepository woProjectStepRepository)
 	{
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;

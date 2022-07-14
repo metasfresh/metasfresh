@@ -3,8 +3,8 @@ package org.compiere.util;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import de.metas.common.util.time.SystemTime;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -1785,6 +1785,20 @@ public class TimeUtil
 		return timestamp != null ? timestamp.toInstant().atZone(SystemTime.zoneId()) : null;
 	}
 
+	@Nullable
+	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
+	{
+		if (ts == null)
+		{
+			return null;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+		return asZonedDateTime(ts, zoneId);
+	}
+	
 	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
 		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;

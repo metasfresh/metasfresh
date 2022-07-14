@@ -23,12 +23,9 @@
 package de.metas.rest_api.v2.project.workorder;
 
 import de.metas.Profiles;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceRequest;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertResponse;
 import de.metas.project.ProjectId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -40,7 +37,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -71,24 +67,6 @@ public class WorkOrderProjectRestController
 	)
 	{
 		final JsonWorkOrderProjectUpsertResponse response = projectRestService.upsertWOProject(request);
-
-		return ResponseEntity.ok().body(response);
-	}
-
-	@ApiOperation("Create or update work order resource for project.")
-	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created or updated work order project	"),
-			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
-	})
-	@PutMapping(value = "/{projectId}/resource", consumes = "application/json")
-	public ResponseEntity<JsonWorkOrderResourceUpsertResponse> upsertResource(
-			@RequestBody @NonNull final JsonWorkOrderResourceRequest jsonWorkOrderResourceRequest,
-			@PathVariable("projectId") @NonNull final Integer projectId
-	)
-	{
-		final JsonWorkOrderResourceUpsertResponse response = projectRestService.upsertResource(jsonWorkOrderResourceRequest, JsonMetasfreshId.of(projectId));
 
 		return ResponseEntity.ok().body(response);
 	}

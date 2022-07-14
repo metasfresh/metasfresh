@@ -3,18 +3,7 @@
  */
 package de.metas.document.sequence.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.IClientOrgAware;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
@@ -26,6 +15,15 @@ import de.metas.document.sequence.ValueSequenceInfoProvider.ProviderResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.IClientOrgAware;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 @Service
 public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
@@ -52,7 +50,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 				return ProviderResult.EMPTY;
 			}
 			return ProviderResult.of(documentSequenceInfo);
-		};
+		}
 	};
 
 	@Override

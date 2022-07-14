@@ -101,10 +101,6 @@ public class JsonWorkOrderProjectResponse
 	@JsonProperty("steps")
 	List<JsonWorkOrderStepResponse> steps;
 
-	@Nullable
-	@JsonProperty("resources")
-	List<JsonWorkOrderResourceResponse> resources;
-
 	@JsonCreator
 	@Builder
 	public JsonWorkOrderProjectResponse(
@@ -123,8 +119,7 @@ public class JsonWorkOrderProjectResponse
 			@Nullable @JsonProperty("projectParentId") final JsonMetasfreshId projectParentId,
 			@NonNull @JsonProperty("orgCode") final String orgCode,
 			@Nullable @JsonProperty("isActive") final Boolean isActive,
-			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepResponse> steps,
-			@Nullable @JsonProperty("resources") final List<JsonWorkOrderResourceResponse> resources)
+			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepResponse> steps)
 	{
 		this.projectId = projectId;
 		this.value = value;
@@ -142,6 +137,5 @@ public class JsonWorkOrderProjectResponse
 		this.orgCode = orgCode;
 		this.isActive = isActive;
 		this.steps = steps;
-		this.resources = resources;
 	}
 }

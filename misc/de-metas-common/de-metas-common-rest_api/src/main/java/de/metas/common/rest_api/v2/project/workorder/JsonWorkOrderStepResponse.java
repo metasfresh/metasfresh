@@ -27,9 +27,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 public class JsonWorkOrderStepResponse
@@ -62,6 +64,10 @@ public class JsonWorkOrderStepResponse
 	@JsonProperty("dateEnd")
 	String dateEnd;
 
+	@Nullable
+	@JsonProperty("resources")
+	List<JsonWorkOrderResourceResponse> resources;
+	
 	@JsonCreator
 	@Builder
 	public JsonWorkOrderStepResponse(
@@ -71,7 +77,8 @@ public class JsonWorkOrderStepResponse
 			@Nullable @JsonProperty("description") final String description,
 			@NonNull @JsonProperty("seqNo") final Integer seqNo,
 			@Nullable @JsonProperty("dateStart") final String dateStart,
-			@Nullable @JsonProperty("dateEnd") final String dateEnd
+			@Nullable @JsonProperty("dateEnd") final String dateEnd,
+			@Singular @JsonProperty("resources") final List<JsonWorkOrderResourceResponse> resources
 	)
 	{
 		this.stepId = stepId;
@@ -81,5 +88,6 @@ public class JsonWorkOrderStepResponse
 		this.seqNo = seqNo;
 		this.dateStart = dateStart;
 		this.dateEnd = dateEnd;
+		this.resources = resources;
 	}
 }

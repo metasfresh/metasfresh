@@ -27,130 +27,119 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER_DOC;
+
+@Getter
 @ToString
 @EqualsAndHashCode
 public class JsonWorkOrderProjectRequest
 {
-	@Getter
-	JsonMetasfreshId projectId;
+	@ApiModelProperty(position = 10,
+			required = true,
+			value = PROJECT_IDENTIFIER_DOC) //
+	@Setter
+	String projectIdentifier;
 
-	@ApiModelProperty(hidden = true)
-	@Getter
-	boolean projectIdSet;
-
-	@Getter
 	String value;
-
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean valueSet;
 
-	@Getter
 	String name;
-
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean nameSet;
 
 	@ApiModelProperty(required = true)
 	JsonMetasfreshId projectTypeId;
 
-
-	@Getter
 	JsonMetasfreshId priceListVersionId;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean priceListVersionIdSet;
 
-	@Getter
 	JsonMetasfreshId currencyId;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean currencyIdSet;
 
-	@Getter
 	JsonMetasfreshId salesRepId;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean salesRepIdSet;
 
-	@Getter
 	String description;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean descriptionSet;
 
-	@Getter
 	LocalDate dateContract;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean dateContractSet;
 
-	@Getter
 	LocalDate dateFinish;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean dateFinishSet;
 
-	@Getter
 	JsonMetasfreshId businessPartnerId;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean businessPartnerIdSet;
 
-	@Getter
 	String projectReferenceExt;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean projectReferenceExtSet;
 
-	@Getter
 	JsonMetasfreshId projectParentId;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean projectParentIdSet;
 
 	@ApiModelProperty(required = true)
 	String orgCode;
 
-	@Getter
 	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	Boolean isActive;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean activeSet;
 
 	@ApiModelProperty(required = true)
 	SyncAdvise syncAdvise;
 
-	@Getter
-	List<JsonWorkOrderStepRequest> steps;
+	List<JsonWorkOrderStepRequest> steps = new ArrayList<>();
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean stepsSet;
 
-	public void setProjectId(final JsonMetasfreshId projectId)
-	{
-		this.projectId = projectId;
-		this.projectIdSet = true;
-	}
+	String bpartnerDepartment;
+
+	@ApiModelProperty(hidden = true)
+	boolean bpartnerDepartmentSet;
+
+	private String woOwner;
+	@ApiModelProperty(hidden = true)
+	private boolean woOwnerSet;
+
+	private String poReference;
+	@ApiModelProperty(hidden = true)
+	private boolean poReferenceSet;
+
+	private LocalDate bpartnerTargetDate;
+	@ApiModelProperty(hidden = true)
+	private boolean bpartnerTargetDateSet;
+
+	private LocalDate woProjectCreatedDate;
+	@ApiModelProperty(hidden = true)
+	private boolean woProjectCreatedDateSet;
 
 	public void setValue(final String value)
 	{
@@ -244,21 +233,33 @@ public class JsonWorkOrderProjectRequest
 		this.stepsSet = true;
 	}
 
-	@NonNull
-	public JsonMetasfreshId getProjectTypeId()
+	public void setBpartnerDepartment(final String bpartnerDepartment)
 	{
-		return projectTypeId;
+		this.bpartnerDepartment = bpartnerDepartment;
+		this.bpartnerDepartmentSet = true;
 	}
 
-	@NonNull
-	public String getOrgCode()
+	public void setWoOwner(final String woOwner)
 	{
-		return orgCode;
+		this.woOwner = woOwner;
+		this.woOwnerSet = true;
 	}
 
-	@NonNull
-	public SyncAdvise getSyncAdvise()
+	public void setPOReference(final String poReference)
 	{
-		return syncAdvise;
+		this.poReference = poReference;
+		this.poReferenceSet = true;
+	}
+
+	public void setBPartnerTargetDate(final LocalDate bpartnerTargetDate)
+	{
+		this.bpartnerTargetDate = bpartnerTargetDate;
+		this.bpartnerTargetDateSet = true;
+	}
+
+	public void setWOProjectCreatedDate(final LocalDate woProjectCreatedDate)
+	{
+		this.woProjectCreatedDate = woProjectCreatedDate;
+		this.woProjectCreatedDateSet = true;
 	}
 }

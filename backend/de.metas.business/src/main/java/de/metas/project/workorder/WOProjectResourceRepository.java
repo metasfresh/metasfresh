@@ -25,6 +25,8 @@ package de.metas.project.workorder;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
@@ -45,6 +47,7 @@ import java.util.function.Function;
 @Repository
 public class WOProjectResourceRepository
 {
+	private static final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public Map<ProjectId, WOProjectResources> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
@@ -71,15 +74,17 @@ public class WOProjectResourceRepository
 	private static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)
 	{
 		final TemporalUnit durationUnit = WFDurationUnit.ofCode(record.getDurationUnit()).getTemporalUnit();
-
+		final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
+		
 		return WOProjectResource.builder()
-				.id(WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID()))
-				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
-				.stepId(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
+				.id(WOProjectResourceId.ofRepoId(projectId, record.getC_Project_WO_Resource_ID()))
+				.projectId(projectId)
+				.stepId(WOProjectStepId.ofRepoId(projectId, record.getC_Project_WO_Step_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.dateRange(CalendarDateRange.builder()
-						.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom()))
-						.endDate(TimeUtil.asZonedDateTime(record.getAssignDateTo()))
+						.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom(), orgId))
+						.endDate(TimeUtil.asZonedDateTime(record.getAssignDateTo(), orgId))
 						.allDay(record.isAllDay())
 						.build())
 				.durationUnit(durationUnit)

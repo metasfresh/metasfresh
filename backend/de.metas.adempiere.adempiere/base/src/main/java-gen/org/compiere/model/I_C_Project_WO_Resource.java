@@ -304,6 +304,27 @@ public interface I_C_Project_WO_Resource
 	String COLUMNNAME_DurationUnit = "DurationUnit";
 
 	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
+
+	ModelColumn<I_C_Project_WO_Resource, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_Project_WO_Resource.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

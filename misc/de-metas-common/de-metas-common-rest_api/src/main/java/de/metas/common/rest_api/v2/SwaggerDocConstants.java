@@ -76,4 +76,13 @@ public class SwaggerDocConstants
 
 	public static final String HU_IDENTIFIER_DOC = "Identifier of the handling unit in question. Can be\n"
 			+ "* a plain `<M_HU_ID>`";
+
+	public static final String PROJECT_IDENTIFIER_DOC = "Identifier of the project in question. Can be\n"
+			+ "* a plain `<C_Project_ID>`\n"
+			+ "* or something like `ext-<C_Project.ProjectReferenceExt>`\n"
+			+ "* or something like `val-<C_Project.value>`\n";
+
+	public static final String RESOURCE_IDENTIFIER_DOC = "Identifier of the project in question. Can be\n"
+			+ "* a plain `<S_Resource_ID>`\n"
+			+ "* or something like `val-<S_Resource.Value>`\n";
 }

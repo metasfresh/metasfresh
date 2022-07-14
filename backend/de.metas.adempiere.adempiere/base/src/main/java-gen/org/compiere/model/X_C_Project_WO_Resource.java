@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_C_Project_WO_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1167923606L;
+	private static final long serialVersionUID = 2034969764L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource (final Properties ctx, final int C_Project_WO_Resource_ID, @Nullable final String trxName)
@@ -210,6 +210,18 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	public java.lang.String getDurationUnit() 
 	{
 		return get_ValueAsString(COLUMNNAME_DurationUnit);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override

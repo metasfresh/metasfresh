@@ -22,34 +22,34 @@
 
 package de.metas.project.workorder.data;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepRequest;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectStepId;
-import lombok.AccessLevel;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Project_WO_Step;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.List;
 
 @Value
 @Builder
 public class WOProjectStep
 {
 	@Nullable
-	@Getter(AccessLevel.NONE)
+	@Getter
 	WOProjectStepId woProjectStepId;
 
 	@NonNull
 	String name;
 
-	@NonNull
+	@With
+	@Nullable
 	ProjectId projectId;
 
 	@Nullable
@@ -63,6 +63,12 @@ public class WOProjectStep
 
 	@Nullable
 	LocalDate dateEnd;
+
+	@Nullable
+	ExternalId externalId;
+	
+	@Singular
+	List<WOProjectResource> projectResources;
 
 	@NonNull
 	public WOProjectStepId getWOProjectStepIdNonNull()
@@ -84,31 +90,4 @@ public class WOProjectStep
 		return seqNo;
 	}
 
-	@NonNull
-	public static WOProjectStep ofRecord(@NonNull final I_C_Project_WO_Step stepRecord)
-	{
-		return WOProjectStep.builder()
-				.woProjectStepId(WOProjectStepId.ofRepoId(stepRecord.getC_Project_WO_Step_ID()))
-				.name(stepRecord.getName())
-				.description(stepRecord.getDescription())
-				.seqNo(stepRecord.getSeqNo())
-				.dateStart(TimeUtil.asLocalDate(stepRecord.getDateStart()))
-				.dateEnd(TimeUtil.asLocalDate(stepRecord.getDateEnd()))
-				.projectId(ProjectId.ofRepoId(stepRecord.getC_Project_ID()))
-				.build();
-	}
-
-	@NonNull
-	public static WOProjectStep fromJson(@NonNull final JsonWorkOrderStepRequest jsonStep, @NonNull final ProjectId projectId)
-	{
-		return WOProjectStep.builder()
-				.woProjectStepId(WOProjectStepId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(jsonStep.getStepId())))
-				.name(jsonStep.getName())
-				.description(jsonStep.getDescription())
-				.dateEnd(jsonStep.getDateEnd())
-				.dateStart(jsonStep.getDateStart())
-				.seqNo(jsonStep.getSeqNo())
-				.projectId(projectId)
-				.build();
-	}
 }

@@ -72,6 +72,7 @@ public class JsonExternalId
 		return Objects.equals(id1, id2);
 	}
 
+	@Nullable
 	public static String toValue(@Nullable final JsonExternalId externalId)
 	{
 		if (externalId == null)

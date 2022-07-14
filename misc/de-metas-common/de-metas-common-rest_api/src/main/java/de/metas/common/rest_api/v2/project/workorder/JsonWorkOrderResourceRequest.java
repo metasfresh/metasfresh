@@ -22,78 +22,78 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
+
+@Getter
 @ToString
 @EqualsAndHashCode
 public class JsonWorkOrderResourceRequest
 {
-	@Getter
-	JsonMetasfreshId woResourceId;
-
-	@ApiModelProperty(hidden = true)
-	@Getter
-	boolean woResourceIdSet;
+	@ApiModelProperty(position = 10,
+			required = true,
+			value = RESOURCE_IDENTIFIER_DOC) //
+	@Setter
+	String resourceIdentifier;
 
 	@ApiModelProperty(required = true)
 	String orgCode;
-
-	@ApiModelProperty(required = true)
-	JsonMetasfreshId stepId;
 
 	@ApiModelProperty(required = true)
 	LocalDate assignDateFrom;
 
 	@ApiModelProperty(required = true)
 	LocalDate assignDateTo;
-
-	@Getter
+	
 	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	Boolean isActive;
 
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean activeSet;
 
-	@Getter
 	JsonMetasfreshId resourceId;
-
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean resourceIdSet;
 
-	@Getter
 	Boolean isAllDay;
-
 	@ApiModelProperty(hidden = true)
-	@Getter
 	boolean allDaySet;
 
+	BigDecimal duration;
+	@ApiModelProperty(hidden = true)
+	boolean durationSet;
+
+	// TODO: turn into enum
+	String durationUnit;
+	@ApiModelProperty(hidden = true)
+	boolean durationUnitSet;
+
+	String testFacilityGroupName;
+	@ApiModelProperty(hidden = true)
+	boolean testFacilityGroupNameSet;
+
+	@Setter
+	@ApiModelProperty(required = true)
+	JsonExternalId externalId;
+	
+	@Setter
 	@ApiModelProperty(required = true)
 	SyncAdvise syncAdvise;
-
-	public void setWoResourceId(final JsonMetasfreshId woResourceId)
-	{
-		this.woResourceId = woResourceId;
-		this.woResourceIdSet = true;
-	}
 
 	public void setOrgCode(final String orgCode)
 	{
 		this.orgCode = orgCode;
-	}
-
-	public void setStepId(final JsonMetasfreshId stepId)
-	{
-		this.stepId = stepId;
 	}
 
 	public void setAssignDateFrom(final LocalDate assignDateFrom)
@@ -120,42 +120,25 @@ public class JsonWorkOrderResourceRequest
 
 	public void setAllDay(final Boolean allDay)
 	{
-		isAllDay = allDay;
+		this.isAllDay = allDay;
 		this.allDaySet = true;
 	}
 
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
+	public void setDuration(final BigDecimal duration)
 	{
-		this.syncAdvise = syncAdvise;
+		this.duration = duration;
+		this.durationSet = true;
 	}
 
-	@NonNull
-	public String getOrgCode()
+	public void setDurationUnit(final String durationUnit)
 	{
-		return orgCode;
+		this.durationUnit = durationUnit;
+		this.durationUnitSet = true;
 	}
 
-	@NonNull
-	public JsonMetasfreshId getStepId()
+	public void setTestFacilityGroupName(final String testFacilityGroupName)
 	{
-		return stepId;
-	}
-
-	@NonNull
-	public LocalDate getAssignDateFrom()
-	{
-		return assignDateFrom;
-	}
-
-	@NonNull
-	public LocalDate getAssignDateTo()
-	{
-		return assignDateTo;
-	}
-
-	@NonNull
-	public SyncAdvise getSyncAdvise()
-	{
-		return syncAdvise;
+		this.testFacilityGroupName = testFacilityGroupName;
+		this.testFacilityGroupNameSet = true;
 	}
 }

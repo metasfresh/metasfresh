@@ -24,8 +24,10 @@ package de.metas.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -34,16 +36,19 @@ import java.util.Objects;
 @Value
 public class WOProjectStepId implements RepoIdAware
 {
+
 	@JsonCreator
-	public static WOProjectStepId ofRepoId(final int repoId)
+	public static WOProjectStepId ofRepoId(@NonNull final ProjectId projectId, final int repoId)
 	{
-		return new WOProjectStepId(repoId);
+		return new WOProjectStepId(projectId, repoId);
 	}
 
 	@Nullable
-	public static WOProjectStepId ofRepoIdOrNull(final int repoId)
+	public static WOProjectStepId ofRepoIdOrNull(
+			@Nullable final ProjectId projectId,
+			@Nullable final Integer repoId)
 	{
-		return repoId > 0 ? new WOProjectStepId(repoId) : null;
+		return projectId != null && repoId != null && repoId > 0 ? ofRepoId(projectId, repoId) : null;
 	}
 
 	public static int toRepoId(@Nullable final WOProjectStepId id)
@@ -53,8 +58,12 @@ public class WOProjectStepId implements RepoIdAware
 
 	int repoId;
 
-	private WOProjectStepId(final int repoId)
+	@NonNull
+	ProjectId projectId;
+	
+	private WOProjectStepId(@NonNull final ProjectId projectId, final int repoId)
 	{
+		this.projectId = projectId;
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Project_WO_Step_ID");
 	}
 

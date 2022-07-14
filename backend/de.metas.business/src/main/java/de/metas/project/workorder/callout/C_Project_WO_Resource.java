@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.callout;
 
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
@@ -130,13 +131,15 @@ public class C_Project_WO_Resource implements ITabCallout
 
 	private BigDecimal computeDuration(final I_C_Project_WO_Resource woResource)
 	{
-		final ZonedDateTime dateFrom = TimeUtil.asZonedDateTime(woResource.getAssignDateFrom());
+		final OrgId orgId = OrgId.ofRepoId(woResource.getAD_Org_ID());
+
+		final ZonedDateTime dateFrom = TimeUtil.asZonedDateTime(woResource.getAssignDateFrom(),orgId);
 		if (dateFrom == null)
 		{
 			return BigDecimal.ZERO;
 		}
 
-		final ZonedDateTime dateTo = TimeUtil.asZonedDateTime(woResource.getAssignDateTo());
+		final ZonedDateTime dateTo = TimeUtil.asZonedDateTime(woResource.getAssignDateTo(), orgId);
 		if (dateTo == null)
 		{
 			return BigDecimal.ZERO;
