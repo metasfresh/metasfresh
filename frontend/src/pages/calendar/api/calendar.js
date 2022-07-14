@@ -13,7 +13,7 @@ export const fetchAvailableCalendars = () => {
     .then(({ calendars }) => calendars.map(converters.fromAPICalendar));
 };
 
-export const fetchCalendarEvents = ({
+export const fetchCalendarEntries = ({
   calendarIds = null,
   simulationId = null,
   startDate = null,
@@ -27,10 +27,10 @@ export const fetchCalendarEvents = ({
       endDate,
     })
     .then(extractAxiosResponseData)
-    .then(({ entries }) => entries.map(converters.fromAPIEvent));
+    .then(({ entries }) => entries.map(converters.fromAPIEntry));
 };
 
-export const addOrUpdateCalendarEvent = ({
+export const addOrUpdateCalendarEntry = ({
   id,
   simulationId = null,
   //

@@ -11,18 +11,18 @@ const converters = {
   fromAPIUpdateResult: (updateResult) => {
     //console.log('fromAPIUpdateResult', { updateResult });
     return [
-      converters.fromAPIEvent(updateResult.changedEntry),
+      converters.fromAPIEntry(updateResult.changedEntry),
       ...updateResult.otherChangedEntries.map((entry) =>
-        converters.fromAPIEvent(entry)
+        converters.fromAPIEntry(entry)
       ),
     ];
   },
 
-  fromAPIEvent: (entry) => {
-    //console.log('fromAPIEvent', { entry });
+  fromAPIEntry: (entry) => {
+    //console.log('fromAPIEntry', { entry });
     return {
       calendarId: entry.calendarId,
-      ...converters.fullcalendar_io.fromAPIEvent(entry),
+      ...converters.fullcalendar_io.fromAPIEntry(entry),
     };
   },
 
@@ -58,7 +58,7 @@ const converters = {
       return resource;
     },
 
-    fromAPIEvent: (apiEntry) => ({
+    fromAPIEntry: (apiEntry) => ({
       id: apiEntry.entryId,
       resourceId: apiEntry.resourceId,
       title: apiEntry.title,

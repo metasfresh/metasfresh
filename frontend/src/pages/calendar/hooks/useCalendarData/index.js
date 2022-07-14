@@ -1,36 +1,36 @@
 import { useState } from 'react';
-import { mergeCalendarEventsArrayToArray } from './utils/mergeCalendarEventsArrayToArray';
-import { mergeWSEventsToCalendarEvents } from './utils/mergeWSEventsToCalendarEvents';
-import { updateEventsFromConflicts } from './utils/updateEventsFromConflicts';
+import { mergeCalendarEntriesArrayToArray } from './utils/mergeCalendarEntriesArrayToArray';
+import { mergeWSEventsToCalendarEntries } from './utils/mergeWSEventsToCalendarEntries';
+import { updateEntriesFromConflicts } from './utils/updateEntriesFromConflicts';
 import { mergeWSConflictChangesEvents } from './utils/mergeWSConflictChangesEvents';
 
-export const useCalendarEvents = () => {
+export const useCalendarData = () => {
   const [state, setState] = useState({
     startDate: null,
     endDate: null,
     simulationId: null,
-    eventsLoading: false,
-    events: [],
+    entriesLoading: false,
+    entries: [],
     conflicts: [],
   });
 
-  const updateStateEventsAndConflicts = (eventsMapper, conflictsMapper) => {
+  const updateStateEntriesAndConflicts = (entriesMapper, conflictsMapper) => {
     setState((prevState) => {
-      const prevEvents = prevState.events;
-      let newEvents = eventsMapper ? eventsMapper(prevEvents) : prevEvents;
+      const prevEntries = prevState.entries;
+      let newEntries = entriesMapper ? entriesMapper(prevEntries) : prevEntries;
 
       const prevConflicts = prevState.conflicts;
       const newConflicts = conflictsMapper
         ? conflictsMapper(prevConflicts)
         : prevConflicts;
 
-      if (prevEvents === newEvents && prevConflicts === newConflicts) {
+      if (prevEntries === newEntries && prevConflicts === newConflicts) {
         return prevState;
       }
 
-      newEvents = updateEventsFromConflicts(newEvents, newConflicts);
+      newEntries = updateEntriesFromConflicts(newEntries, newConflicts);
 
-      return { ...prevState, events: newEvents, conflicts: newConflicts };
+      return { ...prevState, entries: newEntries, conflicts: newConflicts };
     });
   };
 
@@ -42,12 +42,12 @@ export const useCalendarEvents = () => {
     );
   };
 
-  const addEventsArray = (eventsArrayToAdd) => {
-    console.groupCollapsed('addEventsArray', { eventsArrayToAdd });
+  const addEntriesArray = (entriesToAddArray) => {
+    console.groupCollapsed('addEntriesArray', { entriesToAddArray });
 
-    updateStateEventsAndConflicts(
-      (prevEvents) =>
-        mergeCalendarEventsArrayToArray(prevEvents, eventsArrayToAdd),
+    updateStateEntriesAndConflicts(
+      (prevEntries) =>
+        mergeCalendarEntriesArrayToArray(prevEntries, entriesToAddArray),
       (prevConflicts) => prevConflicts
     );
 
@@ -57,9 +57,9 @@ export const useCalendarEvents = () => {
   const applyWSEvents = (wsEvents) => {
     console.groupCollapsed('applyWSEvents', { wsEvents });
 
-    updateStateEventsAndConflicts(
-      (prevEvents) =>
-        mergeWSEventsToCalendarEvents(prevEvents, wsEvents.entryEvents),
+    updateStateEntriesAndConflicts(
+      (prevEntries) =>
+        mergeWSEventsToCalendarEntries(prevEntries, wsEvents.entryEvents),
       (prevConflicts) =>
         mergeWSConflictChangesEvents(prevConflicts, wsEvents.conflictEvents)
     );
@@ -67,7 +67,7 @@ export const useCalendarEvents = () => {
     console.groupEnd();
   };
 
-  const updateEventsFromAPI = ({
+  const updateEntriesFromAPI = ({
     calendarIds,
     startDate,
     endDate,
@@ -77,17 +77,13 @@ export const useCalendarEvents = () => {
     onFetchError,
   }) => {
     if (
-      state.eventsLoading ||
+      state.entriesLoading ||
       isStateMatchingQuery({ startDate, endDate, simulationId })
     ) {
-      //console.log('updateEventsAndGet: already fetched');
-
       // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-      onFetchSuccess(state.events);
+      onFetchSuccess(state.entries);
     } else {
-      //console.log('updateEventsAndGet: start fetching from supplier: ', newEventsSupplier);
-
-      setState((prevState) => ({ ...prevState, eventsLoading: true }));
+      setState((prevState) => ({ ...prevState, entriesLoading: true }));
 
       fetchFromAPI({
         calendarIds,
@@ -95,27 +91,28 @@ export const useCalendarEvents = () => {
         startDate,
         endDate,
       })
-        .then((eventsFromAPI) => {
-          //console.log('fetchCalendarEvents: got result', { events });
-
+        .then((entriesFromAPI) => {
           setState((prevState) => {
             const conflicts = prevState.conflicts;
-            const events = updateEventsFromConflicts(eventsFromAPI, conflicts);
-            //onFetchSuccess(events);
+            const entries = updateEntriesFromConflicts(
+              entriesFromAPI,
+              conflicts
+            );
+            //onFetchSuccess(entries);
 
             return {
               startDate,
               endDate,
               simulationId,
-              events,
-              eventsLoading: false,
+              entries,
+              entriesLoading: false,
               conflicts,
             };
           });
         })
         .catch((error) => {
           console.log('got error', error);
-          setState((prevState) => ({ ...prevState, eventsLoading: false }));
+          setState((prevState) => ({ ...prevState, entriesLoading: false }));
           onFetchError(error);
         });
     }
@@ -124,8 +121,8 @@ export const useCalendarEvents = () => {
   const setConflicts = (conflictsArray) => {
     console.groupCollapsed('setConflicts', { conflictsArray });
 
-    updateStateEventsAndConflicts(
-      (prevEvents) => prevEvents,
+    updateStateEntriesAndConflicts(
+      (prevEntries) => prevEntries,
       () => conflictsArray
     );
 
@@ -137,9 +134,9 @@ export const useCalendarEvents = () => {
   };
 
   return {
-    addEventsArray,
+    addEntriesArray,
     applyWSEvents,
-    updateEventsFromAPI,
+    updateEntriesFromAPI,
     setConflicts,
     getConflictsCount,
   };

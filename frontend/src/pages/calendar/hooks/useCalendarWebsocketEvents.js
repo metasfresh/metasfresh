@@ -76,7 +76,7 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
     if (apiWSEvent.type === WSEventType_addOrChange) {
       entryEvents.push({
         type: WSEventType_addOrChange,
-        entry: converters.fromAPIEvent(apiWSEvent.entry),
+        entry: converters.fromAPIEntry(apiWSEvent.entry),
       });
     } else if (apiWSEvent.type === WSEventType_remove) {
       entryEvents.push({

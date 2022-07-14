@@ -17,7 +17,7 @@ import { normalizeDateTime } from './utils/calendarUtils';
 
 import SimulationsDropDown from './components/SimulationsDropDown';
 import { getCurrentActiveLanguage } from '../../utils/locale';
-import { useCalendarEvents } from './hooks/useCalendarEvents';
+import { useCalendarData } from './hooks/useCalendarData';
 import { useAvailableCalendars } from './hooks/useAvailableCalendars';
 import { useSimulations } from './hooks/useSimulations';
 import { useCalendarWebsocketEvents } from './hooks/useCalendarWebsocketEvents';
@@ -32,7 +32,7 @@ const Calendar = ({
   const simulations = useSimulations(initialSelectedSimulationId);
   const simulationId = simulations.getSelectedSimulationId();
   const availableCalendars = useAvailableCalendars();
-  const calendarEvents = useCalendarEvents();
+  const calendarData = useCalendarData();
 
   useEffect(() => {
     console.log('Loading simulations and calendars');
@@ -41,7 +41,7 @@ const Calendar = ({
   }, []);
 
   useEffect(() => {
-    api.fetchConflicts({ simulationId }).then(calendarEvents.setConflicts);
+    api.fetchConflicts({ simulationId }).then(calendarData.setConflicts);
   }, [simulationId]);
 
   if (onParamsChanged) {
@@ -52,16 +52,20 @@ const Calendar = ({
 
   useCalendarWebsocketEvents({
     simulationId,
-    onWSEvents: calendarEvents.applyWSEvents,
+    onWSEvents: calendarData.applyWSEvents,
   });
 
-  const fetchCalendarEvents = (fetchInfo, successCallback, failureCallback) => {
-    calendarEvents.updateEventsFromAPI({
+  const fetchCalendarEntries = (
+    fetchInfo,
+    successCallback,
+    failureCallback
+  ) => {
+    calendarData.updateEntriesFromAPI({
       calendarIds: availableCalendars.getCalendarIds(),
       startDate: normalizeDateTime(fetchInfo.startStr),
       endDate: normalizeDateTime(fetchInfo.endStr),
       simulationId,
-      fetchFromAPI: api.fetchCalendarEvents,
+      fetchFromAPI: api.fetchCalendarEntries,
       onFetchSuccess: successCallback,
       onFetchError: failureCallback,
     });
@@ -85,14 +89,14 @@ const Calendar = ({
     }
 
     api
-      .addOrUpdateCalendarEvent({
+      .addOrUpdateCalendarEntry({
         id: params.event.id,
         simulationId,
         startDate: params.event.start,
         endDate: params.event.end,
         allDay: params.event.allDay,
       })
-      .then(calendarEvents.addEventsArray)
+      .then(calendarData.addEntriesArray)
       .catch((error) => {
         console.log('Got error', error);
         params.revert();
@@ -103,9 +107,7 @@ const Calendar = ({
     <div className="calendar-container">
       <div className="calendar-top">
         <div className="calendar-top-left">
-          <ConflictsSummary
-            conflictsCount={calendarEvents.getConflictsCount()}
-          />
+          <ConflictsSummary conflictsCount={calendarData.getConflictsCount()} />
         </div>
         <div className="calendar-top-center" />
         <div className="calendar-top-right">
@@ -153,10 +155,10 @@ const Calendar = ({
         resources={availableCalendars.getResourcesArray()}
         eventSources={[
           {
-            events: fetchCalendarEvents,
+            events: fetchCalendarEntries,
           },
         ]}
-        //events={fetchCalendarEvents}
+        //events={fetchCalendarEntries}
         //dateClick={handleDateClick}
         eventClick={handleEventClick}
         eventClassNames={(params) => {
