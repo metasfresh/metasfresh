@@ -32,8 +32,8 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
+import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -175,11 +175,6 @@ public class AD_AttachmentEntry_StepDef
 		final String type = DataTableUtil.extractStringForColumnName(row, I_AD_AttachmentEntry.Table_Name + "." + I_AD_AttachmentEntry.COLUMNNAME_Type);
 		final String fileIdentifier = DataTableUtil.extractStringForColumnName(row, "File.Identifier");
 
-		final String targets = DataTableUtil.extractStringForColumnName(row, "targets");
-
-		final List<JsonExternalReferenceTarget> targetList = JsonObjectMapperHolder.newJsonObjectMapper()
-				.readValue(targets, new TypeReference<List<JsonExternalReferenceTarget>>() {});
-
 		final File file = fileTable.get(fileIdentifier);
 		assertThat(file).isNotNull();
 
@@ -195,13 +190,29 @@ public class AD_AttachmentEntry_StepDef
 				.data(filePath)
 				.build();
 
-		final JsonAttachmentRequest jsonAttachmentRequest = JsonAttachmentRequest.builder()
+		final JsonAttachmentRequest.JsonAttachmentRequestBuilder jsonAttachmentRequestBuilder = JsonAttachmentRequest.builder()
 				.attachment(jsonAttachment)
-				.orgCode(orgCode)
-				.targets(targetList)
-				.build();
+				.orgCode(orgCode);
 
-		final String payload = mapper.writeValueAsString(jsonAttachmentRequest);
+		final String targets = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.targets");
+		if (Check.isNotBlank(targets))
+		{
+			final List<JsonExternalReferenceTarget> targetList = JsonObjectMapperHolder.newJsonObjectMapper()
+					.readValue(targets, new TypeReference<List<JsonExternalReferenceTarget>>() {});
+
+			jsonAttachmentRequestBuilder.targets(targetList);
+		}
+
+		final String references = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.references");
+		if (Check.isNotBlank(references))
+		{
+			final List<JsonTableRecordReference> referenceList = JsonObjectMapperHolder.newJsonObjectMapper()
+					.readValue(references, new TypeReference<List<JsonTableRecordReference>>() {});
+
+			jsonAttachmentRequestBuilder.references(referenceList);
+		}
+
+		final String payload = mapper.writeValueAsString(jsonAttachmentRequestBuilder.build());
 
 		testContext.setRequestPayload(payload);
 	}

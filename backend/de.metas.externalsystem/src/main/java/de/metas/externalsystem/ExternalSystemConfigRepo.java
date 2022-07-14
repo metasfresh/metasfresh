@@ -34,6 +34,9 @@ import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfig;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfigId;
+import de.metas.externalsystem.leichmehl.ReplacementSource;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -44,6 +47,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
+import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -828,6 +832,7 @@ public class ExternalSystemConfigRepo
 				.tcpPort(config.getTCP_PortNumber())
 				.tcpHost(config.getTCP_Host())
 				.externalSystemLeichMehlConfigProductMappingList(getExternalSystemLeichMehlConfigProductMappings(id))
+				.externalSystemLeichMehlPluFileConfigList(getExternalSystemLeichMehlPluFileConfigs(id))
 				.build();
 	}
 
@@ -857,6 +862,32 @@ public class ExternalSystemConfigRepo
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+				.build();
+	}
+
+	@NonNull
+	private List<ExternalSystemLeichMehlPluFileConfig> getExternalSystemLeichMehlPluFileConfigs(@NonNull final ExternalSystemLeichMehlConfigId leichMehlConfigId)
+	{
+		return queryBL.createQueryBuilder(I_LeichMehl_PluFile_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_LeichMehl_PluFile_Config.COLUMN_ExternalSystem_Config_LeichMehl_ID, leichMehlConfigId)
+				.create()
+				.stream()
+				.map(ExternalSystemConfigRepo::toExternalSystemLeichMehlPluFileConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static ExternalSystemLeichMehlPluFileConfig toExternalSystemLeichMehlPluFileConfig(@NonNull final I_LeichMehl_PluFile_Config record)
+	{
+		return ExternalSystemLeichMehlPluFileConfig.builder()
+				.id(ExternalSystemLeichMehlPluFileConfigId.ofRepoId(record.getLeichMehl_PluFile_Config_ID()))
+				.leichMehlConfigId(ExternalSystemLeichMehlConfigId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ID()))
+				.targetFieldName(record.getTargetFieldName())
+				.targetFieldType(record.getTargetFieldType())
+				.replacement(record.getReplacement())
+				.replaceRegExp(record.getReplaceRegExp())
+				.replacementSource(ReplacementSource.ofCode(record.getReplacementSource()))
 				.build();
 	}
 }

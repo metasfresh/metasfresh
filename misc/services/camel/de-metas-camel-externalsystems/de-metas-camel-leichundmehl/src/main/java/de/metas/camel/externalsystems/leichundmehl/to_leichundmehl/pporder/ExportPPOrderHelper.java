@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -72,6 +73,27 @@ public class ExportPPOrderHelper
 		try
 		{
 			return mapper.readValue(productMapping, JsonExternalSystemLeichMehlConfigProductMapping.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	@NonNull
+	public JsonExternalSystemLeichMehlPluFileConfigs getPluFileConfigs(@NonNull final Map<String, String> params)
+	{
+		final String pluFileConfigs = params.get(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG);
+		if (Check.isBlank(pluFileConfigs))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PLU_FILE_CONFIG);
+		}
+
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
+		try
+		{
+			return mapper.readValue(pluFileConfigs, JsonExternalSystemLeichMehlPluFileConfigs.class);
 		}
 		catch (final JsonProcessingException e)
 		{

@@ -140,7 +140,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "tcpPort" : 8080,
       "tcpHost" : "tcpHost",
       "externalSystemLeichMehlConfigProductMappingList" : [ ],
-      "productMappingEmpty" : true
+      "externalSystemLeichMehlPluFileConfigList" : [ ],
+      "productMappingEmpty" : true,
+      "pluFileConfigEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -164,7 +166,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "tcpPort" : 8080,
         "tcpHost" : "tcpHost",
         "externalSystemLeichMehlConfigProductMappingList" : [ ],
-        "productMappingEmpty" : true
+        "externalSystemLeichMehlPluFileConfigList" : [ ],
+        "productMappingEmpty" : true,
+        "pluFileConfigEmpty" : true
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -182,7 +186,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "tcpPort" : 8080,
     "tcpHost" : "tcpHost",
     "externalSystemLeichMehlConfigProductMappingList" : [ ],
-    "productMappingEmpty" : true
+    "externalSystemLeichMehlPluFileConfigList" : [ ],
+    "productMappingEmpty" : true,
+    "pluFileConfigEmpty" : true
   }
 ]
 
@@ -202,7 +208,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "tcpPort" : 8080,
       "tcpHost" : "tcpHost",
       "externalSystemLeichMehlConfigProductMappingList" : [ ],
-      "productMappingEmpty" : true
+      "externalSystemLeichMehlPluFileConfigList" : [ ],
+      "productMappingEmpty" : true,
+      "pluFileConfigEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -492,7 +500,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
       "tcpPort" : 8080,
       "tcpHost" : "tcpHost",
       "externalSystemLeichMehlConfigProductMappingList" : [ ],
-      "productMappingEmpty" : true
+      "externalSystemLeichMehlPluFileConfigList" : [ ],
+      "productMappingEmpty" : true,
+      "pluFileConfigEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -523,6 +533,41 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value" : "value2"
         }
       ]
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.leichMehl_PluFile_Config_getById=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "externalSystemLeichMehlConfigProductMappingList" : [ ],
+      "externalSystemLeichMehlPluFileConfigList" : [
+        {
+          "id" : 100003,
+          "leichMehlConfigId" : 100002,
+          "targetFieldName" : "targetFileName",
+          "targetFieldType" : "targetFieldType",
+          "replaceRegExp" : "replacePattern",
+          "replacement" : "replacement",
+          "replacementSource" : "PPOrder"
+        }
+      ],
+      "productMappingEmpty" : true,
+      "pluFileConfigEmpty" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"

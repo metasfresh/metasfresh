@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.ReplacementSource;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -36,6 +37,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
+import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -887,6 +889,41 @@ class ExternalSystemConfigRepoTest
 				.productCategoryId(ProductCategoryId.ofRepoId(2))
 				.bPartnerId(BPartnerId.ofRepoId(3))
 				.build();
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void leichMehl_PluFile_Config_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
+				.build();
+
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("LeichMehl");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
+
+		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
+		pluFileConfig.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
+		pluFileConfig.setTargetFieldName("targetFileName");
+		pluFileConfig.setTargetFieldType("targetFieldType");
+		pluFileConfig.setReplacement("replacement");
+		pluFileConfig.setReplaceRegExp("replacePattern");
+		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
+
+		saveRecord(pluFileConfig);
 
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));

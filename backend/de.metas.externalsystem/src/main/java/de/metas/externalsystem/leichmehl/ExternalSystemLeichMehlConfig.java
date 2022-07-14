@@ -56,6 +56,9 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 	@NonNull
 	List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList;
 
+	@NonNull
+	List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigList;
+
 	@Builder
 	public ExternalSystemLeichMehlConfig(
 			@NonNull final ExternalSystemLeichMehlConfigId id,
@@ -64,7 +67,8 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 			@NonNull final String productBaseFolderName,
 			@NonNull final Integer tcpPort,
 			@NonNull final String tcpHost,
-			@NonNull final List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList)
+			@NonNull final List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList,
+			@NonNull final List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigList)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -73,6 +77,7 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 		this.tcpPort = tcpPort;
 		this.tcpHost = tcpHost;
 		this.externalSystemLeichMehlConfigProductMappingList = externalSystemLeichMehlConfigProductMappingList;
+		this.externalSystemLeichMehlPluFileConfigList = externalSystemLeichMehlPluFileConfigList;
 	}
 
 	public static ExternalSystemLeichMehlConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
@@ -91,5 +96,10 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 		return externalSystemLeichMehlConfigProductMappingList.stream()
 				.filter(productMapping -> productMapping.isMatchingQuery(query))
 				.min(Comparator.comparing(ExternalSystemLeichMehlConfigProductMapping::getSeqNo));
+	}
+
+	public boolean isPluFileConfigEmpty()
+	{
+		return externalSystemLeichMehlPluFileConfigList.isEmpty();
 	}
 }

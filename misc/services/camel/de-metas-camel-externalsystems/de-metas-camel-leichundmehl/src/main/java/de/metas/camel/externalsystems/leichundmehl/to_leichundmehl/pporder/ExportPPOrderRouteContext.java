@@ -22,12 +22,22 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonPluFileAudit;
+import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
+import org.apache.camel.RuntimeCamelException;
+
+import javax.annotation.Nullable;
+import java.nio.file.Path;
 
 @Data
 @Builder
@@ -44,4 +54,73 @@ public class ExportPPOrderRouteContext
 
 	@NonNull
 	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
+
+	@NonNull
+	private final JsonExternalSystemLeichMehlPluFileConfigs pluFileConfigs;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private JsonResponseManufacturingOrder jsonResponseManufacturingOrder;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private JsonProductInfo.JsonProductInfoBuilder jsonProductBuilder;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private JsonPluFileAudit jsonPluFileAudit;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private Path filePath;
+
+	@NonNull
+	public JsonResponseManufacturingOrder getManufacturingOrderNonNull()
+	{
+		if (this.jsonResponseManufacturingOrder == null)
+		{
+			throw new RuntimeCamelException("JsonResponseManufacturingOrder cannot be null!");
+		}
+
+		return this.jsonResponseManufacturingOrder;
+	}
+
+	@NonNull
+	public JsonProductInfo.JsonProductInfoBuilder getProductInfoBuilderNonNull()
+	{
+		if (this.jsonProductBuilder == null)
+		{
+			throw new RuntimeCamelException("JsonProductInfo.JsonProductInfoBuilder cannot be null!");
+		}
+
+		return this.jsonProductBuilder;
+	}
+
+	@NonNull
+	public JsonProductInfo getProductInfoNonNull()
+	{
+		return getProductInfoBuilderNonNull().build();
+	}
+
+	@NonNull
+	public JsonPluFileAudit getJsonPluFileAuditNonNull()
+	{
+		if (this.jsonPluFileAudit == null)
+		{
+			throw new RuntimeCamelException("JsonPluFileAudit cannot be null!");
+		}
+
+		return jsonPluFileAudit;
+	}
+
+	@NonNull
+	public Path getFilePathNonNull()
+	{
+		if (this.filePath == null)
+		{
+			throw new RuntimeCamelException("filePath cannot be null!");
+		}
+
+		return this.filePath;
+	}
 }

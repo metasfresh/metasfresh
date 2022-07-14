@@ -22,19 +22,40 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
+import de.metas.camel.externalsystems.common.LogMessageRequest;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.JsonConverter;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.ReadPluFileProcessor;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonPluFileAudit;
+import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
+import de.metas.common.product.v2.response.JsonProduct;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.attachment.JsonAttachment;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
+import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
+import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
-import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.SendToTCPRouteBuilder.SEND_TO_TCP_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -57,14 +78,23 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 				.log("Route invoked!")
 				.streamCaching()
 				.process(this::buildAndAttachContext)
+				.process(this::processAndRetrieveManufacturingOrder)
+				.to(direct(MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID))
+				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseManufacturingOrder.class))
+				.process(this::processJsonResponseManufacturingOrder)
+
+				.to(direct(MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID))
+				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonProduct.class))
+				.process(this::processJsonProduct)
+
 				.process(new ReadPluFileProcessor())
-				.choice()
-					.when(body().isNull())
-						.log(LoggingLevel.DEBUG, "No DispatchMessageRequest received.")
-					.otherwise()
-						.to(direct(SEND_TO_TCP_ROUTE_ID))
-					.endChoice()
-				.end();
+				.to(direct(SEND_TO_TCP_ROUTE_ID))
+
+				.process(this::processLogMessageRequest)
+				.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
+
+				.process(this::processJsonAttachmentRequest)
+				.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID));
 		//@formatter:on
 	}
 
@@ -89,8 +119,108 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 				.connectionDetails(ExportPPOrderHelper.getTcpConnectionDetails(parameters))
 				.productMapping(ExportPPOrderHelper.getProductMapping(parameters))
 				.productBaseFolderName(productBaseFolderName)
+				.pluFileConfigs(ExportPPOrderHelper.getPluFileConfigs(parameters))
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, context);
+	}
+
+	private void processAndRetrieveManufacturingOrder(@NonNull final Exchange exchange)
+	{
+		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
+																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
+																						  ExportPPOrderRouteContext.class);
+
+		final Map<String, String> parameters = context.getJsonExternalSystemRequest().getParameters();
+
+		if (Check.isBlank(parameters.get(ExternalSystemConstants.PARAM_PP_ORDER_ID)))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PP_ORDER_ID);
+		}
+
+		final Integer ppOrderMetasfreshId = Integer.parseInt(parameters.get(ExternalSystemConstants.PARAM_PP_ORDER_ID));
+
+		exchange.getIn().setBody(ppOrderMetasfreshId, Integer.class);
+	}
+
+	private void processJsonResponseManufacturingOrder(@NonNull final Exchange exchange)
+	{
+		final JsonResponseManufacturingOrder jsonResponseManufacturingOrder = exchange.getIn().getBody(JsonResponseManufacturingOrder.class);
+
+		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange,
+																						  ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT,
+																						  ExportPPOrderRouteContext.class);
+		context.setJsonResponseManufacturingOrder(jsonResponseManufacturingOrder);
+
+		final String productIdentifier = String.valueOf(jsonResponseManufacturingOrder.getProductId().getValue());
+		final RetrieveProductCamelRequest request = RetrieveProductCamelRequest.builder()
+				.orgCode(context.getJsonExternalSystemRequest().getOrgCode())
+				.productIdentifier(productIdentifier)
+				.build();
+
+		exchange.getIn().setBody(request, RetrieveProductCamelRequest.class);
+	}
+
+	private void processJsonProduct(@NonNull final Exchange exchange)
+	{
+		final JsonProduct jsonProduct = exchange.getIn().getBody(JsonProduct.class);
+
+		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
+
+		final JsonProductInfo.JsonProductInfoBuilder jsonProductInfoBuilder = JsonConverter.initProductInfo(context.getManufacturingOrderNonNull(), jsonProduct);
+
+		context.setJsonProductBuilder(jsonProductInfoBuilder);
+	}
+
+	private void processLogMessageRequest(@NonNull final Exchange exchange) throws JsonProcessingException
+	{
+		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
+
+		final JsonMetasfreshId adPInstanceId = context.getJsonExternalSystemRequest().getAdPInstanceId();
+
+		Check.assumeNotNull(adPInstanceId, "adPInstanceId cannot be null at this stage!");
+
+		final JsonPluFileAudit jsonPluFileAudit = context.getJsonPluFileAuditNonNull();
+		final String jsonPluFileAuditMessage = JsonObjectMapperHolder.sharedJsonObjectMapper()
+				.writeValueAsString(jsonPluFileAudit);
+
+		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
+				.logMessage(jsonPluFileAuditMessage)
+				.pInstanceId(adPInstanceId)
+				.build();
+
+		exchange.getIn().setBody(logMessageRequest);
+	}
+
+	private void processJsonAttachmentRequest(@NonNull final Exchange exchange)
+	{
+		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
+
+		final JsonExternalSystemRequest request = context.getJsonExternalSystemRequest();
+
+		final JsonMetasfreshId adPInstanceId = request.getAdPInstanceId();
+
+		Check.assumeNotNull(adPInstanceId, "adPInstanceId cannot be null at this stage!");
+
+		final Path filePath = context.getFilePathNonNull();
+
+		final JsonAttachment attachment = JsonAttachment.builder()
+				.fileName(filePath.getFileName().toString())
+				.data(filePath.toFile().toURI().toString())
+				.type(JsonAttachmentSourceType.LocalFileURL)
+				.build();
+
+		final JsonTableRecordReference jsonTableRecordReference = JsonTableRecordReference.builder()
+				.tableName(LeichMehlConstants.PP_ORDER_TABLE_NAME)
+				.recordId(context.getManufacturingOrderNonNull().getOrderId())
+				.build();
+
+		final JsonAttachmentRequest jsonAttachmentRequest = JsonAttachmentRequest.builder()
+				.attachment(attachment)
+				.orgCode(request.getOrgCode())
+				.reference(jsonTableRecordReference)
+				.build();
+
+		exchange.getIn().setBody(jsonAttachmentRequest);
 	}
 }

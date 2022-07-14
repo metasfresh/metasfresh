@@ -48,7 +48,7 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.nio.file.Path;
 
-import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.XML_PROPERTY_PLU_FILE_ENCODING_VALUE;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.XML_PROPERTY_FILE_ENCODING_VALUE;
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.XML_PROPERTY_VALUE_YES;
 
 @UtilityClass
@@ -58,14 +58,18 @@ public class XMLUtil
 	public static Document readFromPath(@NonNull final Path path) throws ParserConfigurationException, IOException, SAXException
 	{
 		final InputStream inputStream = new FileInputStream(path.toFile());
-		final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, XML_PROPERTY_PLU_FILE_ENCODING_VALUE);
+		final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, XML_PROPERTY_FILE_ENCODING_VALUE);
 
 		final BufferedReader reader = new BufferedReader(inputStreamReader);
 		final InputSource input = new InputSource(reader);
 
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder builder = factory.newDocumentBuilder();
-		return builder.parse(input);
+		final Document document = builder.parse(input);
+		//dev-note: ensure that the document hierarchy isn't affected by any extra white spaces or new lines within nodes.
+		document.getDocumentElement().normalize();
+
+		return document;
 	}
 
 	@NonNull
@@ -90,7 +94,7 @@ public class XMLUtil
 
 		final Marshaller marshaller = jaxbContext.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_PLU_FILE_ENCODING_VALUE);
+		marshaller.setProperty(Marshaller.JAXB_ENCODING, XML_PROPERTY_FILE_ENCODING_VALUE);
 
 		final CharacterEscapeHandler escapeHandler = NoEscapeHandler.INSTANCE;
 		marshaller.setProperty("com.sun.xml.bind.characterEscapeHandler", escapeHandler);

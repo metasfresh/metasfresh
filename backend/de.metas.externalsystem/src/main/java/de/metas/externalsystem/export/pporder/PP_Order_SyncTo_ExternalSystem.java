@@ -28,12 +28,17 @@ import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
+import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -46,6 +51,7 @@ import java.util.Iterator;
 public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 
 	@Nullable
 	@Override
@@ -90,11 +96,17 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 
 		final IExternalSystemChildConfigId externalSystemChildConfigId = getExternalSystemChildConfigId();
 
+		final AdProcessId adProcessId = getProcessInfo().getAdProcessId();
+
 		while (ppOrderIterator.hasNext())
 		{
+			final PInstanceId pInstanceId = instanceDAO.createADPinstanceAndADPInstancePara(PInstanceRequest.builder()
+																									.processId(adProcessId)
+																									.build());
+
 			final TableRecordReference ppOrderRecordRef = TableRecordReference.of(ppOrderIterator.next());
 
-			getExportPPOrderToExternalSystem().exportToExternalSystem(externalSystemChildConfigId, ppOrderRecordRef, getPinstanceId());
+			getExportPPOrderToExternalSystem().exportToExternalSystem(externalSystemChildConfigId, ppOrderRecordRef, pInstanceId);
 		}
 
 		return JavaProcess.MSG_OK;

@@ -1,0 +1,17 @@
+{
+  "orgCode": "orgCode",
+  "attachment": {
+    "fileName": "pluFile.xml",
+    "data": "file:/C:/metas/metasfresh/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-leichundmehl/src/test/resources/de/metas/camel/externalsystems/leichundmehl/to_leichundmehl/pporder/pluFile.xml",
+    "type": "LocalFileURL",
+    "mimeType": null,
+    "tags": null
+  },
+  "targets": [],
+  "references": [
+    {
+      "tableName": "PP_Order",
+      "recordId": 11111
+    }
+  ]
+}
