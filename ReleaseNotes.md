@@ -12,8 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
-  * [#13246] https://github.com/metasfresh/metasfresh/issues/13246 Record sql  "raise warning" output in AD_PInstanceLog
-  * [#13227] https://github.com/metasfresh/metasfresh/issues/13227
+  * [#13223](https://github.com/metasfresh/metasfresh/issues/13223) Leich&Mehl Part II
+  * [#13246](https://github.com/metasfresh/metasfresh/issues/13246) Record sql  "raise warning" output in AD_PInstanceLog
+  * [#13227](https://github.com/metasfresh/metasfresh/issues/13227) Picking QA Step
   * [#13198](https://github.com/metasfresh/metasfresh/issues/13198) Tell camel which auth token to use when connecting to MF
   * [#13242](https://github.com/metasfresh/metasfresh/pull/13242) build metasfresh via dockerbuilds
   * [#13255](https://github.com/metasfresh/metasfresh/issues/13255) Add source infos to account sheet report 
