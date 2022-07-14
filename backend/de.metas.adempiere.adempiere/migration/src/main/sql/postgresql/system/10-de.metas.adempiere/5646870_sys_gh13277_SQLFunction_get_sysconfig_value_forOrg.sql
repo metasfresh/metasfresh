@@ -16,7 +16,8 @@ BEGIN
     FROM ad_sysconfig c
     WHERE c.name = get_sysconfig_value_forOrg.name
       AND c.ad_org_id IN (p_AD_Org_ID, 0)
-      ORDER BY AD_Org_ID desc
+      AND c.IsActive='Y'
+    ORDER BY AD_Org_ID desc
     limit 1;
 
 
@@ -39,3 +40,7 @@ $BODY$
 
 -- Example
 -- SELECT get_sysconfig_value_forOrg('C_Invoice_Send_To_Current_BillTo_Address_And_User', 'N', 1000000)
+
+
+COMMENT ON FUNCTION get_sysconfig_value_forOrg(VARCHAR, VARCHAR, NUMERIC) IS 'Retrieve the sys config value for the given org, falling back on org 0.
+Example:  SELECT get_sysconfig_value_forOrg(''C_Invoice_Send_To_Current_BillTo_Address_And_User'', ''N'', 1000000)';
