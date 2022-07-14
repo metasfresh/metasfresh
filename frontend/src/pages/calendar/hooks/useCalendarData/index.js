@@ -6,9 +6,7 @@ import { mergeWSConflictChangesEvents } from './utils/mergeWSConflictChangesEven
 
 export const useCalendarData = () => {
   const [state, setState] = useState({
-    startDate: null,
-    endDate: null,
-    simulationId: null,
+    entriesQuery: { startDate: null, endDate: null, simulationId: null },
     entriesLoading: false,
     entries: [],
     conflicts: [],
@@ -36,9 +34,9 @@ export const useCalendarData = () => {
 
   const isStateMatchingQuery = ({ startDate, endDate, simulationId }) => {
     return (
-      state.startDate === startDate &&
-      state.endDate === endDate &&
-      state.simulationId === simulationId
+      state.entriesQuery.startDate === startDate &&
+      state.entriesQuery.endDate === endDate &&
+      state.entriesQuery.simulationId === simulationId
     );
   };
 
@@ -101,11 +99,9 @@ export const useCalendarData = () => {
             //onFetchSuccess(entries);
 
             return {
-              startDate,
-              endDate,
-              simulationId,
-              entries,
+              entriesQuery: { startDate, endDate, simulationId },
               entriesLoading: false,
+              entries,
               conflicts,
             };
           });
