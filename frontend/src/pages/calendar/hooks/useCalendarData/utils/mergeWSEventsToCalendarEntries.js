@@ -3,6 +3,7 @@ import {
   WSEventType_remove,
 } from '../../useCalendarWebsocketEvents';
 import { isEqualEntries } from './isEqualEntries';
+import { indexEntriesById } from './indexEntriesById';
 
 export const mergeWSEventsToCalendarEntries = (entriesArray, wsEventsArray) => {
   console.groupCollapsed('mergeWSEventsToCalendarEntries', {
@@ -16,12 +17,7 @@ export const mergeWSEventsToCalendarEntries = (entriesArray, wsEventsArray) => {
     return entriesArray;
   }
 
-  const resultEntriesById = {};
-  if (entriesArray) {
-    entriesArray.forEach((entry) => {
-      resultEntriesById[entry.id] = entry;
-    });
-  }
+  const resultEntriesById = indexEntriesById(entriesArray);
 
   let hasChanges = false;
   wsEventsArray.forEach((wsEvent) => {

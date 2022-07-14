@@ -1,16 +1,22 @@
-export const extractResourcesFromCalendarsArray = (calendars) => {
-  if (!calendars) {
+import { updateResourcesFromConflicts } from './updateResourcesFromConflicts';
+
+export const extractResourcesFromCalendarsArray = ({
+  calendarsArray,
+  entries,
+  conflicts,
+}) => {
+  if (!calendarsArray) {
     return [];
   }
 
-  const resourcesById = calendars
+  const resourcesById = calendarsArray
     .flatMap((calendar) => calendar.resources)
     .reduce((accum, resource) => {
       accum[resource.id] = resource;
       return accum;
     }, {});
 
-  const resources = Object.values(resourcesById);
+  let resources = Object.values(resourcesById);
 
   // IMPORTANT: completely remove 'parentId' property if it's not found in our list of resources
   // Else fullcalendar.io won't render that resource at all.
@@ -21,6 +27,8 @@ export const extractResourcesFromCalendarsArray = (calendars) => {
     }
   });
   //console.log('extractResourcesFromCalendarsArray', resources);
+
+  resources = updateResourcesFromConflicts({ resources, conflicts, entries });
 
   return resources;
 };

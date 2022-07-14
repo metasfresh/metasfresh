@@ -8,7 +8,7 @@ const ConflictsSummary = ({ conflictsCount }) => {
   }
 
   return (
-    <span className="conflicts-indicator">
+    <span className="conflicts-summary">
       &#9888; {conflictsCount} conflicts
     </span>
   );

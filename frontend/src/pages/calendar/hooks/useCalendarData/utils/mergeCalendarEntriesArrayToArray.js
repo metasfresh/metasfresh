@@ -1,4 +1,5 @@
 import { isEqualEntries } from './isEqualEntries';
+import { indexEntriesById } from './indexEntriesById';
 
 export const mergeCalendarEntriesArrayToArray = (
   entriesArray,
@@ -16,10 +17,7 @@ export const mergeCalendarEntriesArrayToArray = (
     return entriesArray;
   }
 
-  const resultEntriesById = {};
-  entriesArray.forEach((entry) => {
-    resultEntriesById[entry.id] = entry;
-  });
+  const resultEntriesById = indexEntriesById(entriesArray);
 
   let hasChanges = false;
   entriesToAdd.forEach((entry) => {

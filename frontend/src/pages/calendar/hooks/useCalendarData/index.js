@@ -4,11 +4,12 @@ import { mergeWSEventsToCalendarEntries } from './utils/mergeWSEventsToCalendarE
 import { updateEntriesFromConflicts } from './utils/updateEntriesFromConflicts';
 import { mergeWSConflictChangesEvents } from './utils/mergeWSConflictChangesEvents';
 import { extractResourcesFromCalendarsArray } from './utils/extractResourcesFromCalendarsArray';
+import { updateResourcesFromConflicts } from './utils/updateResourcesFromConflicts';
 
 export const useCalendarData = () => {
   const [state, setState] = useState({
     calendarsArray: [],
-    resourcesArray: [],
+    resources: [],
     //
     entriesQuery: { startDate: null, endDate: null, simulationId: null },
     entriesLoading: false,
@@ -22,7 +23,11 @@ export const useCalendarData = () => {
     setState((prevState) => ({
       ...prevState,
       calendarsArray: calendarsArray || [],
-      resourcesArray: extractResourcesFromCalendarsArray(calendarsArray),
+      resources: extractResourcesFromCalendarsArray({
+        calendarsArray,
+        entries: prevState.entries,
+        conflicts: prevState.conflicts,
+      }),
     }));
   };
 
@@ -33,7 +38,7 @@ export const useCalendarData = () => {
   const getResourcesArray = () => {
     //console.log('getResourcesArray', { state });
     // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-    return state.resourcesArray;
+    return state.resources;
   };
 
   const updateStateEntriesAndConflicts = (entriesMapper, conflictsMapper) => {
@@ -52,12 +57,23 @@ export const useCalendarData = () => {
 
       newEntries = updateEntriesFromConflicts(newEntries, newConflicts);
 
-      return { ...prevState, entries: newEntries, conflicts: newConflicts };
+      const prevResources = prevState.resources;
+      const newResources = updateResourcesFromConflicts({
+        resources: prevResources,
+        conflicts: newConflicts,
+        entries: newEntries,
+      });
+
+      return {
+        ...prevState,
+        entries: newEntries,
+        conflicts: newConflicts,
+        resources: newResources,
+      };
     });
   };
 
   const isStateMatchingQuery = ({ startDate, endDate, simulationId }) => {
-    console.log('isStateMatchingQuery', { state });
     return (
       state.entriesQuery.startDate === startDate &&
       state.entriesQuery.endDate === endDate &&
@@ -120,9 +136,16 @@ export const useCalendarData = () => {
               entriesFromAPI,
               conflicts
             );
-            //onFetchSuccess(entries);
+            //onFetchSuccess(entries); // not needed
+
+            const resources = updateResourcesFromConflicts({
+              resources: prevState.resources,
+              conflicts,
+              entries,
+            });
 
             return {
+              resources,
               entriesQuery: { startDate, endDate, simulationId },
               entriesLoading: false,
               entries,

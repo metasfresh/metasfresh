@@ -1,3 +1,8 @@
+.conflicts-summary {
+  color: red !important;
+  font-weight: bold;
+}
+
 .calendar-container {
   padding: 15px;
 
@@ -27,7 +32,7 @@
   border: 2px solid red !important;
 }
 
-.conflicts-indicator {
+.fc-resource-label.has-conflict {
   color: red !important;
   font-weight: bold;
 }

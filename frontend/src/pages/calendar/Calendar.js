@@ -23,6 +23,7 @@ import { useCalendarWebsocketEvents } from './hooks/useCalendarWebsocketEvents';
 
 import './calendar.scss';
 import ConflictsSummary from './components/ConflictsSummary';
+import CalendarResourceLabel from './components/CalendarResourceLabel';
 
 const Calendar = ({
   simulationId: initialSelectedSimulationId,
@@ -150,6 +151,15 @@ const Calendar = ({
         }}
         resourceAreaHeaderContent="Resources"
         resources={calendarData.getResourcesArray()}
+        resourceLabelContent={(params) => {
+          //console.log('resourceLabelContent', { params });
+          return (
+            <CalendarResourceLabel
+              title={params.resource.title}
+              conflict={!!params.resource.extendedProps.conflict}
+            />
+          );
+        }}
         eventSources={[
           {
             events: fetchCalendarEntries,
