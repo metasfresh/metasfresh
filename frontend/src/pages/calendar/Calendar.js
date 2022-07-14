@@ -18,7 +18,6 @@ import { normalizeDateTime } from './utils/calendarUtils';
 import SimulationsDropDown from './components/SimulationsDropDown';
 import { getCurrentActiveLanguage } from '../../utils/locale';
 import { useCalendarData } from './hooks/useCalendarData';
-import { useAvailableCalendars } from './hooks/useAvailableCalendars';
 import { useSimulations } from './hooks/useSimulations';
 import { useCalendarWebsocketEvents } from './hooks/useCalendarWebsocketEvents';
 
@@ -31,13 +30,12 @@ const Calendar = ({
 }) => {
   const simulations = useSimulations(initialSelectedSimulationId);
   const simulationId = simulations.getSelectedSimulationId();
-  const availableCalendars = useAvailableCalendars();
   const calendarData = useCalendarData();
 
   useEffect(() => {
     console.log('Loading simulations and calendars');
     api.fetchAvailableSimulations().then(simulations.setFromArray);
-    api.fetchAvailableCalendars().then(availableCalendars.setFromArray);
+    api.fetchAvailableCalendars().then(calendarData.setCalendars);
   }, []);
 
   useEffect(() => {
@@ -61,7 +59,6 @@ const Calendar = ({
     failureCallback
   ) => {
     calendarData.updateEntriesFromAPI({
-      calendarIds: availableCalendars.getCalendarIds(),
       startDate: normalizeDateTime(fetchInfo.startStr),
       endDate: normalizeDateTime(fetchInfo.endStr),
       simulationId,
@@ -152,7 +149,7 @@ const Calendar = ({
             'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear',
         }}
         resourceAreaHeaderContent="Resources"
-        resources={availableCalendars.getResourcesArray()}
+        resources={calendarData.getResourcesArray()}
         eventSources={[
           {
             events: fetchCalendarEntries,

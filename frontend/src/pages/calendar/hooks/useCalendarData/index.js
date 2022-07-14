@@ -3,14 +3,38 @@ import { mergeCalendarEntriesArrayToArray } from './utils/mergeCalendarEntriesAr
 import { mergeWSEventsToCalendarEntries } from './utils/mergeWSEventsToCalendarEntries';
 import { updateEntriesFromConflicts } from './utils/updateEntriesFromConflicts';
 import { mergeWSConflictChangesEvents } from './utils/mergeWSConflictChangesEvents';
+import { extractResourcesFromCalendarsArray } from './utils/extractResourcesFromCalendarsArray';
 
 export const useCalendarData = () => {
   const [state, setState] = useState({
+    calendarsArray: [],
+    resourcesArray: [],
+    //
     entriesQuery: { startDate: null, endDate: null, simulationId: null },
     entriesLoading: false,
     entries: [],
+    //
     conflicts: [],
   });
+
+  const setCalendars = (calendarsArray) => {
+    //console.log('setCalendarsArray', { calendarsArray, state });
+    setState((prevState) => ({
+      ...prevState,
+      calendarsArray: calendarsArray || [],
+      resourcesArray: extractResourcesFromCalendarsArray(calendarsArray),
+    }));
+  };
+
+  const getCalendarIds = () => {
+    return state.calendarsArray.map((calendar) => calendar.calendarId);
+  };
+
+  const getResourcesArray = () => {
+    //console.log('getResourcesArray', { state });
+    // IMPORTANT: don't copy it because we don't want to trigger a "react change"
+    return state.resourcesArray;
+  };
 
   const updateStateEntriesAndConflicts = (entriesMapper, conflictsMapper) => {
     setState((prevState) => {
@@ -33,6 +57,7 @@ export const useCalendarData = () => {
   };
 
   const isStateMatchingQuery = ({ startDate, endDate, simulationId }) => {
+    console.log('isStateMatchingQuery', { state });
     return (
       state.entriesQuery.startDate === startDate &&
       state.entriesQuery.endDate === endDate &&
@@ -66,7 +91,6 @@ export const useCalendarData = () => {
   };
 
   const updateEntriesFromAPI = ({
-    calendarIds,
     startDate,
     endDate,
     simulationId,
@@ -84,7 +108,7 @@ export const useCalendarData = () => {
       setState((prevState) => ({ ...prevState, entriesLoading: true }));
 
       fetchFromAPI({
-        calendarIds,
+        calendarIds: getCalendarIds(),
         simulationId,
         startDate,
         endDate,
@@ -130,9 +154,13 @@ export const useCalendarData = () => {
   };
 
   return {
+    setCalendars,
+    getResourcesArray,
+    //
     addEntriesArray,
-    applyWSEvents,
     updateEntriesFromAPI,
+    applyWSEvents,
+    //
     setConflicts,
     getConflictsCount,
   };
