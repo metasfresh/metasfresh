@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import { isSameMoment } from '../utils/calendarUtils';
+import {
+  WSEventType_addOrChange,
+  WSEventType_remove,
+} from './useCalendarWebsocketEvents';
 
 export const useCalendarEvents = () => {
   const [state, setState] = useState({
@@ -11,35 +15,23 @@ export const useCalendarEvents = () => {
     conflicts: [],
   });
 
-  const updateStateEvents = (eventsMapper) => {
+  const updateStateEventsAndConflicts = (eventsMapper, conflictsMapper) => {
     setState((prevState) => {
       const prevEvents = prevState.events;
-      let newEvents = eventsMapper(prevEvents);
-      if (prevEvents === newEvents) {
-        return prevState;
-      }
+      let newEvents = eventsMapper ? eventsMapper(prevEvents) : prevEvents;
 
-      newEvents = updateEventsFromConflicts(newEvents, prevState.conflicts);
-
-      return { ...prevState, events: newEvents };
-    });
-  };
-
-  const updateStateConflicts = (conflictsMapper) => {
-    setState((prevState) => {
       const prevConflicts = prevState.conflicts;
-      const newConflicts = conflictsMapper(prevConflicts);
-      if (prevConflicts === newConflicts) {
-        //console.log('NO conflicts changed', { prevConflicts });
+      const newConflicts = conflictsMapper
+        ? conflictsMapper(prevConflicts)
+        : prevConflicts;
+
+      if (prevEvents === newEvents && prevConflicts === newConflicts) {
         return prevState;
       }
 
-      //console.log('changed conflicts', { newConflicts, prevConflicts });
-      return {
-        ...prevState,
-        conflicts: newConflicts,
-        events: updateEventsFromConflicts(prevState.events, newConflicts),
-      };
+      newEvents = updateEventsFromConflicts(newEvents, newConflicts);
+
+      return { ...prevState, events: newEvents, conflicts: newConflicts };
     });
   };
 
@@ -52,17 +44,28 @@ export const useCalendarEvents = () => {
   };
 
   const addEventsArray = (eventsArrayToAdd) => {
-    console.log('addEventsArray', { eventsArrayToAdd });
-    updateStateEvents((prevEvents) =>
-      mergeCalendarEventsArrayToArray(prevEvents, eventsArrayToAdd)
+    console.groupCollapsed('addEventsArray', { eventsArrayToAdd });
+
+    updateStateEventsAndConflicts(
+      (prevEvents) =>
+        mergeCalendarEventsArrayToArray(prevEvents, eventsArrayToAdd),
+      (prevConflicts) => prevConflicts
     );
+
+    console.groupEnd();
   };
 
-  const applyWSEventsArray = (wsEventsArray) => {
-    console.log('applyWSEvents', { wsEventsArray });
-    updateStateEvents((prevEvents) =>
-      mergeWSEventsToCalendarEvents(prevEvents, wsEventsArray)
+  const applyWSEvents = (wsEvents) => {
+    console.groupCollapsed('applyWSEvents', { wsEvents });
+
+    updateStateEventsAndConflicts(
+      (prevEvents) =>
+        mergeWSEventsToCalendarEvents(prevEvents, wsEvents.entryEvents),
+      (prevConflicts) =>
+        mergeWSConflictChangesEvents(prevConflicts, wsEvents.conflictEvents)
     );
+
+    console.groupEnd();
   };
 
   const updateEventsFromAPI = ({
@@ -120,13 +123,19 @@ export const useCalendarEvents = () => {
   };
 
   const setConflicts = (conflictsArray) => {
-    console.log('conflictsArray', conflictsArray);
-    updateStateConflicts(() => conflictsArray);
+    console.groupCollapsed('setConflicts', { conflictsArray });
+
+    updateStateEventsAndConflicts(
+      (prevEvents) => prevEvents,
+      () => conflictsArray
+    );
+
+    console.groupEnd();
   };
 
   return {
     addEventsArray,
-    applyWSEventsArray,
+    applyWSEvents,
     updateEventsFromAPI,
     setConflicts,
   };
@@ -177,10 +186,15 @@ const mergeCalendarEventsArrayToArray = (eventsArray, eventsToAdd) => {
 };
 
 const mergeWSEventsToCalendarEvents = (eventsArray, wsEventsArray) => {
-  console.log('mergeWSEventsToCalendarEvents', { eventsArray, wsEventsArray });
+  console.groupCollapsed('mergeWSEventsToCalendarEvents', {
+    eventsArray,
+    wsEventsArray,
+  });
+
   if (!wsEventsArray || wsEventsArray.length === 0) {
     console.log('=> empty wsEventsArray => NO CHANGE');
-    return;
+    console.groupEnd();
+    return eventsArray;
   }
 
   const resultEventsById = [];
@@ -192,7 +206,7 @@ const mergeWSEventsToCalendarEvents = (eventsArray, wsEventsArray) => {
 
   let hasChanges = false;
   wsEventsArray.forEach((wsEvent) => {
-    if (wsEvent.type === 'addOrChange') {
+    if (wsEvent.type === WSEventType_addOrChange) {
       if (!isEqualEvents(resultEventsById[wsEvent.entry.id], wsEvent.entry)) {
         console.log('changing event', {
           oldEvent: resultEventsById[wsEvent.entry.id],
@@ -206,7 +220,7 @@ const mergeWSEventsToCalendarEvents = (eventsArray, wsEventsArray) => {
           newEvent: wsEvent.entry,
         });
       }
-    } else if (wsEvent.type === 'remove') {
+    } else if (wsEvent.type === WSEventType_remove) {
       if (wsEvent.entryId in resultEventsById) {
         delete resultEventsById[wsEvent.entryId];
         hasChanges = true;
@@ -218,10 +232,12 @@ const mergeWSEventsToCalendarEvents = (eventsArray, wsEventsArray) => {
 
   if (!hasChanges) {
     console.log('=> same => NO CHANGE');
+    console.groupEnd();
     return eventsArray;
   }
 
   console.log('=> new array of ', resultEventsById);
+  console.groupEnd();
   return Object.values(resultEventsById);
 };
 
@@ -290,4 +306,45 @@ const updateEventsFromConflicts = (eventsArray, conflictsArray) => {
     conflictsArray,
   });
   return changedEvents;
+};
+
+const mergeWSConflictChangesEvents = (conflictsArray, wsEventsArray) => {
+  if (!wsEventsArray || wsEventsArray.length === 0) {
+    return conflictsArray;
+  }
+
+  let changedConflictsArray = conflictsArray;
+  wsEventsArray.forEach((wsEvent) => {
+    changedConflictsArray = mergeSingleWSConflictChangesEvent(
+      changedConflictsArray,
+      wsEvent
+    );
+  });
+
+  return changedConflictsArray;
+};
+
+const mergeSingleWSConflictChangesEvent = (conflictsArray, wsEvent) => {
+  console.groupCollapsed('mergeSingleWSConflictChangesEvent', {
+    conflictsArray,
+    wsEvent,
+  });
+
+  //
+  // Remove conflicts which are affected by this event
+  const affectedEntryIds = wsEvent.affectedEntryIds;
+  let changedConflictsArray = conflictsArray.filter(
+    (conflict) =>
+      !affectedEntryIds.includes(conflict.entryId1) &&
+      !affectedEntryIds.includes(conflict.entryId2)
+  );
+  console.log('conflicts after removing affected:', changedConflictsArray);
+
+  //
+  // Add conflicts from this event
+  changedConflictsArray = [...changedConflictsArray, ...wsEvent.conflicts];
+  console.log('conflicts after adding new ones:', changedConflictsArray);
+
+  console.groupEnd();
+  return changedConflictsArray;
 };

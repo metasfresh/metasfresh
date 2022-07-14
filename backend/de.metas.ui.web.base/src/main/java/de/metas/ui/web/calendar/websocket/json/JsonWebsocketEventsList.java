@@ -1,4 +1,4 @@
-package de.metas.ui.web.calendar.json;
+package de.metas.ui.web.calendar.websocket.json;
 
 import lombok.Builder;
 import lombok.NonNull;

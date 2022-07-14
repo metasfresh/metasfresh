@@ -2,12 +2,14 @@ package de.metas.project.workorder.conflicts;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.conflicts.CalendarConflictEventsDispatcher;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectRepository;
 import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceRepository;
 import de.metas.project.workorder.WOProjectResourceSimulation;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
@@ -20,6 +22,8 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
+import static de.metas.project.workorder.conflicts.WOProjectCalendarConflictsConverters.toEvent;
+
 @Service
 public class WOProjectConflictService
 {
@@ -28,17 +32,20 @@ public class WOProjectConflictService
 
 	@NonNull private final WOProjectRepository woProjectRepository;
 	@NonNull private final WOProjectResourceRepository woProjectResourceRepository;
+	@NonNull private final CalendarConflictEventsDispatcher eventsDispatcher;
 
 	public WOProjectConflictService(
 			final @NonNull WOProjectResourceConflictRepository conflictRepository,
 			final @NonNull WOProjectSimulationRepository woProjectSimulationRepository,
 			final @NonNull WOProjectRepository woProjectRepository,
-			final @NonNull WOProjectResourceRepository woProjectResourceRepository)
+			final @NonNull WOProjectResourceRepository woProjectResourceRepository,
+			final @NonNull CalendarConflictEventsDispatcher eventsDispatcher)
 	{
 		this.conflictRepository = conflictRepository;
 		this.woProjectSimulationRepository = woProjectSimulationRepository;
 		this.woProjectRepository = woProjectRepository;
 		this.woProjectResourceRepository = woProjectResourceRepository;
+		this.eventsDispatcher = eventsDispatcher;
 	}
 
 	public ResourceAllocationConflicts getActualAndSimulation(@Nullable final SimulationPlanId simulationId)
@@ -64,7 +71,6 @@ public class WOProjectConflictService
 		checkConflicts0(onlySimulation, resourceIds);
 	}
 
-
 	private void checkConflicts0(
 			@Nullable final WOProjectSimulationPlan onlySimulation,
 			@NonNull Set<ResourceId> resourceIds)
@@ -80,8 +86,8 @@ public class WOProjectConflictService
 			return;
 		}
 
-		final ImmutableMap<WOProjectResourceId, WOProjectResource> projectResources = woProjectResourceRepository.streamByResourceIds(resourceIds, activeProjectIds)
-				.collect(GuavaCollectors.toImmutableMapByKey(WOProjectResource::getId));
+		final ImmutableMap<WOProjectAndResourceId, WOProjectResource> projectResources = woProjectResourceRepository.streamByResourceIds(resourceIds, activeProjectIds)
+				.collect(GuavaCollectors.toImmutableMapByKey(WOProjectResource::getWOProjectAndResourceId));
 		if (projectResources.isEmpty())
 		{
 			return;
@@ -93,13 +99,13 @@ public class WOProjectConflictService
 		{
 			final ResourceAllocations resourceAllocations = toResourceAllocations(projectResources.values(), null);
 			actualConflicts = resourceAllocations.findActualConflicts();
-			conflictRepository.save(actualConflicts, projectResources.keySet());
+			saveAndNotify(actualConflicts, projectResources.keySet());
 
-			simulationsToCheck = woProjectSimulationRepository.getByResourceIds(projectResources.keySet());
+			simulationsToCheck = woProjectSimulationRepository.getByResourceIds(WOProjectAndResourceId.unbox(projectResources.keySet()));
 		}
 		else
 		{
-			actualConflicts = conflictRepository.getActualConflicts(projectResources.keySet());
+			actualConflicts = conflictRepository.getActualConflicts(WOProjectAndResourceId.unbox(projectResources.keySet()));
 			simulationsToCheck = ImmutableList.of(onlySimulation);
 		}
 
@@ -108,8 +114,16 @@ public class WOProjectConflictService
 		{
 			final ResourceAllocations resourceAllocations = toResourceAllocations(projectResources.values(), simulationToCheck);
 			final ResourceAllocationConflicts simulationOnlyConflicts = resourceAllocations.findSimulationOnlyConflicts(actualConflicts);
-			conflictRepository.save(simulationOnlyConflicts, projectResources.keySet());
+			saveAndNotify(simulationOnlyConflicts, projectResources.keySet());
 		}
+	}
+
+	private void saveAndNotify(
+			@NonNull final ResourceAllocationConflicts conflicts,
+			@NonNull final ImmutableSet<WOProjectAndResourceId> projectResourceIds)
+	{
+		conflictRepository.save(conflicts, WOProjectAndResourceId.unbox(projectResourceIds));
+		eventsDispatcher.notifyChanges(conflicts.getSimulationId(), () -> toEvent(conflicts, projectResourceIds));
 	}
 
 	private static ResourceAllocations toResourceAllocations(

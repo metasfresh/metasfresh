@@ -49,7 +49,7 @@ const Calendar = ({
 
   useCalendarWebsocketEvents({
     simulationId,
-    onWSEventsArray: calendarEvents.applyWSEventsArray,
+    onWSEvents: calendarEvents.applyWSEvents,
   });
 
   const fetchCalendarEvents = (fetchInfo, successCallback, failureCallback) => {

@@ -31,14 +31,6 @@ const converters = {
     name: simulation.name,
   }),
 
-  // see de.metas.ui.web.calendar.json.JsonWebsocketEvent
-  fromAPIWebsocketEvent: (wsEvent) => ({
-    type: wsEvent.type,
-    entry: wsEvent.entry ? converters.fromAPIEvent(wsEvent.entry) : null,
-    entryId: wsEvent.entryId,
-    simulationId: wsEvent.simulationId,
-  }),
-
   fromAPIConflict: (conflict) => ({
     entryId1: conflict.entryId1,
     entryId2: conflict.entryId2,

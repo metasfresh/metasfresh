@@ -59,7 +59,7 @@ public class CalendarContinuousQuery
 			return;
 		}
 
-		listeners.forEach(listener -> listener.onEvents(relevantEvents));
+		listeners.forEach(listener -> listener.onCalendarContinuousQueryEvents(relevantEvents));
 	}
 
 	private boolean isEventMatchingQuery(@NonNull final Event event)

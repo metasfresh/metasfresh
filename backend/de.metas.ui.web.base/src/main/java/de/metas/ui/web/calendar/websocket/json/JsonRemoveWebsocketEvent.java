@@ -1,4 +1,4 @@
-package de.metas.ui.web.calendar.json;
+package de.metas.ui.web.calendar.websocket.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.calendar.CalendarEntryId;
@@ -13,21 +13,13 @@ import javax.annotation.Nullable;
 @Value
 @Builder
 @Jacksonized
-public class JsonWebsocketEvent
+public class JsonRemoveWebsocketEvent implements JsonWebsocketEvent
 {
-	public enum Type
-	{
-		addOrChange, remove
-	}
-
-	@NonNull Type type;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Nullable JsonCalendarEntry entry;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@Nullable CalendarEntryId entryId;
+	@NonNull String type = "remove";
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Nullable SimulationPlanId simulationId;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable CalendarEntryId entryId;
 }
