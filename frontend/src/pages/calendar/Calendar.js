@@ -22,6 +22,8 @@ import { useAvailableCalendars } from './hooks/useAvailableCalendars';
 import { useSimulations } from './hooks/useSimulations';
 import { useCalendarWebsocketEvents } from './hooks/useCalendarWebsocketEvents';
 
+import './calendar.scss';
+
 const Calendar = ({
   simulationId: initialSelectedSimulationId,
   onParamsChanged,
