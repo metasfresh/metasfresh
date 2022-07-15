@@ -111,7 +111,7 @@ public class WorkOrderProjectRepository
 	public WOProject save(@NonNull final WOProject woProject)
 	{
 		final I_C_Project projectRecord = InterfaceWrapperHelper.loadOrNew(woProject.getProjectId(), I_C_Project.class);
-		
+
 		if (Check.isNotBlank(woProject.getName()))
 		{
 			projectRecord.setName(woProject.getName());
@@ -124,7 +124,7 @@ public class WorkOrderProjectRepository
 		{
 			projectRecord.setIsActive(true);
 		}
-
+		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(woProject.getCurrencyId()));
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(woProject.getOrgId()));
 		projectRecord.setDescription(woProject.getDescription());
 		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(woProject.getProjectParentId()));

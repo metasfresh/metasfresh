@@ -45,6 +45,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
@@ -61,6 +62,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -89,13 +91,16 @@ public class WorkOrderProjectRestService
 
 	private final WorkOrderProjectRepository projectRepository;
 	private final ResourceService resourceService;
+	private final ProjectTypeRepository projectTypeRepository;
 
 	public WorkOrderProjectRestService(
 			@NonNull final WorkOrderProjectRepository projectRepository,
-			@NonNull final ResourceService resourceService)
+			@NonNull final ResourceService resourceService,
+			@NonNull final ProjectTypeRepository projectTypeRepository)
 	{
 		this.projectRepository = projectRepository;
 		this.resourceService = resourceService;
+		this.projectTypeRepository = projectTypeRepository;
 	}
 
 	public JsonWorkOrderProjectResponse getWorkOrderProjectDataById(@NonNull final ProjectId projectId)
@@ -121,11 +126,7 @@ public class WorkOrderProjectRestService
 		final SyncAdvise woProjectSyncAdvise = request.getSyncAdvise();
 		if (woProjectSyncAdvise == null)
 		{
-			throw MissingResourceException.builder()
-					.resourceName("syncAdvise")
-					.parentResource(request)
-					.build()
-					.setParameter("JsonWorkOrderProjectRequest", request);
+			throw new MissingPropertyException("syncAdvise", request);
 		}
 
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
@@ -146,7 +147,6 @@ public class WorkOrderProjectRestService
 							.projectId(JsonMetasfreshId.of(existingWOProjectId.getRepoId()));
 
 			final WOProject jsonUpdatedWOProject = updateWOProjectFromJson(request, existingWOProject);
-
 			updateExistingWOProject(projectResponseBuilder, jsonUpdatedWOProject, woProjectSyncAdvise);
 
 			return projectResponseBuilder.build();
@@ -161,10 +161,28 @@ public class WorkOrderProjectRestService
 		}
 		else
 		{
+			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getCurrencyId()));
+			if (currencyId == null)
+			{
+				throw new MissingPropertyException("currencyId", request);
+			}
+			final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectTypeId()));
+			if (projectTypeId == null)
+			{
+				throw new MissingPropertyException("projectTypeId", request);
+			}
+			if (projectTypeRepository.getByIdOrNull(projectTypeId) == null)
+			{
+				throw MissingResourceException.builder()
+						.resourceName("projectTypeId")
+						.resourceIdentifier(Integer.toString(projectTypeId.getRepoId()))
+						.parentResource(request)
+						.build();
+			}
+			
 			final OrgId woProjectOrgId = retrieveOrgIdOrDefault(request.getOrgCode());
 
 			final WOProject projectData = FromJSONUtil.fromJson(request, woProjectOrgId);
-
 			final ProjectId createdProjectId = projectRepository.save(projectData).getProjectIdNonNull();
 
 			final ImmutableList.Builder<JsonWorkOrderStepUpsertResponse> stepListBuilder = ImmutableList.builder();
@@ -214,6 +232,15 @@ public class WorkOrderProjectRestService
 			updatedWOProjectBuilder.priceListVersionId(existingWOProject.getPriceListVersionId());
 		}
 
+		if (request.isCurrencyIdSet())
+		{
+			updatedWOProjectBuilder.currencyId(CurrencyId.ofRepoId(request.getCurrencyId().getValue()));
+		}
+		else
+		{
+			updatedWOProjectBuilder.currencyId(existingWOProject.getCurrencyId());
+		}
+				
 		if (request.isSalesRepIdSet())
 		{
 			updatedWOProjectBuilder.salesRepId(UserId.ofRepoIdOrNull(request.getSalesRepId().getValue()));

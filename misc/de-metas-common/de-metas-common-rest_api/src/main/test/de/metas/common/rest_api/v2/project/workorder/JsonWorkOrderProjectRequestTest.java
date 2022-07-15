@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import org.junit.BeforeClass;
@@ -33,8 +34,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -42,7 +41,6 @@ import static org.assertj.core.api.Assertions.*;
 
 public class JsonWorkOrderProjectRequestTest
 {
-
 	private final ObjectMapper mapper = new ObjectMapper()
 			.findAndRegisterModules()
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
@@ -58,9 +56,7 @@ public class JsonWorkOrderProjectRequestTest
 	@Test
 	public void serializeDeserialize() throws IOException
 	{
-
-		final JsonWorkOrderProjectRequest woProjectRequest = new JsonWorkOrderProjectRequest();
-		woProjectRequest.setProjectId(JsonMetasfreshId.of(123456));
+		final JsonWorkOrderProjectUpsertRequest woProjectRequest = new JsonWorkOrderProjectUpsertRequest();
 		woProjectRequest.setbPartnerId(JsonMetasfreshId.of(123456));
 		woProjectRequest.setProjectParentId(JsonMetasfreshId.of(123456));
 		woProjectRequest.setProjectTypeId(JsonMetasfreshId.of(123456));
@@ -77,25 +73,25 @@ public class JsonWorkOrderProjectRequestTest
 		woProjectRequest.setOrgCode("ORG");
 		woProjectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 
-		final List<JsonWorkOrderStepRequest> woProjectStepRequestList = new ArrayList<>();
+		final JsonWorkOrderStepUpsertRequest woProjectStep = new JsonWorkOrderStepUpsertRequest();
+		woProjectStep.setSeqNo(123456);
+		woProjectStep.setName("Test WO Project Step");
+		woProjectStep.setDescription("Test WO Project Step Description");
+		woProjectStep.setDateEnd(LocalDate.now());
+		woProjectStep.setDateStart(LocalDate.now());
 
-		final JsonWorkOrderStepRequest woProjectStepRequest = new JsonWorkOrderStepRequest();
-		woProjectStepRequest.setStepId(JsonMetasfreshId.of(123456));
-		woProjectStepRequest.setSeqNo(123456);
-		woProjectStepRequest.setName("Test WO Project Step");
-		woProjectStepRequest.setDescription("Test WO Project Step Description");
-		woProjectStepRequest.setDateEnd(LocalDate.now());
-		woProjectStepRequest.setDateStart(LocalDate.now());
-		woProjectStepRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+		woProjectRequest.setSteps(ImmutableList.of(woProjectStep));
+		
+		final JsonWorkOrderResourceUpsertRequest woProjectResource = new JsonWorkOrderResourceUpsertRequest();
+		woProjectResource.setAssignDateFrom(LocalDate.parse("2022-07-15"));
+		woProjectResource.setAssignDateTo(LocalDate.parse("2022-07-16"));
 
-		woProjectStepRequestList.add(woProjectStepRequest);
-
-		woProjectRequest.setSteps(woProjectStepRequestList);
+		woProjectStep.setResourceRequests(ImmutableList.of(woProjectResource));
 
 		final String string = mapper.writeValueAsString(woProjectRequest);
 		assertThat(string).isNotEmpty();
 
-		final JsonWorkOrderProjectRequest result = mapper.readValue(string, JsonWorkOrderProjectRequest.class);
+		final JsonWorkOrderProjectUpsertRequest result = mapper.readValue(string, JsonWorkOrderProjectUpsertRequest.class);
 
 		assertThat(result).isEqualTo(woProjectRequest);
 		expect(result).toMatchSnapshot();

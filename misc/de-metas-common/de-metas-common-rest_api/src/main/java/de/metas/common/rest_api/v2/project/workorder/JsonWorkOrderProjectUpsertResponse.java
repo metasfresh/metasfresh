@@ -28,6 +28,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
@@ -48,7 +49,7 @@ public class JsonWorkOrderProjectUpsertResponse
 	@JsonCreator
 	public JsonWorkOrderProjectUpsertResponse(
 			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@NonNull @JsonProperty("createdStepIds") final List<JsonWorkOrderStepUpsertResponse> createdStepIds,
+			@Singular @JsonProperty("createdStepIds") final List<JsonWorkOrderStepUpsertResponse> createdStepIds,
 			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
 	)
 	{

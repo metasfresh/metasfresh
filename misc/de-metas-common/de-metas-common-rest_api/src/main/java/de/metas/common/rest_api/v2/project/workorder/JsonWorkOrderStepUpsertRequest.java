@@ -140,7 +140,7 @@ public class JsonWorkOrderStepUpsertRequest
 		this.woPartialReportDateSet = true;
 	}
 
-	public void setWoPartialReportDate(final Integer woPlannedResourceDurationHours)
+	public void setWoPlannedResourceDurationHours(final Integer woPlannedResourceDurationHours)
 	{
 		this.woPlannedResourceDurationHours = woPlannedResourceDurationHours;
 		this.woPlannedResourceDurationHoursSet = true;

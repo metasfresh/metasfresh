@@ -141,6 +141,7 @@ public class ProjectRepository
 				.map(ProjectId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
 	public void updateFromProjectType(@NonNull final I_C_Project projectRecord)
 	{
 		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());

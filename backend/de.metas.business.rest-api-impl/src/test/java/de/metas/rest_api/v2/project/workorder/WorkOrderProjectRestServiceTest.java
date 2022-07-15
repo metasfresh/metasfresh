@@ -98,11 +98,12 @@ class WorkOrderProjectRestServiceTest
 				new WOProjectStepRepository(),
 				new WorkOrderProjectResourceRepository());
 
-		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory, new ProjectTypeRepository(), workOrderProjectStepRepository);
+		final ProjectTypeRepository projectTypeRepository = new ProjectTypeRepository();
+		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory, projectTypeRepository, workOrderProjectStepRepository);
 
 		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
 
-		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository, resourceService);
+		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository, resourceService, projectTypeRepository);
 	}
 
 	@BeforeAll
