@@ -1,3 +1,7 @@
 
-UPDATE c_project_wo_step SET DateStart='2000-01-01', updatedby=99, updated='2022-06-20 21:28' where DateStart is null;
-UPDATE c_project_wo_step SET DateEnd='2000-01-01', updatedby=99, updated='2022-06-20 21:28' where DateEnd is null;
+-- thx @teosarca
+UPDATE c_project_wo_step s
+SET datestart=(SELECT MIN(r.assigndatefrom) FROM c_project_wo_resource r WHERE r.c_project_wo_step_id = s.c_project_wo_step_id),
+    dateend=(SELECT MAX(r.assigndateto) FROM c_project_wo_resource r WHERE r.c_project_wo_step_id = s.c_project_wo_step_id)
+WHERE 1 = 1
+;
