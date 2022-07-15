@@ -129,9 +129,7 @@ public class C_Project_WO_Resource
 
 	private static BigDecimal computeDuration(final I_C_Project_WO_Resource woResource)
 	{
-		final OrgId orgId = OrgId.ofRepoId(woResource.getAD_Org_ID());
-
-		final Instant dateFrom = TimeUtil.asInstant(woResource.getAssignDateFrom(),orgId);
+		final Instant dateFrom = TimeUtil.asInstant(woResource.getAssignDateFrom());
 		if (dateFrom == null)
 		{
 			return BigDecimal.ZERO;

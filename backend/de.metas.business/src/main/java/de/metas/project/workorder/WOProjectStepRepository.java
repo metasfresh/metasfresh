@@ -89,6 +89,8 @@ public class WOProjectStepRepository
 	{
 		try
 		{
+		try
+		{
 		final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
 
 			return WOProjectStep.builder()
