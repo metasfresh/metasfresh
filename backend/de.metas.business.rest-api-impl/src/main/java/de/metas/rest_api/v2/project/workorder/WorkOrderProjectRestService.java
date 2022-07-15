@@ -25,7 +25,6 @@ package de.metas.rest_api.v2.project.workorder;
 import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -33,9 +32,7 @@ import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRespons
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceResponse;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepResponse;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResponse;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -54,13 +51,10 @@ import de.metas.project.workorder.data.WOProject;
 import de.metas.project.workorder.data.WOProjectResource;
 import de.metas.project.workorder.data.WOProjectStep;
 import de.metas.project.workorder.data.WorkOrderProjectRepository;
-import de.metas.resource.Resource;
-import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
@@ -71,14 +65,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
 @Service
 public class WorkOrderProjectRestService
@@ -90,17 +77,17 @@ public class WorkOrderProjectRestService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final WorkOrderProjectRepository projectRepository;
-	private final ResourceService resourceService;
 	private final ProjectTypeRepository projectTypeRepository;
+	private final WorkOrderProjectJsonToInternalConverter workOrderProjectJsonToInternalConverter;
 
 	public WorkOrderProjectRestService(
 			@NonNull final WorkOrderProjectRepository projectRepository,
-			@NonNull final ResourceService resourceService,
-			@NonNull final ProjectTypeRepository projectTypeRepository)
+			@NonNull final ProjectTypeRepository projectTypeRepository,
+			@NonNull final WorkOrderProjectJsonToInternalConverter workOrderProjectJsonToInternalConverter)
 	{
 		this.projectRepository = projectRepository;
-		this.resourceService = resourceService;
 		this.projectTypeRepository = projectTypeRepository;
+		this.workOrderProjectJsonToInternalConverter = workOrderProjectJsonToInternalConverter;
 	}
 
 	public JsonWorkOrderProjectResponse getWorkOrderProjectDataById(@NonNull final ProjectId projectId)
@@ -146,7 +133,7 @@ public class WorkOrderProjectRestService
 					JsonWorkOrderProjectUpsertResponse.builder()
 							.projectId(JsonMetasfreshId.of(existingWOProjectId.getRepoId()));
 
-			final WOProject jsonUpdatedWOProject = updateWOProjectFromJson(request, existingWOProject);
+			final WOProject jsonUpdatedWOProject = workOrderProjectJsonToInternalConverter.updateWOProjectFromJson(request, existingWOProject);
 			updateExistingWOProject(projectResponseBuilder, jsonUpdatedWOProject, woProjectSyncAdvise);
 
 			return projectResponseBuilder.build();
@@ -179,10 +166,8 @@ public class WorkOrderProjectRestService
 						.parentResource(request)
 						.build();
 			}
-			
-			final OrgId woProjectOrgId = retrieveOrgIdOrDefault(request.getOrgCode());
 
-			final WOProject projectData = FromJSONUtil.fromJson(request, woProjectOrgId);
+			final WOProject projectData = workOrderProjectJsonToInternalConverter.updateWOProjectFromJson(request, null);
 			final ProjectId createdProjectId = projectRepository.save(projectData).getProjectIdNonNull();
 
 			final ImmutableList.Builder<JsonWorkOrderStepUpsertResponse> stepListBuilder = ImmutableList.builder();
@@ -209,326 +194,6 @@ public class WorkOrderProjectRestService
 		{
 			responseBuilder.syncOutcome(JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE);
 		}
-	}
-
-	@NonNull
-	private WOProject updateWOProjectFromJson(
-			@NonNull final JsonWorkOrderProjectUpsertRequest request,
-			@NonNull final WOProject existingWOProject)
-	{
-		final OrgId orgId = retrieveOrgIdOrDefault(request.getOrgCode());
-
-		final WOProject.WOProjectBuilder updatedWOProjectBuilder = WOProject.builder()
-				.projectId(existingWOProject.getProjectIdNonNull())
-				.projectTypeId(ProjectTypeId.ofRepoId(request.getProjectTypeId().getValue()))
-				.orgId(orgId);
-
-		if (request.isPriceListVersionIdSet())
-		{
-			updatedWOProjectBuilder.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(request.getPriceListVersionId().getValue()));
-		}
-		else
-		{
-			updatedWOProjectBuilder.priceListVersionId(existingWOProject.getPriceListVersionId());
-		}
-
-		if (request.isCurrencyIdSet())
-		{
-			updatedWOProjectBuilder.currencyId(CurrencyId.ofRepoId(request.getCurrencyId().getValue()));
-		}
-		else
-		{
-			updatedWOProjectBuilder.currencyId(existingWOProject.getCurrencyId());
-		}
-				
-		if (request.isSalesRepIdSet())
-		{
-			updatedWOProjectBuilder.salesRepId(UserId.ofRepoIdOrNull(request.getSalesRepId().getValue()));
-		}
-		else
-		{
-			updatedWOProjectBuilder.salesRepId(existingWOProject.getSalesRepId());
-		}
-
-		if (request.isProjectReferenceExtSet())
-		{
-			updatedWOProjectBuilder.projectReferenceExt(request.getProjectReferenceExt());
-		}
-		else
-		{
-			updatedWOProjectBuilder.projectReferenceExt(existingWOProject.getProjectReferenceExt());
-		}
-
-		if (request.isProjectParentIdSet())
-		{
-			updatedWOProjectBuilder.projectParentId(ProjectId.ofRepoIdOrNull(request.getProjectParentId().getValue()));
-		}
-		else
-		{
-			updatedWOProjectBuilder.projectParentId(existingWOProject.getProjectParentId());
-		}
-
-		if (request.isBusinessPartnerIdSet())
-		{
-			updatedWOProjectBuilder.bPartnerId(BPartnerId.ofRepoIdOrNull(request.getBusinessPartnerId().getValue()));
-		}
-		else
-		{
-			updatedWOProjectBuilder.bPartnerId(existingWOProject.getBPartnerId());
-		}
-
-		if (request.isCurrencyIdSet())
-		{
-			updatedWOProjectBuilder.currencyId(CurrencyId.ofRepoIdOrNull(request.getCurrencyId().getValue()));
-		}
-		else
-		{
-			updatedWOProjectBuilder.currencyId(existingWOProject.getCurrencyId());
-		}
-
-		if (request.isNameSet())
-		{
-			updatedWOProjectBuilder.name(request.getName());
-		}
-		else
-		{
-			updatedWOProjectBuilder.name(existingWOProject.getName());
-		}
-
-		if (request.isValueSet())
-		{
-			updatedWOProjectBuilder.value(request.getValue());
-		}
-		else
-		{
-			updatedWOProjectBuilder.value(existingWOProject.getValue());
-		}
-
-		if (request.isDateContractSet())
-		{
-			updatedWOProjectBuilder.dateContract(request.getDateContract());
-		}
-		else
-		{
-			updatedWOProjectBuilder.dateContract(existingWOProject.getDateContract());
-		}
-
-		if (request.isDateFinishSet())
-		{
-			updatedWOProjectBuilder.dateFinish(request.getDateFinish());
-		}
-		else
-		{
-			updatedWOProjectBuilder.dateFinish(existingWOProject.getDateFinish());
-		}
-
-		if (request.isDescriptionSet())
-		{
-			updatedWOProjectBuilder.description(request.getDescription());
-		}
-		else
-		{
-			updatedWOProjectBuilder.description(existingWOProject.getDescription());
-		}
-
-		if (request.isActiveSet())
-		{
-			updatedWOProjectBuilder.isActive(request.getIsActive());
-		}
-		else
-		{
-			updatedWOProjectBuilder.isActive(existingWOProject.getIsActive());
-		}
-
-		final Map<JsonExternalId, JsonWorkOrderStepUpsertRequest> jsonProjectSteps = request.getSteps().stream()
-				.collect(Collectors.toMap(JsonWorkOrderStepUpsertRequest::getExternalId, Function.identity()));
-
-		for (final WOProjectStep existingProjectStep : existingWOProject.getProjectSteps())
-		{
-			if (existingProjectStep.getExternalId() == null)
-			{
-				continue; // can't match a step that has no external ID
-			}
-			final JsonExternalId existingJsonExtenalId = JsonExternalId.of(existingProjectStep.getExternalId().getValue());
-			updateWOProjectStepFromJson(
-					orgId,
-					jsonProjectSteps.remove(existingJsonExtenalId),
-					existingProjectStep);
-		}
-
-		for (final JsonWorkOrderStepUpsertRequest remainingJsonProjectStep : jsonProjectSteps.values())
-		{
-			updatedWOProjectBuilder.projectStep(FromJSONUtil.fromJson(remainingJsonProjectStep, null));
-		}
-
-		return updatedWOProjectBuilder.build();
-	}
-
-	@NonNull
-	private WOProjectStep updateWOProjectStepFromJson(
-			@NonNull final OrgId orgId,
-			@Nullable final JsonWorkOrderStepUpsertRequest request,
-			@NonNull final WOProjectStep existingWOProjectStep)
-	{
-		if (request == null)
-		{
-			return existingWOProjectStep; // nothing to do
-		}
-
-		final WOProjectStep.WOProjectStepBuilder updatedWOProjectStepBuilder = WOProjectStep.builder()
-				.woProjectStepId(existingWOProjectStep.getWOProjectStepIdNonNull())
-				.name(request.getName());
-
-		if (request.isSeqNoSet())
-		{
-			updatedWOProjectStepBuilder.seqNo(request.getSeqNo());
-		}
-		else
-		{
-			updatedWOProjectStepBuilder.seqNo(existingWOProjectStep.getSeqNo());
-		}
-
-		if (request.isDateStartSet())
-		{
-			updatedWOProjectStepBuilder.dateStart(request.getDateStart());
-		}
-		else
-		{
-			updatedWOProjectStepBuilder.dateStart(existingWOProjectStep.getDateStart());
-		}
-
-		if (request.isDateEndSet())
-		{
-			updatedWOProjectStepBuilder.dateEnd(request.getDateEnd());
-		}
-		else
-		{
-			updatedWOProjectStepBuilder.dateEnd(existingWOProjectStep.getDateEnd());
-		}
-
-		if (request.isDescriptionSet())
-		{
-			updatedWOProjectStepBuilder.description(request.getDescription());
-		}
-		else
-		{
-			updatedWOProjectStepBuilder.description(existingWOProjectStep.getDescription());
-		}
-
-		final Map<JsonExternalId, JsonWorkOrderResourceUpsertRequest> jsonProjectResources = request.getResourceRequests().stream()
-				.collect(Collectors.toMap(JsonWorkOrderResourceUpsertRequest::getExternalId, Function.identity()));
-
-		for (final WOProjectResource existingProjectResource : existingWOProjectStep.getProjectResources())
-		{
-			if (existingProjectResource.getExternalId() == null)
-			{
-				continue; // can't match a resource that has no external ID
-			}
-			final JsonExternalId existingJsonExtenalId = JsonExternalId.of(existingProjectResource.getExternalId().getValue());
-			updateWOProjectResourceFromJson(
-					orgId,
-					jsonProjectResources.remove(existingJsonExtenalId),
-					existingProjectResource);
-		}
-
-		for (final JsonWorkOrderResourceUpsertRequest remainingJsonProjectResource : jsonProjectResources.values())
-		{
-			final ResourceId resourceId = extractResourceId(orgId, remainingJsonProjectResource);
-			final FromJSONUtil.AdditionalWOProjectResourceProperties additionalProps = FromJSONUtil.AdditionalWOProjectResourceProperties
-					.builder()
-					.resourceId(resourceId).build();
-
-			final WOProjectResource projectResource = FromJSONUtil.fromJson(remainingJsonProjectResource, additionalProps);
-			updatedWOProjectStepBuilder.projectResource(projectResource);
-		}
-
-		return updatedWOProjectStepBuilder.build();
-	}
-
-	@NonNull
-	private WOProjectResource updateWOProjectResourceFromJson(
-			@NonNull final OrgId orgId,
-			@NonNull final JsonWorkOrderResourceUpsertRequest request,
-			@NonNull final WOProjectResource existingWOProjectResource)
-	{
-		final WOProjectResource.WOProjectResourceBuilder updatedWOProjectResourceBuilder = WOProjectResource.builder()
-				.externalId(ExternalId.of(request.getExternalId().getValue()))
-				.woProjectResourceId(existingWOProjectResource.getWOProjectResourceIdNotNull())
-				.budgetProjectId(existingWOProjectResource.getBudgetProjectId())
-				.projectResourceBudgetId(existingWOProjectResource.getProjectResourceBudgetId())
-				.duration(existingWOProjectResource.getDuration())
-				.durationUnit(existingWOProjectResource.getDurationUnit())
-				.assignDateFrom(request.getAssignDateFrom())
-				.assignDateTo(request.getAssignDateTo());
-
-		if (request.isResourceIdentifierSet())
-		{
-			ResourceId resourceId = extractResourceId(orgId, request);
-			updatedWOProjectResourceBuilder.resourceId(resourceId);
-		}
-		else
-		{
-			updatedWOProjectResourceBuilder.resourceId(existingWOProjectResource.getResourceId());
-		}
-
-		if (request.isActiveSet())
-		{
-			updatedWOProjectResourceBuilder.isActive(request.getIsActive());
-		}
-		else
-		{
-			updatedWOProjectResourceBuilder.isActive(existingWOProjectResource.getIsActive());
-		}
-
-		if (request.isAllDaySet())
-		{
-			updatedWOProjectResourceBuilder.isAllDay(request.getIsAllDay());
-		}
-		else
-		{
-			updatedWOProjectResourceBuilder.isAllDay(existingWOProjectResource.getIsAllDay());
-		}
-
-		return updatedWOProjectResourceBuilder.build();
-	}
-
-	private ResourceId extractResourceId(
-			@NonNull final OrgId orgId,
-			@NonNull final JsonWorkOrderResourceUpsertRequest request
-	)
-	{
-		final IdentifierString resourceIdentifier = IdentifierString.of(request.getResourceIdentifier());
-
-		final Predicate<Resource> resourcePredicate;
-		switch (resourceIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				resourcePredicate = r -> ResourceId.toRepoId(r.getResourceId()) == resourceIdentifier.asMetasfreshId().getValue();
-				break;
-			case VALUE:
-				resourcePredicate = r -> // make sure that org and value match
-						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
-								&& Objects.equals(r.getValue(), resourceIdentifier.asValue());
-				break;
-			case INTERNALNAME:
-				resourcePredicate = r -> // make sure that org and value match
-						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
-								&& Objects.equals(r.getInternalName(), resourceIdentifier.asInternalName());
-				break;
-			default:
-				throw new InvalidIdentifierException(resourceIdentifier.getRawIdentifierString(), request);
-		}
-
-		return resourceService.getAllActiveResources()
-				.stream()
-				.filter(resourcePredicate)
-				.findAny()
-				.map(Resource::getResourceId)
-				.orElseThrow(() -> MissingResourceException.builder()
-						.resourceName("resourceIdentifier")
-						.resourceIdentifier(request.getResourceIdentifier())
-						.parentResource(request)
-						.build());
 	}
 
 	@NonNull

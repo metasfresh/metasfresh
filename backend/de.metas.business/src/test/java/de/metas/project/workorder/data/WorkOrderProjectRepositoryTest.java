@@ -26,7 +26,9 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.workorder.WOProjectStepRepository;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Project;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -51,7 +53,7 @@ class WorkOrderProjectRepositoryTest
 	}
 
 	@Test
-	void save()
+	void saveNew()
 	{
 		final WOProject woProject = WOProject.builder()
 				.orgId(OrgId.ofRepoId(10))
@@ -66,5 +68,14 @@ class WorkOrderProjectRepositoryTest
 		final WOProject result = workOrderProjectRepository.save(woProject);
 
 		assertThat(result.getProjectId()).isNotNull();
+
+		final I_C_Project projectRecord = InterfaceWrapperHelper.load(result.getProjectId(), I_C_Project.class);
+
+	}
+	
+	@Test
+	void saveExisting()
+	{
+		
 	}
 }

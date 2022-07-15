@@ -43,6 +43,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -91,17 +92,32 @@ public class WorkOrderProjectResourceRepository
 	@NonNull
 	WOProjectResource save(	@NonNull final WOProjectResource resourceData)
 	{
-		final I_C_Project_WO_Resource resourceRecord = InterfaceWrapperHelper.loadOrNew(resourceData.getWoProjectResourceId(), I_C_Project_WO_Resource.class);
-
+		final WOProjectResourceId existingWoProjectResourceId;
+		if (resourceData.getWoProjectResourceId() != null)
+		{
+			existingWoProjectResourceId = resourceData.getWOProjectResourceIdNotNull();
+					
+		}
+		else if (resourceData.getExternalId() != null)
+		{
+			existingWoProjectResourceId = getByProjectId(resourceData.getWoProjectStepId().getProjectId())
+					.stream()
+					.filter(s -> Objects.equals(s.getExternalId(), resourceData.getExternalId()))
+					.findAny()
+					.map(WOProjectResource::getWoProjectResourceId)
+					.orElse(null);
+		}
+		else
+		{
+			existingWoProjectResourceId = null;
+		}
+		final I_C_Project_WO_Resource resourceRecord = InterfaceWrapperHelper.loadOrNew(existingWoProjectResourceId, I_C_Project_WO_Resource.class);
+		
+		
 		if (resourceData.getIsActive() != null)
 		{
 			resourceRecord.setIsActive(resourceData.getIsActive());
 		}
-		else
-		{
-			resourceRecord.setIsActive(true);
-		}
-
 		if (resourceData.getIsAllDay() != null)
 		{
 			resourceRecord.setIsAllDay(resourceData.getIsAllDay());

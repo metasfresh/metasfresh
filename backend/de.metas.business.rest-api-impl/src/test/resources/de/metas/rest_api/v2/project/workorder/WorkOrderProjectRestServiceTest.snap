@@ -1,18 +1,19 @@
 de.metas.rest_api.v2.project.workorder.WorkOrderProjectRestServiceTest.upsertWOProject=[ {
+  "currencyId" : 100011,
   "dateContract" : "2022-08-10",
   "dateFinish" : "2022-08-21",
   "description" : "description",
   "isActive" : false,
   "name" : "name",
   "orgCode" : "org",
-  "projectId" : 100005,
+  "projectId" : 100012,
   "projectReferenceExt" : "projectReferenceExt",
   "projectTypeId" : 100003,
   "steps" : [ {
     "dateEnd" : "2022-08-02",
     "dateStart" : "2022-07-22",
     "name" : "stepRequest1-name",
-    "projectId" : 100005,
+    "projectId" : 100012,
     "resources" : [ {
       "assignDateFrom" : "2022-08-07",
       "assignDateTo" : "2022-08-08",
@@ -20,11 +21,12 @@ de.metas.rest_api.v2.project.workorder.WorkOrderProjectRestServiceTest.upsertWOP
       "durationUnit" : "h",
       "isActive" : false,
       "isAllDay" : true,
-      "stepId" : 100006,
-      "woResourceId" : 100007
+      "resourceId" : 100005,
+      "stepId" : 100013,
+      "woResourceId" : 100014
     } ],
     "seqNo" : 40,
-    "stepId" : 100006
+    "stepId" : 100013
   } ],
   "value" : "123"
 } ]

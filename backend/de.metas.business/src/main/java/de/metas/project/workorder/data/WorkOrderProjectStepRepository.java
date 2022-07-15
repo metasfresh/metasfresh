@@ -42,6 +42,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -54,7 +55,7 @@ public class WorkOrderProjectStepRepository
 
 	private final WOProjectStepRepository woProjectStepRepository;
 	private final WorkOrderProjectResourceRepository workOrderProjectResourceRepository;
-	
+
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public WorkOrderProjectStepRepository(
@@ -92,13 +93,31 @@ public class WorkOrderProjectStepRepository
 	@NonNull
 	WOProjectStep save(@NonNull final WOProjectStep stepData)
 	{
-
-		final I_C_Project_WO_Step stepRecord = InterfaceWrapperHelper.loadOrNew(stepData.getWoProjectStepId(), I_C_Project_WO_Step.class);
+		final WOProjectStepId existingWoProjectStepId;
+		if (stepData.getWoProjectStepId() != null)
+		{
+			existingWoProjectStepId = stepData.getWOProjectStepIdNonNull();
+		}
+		else if (stepData.getExternalId() != null)
+		{
+			existingWoProjectStepId = getByProjectId(stepData.getProjectId())
+					.stream()
+					.filter(s -> Objects.equals(s.getExternalId(), stepData.getExternalId()))
+					.findAny()
+					.map(WOProjectStep::getWoProjectStepId)
+					.orElse(null);
+		}
+		else
+		{
+			existingWoProjectStepId = null;
+		}
+		final I_C_Project_WO_Step stepRecord = InterfaceWrapperHelper.loadOrNew(existingWoProjectStepId, I_C_Project_WO_Step.class);
 
 		if (Check.isNotBlank(stepData.getName()))
 		{
 			stepRecord.setName(stepData.getName());
 		}
+
 		final ProjectId projectId = stepData.getProjectId(); // not null at this point
 		if (stepData.getSeqNo() == null)
 		{
@@ -113,16 +132,17 @@ public class WorkOrderProjectStepRepository
 		stepRecord.setDateStart(TimeUtil.asTimestamp(stepData.getDateStart()));
 		stepRecord.setDescription(stepData.getDescription());
 		stepRecord.setC_Project_ID(projectId.getRepoId());
+		
+		stepRecord.setExternalId(ExternalId.toValue(stepData.getExternalId()));
 
 		saveRecord(stepRecord);
 
 		final WOProjectStepId woProjectStepId = WOProjectStepId.ofRepoId(stepData.getProjectId(), stepRecord.getC_Project_WO_Step_ID());
-		
 		for (final WOProjectResource woProjectResource : stepData.getProjectResources())
 		{
 			workOrderProjectResourceRepository.save(woProjectResource.withWoProjectStepId(woProjectStepId));
 		}
-		
+
 		return ofRecord(stepRecord);
 	}
 
@@ -132,11 +152,11 @@ public class WorkOrderProjectStepRepository
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(stepRecord.getAD_Org_ID()));
 
 		final ProjectId projectId = ProjectId.ofRepoId(stepRecord.getC_Project_ID());
-		
+
 		final WOProjectStepId woProjectStepId = WOProjectStepId.ofRepoId(
 				projectId,
 				stepRecord.getC_Project_WO_Step_ID());
-				
+
 		final WOProjectStep.WOProjectStepBuilder woProjectStepBuilder = WOProjectStep.builder()
 				.woProjectStepId(woProjectStepId)
 				.name(stepRecord.getName())
@@ -149,7 +169,7 @@ public class WorkOrderProjectStepRepository
 
 		final List<WOProjectResource> resources = workOrderProjectResourceRepository.getByStepId(woProjectStepId);
 		woProjectStepBuilder.projectResources(resources);
-		
+
 		return woProjectStepBuilder.build();
 	}
 }

@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.project.workorder;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -51,6 +52,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_C_ProjectType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -84,8 +86,14 @@ class WorkOrderProjectRestServiceTest
 		projectType.setProjectCategory(X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob);
 		InterfaceWrapperHelper.save(projectType);
 
+		final I_S_ResourceType resourceType = InterfaceWrapperHelper.newInstance(I_S_ResourceType.class);
+		InterfaceWrapperHelper.save(resourceType);
+
 		resource = InterfaceWrapperHelper.newInstance(I_S_Resource.class);
+		resource.setS_ResourceType_ID(resourceType.getS_ResourceType_ID());
+		resource.setInternalName("internalName");
 		resource.setValue("resourceValue");
+		
 		InterfaceWrapperHelper.save(resource);
 
 		final IDocumentNoBuilderFactory documentNoBuilderFactory = Mockito.mock(IDocumentNoBuilderFactory.class);
@@ -102,8 +110,8 @@ class WorkOrderProjectRestServiceTest
 		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory, projectTypeRepository, workOrderProjectStepRepository);
 
 		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
-
-		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository, resourceService, projectTypeRepository);
+		final WorkOrderProjectJsonToInternalConverter workOrderProjectJsonToInternalConverter = new WorkOrderProjectJsonToInternalConverter(resourceService);
+		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository, projectTypeRepository, workOrderProjectJsonToInternalConverter);
 	}
 
 	@BeforeAll
@@ -124,6 +132,7 @@ class WorkOrderProjectRestServiceTest
 	void upsertWOProject()
 	{
 		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
+		projectRequest.setCurrencyId(JsonMetasfreshId.of(BusinessTestHelper.getEURCurrencyId().getRepoId()));
 		projectRequest.setProjectIdentifier("ext-externalId");
 		projectRequest.setBpartnerDepartment("bpartnerDepartment");
 		projectRequest.setBPartnerTargetDate(LocalDate.parse("2022-08-20"));
@@ -159,7 +168,7 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setSteps(ImmutableList.of(stepRequest1));
 
 		final JsonWorkOrderResourceUpsertRequest resourceRequest1 = new JsonWorkOrderResourceUpsertRequest();
-		resourceRequest1.setResourceIdentifier("val-" + resource.getValue());
+		resourceRequest1.setResourceIdentifier("int-" + resource.getInternalName());
 		resourceRequest1.setTestFacilityGroupName("testFacilityGroupName");
 		resourceRequest1.setExternalId(JsonExternalId.of("resourceRequest1-externalId"));
 		resourceRequest1.setDurationUnit("h");
