@@ -4,6 +4,6 @@
 -- After merging master into this branch, feel free to delete this.
 
 ALTER TABLE public.AD_Tab
-    ADD COLUMN IF NOT EXISTS IsQueryIfNoFilters CHAR(1) DEFAULT 'Y' CHECK (IsQueryIfNoFilters IN ('Y', 'N')) NOT NULL
+    ADD COLUMN IsQueryIfNoFilters CHAR(1) DEFAULT 'Y' CHECK (IsQueryIfNoFilters IN ('Y', 'N')) NOT NULL
 ;
 
