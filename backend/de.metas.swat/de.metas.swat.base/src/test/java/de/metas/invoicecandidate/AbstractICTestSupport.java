@@ -8,7 +8,6 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
-import de.metas.async.api.impl.QueueProcessorDAO;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -57,6 +56,7 @@ import de.metas.location.CountryId;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.service.IPriceListDAO;
@@ -75,6 +75,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
@@ -258,6 +259,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		uomConversionRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
 		uomConversionRecord.setC_UOM_To_ID(uomRecord.getC_UOM_ID());
 		uomConversionRecord.setMultiplyRate(TEN);
+		//noinspection BigDecimalMethodWithoutRoundingCalled
 		uomConversionRecord.setDivideRate(ONE.divide(TEN));
 		saveRecord(uomConversionRecord);
 
@@ -271,7 +273,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
-		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService, NullCustomizedWindowInfoMapRepository.instance));
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 	}
@@ -280,35 +282,35 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		//@formatter:off
 		defaultHeaderAggregation = new C_Aggregation_Builder()
-			.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
-			.setIsDefault(true)
-			.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
-			.setName("Default")
-			.newItem()
+				.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
+				.setIsDefault(true)
+				.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
+				.setName("Default")
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded)
 				.end()
-			.build();
+				.build();
 		//@formatter:on
 
 		new C_Aggregation_Attribute_Builder()
@@ -325,33 +327,30 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		//@formatter:off
 		defaultHeaderAggregation_NotConsolidated = new C_Aggregation_Builder()
-			.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
-			.setIsDefault(false)
-			.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
-			.setName("Default_NotConsolidated")
-			.newItem()
+				.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
+				.setIsDefault(false)
+				.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
+				.setName("Default_NotConsolidated")
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_IncludedAggregation)
 				.setIncluded_Aggregation(defaultHeaderAggregation)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
 				.end()
-//			.newItem()
-//				.setType(X_C_AggregationItem.TYPE_Attribute)
-//				.setC_Aggregation_Attribute(attr_AggregatePer_M_InOut_ID)
-//				//.setAD_Column(I_C_Invoice_Candidate.COLUMN_First_Ship_BPLocation_ID)
-//				.end()
-			.build();
+				//			.newItem()
+				//				.setType(X_C_AggregationItem.TYPE_Attribute)
+				//				.setC_Aggregation_Attribute(attr_AggregatePer_M_InOut_ID)
+				//				//.setAD_Column(I_C_Invoice_Candidate.COLUMN_First_Ship_BPLocation_ID)
+				//				.end()
+				.build();
 		//@formatter:on
 	}
 
 	/**
 	 * Configures {@link DefaultAggregator} to be the aggregator that is returned by invocations of {@link IAggregationDAO#retrieveAggregate(I_C_Invoice_Candidate)} throughout tests. <br>
 	 * Override this method to test different {@link IAggregator}s.
-	 *
-	 * @param ctx
-	 * @param trxName
 	 */
 	protected void config_InvoiceCand_LineAggregation(final Properties ctx, final String trxName)
 	{
@@ -624,7 +623,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		// NOTE: setting this flag to make sure that the model validators behave as they would when the server-side process was run. In particular, make sure
 		// that the ICs are not invalidated (again) when they are changed, because that causes trouble with the "light" PlainInvoiceCandDAO recomputeMap
 		// implementation.
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			invoiceCandBL.updateInvalid()
 					.setContext(ctx, trxName)
@@ -636,7 +635,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			if (!modelInterceptorsRegistered)
 			{
 				final List<I_C_Invoice_Candidate> allCandidates = POJOLookupMap.get().getRecords(I_C_Invoice_Candidate.class);
-				Collections.sort(allCandidates, PlainInvoiceCandDAO.INVALID_CANDIDATES_ORDERING);
+				allCandidates.sort(PlainInvoiceCandDAO.INVALID_CANDIDATES_ORDERING);
 
 				for (final I_C_Invoice_Candidate ic : allCandidates)
 				{
@@ -655,7 +654,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
 					.anyMatch();
-			Assert.assertEquals("Existing invalid invoice candidates", false, existingInvalidCandidates);
+			Assert.assertFalse("Existing invalid invoice candidates", existingInvalidCandidates);
 		}
 	}
 
@@ -677,12 +676,12 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				invoiceCandBL.updateInvalid()
 						.setContext(ctx, localTrxName)
 						.setTaggedWithAnyTag()
-						.setOnlyC_Invoice_Candidates(invoiceCandidates)
+						.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCandidates))
 						.update();
 			}
 		});
@@ -698,8 +697,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	/**
 	 * Lazily initializes our {@link C_Invoice_Candidate} model validator/interceptor and returns it. The lazyness is required because the MV might make calls to {@link Services#get(Class)} before the
 	 * actual testing starts and might lead to trouble when then {@link Services#clear()} is called prio to the tests (because then we might have then old reference beeing left in some classes).
-	 *
-	 * @return
 	 */
 	public final C_Invoice_Candidate getInvoiceCandidateValidator()
 	{
