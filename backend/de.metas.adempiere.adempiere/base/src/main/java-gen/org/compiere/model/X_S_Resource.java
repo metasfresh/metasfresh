@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1915472746L;
+	private static final long serialVersionUID = 1847142490L;
 
     /** Standard Constructor */
     public X_S_Resource (final Properties ctx, final int S_Resource_ID, @Nullable final String trxName)
@@ -86,6 +86,18 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setInternalName (final @Nullable java.lang.String InternalName)
+	{
+		set_Value (COLUMNNAME_InternalName, InternalName);
+	}
+
+	@Override
+	public java.lang.String getInternalName() 
+	{
+		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 
 	@Override

@@ -84,5 +84,6 @@ public class SwaggerDocConstants
 
 	public static final String RESOURCE_IDENTIFIER_DOC = "Identifier of the project in question. Can be\n"
 			+ "* a plain `<S_Resource_ID>`\n"
-			+ "* or something like `val-<S_Resource.Value>`\n";
+			+ "* or something like `val-<S_Resource.Value>`\n"
+			+ "* or something like `int-<S_Resource.InternalName>`\n";
 }

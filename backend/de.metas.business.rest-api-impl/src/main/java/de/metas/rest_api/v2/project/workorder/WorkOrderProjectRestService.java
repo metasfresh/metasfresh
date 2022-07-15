@@ -433,7 +433,7 @@ public class WorkOrderProjectRestService
 
 		for (final JsonWorkOrderResourceUpsertRequest remainingJsonProjectResource : jsonProjectResources.values())
 		{
-			final ResourceId resourceId = extractResourceid(orgId, remainingJsonProjectResource);
+			final ResourceId resourceId = extractResourceId(orgId, remainingJsonProjectResource);
 			final FromJSONUtil.AdditionalWOProjectResourceProperties additionalProps = FromJSONUtil.AdditionalWOProjectResourceProperties
 					.builder()
 					.resourceId(resourceId).build();
@@ -463,7 +463,7 @@ public class WorkOrderProjectRestService
 
 		if (request.isResourceIdentifierSet())
 		{
-			ResourceId resourceId = extractResourceid(orgId, request);
+			ResourceId resourceId = extractResourceId(orgId, request);
 			updatedWOProjectResourceBuilder.resourceId(resourceId);
 		}
 		else
@@ -492,7 +492,7 @@ public class WorkOrderProjectRestService
 		return updatedWOProjectResourceBuilder.build();
 	}
 
-	private ResourceId extractResourceid(
+	private ResourceId extractResourceId(
 			@NonNull final OrgId orgId,
 			@NonNull final JsonWorkOrderResourceUpsertRequest request
 	)
@@ -509,6 +509,11 @@ public class WorkOrderProjectRestService
 				resourcePredicate = r -> // make sure that org and value match
 						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
 								&& Objects.equals(r.getValue(), resourceIdentifier.asValue());
+				break;
+			case INTERNALNAME:
+				resourcePredicate = r -> // make sure that org and value match
+						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
+								&& Objects.equals(r.getInternalName(), resourceIdentifier.asInternalName());
 				break;
 			default:
 				throw new InvalidIdentifierException(resourceIdentifier.getRawIdentifierString(), request);
