@@ -145,6 +145,7 @@ export const useCalendarData = () => {
             });
 
             return {
+              ...prevState,
               resources,
               entriesQuery: { startDate, endDate, simulationId },
               entriesLoading: false,
