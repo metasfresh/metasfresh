@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13277](https://github.com/metasfresh/metasfresh/issues/13277) Sys config: address and user to update when creating an invoice
   * [#13223](https://github.com/metasfresh/metasfresh/issues/13223) Leich&Mehl Part II
   * [#13246](https://github.com/metasfresh/metasfresh/issues/13246) Record sql  "raise warning" output in AD_PInstanceLog
   * [#13227](https://github.com/metasfresh/metasfresh/issues/13227) Picking QA Step
