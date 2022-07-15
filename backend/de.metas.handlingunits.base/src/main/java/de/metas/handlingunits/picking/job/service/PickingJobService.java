@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -148,6 +149,12 @@ public class PickingJobService
 		pickingJobRepository
 				.getDraftBySalesOrderId(salesOrderId, loadingSupportingServices)
 				.ifPresent(this::abort);
+	}
+
+	public Optional<PickingJob> getByOrderId(@NonNull final OrderId orderId)
+	{
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		return pickingJobRepository.getDraftBySalesOrderId(orderId, loadingSupportingServices);
 	}
 
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final UserId pickerId)
