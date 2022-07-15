@@ -6,6 +6,8 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -50,12 +52,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class C_Doc_Outbound_Log
 {
 	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final DocOutboundService docOutBoundService;
 
 	public C_Doc_Outbound_Log(@NonNull final DocOutBoundRecipientRepository docOutBoundRecipientRepository,
+			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo,
 			@NonNull final DocOutboundService docOutboundService)
 	{
 		this.docOutBoundRecipientRepository = docOutBoundRecipientRepository;
+		this.orderEmailPropagationSysConfigRepository = orderEmailPropagationSysConfigRepo;
 		this.docOutBoundService = docOutboundService;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
@@ -79,7 +84,10 @@ public class C_Doc_Outbound_Log
 		final String documentEmail = docOutBoundService.getDocumentEmail(docOutboundlogRecord);
 		final String userEmailAddress = user.getEmailAddress();
 
-		if (!Check.isBlank(documentEmail))
+		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(
+				ClientAndOrgId.ofClientAndOrg(docOutboundlogRecord.getAD_Client_ID(), docOutboundlogRecord.getAD_Org_ID()));
+
+		if (propagateToDocOutboundLog && (Check.isNotBlank(documentEmail)))
 		{
 			docOutboundlogRecord.setCurrentEMailAddress(documentEmail);
 		}
