@@ -174,7 +174,10 @@ export const useCalendarData = () => {
   };
 
   const getConflictsCount = () => {
-    return state.conflicts?.length ?? 0;
+    return (
+      state.conflicts?.filter((conflict) => conflict.status === 'CONFLICT')
+        ?.length ?? 0
+    );
   };
 
   return {

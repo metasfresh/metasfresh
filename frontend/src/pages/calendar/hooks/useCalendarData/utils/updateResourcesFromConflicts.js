@@ -13,9 +13,6 @@ export const updateResourcesFromConflicts = ({
     entries,
     conflicts,
   });
-  if (resourceIdsWithConflicts.length === 0) {
-    return resources;
-  }
 
   const changedResources = [];
   let hasChanges = false;
@@ -43,17 +40,19 @@ const extractResourceIdsWithConflicts = ({ entries, conflicts }) => {
   const entriesById = indexEntriesById(entries);
 
   const resourceIdsWithConflicts = {};
-  conflicts.forEach((conflict) => {
-    const entry1 = entriesById[conflict.entryId1];
-    if (entry1?.conflict) {
-      resourceIdsWithConflicts[entry1.resourceId] = true;
-    }
+  conflicts
+    .filter((conflict) => conflict.status === 'CONFLICT')
+    .forEach((conflict) => {
+      const resourceId1 = entriesById[conflict.entryId1]?.resourceId;
+      if (resourceId1) {
+        resourceIdsWithConflicts[resourceId1] = true;
+      }
 
-    const entry2 = entriesById[conflict.entryId2];
-    if (entry2?.conflict) {
-      resourceIdsWithConflicts[entry2.resourceId] = true;
-    }
-  });
+      const resourceId2 = entriesById[conflict.entryId2]?.resourceId;
+      if (resourceId2) {
+        resourceIdsWithConflicts[resourceId2] = true;
+      }
+    });
 
   return Object.keys(resourceIdsWithConflicts);
 };
