@@ -19,6 +19,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
