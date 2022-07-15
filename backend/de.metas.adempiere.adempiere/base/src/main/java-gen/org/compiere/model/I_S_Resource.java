@@ -163,6 +163,29 @@ public interface I_S_Resource
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalName (@Nullable java.lang.String InternalName);
+
+	/**
+	 * Get Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalName();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_InternalName = new ModelColumn<>(I_S_Resource.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

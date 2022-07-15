@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.callout;
 
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
@@ -134,7 +135,8 @@ public class C_Project_WO_Resource
 			return BigDecimal.ZERO;
 		}
 
-		final Instant dateTo = TimeUtil.asInstant(woResource.getAssignDateTo());
+		final OrgId orgId = OrgId.ofRepoId(woResource.getAD_Org_ID());
+		final Instant dateTo = TimeUtil.asInstant(woResource.getAssignDateTo(), orgId);
 		if (dateTo == null)
 		{
 			return BigDecimal.ZERO;

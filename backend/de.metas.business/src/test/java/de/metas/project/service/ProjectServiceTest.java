@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.project;
+package de.metas.project.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
@@ -30,9 +30,9 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
-import de.metas.project.service.ProjectLineRepository;
-import de.metas.project.service.ProjectRepository;
-import de.metas.project.service.ProjectService;
+import de.metas.project.ProjectCategory;
+import de.metas.project.ProjectId;
+import de.metas.project.ProjectTypeRepository;
 import de.metas.quantity.Quantity;
 import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,7 +66,11 @@ public class ProjectServiceTest
 		final ProjectRepository projectRepository = Mockito.spy(new ProjectRepository(Mockito.mock(DocumentNoBuilderFactory.class), projectTypeRepository));
 		Mockito.doReturn(MOCKED_DocNo).when(projectRepository).computeNextProjectValue(any(I_C_Project.class));
 
-		this.projectService = new ProjectService(projectTypeRepository, projectRepository, new ProjectLineRepository(), Optional.of(ImmutableList.of()));
+		this.projectService = new ProjectService(
+				projectTypeRepository, 
+				projectRepository, 
+				new ProjectLineRepository(), 
+				Optional.of(ImmutableList.of()));
 	}
 
 	@Test

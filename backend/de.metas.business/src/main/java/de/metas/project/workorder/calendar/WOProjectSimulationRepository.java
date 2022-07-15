@@ -134,13 +134,13 @@ public class WOProjectSimulationRepository
 	@NonNull
 	private static WOProjectResourceId extractWOProjectResourceId(final I_C_Project_WO_Resource_Simulation record)
 	{
-		return WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID());
+		return WOProjectResourceId.ofRepoId(ProjectId.ofRepoId(record.getC_Project_ID()), record.getC_Project_WO_Resource_ID());
 	}
 
 	@NonNull
 	private static WOProjectStepId extractWOProjectStepId(final I_C_Project_WO_Step_Simulation record)
 	{
-		return WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID());
+		return WOProjectStepId.ofRepoId(ProjectId.ofRepoId(record.getC_Project_ID()), record.getC_Project_WO_Step_ID());
 	}
 
 	private static WOProjectStepSimulation fromRecord(@NonNull final I_C_Project_WO_Step_Simulation record)

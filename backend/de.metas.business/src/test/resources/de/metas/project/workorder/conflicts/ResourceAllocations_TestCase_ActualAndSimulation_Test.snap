@@ -1,6 +1,6 @@
 de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_ActualAndSimulation_Test.conflictInActualAllocs_changedButStillConflictInSimulation=[ {
   "byIds" : {
-    "ProjectResourceIdsPair(projectResourceId1=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=1)), projectResourceId2=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=2)))" : {
+    "ProjectResourceIdsPair(projectResourceId1=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1))), projectResourceId2=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1))))" : {
       "projectResourceIdsPair" : {
         "projectResourceId1" : {
           "projectId" : 1,
@@ -21,7 +21,7 @@ de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_ActualAndSimul
 
 de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_ActualAndSimulation_Test.conflictInActualAllocs_fixedInSimulation=[ {
   "byIds" : {
-    "ProjectResourceIdsPair(projectResourceId1=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=1)), projectResourceId2=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=2)))" : {
+    "ProjectResourceIdsPair(projectResourceId1=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1))), projectResourceId2=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1))))" : {
       "projectResourceIdsPair" : {
         "projectResourceId1" : {
           "projectId" : 1,
@@ -42,7 +42,7 @@ de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_ActualAndSimul
 
 de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_ActualAndSimulation_Test.okInActualAllocs_conflictInSimulation=[ {
   "byIds" : {
-    "ProjectResourceIdsPair(projectResourceId1=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=1)), projectResourceId2=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=2)))" : {
+    "ProjectResourceIdsPair(projectResourceId1=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1))), projectResourceId2=WOProjectAndResourceId(projectId=ProjectId(repoId=1), projectResourceId=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1))))" : {
       "projectResourceIdsPair" : {
         "projectResourceId1" : {
           "projectId" : 1,
