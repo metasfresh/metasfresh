@@ -25,7 +25,7 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.rest_api.v2.project.JsonRequestProjectUpsert;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
@@ -50,13 +50,13 @@ public class WorkOrderProjectRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
-					if (!(lookupRequest instanceof JsonWorkOrderProjectRequest))
+					if (!(lookupRequest instanceof JsonWorkOrderProjectUpsertRequest))
 					{
 						throw new RuntimeCamelException("The route " + MF_UPSERT_WORK_ORDER_PROJECT_V2_ROUTE_ID + " requires the body to be instanceof JsonWorkOrderProjectRequest."
 																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
 					
-					final JsonWorkOrderProjectRequest jsonRequestUpsert = ((JsonWorkOrderProjectRequest)lookupRequest);
+					final JsonWorkOrderProjectUpsertRequest jsonRequestUpsert = ((JsonWorkOrderProjectUpsertRequest)lookupRequest);
 
 					log.info("WorkOrder-Project upsert route invoked");
 					exchange.getIn().setBody(jsonRequestUpsert);

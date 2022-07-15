@@ -39,7 +39,7 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER
 @Getter
 @ToString
 @EqualsAndHashCode
-public class JsonWorkOrderProjectRequest
+public class JsonWorkOrderProjectUpsertRequest
 {
 	@ApiModelProperty(position = 10,
 			required = true,
@@ -115,7 +115,7 @@ public class JsonWorkOrderProjectRequest
 	@ApiModelProperty(required = true)
 	SyncAdvise syncAdvise;
 
-	List<JsonWorkOrderStepRequest> steps = new ArrayList<>();
+	List<JsonWorkOrderStepUpsertRequest> steps = new ArrayList<>();
 
 	@ApiModelProperty(hidden = true)
 	boolean stepsSet;
@@ -227,7 +227,7 @@ public class JsonWorkOrderProjectRequest
 		this.syncAdvise = syncAdvise;
 	}
 
-	public void setSteps(final List<JsonWorkOrderStepRequest> steps)
+	public void setSteps(final List<JsonWorkOrderStepUpsertRequest> steps)
 	{
 		this.steps = steps;
 		this.stepsSet = true;

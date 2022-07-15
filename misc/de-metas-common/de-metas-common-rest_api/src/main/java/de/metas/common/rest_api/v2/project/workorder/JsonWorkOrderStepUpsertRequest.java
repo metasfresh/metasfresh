@@ -23,7 +23,6 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -37,7 +36,7 @@ import java.util.List;
 @Getter
 @ToString
 @EqualsAndHashCode
-public class JsonWorkOrderStepRequest
+public class JsonWorkOrderStepUpsertRequest
 {
 	@ApiModelProperty(required = true)
 	String name;
@@ -104,11 +103,7 @@ public class JsonWorkOrderStepRequest
 	
 	@Setter
 	@ApiModelProperty("Optional resource allocations that reference to this step")
-	List<JsonWorkOrderResourceRequest> resourceRequests = new ArrayList<>();
-
-	@Setter
-	@ApiModelProperty(required = true)
-	SyncAdvise syncAdvise;
+	List<JsonWorkOrderResourceUpsertRequest> resourceRequests = new ArrayList<>();
 	
 	public void setName(final String name)
 	{
@@ -141,7 +136,7 @@ public class JsonWorkOrderStepRequest
 
 	public void setWoPartialReportDate(final LocalDate woPartialReportDate)
 	{
-		this.woPartialReportDate = dateEnd;
+		this.woPartialReportDate = woPartialReportDate;
 		this.woPartialReportDateSet = true;
 	}
 

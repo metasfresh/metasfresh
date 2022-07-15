@@ -42,14 +42,6 @@ public class JsonWorkOrderResourceResponse
 	JsonMetasfreshId woResourceId;
 
 	@NonNull
-	@JsonProperty("orgCode")
-	String orgCode;
-
-	@NonNull
-	@JsonProperty("projectId")
-	JsonMetasfreshId projectId;
-
-	@NonNull
 	@JsonProperty("stepId")
 	JsonMetasfreshId stepId;
 
@@ -93,8 +85,6 @@ public class JsonWorkOrderResourceResponse
 	@Builder
 	public JsonWorkOrderResourceResponse(
 			@JsonProperty("woResourceId") @NonNull final JsonMetasfreshId woResourceId,
-			@JsonProperty("orgCode") @NonNull final String orgCode,
-			@JsonProperty("projectId") @NonNull final JsonMetasfreshId projectId,
 			@JsonProperty("stepId") @NonNull final JsonMetasfreshId stepId,
 			@JsonProperty("assignDateFrom") @NonNull final String assignDateFrom,
 			@JsonProperty("assignDateTo") @NonNull final String assignDateTo,
@@ -108,14 +98,12 @@ public class JsonWorkOrderResourceResponse
 	)
 	{
 		this.woResourceId = woResourceId;
-		this.orgCode = orgCode;
 		this.stepId = stepId;
 		this.assignDateFrom = assignDateFrom;
 		this.assignDateTo = assignDateTo;
 		this.isActive = isActive;
 		this.resourceId = resourceId;
 		this.isAllDay = isAllDay;
-		this.projectId = projectId;
 		this.duration = duration;
 		this.durationUnit = durationUnit;
 		this.budgetProjectId = budgetProjectId;

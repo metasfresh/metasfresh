@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -42,7 +43,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-// TODO merge IResourceDAO into this repository
 @Repository
 class ResourceRepository
 {
@@ -112,6 +112,7 @@ class ResourceRepository
 		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return Resource.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.isActive(record.isActive())
 				.value(record.getValue())

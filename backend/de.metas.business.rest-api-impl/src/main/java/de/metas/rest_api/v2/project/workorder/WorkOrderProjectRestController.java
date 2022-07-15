@@ -23,8 +23,8 @@
 package de.metas.rest_api.v2.project.workorder;
 
 import de.metas.Profiles;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.project.ProjectId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -63,7 +63,7 @@ public class WorkOrderProjectRestController
 	})
 	@PostMapping
 	public ResponseEntity<JsonWorkOrderProjectUpsertResponse> upsertWOProject(
-			@RequestBody @NonNull final JsonWorkOrderProjectRequest request
+			@RequestBody @NonNull final JsonWorkOrderProjectUpsertRequest request
 	)
 	{
 		final JsonWorkOrderProjectUpsertResponse response = projectRestService.upsertWOProject(request);

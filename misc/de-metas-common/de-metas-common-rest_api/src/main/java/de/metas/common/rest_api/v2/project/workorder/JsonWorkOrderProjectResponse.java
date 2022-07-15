@@ -110,7 +110,7 @@ public class JsonWorkOrderProjectResponse
 			@NonNull @JsonProperty("projectTypeId") final JsonMetasfreshId projectTypeId,
 			@Nullable @JsonProperty("priceListVersionId") final JsonMetasfreshId priceListVersionId,
 			@Nullable @JsonProperty("currencyId") final JsonMetasfreshId currencyId,
-			@NonNull @JsonProperty("salesRepId") final JsonMetasfreshId salesRepId,
+			@Nullable @JsonProperty("salesRepId") final JsonMetasfreshId salesRepId,
 			@Nullable @JsonProperty("description") final String description,
 			@Nullable @JsonProperty("dateContract") final String dateContract,
 			@Nullable @JsonProperty("dateFinish") final String dateFinish,

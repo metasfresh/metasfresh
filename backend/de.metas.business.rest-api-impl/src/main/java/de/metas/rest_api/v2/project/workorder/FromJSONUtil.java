@@ -26,9 +26,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequest;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceRequest;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -43,7 +43,9 @@ import de.metas.project.workorder.data.WOProjectStep;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.MissingResourceException;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
@@ -56,7 +58,7 @@ import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 public class FromJSONUtil
 {
 	@NonNull
-	public WOProject fromJson(@NonNull final JsonWorkOrderProjectRequest request, @NonNull final OrgId orgId)
+	public WOProject fromJson(@NonNull final JsonWorkOrderProjectUpsertRequest request, @NonNull final OrgId orgId)
 	{
 		final JsonMetasfreshId projectTypeId = request.getProjectTypeId();
 		if (projectTypeId == null)
@@ -85,8 +87,8 @@ public class FromJSONUtil
 				.dateFinish(request.getDateFinish())
 				.isActive(request.getIsActive());
 
-		final List<JsonWorkOrderStepRequest> stepRequests = coalesceNotNull(request.getSteps(), ImmutableList.of());
-		for (final JsonWorkOrderStepRequest stepRequest : stepRequests)
+		final List<JsonWorkOrderStepUpsertRequest> stepRequests = coalesceNotNull(request.getSteps(), ImmutableList.of());
+		for (final JsonWorkOrderStepUpsertRequest stepRequest : stepRequests)
 		{
 			projectBuilder.projectStep(fromJson(stepRequest, null));
 		}
@@ -96,7 +98,7 @@ public class FromJSONUtil
 
 	@NonNull
 	public WOProjectStep fromJson(
-			@NonNull final JsonWorkOrderStepRequest jsonStep,
+			@NonNull final JsonWorkOrderStepUpsertRequest jsonStep,
 			@Nullable final ProjectId projectId)
 	{
 		final WOProjectStep.WOProjectStepBuilder woProjectStepBuilder = WOProjectStep.builder()
@@ -108,38 +110,49 @@ public class FromJSONUtil
 				.projectId(projectId)
 				.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(jsonStep.getExternalId())));
 
-		final List<JsonWorkOrderResourceRequest> resourceRequests = jsonStep.getResourceRequests();
-		for (final JsonWorkOrderResourceRequest resourceRequest : resourceRequests)
+		final List<JsonWorkOrderResourceUpsertRequest> resourceRequests = jsonStep.getResourceRequests();
+		for (final JsonWorkOrderResourceUpsertRequest resourceRequest : resourceRequests)
 		{
 			woProjectStepBuilder.projectResource(fromJson(
 					resourceRequest,
-					null,
-					null,
-					null,
-					null));
+					AdditionalWOProjectResourceProperties.builder().build()
+			));
 		}
 		return woProjectStepBuilder.build();
 	}
 
 	@NonNull
 	public WOProjectResource fromJson(
-			@NonNull final JsonWorkOrderResourceRequest jsonWorkOrderResourceRequest,
-			@Nullable final BigDecimal durationOverride,
-			@Nullable final String durationUnitOverride,
-			@Nullable final ProjectId budgetProjectId,
-			@Nullable final BudgetProjectResourceId budgetProjectResourceId)
+			@NonNull final JsonWorkOrderResourceUpsertRequest jsonWorkOrderResourceRequest,
+			@NonNull final AdditionalWOProjectResourceProperties additionalProps)
 	{
 		return WOProjectResource.builder()
-				.resourceId(ResourceId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(jsonWorkOrderResourceRequest.getResourceId())))
+				.resourceId(additionalProps.getResourceId())
 				.isActive(jsonWorkOrderResourceRequest.getIsActive())
 				.isAllDay(jsonWorkOrderResourceRequest.getIsAllDay())
 				.assignDateFrom(jsonWorkOrderResourceRequest.getAssignDateFrom())
 				.assignDateTo(jsonWorkOrderResourceRequest.getAssignDateTo())
-				.duration(CoalesceUtil.coalesce(durationOverride, jsonWorkOrderResourceRequest.getDuration()))
-				.durationUnit(CoalesceUtil.coalesce(durationUnitOverride, jsonWorkOrderResourceRequest.getDurationUnit()))
-				.budgetProjectId(budgetProjectId)
-				.projectResourceBudgetId(budgetProjectResourceId)
+				.duration(CoalesceUtil.coalesce(additionalProps.getDurationOverride(), jsonWorkOrderResourceRequest.getDuration()))
+				.durationUnit(CoalesceUtil.coalesce(additionalProps.getDurationUnitOverride(), jsonWorkOrderResourceRequest.getDurationUnit()))
+				.budgetProjectId(additionalProps.getBudgetProjectId())
+				.projectResourceBudgetId(additionalProps.getBudgetProjectResourceId())
 				.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(jsonWorkOrderResourceRequest.getExternalId())))
 				.build();
+	}
+
+	@Value
+	@Builder
+	public static class AdditionalWOProjectResourceProperties
+	{
+		@Nullable
+		BigDecimal durationOverride;
+		@Nullable
+		String durationUnitOverride;
+		@Nullable
+		ResourceId resourceId;
+		@Nullable
+		ProjectId budgetProjectId;
+		@Nullable
+		BudgetProjectResourceId budgetProjectResourceId;
 	}
 }

@@ -22,24 +22,44 @@
 
 package de.metas.rest_api.v2.project.workorder;
 
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertRequest;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.workorder.WOProjectStepRepository;
 import de.metas.project.workorder.data.WorkOrderProjectRepository;
 import de.metas.project.workorder.data.WorkOrderProjectResourceRepository;
 import de.metas.project.workorder.data.WorkOrderProjectStepRepository;
+import de.metas.resource.ResourceService;
+import de.metas.test.SnapshotFunctionFactory;
+import de.metas.util.Services;
+import io.github.jsonSnapshot.SnapshotMatcher;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_ProjectType;
+import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_ProjectType;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,15 +69,24 @@ class WorkOrderProjectRestServiceTest
 {
 	private WorkOrderProjectRestService workOrderProjectRestService;
 	private I_C_ProjectType projectType;
+	private String orgValue;
+	private I_S_Resource resource;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
+		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
+		orgValue = Services.get(IOrgDAO.class).retrieveOrgValue(orgId);
+
 		projectType = InterfaceWrapperHelper.newInstance(I_C_ProjectType.class);
 		projectType.setProjectCategory(X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob);
 		InterfaceWrapperHelper.save(projectType);
+
+		resource = InterfaceWrapperHelper.newInstance(I_S_Resource.class);
+		resource.setValue("resourceValue");
+		InterfaceWrapperHelper.save(resource);
 
 		final IDocumentNoBuilderFactory documentNoBuilderFactory = Mockito.mock(IDocumentNoBuilderFactory.class);
 		final IDocumentNoBuilder documentNoBuilder = Mockito.mock(IDocumentNoBuilder.class);
@@ -71,18 +100,80 @@ class WorkOrderProjectRestServiceTest
 
 		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory, new ProjectTypeRepository(), workOrderProjectStepRepository);
 
+		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
 
-		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository);
+		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository, resourceService);
+	}
+
+	@BeforeAll
+	static void initStatic()
+	{
+		SnapshotMatcher.start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
+
+		LogManager.setLoggerLevel(de.metas.rest_api.v2.product.ProductsRestController.class, Level.ALL);
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		SnapshotMatcher.validateSnapshots();
 	}
 
 	@Test
 	void upsertWOProject()
 	{
-		final JsonWorkOrderProjectRequest request = new JsonWorkOrderProjectRequest();
-		request.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
-		request.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
+		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
+		projectRequest.setProjectIdentifier("ext-externalId");
+		projectRequest.setBpartnerDepartment("bpartnerDepartment");
+		projectRequest.setBPartnerTargetDate(LocalDate.parse("2022-08-20"));
+		projectRequest.setDateContract(LocalDate.parse("2022-08-10"));
+		projectRequest.setDateFinish(LocalDate.parse("2022-08-21"));
+		projectRequest.setDescription("description");
+		projectRequest.setIsActive(false);
+		projectRequest.setName("name");
+		projectRequest.setOrgCode(orgValue);
+		projectRequest.setPOReference("POReference");
+		projectRequest.setProjectReferenceExt("projectReferenceExt");
+		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
+		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+		projectRequest.setValue("value");
+		projectRequest.setWoOwner("woOwner");
+		projectRequest.setWOProjectCreatedDate(LocalDate.parse("2022-07-15"));
 
-		final JsonWorkOrderProjectUpsertResponse result = workOrderProjectRestService.upsertWOProject(request);
-		assertThat(result).isNotNull();
+		final JsonWorkOrderStepUpsertRequest stepRequest1 = new JsonWorkOrderStepUpsertRequest();
+		stepRequest1.setDateEnd(LocalDate.parse("2022-08-02"));
+		stepRequest1.setDateStart(LocalDate.parse("2022-07-22"));
+		stepRequest1.setDeliveryDate(LocalDate.parse("2022-08-05"));
+		stepRequest1.setExternalId(JsonExternalId.of("stepRequest1-externalId"));
+		stepRequest1.setName("stepRequest1-name");
+		stepRequest1.setSeqNo(40);
+		stepRequest1.setWOFindingsCreatedDate(LocalDate.parse("2022-08-01"));
+		stepRequest1.setWOFindingsReleasedDate(LocalDate.parse("2022-08-03"));
+		stepRequest1.setWoPartialReportDate(LocalDate.parse("2022-08-02"));
+		stepRequest1.setWOPlannedPersonDurationHours(20);
+		stepRequest1.setWOStepStatus(10);
+		stepRequest1.setWOTargetEndDate(LocalDate.parse("2022-07-31"));
+		stepRequest1.setWOTargetStartDate(LocalDate.parse("2022-07-21"));
+
+		projectRequest.setSteps(ImmutableList.of(stepRequest1));
+
+		final JsonWorkOrderResourceUpsertRequest resourceRequest1 = new JsonWorkOrderResourceUpsertRequest();
+		resourceRequest1.setResourceIdentifier("val-" + resource.getValue());
+		resourceRequest1.setTestFacilityGroupName("testFacilityGroupName");
+		resourceRequest1.setExternalId(JsonExternalId.of("resourceRequest1-externalId"));
+		resourceRequest1.setDurationUnit("h");
+		resourceRequest1.setDuration(BigDecimal.TEN);
+		resourceRequest1.setAssignDateFrom(LocalDate.parse("2022-08-07"));
+		resourceRequest1.setAssignDateTo(LocalDate.parse("2022-08-08"));
+		resourceRequest1.setActive(false);
+		resourceRequest1.setAllDay(true);
+
+		stepRequest1.setResourceRequests(ImmutableList.of(resourceRequest1));
+
+		final JsonWorkOrderProjectUpsertResponse responseBody = workOrderProjectRestService.upsertWOProject(projectRequest);
+		assertThat(responseBody).isNotNull();
+
+		final JsonWorkOrderProjectResponse data = workOrderProjectRestService.getWorkOrderProjectDataById(ProjectId.ofRepoId(responseBody.getProjectId().getValue()));
+		SnapshotMatcher.expect(data).toMatchSnapshot();
 	}
 }

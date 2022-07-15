@@ -23,8 +23,6 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,32 +37,29 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIE
 @Getter
 @ToString
 @EqualsAndHashCode
-public class JsonWorkOrderResourceRequest
+public class JsonWorkOrderResourceUpsertRequest
 {
 	@ApiModelProperty(position = 10,
-			required = true,
-			value = RESOURCE_IDENTIFIER_DOC) //
-	@Setter
+			value = RESOURCE_IDENTIFIER_DOC + "\n"
+					+ "Note that `C_Project_WO_Resource.S_Reource_ID` is currently not mandatory!") //
 	String resourceIdentifier;
 
-	@ApiModelProperty(required = true)
-	String orgCode;
+	@ApiModelProperty(hidden = true)
+	boolean resourceIdentifierSet;
 
 	@ApiModelProperty(required = true)
+	@Setter
 	LocalDate assignDateFrom;
 
 	@ApiModelProperty(required = true)
+	@Setter
 	LocalDate assignDateTo;
-	
+
 	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	Boolean isActive;
 
 	@ApiModelProperty(hidden = true)
 	boolean activeSet;
-
-	JsonMetasfreshId resourceId;
-	@ApiModelProperty(hidden = true)
-	boolean resourceIdSet;
 
 	Boolean isAllDay;
 	@ApiModelProperty(hidden = true)
@@ -86,36 +81,17 @@ public class JsonWorkOrderResourceRequest
 	@Setter
 	@ApiModelProperty(required = true)
 	JsonExternalId externalId;
-	
-	@Setter
-	@ApiModelProperty(required = true)
-	SyncAdvise syncAdvise;
 
-	public void setOrgCode(final String orgCode)
+	public void setResourceIdentifier(final String resourceIdentifier)
 	{
-		this.orgCode = orgCode;
-	}
-
-	public void setAssignDateFrom(final LocalDate assignDateFrom)
-	{
-		this.assignDateFrom = assignDateFrom;
-	}
-
-	public void setAssignDateTo(final LocalDate assignDateTo)
-	{
-		this.assignDateTo = assignDateTo;
+		this.resourceIdentifier = resourceIdentifier;
+		this.resourceIdentifierSet = true;
 	}
 
 	public void setActive(final Boolean active)
 	{
 		isActive = active;
 		this.activeSet = true;
-	}
-
-	public void setResourceId(final JsonMetasfreshId resourceId)
-	{
-		this.resourceId = resourceId;
-		this.resourceIdSet = true;
 	}
 
 	public void setAllDay(final Boolean allDay)

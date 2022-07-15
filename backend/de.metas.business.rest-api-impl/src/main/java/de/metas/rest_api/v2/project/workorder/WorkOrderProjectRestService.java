@@ -29,13 +29,13 @@ import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceResponse;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResponse;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -53,6 +53,8 @@ import de.metas.project.workorder.data.WOProject;
 import de.metas.project.workorder.data.WOProjectResource;
 import de.metas.project.workorder.data.WOProjectStep;
 import de.metas.project.workorder.data.WorkOrderProjectRepository;
+import de.metas.resource.Resource;
+import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.user.UserId;
@@ -68,8 +70,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
@@ -81,13 +85,17 @@ public class WorkOrderProjectRestService
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private static final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final WorkOrderProjectRepository projectRepository;
+	private final ResourceService resourceService;
 
-	public WorkOrderProjectRestService(@NonNull final WorkOrderProjectRepository projectRepository)
+	public WorkOrderProjectRestService(
+			@NonNull final WorkOrderProjectRepository projectRepository,
+			@NonNull final ResourceService resourceService)
 	{
 		this.projectRepository = projectRepository;
+		this.resourceService = resourceService;
 	}
 
 	public JsonWorkOrderProjectResponse getWorkOrderProjectDataById(@NonNull final ProjectId projectId)
@@ -102,13 +110,13 @@ public class WorkOrderProjectRestService
 	}
 
 	@NonNull
-	public JsonWorkOrderProjectUpsertResponse upsertWOProject(@NonNull final JsonWorkOrderProjectRequest request)
+	public JsonWorkOrderProjectUpsertResponse upsertWOProject(@NonNull final JsonWorkOrderProjectUpsertRequest request)
 	{
 		return trxManager.callInNewTrx(() -> upsertWOProjectWithinTrx(request));
 	}
 
 	@NonNull
-	private JsonWorkOrderProjectUpsertResponse upsertWOProjectWithinTrx(@NonNull final JsonWorkOrderProjectRequest request)
+	private JsonWorkOrderProjectUpsertResponse upsertWOProjectWithinTrx(@NonNull final JsonWorkOrderProjectUpsertRequest request)
 	{
 		final SyncAdvise woProjectSyncAdvise = request.getSyncAdvise();
 		if (woProjectSyncAdvise == null)
@@ -123,7 +131,8 @@ public class WorkOrderProjectRestService
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
 		final Optional<WOProject> existingWOProjectOpt = getExistingWOProject(
 				orgId,
-				IdentifierString.ofOrNull(request.getProjectIdentifier()));
+				IdentifierString.ofOrNull(request.getProjectIdentifier()),
+				request);
 
 		if (existingWOProjectOpt.isPresent())
 		{
@@ -186,7 +195,7 @@ public class WorkOrderProjectRestService
 
 	@NonNull
 	private WOProject updateWOProjectFromJson(
-			@NonNull final JsonWorkOrderProjectRequest request,
+			@NonNull final JsonWorkOrderProjectUpsertRequest request,
 			@NonNull final WOProject existingWOProject)
 	{
 		final OrgId orgId = retrieveOrgIdOrDefault(request.getOrgCode());
@@ -304,8 +313,8 @@ public class WorkOrderProjectRestService
 			updatedWOProjectBuilder.isActive(existingWOProject.getIsActive());
 		}
 
-		final Map<JsonExternalId, JsonWorkOrderStepRequest> jsonProjectSteps = request.getSteps().stream()
-				.collect(Collectors.toMap(JsonWorkOrderStepRequest::getExternalId, Function.identity()));
+		final Map<JsonExternalId, JsonWorkOrderStepUpsertRequest> jsonProjectSteps = request.getSteps().stream()
+				.collect(Collectors.toMap(JsonWorkOrderStepUpsertRequest::getExternalId, Function.identity()));
 
 		for (final WOProjectStep existingProjectStep : existingWOProject.getProjectSteps())
 		{
@@ -314,10 +323,13 @@ public class WorkOrderProjectRestService
 				continue; // can't match a step that has no external ID
 			}
 			final JsonExternalId existingJsonExtenalId = JsonExternalId.of(existingProjectStep.getExternalId().getValue());
-			updateWOProjectStepFromJson(jsonProjectSteps.remove(existingJsonExtenalId), existingProjectStep);
+			updateWOProjectStepFromJson(
+					orgId,
+					jsonProjectSteps.remove(existingJsonExtenalId),
+					existingProjectStep);
 		}
 
-		for (final JsonWorkOrderStepRequest remainingJsonProjectStep : jsonProjectSteps.values())
+		for (final JsonWorkOrderStepUpsertRequest remainingJsonProjectStep : jsonProjectSteps.values())
 		{
 			updatedWOProjectBuilder.projectStep(FromJSONUtil.fromJson(remainingJsonProjectStep, null));
 		}
@@ -327,7 +339,8 @@ public class WorkOrderProjectRestService
 
 	@NonNull
 	private WOProjectStep updateWOProjectStepFromJson(
-			@Nullable final JsonWorkOrderStepRequest request,
+			@NonNull final OrgId orgId,
+			@Nullable final JsonWorkOrderStepUpsertRequest request,
 			@NonNull final WOProjectStep existingWOProjectStep)
 	{
 		if (request == null)
@@ -375,8 +388,8 @@ public class WorkOrderProjectRestService
 			updatedWOProjectStepBuilder.description(existingWOProjectStep.getDescription());
 		}
 
-		final Map<JsonExternalId, JsonWorkOrderResourceRequest> jsonProjectResources = request.getResourceRequests().stream()
-				.collect(Collectors.toMap(JsonWorkOrderResourceRequest::getExternalId, Function.identity()));
+		final Map<JsonExternalId, JsonWorkOrderResourceUpsertRequest> jsonProjectResources = request.getResourceRequests().stream()
+				.collect(Collectors.toMap(JsonWorkOrderResourceUpsertRequest::getExternalId, Function.identity()));
 
 		for (final WOProjectResource existingProjectResource : existingWOProjectStep.getProjectResources())
 		{
@@ -385,12 +398,20 @@ public class WorkOrderProjectRestService
 				continue; // can't match a resource that has no external ID
 			}
 			final JsonExternalId existingJsonExtenalId = JsonExternalId.of(existingProjectResource.getExternalId().getValue());
-			updateWOProjectResourceFromJson(jsonProjectResources.remove(existingJsonExtenalId), existingProjectResource);
+			updateWOProjectResourceFromJson(
+					orgId,
+					jsonProjectResources.remove(existingJsonExtenalId),
+					existingProjectResource);
 		}
 
-		for (final JsonWorkOrderResourceRequest remainingJsonProjectResource : jsonProjectResources.values())
+		for (final JsonWorkOrderResourceUpsertRequest remainingJsonProjectResource : jsonProjectResources.values())
 		{
-			final WOProjectResource projectResource = FromJSONUtil.fromJson(remainingJsonProjectResource, null, null, null, null);
+			final ResourceId resourceId = extractResourceid(orgId, remainingJsonProjectResource);
+			final FromJSONUtil.AdditionalWOProjectResourceProperties additionalProps = FromJSONUtil.AdditionalWOProjectResourceProperties
+					.builder()
+					.resourceId(resourceId).build();
+
+			final WOProjectResource projectResource = FromJSONUtil.fromJson(remainingJsonProjectResource, additionalProps);
 			updatedWOProjectStepBuilder.projectResource(projectResource);
 		}
 
@@ -399,7 +420,8 @@ public class WorkOrderProjectRestService
 
 	@NonNull
 	private WOProjectResource updateWOProjectResourceFromJson(
-			@NonNull final JsonWorkOrderResourceRequest request,
+			@NonNull final OrgId orgId,
+			@NonNull final JsonWorkOrderResourceUpsertRequest request,
 			@NonNull final WOProjectResource existingWOProjectResource)
 	{
 		final WOProjectResource.WOProjectResourceBuilder updatedWOProjectResourceBuilder = WOProjectResource.builder()
@@ -412,9 +434,10 @@ public class WorkOrderProjectRestService
 				.assignDateFrom(request.getAssignDateFrom())
 				.assignDateTo(request.getAssignDateTo());
 
-		if (request.isResourceIdSet())
+		if (request.isResourceIdentifierSet())
 		{
-			updatedWOProjectResourceBuilder.resourceId(ResourceId.ofRepoId(request.getResourceId().getValue()));
+			ResourceId resourceId = extractResourceid(orgId, request);
+			updatedWOProjectResourceBuilder.resourceId(resourceId);
 		}
 		else
 		{
@@ -442,10 +465,45 @@ public class WorkOrderProjectRestService
 		return updatedWOProjectResourceBuilder.build();
 	}
 
+	private ResourceId extractResourceid(
+			@NonNull final OrgId orgId,
+			@NonNull final JsonWorkOrderResourceUpsertRequest request
+	)
+	{
+		final IdentifierString resourceIdentifier = IdentifierString.of(request.getResourceIdentifier());
+
+		final Predicate<Resource> resourcePredicate;
+		switch (resourceIdentifier.getType())
+		{
+			case METASFRESH_ID:
+				resourcePredicate = r -> ResourceId.toRepoId(r.getResourceId()) == resourceIdentifier.asMetasfreshId().getValue();
+				break;
+			case VALUE:
+				resourcePredicate = r -> // make sure that org and value match
+						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
+								&& Objects.equals(r.getValue(), resourceIdentifier.asValue());
+				break;
+			default:
+				throw new InvalidIdentifierException(resourceIdentifier.getRawIdentifierString(), request);
+		}
+
+		return resourceService.getAllActiveResources()
+				.stream()
+				.filter(resourcePredicate)
+				.findAny()
+				.map(Resource::getResourceId)
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("resourceIdentifier")
+						.resourceIdentifier(request.getResourceIdentifier())
+						.parentResource(request)
+						.build());
+	}
+
 	@NonNull
 	private Optional<WOProject> getExistingWOProject(
 			@NonNull final OrgId orgId,
-			@Nullable final IdentifierString identifier)
+			@Nullable final IdentifierString identifier,
+			@Nullable final Object objectWithIdentifier)
 	{
 		if (identifier == null)
 		{
@@ -467,14 +525,14 @@ public class WorkOrderProjectRestService
 				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
 				break;
 			default:
-				throw new InvalidIdentifierException(identifier);
+				throw new InvalidIdentifierException(identifier.getRawIdentifierString(), objectWithIdentifier);
 		}
 
 		return projectRepository.getOptionalBy(projectQueryBuilder.build());
 	}
 
 	@NonNull
-	private static JsonWorkOrderProjectResponse toJsonWorkOrderProjectResponse(@NonNull final WOProject projectData)
+	private JsonWorkOrderProjectResponse toJsonWorkOrderProjectResponse(@NonNull final WOProject projectData)
 	{
 		final ImmutableList.Builder<JsonWorkOrderStepResponse> stepsResponseBuilder = ImmutableList.builder();
 
@@ -523,7 +581,7 @@ public class WorkOrderProjectRestService
 				.description(projectData.getDescription())
 				.projectReferenceExt(projectData.getProjectReferenceExt())
 				.name(projectData.getNameNonNull())
-				.salesRepId(JsonMetasfreshId.of(UserId.toRepoId(projectData.getSalesRepId())))
+				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(projectData.getSalesRepId())))
 				.isActive(projectData.getIsActive())
 				.value(projectData.getValueNonNull())
 				.steps(stepsResponseBuilder.build())
