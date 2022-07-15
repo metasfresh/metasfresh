@@ -25,9 +25,10 @@ export const useSimulations = (initialSelectedSimulationId) => {
     },
 
     addSimulationAndSelect: (newSimulation) => {
-      setAvailableSimulationsState((prevAvailableSimulations) => {
-        [...prevAvailableSimulations, newSimulation];
-      });
+      setAvailableSimulationsState((prevAvailableSimulations) => [
+        ...prevAvailableSimulations,
+        newSimulation,
+      ]);
 
       setSelectedSimulationIdState(newSimulation.simulationId);
     },
