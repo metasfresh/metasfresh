@@ -31,6 +31,8 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -39,27 +41,81 @@ import java.util.stream.Stream;
 public class WOProjectSteps
 {
 	@Getter ProjectId projectId;
-	ImmutableList<WOProjectStep> steps;
+	ImmutableList<WOProjectStep> stepsInOrder;
 
 	@Builder
 	private WOProjectSteps(
 			@NonNull final ProjectId projectId,
 			@NonNull final List<WOProjectStep> steps)
 	{
-		this.projectId = projectId;
-		this.steps = ImmutableList.copyOf(steps);
+		assertStepsAreMatchingProject(steps, projectId);
 
-		if (!steps.isEmpty())
+		this.projectId = projectId;
+		this.stepsInOrder = steps.stream()
+				.sorted(Comparator.comparing(WOProjectStep::getSeqNo)
+						.thenComparing(WOProjectStep::getId))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static void assertStepsAreMatchingProject(final @NonNull List<WOProjectStep> steps, final @NonNull ProjectId expectedProjectId)
+	{
+		if (steps.isEmpty())
 		{
-			final ImmutableList<WOProjectStep> resourcesFromOtherProjects = steps.stream()
-					.filter(step -> !ProjectId.equals(step.getProjectId(), projectId))
-					.collect(ImmutableList.toImmutableList());
-			if (!resourcesFromOtherProjects.isEmpty())
-			{
-				throw new AdempiereException("Expected all steps to be from project " + projectId + ": " + resourcesFromOtherProjects);
-			}
+			return;
+		}
+
+		final ImmutableList<WOProjectStep> stepsFromOtherProjects = steps.stream()
+				.filter(step -> !ProjectId.equals(step.getProjectId(), expectedProjectId))
+				.collect(ImmutableList.toImmutableList());
+		if (!stepsFromOtherProjects.isEmpty())
+		{
+			throw new AdempiereException("Expected all steps to be from project " + expectedProjectId + " but followings are not: " + stepsFromOtherProjects);
 		}
 	}
 
-	public Stream<WOProjectStep> stream() {return steps.stream();}
+	public Stream<WOProjectStep> stream() {return stepsInOrder.stream();}
+
+	public WOProjectStep getById(@NonNull WOProjectStepId stepId)
+	{
+		return stepsInOrder.stream()
+				.filter(step -> WOProjectStepId.equals(step.getId(), stepId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No step found for " + stepId + " in " + this));
+	}
+
+	public List<WOProjectStep> getStepsBeforeFromLastToFirst(@NonNull final WOProjectStepId stepId)
+	{
+		final ArrayList<WOProjectStep> result = new ArrayList<>();
+		for (final WOProjectStep step : stepsInOrder)
+		{
+			if (WOProjectStepId.equals(step.getId(), stepId))
+			{
+				break;
+			}
+
+			result.add(0, step);
+		}
+
+		return ImmutableList.copyOf(result);
+	}
+
+	public List<WOProjectStep> getStepsAfterInOrder(@NonNull final WOProjectStepId stepId)
+	{
+		final ImmutableList.Builder<WOProjectStep> result = ImmutableList.builder();
+		boolean addStepsToResult = false;
+		for (final WOProjectStep step : stepsInOrder)
+		{
+			if (addStepsToResult)
+			{
+				result.add(step);
+			}
+			else if (WOProjectStepId.equals(step.getId(), stepId))
+			{
+				addStepsToResult = true;
+			}
+		}
+
+		return result.build();
+	}
+
 }

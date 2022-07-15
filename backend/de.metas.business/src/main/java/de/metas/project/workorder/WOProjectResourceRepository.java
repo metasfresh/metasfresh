@@ -23,7 +23,7 @@
 package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
@@ -32,29 +32,31 @@ import de.metas.util.StringUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_Project_WO_Resource;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 @Repository
 public class WOProjectResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public Map<ProjectId, WOProjectResources> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public WOProjectResourcesCollection getByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		if (projectIds.isEmpty())
 		{
-			return ImmutableMap.of();
+			return WOProjectResourcesCollection.EMPTY;
 		}
 
 		final ImmutableListMultimap<ProjectId, WOProjectResource> byProjectId = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds)
 				.stream()
 				.map(WOProjectResourceRepository::fromRecord)
@@ -65,10 +67,37 @@ public class WOProjectResourceRepository
 						.projectId(projectId)
 						.resources(byProjectId.get(projectId))
 						.build())
-				.collect(ImmutableMap.toImmutableMap(WOProjectResources::getProjectId, Function.identity()));
+				.collect(WOProjectResourcesCollection.collect());
 	}
 
-	private static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)
+	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)
+	{
+		return getByProjectIds(ImmutableSet.of(projectId)).get(projectId);
+	}
+
+	public Stream<WOProjectResource> streamByResourceIds(
+			@NonNull final Set<ResourceId> resourceIds,
+			@Nullable final Set<ProjectId> onlyProjectIds)
+	{
+		if (resourceIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		final IQueryBuilder<I_C_Project_WO_Resource> queryBuilder = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds);
+
+		if (onlyProjectIds != null && !onlyProjectIds.isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, onlyProjectIds);
+		}
+
+		return queryBuilder.stream()
+				.map(WOProjectResourceRepository::fromRecord);
+	}
+
+	public static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)
 	{
 		final TemporalUnit durationUnit = WFDurationUnit.ofCode(record.getDurationUnit()).getTemporalUnit();
 
@@ -78,8 +107,8 @@ public class WOProjectResourceRepository
 				.stepId(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.dateRange(CalendarDateRange.builder()
-						.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom()))
-						.endDate(TimeUtil.asZonedDateTime(record.getAssignDateTo()))
+						.startDate(record.getAssignDateFrom().toInstant())
+						.endDate(record.getAssignDateTo().toInstant())
 						.allDay(record.isAllDay())
 						.build())
 				.durationUnit(durationUnit)

@@ -22,6 +22,7 @@
 
 package de.metas.calendar;
 
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -38,7 +39,8 @@ public class CalendarEntry
 {
 	@NonNull CalendarEntryId entryId;
 
-	@NonNull CalendarGlobalId calendarId;
+	@Nullable SimulationPlanId simulationId;
+
 	@NonNull CalendarResourceId resourceId;
 
 	@Builder.Default
@@ -51,4 +53,10 @@ public class CalendarEntry
 	boolean editable;
 	@Nullable String color;
 	@Nullable URI url;
+
+	public CalendarServiceId getCalendarServiceId() {return getEntryId().getCalendarServiceId();}
+
+	public CalendarGlobalId getCalendarId() {return getEntryId().getCalendarId();}
+
+	public CalendarEntryAndSimulationId getCalendarEntryAndSimulationId() {return CalendarEntryAndSimulationId.of(getEntryId(), getSimulationId());}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.calendar;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -29,6 +30,7 @@ import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryAddRequest;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarEntryUpdateRequest;
+import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.CalendarRef;
@@ -36,47 +38,52 @@ import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.CalendarResourceRef;
 import de.metas.calendar.CalendarService;
 import de.metas.calendar.CalendarServiceId;
-import de.metas.calendar.util.CalendarDateRange;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectAndResourceId;
 import de.metas.project.budget.BudgetProjectResource;
+import de.metas.project.budget.BudgetProjectResourceSimulation;
 import de.metas.project.budget.BudgetProjectResources;
 import de.metas.project.budget.BudgetProjectService;
+import de.metas.project.budget.BudgetProjectSimulationPlan;
+import de.metas.project.budget.BudgetProjectSimulationRepository;
 import de.metas.project.workorder.WOProject;
+import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResource;
+import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResources;
+import de.metas.project.workorder.WOProjectResourcesCollection;
 import de.metas.project.workorder.WOProjectService;
 import de.metas.project.workorder.WOProjectStep;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.WOProjectSteps;
+import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceGroup;
 import de.metas.resource.ResourceService;
-import de.metas.ui.web.WebuiURLs;
 import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.apache.commons.lang3.StringUtils;
-import org.compiere.model.I_C_Project;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import javax.annotation.Nullable;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 @Component
@@ -85,21 +92,30 @@ public class WOProjectCalendarService implements CalendarService
 	private static final Logger logger = LogManager.getLogger(WOProjectCalendarService.class);
 	private static final CalendarServiceId ID = CalendarServiceId.ofString("WOProject");
 
-	private static final CalendarGlobalId CALENDAR_ID = CalendarGlobalId.of(ID, "default");
+	static final CalendarGlobalId CALENDAR_ID = CalendarGlobalId.of(ID, "default");
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ResourceService resourceService;
-	private final WOProjectService woProjectService;
 	private final BudgetProjectService budgetProjectService;
+	private final BudgetProjectSimulationRepository budgetProjectSimulationRepository;
+	private final WOProjectService woProjectService;
+	private final WOProjectSimulationService woProjectSimulationService;
+	private final WOProjectConflictService woProjectConflictService;
 
 	public WOProjectCalendarService(
 			final ResourceService resourceService,
 			final WOProjectService woProjectService,
-			final BudgetProjectService budgetProjectService)
+			final BudgetProjectService budgetProjectService,
+			final BudgetProjectSimulationRepository budgetProjectSimulationRepository,
+			final WOProjectSimulationService woProjectSimulationService,
+			final WOProjectConflictService woProjectConflictService)
 	{
 		this.resourceService = resourceService;
-		this.woProjectService = woProjectService;
 		this.budgetProjectService = budgetProjectService;
+		this.budgetProjectSimulationRepository = budgetProjectSimulationRepository;
+		this.woProjectService = woProjectService;
+		this.woProjectSimulationService = woProjectSimulationService;
+		this.woProjectConflictService = woProjectConflictService;
 	}
 
 	@Override
@@ -166,82 +182,68 @@ public class WOProjectCalendarService implements CalendarService
 		}
 
 		// TODO consider onlyResourceIds
-		// final ImmutableSet<ResourceId> onlyResourceIds;
-		// if (!calendarQuery.getOnlyResourceIds().isEmpty())
-		// {
-		// 	onlyResourceIds = calendarQuery.getOnlyResourceIdsOfType(ResourceId.class);
-		// 	if (onlyResourceIds.isEmpty())
-		// 	{
-		// 		return null;
-		// 	}
-		//
-		// 	// TODO calendarQuery.getOnlyResourceIdsOfType(ResourceGroupId.class);
-		// }
-		// else
-		// {
-		// 	onlyResourceIds = null;
-		// }
-
 		// TODO consider date range
 
-		final FrontendURLs frontendURLs = new FrontendURLs();
+		final WOProjectFrontendURLsProvider frontendURLs = new WOProjectFrontendURLsProvider();
 
 		final ArrayList<CalendarEntry> result = new ArrayList<>();
-
-		//
-		// Budget projects
-		{
-			final ImmutableMap<ProjectId, BudgetProject> budgetProjects = Maps.uniqueIndex(budgetProjectService.getAllActiveProjects(), BudgetProject::getProjectId);
-			final Map<ProjectId, BudgetProjectResources> budgetsByProjectId = budgetProjectService.getBudgetsByProjectIds(budgetProjects.keySet());
-
-			budgetsByProjectId.values()
-					.stream()
-					.flatMap(budgets -> budgets.getBudgets().stream())
-					.map(budget -> toCalendarEntry(
-							budget,
-							budgetProjects.get(budget.getProjectId()),
-							frontendURLs)
-					)
-					.forEach(result::add);
-		}
-
-		//
-		// Work Order Projects
-		{
-			final ImmutableMap<ProjectId, WOProject> woProjects = Maps.uniqueIndex(woProjectService.getAllActiveProjects(), WOProject::getProjectId);
-			final Map<ProjectId, WOProjectResources> resourcesByProjectId = woProjectService.getResourcesByProjectIds(woProjects.keySet());
-			final ImmutableMap<WOProjectStepId, WOProjectStep> stepsById = woProjectService.getStepsByProjectIds(woProjects.keySet())
-					.values()
-					.stream()
-					.flatMap(WOProjectSteps::stream)
-					.collect(ImmutableMap.toImmutableMap(WOProjectStep::getId, step -> step));
-
-			resourcesByProjectId.values()
-					.stream()
-					.flatMap(resources -> resources.getResources().stream())
-					.map(resource -> toCalendarEntry(
-							resource,
-							stepsById.get(resource.getStepId()),
-							woProjects.get(resource.getProjectId()),
-							frontendURLs)
-					)
-					.forEach(result::add);
-		}
-
-		//
-		//
-
+		result.addAll(query_BudgetProjects(calendarQuery, frontendURLs));
+		result.addAll(query_WOProjects(calendarQuery, frontendURLs));
 		return result.stream();
+	}
+
+	private List<CalendarEntry> query_WOProjects(final CalendarQuery calendarQuery, final WOProjectFrontendURLsProvider frontendURLs)
+	{
+		final ImmutableMap<ProjectId, WOProject> woProjects = Maps.uniqueIndex(woProjectService.getAllActiveProjects(), WOProject::getProjectId);
+		final ImmutableMap<WOProjectStepId, WOProjectStep> stepsById = woProjectService.getStepsByProjectIds(woProjects.keySet())
+				.values()
+				.stream()
+				.flatMap(WOProjectSteps::stream)
+				.collect(ImmutableMap.toImmutableMap(WOProjectStep::getId, step -> step));
+
+		final WOProjectSimulationPlan simulationPlan = calendarQuery.getSimulationId() != null ? woProjectSimulationService.getSimulationPlanById(calendarQuery.getSimulationId()) : null;
+
+		final WOProjectResourcesCollection allProjectResources = woProjectService.getResourcesByProjectIds(woProjects.keySet());
+
+		return allProjectResources.streamProjectResources()
+				.map(resource -> toCalendarEntry(
+						simulationPlan != null ? simulationPlan.applyOn(resource) : resource,
+						stepsById.get(resource.getStepId()),
+						woProjects.get(resource.getProjectId()),
+						simulationPlan != null ? simulationPlan.getSimulationPlanId() : null,
+						frontendURLs)
+				)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<CalendarEntry> query_BudgetProjects(final CalendarQuery calendarQuery, final WOProjectFrontendURLsProvider frontendURLs)
+	{
+		final ImmutableMap<ProjectId, BudgetProject> budgetProjects = Maps.uniqueIndex(budgetProjectService.getAllActiveProjects(), BudgetProject::getProjectId);
+		final Map<ProjectId, BudgetProjectResources> budgetsByProjectId = budgetProjectService.getBudgetsByProjectIds(budgetProjects.keySet());
+
+		final BudgetProjectSimulationPlan simulationPlan = calendarQuery.getSimulationId() != null ? budgetProjectSimulationRepository.getSimulationPlanById(calendarQuery.getSimulationId()) : null;
+
+		return budgetsByProjectId.values()
+				.stream()
+				.flatMap(budgets -> budgets.getBudgets().stream())
+				.map(budget -> toCalendarEntry(
+						simulationPlan != null ? simulationPlan.applyOn(budget) : budget,
+						budgetProjects.get(budget.getProjectId()),
+						simulationPlan != null ? simulationPlan.getSimulationPlanId() : null,
+						frontendURLs)
+				)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private CalendarEntry toCalendarEntry(
 			@NonNull final BudgetProjectResource budget,
 			@NonNull final BudgetProject project,
-			@NonNull final FrontendURLs frontendURLs)
+			@Nullable final SimulationPlanId simulationId,
+			@NonNull final WOProjectFrontendURLsProvider frontendURLs)
 	{
 		return CalendarEntry.builder()
-				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, budget.getId()))
-				.calendarId(CALENDAR_ID)
+				.entryId(BudgetAndWOCalendarEntryIdConverters.from(budget.getProjectId(), budget.getId()))
+				.simulationId(simulationId)
 				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(), budget.getResourceGroupId())))
 				.title(TranslatableStrings.builder()
 						.append(project.getName())
@@ -249,11 +251,8 @@ public class WOProjectCalendarService implements CalendarService
 						.appendQty(budget.getPlannedDuration().toBigDecimal(), budget.getPlannedDuration().getUOMSymbol())
 						.build())
 				.description(TranslatableStrings.anyLanguage(budget.getDescription()))
-				.dateRange(CalendarDateRange.builder()
-						.startDate(budget.getStartDate())
-						.endDate(budget.getEndDate())
-						.build())
-				.editable(false)
+				.dateRange(budget.getDateRange())
+				.editable(simulationId != null)
 				.color("#89D72D") // metasfresh green
 				.url(frontendURLs.getFrontendURL(budget.getProjectId()).orElse(null))
 				.build();
@@ -263,14 +262,15 @@ public class WOProjectCalendarService implements CalendarService
 			@NonNull final WOProjectResource resource,
 			@NonNull final WOProjectStep step,
 			@NonNull final WOProject project,
-			@NonNull final FrontendURLs frontendURLs)
+			@Nullable final SimulationPlanId simulationId,
+			@NonNull final WOProjectFrontendURLsProvider frontendURLs)
 	{
 		final int durationInt = DurationUtils.toInt(resource.getDuration(), resource.getDurationUnit());
 		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(resource.getDurationUnit());
 
 		return CalendarEntry.builder()
-				.entryId(CalendarEntryId.ofRepoId(CALENDAR_ID, resource.getId()))
-				.calendarId(CALENDAR_ID)
+				.entryId(BudgetAndWOCalendarEntryIdConverters.from(resource.getWOProjectAndResourceId()))
+				.simulationId(simulationId)
 				.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
 				.title(TranslatableStrings.builder()
 						.append(project.getName())
@@ -282,7 +282,7 @@ public class WOProjectCalendarService implements CalendarService
 				)
 				.description(TranslatableStrings.anyLanguage(resource.getDescription()))
 				.dateRange(resource.getDateRange())
-				.editable(false)
+				.editable(simulationId != null)
 				.color("#FFCF60") // orange-ish
 				.url(frontendURLs.getFrontendURL(resource.getProjectId()).orElse(null))
 				.build();
@@ -308,60 +308,166 @@ public class WOProjectCalendarService implements CalendarService
 	}
 
 	@Override
-	public CalendarEntry updateEntry(final CalendarEntryUpdateRequest request)
+	public CalendarEntryUpdateResult updateEntry(final CalendarEntryUpdateRequest request)
+	{
+		CALENDAR_ID.assertEqualsTo(request.getCalendarId());
+
+		if (request.getSimulationId() == null)
+		{
+			throw new AdempiereException("Changing entries outside of simulation is not allowed");
+		}
+
+		return BudgetAndWOCalendarEntryIdConverters.withProjectResourceId(
+				request.getEntryId(),
+				budgetProjectAndResourceId -> updateEntry_BudgetProjectResource(request, budgetProjectAndResourceId),
+				projectAndResourceId -> updateEntry_WOProjectResource(request, projectAndResourceId));
+	}
+
+	private CalendarEntryUpdateResult updateEntry_BudgetProjectResource(@NonNull final CalendarEntryUpdateRequest request, @NonNull final BudgetProjectAndResourceId projectAndResourceId)
+	{
+		final BudgetProject project = budgetProjectService.getById(projectAndResourceId.getProjectId())
+				.orElseThrow(() -> new AdempiereException("No Budget Project found for " + projectAndResourceId.getProjectId()));
+
+		final BudgetProjectResource actualBudget = budgetProjectService.getBudgetsById(projectAndResourceId.getProjectId(), projectAndResourceId.getProjectResourceId());
+
+		final WOProjectFrontendURLsProvider frontendURLs = new WOProjectFrontendURLsProvider();
+
+		final OldAndNewValues<CalendarEntry> result = budgetProjectSimulationRepository
+				.createOrUpdate(
+						BudgetProjectResourceSimulation.UpdateRequest.builder()
+								.simulationId(Check.assumeNotNull(request.getSimulationId(), "simulationId is set: {}", request))
+								.projectAndResourceId(projectAndResourceId)
+								.dateRange(CoalesceUtil.coalesceNotNull(request.getDateRange(), actualBudget.getDateRange()))
+								.build())
+				.map(simulation -> simulation != null ? simulation.applyOn(actualBudget) : actualBudget)
+				.map(budget -> toCalendarEntry(
+						actualBudget,
+						project,
+						request.getSimulationId(),
+						frontendURLs));
+
+		return CalendarEntryUpdateResult.ofChangedEntry(result);
+	}
+
+	private CalendarEntryUpdateResult updateEntry_WOProjectResource(
+			@NonNull final CalendarEntryUpdateRequest request,
+			@NonNull final WOProjectAndResourceId projectAndResourceId)
+	{
+		final SimulationPlanId simulationId = Check.assumeNotNull(request.getSimulationId(), "simulationId shall be set: {}", request);
+
+		final WOProjectResources projectResources = woProjectService.getResourcesByProjectId(projectAndResourceId.getProjectId());
+
+		final WOProjectSimulationPlanEditor simulationEditor = WOProjectSimulationPlanEditor.builder()
+				.project(woProjectService.getById(projectAndResourceId.getProjectId()))
+				.steps(woProjectService.getStepsByProjectId(projectAndResourceId.getProjectId()))
+				.projectResources(projectResources)
+				.currentSimulationPlan(woProjectSimulationService.getSimulationPlanById(simulationId))
+				.build();
+
+		if (request.getDateRange() != null)
+		{
+			final WOProjectStepId stepId = projectResources.getStepId(projectAndResourceId.getProjectResourceId());
+			simulationEditor.changeResourceDateRangeAndShiftSteps(projectAndResourceId, request.getDateRange(), stepId);
+		}
+		if (!Check.isBlank(request.getTitle()))
+		{
+			throw new AdempiereException("Changing title is not supported yet");
+		}
+		if (!Check.isBlank(request.getDescription()))
+		{
+			throw new AdempiereException("Changing description is not supported yet");
+
+		}
+
+		//
+		// Save changed plan to database
+		final WOProjectSimulationPlan simulation = simulationEditor.toNewSimulationPlan();
+		woProjectSimulationService.savePlan(simulation);
+
+		//
+		// Check conflicts
+		woProjectConflictService.checkSimulationConflicts(simulation, simulationEditor.getAffectedResourceIds());
+		// TODO: send conflicts changes to websockets
+
+		//
+		// toCalendarEntry converter:
+		final WOProjectFrontendURLsProvider frontendURLs = new WOProjectFrontendURLsProvider();
+		final Function<WOProjectResource, CalendarEntry> toCalendarEntry = woProjectResource -> toCalendarEntry(
+				woProjectResource,
+				simulationEditor.getStepById(woProjectResource.getStepId()),
+				simulationEditor.getProjectById(woProjectResource.getProjectId()),
+				simulationEditor.getSimulationPlanId(),
+				frontendURLs);
+
+		//
+		return CalendarEntryUpdateResult.builder()
+				.changedEntry(simulationEditor.mapProjectResourceInitialAndNow(projectAndResourceId.getProjectResourceId(), toCalendarEntry))
+				.otherChangedEntries(
+						simulationEditor.streamChangedProjectResourceIds()
+								.filter(projectResourceId -> !WOProjectResourceId.equals(projectResourceId, projectAndResourceId.getProjectResourceId()))
+								.map(projectResourceId -> simulationEditor.mapProjectResourceInitialAndNow(projectResourceId, toCalendarEntry))
+								.collect(ImmutableList.toImmutableList())
+				)
+				.build();
+	}
+
+	@Override
+	public void deleteEntryById(final @NonNull CalendarEntryId entryId, @Nullable SimulationPlanId simulationId)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void deleteEntryById(final CalendarEntryId entryId)
+	public CalendarEntry getEntryById(
+			@NonNull final CalendarEntryId entryId,
+			@Nullable final SimulationPlanId simulationId)
 	{
-		throw new UnsupportedOperationException();
+		return BudgetAndWOCalendarEntryIdConverters.withProjectResourceId(
+				entryId,
+				budgetProjectAndResourceId -> getEntryByBudgetResourceId(budgetProjectAndResourceId, simulationId),
+				budgetProjectAndResourceId -> getEntryByWOProjectResourceId(budgetProjectAndResourceId, simulationId));
 	}
 
-	//
-	//
-	//
-	//
-	//
-
-	private static class FrontendURLs
+	private CalendarEntry getEntryByBudgetResourceId(
+			@NonNull final BudgetProjectAndResourceId budgetProjectAndResourceId,
+			@Nullable final SimulationPlanId simulationId)
 	{
-		private final WebuiURLs webuiURLs = WebuiURLs.newInstance();
-
-		private final HashMap<ProjectId, Optional<URI>> cache = new HashMap<>();
-
-		private Optional<URI> getFrontendURL(final ProjectId projectId)
+		BudgetProjectResource budget = budgetProjectService.getBudgetsById(budgetProjectAndResourceId);
+		if (simulationId != null)
 		{
-			return cache.computeIfAbsent(projectId, this::computeFrontendURL);
+			budget = budgetProjectSimulationRepository.getSimulationPlanById(simulationId).applyOn(budget);
 		}
 
-		private Optional<URI> computeFrontendURL(@NonNull final ProjectId projectId)
+		final BudgetProject project = budgetProjectService.getById(budgetProjectAndResourceId.getProjectId())
+				.orElseThrow(() -> new AdempiereException("No project found for " + budgetProjectAndResourceId));
+		final WOProjectFrontendURLsProvider frontendUrls = new WOProjectFrontendURLsProvider();
+
+		return toCalendarEntry(budget, project, simulationId, frontendUrls);
+	}
+
+	private CalendarEntry getEntryByWOProjectResourceId(
+			@NonNull final WOProjectAndResourceId woProjectAndResourceId,
+			@Nullable final SimulationPlanId simulationId)
+	{
+		final ProjectId projectId = woProjectAndResourceId.getProjectId();
+		final WOProjectResourceId projectResourceId = woProjectAndResourceId.getProjectResourceId();
+
+		final WOProjectResources projectResources = woProjectService.getResourcesByProjectId(projectId);
+		final WOProjectStepId stepId = projectResources.getStepId(projectResourceId);
+
+		WOProjectResource resource = projectResources.getById(projectResourceId);
+		if (simulationId != null)
 		{
-			final AdWindowId adWindowId = RecordWindowFinder.newInstance(TableRecordReference.of(I_C_Project.Table_Name, projectId))
-					.checkRecordPresentInWindow() // IMPORTANT: make sure the right Project window is picked
-					.findAdWindowId()
-					.orElse(null);
-			if (adWindowId == null)
-			{
-				return Optional.empty();
-			}
-
-			final String url = webuiURLs.getDocumentUrl(adWindowId, projectId.getRepoId());
-			if (url == null)
-			{
-				return Optional.empty();
-			}
-
-			try
-			{
-				return Optional.of(new URI(url));
-			}
-			catch (final URISyntaxException e)
-			{
-				logger.warn("Failed converting `{}` to URI", url, e);
-				return Optional.empty();
-			}
+			resource = woProjectSimulationService.getSimulationPlanById(simulationId).applyOn(resource);
 		}
+
+		final WOProjectFrontendURLsProvider frontendUrls = new WOProjectFrontendURLsProvider();
+
+		return toCalendarEntry(
+				resource,
+				woProjectService.getStepsByProjectId(projectId).getById(stepId),
+				woProjectService.getById(projectId),
+				simulationId,
+				frontendUrls);
 	}
 }

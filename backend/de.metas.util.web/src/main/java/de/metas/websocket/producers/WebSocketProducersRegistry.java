@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -100,13 +101,8 @@ public final class WebSocketProducersRegistry
 	}
 
 	@Nullable
-	private WebSocketProducerFactory getWebSocketProducerFactoryOrNull(final WebsocketTopicName topicName)
+	private WebSocketProducerFactory getWebSocketProducerFactoryOrNull(@NonNull final WebsocketTopicName topicName)
 	{
-		if (topicName == null)
-		{
-			return null;
-		}
-
 		return producerFactoriesByTopicNamePrefix
 				.entrySet()
 				.stream()
@@ -124,7 +120,7 @@ public final class WebSocketProducersRegistry
 	}
 
 	@Nullable
-	private WebSocketProducerInstance getOrCreateWebSocketProducerOrNull(final WebsocketTopicName topicName)
+	private WebSocketProducerInstance getOrCreateWebSocketProducerOrNull(@NonNull final WebsocketTopicName topicName)
 	{
 		final WebSocketProducerInstance existingProducer = _producersByTopicName.get(topicName);
 		if (existingProducer != null)
@@ -138,10 +134,17 @@ public final class WebSocketProducersRegistry
 			return null;
 		}
 
-		return _producersByTopicName.computeIfAbsent(topicName, k -> {
-			final WebSocketProducer producer = producerFactory.createProducer(topicName);
-			return new WebSocketProducerInstance(topicName, producer, scheduler, websocketSender);
-		});
+		return _producersByTopicName.computeIfAbsent(topicName, k -> createProducerInstance(topicName, producerFactory));
+	}
+
+	private WebSocketProducerInstance createProducerInstance(
+			@NonNull final WebsocketTopicName topicName,
+			@NonNull final WebSocketProducerFactory producerFactory)
+	{
+		final WebSocketProducer producer = producerFactory.createProducer(topicName);
+		producer.setWebsocketSender(websocketSender);
+
+		return new WebSocketProducerInstance(topicName, producer, scheduler, websocketSender);
 	}
 
 	private void forEachExistingWebSocketProducerInstance(final Consumer<WebSocketProducerInstance> action)
@@ -207,15 +210,18 @@ public final class WebSocketProducersRegistry
 	{
 		return _producersByTopicName.values()
 				.stream()
-				.filter(producerInstance -> producerType.isInstance(producerInstance.producer))
+				.filter(producerInstance -> producerType.isInstance(producerInstance.producerControls))
 				.filter(WebSocketProducerInstance::hasActiveSubscriptions)
-				.map(producerInstance -> producerType.cast(producerInstance.producer));
+				.map(producerInstance -> producerType.cast(producerInstance.producerControls));
 	}
 
 	private static final class WebSocketProducerInstance
 	{
 		private final WebsocketTopicName topicName;
-		private final WebSocketProducer producer;
+
+		private final AtomicBoolean running = new AtomicBoolean(false);
+		private final WebSocketProducer producerControls;
+		private final WebSocketProducer.ProduceEventsOnPollSupport onPollingEventsSupplier;
 		private final ScheduledExecutorService scheduler;
 		private final WebsocketSender websocketSender;
 
@@ -229,7 +235,10 @@ public final class WebSocketProducersRegistry
 				@NonNull final WebsocketSender websocketSender)
 		{
 			this.topicName = topicName;
-			this.producer = producer;
+			this.producerControls = producer;
+			this.onPollingEventsSupplier = (producer instanceof WebSocketProducer.ProduceEventsOnPollSupport)
+					? (WebSocketProducer.ProduceEventsOnPollSupport)producer
+					: null;
 			this.scheduler = scheduler;
 			this.websocketSender = websocketSender;
 		}
@@ -239,7 +248,7 @@ public final class WebSocketProducersRegistry
 		{
 			return MoreObjects.toStringHelper(this)
 					.add("topicName", topicName)
-					.add("producer", producer)
+					.add("producer", producerControls)
 					.toString();
 		}
 
@@ -248,7 +257,7 @@ public final class WebSocketProducersRegistry
 			activeSubscriptionIds.add(subscriptionId);
 			logger.trace("{}: session {} subscribed", this, subscriptionId);
 
-			producer.onNewSubscription(subscriptionId);
+			producerControls.onNewSubscription(subscriptionId);
 
 			startIfSubscriptions();
 		}
@@ -260,19 +269,13 @@ public final class WebSocketProducersRegistry
 				return;
 			}
 
-			//
-			// Check if the producer was already scheduled
-			if (scheduledFuture != null)
+			final boolean wasRunning = running.getAndSet(true);
+			if (!wasRunning)
 			{
-				return;
+				producerControls.onStart();
 			}
 
-			//
-			// Schedule producer
-			final long initialDelayMillis = 1000;
-			final long periodMillis = 1000;
-			scheduledFuture = scheduler.scheduleAtFixedRate(this::executeAndPublish, initialDelayMillis, periodMillis, TimeUnit.MILLISECONDS);
-			logger.trace("{}: start producing using initialDelayMillis={}, periodMillis={}", this, initialDelayMillis, periodMillis);
+			startScheduledFutureIfApplies();
 		}
 
 		public synchronized void unsubscribe(final WebsocketSubscriptionId subscriptionId)
@@ -306,6 +309,43 @@ public final class WebSocketProducersRegistry
 				return;
 			}
 
+			final boolean wasRunning = running.getAndSet(false);
+			if (wasRunning)
+			{
+				producerControls.onStop();
+			}
+
+			stopScheduledFuture();
+
+			logger.debug("{} stopped", this);
+		}
+
+		private void startScheduledFutureIfApplies()
+		{
+			// Does not apply
+			if (onPollingEventsSupplier == null)
+			{
+				return;
+			}
+
+			//
+			// Check if the producer was already scheduled
+			if (scheduledFuture != null)
+			{
+				return;
+			}
+
+			//
+			// Schedule producer
+			final long initialDelayMillis = 1000;
+			final long periodMillis = 1000;
+			scheduledFuture = scheduler.scheduleAtFixedRate(this::pollAndPublish, initialDelayMillis, periodMillis, TimeUnit.MILLISECONDS);
+			logger.trace("{}: start producing using initialDelayMillis={}, periodMillis={}", this, initialDelayMillis, periodMillis);
+
+		}
+
+		private void stopScheduledFuture()
+		{
 			if (scheduledFuture == null)
 			{
 				return;
@@ -320,15 +360,18 @@ public final class WebSocketProducersRegistry
 				logger.warn("{}: Failed stopping scheduled future: {}. Ignored and considering it as stopped", this, scheduledFuture, ex);
 			}
 			scheduledFuture = null;
-
-			logger.debug("{} stopped", this);
 		}
 
-		private void executeAndPublish()
+		private void pollAndPublish()
 		{
+			if (onPollingEventsSupplier == null)
+			{
+				return;
+			}
+
 			try
 			{
-				final List<?> events = producer.produceEvents();
+				final List<?> events = onPollingEventsSupplier.produceEvents();
 				if (events != null && !events.isEmpty())
 				{
 					for (final Object event : events)
@@ -339,7 +382,7 @@ public final class WebSocketProducersRegistry
 				}
 				else
 				{
-					logger.trace("Got no events from {}", producer);
+					logger.trace("Got no events from {}", onPollingEventsSupplier);
 				}
 			}
 			catch (final Exception ex)

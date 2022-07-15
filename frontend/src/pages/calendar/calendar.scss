@@ -1,0 +1,38 @@
+.conflicts-summary {
+  color: red !important;
+  font-weight: bold;
+}
+
+.calendar-container {
+  padding: 15px;
+
+  .calendarEventEditor {
+  }
+
+  .calendar-top {
+    display: flex;
+    .calendar-top-left {
+      flex: 0 0 auto;
+    }
+    .calendar-top-center {
+      flex: 1 1 auto;
+    }
+    .calendar-top-right {
+      flex: 0 0 auto;
+
+      .calendar-simulations-dropdown {
+        min-width: 300px;
+        text-align: right;
+      }
+    }
+  }
+}
+
+.fc-event.has-conflict {
+  border: 2px solid red !important;
+}
+
+.fc-resource-label.has-conflict {
+  color: red !important;
+  font-weight: bold;
+}

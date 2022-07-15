@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -123,19 +122,19 @@ public interface I_C_Project_WO_Step
 	 * Set Date End.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateEnd (@Nullable java.sql.Timestamp DateEnd);
+	void setDateEnd (java.sql.Timestamp DateEnd);
 
 	/**
 	 * Get Date End.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateEnd();
+	java.sql.Timestamp getDateEnd();
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateEnd = new ModelColumn<>(I_C_Project_WO_Step.class, "DateEnd", null);
 	String COLUMNNAME_DateEnd = "DateEnd";
@@ -145,20 +144,20 @@ public interface I_C_Project_WO_Step
 	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateStart (@Nullable java.sql.Timestamp DateStart);
+	void setDateStart (java.sql.Timestamp DateStart);
 
 	/**
 	 * Get Start Date.
 	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateStart();
+	java.sql.Timestamp getDateStart();
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateStart = new ModelColumn<>(I_C_Project_WO_Step.class, "DateStart", null);
 	String COLUMNNAME_DateStart = "DateStart";

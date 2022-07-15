@@ -9,6 +9,7 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
@@ -385,4 +386,10 @@ public interface IQueryBuilder<T>
 			@NonNull String upperBoundColumnName,
 			@Nullable ZonedDateTime lowerBoundValue,
 			@Nullable ZonedDateTime upperBoundValue);
+
+	IQueryBuilder<T> addIntervalIntersection(
+			@NonNull String lowerBoundColumnName,
+			@NonNull String upperBoundColumnName,
+			@Nullable Instant lowerBoundValue,
+			@Nullable Instant upperBoundValue);
 }

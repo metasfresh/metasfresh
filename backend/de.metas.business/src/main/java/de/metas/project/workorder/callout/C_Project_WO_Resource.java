@@ -38,28 +38,26 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.ui.spi.ITabCallout;
-import org.adempiere.ad.ui.spi.TabCallout;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.time.temporal.TemporalUnit;
 import java.util.Optional;
 
 @Callout(I_C_Project_WO_Resource.class)
-@TabCallout(I_C_Project_WO_Resource.class)
 @Component
-public class C_Project_WO_Resource implements ITabCallout
+public class C_Project_WO_Resource
 {
 	private final ResourceService resourceService;
 	private final WOProjectService woProjectService;
 	private final BudgetProjectService budgetProjectService;
+
+	private static final Duration DEFAULT_DURATION = Duration.ofHours(1);
 
 	public C_Project_WO_Resource(
 			final ResourceService resourceService,
@@ -94,13 +92,13 @@ public class C_Project_WO_Resource implements ITabCallout
 	@CalloutMethod(columnNames = I_C_Project_WO_Resource.COLUMNNAME_AssignDateFrom)
 	public void onAssignDateFrom(@NonNull final I_C_Project_WO_Resource woResource)
 	{
-		final Timestamp assignDateFrom = woResource.getAssignDateFrom();
+		final Instant assignDateFrom = TimeUtil.asInstant(woResource.getAssignDateFrom());
 		if (assignDateFrom != null)
 		{
-			final Timestamp assignDateTo = woResource.getAssignDateTo();
-			if (assignDateTo == null || assignDateTo.before(assignDateFrom))
+			final Instant assignDateTo = TimeUtil.asInstant(woResource.getAssignDateTo());
+			if (assignDateTo == null || assignDateFrom.compareTo(assignDateTo) >= 0)
 			{
-				woResource.setAssignDateTo(assignDateFrom);
+				woResource.setAssignDateTo(TimeUtil.asTimestamp(assignDateFrom.plus(DEFAULT_DURATION)));
 			}
 		}
 
@@ -110,13 +108,13 @@ public class C_Project_WO_Resource implements ITabCallout
 	@CalloutMethod(columnNames = I_C_Project_WO_Resource.COLUMNNAME_AssignDateTo)
 	public void onAssignDateTo(@NonNull final I_C_Project_WO_Resource woResource)
 	{
-		final Timestamp assignDateTo = woResource.getAssignDateTo();
+		final Instant assignDateTo = TimeUtil.asInstant(woResource.getAssignDateTo());
 		if (assignDateTo != null)
 		{
-			final Timestamp assignDateFrom = woResource.getAssignDateFrom();
-			if (assignDateFrom == null || assignDateFrom.after(assignDateTo))
+			final Instant assignDateFrom = TimeUtil.asInstant(woResource.getAssignDateFrom());
+			if (assignDateFrom == null || assignDateFrom.compareTo(assignDateTo) >= 0)
 			{
-				woResource.setAssignDateFrom(assignDateTo);
+				woResource.setAssignDateFrom(TimeUtil.asTimestamp(assignDateTo.minus(DEFAULT_DURATION)));
 			}
 		}
 
@@ -128,15 +126,15 @@ public class C_Project_WO_Resource implements ITabCallout
 		woResource.setDuration(computeDuration(woResource));
 	}
 
-	private BigDecimal computeDuration(final I_C_Project_WO_Resource woResource)
+	private static BigDecimal computeDuration(final I_C_Project_WO_Resource woResource)
 	{
-		final ZonedDateTime dateFrom = TimeUtil.asZonedDateTime(woResource.getAssignDateFrom());
+		final Instant dateFrom = TimeUtil.asInstant(woResource.getAssignDateFrom());
 		if (dateFrom == null)
 		{
 			return BigDecimal.ZERO;
 		}
 
-		final ZonedDateTime dateTo = TimeUtil.asZonedDateTime(woResource.getAssignDateTo());
+		final Instant dateTo = TimeUtil.asInstant(woResource.getAssignDateTo());
 		if (dateTo == null)
 		{
 			return BigDecimal.ZERO;
