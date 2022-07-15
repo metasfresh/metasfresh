@@ -379,7 +379,7 @@ export class RawList extends PureComponent {
         ]}
         renderTarget={(ref) => {
           return (
-            <div ref={ref}>
+            <div ref={ref} className={this.props.className}>
               <div
                 ref={(ref) => (this.dropdown = ref)}
                 className={classnames('input-dropdown-container', {
@@ -542,6 +542,7 @@ export class RawList extends PureComponent {
  * @prop {func} disableOnClickOutside - callback to be used to disable click outside for parent component
  */
 RawList.propTypes = {
+  className: PropTypes.string,
   filter: PropTypes.object,
   readonly: PropTypes.bool,
   clearable: PropTypes.bool,

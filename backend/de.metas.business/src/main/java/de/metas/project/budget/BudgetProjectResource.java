@@ -22,6 +22,7 @@
 
 package de.metas.project.budget;
 
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.money.Money;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
@@ -33,7 +34,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 
 @Value
 public class BudgetProjectResource
@@ -50,12 +50,11 @@ public class BudgetProjectResource
 	@NonNull Quantity plannedDuration;
 	@NonNull Money pricePerDurationUnit;
 
-	@NonNull ZonedDateTime startDate;
-	@NonNull ZonedDateTime endDate;
+	@NonNull CalendarDateRange dateRange;
 
 	@Nullable String description;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private BudgetProjectResource(
 			@NonNull final BudgetProjectResourceId id,
 			@NonNull final ProjectId projectId,
@@ -65,8 +64,7 @@ public class BudgetProjectResource
 			@NonNull final Money plannedAmount,
 			@NonNull final Quantity plannedDuration,
 			@NonNull final Money pricePerDurationUnit,
-			@NonNull final ZonedDateTime startDate,
-			@NonNull final ZonedDateTime endDate,
+			@NonNull final CalendarDateRange dateRange,
 			@Nullable final String description)
 	{
 		Money.getCommonCurrencyIdOfAll(plannedAmount, pricePerDurationUnit); // make sure they are in the same currency
@@ -79,8 +77,12 @@ public class BudgetProjectResource
 		this.plannedAmount = plannedAmount;
 		this.plannedDuration = plannedDuration;
 		this.pricePerDurationUnit = pricePerDurationUnit;
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.dateRange = dateRange;
 		this.description = description;
+	}
+
+	public BudgetProjectAndResourceId getProjectAndResourceId()
+	{
+		return BudgetProjectAndResourceId.of(projectId, id);
 	}
 }

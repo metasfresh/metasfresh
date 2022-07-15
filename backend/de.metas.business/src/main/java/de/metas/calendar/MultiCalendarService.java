@@ -23,37 +23,37 @@
 package de.metas.calendar;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import de.metas.calendar.conflicts.CalendarConflictsService;
+import de.metas.calendar.conflicts.CalendarEntryConflicts;
+import de.metas.calendar.continuous_query.CalendarContinuousQuery;
+import de.metas.calendar.continuous_query.CalendarContinuousQueryDispatcher;
+import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Service
 public class MultiCalendarService
 {
-	private final ImmutableList<CalendarService> calendarServices;
-	private final ImmutableMap<CalendarServiceId, CalendarService> calendarServicesById;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final CalendarServicesMap calendarServices;
+	private final ImmutableList<CalendarConflictsService> calendarConflictsServices;
+
+	private final CalendarContinuousQueryDispatcher continuousQueriesDispatcher;
 
 	public MultiCalendarService(
-			@NonNull final List<CalendarService> calendarServices)
+			@NonNull final List<CalendarService> calendarServices,
+			@NonNull final List<CalendarConflictsService> calendarConflictsServices)
 	{
-		this.calendarServices = ImmutableList.copyOf(calendarServices);
-		this.calendarServicesById = Maps.uniqueIndex(calendarServices, CalendarService::getCalendarServiceId);
-	}
-
-	private CalendarService getCalendarServiceById(@NonNull final CalendarServiceId calendarServiceId)
-	{
-		final CalendarService calendarService = calendarServicesById.get(calendarServiceId);
-		if (calendarService == null)
-		{
-			throw new AdempiereException("No calendar service found for " + calendarServiceId);
-		}
-		return calendarService;
+		this.calendarServices = CalendarServicesMap.of(calendarServices);
+		this.calendarConflictsServices = ImmutableList.copyOf(calendarConflictsServices);
+		this.continuousQueriesDispatcher = new CalendarContinuousQueryDispatcher(trxManager, this.calendarServices);
 	}
 
 	public Stream<CalendarRef> streamAvailableCalendars(@NonNull final UserId userId)
@@ -68,21 +68,56 @@ public class MultiCalendarService
 				.flatMap(calendarService -> calendarService.query(query));
 	}
 
+	public CalendarContinuousQuery continuousQuery(@NonNull final CalendarQuery query)
+	{
+		return continuousQueriesDispatcher.getOrCreate(query);
+	}
+
 	public CalendarEntry addEntry(@NonNull final CalendarEntryAddRequest request)
 	{
-		return getCalendarServiceById(request.getCalendarId().getCalendarServiceId())
-				.addEntry(request);
+		final CalendarService calendarService = calendarServices.getById(request.getCalendarId().getCalendarServiceId());
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final CalendarEntry result = calendarService.addEntry(request);
+			continuousQueriesDispatcher.onEntryAdded(result);
+			return result;
+		});
 	}
 
-	public CalendarEntry updateEntry(@NonNull final CalendarEntryUpdateRequest request)
+	public CalendarEntryUpdateResult updateEntry(@NonNull final CalendarEntryUpdateRequest request)
 	{
-		return getCalendarServiceById(request.getCalendarId().getCalendarServiceId())
-				.updateEntry(request);
+		final CalendarService calendarService = calendarServices.getById(request.getCalendarServiceId());
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final CalendarEntryUpdateResult result = calendarService.updateEntry(request);
+			continuousQueriesDispatcher.onEntryUpdated(result);
+			return result;
+		});
 	}
 
-	public void deleteEntryById(@NonNull final CalendarEntryId entryId)
+	public void deleteEntryById(@NonNull final CalendarEntryId entryId, @Nullable SimulationPlanId simulationId)
 	{
-		getCalendarServiceById(entryId.getCalendarServiceId())
-				.deleteEntryById(entryId);
+		final CalendarService calendarService = calendarServices.getById(entryId.getCalendarServiceId());
+		trxManager.runInThreadInheritedTrx(() -> {
+			calendarService.deleteEntryById(entryId, simulationId);
+			continuousQueriesDispatcher.onEntryDeleted(entryId, simulationId);
+		});
 	}
+
+	public void notifyEntryUpdatedByUser(@NonNull final CalendarEntryId entryId)
+	{
+		continuousQueriesDispatcher.onEntryUpdated(entryId);
+	}
+
+	public void notifyEntryDeletedByUser(@NonNull final CalendarEntryId entryId)
+	{
+		continuousQueriesDispatcher.onEntryDeleted(entryId, null);
+	}
+
+	public CalendarEntryConflicts getConflicts(@Nullable SimulationPlanId simulationId)
+	{
+		return calendarConflictsServices.stream()
+				.map(conflictsService -> conflictsService.query(simulationId))
+				.reduce(CalendarEntryConflicts::mergeFrom)
+				.orElse(CalendarEntryConflicts.EMPTY);
+	}
+
 }

@@ -23,7 +23,8 @@
 package de.metas.calendar;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.user.UserId;
+import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,22 +32,26 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.Objects;
-import java.util.Set;
 
 @Value
 @Builder
 @SuppressWarnings("BooleanMethodIsAlwaysInverted")
 public class CalendarQuery
 {
-	@Nullable UserId availableForUserId;
+	@Nullable SimulationPlanId simulationId;
 
-	@NonNull @Singular Set<CalendarServiceId> onlyCalendarServiceIds;
-	@NonNull @Singular Set<CalendarGlobalId> onlyCalendarIds;
-	@NonNull @Singular Set<CalendarResourceId> onlyResourceIds;
-	@Nullable ZonedDateTime startDate;
-	@Nullable ZonedDateTime endDate;
+	@NonNull @Singular ImmutableSet<CalendarServiceId> onlyCalendarServiceIds;
+	@NonNull @Singular ImmutableSet<CalendarGlobalId> onlyCalendarIds;
+	@NonNull @Singular ImmutableSet<CalendarResourceId> onlyResourceIds;
+	@Nullable Instant startDate;
+	@Nullable Instant endDate;
+
+	public boolean isMatchingSimulationId(@Nullable final SimulationPlanId simulationId)
+	{
+		return SimulationPlanId.equals(this.simulationId, simulationId);
+	}
 
 	public boolean isMatchingCalendarServiceId(@NonNull final CalendarServiceId calendarServiceId)
 	{
@@ -58,6 +63,25 @@ public class CalendarQuery
 		return onlyCalendarIds.isEmpty() || onlyCalendarIds.contains(calendarId);
 	}
 
+	public boolean isMatchingResourceId(@NonNull final CalendarResourceId resourceId)
+	{
+		return onlyResourceIds.isEmpty() || onlyResourceIds.contains(resourceId);
+	}
+
+	public boolean isMatchingDateRange(@NonNull final CalendarDateRange dateRange)
+	{
+		return dateRange.isConnectedTo(this.startDate, this.endDate);
+	}
+
+	public boolean isMatchingEntry(@NonNull final CalendarEntry entry)
+	{
+		return isMatchingSimulationId(entry.getSimulationId())
+				&& isMatchingCalendarServiceId(entry.getCalendarServiceId())
+				&& isMatchingCalendarId(entry.getCalendarId())
+				&& isMatchingResourceId(entry.getResourceId())
+				&& isMatchingDateRange(entry.getDateRange());
+	}
+
 	public <T extends RepoIdAware> ImmutableSet<T> getOnlyResourceIdsOfType(@NonNull final Class<T> clazz)
 	{
 		return onlyResourceIds
@@ -66,5 +90,4 @@ public class CalendarQuery
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 }

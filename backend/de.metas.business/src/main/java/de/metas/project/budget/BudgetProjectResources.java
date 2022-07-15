@@ -92,4 +92,12 @@ public class BudgetProjectResources
 	{
 		return budgets.stream().map(BudgetProjectResource::getResourceGroupId).collect(ImmutableSet.toImmutableSet());
 	}
+
+	public BudgetProjectResource getBudgetById(@NonNull final BudgetProjectResourceId id)
+	{
+		return budgets.stream()
+				.filter(budget -> BudgetProjectResourceId.equals(budget.getId(), id))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No budget found for " + id));
+	}
 }

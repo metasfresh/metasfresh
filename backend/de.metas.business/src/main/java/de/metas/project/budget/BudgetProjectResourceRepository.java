@@ -25,6 +25,7 @@ package de.metas.project.budget;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.StringUtils;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -39,7 +40,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_Resource_Budget;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
@@ -100,8 +100,11 @@ public class BudgetProjectResourceRepository
 				.plannedDuration(Quantitys.create(record.getPlannedDuration(), durationUomId))
 				.plannedAmount(Money.of(record.getPlannedAmt(), currencyId))
 				.pricePerDurationUnit(Money.of(record.getPricePerTimeUOM(), currencyId))
-				.startDate(TimeUtil.asZonedDateTime(record.getDateStartPlan()))
-				.endDate(TimeUtil.asZonedDateTime(record.getDateFinishPlan()))
+				.dateRange(CalendarDateRange.builder()
+						.startDate(record.getDateStartPlan().toInstant())
+						.endDate(record.getDateFinishPlan().toInstant())
+						.allDay(true)
+						.build())
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.build();
 	}
@@ -125,4 +128,5 @@ public class BudgetProjectResourceRepository
 		record.setC_Currency_ID(newCurrencyId.getRepoId());
 		InterfaceWrapperHelper.save(record);
 	}
+
 }

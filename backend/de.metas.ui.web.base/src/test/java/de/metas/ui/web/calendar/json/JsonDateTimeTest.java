@@ -28,6 +28,7 @@ import de.metas.JsonObjectMapperHolder;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -56,5 +57,13 @@ class JsonDateTimeTest
 		final ZonedDateTime zdt = LocalDate.parse("2022-02-03").atTime(13, 14).atZone(ZoneId.of("Europe/Berlin"));
 		final JsonDateTime json = JsonDateTime.ofZonedDateTime(zdt, zdt.getZone());
 		Assertions.assertThat(json.toZonedDateTime()).isEqualTo(zdt);
+	}
+
+	@Test
+	void ofInstant_toInstant()
+	{
+		final Instant instant = LocalDate.parse("2022-02-03").atTime(13, 14).atZone(ZoneId.of("Europe/Berlin")).toInstant();
+		final JsonDateTime json = JsonDateTime.ofInstant(instant, ZoneId.of("Europe/Berlin"));
+		Assertions.assertThat(json.toInstant()).isEqualTo(instant);
 	}
 }
