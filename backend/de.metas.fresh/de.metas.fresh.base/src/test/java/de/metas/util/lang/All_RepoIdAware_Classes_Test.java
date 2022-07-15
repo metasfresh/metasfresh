@@ -7,6 +7,7 @@ import de.metas.audit.data.model.DataExportAuditLogId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.invoice.InvoiceVerificationRunId;
+import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.util.Check;
@@ -92,6 +93,9 @@ public class All_RepoIdAware_Classes_Test
 			.skip(ExternalSystemOtherConfigId.class)
 			//
 			.skip(MediatedCommissionSettingsLineId.class)
+			//
+			.skip(WOProjectResourceId.class)
+			.skip(WOProjectResourceId.class)
 			;
 
 	private static ObjectMapper jsonMapper;
