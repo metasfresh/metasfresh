@@ -33,6 +33,10 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+/**
+ * Note that this class is somewhat redundant with {@link WOProjectAndResourceId}.
+ * One Of the two should be refactored away. The remaining class should be RepoIdAware.
+ */
 @Value
 public class WOProjectResourceId implements RepoIdAware
 {
