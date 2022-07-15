@@ -90,6 +90,11 @@ public class DurationUtils
 		return BigDecimal.valueOf(toLong(duration, unit));
 	}
 
+	public static Duration fromBigDecimal(@NonNull final BigDecimal duration, @NonNull final TemporalUnit unit)
+	{
+		return Duration.of(duration.longValue(), unit);
+	}
+
 	public static int toInt(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
 	{
 		return (int)toLong(duration, unit);
