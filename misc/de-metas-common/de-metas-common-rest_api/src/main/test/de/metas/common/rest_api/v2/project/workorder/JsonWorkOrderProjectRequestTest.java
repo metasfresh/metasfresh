@@ -83,6 +83,7 @@ public class JsonWorkOrderProjectRequestTest
 		woProjectRequest.setSteps(ImmutableList.of(woProjectStep));
 		
 		final JsonWorkOrderResourceUpsertRequest woProjectResource = new JsonWorkOrderResourceUpsertRequest();
+		woProjectResource.setResourceIdentifier("int-resourceIdentifier");
 		woProjectResource.setAssignDateFrom(LocalDate.parse("2022-07-15"));
 		woProjectResource.setAssignDateTo(LocalDate.parse("2022-07-16"));
 

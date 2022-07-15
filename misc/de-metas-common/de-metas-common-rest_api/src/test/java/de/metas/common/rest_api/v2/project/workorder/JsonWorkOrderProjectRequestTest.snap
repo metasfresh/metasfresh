@@ -72,6 +72,7 @@ de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequestTest.se
         "woFindingsCreatedDateSet" : false,
         "resourceRequests" : [
           {
+            "resourceIdentifier" : "int-resourceIdentifier",
             "resourceIdentifierSet" : false,
             "assignDateFrom" : {
               "year" : 2022,

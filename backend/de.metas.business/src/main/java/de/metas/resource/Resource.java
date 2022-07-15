@@ -46,4 +46,6 @@ public class Resource
 	@NonNull ResourceTypeId resourceTypeId;
 
 	@Nullable UserId responsibleId;
+	
+	@Nullable String internalName;
 }

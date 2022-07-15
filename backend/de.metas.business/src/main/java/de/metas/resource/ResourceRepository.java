@@ -121,6 +121,7 @@ class ResourceRepository
 				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
 				.resourceTypeId(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
 				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
+				.internalName(record.getInternalName())
 				.build();
 	}
 

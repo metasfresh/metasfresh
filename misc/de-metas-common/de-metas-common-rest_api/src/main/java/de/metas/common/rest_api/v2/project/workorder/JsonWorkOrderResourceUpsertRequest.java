@@ -41,7 +41,8 @@ public class JsonWorkOrderResourceUpsertRequest
 {
 	@ApiModelProperty(position = 10,
 			value = RESOURCE_IDENTIFIER_DOC + "\n"
-					+ "Note that `C_Project_WO_Resource.S_Reource_ID` is currently not mandatory!") //
+					+ "Note that `C_Project_WO_Resource.S_Reource_ID` is needed for the calendar view!") //
+	@Setter
 	String resourceIdentifier;
 
 	@ApiModelProperty(hidden = true)
@@ -81,12 +82,6 @@ public class JsonWorkOrderResourceUpsertRequest
 	@Setter
 	@ApiModelProperty(required = true)
 	JsonExternalId externalId;
-
-	public void setResourceIdentifier(final String resourceIdentifier)
-	{
-		this.resourceIdentifier = resourceIdentifier;
-		this.resourceIdentifierSet = true;
-	}
 
 	public void setActive(final Boolean active)
 	{
