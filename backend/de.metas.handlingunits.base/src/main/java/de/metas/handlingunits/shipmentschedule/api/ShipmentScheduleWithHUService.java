@@ -670,7 +670,7 @@ public class ShipmentScheduleWithHUService
 
 	/**
 	 * @param pickingJob the picking job to check
-	 * @return true if the picking job needs to be approved, but not approval is yet given.
+	 * @return true if the picking job needs to be approved, but no approval is yet given.
 	 */
 	private boolean pickingJobInReview(final PickingJob pickingJob)
 	{
