@@ -1886,6 +1886,18 @@ public class TimeUtil
 	}
 
 	@Nullable
+	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final OrgId orgId)
+	{
+		if(localDate == null)
+		{
+			return null;
+		}
+		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
+
+		return asInstant(endOfDay, orgId);
+	}
+	
+	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,
 			@NonNull final OrgId orgId)

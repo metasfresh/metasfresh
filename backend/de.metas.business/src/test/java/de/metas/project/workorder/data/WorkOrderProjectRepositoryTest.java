@@ -33,7 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -60,8 +60,8 @@ class WorkOrderProjectRepositoryTest
 				.name("name")
 				.projectStep(WOProjectStep.builder().name("name")
 									 .projectResource(WOProjectResource.builder()
-															  .assignDateFrom(LocalDate.parse("2022-07-01"))
-															  .assignDateTo(LocalDate.parse("2022-07-14"))
+															  .assignDateFrom(Instant.parse("2022-07-01T10:15:30.00Z"))
+															  .assignDateTo(Instant.parse("2022-07-14T10:15:30.00Z"))
 															  .build())
 									 .build())
 				.build();

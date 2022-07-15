@@ -64,6 +64,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -237,8 +238,8 @@ public class WorkOrderProjectRestService
 		{
 			final JsonWorkOrderStepResponse.JsonWorkOrderStepResponseBuilder jsonWorkOrderStepResponseBuilder = JsonWorkOrderStepResponse.builder()
 					.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(stepData.getWOProjectStepIdNonNull())))
-					.dateEnd(Optional.ofNullable(stepData.getDateEnd()).map(LocalDate::toString).orElse(""))
-					.dateStart(Optional.ofNullable(stepData.getDateStart()).map(LocalDate::toString).orElse(""))
+					.dateEnd(Optional.ofNullable(stepData.getDateEnd()).map(Instant::toString).orElse(""))
+					.dateStart(Optional.ofNullable(stepData.getDateStart()).map(Instant::toString).orElse(""))
 					.seqNo(stepData.getSeqNoNonNull())
 					.description(stepData.getDescription())
 					.name(stepData.getName())

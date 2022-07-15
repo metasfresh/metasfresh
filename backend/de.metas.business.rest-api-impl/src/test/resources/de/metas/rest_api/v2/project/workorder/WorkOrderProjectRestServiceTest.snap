@@ -10,13 +10,13 @@ de.metas.rest_api.v2.project.workorder.WorkOrderProjectRestServiceTest.upsertWOP
   "projectReferenceExt" : "projectReferenceExt",
   "projectTypeId" : 100003,
   "steps" : [ {
-    "dateEnd" : "2022-08-02",
-    "dateStart" : "2022-07-22",
+    "dateEnd" : "2022-08-02T21:59:59.999999999Z",
+    "dateStart" : "2022-07-21T22:00:00Z",
     "name" : "stepRequest1-name",
     "projectId" : 100012,
     "resources" : [ {
-      "assignDateFrom" : "2022-08-07",
-      "assignDateTo" : "2022-08-08",
+      "assignDateFrom" : "2022-08-06T22:00:00Z",
+      "assignDateTo" : "2022-08-08T21:59:59.999999999Z",
       "duration" : 10,
       "durationUnit" : "h",
       "isActive" : false,
