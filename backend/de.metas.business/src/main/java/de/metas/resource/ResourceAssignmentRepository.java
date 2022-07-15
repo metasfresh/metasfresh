@@ -32,11 +32,13 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.compiere.model.I_S_ResourceAssignment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.function.UnaryOperator;
@@ -96,18 +98,18 @@ class ResourceAssignmentRepository
 	private static CalendarDateRange extractDateRange(@NonNull final I_S_ResourceAssignment record)
 	{
 		return CalendarDateRange.builder()
-				.startDate(TimeUtil.asZonedDateTime(record.getAssignDateFrom()))
+				.startDate(record.getAssignDateFrom().toInstant())
 				.endDate(CoalesceUtil.coalesceSuppliersNotNull(
-						() -> TimeUtil.asZonedDateTime(record.getAssignDateTo()),
-						() -> LocalDate.MAX.atTime(LocalTime.MAX).atZone(SystemTime.zoneId())))
+						() -> TimeUtil.asInstant(record.getAssignDateTo()),
+						() -> LocalDate.MAX.atTime(LocalTime.MAX).atZone(SystemTime.zoneId()).toInstant()))
 				.allDay(record.isAllDay())
 				.build();
 	}
 
 	private static void updateRecordFromDateRange(@NonNull final I_S_ResourceAssignment record, @NonNull final CalendarDateRange from)
 	{
-		record.setAssignDateFrom(TimeUtil.asTimestampNotNull(from.getStartDate()));
-		record.setAssignDateTo(TimeUtil.asTimestampNotNull(from.getEndDate()));
+		record.setAssignDateFrom(Timestamp.from(from.getStartDate()));
+		record.setAssignDateTo(Timestamp.from(from.getEndDate()));
 		record.setIsAllDay(from.isAllDay());
 	}
 
@@ -124,11 +126,12 @@ class ResourceAssignmentRepository
 		return fromRecord(record);
 	}
 
-	public ResourceAssignment changeById(@NonNull final ResourceAssignmentId id, @NonNull final UnaryOperator<ResourceAssignment> mapper)
+	public OldAndNewValues<ResourceAssignment> changeById(@NonNull final ResourceAssignmentId id, @NonNull final UnaryOperator<ResourceAssignment> mapper)
 	{
 		final I_S_ResourceAssignment record = getRecordById(id);
 
-		final ResourceAssignment changedResourceAssignment = mapper.apply(fromRecord(record));
+		final ResourceAssignment initialResourceAssignment = fromRecord(record);
+		final ResourceAssignment changedResourceAssignment = mapper.apply(initialResourceAssignment);
 		record.setS_Resource_ID(changedResourceAssignment.getResourceId().getRepoId());
 		record.setName(changedResourceAssignment.getName());
 		record.setDescription(changedResourceAssignment.getDescription());
@@ -137,7 +140,7 @@ class ResourceAssignmentRepository
 
 		InterfaceWrapperHelper.saveRecord(record);
 
-		return changedResourceAssignment;
+		return OldAndNewValues.ofOldAndNewValues(initialResourceAssignment, changedResourceAssignment);
 	}
 
 	@NonNull

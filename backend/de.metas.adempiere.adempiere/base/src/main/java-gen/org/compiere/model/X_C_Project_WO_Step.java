@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Project_WO_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2055987856L;
+	private static final long serialVersionUID = -1053617724L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Step (final Properties ctx, final int C_Project_WO_Step_ID, @Nullable final String trxName)
@@ -65,7 +65,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public void setDateEnd (final @Nullable java.sql.Timestamp DateEnd)
+	public void setDateEnd (final java.sql.Timestamp DateEnd)
 	{
 		set_Value (COLUMNNAME_DateEnd, DateEnd);
 	}
@@ -77,7 +77,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public void setDateStart (final @Nullable java.sql.Timestamp DateStart)
+	public void setDateStart (final java.sql.Timestamp DateStart)
 	{
 		set_Value (COLUMNNAME_DateStart, DateStart);
 	}

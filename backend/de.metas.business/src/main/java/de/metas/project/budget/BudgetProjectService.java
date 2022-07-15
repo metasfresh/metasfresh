@@ -62,6 +62,16 @@ public class BudgetProjectService
 		return resourceBudgetRepository.getByProjectIds(projectIds);
 	}
 
+	public BudgetProjectResource getBudgetsById(@NonNull final ProjectId projectId, @NonNull final BudgetProjectResourceId id)
+	{
+		return resourceBudgetRepository.getByProjectId(projectId).getBudgetById(id);
+	}
+
+	public BudgetProjectResource getBudgetsById(@NonNull final BudgetProjectAndResourceId id)
+	{
+		return resourceBudgetRepository.getByProjectId(id.getProjectId()).getBudgetById(id.getProjectResourceId());
+	}
+
 	public Optional<BudgetProjectResource> findBudgetForResource(
 			@NonNull final ProjectId budgetProjectId,
 			@NonNull final ResourceId resourceId)
@@ -79,10 +89,5 @@ public class BudgetProjectService
 	public Optional<BudgetProject> getById(@NonNull final ProjectId projectId)
 	{
 		return projectRepository.getById(projectId);
-	}
-
-	public boolean isBudgetProject(@NonNull final ProjectId projectId)
-	{
-		return getById(projectId).isPresent();
 	}
 }

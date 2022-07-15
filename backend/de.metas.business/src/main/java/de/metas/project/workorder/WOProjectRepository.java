@@ -28,6 +28,7 @@ import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class WOProjectRepository
@@ -51,15 +53,27 @@ public class WOProjectRepository
 
 	public List<WOProject> getAllActiveProjects()
 	{
-		return queryBL
-				.createQueryBuilder(I_C_Project.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
+		return queryAllActiveProjects()
 				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
 				.stream()
 				.map(record -> fromRecord(record).orElse(null))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public Set<ProjectId> getAllActiveProjectIds()
+	{
+		return queryAllActiveProjects()
+				.create()
+				.listIds(ProjectId::ofRepoId);
+	}
+
+	private IQueryBuilder<I_C_Project> queryAllActiveProjects()
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob);
 	}
 
 	private static Optional<WOProject> fromRecord(@NonNull final I_C_Project record)

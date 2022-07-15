@@ -24,12 +24,14 @@ package de.metas.calendar;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 @Value
@@ -91,5 +93,10 @@ public class CalendarGlobalId
 	{
 		final int repoIdInt = NumberUtils.toInt(localId);
 		return idMapper.apply(repoIdInt);
+	}
+
+	public void assertEqualsTo(@Nullable final CalendarGlobalId id)
+	{
+		Check.assumeEquals(this, id, "calendarId");
 	}
 }

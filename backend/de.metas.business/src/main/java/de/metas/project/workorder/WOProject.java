@@ -22,15 +22,12 @@
 
 package de.metas.project.workorder;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Work Order Project
@@ -42,9 +39,4 @@ public class WOProject
 	@NonNull ProjectId projectId;
 	@NonNull String name;
 	@Nullable ProjectId parentProjectId;
-
-	public static Set<ProjectId> extractProjectIds(final List<WOProject> projects)
-	{
-		return projects.stream().map(WOProject::getProjectId).collect(ImmutableSet.toImmutableSet());
-	}
 }

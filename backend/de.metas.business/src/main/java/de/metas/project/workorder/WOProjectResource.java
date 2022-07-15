@@ -22,19 +22,22 @@
 
 package de.metas.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
+import java.util.List;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class WOProjectResource
 {
 	@NonNull WOProjectResourceId id;
@@ -49,4 +52,25 @@ public class WOProjectResource
 	@NonNull Duration duration;
 
 	@Nullable String description;
+
+	public WOProjectAndResourceId getWOProjectAndResourceId()
+	{
+		return WOProjectAndResourceId.of(projectId, id);
+	}
+
+	public static CalendarDateRange computeDateRangeToEncloseAll(@NonNull List<WOProjectResource> projectResources)
+	{
+		if (projectResources.isEmpty())
+		{
+			throw new AdempiereException("No project resources provided");
+		}
+
+		final ImmutableList<CalendarDateRange> dateRanges = projectResources.stream()
+				.map(WOProjectResource::getDateRange)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		return CalendarDateRange.span(dateRanges);
+	}
+
 }

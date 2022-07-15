@@ -41,9 +41,4 @@ public class BudgetProject
 	@NonNull String name;
 	@NonNull OrgId orgId;
 	@NonNull CurrencyId currencyId;
-
-	public static Set<ProjectId> extractProjectIds(final List<BudgetProject> projects)
-	{
-		return projects.stream().map(BudgetProject::getProjectId).collect(ImmutableSet.toImmutableSet());
-	}
 }

@@ -24,8 +24,9 @@ package de.metas.calendar;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import de.metas.util.StringUtils;
+import com.google.common.collect.ImmutableList;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
@@ -42,18 +43,24 @@ public class CalendarEntryId
 {
 	@Getter
 	private final CalendarGlobalId calendarId;
-	private final String entryLocalId;
+	@Getter
+	private final ImmutableList<String> entryLocalIds;
+
+	private static final String SEPARATOR = "-";
+	private static final Splitter STRING_SPLITTER = Splitter.on(SEPARATOR);
+	private static final Joiner STRING_JOINER = Joiner.on(SEPARATOR);
 
 	private CalendarEntryId(
 			@NonNull final CalendarGlobalId calendarId,
-			@NonNull final String entryLocalId)
+			@NonNull final ImmutableList<String> entryLocalIds)
 	{
-		this.calendarId = calendarId;
-		this.entryLocalId = StringUtils.trimBlankToNull(entryLocalId);
-		if (this.entryLocalId == null)
+		if (entryLocalIds.isEmpty())
 		{
-			throw new AdempiereException("entryLocalId shall not be blank");
+			throw new AdempiereException("entryLocalIds shall not be empty");
 		}
+
+		this.calendarId = calendarId;
+		this.entryLocalIds = entryLocalIds;
 	}
 
 	@JsonCreator
@@ -61,12 +68,12 @@ public class CalendarEntryId
 	{
 		try
 		{
-			final List<String> parts = Splitter.on("-").splitToList(string);
+			final List<String> parts = STRING_SPLITTER.splitToList(string);
 			final CalendarGlobalId calendarId = CalendarGlobalId.of(
 					CalendarServiceId.ofString(parts.get(0)),
 					parts.get(1));
-			final String entryLocalId = parts.get(2);
-			return new CalendarEntryId(calendarId, entryLocalId);
+			final ImmutableList<String> entryLocalIds = ImmutableList.copyOf(parts.subList(2, parts.size()));
+			return new CalendarEntryId(calendarId, entryLocalIds);
 		}
 		catch (final Exception e)
 		{
@@ -78,8 +85,8 @@ public class CalendarEntryId
 	public String getAsString()
 	{
 		return calendarId.getCalendarServiceId().getAsString()
-				+ "-" + calendarId.getLocalId()
-				+ "-" + entryLocalId;
+				+ SEPARATOR + calendarId.getLocalId()
+				+ SEPARATOR + STRING_JOINER.join(entryLocalIds);
 	}
 
 	@Deprecated
@@ -93,12 +100,17 @@ public class CalendarEntryId
 
 	public static CalendarEntryId ofRepoId(@NonNull final CalendarGlobalId calendarId, @NonNull final RepoIdAware id)
 	{
-		return new CalendarEntryId(calendarId, String.valueOf(id.getRepoId()));
+		return new CalendarEntryId(calendarId, ImmutableList.of(String.valueOf(id.getRepoId())));
 	}
 
 	public <T extends RepoIdAware> T toRepoId(@NonNull final Class<T> type)
 	{
-		return RepoIdAwares.ofObject(entryLocalId, type);
+		return RepoIdAwares.ofObject(entryLocalIds.get(0), type);
+	}
+
+	public static CalendarEntryId ofCalendarAndLocalIds(@NonNull final CalendarGlobalId calendarId, String... entryLocalIds)
+	{
+		return new CalendarEntryId(calendarId, ImmutableList.copyOf(entryLocalIds));
 	}
 
 	public CalendarServiceId getCalendarServiceId()
