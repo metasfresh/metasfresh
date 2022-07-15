@@ -41,7 +41,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -143,8 +143,8 @@ public class WorkOrderProjectResourceRepository
 	private static WOProjectResource ofRecord(@NonNull final I_C_Project_WO_Resource resourceRecord)
 	{
 		final OrgId orgId = OrgId.ofRepoId(resourceRecord.getAD_Org_ID());
-		final LocalDate assignDateFrom = TimeUtil.asLocalDate(resourceRecord.getAssignDateFrom(), orgId);
-		final LocalDate assignDateTo = TimeUtil.asLocalDate(resourceRecord.getAssignDateTo(), orgId);
+		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom(), orgId);
+		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo(), orgId);
 		if (assignDateTo == null || assignDateFrom == null)
 		{
 			throw new AdempiereException("I_C_Project_WO_Resource.assignDateFrom and I_C_Project_WO_Resource.assignDateTo should be set on the record at this point!");

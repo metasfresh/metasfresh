@@ -34,7 +34,7 @@ import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 
 @Value
@@ -59,10 +59,10 @@ public class WOProjectStep
 	Integer seqNo;
 
 	@Nullable
-	LocalDate dateStart;
+	Instant dateStart;
 
 	@Nullable
-	LocalDate dateEnd;
+	Instant dateEnd;
 
 	@Nullable
 	ExternalId externalId;

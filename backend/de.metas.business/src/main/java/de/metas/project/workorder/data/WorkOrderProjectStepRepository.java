@@ -40,7 +40,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -149,7 +148,7 @@ public class WorkOrderProjectStepRepository
 	@NonNull
 	private WOProjectStep ofRecord(@NonNull final I_C_Project_WO_Step stepRecord)
 	{
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(stepRecord.getAD_Org_ID()));
+		final OrgId orgId = OrgId.ofRepoId(stepRecord.getAD_Org_ID());
 
 		final ProjectId projectId = ProjectId.ofRepoId(stepRecord.getC_Project_ID());
 
@@ -162,8 +161,8 @@ public class WorkOrderProjectStepRepository
 				.name(stepRecord.getName())
 				.description(stepRecord.getDescription())
 				.seqNo(stepRecord.getSeqNo())
-				.dateStart(TimeUtil.asLocalDate(stepRecord.getDateStart(), timeZone))
-				.dateEnd(TimeUtil.asLocalDate(stepRecord.getDateEnd(), timeZone))
+				.dateStart(TimeUtil.asInstant(stepRecord.getDateStart(), orgId))
+				.dateEnd(TimeUtil.asInstant(stepRecord.getDateEnd(), orgId))
 				.projectId(projectId)
 				.externalId(ExternalId.ofOrNull(stepRecord.getExternalId()));
 

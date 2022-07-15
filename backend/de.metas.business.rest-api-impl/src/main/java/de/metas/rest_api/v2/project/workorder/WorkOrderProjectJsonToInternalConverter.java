@@ -46,9 +46,11 @@ import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -259,7 +261,7 @@ public class WorkOrderProjectJsonToInternalConverter
 
 		if (request.isDateStartSet() || woProjectStepToUpdate == null)
 		{
-			updatedWOProjectStepBuilder.dateStart(request.getDateStart());
+			updatedWOProjectStepBuilder.dateStart(TimeUtil.asInstant(request.getDateStart(), orgId));
 		}
 		else
 		{
@@ -268,7 +270,8 @@ public class WorkOrderProjectJsonToInternalConverter
 
 		if (request.isDateEndSet() || woProjectStepToUpdate == null)
 		{
-			updatedWOProjectStepBuilder.dateEnd(request.getDateEnd());
+			final Instant dateEnd = TimeUtil.asEndOfDayInstant(request.getDateEnd(), orgId);
+			updatedWOProjectStepBuilder.dateEnd(dateEnd);
 		}
 		else
 		{
@@ -308,17 +311,20 @@ public class WorkOrderProjectJsonToInternalConverter
 		{
 			final ResourceId resourceId = extractResourceId(orgId, remainingJsonProjectResource);
 
+			final Instant assignDateFrom = TimeUtil.asInstant(remainingJsonProjectResource.getAssignDateFrom(), orgId);
+			final Instant assignDateTo = TimeUtil.asEndOfDayInstant(remainingJsonProjectResource.getAssignDateTo(), orgId);
+
 			final WOProjectResource projectResource = WOProjectResource.builder()
 					.resourceId(resourceId)
 					.isActive(remainingJsonProjectResource.getIsActive())
 					.isAllDay(remainingJsonProjectResource.getIsAllDay())
-					.assignDateFrom(remainingJsonProjectResource.getAssignDateFrom())
-					.assignDateTo(remainingJsonProjectResource.getAssignDateTo())
+					.assignDateFrom(assignDateFrom)
+					.assignDateTo(assignDateTo)
 					.duration(remainingJsonProjectResource.getDuration())
 					.durationUnit(remainingJsonProjectResource.getDurationUnit())
 					.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(remainingJsonProjectResource.getExternalId())))
 					.build();
-			
+
 			updatedWOProjectStepBuilder.projectResource(projectResource);
 		}
 
@@ -331,6 +337,9 @@ public class WorkOrderProjectJsonToInternalConverter
 			@NonNull final JsonWorkOrderResourceUpsertRequest request,
 			@NonNull final WOProjectResource existingWOProjectResource)
 	{
+		final Instant assignDateFrom = TimeUtil.asInstant(request.getAssignDateFrom(), orgId);
+		final Instant assignDateTo = TimeUtil.asEndOfDayInstant(request.getAssignDateTo(), orgId);
+
 		final WOProjectResource.WOProjectResourceBuilder updatedWOProjectResourceBuilder = WOProjectResource.builder()
 				.externalId(ExternalId.of(request.getExternalId().getValue()))
 				.woProjectResourceId(existingWOProjectResource.getWOProjectResourceIdNotNull())
@@ -338,8 +347,8 @@ public class WorkOrderProjectJsonToInternalConverter
 				.projectResourceBudgetId(existingWOProjectResource.getProjectResourceBudgetId())
 				.duration(existingWOProjectResource.getDuration())
 				.durationUnit(existingWOProjectResource.getDurationUnit())
-				.assignDateFrom(request.getAssignDateFrom())
-				.assignDateTo(request.getAssignDateTo());
+				.assignDateFrom(assignDateFrom)
+				.assignDateTo(assignDateTo);
 
 		if (request.isResourceIdentifierSet())
 		{

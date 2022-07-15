@@ -37,7 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -52,10 +52,10 @@ public class WOProjectResource
 	WOProjectStepId woProjectStepId;
 
 	@NonNull
-	LocalDate assignDateFrom;
+	Instant assignDateFrom;
 
 	@NonNull
-	LocalDate assignDateTo;
+	Instant assignDateTo;
 
 	@Nullable
 	Boolean isActive;
