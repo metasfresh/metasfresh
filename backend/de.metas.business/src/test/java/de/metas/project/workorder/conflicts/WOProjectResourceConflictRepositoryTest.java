@@ -12,16 +12,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class WOProjectResourceConflictRepositoryTest
 {
 	private static final ProjectId P1 = ProjectId.ofRepoId(1);
-	private static final WOProjectAndResourceId P1R1 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(1));
-	private static final WOProjectAndResourceId P1R2 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(2));
-	private static final WOProjectAndResourceId P1R3 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(3));
-	private static final WOProjectAndResourceId P1R4 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(4));
+	private static final WOProjectAndResourceId P1R1 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(P1,1));
+	private static final WOProjectAndResourceId P1R2 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(P1,2));
+	private static final WOProjectAndResourceId P1R3 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(P1,3));
+	private static final WOProjectAndResourceId P1R4 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(P1,4));
 
 	final ImmutableSet<WOProjectResourceId> PRs1_to_4 = ImmutableSet.of(P1R1.getProjectResourceId(), P1R2.getProjectResourceId(), P1R3.getProjectResourceId(), P1R4.getProjectResourceId());
 

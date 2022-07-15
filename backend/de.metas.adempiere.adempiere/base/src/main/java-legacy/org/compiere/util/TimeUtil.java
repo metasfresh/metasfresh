@@ -1888,6 +1888,15 @@ public class TimeUtil
 	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,
+			@NonNull final OrgId orgId)
+	{
+		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(orgId);
+		return asInstant(obj,timeZone);
+	}
+	
+	@Nullable
+	public static Instant asInstant(
+			@Nullable final Object obj,
 			@NonNull final ZoneId zoneId)
 	{
 		if (obj == null)
