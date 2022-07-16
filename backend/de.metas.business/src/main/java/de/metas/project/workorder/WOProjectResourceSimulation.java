@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class WOProjectResourceSimulation
 {
-	@NonNull WOProjectAndResourceId projectAndResourceId;
+	@NonNull WOProjectResourceId projectResourceId;
 
 	@NonNull CalendarDateRange dateRange;
 
@@ -24,12 +24,7 @@ public class WOProjectResourceSimulation
 
 	public ProjectId getProjectId()
 	{
-		return getProjectAndResourceId().getProjectId();
-	}
-
-	public WOProjectResourceId getProjectResourceId()
-	{
-		return getProjectAndResourceId().getProjectResourceId();
+		return getProjectResourceId().getProjectId();
 	}
 
 	public static WOProjectResourceSimulation reduce(@Nullable WOProjectResourceSimulation simulation, @NonNull UpdateRequest updateRequest)
@@ -37,13 +32,13 @@ public class WOProjectResourceSimulation
 		if (simulation == null)
 		{
 			return builder()
-					.projectAndResourceId(updateRequest.getProjectAndResourceId())
+					.projectResourceId(updateRequest.getProjectResourceId())
 					.dateRange(updateRequest.getDateRange())
 					.build();
 		}
 		else
 		{
-			Check.assumeEquals(simulation.getProjectAndResourceId(), updateRequest.getProjectAndResourceId(), "expected same projectAndResourceId: {}, {}", simulation, updateRequest);
+			Check.assumeEquals(simulation.getProjectResourceId(), updateRequest.getProjectResourceId(), "expected same projectAndResourceId: {}, {}", simulation, updateRequest);
 
 			return simulation.toBuilder()
 					.dateRange(updateRequest.getDateRange())
@@ -53,7 +48,7 @@ public class WOProjectResourceSimulation
 
 	public WOProjectResource applyOn(@NonNull final WOProjectResource resource)
 	{
-		Check.assumeEquals(resource.getWOProjectAndResourceId(), projectAndResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
+		Check.assumeEquals(resource.getId(), projectResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
 
 		return resource.toBuilder()
 				.dateRange(dateRange)
@@ -83,7 +78,7 @@ public class WOProjectResourceSimulation
 	public static class UpdateRequest
 	{
 		@NonNull SimulationPlanId simulationId;
-		@NonNull WOProjectAndResourceId projectAndResourceId;
+		@NonNull WOProjectResourceId projectResourceId;
 
 		@NonNull CalendarDateRange dateRange;
 	}

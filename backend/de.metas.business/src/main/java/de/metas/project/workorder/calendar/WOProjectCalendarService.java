@@ -54,7 +54,6 @@ import de.metas.project.budget.BudgetProjectService;
 import de.metas.project.budget.BudgetProjectSimulationPlan;
 import de.metas.project.budget.BudgetProjectSimulationService;
 import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResources;
@@ -278,7 +277,7 @@ public class WOProjectCalendarService implements CalendarService
 		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(resource.getDurationUnit());
 
 		return CalendarEntry.builder()
-				.entryId(BudgetAndWOCalendarEntryIdConverters.from(resource.getWOProjectAndResourceId()))
+				.entryId(BudgetAndWOCalendarEntryIdConverters.from(resource.getId()))
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
 				.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
 				.title(TranslatableStrings.builder()
@@ -329,7 +328,7 @@ public class WOProjectCalendarService implements CalendarService
 		return BudgetAndWOCalendarEntryIdConverters.withProjectResourceId(
 				request.getEntryId(),
 				budgetProjectAndResourceId -> updateEntry_BudgetProjectResource(request, budgetProjectAndResourceId),
-				projectAndResourceId -> updateEntry_WOProjectResource(request, projectAndResourceId));
+				projectResourceId -> updateEntry_WOProjectResource(request, projectResourceId));
 	}
 
 	private CalendarEntryUpdateResult updateEntry_BudgetProjectResource(
@@ -366,25 +365,25 @@ public class WOProjectCalendarService implements CalendarService
 
 	private CalendarEntryUpdateResult updateEntry_WOProjectResource(
 			@NonNull final CalendarEntryUpdateRequest request,
-			@NonNull final WOProjectAndResourceId projectAndResourceId)
+			@NonNull final WOProjectResourceId projectResourceId)
 	{
 		final SimulationPlanId simulationId = Check.assumeNotNull(request.getSimulationId(), "simulationId shall be set: {}", request);
 		final SimulationPlanRef simulationPlanHeader = simulationPlanService.getById(simulationId);
 		simulationPlanHeader.assertEditable();
 
-		final WOProjectResources projectResources = woProjectService.getResourcesByProjectId(projectAndResourceId.getProjectId());
+		final WOProjectResources projectResources = woProjectService.getResourcesByProjectId(projectResourceId.getProjectId());
 
 		final WOProjectSimulationPlanEditor simulationEditor = WOProjectSimulationPlanEditor.builder()
-				.project(woProjectService.getById(projectAndResourceId.getProjectId()))
-				.steps(woProjectService.getStepsByProjectId(projectAndResourceId.getProjectId()))
+				.project(woProjectService.getById(projectResourceId.getProjectId()))
+				.steps(woProjectService.getStepsByProjectId(projectResourceId.getProjectId()))
 				.projectResources(projectResources)
 				.currentSimulationPlan(woProjectSimulationService.getSimulationPlanById(simulationId))
 				.build();
 
 		if (request.getDateRange() != null)
 		{
-			final WOProjectStepId stepId = projectResources.getStepId(projectAndResourceId.getProjectResourceId());
-			simulationEditor.changeResourceDateRangeAndShiftSteps(projectAndResourceId, request.getDateRange(), stepId);
+			final WOProjectStepId stepId = projectResources.getStepId(projectResourceId);
+			simulationEditor.changeResourceDateRangeAndShiftSteps(projectResourceId, request.getDateRange(), stepId);
 		}
 		if (!Check.isBlank(request.getTitle()))
 		{
@@ -417,11 +416,11 @@ public class WOProjectCalendarService implements CalendarService
 
 		//
 		return CalendarEntryUpdateResult.builder()
-				.changedEntry(simulationEditor.mapProjectResourceInitialAndNow(projectAndResourceId.getProjectResourceId(), toCalendarEntry))
+				.changedEntry(simulationEditor.mapProjectResourceInitialAndNow(projectResourceId, toCalendarEntry))
 				.otherChangedEntries(
 						simulationEditor.streamChangedProjectResourceIds()
-								.filter(projectResourceId -> !WOProjectResourceId.equals(projectResourceId, projectAndResourceId.getProjectResourceId()))
-								.map(projectResourceId -> simulationEditor.mapProjectResourceInitialAndNow(projectResourceId, toCalendarEntry))
+								.filter(changedProjectResourceId -> !WOProjectResourceId.equals(projectResourceId, changedProjectResourceId))
+								.map(changedProjectResourceId -> simulationEditor.mapProjectResourceInitialAndNow(changedProjectResourceId, toCalendarEntry))
 								.collect(ImmutableList.toImmutableList())
 				)
 				.build();
@@ -443,7 +442,7 @@ public class WOProjectCalendarService implements CalendarService
 		return BudgetAndWOCalendarEntryIdConverters.withProjectResourceId(
 				entryId,
 				budgetProjectAndResourceId -> getEntryByBudgetResourceId(budgetProjectAndResourceId, simulationPlanHeader),
-				budgetProjectAndResourceId -> getEntryByWOProjectResourceId(budgetProjectAndResourceId, simulationPlanHeader));
+				woProjectResourceId -> getEntryByWOProjectResourceId(woProjectResourceId, simulationPlanHeader));
 	}
 
 	private CalendarEntry getEntryByBudgetResourceId(
@@ -464,11 +463,10 @@ public class WOProjectCalendarService implements CalendarService
 	}
 
 	private CalendarEntry getEntryByWOProjectResourceId(
-			@NonNull final WOProjectAndResourceId woProjectAndResourceId,
+			@NonNull final WOProjectResourceId projectResourceId,
 			@Nullable final SimulationPlanRef simulationPlanHeader)
 	{
-		final ProjectId projectId = woProjectAndResourceId.getProjectId();
-		final WOProjectResourceId projectResourceId = woProjectAndResourceId.getProjectResourceId();
+		final ProjectId projectId = projectResourceId.getProjectId();
 
 		final WOProjectResources projectResources = woProjectService.getResourcesByProjectId(projectId);
 		final WOProjectStepId stepId = projectResources.getStepId(projectResourceId);

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.OptionalBoolean;
@@ -76,10 +75,10 @@ public class WOProjectResourceConflictRepository
 		I_C_Project_WO_Resource_Conflict record = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Resource_Conflict.class);
 
 		record.setC_Project_ID(resourceIdsPair.getProjectResourceId1().getProjectId().getRepoId());
-		record.setC_Project_WO_Resource_ID(resourceIdsPair.getProjectResourceId1().getProjectResourceId().getRepoId());
+		record.setC_Project_WO_Resource_ID(resourceIdsPair.getProjectResourceId1().getRepoId());
 
 		record.setC_Project2_ID(resourceIdsPair.getProjectResourceId2().getProjectId().getRepoId());
-		record.setC_Project_WO_Resource2_ID(resourceIdsPair.getProjectResourceId2().getProjectResourceId().getRepoId());
+		record.setC_Project_WO_Resource2_ID(resourceIdsPair.getProjectResourceId2().getRepoId());
 
 		record.setC_SimulationPlan_ID(SimulationPlanId.toRepoId(simulationId));
 
@@ -193,8 +192,8 @@ public class WOProjectResourceConflictRepository
 	private static ProjectResourceIdsPair extractProjectResourceIds(final @NonNull I_C_Project_WO_Resource_Conflict record)
 	{
 		return ProjectResourceIdsPair.of(
-				WOProjectAndResourceId.ofRepoIds(record.getC_Project_ID(), record.getC_Project_WO_Resource_ID()),
-				WOProjectAndResourceId.ofRepoIds(record.getC_Project2_ID(), record.getC_Project_WO_Resource2_ID())
+				WOProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Resource_ID()),
+				WOProjectResourceId.ofRepoId(record.getC_Project2_ID(), record.getC_Project_WO_Resource2_ID())
 		);
 	}
 

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceSimulation;
@@ -57,7 +56,7 @@ public class WOProjectSimulationService
 
 		woProjectConflictService.assertAllConflictsApproved(simulationId);
 
-		final ImmutableMap<WOProjectAndResourceId, WOProjectResourceSimulation> projectResourceSimulationsToApply = Maps.uniqueIndex(simulationPlan.getProjectResources(), WOProjectResourceSimulation::getProjectAndResourceId);
+		final ImmutableMap<WOProjectResourceId, WOProjectResourceSimulation> projectResourceSimulationsToApply = Maps.uniqueIndex(simulationPlan.getProjectResources(), WOProjectResourceSimulation::getProjectResourceId);
 
 		final HashMap<WOProjectResourceId, WOProjectResourceSimulation> projectResourceSimulationsApplied = new HashMap<>();
 		final HashSet<ResourceId> affectedResourceIds = new HashSet<>();
@@ -65,7 +64,7 @@ public class WOProjectSimulationService
 		woProjectService.updateProjectResourcesByIds(
 				projectResourceSimulationsToApply.keySet(),
 				projectResource -> {
-					final WOProjectResourceSimulation simulation = projectResourceSimulationsToApply.get(projectResource.getWOProjectAndResourceId());
+					final WOProjectResourceSimulation simulation = projectResourceSimulationsToApply.get(projectResource.getId());
 
 					// do nothing if simulation was already applied. shall not happen.
 					if (simulation.isAppliedOnActualData())

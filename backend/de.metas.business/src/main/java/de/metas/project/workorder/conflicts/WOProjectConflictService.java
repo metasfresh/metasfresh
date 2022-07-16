@@ -8,9 +8,9 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRepository;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectRepository;
 import de.metas.project.workorder.WOProjectResource;
+import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceRepository;
 import de.metas.project.workorder.WOProjectResourceSimulation;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
@@ -91,8 +91,8 @@ public class WOProjectConflictService
 			return;
 		}
 
-		final ImmutableMap<WOProjectAndResourceId, WOProjectResource> projectResources = woProjectResourceRepository.streamByResourceIds(resourceIds, activeProjectIds)
-				.collect(GuavaCollectors.toImmutableMapByKey(WOProjectResource::getWOProjectAndResourceId));
+		final ImmutableMap<WOProjectResourceId, WOProjectResource> projectResources = woProjectResourceRepository.streamByResourceIds(resourceIds, activeProjectIds)
+				.collect(GuavaCollectors.toImmutableMapByKey(WOProjectResource::getId));
 		if (projectResources.isEmpty())
 		{
 			return;
@@ -107,12 +107,12 @@ public class WOProjectConflictService
 			saveAndNotify(actualConflicts, projectResources.keySet());
 
 			simulationsToCheck = woProjectSimulationRepository.getByResourceIdsAndSimulationIds(
-					WOProjectAndResourceId.unbox(projectResources.keySet()),
+					projectResources.keySet(),
 					simulationPlanRepository.getDraftSimulationIds());
 		}
 		else
 		{
-			actualConflicts = conflictRepository.getActualConflicts(WOProjectAndResourceId.unbox(projectResources.keySet()));
+			actualConflicts = conflictRepository.getActualConflicts(projectResources.keySet());
 			simulationsToCheck = ImmutableList.of(onlySimulation);
 		}
 
@@ -127,9 +127,9 @@ public class WOProjectConflictService
 
 	private void saveAndNotify(
 			@NonNull final ResourceAllocationConflicts conflicts,
-			@NonNull final ImmutableSet<WOProjectAndResourceId> projectResourceIds)
+			@NonNull final ImmutableSet<WOProjectResourceId> projectResourceIds)
 	{
-		conflictRepository.save(conflicts, WOProjectAndResourceId.unbox(projectResourceIds));
+		conflictRepository.save(conflicts, projectResourceIds);
 		eventsDispatcher.notifyChangesAfterCommit(conflicts.getSimulationId(), () -> toEvent(conflicts, projectResourceIds));
 	}
 
@@ -170,7 +170,7 @@ public class WOProjectConflictService
 	{
 		return ResourceAllocation.builder()
 				.resourceId(resourceId)
-				.projectAndResourceId(projectResource.getWOProjectAndResourceId())
+				.projectResourceId(projectResource.getId())
 				.appliedSimulationId(appliedSimulationId)
 				.dateRange(projectResource.getDateRange())
 				.build();

@@ -4,26 +4,26 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
+import de.metas.util.OptionalBoolean;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class WOProjectResourceConflictRepositoryTest
 {
 	private static final ProjectId P1 = ProjectId.ofRepoId(1);
-	private static final WOProjectAndResourceId P1R1 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(P1,1));
-	private static final WOProjectAndResourceId P1R2 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(P1,2));
-	private static final WOProjectAndResourceId P1R3 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(P1,3));
-	private static final WOProjectAndResourceId P1R4 = WOProjectAndResourceId.of(P1, WOProjectResourceId.ofRepoId(P1,4));
+	private static final WOProjectResourceId P1R1 = WOProjectResourceId.ofRepoId(P1, 1);
+	private static final WOProjectResourceId P1R2 = WOProjectResourceId.ofRepoId(P1, 2);
+	private static final WOProjectResourceId P1R3 = WOProjectResourceId.ofRepoId(P1, 3);
+	private static final WOProjectResourceId P1R4 = WOProjectResourceId.ofRepoId(P1, 4);
 
-	final ImmutableSet<WOProjectResourceId> PRs1_to_4 = ImmutableSet.of(P1R1.getProjectResourceId(), P1R2.getProjectResourceId(), P1R3.getProjectResourceId(), P1R4.getProjectResourceId());
+	final ImmutableSet<WOProjectResourceId> PRs1_to_4 = ImmutableSet.of(P1R1, P1R2, P1R3, P1R4);
 
 	private static final SimulationPlanId SIMULATION1 = SimulationPlanId.ofRepoId(1);
 
@@ -35,8 +35,8 @@ class WOProjectResourceConflictRepositoryTest
 
 	@SuppressWarnings("SameParameterValue")
 	private static ResourceAllocationConflict conflict(
-			WOProjectAndResourceId pr1,
-			WOProjectAndResourceId pr2,
+			WOProjectResourceId pr1,
+			WOProjectResourceId pr2,
 			ResourceAllocationConflictStatus status,
 			SimulationPlanId simulationId)
 	{
@@ -44,6 +44,7 @@ class WOProjectResourceConflictRepositoryTest
 				.projectResourceIdsPair(ProjectResourceIdsPair.of(pr1, pr2))
 				.simulationId(simulationId)
 				.status(status)
+				.approved(OptionalBoolean.FALSE)
 				.build();
 	}
 

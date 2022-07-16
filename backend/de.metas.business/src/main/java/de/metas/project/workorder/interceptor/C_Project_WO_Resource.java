@@ -93,7 +93,7 @@ public class C_Project_WO_Resource
 	@NonNull
 	private static CalendarEntryId extractCalendarEntryId(final I_C_Project_WO_Resource record)
 	{
-		return BudgetAndWOCalendarEntryIdConverters.from(WOProjectResourceRepository.fromRecord(record).getWOProjectAndResourceId());
+		return BudgetAndWOCalendarEntryIdConverters.from(WOProjectResourceRepository.extractWOProjectResourceId(record));
 	}
 
 	private void checkConflictsAfterCommitIfUserChange(@NonNull final I_C_Project_WO_Resource record)

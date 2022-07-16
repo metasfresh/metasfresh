@@ -7,7 +7,6 @@ import de.metas.cache.CCache;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceSimulation;
 import de.metas.project.workorder.WOProjectStepId;
@@ -140,7 +139,7 @@ public class WOProjectSimulationRepository
 	@NonNull
 	private static WOProjectResourceId extractWOProjectResourceId(final I_C_Project_WO_Resource_Simulation record)
 	{
-		return WOProjectResourceId.ofRepoId(ProjectId.ofRepoId(record.getC_Project_ID()), record.getC_Project_WO_Resource_ID());
+		return WOProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Resource_ID());
 	}
 
 	@NonNull
@@ -173,9 +172,7 @@ public class WOProjectSimulationRepository
 	private static WOProjectResourceSimulation fromRecord(@NonNull final I_C_Project_WO_Resource_Simulation record)
 	{
 		return WOProjectResourceSimulation.builder()
-				.projectAndResourceId(WOProjectAndResourceId.of(
-						ProjectId.ofRepoId(record.getC_Project_ID()),
-						extractWOProjectResourceId(record)))
+				.projectResourceId(extractWOProjectResourceId(record))
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getAssignDateFrom().toInstant())
 						.endDate(record.getAssignDateTo().toInstant())
@@ -205,8 +202,8 @@ public class WOProjectSimulationRepository
 
 	private void updateRecord(final I_C_Project_WO_Resource_Simulation record, final WOProjectResourceSimulation from)
 	{
-		record.setC_Project_ID(from.getProjectAndResourceId().getProjectId().getRepoId());
-		record.setC_Project_WO_Resource_ID(from.getProjectAndResourceId().getProjectResourceId().getRepoId());
+		record.setC_Project_ID(from.getProjectResourceId().getProjectId().getRepoId());
+		record.setC_Project_WO_Resource_ID(from.getProjectResourceId().getRepoId());
 
 		record.setAssignDateFrom(Timestamp.from(from.getDateRange().getStartDate()));
 		record.setAssignDateTo(Timestamp.from(from.getDateRange().getEndDate()));

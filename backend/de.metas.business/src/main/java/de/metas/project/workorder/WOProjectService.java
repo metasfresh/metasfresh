@@ -113,9 +113,9 @@ public class WOProjectService
 	}
 
 	public void updateProjectResourcesByIds(
-			@NonNull final Set<WOProjectAndResourceId> projectAndResourceIds,
+			@NonNull final Set<WOProjectResourceId> projectResourceIds,
 			@NonNull final UnaryOperator<WOProjectResource> mapper)
 	{
-		woProjectResourceRepository.updateProjectResourcesByIds(projectAndResourceIds, mapper);
+		woProjectResourceRepository.updateProjectResourcesByIds(projectResourceIds, mapper);
 	}
 }

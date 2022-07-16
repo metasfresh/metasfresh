@@ -25,8 +25,6 @@ package de.metas.project.workorder;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
@@ -43,7 +41,6 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.temporal.TemporalUnit;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -53,7 +50,6 @@ import java.util.stream.Stream;
 @Repository
 public class WOProjectResourceRepository
 {
-	private static final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public WOProjectResourcesCollection getByProjectIds(@NonNull final Set<ProjectId> projectIds)
@@ -111,8 +107,7 @@ public class WOProjectResourceRepository
 		final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
 
 		return WOProjectResource.builder()
-				.id(extractWOProjectResourceId(projectId, record))
-				.projectId(projectId)
+				.id(extractWOProjectResourceId(record))
 				.stepId(WOProjectStepId.ofRepoId(projectId, record.getC_Project_WO_Step_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.dateRange(CalendarDateRange.builder()
@@ -143,16 +138,15 @@ public class WOProjectResourceRepository
 	}
 
 	@NonNull
-	private static WOProjectResourceId extractWOProjectResourceId(final @NonNull I_C_Project_WO_Resource record)
+	public static WOProjectResourceId extractWOProjectResourceId(final @NonNull I_C_Project_WO_Resource record)
 	{
-		return WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID());
+		return WOProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Resource_ID());
 	}
 
 	public void updateProjectResourcesByIds(
-			@NonNull final Set<WOProjectAndResourceId> projectAndResourceIds,
+			@NonNull final Set<WOProjectResourceId> projectResourceIds,
 			@NonNull final UnaryOperator<WOProjectResource> mapper)
 	{
-		final ImmutableSet<WOProjectResourceId> projectResourceIds = WOProjectAndResourceId.unbox(projectAndResourceIds);
 		if (projectResourceIds.isEmpty())
 		{
 			return;

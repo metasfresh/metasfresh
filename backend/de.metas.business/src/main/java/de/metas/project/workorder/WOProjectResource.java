@@ -42,7 +42,6 @@ public class WOProjectResource
 {
 	@NonNull WOProjectResourceId id;
 
-	@NonNull ProjectId projectId;
 	@NonNull WOProjectStepId stepId;
 
 	@NonNull ResourceId resourceId;
@@ -52,11 +51,6 @@ public class WOProjectResource
 	@NonNull Duration duration;
 
 	@Nullable String description;
-
-	public WOProjectAndResourceId getWOProjectAndResourceId()
-	{
-		return WOProjectAndResourceId.of(projectId, id);
-	}
 
 	public static CalendarDateRange computeDateRangeToEncloseAll(@NonNull List<WOProjectResource> projectResources)
 	{
@@ -73,4 +67,5 @@ public class WOProjectResource
 		return CalendarDateRange.span(dateRanges);
 	}
 
+	public ProjectId getProjectId() {return id.getProjectId();}
 }

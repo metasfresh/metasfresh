@@ -52,10 +52,4 @@ public class WOProjectResourcesCollection
 	{
 		return map.values().stream().flatMap(WOProjectResources::stream);
 	}
-
-	public WOProjectResource getByProjectAndResourceId(final WOProjectAndResourceId projectAndResourceId)
-	{
-		return getByProjectId(projectAndResourceId.getProjectId())
-				.getById(projectAndResourceId.getProjectResourceId());
-	}
 }
