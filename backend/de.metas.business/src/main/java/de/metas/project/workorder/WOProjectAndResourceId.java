@@ -19,9 +19,10 @@ public class WOProjectAndResourceId
 			final int projectRepoId,
 			final int projectResourceRepoId)
 	{
+		final ProjectId projectId = ProjectId.ofRepoId(projectRepoId);
 		return of(
-				ProjectId.ofRepoId(projectRepoId),
-				WOProjectResourceId.ofRepoId(projectResourceRepoId));
+				projectId,
+				WOProjectResourceId.ofRepoId(projectId, projectResourceRepoId));
 	}
 
 	public static boolean equals(@Nullable final WOProjectAndResourceId id1, @Nullable final WOProjectAndResourceId id2) {return Objects.equals(id1, id2);}

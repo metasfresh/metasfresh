@@ -12,6 +12,7 @@ public class WOProjectAndStepId
 
 	public static WOProjectAndStepId ofRepoId(final int projectRepoId, final int stepRepoId)
 	{
-		return of(ProjectId.ofRepoId(projectRepoId), WOProjectStepId.ofRepoId(stepRepoId));
+		final ProjectId projectId = ProjectId.ofRepoId(projectRepoId);
+		return of(projectId, WOProjectStepId.ofRepoId(projectId, stepRepoId));
 	}
 }

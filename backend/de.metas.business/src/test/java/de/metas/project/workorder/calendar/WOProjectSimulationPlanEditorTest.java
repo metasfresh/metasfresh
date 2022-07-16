@@ -67,14 +67,14 @@ class WOProjectSimulationPlanEditorTest
 						.projectId(ProjectId.ofRepoId(1))
 						.steps(ImmutableList.of(
 								WOProjectStep.builder()
-										.id(WOProjectStepId.ofRepoId(1))
+										.id(WOProjectStepId.ofRepoId(ProjectId.ofRepoId(1),1))
 										.projectId(ProjectId.ofRepoId(1))
 										.seqNo(10)
 										.name("step 1")
 										.dateRange(allDay(1, 5))
 										.build(),
 								WOProjectStep.builder()
-										.id(WOProjectStepId.ofRepoId(2))
+										.id(WOProjectStepId.ofRepoId(ProjectId.ofRepoId(1),2))
 										.projectId(ProjectId.ofRepoId(1))
 										.seqNo(20)
 										.name("step 2")
@@ -86,36 +86,36 @@ class WOProjectSimulationPlanEditorTest
 						.projectId(ProjectId.ofRepoId(1))
 						.resources(ImmutableList.of(
 								WOProjectResource.builder()
-										.id(WOProjectResourceId.ofRepoId(1))
+										.id(WOProjectResourceId.ofRepoId(ProjectId.ofRepoId(1),1))
 										.projectId(ProjectId.ofRepoId(1))
-										.stepId(WOProjectStepId.ofRepoId(1))
+										.stepId(WOProjectStepId.ofRepoId(ProjectId.ofRepoId(1),1))
 										.resourceId(ResourceId.ofRepoId(1))
 										.dateRange(allDay(1, 3))
 										.durationUnit(ChronoUnit.HOURS)
 										.duration(allDay(1, 3).getDuration())
 										.build(),
 								WOProjectResource.builder()
-										.id(WOProjectResourceId.ofRepoId(2))
+										.id(WOProjectResourceId.ofRepoId(ProjectId.ofRepoId(1),2))
 										.projectId(ProjectId.ofRepoId(1))
-										.stepId(WOProjectStepId.ofRepoId(1))
+										.stepId(WOProjectStepId.ofRepoId(ProjectId.ofRepoId(1),1))
 										.resourceId(ResourceId.ofRepoId(2))
 										.dateRange(allDay(4, 5))
 										.durationUnit(ChronoUnit.HOURS)
 										.duration(allDay(4, 5).getDuration())
 										.build(),
 								WOProjectResource.builder()
-										.id(WOProjectResourceId.ofRepoId(3))
+										.id(WOProjectResourceId.ofRepoId(ProjectId.ofRepoId(1),3))
 										.projectId(ProjectId.ofRepoId(1))
-										.stepId(WOProjectStepId.ofRepoId(2))
+										.stepId(WOProjectStepId.ofRepoId(ProjectId.ofRepoId(1),2))
 										.resourceId(ResourceId.ofRepoId(1))
 										.dateRange(allDay(6, 8))
 										.durationUnit(ChronoUnit.HOURS)
 										.duration(allDay(6, 8).getDuration())
 										.build(),
 								WOProjectResource.builder()
-										.id(WOProjectResourceId.ofRepoId(4))
+										.id(WOProjectResourceId.ofRepoId(ProjectId.ofRepoId(1),4))
 										.projectId(ProjectId.ofRepoId(1))
-										.stepId(WOProjectStepId.ofRepoId(2))
+										.stepId(WOProjectStepId.ofRepoId(ProjectId.ofRepoId(1),2))
 										.resourceId(ResourceId.ofRepoId(2))
 										.dateRange(allDay(8, 9))
 										.durationUnit(ChronoUnit.HOURS)
@@ -129,9 +129,9 @@ class WOProjectSimulationPlanEditorTest
 				.build();
 
 		planEditor.changeResourceDateRangeAndShiftSteps(
-				WOProjectAndResourceId.of(ProjectId.ofRepoId(1), WOProjectResourceId.ofRepoId(1)),
+				WOProjectAndResourceId.of(ProjectId.ofRepoId(1), WOProjectResourceId.ofRepoId(ProjectId.ofRepoId(1),1)),
 				allDay(11, 13),
-				WOProjectStepId.ofRepoId(1));
+				WOProjectStepId.ofRepoId(ProjectId.ofRepoId(1),1));
 
 		final WOProjectSimulationPlan newSimulationPlan = planEditor.toNewSimulationPlan();
 		System.out.println(newSimulationPlan);

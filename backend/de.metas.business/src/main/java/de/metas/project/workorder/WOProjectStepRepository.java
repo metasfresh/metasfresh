@@ -89,18 +89,20 @@ public class WOProjectStepRepository
 	{
 		try
 		{
+			final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
+
 			return WOProjectStep.builder()
-					.id(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
-					.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
+					.id(WOProjectStepId.ofRepoId(projectId, record.getC_Project_WO_Step_ID()))
+					.projectId(projectId)
 					.seqNo(record.getSeqNo())
 					.name(record.getName())
 					.dateRange(CalendarDateRange.builder()
-							.startDate(record.getDateStart().toInstant())
-							.endDate(record.getDateEnd().toInstant())
-							.build())
+									   .startDate(record.getDateStart().toInstant())
+									   .endDate(record.getDateEnd().toInstant())
+									   .build())
 					.build();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed loading WOProjectStep from " + record, ex);
 		}
@@ -118,7 +120,7 @@ public class WOProjectStepRepository
 				.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, stepIds)
 				.create()
-				.map(record -> WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()));
+				.map(record -> WOProjectStepId.ofRepoId(ProjectId.ofRepoId(record.getC_Project_ID()), record.getC_Project_WO_Step_ID()));
 
 		for (final WOProjectStepId stepId : stepIds)
 		{

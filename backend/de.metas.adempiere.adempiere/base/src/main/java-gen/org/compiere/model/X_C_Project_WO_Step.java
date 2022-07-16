@@ -101,6 +101,18 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
 	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
