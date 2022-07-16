@@ -37,11 +37,11 @@ public class BudgetProjectSimulationPlan
 	}
 
 	BudgetProjectSimulationPlan mapByProjectResourceId(
-			@NonNull BudgetProjectAndResourceId projectAndResourceId,
+			@NonNull BudgetProjectResourceId projectResourceId,
 			@NonNull UnaryOperator<BudgetProjectResourceSimulation> mapper)
 	{
 		@Nullable
-		BudgetProjectResourceSimulation simulation = getByProjectResourceIdOrNull(projectAndResourceId.getProjectResourceId());
+		BudgetProjectResourceSimulation simulation = getByProjectResourceIdOrNull(projectResourceId);
 		final BudgetProjectResourceSimulation simulationChanged = mapper.apply(simulation);
 		if (Objects.equals(simulation, simulationChanged))
 		{
@@ -51,7 +51,7 @@ public class BudgetProjectSimulationPlan
 		else
 		{
 			Check.assumeNotNull(simulationChanged, "changed simulation cannot be null");
-			Check.assumeEquals(simulationChanged.getProjectAndResourceId(), projectAndResourceId, "projectStepAndResourceId");
+			Check.assumeEquals(simulationChanged.getProjectResourceId(), projectResourceId, "projectStepAndResourceId");
 
 			return toBuilder()
 					.projectResourcesById(CollectionUtils.mergeElementToMap(projectResourcesById, simulationChanged, BudgetProjectResourceSimulation::getProjectResourceId))

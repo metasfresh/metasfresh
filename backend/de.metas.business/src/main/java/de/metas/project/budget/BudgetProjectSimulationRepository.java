@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CCache;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.project.ProjectId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,9 +68,7 @@ public class BudgetProjectSimulationRepository
 	private static BudgetProjectResourceSimulation fromRecord(@NonNull final I_C_Project_Resource_Budget_Simulation record)
 	{
 		return BudgetProjectResourceSimulation.builder()
-				.projectAndResourceId(BudgetProjectAndResourceId.of(
-						ProjectId.ofRepoId(record.getC_Project_ID()),
-						BudgetProjectResourceId.ofRepoId(record.getC_Project_Resource_Budget_ID())))
+				.projectResourceId(extractBudgetProjectResourceId(record))
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getDateStartPlan().toInstant())
 						.endDate(record.getDateFinishPlan().toInstant())
@@ -101,8 +98,8 @@ public class BudgetProjectSimulationRepository
 
 	private static void updateRecord(final I_C_Project_Resource_Budget_Simulation record, final BudgetProjectResourceSimulation from)
 	{
-		record.setC_Project_ID(from.getProjectAndResourceId().getProjectId().getRepoId());
-		record.setC_Project_Resource_Budget_ID(from.getProjectAndResourceId().getProjectResourceId().getRepoId());
+		record.setC_Project_ID(from.getProjectResourceId().getProjectId().getRepoId());
+		record.setC_Project_Resource_Budget_ID(from.getProjectResourceId().getRepoId());
 		record.setDateStartPlan(TimeUtil.asTimestamp(from.getDateRange().getStartDate()));
 		record.setDateFinishPlan(TimeUtil.asTimestamp(from.getDateRange().getEndDate()));
 
@@ -118,7 +115,7 @@ public class BudgetProjectSimulationRepository
 				.createQueryBuilder(I_C_Project_Resource_Budget_Simulation.class)
 				.addEqualsFilter(I_C_Project_Resource_Budget_Simulation.COLUMNNAME_C_SimulationPlan_ID, plan.getSimulationPlanId())
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(record -> BudgetProjectResourceId.ofRepoId(record.getC_Project_Resource_Budget_ID())));
+				.collect(GuavaCollectors.toHashMapByKey(BudgetProjectSimulationRepository::extractBudgetProjectResourceId));
 
 		for (final BudgetProjectResourceSimulation resource : plan.getAll())
 		{
@@ -137,15 +134,21 @@ public class BudgetProjectSimulationRepository
 		InterfaceWrapperHelper.deleteAll(existingRecords.values());
 	}
 
+	@NonNull
+	private static BudgetProjectResourceId extractBudgetProjectResourceId(final I_C_Project_Resource_Budget_Simulation record)
+	{
+		return BudgetProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Resource_Budget_ID());
+	}
+
 	public OldAndNewValues<BudgetProjectResourceSimulation> createOrUpdate(@NonNull final BudgetProjectResourceSimulation.UpdateRequest request)
 	{
 		BudgetProjectSimulationPlan simulationPlan = getSimulationPlanById(request.getSimulationId());
 		final BudgetProjectSimulationPlan changedSimulationPlan = simulationPlan.mapByProjectResourceId(
-				request.getProjectAndResourceId(),
+				request.getProjectResourceId(),
 				existingSimulation -> BudgetProjectResourceSimulation.reduce(existingSimulation, request)
 		);
 
-		final BudgetProjectResourceId projectResourceId = request.getProjectAndResourceId().getProjectResourceId();
+		final BudgetProjectResourceId projectResourceId = request.getProjectResourceId();
 		return OldAndNewValues.ofOldAndNewValues(
 				simulationPlan.getByProjectResourceIdOrNull(projectResourceId),
 				changedSimulationPlan.getByProjectResourceId(projectResourceId)

@@ -98,8 +98,7 @@ public class BudgetProjectResourceRepository
 		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_Time_ID());
 
 		return BudgetProjectResource.builder()
-				.id(BudgetProjectResourceId.ofRepoId(record.getC_Project_Resource_Budget_ID()))
-				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.id(extractBudgetProjectResourceId(record))
 				.resourceGroupId(ResourceGroupId.ofRepoId(record.getS_Resource_Group_ID()))
 				.resourceId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
 				.durationUomId(durationUomId)
@@ -113,6 +112,11 @@ public class BudgetProjectResourceRepository
 						.build())
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.build();
+	}
+
+	public static BudgetProjectResourceId extractBudgetProjectResourceId(final @NonNull I_C_Project_Resource_Budget record)
+	{
+		return BudgetProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Resource_Budget_ID());
 	}
 
 	private static void updateRecord(
@@ -145,10 +149,9 @@ public class BudgetProjectResourceRepository
 	}
 
 	public void updateProjectResourcesByIds(
-			@NonNull final ImmutableSet<BudgetProjectAndResourceId> ids,
+			@NonNull final ImmutableSet<BudgetProjectResourceId> projectResourceIds,
 			@NonNull final UnaryOperator<BudgetProjectResource> mapper)
 	{
-		final ImmutableSet<BudgetProjectResourceId> projectResourceIds = BudgetProjectAndResourceId.unbox(ids);
 		if (projectResourceIds.isEmpty())
 		{
 			return;

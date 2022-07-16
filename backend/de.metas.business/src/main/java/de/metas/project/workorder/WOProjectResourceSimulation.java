@@ -38,7 +38,7 @@ public class WOProjectResourceSimulation
 		}
 		else
 		{
-			Check.assumeEquals(simulation.getProjectResourceId(), updateRequest.getProjectResourceId(), "expected same projectAndResourceId: {}, {}", simulation, updateRequest);
+			Check.assumeEquals(simulation.getProjectResourceId(), updateRequest.getProjectResourceId(), "expected same projectResourceId: {}, {}", simulation, updateRequest);
 
 			return simulation.toBuilder()
 					.dateRange(updateRequest.getDateRange())

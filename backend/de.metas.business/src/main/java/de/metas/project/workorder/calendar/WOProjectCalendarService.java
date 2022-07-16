@@ -46,8 +46,8 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
-import de.metas.project.budget.BudgetProjectAndResourceId;
 import de.metas.project.budget.BudgetProjectResource;
+import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.budget.BudgetProjectResourceSimulation;
 import de.metas.project.budget.BudgetProjectResources;
 import de.metas.project.budget.BudgetProjectService;
@@ -250,7 +250,7 @@ public class WOProjectCalendarService implements CalendarService
 			@NonNull final WOProjectFrontendURLsProvider frontendURLs)
 	{
 		return CalendarEntry.builder()
-				.entryId(BudgetAndWOCalendarEntryIdConverters.from(budget.getProjectId(), budget.getId()))
+				.entryId(BudgetAndWOCalendarEntryIdConverters.from(budget.getId()))
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
 				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(), budget.getResourceGroupId())))
 				.title(TranslatableStrings.builder()
@@ -327,22 +327,22 @@ public class WOProjectCalendarService implements CalendarService
 
 		return BudgetAndWOCalendarEntryIdConverters.withProjectResourceId(
 				request.getEntryId(),
-				budgetProjectAndResourceId -> updateEntry_BudgetProjectResource(request, budgetProjectAndResourceId),
+				budgetProjectResourceId -> updateEntry_BudgetProjectResource(request, budgetProjectResourceId),
 				projectResourceId -> updateEntry_WOProjectResource(request, projectResourceId));
 	}
 
 	private CalendarEntryUpdateResult updateEntry_BudgetProjectResource(
 			@NonNull final CalendarEntryUpdateRequest request,
-			@NonNull final BudgetProjectAndResourceId projectAndResourceId)
+			@NonNull final BudgetProjectResourceId projectResourceId)
 	{
 		final SimulationPlanId simulationId = Check.assumeNotNull(request.getSimulationId(), "simulationId is set: {}", request);
 		final SimulationPlanRef simulationPlanHeader = simulationPlanService.getById(simulationId);
 		simulationPlanHeader.assertEditable();
 
-		final BudgetProject project = budgetProjectService.getById(projectAndResourceId.getProjectId())
-				.orElseThrow(() -> new AdempiereException("No Budget Project found for " + projectAndResourceId.getProjectId()));
+		final BudgetProject project = budgetProjectService.getById(projectResourceId.getProjectId())
+				.orElseThrow(() -> new AdempiereException("No Budget Project found for " + projectResourceId.getProjectId()));
 
-		final BudgetProjectResource actualBudget = budgetProjectService.getBudgetsById(projectAndResourceId.getProjectId(), projectAndResourceId.getProjectResourceId());
+		final BudgetProjectResource actualBudget = budgetProjectService.getBudgetsById(projectResourceId);
 
 		final WOProjectFrontendURLsProvider frontendURLs = new WOProjectFrontendURLsProvider();
 
@@ -350,7 +350,7 @@ public class WOProjectCalendarService implements CalendarService
 				.createOrUpdate(
 						BudgetProjectResourceSimulation.UpdateRequest.builder()
 								.simulationId(simulationId)
-								.projectAndResourceId(projectAndResourceId)
+								.projectResourceId(projectResourceId)
 								.dateRange(CoalesceUtil.coalesceNotNull(request.getDateRange(), actualBudget.getDateRange()))
 								.build())
 				.map(simulation -> simulation != null ? simulation.applyOn(actualBudget) : actualBudget)
@@ -441,22 +441,22 @@ public class WOProjectCalendarService implements CalendarService
 
 		return BudgetAndWOCalendarEntryIdConverters.withProjectResourceId(
 				entryId,
-				budgetProjectAndResourceId -> getEntryByBudgetResourceId(budgetProjectAndResourceId, simulationPlanHeader),
+				budgetProjectResourceId -> getEntryByBudgetResourceId(budgetProjectResourceId, simulationPlanHeader),
 				woProjectResourceId -> getEntryByWOProjectResourceId(woProjectResourceId, simulationPlanHeader));
 	}
 
 	private CalendarEntry getEntryByBudgetResourceId(
-			@NonNull final BudgetProjectAndResourceId budgetProjectAndResourceId,
+			@NonNull final BudgetProjectResourceId budgetProjectResourceId,
 			@Nullable final SimulationPlanRef simulationPlanHeader)
 	{
-		BudgetProjectResource budget = budgetProjectService.getBudgetsById(budgetProjectAndResourceId);
+		BudgetProjectResource budget = budgetProjectService.getBudgetsById(budgetProjectResourceId);
 		if (simulationPlanHeader != null)
 		{
 			budget = budgetProjectSimulationService.getSimulationPlanById(simulationPlanHeader.getId()).applyOn(budget);
 		}
 
-		final BudgetProject project = budgetProjectService.getById(budgetProjectAndResourceId.getProjectId())
-				.orElseThrow(() -> new AdempiereException("No project found for " + budgetProjectAndResourceId));
+		final BudgetProject project = budgetProjectService.getById(budgetProjectResourceId.getProjectId())
+				.orElseThrow(() -> new AdempiereException("No project found for " + budgetProjectResourceId));
 		final WOProjectFrontendURLsProvider frontendUrls = new WOProjectFrontendURLsProvider();
 
 		return toCalendarEntry(budget, project, simulationPlanHeader, frontendUrls);

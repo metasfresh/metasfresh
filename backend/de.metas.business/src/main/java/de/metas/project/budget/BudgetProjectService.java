@@ -64,14 +64,9 @@ public class BudgetProjectService
 		return resourceBudgetRepository.getByProjectIds(projectIds);
 	}
 
-	public BudgetProjectResource getBudgetsById(@NonNull final ProjectId projectId, @NonNull final BudgetProjectResourceId id)
+	public BudgetProjectResource getBudgetsById(@NonNull final BudgetProjectResourceId id)
 	{
-		return resourceBudgetRepository.getByProjectId(projectId).getBudgetById(id);
-	}
-
-	public BudgetProjectResource getBudgetsById(@NonNull final BudgetProjectAndResourceId id)
-	{
-		return resourceBudgetRepository.getByProjectId(id.getProjectId()).getBudgetById(id.getProjectResourceId());
+		return resourceBudgetRepository.getByProjectId(id.getProjectId()).getBudgetById(id);
 	}
 
 	public Optional<BudgetProjectResource> findBudgetForResource(
@@ -94,7 +89,7 @@ public class BudgetProjectService
 	}
 
 	public void updateProjectResourcesByIds(
-			@NonNull final ImmutableSet<BudgetProjectAndResourceId> ids,
+			@NonNull final ImmutableSet<BudgetProjectResourceId> ids,
 			@NonNull final UnaryOperator<BudgetProjectResource> mapper)
 	{
 		resourceBudgetRepository.updateProjectResourcesByIds(ids, mapper);

@@ -40,8 +40,6 @@ public class BudgetProjectResource
 {
 	@NonNull BudgetProjectResourceId id;
 
-	@NonNull ProjectId projectId;
-
 	@NonNull ResourceGroupId resourceGroupId;
 	@Nullable ResourceId resourceId;
 
@@ -57,7 +55,6 @@ public class BudgetProjectResource
 	@Builder(toBuilder = true)
 	private BudgetProjectResource(
 			@NonNull final BudgetProjectResourceId id,
-			@NonNull final ProjectId projectId,
 			@NonNull final ResourceGroupId resourceGroupId,
 			@Nullable final ResourceId resourceId,
 			@NonNull final UomId durationUomId,
@@ -70,7 +67,6 @@ public class BudgetProjectResource
 		Money.getCommonCurrencyIdOfAll(plannedAmount, pricePerDurationUnit); // make sure they are in the same currency
 
 		this.id = id;
-		this.projectId = projectId;
 		this.resourceGroupId = resourceGroupId;
 		this.resourceId = resourceId;
 		this.durationUomId = durationUomId;
@@ -81,8 +77,5 @@ public class BudgetProjectResource
 		this.description = description;
 	}
 
-	public BudgetProjectAndResourceId getProjectAndResourceId()
-	{
-		return BudgetProjectAndResourceId.of(projectId, id);
-	}
+	public ProjectId getProjectId() {return id.getProjectId();}
 }

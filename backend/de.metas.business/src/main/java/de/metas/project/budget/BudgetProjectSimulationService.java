@@ -45,14 +45,14 @@ public class BudgetProjectSimulationService
 	{
 		final BudgetProjectSimulationPlan simulationPlan = budgetProjectSimulationRepository.getSimulationPlanById(simulationRef.getId());
 
-		final ImmutableMap<BudgetProjectAndResourceId, BudgetProjectResourceSimulation> projectResourceSimulationsToApply = Maps.uniqueIndex(simulationPlan.getAll(), BudgetProjectResourceSimulation::getProjectAndResourceId);
+		final ImmutableMap<BudgetProjectResourceId, BudgetProjectResourceSimulation> projectResourceSimulationsToApply = Maps.uniqueIndex(simulationPlan.getAll(), BudgetProjectResourceSimulation::getProjectResourceId);
 
 		final HashMap<BudgetProjectResourceId, BudgetProjectResourceSimulation> projectResourceSimulationsApplied = new HashMap<>();
 
 		budgetProjectService.updateProjectResourcesByIds(
 				projectResourceSimulationsToApply.keySet(),
 				projectResource -> {
-					final BudgetProjectResourceSimulation simulation = projectResourceSimulationsToApply.get(projectResource.getProjectAndResourceId());
+					final BudgetProjectResourceSimulation simulation = projectResourceSimulationsToApply.get(projectResource.getId());
 
 					// do nothing if simulation was already applied. shall not happen.
 					if (simulation.isAppliedOnActualData())
