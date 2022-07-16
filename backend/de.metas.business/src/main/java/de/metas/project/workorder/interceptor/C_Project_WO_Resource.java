@@ -51,7 +51,7 @@ public class C_Project_WO_Resource
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
-		notifyIfUserChange(record, changeType);
+		notifyEntryChanged(record, changeType);
 		updateStepDatesAfterCommit(WOProjectAndStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
 		checkConflictsAfterCommitIfUserChange(record);
 	}
@@ -59,7 +59,7 @@ public class C_Project_WO_Resource
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void afterDelete(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
-		notifyIfUserChange(record, changeType);
+		notifyEntryChanged(record, changeType);
 		updateStepDatesAfterCommit(WOProjectAndStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
 		checkConflictsAfterCommitIfUserChange(record);
 	}
@@ -75,23 +75,18 @@ public class C_Project_WO_Resource
 				.add(stepId);
 	}
 
-	private void notifyIfUserChange(
+	private void notifyEntryChanged(
 			@NonNull final I_C_Project_WO_Resource record,
 			@NonNull final ModelChangeType changeType)
 	{
-		if (!InterfaceWrapperHelper.isUIAction(record))
-		{
-			return;
-		}
-
 		final CalendarEntryId entryId = extractCalendarEntryId(record);
 		if (changeType.isNewOrChange() && record.isActive())
 		{
-			multiCalendarService.notifyEntryUpdatedByUser(entryId);
+			multiCalendarService.notifyEntryUpdated(entryId);
 		}
 		else
 		{
-			multiCalendarService.notifyEntryDeletedByUser(entryId);
+			multiCalendarService.notifyEntryDeleted(entryId);
 		}
 	}
 

@@ -23,6 +23,8 @@ import org.compiere.model.I_C_Project_WO_Step_Simulation;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,24 +55,28 @@ public class WOProjectSimulationRepository
 		}
 	}
 
-	public Collection<WOProjectSimulationPlan> getByResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
+	public Collection<WOProjectSimulationPlan> getByResourceIdsAndSimulationIds(
+			@NonNull final Set<WOProjectResourceId> projectResourceIds,
+			@NonNull final Set<SimulationPlanId> simulationIds)
 	{
-		if (projectResourceIds.isEmpty())
+		if (projectResourceIds.isEmpty()
+				|| simulationIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final ImmutableList<SimulationPlanId> simulationIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource_Simulation.class)
+		final ImmutableList<SimulationPlanId> matchingSimulationIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource_Simulation.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Project_WO_Resource_Simulation.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
+				.addInArrayFilter(I_C_Project_WO_Resource_Simulation.COLUMNNAME_C_SimulationPlan_ID, simulationIds)
 				.create()
 				.listDistinct(I_C_Project_WO_Resource_Simulation.COLUMNNAME_C_SimulationPlan_ID, SimulationPlanId.class);
-		if (simulationIds.isEmpty())
+		if (matchingSimulationIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		return cacheById.getAllOrLoad(simulationIds, this::retrieveSimulationPlansByIds);
+		return cacheById.getAllOrLoad(matchingSimulationIds, this::retrieveSimulationPlansByIds);
 	}
 
 	private void changeSimulationPlanById(
@@ -175,6 +181,25 @@ public class WOProjectSimulationRepository
 						.endDate(record.getAssignDateTo().toInstant())
 						.allDay(record.isAllDay())
 						.build())
+				.isAppliedOnActualData(record.isProcessed())
+				.dateRangeBeforeApplying(extractDateRangeBeforeApplying(record))
+				.build();
+	}
+
+	@Nullable
+	private static CalendarDateRange extractDateRangeBeforeApplying(final I_C_Project_WO_Resource_Simulation record)
+	{
+		final Timestamp assignDateFrom_prev = record.getAssignDateFrom_Prev();
+		final Timestamp assignDateTo_prev = record.getAssignDateTo_Prev();
+		if (assignDateFrom_prev == null || assignDateTo_prev == null)
+		{
+			return null;
+		}
+
+		return CalendarDateRange.builder()
+				.startDate(assignDateFrom_prev.toInstant())
+				.endDate(assignDateTo_prev.toInstant())
+				.allDay(record.isAllDay_Prev())
 				.build();
 	}
 
@@ -182,10 +207,15 @@ public class WOProjectSimulationRepository
 	{
 		record.setC_Project_ID(from.getProjectAndResourceId().getProjectId().getRepoId());
 		record.setC_Project_WO_Resource_ID(from.getProjectAndResourceId().getProjectResourceId().getRepoId());
-		//
-		record.setAssignDateFrom(TimeUtil.asTimestamp(from.getDateRange().getStartDate()));
-		record.setAssignDateTo(TimeUtil.asTimestamp(from.getDateRange().getEndDate()));
+
+		record.setAssignDateFrom(Timestamp.from(from.getDateRange().getStartDate()));
+		record.setAssignDateTo(Timestamp.from(from.getDateRange().getEndDate()));
 		record.setIsAllDay(from.getDateRange().isAllDay());
+
+		record.setProcessed(from.isAppliedOnActualData());
+		record.setAssignDateFrom_Prev(from.getDateRangeBeforeApplying() != null ? Timestamp.from(from.getDateRangeBeforeApplying().getStartDate()) : null);
+		record.setAssignDateTo_Prev(from.getDateRangeBeforeApplying() != null ? Timestamp.from(from.getDateRangeBeforeApplying().getEndDate()) : null);
+		record.setIsAllDay_Prev(from.getDateRangeBeforeApplying() != null && from.getDateRangeBeforeApplying().isAllDay());
 	}
 
 	public void savePlan(@NonNull WOProjectSimulationPlan plan)
@@ -202,7 +232,7 @@ public class WOProjectSimulationRepository
 				.stream()
 				.collect(GuavaCollectors.toHashMapByKey(WOProjectSimulationRepository::extractWOProjectResourceId));
 
-		for (final WOProjectStepSimulation step : plan.getStepsById().values())
+		for (final WOProjectStepSimulation step : plan.getSteps())
 		{
 			I_C_Project_WO_Step_Simulation record = existingStepRecordsById.remove(step.getStepId());
 			if (record == null)
@@ -215,7 +245,7 @@ public class WOProjectSimulationRepository
 			InterfaceWrapperHelper.save(record);
 		}
 
-		for (final WOProjectResourceSimulation resource : plan.getProjectResourcesById().values())
+		for (final WOProjectResourceSimulation resource : plan.getProjectResources())
 		{
 			I_C_Project_WO_Resource_Simulation record = existingProjectResourceRecordsById.remove(resource.getProjectResourceId());
 			if (record == null)

@@ -25,4 +25,10 @@ public class WOProjectSimulationPlanServiceHook implements SimulationPlanService
 			woProjectSimulationService.copySimulationDataTo(copyFromSimulationPlanId, simulationRef.getId());
 		}
 	}
+
+	@Override
+	public void onComplete(@NonNull final SimulationPlanRef simulationRef)
+	{
+		woProjectSimulationService.completeSimulation(simulationRef.getId());
+	}
 }

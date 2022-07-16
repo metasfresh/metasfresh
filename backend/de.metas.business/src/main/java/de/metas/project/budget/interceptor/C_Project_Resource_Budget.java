@@ -79,11 +79,11 @@ public class C_Project_Resource_Budget
 		final CalendarEntryId entryId = extractCalendarEntryId(record);
 		if (changeType.isNewOrChange() && record.isActive())
 		{
-			multiCalendarService.notifyEntryUpdatedByUser(entryId);
+			multiCalendarService.notifyEntryUpdated(entryId);
 		}
 		else
 		{
-			multiCalendarService.notifyEntryDeletedByUser(entryId);
+			multiCalendarService.notifyEntryDeleted(entryId);
 		}
 	}
 

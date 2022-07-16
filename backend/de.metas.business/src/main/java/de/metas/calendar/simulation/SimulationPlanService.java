@@ -1,5 +1,6 @@
 package de.metas.calendar.simulation;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -8,6 +9,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class SimulationPlanService
 {
 	private static final Logger logger = LogManager.getLogger(SimulationPlanService.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final SimulationPlanRepository simulationPlanRepository;
 	private final CompositeSimulationPlanServiceHook hooks;
@@ -37,6 +40,14 @@ public class SimulationPlanService
 	}
 
 	public SimulationPlanRef createNewSimulation(
+			@Nullable String name,
+			@Nullable SimulationPlanId copyFromSimulationId,
+			@NonNull UserId responsibleUserId)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> createNewSimulationInTrx(name, copyFromSimulationId, responsibleUserId));
+	}
+
+	public SimulationPlanRef createNewSimulationInTrx(
 			@Nullable String name,
 			@Nullable SimulationPlanId copyFromSimulationId,
 			@NonNull UserId responsibleUserId)
@@ -84,8 +95,31 @@ public class SimulationPlanService
 		return simulationPlanRepository.getById(id);
 	}
 
-	public Collection<SimulationPlanRef> getAllNotProcessed()
+	public Collection<SimulationPlanRef> getAllDrafts(@Nullable final SimulationPlanId alwaysIncludeId)
 	{
-		return simulationPlanRepository.getAllNotProcessed();
+		return simulationPlanRepository.getAllDrafts(alwaysIncludeId);
+	}
+
+	public ImmutableSet<SimulationPlanId> getDraftSimulationIds()
+	{
+		return simulationPlanRepository.getDraftSimulationIds();
+	}
+
+	public void complete(@NonNull final SimulationPlanId simulationPlanId)
+	{
+		trxManager.runInThreadInheritedTrx(() -> completeInTrx(simulationPlanId));
+	}
+
+	private void completeInTrx(@NonNull final SimulationPlanId simulationPlanId)
+	{
+		final SimulationPlanRef simulationRef = simulationPlanRepository.getById(simulationPlanId);
+		if (!simulationRef.getDocStatus().isDrafted())
+		{
+			throw new AdempiereException("Only Drafted simulations can be completed");
+		}
+
+		hooks.onComplete(simulationRef);
+
+		simulationPlanRepository.changeDocStatus(simulationPlanId, SimulationPlanDocStatus.Completed);
 	}
 }

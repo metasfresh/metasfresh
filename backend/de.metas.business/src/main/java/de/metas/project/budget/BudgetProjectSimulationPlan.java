@@ -11,6 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
@@ -24,10 +25,10 @@ public class BudgetProjectSimulationPlan
 	@Builder(toBuilder = true)
 	private BudgetProjectSimulationPlan(
 			@NonNull final SimulationPlanId simulationPlanId,
-			@Nullable final ImmutableMap<BudgetProjectResourceId, BudgetProjectResourceSimulation> projectResourcesById)
+			@Nullable final Map<BudgetProjectResourceId, BudgetProjectResourceSimulation> projectResourcesById)
 	{
 		this.simulationPlanId = simulationPlanId;
-		this.projectResourcesById = projectResourcesById != null ? projectResourcesById : ImmutableMap.of();
+		this.projectResourcesById = projectResourcesById != null ? ImmutableMap.copyOf(projectResourcesById) : ImmutableMap.of();
 	}
 
 	public Collection<BudgetProjectResourceSimulation> getAll()

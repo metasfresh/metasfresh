@@ -2,10 +2,12 @@ package de.metas.project.workorder;
 
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -16,6 +18,14 @@ public class WOProjectResourceSimulation
 	@NonNull WOProjectAndResourceId projectAndResourceId;
 
 	@NonNull CalendarDateRange dateRange;
+
+	boolean isAppliedOnActualData;
+	CalendarDateRange dateRangeBeforeApplying;
+
+	public ProjectId getProjectId()
+	{
+		return getProjectAndResourceId().getProjectId();
+	}
 
 	public WOProjectResourceId getProjectResourceId()
 	{
@@ -48,6 +58,19 @@ public class WOProjectResourceSimulation
 		return resource.toBuilder()
 				.dateRange(dateRange)
 				.duration(dateRange.getDuration())
+				.build();
+	}
+
+	public WOProjectResourceSimulation markingAsApplied(@NonNull final CalendarDateRange dateRangeBeforeApplying)
+	{
+		if (isAppliedOnActualData)
+		{
+			throw new AdempiereException("Already applied");
+		}
+
+		return toBuilder()
+				.isAppliedOnActualData(true)
+				.dateRangeBeforeApplying(dateRangeBeforeApplying)
 				.build();
 	}
 

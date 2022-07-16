@@ -11,9 +11,9 @@ import javax.annotation.Nullable;
 @Component
 public class BudgetProjectSimulationPlanServiceHook implements SimulationPlanServiceHook
 {
-	private final BudgetProjectSimulationRepository budgetProjectSimulationRepository;
+	private final BudgetProjectSimulationService budgetProjectSimulationService;
 
-	public BudgetProjectSimulationPlanServiceHook(final BudgetProjectSimulationRepository budgetProjectSimulationRepository) {this.budgetProjectSimulationRepository = budgetProjectSimulationRepository;}
+	public BudgetProjectSimulationPlanServiceHook(final BudgetProjectSimulationService budgetProjectSimulationService) {this.budgetProjectSimulationService = budgetProjectSimulationService;}
 
 	@Override
 	public void onNewSimulationPlan(
@@ -22,7 +22,13 @@ public class BudgetProjectSimulationPlanServiceHook implements SimulationPlanSer
 	{
 		if (copyFromSimulationPlanId != null)
 		{
-			budgetProjectSimulationRepository.copySimulationDataTo(copyFromSimulationPlanId, simulationRef.getId());
+			budgetProjectSimulationService.copySimulationDataTo(copyFromSimulationPlanId, simulationRef.getId());
 		}
+	}
+
+	@Override
+	public void onComplete(@NonNull final SimulationPlanRef simulationRef)
+	{
+		budgetProjectSimulationService.completeSimulation(simulationRef);
 	}
 }

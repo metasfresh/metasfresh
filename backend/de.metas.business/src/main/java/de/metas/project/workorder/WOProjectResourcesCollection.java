@@ -1,15 +1,19 @@
 package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.project.ProjectId;
 import de.metas.util.GuavaCollectors;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+@EqualsAndHashCode
+@ToString
 public class WOProjectResourcesCollection
 {
 	public static final WOProjectResourcesCollection EMPTY = new WOProjectResourcesCollection(ImmutableMap.of());
@@ -34,14 +38,14 @@ public class WOProjectResourcesCollection
 				WOProjectResourcesCollection::ofMap);
 	}
 
-	public WOProjectResources get(@NonNull final ProjectId projectId)
+	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)
 	{
-		return map.get(projectId);
-	}
-
-	public ImmutableSet<WOProjectResourceId> getProjectResourceIds()
-	{
-		return map.values().stream().flatMap(WOProjectResources::streamIds).collect(ImmutableSet.toImmutableSet());
+		final WOProjectResources projectResources = map.get(projectId);
+		if (projectResources == null)
+		{
+			throw new AdempiereException("No project resources found for " + projectId + " in " + this);
+		}
+		return projectResources;
 	}
 
 	public Stream<WOProjectResource> streamProjectResources()
@@ -49,4 +53,9 @@ public class WOProjectResourcesCollection
 		return map.values().stream().flatMap(WOProjectResources::stream);
 	}
 
+	public WOProjectResource getByProjectAndResourceId(final WOProjectAndResourceId projectAndResourceId)
+	{
+		return getByProjectId(projectAndResourceId.getProjectId())
+				.getById(projectAndResourceId.getProjectResourceId());
+	}
 }

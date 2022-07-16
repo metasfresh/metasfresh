@@ -234,13 +234,17 @@ public class CalendarRestController
 	}
 
 	@GetMapping("/simulations")
-	public JsonGetAvailableSimulationsResponse getAvailableSimulations()
+	public JsonGetAvailableSimulationsResponse getDraftSimulations(
+			@RequestParam(name = "alwaysIncludeId", required = false) final String alwaysIncludeIdStr
+	)
 	{
 		userSession.assertLoggedIn();
 
+		final SimulationPlanId alwaysIncludeId = SimulationPlanId.ofNullableObject(alwaysIncludeIdStr);
+
 		return JsonGetAvailableSimulationsResponse.builder()
 				.simulations(
-						simulationService.getAllNotProcessed()
+						simulationService.getAllDrafts(alwaysIncludeId)
 								.stream()
 								.map(JsonSimulationRef::of)
 								.sorted(Comparator.comparing(JsonSimulationRef::getName))

@@ -34,7 +34,7 @@ public class ResourceAllocationConflicts
 	{
 		if (simulationId == null)
 		{
-			if (byIds.values().stream().anyMatch(conflict -> conflict.getSimulationId() != null))
+			if (byIds.values().stream().anyMatch(ResourceAllocationConflict::isSimulation))
 			{
 				throw new AdempiereException("Simulation conflicts are not allowed in actual conflicts only collection")
 						.setParameter("simulationId", simulationId)
@@ -44,7 +44,7 @@ public class ResourceAllocationConflicts
 		}
 		else
 		{
-			if (byIds.values().stream().anyMatch(conflict -> conflict.getSimulationId() != null && !SimulationPlanId.equals(conflict.getSimulationId(), simulationId)))
+			if (byIds.values().stream().anyMatch(conflict -> conflict.isSimulation() && !conflict.isSimulation(simulationId)))
 			{
 				throw new AdempiereException("Mixing conflicts from different simulations is not allowed.")
 						.setParameter("simulationId", simulationId)
@@ -118,7 +118,7 @@ public class ResourceAllocationConflicts
 
 	private boolean isActualConflicts()
 	{
-		return simulationId == null;
+		return !isSimulation();
 	}
 
 	public boolean isSimulation()
@@ -151,5 +151,13 @@ public class ResourceAllocationConflicts
 				simulationConflicts.simulationId,
 				CollectionUtils.mergeMaps(this.byIds, simulationConflicts.byIds)
 		);
+	}
+
+	public boolean isSimulationConflictsApproved()
+	{
+		return stream()
+				.filter(ResourceAllocationConflict::isSimulation)
+				.filter(ResourceAllocationConflict::isConflict)
+				.allMatch(ResourceAllocationConflict::isApproved);
 	}
 }

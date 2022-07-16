@@ -33,13 +33,24 @@ const Calendar = ({
   const simulationId = simulations.getSelectedSimulationId();
   const calendarData = useCalendarData();
 
+  const loadAvailableSimulations = () => {
+    console.log(`Loading simulations, including ${simulationId}...`);
+    api
+      .fetchAvailableSimulations({ alwaysIncludeId: simulationId })
+      .then(simulations.setFromArray);
+  };
+
   useEffect(() => {
-    console.log('Loading simulations and calendars');
-    api.fetchAvailableSimulations().then(simulations.setFromArray);
+    console.log('Loading calendars...');
     api.fetchAvailableCalendars().then(calendarData.setCalendars);
   }, []);
 
   useEffect(() => {
+    loadAvailableSimulations();
+  }, [simulationId]);
+
+  useEffect(() => {
+    console.log('Loading conflicts...');
     api.fetchConflicts({ simulationId }).then(calendarData.setConflicts);
   }, [simulationId]);
 
@@ -112,6 +123,7 @@ const Calendar = ({
           <SimulationsDropDown
             simulations={simulations.toArray()}
             selectedSimulationId={simulationId}
+            onOpenDropdown={() => loadAvailableSimulations()}
             onSelect={(simulation) => {
               simulations.setSelectedSimulationId(simulation?.simulationId);
             }}

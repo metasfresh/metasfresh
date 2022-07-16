@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 @Service
 public class WOProjectService
@@ -95,7 +96,7 @@ public class WOProjectService
 		for (final WOProjectAndStepId projectAndStepId : projectAndStepIds)
 		{
 			final ImmutableList<CalendarDateRange> resourceDateRanges = resourcesByProjectId
-					.get(projectAndStepId.getProjectId())
+					.getByProjectId(projectAndStepId.getProjectId())
 					.streamByStepId(projectAndStepId.getStepId())
 					.map(WOProjectResource::getDateRange)
 					.distinct()
@@ -109,5 +110,12 @@ public class WOProjectService
 		}
 
 		woProjectStepRepository.updateStepDateRanges(stepDateRanges);
+	}
+
+	public void updateProjectResourcesByIds(
+			@NonNull final Set<WOProjectAndResourceId> projectAndResourceIds,
+			@NonNull final UnaryOperator<WOProjectResource> mapper)
+	{
+		woProjectResourceRepository.updateProjectResourcesByIds(projectAndResourceIds, mapper);
 	}
 }

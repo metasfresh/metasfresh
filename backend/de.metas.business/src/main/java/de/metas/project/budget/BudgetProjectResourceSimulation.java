@@ -6,6 +6,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -16,6 +17,9 @@ public class BudgetProjectResourceSimulation
 	@NonNull BudgetProjectAndResourceId projectAndResourceId;
 
 	@NonNull CalendarDateRange dateRange;
+
+	boolean isAppliedOnActualData;
+	CalendarDateRange dateRangeBeforeApplying;
 
 	public BudgetProjectResourceId getProjectResourceId() {return getProjectAndResourceId().getProjectResourceId();}
 
@@ -46,6 +50,19 @@ public class BudgetProjectResourceSimulation
 
 		return resource.toBuilder()
 				.dateRange(dateRange)
+				.build();
+	}
+
+	public BudgetProjectResourceSimulation markingAsApplied(@NonNull final CalendarDateRange dateRangeBeforeApplying)
+	{
+		if (isAppliedOnActualData)
+		{
+			throw new AdempiereException("Already applied");
+		}
+
+		return toBuilder()
+				.isAppliedOnActualData(true)
+				.dateRangeBeforeApplying(dateRangeBeforeApplying)
 				.build();
 	}
 

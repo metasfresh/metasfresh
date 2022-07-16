@@ -30,4 +30,11 @@ final class CompositeSimulationPlanServiceHook implements SimulationPlanServiceH
 	{
 		list.forEach(hook -> hook.onNewSimulationPlan(simulationRef, copyFromSimulationPlanId));
 	}
+
+	@Override
+	public void onComplete(final @NonNull SimulationPlanRef simulationRef)
+	{
+		list.forEach(hook -> hook.onComplete(simulationRef));
+	}
+
 }

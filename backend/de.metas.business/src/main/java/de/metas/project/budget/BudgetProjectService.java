@@ -22,6 +22,7 @@
 
 package de.metas.project.budget;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.resource.ResourceGroupAndResourceId;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 @Service
 public class BudgetProjectService
@@ -89,5 +91,12 @@ public class BudgetProjectService
 	public Optional<BudgetProject> getById(@NonNull final ProjectId projectId)
 	{
 		return projectRepository.getById(projectId);
+	}
+
+	public void updateProjectResourcesByIds(
+			@NonNull final ImmutableSet<BudgetProjectAndResourceId> ids,
+			@NonNull final UnaryOperator<BudgetProjectResource> mapper)
+	{
+		resourceBudgetRepository.updateProjectResourcesByIds(ids, mapper);
 	}
 }

@@ -2,10 +2,36 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import SimpleList from '../../../components/widget/List/SimpleList';
 
-const toKeyCaption = (simulation) => {
+const OPTION_None = { key: 'NONE', caption: 'Actual data' }; // TODO trl
+const OPTION_NEW = { key: 'NEW', caption: 'New simulation' }; // TODO trl
+
+function computeSelectedSimulation(simulations, selectedSimulationId) {
+  if (selectedSimulationId == null) {
+    return null;
+  }
+
+  const selectedSimulation = simulations.find(
+    (simulation) =>
+      String(simulation.simulationId) === String(selectedSimulationId)
+  );
+  if (selectedSimulation != null) {
+    return selectedSimulation;
+  }
+
+  return {
+    simulationId: selectedSimulationId,
+    name: `<${selectedSimulationId}>`,
+  };
+}
+
+const toKeyCaptionOrNone = (simulation) => {
   return simulation
-    ? { key: simulation.simulationId, caption: simulation.name }
-    : null;
+    ? {
+        key: simulation.simulationId,
+        caption: simulation.name,
+        extendedProps: { simulation },
+      }
+    : OPTION_None;
 };
 
 const SimulationsDropDown = ({
@@ -13,14 +39,12 @@ const SimulationsDropDown = ({
   selectedSimulationId,
   onSelect,
   onNew,
+  onOpenDropdown,
 }) => {
-  const simulationsById = simulations.reduce((accum, simulation) => {
-    accum[simulation.simulationId] = simulation;
-    return accum;
-  }, {});
-
-  const selectedSimulation =
-    selectedSimulationId != null ? simulationsById[selectedSimulationId] : null;
+  const selectedSimulation = computeSelectedSimulation(
+    simulations,
+    selectedSimulationId
+  );
 
   const handleOnSelect = (keyCaptionEntry) => {
     if (!keyCaptionEntry || keyCaptionEntry.key === 'NONE') {
@@ -28,23 +52,17 @@ const SimulationsDropDown = ({
     } else if (keyCaptionEntry.key === 'NEW') {
       onNew();
     } else {
-      const simulation = simulationsById[keyCaptionEntry.key];
-      onSelect(simulation);
+      onSelect(keyCaptionEntry.extendedProps.simulation);
     }
   };
 
-  const OPTION_None = { key: 'NONE', caption: 'Actual data' }; // TODO trl
-  const OPTION_NEW = { key: 'NEW', caption: 'New simulation' }; // TODO trl
   return (
     <SimpleList
       className="calendar-simulations-dropdown"
-      list={[OPTION_NEW, OPTION_None, ...simulations.map(toKeyCaption)]}
-      selected={
-        selectedSimulation != null
-          ? toKeyCaption(selectedSimulation)
-          : OPTION_None
-      }
+      list={[OPTION_NEW, OPTION_None, ...simulations.map(toKeyCaptionOrNone)]}
+      selected={toKeyCaptionOrNone(selectedSimulation)}
       onSelect={handleOnSelect}
+      onOpenDropdown={onOpenDropdown}
     />
   );
 };
@@ -57,6 +75,7 @@ SimulationsDropDown.propTypes = {
   ]),
   onNew: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
+  onOpenDropdown: PropTypes.func,
 };
 
 export default SimulationsDropDown;

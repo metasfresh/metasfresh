@@ -17,6 +17,8 @@ import org.compiere.model.I_C_Project_WO_Resource_Simulation;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.function.UnaryOperator;
 
@@ -73,8 +75,27 @@ public class BudgetProjectSimulationRepository
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getDateStartPlan().toInstant())
 						.endDate(record.getDateFinishPlan().toInstant())
-						.allDay(true)
+						.allDay(BudgetProjectResourceRepository.IsAllDay_TRUE)
 						.build())
+				.isAppliedOnActualData(record.isProcessed())
+				.dateRangeBeforeApplying(extractDateRangeBeforeApplying(record))
+				.build();
+	}
+
+	@Nullable
+	private static CalendarDateRange extractDateRangeBeforeApplying(final I_C_Project_Resource_Budget_Simulation record)
+	{
+		final Timestamp dateStartPlan_prev = record.getDateStartPlan_Prev();
+		final Timestamp dateFinishPlan_prev = record.getDateFinishPlan_Prev();
+		if (dateStartPlan_prev == null || dateFinishPlan_prev == null)
+		{
+			return null;
+		}
+
+		return CalendarDateRange.builder()
+				.startDate(dateStartPlan_prev.toInstant())
+				.endDate(dateFinishPlan_prev.toInstant())
+				.allDay(BudgetProjectResourceRepository.IsAllDay_TRUE)
 				.build();
 	}
 
@@ -84,6 +105,11 @@ public class BudgetProjectSimulationRepository
 		record.setC_Project_Resource_Budget_ID(from.getProjectAndResourceId().getProjectResourceId().getRepoId());
 		record.setDateStartPlan(TimeUtil.asTimestamp(from.getDateRange().getStartDate()));
 		record.setDateFinishPlan(TimeUtil.asTimestamp(from.getDateRange().getEndDate()));
+
+		record.setProcessed(from.isAppliedOnActualData());
+		record.setDateStartPlan(from.getDateRangeBeforeApplying() != null ? Timestamp.from(from.getDateRangeBeforeApplying().getStartDate()) : null);
+		record.setDateFinishPlan(from.getDateRangeBeforeApplying() != null ? Timestamp.from(from.getDateRangeBeforeApplying().getEndDate()) : null);
+		//record.setIsAllDay_Prev(from.getDateRangeBeforeApplying() != null && from.getDateRangeBeforeApplying().isAllDay());
 	}
 
 	public void savePlan(@NonNull final BudgetProjectSimulationPlan plan)

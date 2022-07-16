@@ -1,17 +1,16 @@
 package de.metas.calendar.conflicts;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
 import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
@@ -56,24 +55,17 @@ public class CalendarConflictEventsDispatcher
 		}
 		else
 		{
-			simulationChangesListenersMap.compute(
+			simulationChangesListenersMap.computeIfPresent(
 					simulationId,
 					(simulationId0, listenersGroup) -> {
-						if (listenersGroup != null)
+						listenersGroup.unsubscribe(listener);
+						if (listenersGroup.hasSubscriptions())
 						{
-							listenersGroup.unsubscribe(listener);
-							if (listenersGroup.hasSubscriptions())
-							{
-								return listenersGroup;
-							}
-							else
-							{
-								return null;
-							}
+							return listenersGroup;
 						}
 						else
 						{
-							return null;
+							return null; // remove the listenersGroup
 						}
 					});
 		}
@@ -91,30 +83,24 @@ public class CalendarConflictEventsDispatcher
 		}
 	}
 
-	public void notifyChanges(@Nullable final SimulationPlanId simulationId, @NonNull final Supplier<CalendarConflictChangesEvent> event)
+	public void notifyChangesAfterCommit(@Nullable final SimulationPlanId simulationId, @NonNull final Supplier<CalendarConflictChangesEvent> event)
 	{
-		final ImmutableList<CalendarConflictChangesLazyEvent> lazyEvents = ImmutableList.of(CalendarConflictChangesLazyEvent.of(simulationId, event));
-
-		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isActive(trx))
-		{
-			trx.accumulateAndProcessAfterCommit(TRX_PROPERTY_NAME, lazyEvents, this::notifyChangesNow);
-		}
-		else
-		{
-			notifyChangesNow(lazyEvents);
-		}
+		trxManager.accumulateAndProcessAfterCommit(
+				TRX_PROPERTY_NAME,
+				ImmutableList.of(CalendarConflictChangesLazyEvent.of(simulationId, event)),
+				this::notifyChangesNow);
 	}
 
-	private void notifyChangesNow(ImmutableList<CalendarConflictChangesLazyEvent> lazyEvents)
+	private void notifyChangesNow(@NonNull final ImmutableList<CalendarConflictChangesLazyEvent> lazyEvents)
 	{
 		if (lazyEvents.isEmpty())
 		{
 			return;
 		}
 
-		final ImmutableListMultimap<SimulationPlanId, CalendarConflictChangesLazyEvent>
-				lazyEventsBySimulationId = Multimaps.index(lazyEvents, CalendarConflictChangesLazyEvent::getSimulationId);
+		// using ArrayListMultimap because SimulationId might be null too
+		final ArrayListMultimap<SimulationPlanId, CalendarConflictChangesLazyEvent> lazyEventsBySimulationId = lazyEvents.stream()
+				.collect(GuavaCollectors.toArrayListMultimapByKey(CalendarConflictChangesLazyEvent::getSimulationId));
 
 		for (final SimulationPlanId simulationId : lazyEventsBySimulationId.keySet())
 		{
@@ -151,7 +137,7 @@ public class CalendarConflictEventsDispatcher
 			return !listeners.isEmpty();
 		}
 
-		public void notifyChangesNow(@NonNull final ImmutableList<CalendarConflictChangesLazyEvent> lazyEvents)
+		public void notifyChangesNow(@NonNull final List<CalendarConflictChangesLazyEvent> lazyEvents)
 		{
 			if (listeners.isEmpty())
 			{

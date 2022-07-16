@@ -29,18 +29,23 @@ import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
+import java.sql.Timestamp;
 import java.time.temporal.TemporalUnit;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
@@ -72,7 +77,7 @@ public class WOProjectResourceRepository
 
 	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)
 	{
-		return getByProjectIds(ImmutableSet.of(projectId)).get(projectId);
+		return getByProjectIds(ImmutableSet.of(projectId)).getByProjectId(projectId);
 	}
 
 	public Stream<WOProjectResource> streamByResourceIds(
@@ -102,7 +107,7 @@ public class WOProjectResourceRepository
 		final TemporalUnit durationUnit = WFDurationUnit.ofCode(record.getDurationUnit()).getTemporalUnit();
 
 		return WOProjectResource.builder()
-				.id(WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID()))
+				.id(extractWOProjectResourceId(record))
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
 				.stepId(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
@@ -112,8 +117,53 @@ public class WOProjectResourceRepository
 						.allDay(record.isAllDay())
 						.build())
 				.durationUnit(durationUnit)
-				.duration(Duration.of(record.getDuration().longValue(), durationUnit))
+				.duration(DurationUtils.fromBigDecimal(record.getDuration(), durationUnit))
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.build();
+	}
+
+	private static void updateRecord(final I_C_Project_WO_Resource record, WOProjectResource from)
+	{
+		// don't change:
+		// id
+		// projectId
+		// stepId
+		// resourceId
+
+		record.setAssignDateFrom(Timestamp.from(from.getDateRange().getStartDate()));
+		record.setAssignDateTo(Timestamp.from(from.getDateRange().getEndDate()));
+		record.setIsAllDay(from.getDateRange().isAllDay());
+		record.setDurationUnit(WFDurationUnit.ofTemporalUnit(from.getDurationUnit()).getCode());
+		record.setDuration(DurationUtils.toBigDecimal(from.getDuration(), from.getDurationUnit()));
+		record.setDescription(from.getDescription());
+	}
+
+	@NonNull
+	private static WOProjectResourceId extractWOProjectResourceId(final @NonNull I_C_Project_WO_Resource record)
+	{
+		return WOProjectResourceId.ofRepoId(record.getC_Project_WO_Resource_ID());
+	}
+
+	public void updateProjectResourcesByIds(
+			@NonNull final Set<WOProjectAndResourceId> projectAndResourceIds,
+			@NonNull final UnaryOperator<WOProjectResource> mapper)
+	{
+		final ImmutableSet<WOProjectResourceId> projectResourceIds = WOProjectAndResourceId.unbox(projectAndResourceIds);
+		if (projectResourceIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
+				.forEach(record -> {
+					final WOProjectResource projectResource = fromRecord(record);
+					final WOProjectResource projectResourceChanged = mapper.apply(projectResource);
+					if (!Objects.equals(projectResource, projectResourceChanged))
+					{
+						updateRecord(record, projectResourceChanged);
+						InterfaceWrapperHelper.saveRecord(record);
+					}
+				});
 	}
 }
