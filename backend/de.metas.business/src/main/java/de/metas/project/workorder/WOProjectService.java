@@ -82,22 +82,22 @@ public class WOProjectService
 		return woProjectStepRepository.getByProjectId(projectId);
 	}
 
-	public void updateStepsDateRange(@NonNull final Set<WOProjectAndStepId> projectAndStepIds)
+	public void updateStepsDateRange(@NonNull final Set<WOProjectStepId> projectStepIds)
 	{
-		if (projectAndStepIds.isEmpty())
+		if (projectStepIds.isEmpty())
 		{
 			return;
 		}
 
-		final ImmutableSet<ProjectId> projectIds = projectAndStepIds.stream().map(WOProjectAndStepId::getProjectId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<ProjectId> projectIds = projectStepIds.stream().map(WOProjectStepId::getProjectId).collect(ImmutableSet.toImmutableSet());
 		final WOProjectResourcesCollection resourcesByProjectId = woProjectResourceRepository.getByProjectIds(projectIds);
 
 		final HashMap<WOProjectStepId, CalendarDateRange> stepDateRanges = new HashMap<>();
-		for (final WOProjectAndStepId projectAndStepId : projectAndStepIds)
+		for (final WOProjectStepId projectStepId : projectStepIds)
 		{
 			final ImmutableList<CalendarDateRange> resourceDateRanges = resourcesByProjectId
-					.getByProjectId(projectAndStepId.getProjectId())
-					.streamByStepId(projectAndStepId.getStepId())
+					.getByProjectId(projectStepId.getProjectId())
+					.streamByStepId(projectStepId)
 					.map(WOProjectResource::getDateRange)
 					.distinct()
 					.collect(ImmutableList.toImmutableList());
@@ -105,7 +105,7 @@ public class WOProjectService
 			if (!resourceDateRanges.isEmpty())
 			{
 				final CalendarDateRange stepDateRange = CalendarDateRange.span(resourceDateRanges);
-				stepDateRanges.put(projectAndStepId.getStepId(), stepDateRange);
+				stepDateRanges.put(projectStepId, stepDateRange);
 			}
 		}
 

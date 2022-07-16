@@ -104,11 +104,10 @@ public class WOProjectResourceRepository
 	public static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)
 	{
 		final TemporalUnit durationUnit = WFDurationUnit.ofCode(record.getDurationUnit()).getTemporalUnit();
-		final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
 
 		return WOProjectResource.builder()
 				.id(extractWOProjectResourceId(record))
-				.stepId(WOProjectStepId.ofRepoId(projectId, record.getC_Project_WO_Step_ID()))
+				.stepId(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getAssignDateFrom().toInstant())

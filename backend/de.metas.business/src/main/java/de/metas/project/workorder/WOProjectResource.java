@@ -37,7 +37,6 @@ import java.time.temporal.TemporalUnit;
 import java.util.List;
 
 @Value
-@Builder(toBuilder = true)
 public class WOProjectResource
 {
 	@NonNull WOProjectResourceId id;
@@ -51,6 +50,30 @@ public class WOProjectResource
 	@NonNull Duration duration;
 
 	@Nullable String description;
+
+	@Builder(toBuilder = true)
+	private WOProjectResource(
+			@NonNull final WOProjectResourceId id,
+			@NonNull final WOProjectStepId stepId,
+			@NonNull final ResourceId resourceId,
+			@NonNull final CalendarDateRange dateRange,
+			@NonNull final TemporalUnit durationUnit,
+			@NonNull final Duration duration,
+			@Nullable final String description)
+	{
+		if (!ProjectId.equals(id.getProjectId(), stepId.getProjectId()))
+		{
+			throw new AdempiereException("Project step and resource ID shall share the same projectId: " + stepId + ", " + id);
+		}
+
+		this.id = id;
+		this.stepId = stepId;
+		this.resourceId = resourceId;
+		this.dateRange = dateRange;
+		this.durationUnit = durationUnit;
+		this.duration = duration;
+		this.description = description;
+	}
 
 	public static CalendarDateRange computeDateRangeToEncloseAll(@NonNull List<WOProjectResource> projectResources)
 	{

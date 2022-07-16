@@ -3,9 +3,9 @@ package de.metas.project.workorder.interceptor;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.MultiCalendarService;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectAndStepId;
 import de.metas.project.workorder.WOProjectResourceRepository;
 import de.metas.project.workorder.WOProjectService;
+import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.util.Services;
@@ -52,7 +52,7 @@ public class C_Project_WO_Resource
 	public void afterSave(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
 		notifyEntryChanged(record, changeType);
-		updateStepDatesAfterCommit(WOProjectAndStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
+		updateStepDatesAfterCommit(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
 		checkConflictsAfterCommitIfUserChange(record);
 	}
 
@@ -60,11 +60,11 @@ public class C_Project_WO_Resource
 	public void afterDelete(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
 		notifyEntryChanged(record, changeType);
-		updateStepDatesAfterCommit(WOProjectAndStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
+		updateStepDatesAfterCommit(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
 		checkConflictsAfterCommitIfUserChange(record);
 	}
 
-	private void updateStepDatesAfterCommit(@NonNull final WOProjectAndStepId stepId)
+	private void updateStepDatesAfterCommit(@NonNull final WOProjectStepId stepId)
 	{
 		trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail)
 				.getPropertyAndProcessAfterCommit(
