@@ -103,6 +103,8 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob) {return pickingJobService.complete(pickingJob);}
 
+	public PickingJob requestReview(@NonNull final PickingJob pickingJob) {return pickingJobService.requestReview(pickingJob);}
+
 	public IADReferenceDAO.ADRefList getQtyRejectedReasons() {return pickingJobService.getQtyRejectedReasons();}
 
 }

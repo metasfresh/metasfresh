@@ -8,6 +8,7 @@ import lombok.Value;
 
 import java.time.ZonedDateTime;
 
+/** Non-changable picking job header */
 @Value
 @Builder
 public class PickingJobHeader
@@ -18,4 +19,5 @@ public class PickingJobHeader
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId lockedBy;
+	boolean isPickingReviewRequired;
 }

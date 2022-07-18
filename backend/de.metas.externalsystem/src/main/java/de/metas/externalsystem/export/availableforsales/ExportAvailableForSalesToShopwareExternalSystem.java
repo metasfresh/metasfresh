@@ -162,7 +162,7 @@ public class ExportAvailableForSalesToShopwareExternalSystem
 		final String orgCode = orgDAO.getById(productExternalRef.getOrgId()).getValue();
 
 		final ExternalSystemType parentType = ExternalSystemType.ofCode(externalSystemConfigRepo.getParentTypeById(externalSystemParentConfigId));
-	
+
 		final IExternalSystemChildConfig externalSystemChildConfig = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, parentType)
 				.orElseThrow(() -> new AdempiereException("Child config not found for ExternalSystemType and ParentConfigId!")
 						.appendParametersToMessage()
@@ -177,7 +177,7 @@ public class ExportAvailableForSalesToShopwareExternalSystem
 		}
 
 		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(externalSystemChildConfig.getId());
-		
+
 		return Optional.of(JsonExternalSystemRequest.builder()
 								   .externalSystemName(JsonExternalSystemName.of(getExternalSystemType().getName()))
 								   .externalSystemConfigId(JsonMetasfreshId.of(ExternalSystemParentConfigId.toRepoId(externalSystemParentConfigId)))
@@ -185,6 +185,7 @@ public class ExportAvailableForSalesToShopwareExternalSystem
 								   .orgCode(orgCode)
 								   .command(getExternalCommand())
 								   .parameters(buildParameters(productExternalRef, externalSystemChildConfig.getId()))
+								   .writeAuditEndpoint(parentConfig.getAuditEndpointIfEnabled())
 								   .traceId(externalSystemConfigService.getTraceId())
 								   .writeAuditEndpoint(parentConfig.getAuditEndpointIfEnabled())
 								   .build());
