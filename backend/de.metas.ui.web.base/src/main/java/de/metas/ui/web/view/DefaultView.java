@@ -43,7 +43,7 @@ import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
-import org.adempiere.util.lang.SynchronizedMutable.OldAndNewValues;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;

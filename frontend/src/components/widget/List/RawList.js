@@ -377,7 +377,7 @@ export class RawList extends PureComponent {
         ]}
         renderTarget={(ref) => {
           return (
-            <div ref={ref}>
+            <div ref={ref} className={this.props.className}>
               <div
                 ref={(ref) => (this.dropdown = ref)}
                 className={classnames('input-dropdown-container', {
@@ -536,6 +536,7 @@ export class RawList extends PureComponent {
  * @prop {func} onCloseDropdown
  */
 RawList.propTypes = {
+  className: PropTypes.string,
   filter: PropTypes.object,
   readonly: PropTypes.bool,
   clearable: PropTypes.bool,

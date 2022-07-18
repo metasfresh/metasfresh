@@ -59,6 +59,7 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.util.DB;
+import org.compiere.util.DB.ResultSetRowLoader;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -622,13 +623,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				Aggregate.SUM,
 				ImmutableList.of(currencyIdColumnName),
 				rs -> {
-					final BigDecimal value = CoalesceUtil.coalesce(rs.getBigDecimal(1), BigDecimal.ZERO);
+					final BigDecimal value = CoalesceUtil.coalesceNotNull(rs.getBigDecimal(1), BigDecimal.ZERO);
 					final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(currencyIdColumnName));
 					return Money.of(value, currencyId);
 				});
 	}
 
-	public <AT> List<AT> aggregateList(
+	public <AT> ImmutableList<AT> aggregateList(
 			@NonNull String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@NonNull final Class<AT> returnType)
@@ -639,17 +640,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				rs -> DB.retrieveValueOrDefault(rs, 1, returnType));
 	}
 
-	@FunctionalInterface
-	private interface ValueFetcher<T>
-	{
-		T retrieveValue(ResultSet rs) throws SQLException;
-	}
-
-	public <AT> List<AT> aggregateList(
+	public <AT> ImmutableList<AT> aggregateList(
 			@NonNull String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@Nullable final List<String> groupBys,
-			@NonNull final ValueFetcher<AT> valueFetcher)
+			@NonNull final ResultSetRowLoader<AT> valueFetcher)
 	{
 		// NOTE: it's OK to have the sqlFunction null. Methods like first(columnName, valueClass) are relying on this.
 		// if (Check.isEmpty(aggregateType.sqlFunction, true)) throw new DBException("No Aggregate Function defined");
@@ -679,8 +674,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
-		final List<AT> result = new ArrayList<>();
-
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
 		if (Check.isEmpty(aggregateType.getSqlFunction(), true))
 		{
@@ -698,10 +691,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String groupBysClause;
 		if (groupBys != null && !groupBys.isEmpty())
 		{
-			groupBysClause = groupBys != null && !groupBys.isEmpty()
-					? Joiner.on(", ").join(groupBys)
-					: null;
-
+			groupBysClause = Joiner.on(", ").join(groupBys);
 			sqlSelect.append("\n, ").append(groupBysClause);
 		}
 		else
@@ -717,15 +707,19 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			pstmt = DB.prepareStatement(sql, this.trxName);
 			rs = createResultSet(pstmt);
+
+			final ImmutableList.Builder<AT> result = ImmutableList.builder();
 			while (rs.next())
 			{
-				final AT value = valueFetcher.retrieveValue(rs);
+				final AT value = valueFetcher.retrieveRowOrNull(rs);
 				if (value == null)
 				{
 					continue; // Skip null values
 				}
 				result.add(value);
 			}
+
+			return result.build();
 		}
 		catch (final SQLException e)
 		{
@@ -734,15 +728,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
-		//
-		return result;
 	}
 
 	@Override
-	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	public final <AT> ImmutableList<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
 		return aggregateList(columnName, Aggregate.DISTINCT, valueType);
 	}

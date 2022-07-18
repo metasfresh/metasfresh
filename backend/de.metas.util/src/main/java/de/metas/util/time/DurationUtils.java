@@ -140,4 +140,14 @@ public class DurationUtils
 		throw Check.newException("No smaller temporal unit defined for {}", unit);
 	}
 
+	public static boolean isCompleteDays(@NonNull final Duration duration)
+	{
+		if (duration.isZero())
+		{
+			return true;
+		}
+
+		final Duration daysAsDuration = Duration.ofDays(duration.toDays());
+		return daysAsDuration.equals(duration);
+	}
 }

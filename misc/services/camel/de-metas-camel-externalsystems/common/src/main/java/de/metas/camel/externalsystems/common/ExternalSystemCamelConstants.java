@@ -130,4 +130,9 @@ public class ExternalSystemCamelConstants
 	public static final String MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID = "To-MF_retrieve_Material_ProductInfo_V2-Route";
 	public static final String MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID = "To-MF_Search_ProductPrices_V2-Route";
 
+	public static final String MF_UPSERT_RPROJECT_V2_ROUTE_ID = "To-MF_Projects-Route";	
+	public static final String MF_UPSERT_PROJECT_V2_CAMEL_URI = "metasfresh.upsert-project-v2.camel.uri";
+
+	public static final String MF_UPSERT_WORK_ORDER_PROJECT_V2_ROUTE_ID = "To-MF_WorkOrderProjects-Route";
+	public static final String MF_UPSERT_WORK_ORDER_PROJECT_V2_CAMEL_URI = "metasfresh.upsert-workorder-project-v2.camel.uri";
 }

@@ -8,7 +8,7 @@ import Board from '../containers/Board.js';
 import Dashboard from '../containers/Dashboard.js';
 import InboxAll from '../containers/InboxAll.js';
 import NavigationTree from '../containers/NavigationTree.js';
-import CalendarPage from '../containers/calendar/CalendarPage';
+import CalendarPage from '../pages/calendar/CalendarPage';
 
 /**
  * @file Functional component.

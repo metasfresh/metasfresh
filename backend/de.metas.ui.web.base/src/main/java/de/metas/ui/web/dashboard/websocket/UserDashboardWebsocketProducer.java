@@ -56,7 +56,7 @@ import java.util.List;
 import java.util.Map;
 
 @ToString(onlyExplicitlyIncluded = true)
-class UserDashboardWebsocketProducer implements WebSocketProducer
+class UserDashboardWebsocketProducer implements WebSocketProducer, WebSocketProducer.ProduceEventsOnPollSupport
 {
 	private static final Logger logger = LogManager.getLogger(UserDashboardWebsocketProducer.class);
 	private final UserDashboardDataService dashboardDataService;
