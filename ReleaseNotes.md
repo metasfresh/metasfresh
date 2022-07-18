@@ -57,6 +57,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13286] https://github.com/metasfresh/metasfresh/issues/13286 Display document validation message
   * [#13257] https://github.com/metasfresh/metasfresh/pull/13257 available for sales stock fix
   * [#13215] https://github.com/metasfresh/metasfresh/issues/13215 Description and documentnote are not copied from doctype into shipment
   * [#13218] https://github.com/metasfresh/metasfresh/pull/13218 Show Adr attribute details
