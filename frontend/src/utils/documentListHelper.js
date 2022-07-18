@@ -532,3 +532,13 @@ export function renderHeaderProperties(groups) {
     return acc;
   }, []);
 }
+
+export function getInvalidDataItem(data) {
+  return data.find(({ validStatus = {} }) => {
+    const { valid = null } = validStatus;
+
+    if (valid !== null && !valid) {
+      return validStatus;
+    }
+  }, null);
+}
