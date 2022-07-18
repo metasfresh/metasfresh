@@ -41,16 +41,12 @@ public class C_Project_WO_Resource
 		this.multiCalendarService = multiCalendarService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(@NonNull final I_C_Project_WO_Resource record)
-	{
-		// validate
-		WOProjectResourceRepository.fromRecord(record);
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
+		// validate
+		WOProjectResourceRepository.fromRecord(record);
+
 		notifyEntryChanged(record, changeType);
 		updateStepDatesAfterCommit(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
 		checkConflictsAfterCommitIfUserChange(record);
