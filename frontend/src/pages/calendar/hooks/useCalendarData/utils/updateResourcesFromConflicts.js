@@ -5,66 +5,77 @@ export const updateResourcesFromConflicts = ({
   conflicts,
   entries,
 }) => {
+  console.groupCollapsed('updateResourcesFromConflicts', {
+    resources,
+    conflicts,
+    entries,
+  });
+
   if (!resources) {
+    console.log('=> empty resources, returning empty');
+    console.groupEnd();
+
     return resources;
   }
 
-  const resourceIdsWithConflicts = extractResourceIdsWithConflicts({
+  const conflictCountsByResourceId = computeConflictCountsByResourceId({
     entries,
     conflicts,
   });
+  console.log(
+    'computeConflictCountsByResourceId',
+    computeConflictCountsByResourceId
+  );
 
   const changedResources = [];
   let hasChanges = false;
   resources.forEach((resource) => {
-    const newConflictFlag = resourceIdsWithConflicts.includes(resource.id);
-    const changedResource = updateResource(resource, newConflictFlag);
+    const newConflictsCount = conflictCountsByResourceId[resource.id] ?? 0;
+    const changedResource = updateResource(resource, newConflictsCount);
     changedResources.push(changedResource);
     if (changedResource !== resource) {
       hasChanges = true;
     }
   });
 
-  if (!hasChanges) {
-    return resources;
-  } else {
-    return changedResources;
-  }
+  console.log('=> returning', { changedResources, hasChanges });
+  console.groupEnd();
+
+  return hasChanges ? changedResources : resources;
 };
 
-const extractResourceIdsWithConflicts = ({ entries, conflicts }) => {
+const computeConflictCountsByResourceId = ({ entries, conflicts }) => {
   if (!conflicts || !entries) {
-    return [];
+    return {};
   }
 
   const entriesById = indexEntriesById(entries);
 
-  const resourceIdsWithConflicts = {};
+  const conflictCountsByResourceId = {};
   conflicts
     .filter((conflict) => conflict.status === 'CONFLICT')
     .forEach((conflict) => {
       const resourceId1 = entriesById[conflict.entryId1]?.resourceId;
+
       if (resourceId1) {
-        resourceIdsWithConflicts[resourceId1] = true;
+        const count = conflictCountsByResourceId[resourceId1] ?? 0;
+        conflictCountsByResourceId[resourceId1] = count + 1;
       }
 
       const resourceId2 = entriesById[conflict.entryId2]?.resourceId;
-      if (resourceId2) {
-        resourceIdsWithConflicts[resourceId2] = true;
+      if (resourceId2 && resourceId2 !== resourceId1) {
+        const count = conflictCountsByResourceId[resourceId2] ?? 0;
+        conflictCountsByResourceId[resourceId2] = count + 1;
       }
     });
 
-  return Object.keys(resourceIdsWithConflicts);
+  return conflictCountsByResourceId;
 };
 
-const updateResource = (resource, newConflictFlag) => {
-  const oldConflictFlag = !!resource.conflict;
-  if (oldConflictFlag !== newConflictFlag) {
-    return {
-      ...resource,
-      conflict: newConflictFlag,
-    };
-  } else {
-    return resource;
-  }
+const updateResource = (resource, conflictsCount) => {
+  console.log('updateResource', { resource, conflictsCount });
+  const oldConflictsCount = resource.conflictsCount;
+  return oldConflictsCount !== conflictsCount
+    ? { ...resource, conflictsCount }
+    : resource;
 };

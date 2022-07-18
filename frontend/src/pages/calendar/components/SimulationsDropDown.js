@@ -2,8 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import SimpleList from '../../../components/widget/List/SimpleList';
 
-const OPTION_None = { key: 'NONE', caption: 'Actual data' }; // TODO trl
-const OPTION_NEW = { key: 'NEW', caption: 'New simulation' }; // TODO trl
+const KEY_ACTUAL_DATA = 'ACTUAL';
+const OPTION_ACTUAL_DATA = { key: KEY_ACTUAL_DATA, caption: 'Actual data' }; // TODO trl
+
+const KEY_NEW_SIMULATION = 'NEW';
+const OPTION_NEW_SIMULATION = {
+  key: KEY_NEW_SIMULATION,
+  caption: 'New simulation', // TODO trl
+};
 
 function computeSelectedSimulation(simulations, selectedSimulationId) {
   if (selectedSimulationId == null) {
@@ -24,14 +30,21 @@ function computeSelectedSimulation(simulations, selectedSimulationId) {
   };
 }
 
-const toKeyCaptionOrNone = (simulation) => {
-  return simulation
-    ? {
-        key: simulation.simulationId,
-        caption: simulation.name,
-        extendedProps: { simulation },
-      }
-    : OPTION_None;
+const toKeyCaption = (simulation) => {
+  if (simulation) {
+    let caption = simulation.name;
+    if (simulation.processed) {
+      caption = 'Processed: ' + caption; // TODO trl
+    }
+
+    return {
+      key: simulation.simulationId,
+      caption: caption,
+      extendedProps: { simulation },
+    };
+  } else {
+    return null;
+  }
 };
 
 const SimulationsDropDown = ({
@@ -47,9 +60,9 @@ const SimulationsDropDown = ({
   );
 
   const handleOnSelect = (keyCaptionEntry) => {
-    if (!keyCaptionEntry || keyCaptionEntry.key === 'NONE') {
+    if (!keyCaptionEntry || keyCaptionEntry.key === KEY_ACTUAL_DATA) {
       onSelect(null);
-    } else if (keyCaptionEntry.key === 'NEW') {
+    } else if (keyCaptionEntry.key === KEY_NEW_SIMULATION) {
       onNew();
     } else {
       onSelect(keyCaptionEntry.extendedProps.simulation);
@@ -59,8 +72,12 @@ const SimulationsDropDown = ({
   return (
     <SimpleList
       className="calendar-simulations-dropdown"
-      list={[OPTION_NEW, OPTION_None, ...simulations.map(toKeyCaptionOrNone)]}
-      selected={toKeyCaptionOrNone(selectedSimulation)}
+      list={[
+        OPTION_NEW_SIMULATION,
+        OPTION_ACTUAL_DATA,
+        ...simulations.map(toKeyCaption),
+      ]}
+      selected={toKeyCaption(selectedSimulation) || OPTION_ACTUAL_DATA}
       onSelect={handleOnSelect}
       onOpenDropdown={onOpenDropdown}
     />

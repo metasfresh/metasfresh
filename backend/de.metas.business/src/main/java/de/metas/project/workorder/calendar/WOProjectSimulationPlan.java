@@ -1,6 +1,7 @@
 package de.metas.project.workorder.calendar;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectResourceId;
@@ -43,6 +44,8 @@ public final class WOProjectSimulationPlan
 		this.stepsById = stepsById != null ? ImmutableMap.copyOf(stepsById) : ImmutableMap.of();
 		this.projectResourcesById = projectResourcesById != null ? ImmutableMap.copyOf(projectResourcesById) : ImmutableMap.of();
 	}
+
+	public ImmutableSet<WOProjectResourceId> getProjectResourceIds() {return projectResourcesById.keySet();}
 
 	public Collection<WOProjectStepSimulation> getSteps()
 	{

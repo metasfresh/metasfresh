@@ -107,7 +107,7 @@ public class C_Project_WO_Resource
 				.getPropertyAndProcessAfterCommit(
 						"C_Project_WO_Resource.checkConflicts",
 						HashSet::new,
-						woProjectConflictService::checkConflicts
+						woProjectConflictService::checkAllConflicts
 				)
 				.add(getResourceId(record));
 

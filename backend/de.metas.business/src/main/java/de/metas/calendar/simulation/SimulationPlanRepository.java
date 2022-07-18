@@ -7,6 +7,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_SimulationPlan;
 import org.springframework.stereotype.Repository;
@@ -57,12 +58,13 @@ public class SimulationPlanRepository
 				.build();
 	}
 
-	public void changeDocStatus(@NonNull final SimulationPlanId simulationId, @NonNull final SimulationPlanDocStatus docStatus)
+	public SimulationPlanRef changeDocStatus(@NonNull final SimulationPlanId simulationId, @NonNull final SimulationPlanDocStatus docStatus)
 	{
 		final I_C_SimulationPlan record = retrieveRecordById(simulationId);
 		record.setDocStatus(docStatus.getCode());
 		record.setProcessed(docStatus.isProcessed());
 		InterfaceWrapperHelper.saveRecord(record);
+		return fromRecord(record);
 	}
 
 	public SimulationPlanRef getById(@NonNull final SimulationPlanId id)
@@ -78,14 +80,13 @@ public class SimulationPlanRepository
 	public Collection<SimulationPlanRef> getAllDrafts(@Nullable final SimulationPlanId alwaysIncludeId)
 	{
 		ImmutableSet<SimulationPlanId> simulationIds = getDraftSimulationIds();
-		if(alwaysIncludeId != null && !simulationIds.contains(alwaysIncludeId))
+		if (alwaysIncludeId != null && !simulationIds.contains(alwaysIncludeId))
 		{
 			simulationIds = ImmutableSet.<SimulationPlanId>builder()
 					.addAll(simulationIds)
 					.add(alwaysIncludeId)
 					.build();
 		}
-
 
 		return cacheById.getAllOrLoad(simulationIds, this::retrieveByIds);
 	}
@@ -97,7 +98,12 @@ public class SimulationPlanRepository
 
 	private I_C_SimulationPlan retrieveRecordById(final @NonNull SimulationPlanId id)
 	{
-		return InterfaceWrapperHelper.load(id, I_C_SimulationPlan.class);
+		final I_C_SimulationPlan record = InterfaceWrapperHelper.load(id, I_C_SimulationPlan.class);
+		if (record == null)
+		{
+			throw new AdempiereException("No simulation plan found for " + id);
+		}
+		return record;
 	}
 
 	private ImmutableMap<SimulationPlanId, SimulationPlanRef> retrieveByIds(@NonNull final Set<SimulationPlanId> ids)

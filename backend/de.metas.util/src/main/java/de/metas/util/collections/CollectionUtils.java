@@ -345,6 +345,18 @@ public final class CollectionUtils
 		return result.build();
 	}
 
+	public static <T> ImmutableSet<T> removeElement(
+			@NonNull final ImmutableSet<T> set,
+			@Nullable final T elementToRemove)
+	{
+		if(elementToRemove == null || !set.contains(elementToRemove))
+		{
+			return set;
+		}
+
+		return set.stream().filter(element -> !element.equals(elementToRemove)).collect(ImmutableSet.toImmutableSet());
+	}
+
 	public static <K, V> ImmutableMap<K, V> mapValue(
 			@NonNull final ImmutableMap<K, V> map,
 			@NonNull final K key,

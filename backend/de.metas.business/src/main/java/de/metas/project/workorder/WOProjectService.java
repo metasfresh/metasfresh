@@ -25,6 +25,7 @@ package de.metas.project.workorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -44,7 +45,7 @@ public class WOProjectService
 
 	public WOProjectService(
 			final WOProjectRepository woProjectRepository,
-			final WOProjectResourceRepository woProjectResourceRepository, 
+			final WOProjectResourceRepository woProjectResourceRepository,
 			final WOProjectStepRepository woProjectStepRepository)
 	{
 		this.woProjectRepository = woProjectRepository;
@@ -70,6 +71,11 @@ public class WOProjectService
 	public WOProjectResources getResourcesByProjectId(@NonNull final ProjectId projectId)
 	{
 		return woProjectResourceRepository.getByProjectId(projectId);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByProjectResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
+	{
+		return woProjectResourceRepository.getResourceIdsByProjectResourceIds(projectResourceIds);
 	}
 
 	public Map<ProjectId, WOProjectSteps> getStepsByProjectIds(@NonNull final Set<ProjectId> projectIds)

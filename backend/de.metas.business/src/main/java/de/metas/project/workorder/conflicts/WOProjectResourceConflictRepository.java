@@ -11,6 +11,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_WO_Resource_Conflict;
 import org.slf4j.Logger;
@@ -197,10 +198,15 @@ public class WOProjectResourceConflictRepository
 		);
 	}
 
-	public void deleteBySimulationId(@NonNull final SimulationPlanId simulationId)
+	public void deactivateBySimulationId(@NonNull final SimulationPlanId simulationId)
 	{
 		queryBL.createQueryBuilder(I_C_Project_WO_Resource_Conflict.class)
 				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_SimulationPlan_ID, simulationId)
-				.delete();
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.update(record -> {
+					record.setIsActive(false);
+					return IQueryUpdater.MODEL_UPDATED;
+				});
 	}
 }

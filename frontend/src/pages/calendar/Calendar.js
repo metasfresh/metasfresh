@@ -18,7 +18,6 @@ import { normalizeDateTime } from './utils/calendarUtils';
 import SimulationsDropDown from './components/SimulationsDropDown';
 import { getCurrentActiveLanguage } from '../../utils/locale';
 import { useCalendarData } from './hooks/useCalendarData';
-import { useSimulations } from './hooks/useSimulations';
 import { useCalendarWebsocketEvents } from './hooks/useCalendarWebsocketEvents';
 
 import './calendar.scss';
@@ -29,54 +28,33 @@ const Calendar = ({
   simulationId: initialSelectedSimulationId,
   onParamsChanged,
 }) => {
-  const simulations = useSimulations(initialSelectedSimulationId);
-  const simulationId = simulations.getSelectedSimulationId();
-  const calendarData = useCalendarData();
+  const calendarData = useCalendarData({
+    simulationId: initialSelectedSimulationId,
+    fetchAvailableSimulationsFromAPI: api.fetchAvailableSimulations,
+    fetchEntriesFromAPI: api.fetchCalendarEntries,
+    fetchConflictsFromAPI: api.fetchConflicts,
+  });
+  const simulationId = calendarData.getSimulationId();
 
-  const loadAvailableSimulations = () => {
-    console.log(`Loading simulations, including ${simulationId}...`);
-    api
-      .fetchAvailableSimulations({ alwaysIncludeId: simulationId })
-      .then(simulations.setFromArray);
-  };
+  useEffect(() => {
+    onParamsChanged && onParamsChanged({ simulationId });
+  }, [simulationId]);
 
   useEffect(() => {
     console.log('Loading calendars...');
     api.fetchAvailableCalendars().then(calendarData.setCalendars);
   }, []);
 
-  useEffect(() => {
-    loadAvailableSimulations();
-  }, [simulationId]);
-
-  useEffect(() => {
-    console.log('Loading conflicts...');
-    api.fetchConflicts({ simulationId }).then(calendarData.setConflicts);
-  }, [simulationId]);
-
-  if (onParamsChanged) {
-    useEffect(() => {
-      onParamsChanged({ simulationId });
-    }, [simulationId]);
-  }
-
   useCalendarWebsocketEvents({
     simulationId,
     onWSEvents: calendarData.applyWSEvents,
   });
 
-  const fetchCalendarEntries = (
-    fetchInfo,
-    successCallback,
-    failureCallback
-  ) => {
-    calendarData.updateEntriesFromAPI({
+  const fetchCalendarEntries = (fetchInfo, successCallback) => {
+    calendarData.loadEntriesWithConflicts({
       startDate: normalizeDateTime(fetchInfo.startStr),
       endDate: normalizeDateTime(fetchInfo.endStr),
-      simulationId,
-      fetchFromAPI: api.fetchCalendarEntries,
       onFetchSuccess: successCallback,
-      onFetchError: failureCallback,
     });
   };
 
@@ -121,16 +99,16 @@ const Calendar = ({
         <div className="calendar-top-center" />
         <div className="calendar-top-right">
           <SimulationsDropDown
-            simulations={simulations.toArray()}
+            simulations={calendarData.getSimulationsArray()}
             selectedSimulationId={simulationId}
-            onOpenDropdown={() => loadAvailableSimulations()}
+            onOpenDropdown={() => calendarData.loadSimulationsFromAPI()}
             onSelect={(simulation) => {
-              simulations.setSelectedSimulationId(simulation?.simulationId);
+              calendarData.setSimulationId(simulation?.simulationId);
             }}
             onNew={() => {
               api
                 .createSimulation({ copyFromSimulationId: simulationId })
-                .then(simulations.addSimulationAndSelect);
+                .then(calendarData.addSimulationAndSelect);
             }}
           />
         </div>
@@ -168,16 +146,11 @@ const Calendar = ({
           return (
             <CalendarResourceLabel
               title={params.resource.title}
-              conflict={!!params.resource.extendedProps.conflict}
+              conflictsCount={params.resource.extendedProps.conflictsCount}
             />
           );
         }}
-        eventSources={[
-          {
-            events: fetchCalendarEntries,
-          },
-        ]}
-        //events={fetchCalendarEntries}
+        eventSources={[{ events: fetchCalendarEntries }]}
         //dateClick={handleDateClick}
         eventClick={handleEventClick}
         eventClassNames={(params) => {

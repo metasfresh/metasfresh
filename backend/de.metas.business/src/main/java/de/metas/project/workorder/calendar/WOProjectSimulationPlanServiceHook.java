@@ -20,10 +20,17 @@ public class WOProjectSimulationPlanServiceHook implements SimulationPlanService
 			final @NonNull SimulationPlanRef simulationRef,
 			final @Nullable SimulationPlanId copyFromSimulationPlanId)
 	{
+		final WOProjectSimulationPlan simulationPlan;
 		if (copyFromSimulationPlanId != null)
 		{
-			woProjectSimulationService.copySimulationDataTo(copyFromSimulationPlanId, simulationRef.getId());
+			simulationPlan = woProjectSimulationService.copySimulationDataTo(copyFromSimulationPlanId, simulationRef.getId());
 		}
+		else
+		{
+			simulationPlan = woProjectSimulationService.getSimulationPlanById(simulationRef.getId());
+		}
+
+		woProjectSimulationService.checkSimulationConflicts(simulationPlan);
 	}
 
 	@Override

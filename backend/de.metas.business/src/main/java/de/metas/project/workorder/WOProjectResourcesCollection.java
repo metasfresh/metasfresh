@@ -1,6 +1,8 @@
 package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
@@ -51,5 +53,10 @@ public class WOProjectResourcesCollection
 	public Stream<WOProjectResource> streamProjectResources()
 	{
 		return map.values().stream().flatMap(WOProjectResources::stream);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIds()
+	{
+		return streamProjectResources().map(WOProjectResource::getResourceId).collect(ImmutableSet.toImmutableSet());
 	}
 }

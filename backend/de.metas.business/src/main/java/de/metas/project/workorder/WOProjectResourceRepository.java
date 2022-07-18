@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
@@ -72,6 +73,21 @@ public class WOProjectResourceRepository
 						.resources(byProjectId.get(projectId))
 						.build())
 				.collect(WOProjectResourcesCollection.collect());
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByProjectResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
+	{
+		if (projectResourceIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableList<Integer> resourceRepoIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
+				.create()
+				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, Integer.class);
+
+		return ResourceId.ofRepoIds(resourceRepoIds);
 	}
 
 	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)

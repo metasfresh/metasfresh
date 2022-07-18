@@ -78,7 +78,7 @@ public class WOProjectSimulationRepository
 		return cacheById.getAllOrLoad(matchingSimulationIds, this::retrieveSimulationPlansByIds);
 	}
 
-	private void changeSimulationPlanById(
+	private WOProjectSimulationPlan changeSimulationPlanById(
 			@NonNull SimulationPlanId simulationPlanId,
 			@NonNull UnaryOperator<WOProjectSimulationPlan> mapper)
 	{
@@ -90,6 +90,8 @@ public class WOProjectSimulationRepository
 		}
 
 		savePlan(changedSimulationPlan);
+
+		return changedSimulationPlan;
 	}
 
 	private Map<SimulationPlanId, WOProjectSimulationPlan> retrieveSimulationPlansByIds(@NonNull Set<SimulationPlanId> simulationPlanIds)
@@ -262,12 +264,12 @@ public class WOProjectSimulationRepository
 		//cacheById.remove(plan.getSimulationPlanId());
 	}
 
-	public void copySimulationDataTo(
+	public WOProjectSimulationPlan copySimulationDataTo(
 			@NonNull final SimulationPlanId fromSimulationId,
 			@NonNull final SimulationPlanId toSimulationId)
 	{
 		final WOProjectSimulationPlan fromSimulationPlan = getById(fromSimulationId);
-		changeSimulationPlanById(
+		return changeSimulationPlanById(
 				toSimulationId,
 				toSimulation -> toSimulation.mergeFrom(fromSimulationPlan));
 	}

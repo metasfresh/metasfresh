@@ -1,6 +1,5 @@
 package de.metas.calendar.simulation;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -28,6 +27,7 @@ public class SimulationPlanService
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final SimulationPlanRepository simulationPlanRepository;
 	private final CompositeSimulationPlanServiceHook hooks;
+	private final SimulationPlanChangesDispatcher changesDispatcher = new SimulationPlanChangesDispatcher();
 
 	public SimulationPlanService(
 			final SimulationPlanRepository simulationPlanRepository,
@@ -37,6 +37,16 @@ public class SimulationPlanService
 
 		this.hooks = CompositeSimulationPlanServiceHook.of(hooks);
 		logger.info("Hooks: {}", this.hooks);
+	}
+
+	public void subscribe(@NonNull final SimulationPlanId simulationId, @NonNull final SimulationPlanChangesListener listener)
+	{
+		changesDispatcher.subscribe(simulationId, listener);
+	}
+
+	public void unsubscribe(@NonNull final SimulationPlanId simulationId, @NonNull final SimulationPlanChangesListener listener)
+	{
+		changesDispatcher.unsubscribe(simulationId, listener);
 	}
 
 	public SimulationPlanRef createNewSimulation(
@@ -100,11 +110,6 @@ public class SimulationPlanService
 		return simulationPlanRepository.getAllDrafts(alwaysIncludeId);
 	}
 
-	public ImmutableSet<SimulationPlanId> getDraftSimulationIds()
-	{
-		return simulationPlanRepository.getDraftSimulationIds();
-	}
-
 	public void complete(@NonNull final SimulationPlanId simulationPlanId)
 	{
 		trxManager.runInThreadInheritedTrx(() -> completeInTrx(simulationPlanId));
@@ -112,7 +117,7 @@ public class SimulationPlanService
 
 	private void completeInTrx(@NonNull final SimulationPlanId simulationPlanId)
 	{
-		final SimulationPlanRef simulationRef = simulationPlanRepository.getById(simulationPlanId);
+		SimulationPlanRef simulationRef = simulationPlanRepository.getById(simulationPlanId);
 		if (!simulationRef.getDocStatus().isDrafted())
 		{
 			throw new AdempiereException("Only Drafted simulations can be completed");
@@ -120,6 +125,8 @@ public class SimulationPlanService
 
 		hooks.onComplete(simulationRef);
 
-		simulationPlanRepository.changeDocStatus(simulationPlanId, SimulationPlanDocStatus.Completed);
+		simulationRef = simulationPlanRepository.changeDocStatus(simulationPlanId, SimulationPlanDocStatus.Completed);
+
+		changesDispatcher.notifyOnAfterComplete(simulationRef);
 	}
 }
