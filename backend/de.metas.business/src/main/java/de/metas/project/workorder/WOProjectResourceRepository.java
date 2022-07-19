@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.time.DurationUtils;
@@ -88,6 +89,30 @@ public class WOProjectResourceRepository
 				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, Integer.class);
 
 		return ResourceId.ofRepoIds(resourceRepoIds);
+	}
+
+	public InSetPredicate<ProjectId> getProjectIdsPredicateByResourceIds(@NonNull final InSetPredicate<ResourceId> resourceIds)
+	{
+		if (resourceIds.isNone())
+		{
+			return InSetPredicate.none();
+		}
+		else if (resourceIds.isAny())
+		{
+			return InSetPredicate.any();
+		}
+		else
+		{
+			final ImmutableList<Integer> projectRepoIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
+					.create()
+					.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, Integer.class);
+
+			final ImmutableSet<ProjectId> projectIds = ProjectId.ofRepoIds(projectRepoIds);
+			return InSetPredicate.only(projectIds);
+		}
+
 	}
 
 	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)

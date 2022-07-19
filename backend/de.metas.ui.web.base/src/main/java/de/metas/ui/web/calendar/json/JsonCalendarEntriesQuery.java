@@ -22,9 +22,12 @@
 
 package de.metas.ui.web.calendar.json;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.CalendarGlobalId;
+import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -41,4 +44,6 @@ public class JsonCalendarEntriesQuery
 	@Nullable @Singular Set<CalendarGlobalId> calendarIds;
 	@Nullable JsonDateTime startDate;
 	@Nullable JsonDateTime endDate;
+
+	@Nullable Set<CalendarResourceId> onlyResourceIds;
 }

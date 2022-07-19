@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Calendar from './Calendar';
 import Header from '../../components/header/Header';
@@ -16,12 +16,18 @@ const updateURI = (location, { simulationId }) => {
 };
 
 const CalendarPage = ({ location }) => {
+  const onlyResourceIds = useMemo(
+    () => [location.query.resourceId],
+    [location.query.resourceId]
+  );
+
   return (
     <div>
       <Header />
       <div className="header-sticky-distance js-unselect panel-vertical-scroll dashboard">
         <Calendar
           simulationId={location.query.simulationId}
+          onlyResourceIds={onlyResourceIds}
           onParamsChanged={({ simulationId }) =>
             updateURI(location, { simulationId })
           }

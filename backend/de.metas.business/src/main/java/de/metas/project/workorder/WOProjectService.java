@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -58,9 +59,10 @@ public class WOProjectService
 		return woProjectRepository.getById(projectId);
 	}
 
-	public List<WOProject> getAllActiveProjects()
+	public List<WOProject> queryActiveProjects(@NonNull final InSetPredicate<ResourceId> resourceIds)
 	{
-		return woProjectRepository.getAllActiveProjects();
+		final InSetPredicate<ProjectId> projectIds = woProjectResourceRepository.getProjectIdsPredicateByResourceIds(resourceIds);
+		return woProjectRepository.queryAllActiveProjects(projectIds);
 	}
 
 	public WOProjectResourcesCollection getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)

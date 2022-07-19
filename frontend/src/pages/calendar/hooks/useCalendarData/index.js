@@ -10,6 +10,7 @@ import { isEqualEntryQueries, newEntryQuery } from './utils/entryQuery';
 
 export const useCalendarData = ({
   simulationId: initialSimulationId,
+  onlyResourceIds,
   fetchAvailableSimulationsFromAPI,
   fetchEntriesFromAPI,
   fetchConflictsFromAPI,
@@ -29,7 +30,7 @@ export const useCalendarData = ({
   const [conflicts, setConflicts] = useState([]);
 
   useEffect(() => loadSimulationsFromAPI(), []);
-  useEffect(() => loadConflictsFromAPI(), [simulationId]);
+  useEffect(() => loadConflictsFromAPI(), [simulationId, onlyResourceIds]);
 
   useEffect(() => {
     setResources(
@@ -89,7 +90,7 @@ export const useCalendarData = ({
   };
 
   const setEntriesLoadingStart = ({ query }) => {
-    //console.log('setEntriesLoadingStart', { query });
+    //console.log('setEntriesLoadingStart', { query, prevQuery: entries.query });
     setEntries((prevState) => ({ ...prevState, loading: true, query }));
   };
 
@@ -169,6 +170,7 @@ export const useCalendarData = ({
     const query = newEntryQuery({
       calendarIds: extractCalendarIdsFromArray(calendars),
       simulationId,
+      onlyResourceIds,
       startDate,
       endDate,
     });
@@ -211,8 +213,8 @@ export const useCalendarData = ({
   };
 
   const loadConflictsFromAPI = () => {
-    console.log('Loading conflicts...', { simulationId });
-    fetchConflictsFromAPI({ simulationId }).then(setConflicts);
+    console.log('Loading conflicts...', { simulationId, onlyResourceIds });
+    fetchConflictsFromAPI({ simulationId, onlyResourceIds }).then(setConflicts);
   };
 
   const applyWSEvents = (wsEvents) => {

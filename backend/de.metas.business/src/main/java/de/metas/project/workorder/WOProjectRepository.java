@@ -25,6 +25,7 @@ package de.metas.project.workorder;
 import com.google.common.collect.ImmutableList;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -51,9 +52,15 @@ public class WOProjectRepository
 				.orElseThrow(() -> new AdempiereException("Not a Work Order project: " + record));
 	}
 
-	public List<WOProject> getAllActiveProjects()
+	public List<WOProject> queryAllActiveProjects(@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
+		if (projectIds.isNone())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryAllActiveProjects()
+				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectIds)
 				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
 				.stream()
 				.map(record -> fromRecord(record).orElse(null))

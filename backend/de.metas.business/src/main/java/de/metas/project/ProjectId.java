@@ -2,11 +2,14 @@ package de.metas.project;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Objects;
 
 /*
@@ -50,6 +53,15 @@ public class ProjectId implements RepoIdAware
 	public static ProjectId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ProjectId(repoId) : null;
+	}
+
+	public static ImmutableSet<ProjectId> ofRepoIds(@NonNull final Collection<Integer> repoIds)
+	{
+		if (repoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return repoIds.stream().map(ProjectId::ofRepoIdOrNull).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static int toRepoId(@Nullable final ProjectId id)

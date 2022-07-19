@@ -26,10 +26,12 @@ import CalendarResourceLabel from './components/CalendarResourceLabel';
 
 const Calendar = ({
   simulationId: initialSelectedSimulationId,
+  onlyResourceIds,
   onParamsChanged,
 }) => {
   const calendarData = useCalendarData({
     simulationId: initialSelectedSimulationId,
+    onlyResourceIds,
     fetchAvailableSimulationsFromAPI: api.fetchAvailableSimulations,
     fetchEntriesFromAPI: api.fetchCalendarEntries,
     fetchConflictsFromAPI: api.fetchConflicts,
@@ -207,6 +209,7 @@ const Calendar = ({
 
 Calendar.propTypes = {
   simulationId: PropTypes.string,
+  onlyResourceIds: PropTypes.array,
   onParamsChanged: PropTypes.func,
 };
 

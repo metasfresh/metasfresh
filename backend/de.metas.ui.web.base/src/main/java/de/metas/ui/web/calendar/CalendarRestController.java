@@ -29,6 +29,7 @@ import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarEntryUpdateRequest;
 import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarQuery;
+import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.MultiCalendarService;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
@@ -52,6 +53,7 @@ import de.metas.ui.web.calendar.json.JsonSimulationRef;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.user.UserId;
+import de.metas.util.InSetPredicate;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -67,6 +69,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Comparator;
+import java.util.Set;
 
 @Api
 @RestController
@@ -139,6 +142,11 @@ public class CalendarRestController
 			{
 				result.endDate(query.getEndDate().toInstant());
 			}
+
+			final Set<CalendarResourceId> onlyResourceIds = query.getOnlyResourceIds();
+			result.resourceIds(onlyResourceIds != null && !onlyResourceIds.isEmpty()
+					? InSetPredicate.only(onlyResourceIds)
+					: InSetPredicate.any());
 		}
 
 		return result.build();

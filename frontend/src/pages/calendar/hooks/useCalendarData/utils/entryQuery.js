@@ -1,10 +1,23 @@
+import { isSameMoment } from '../../../utils/calendarUtils';
+
 export const newEntryQuery = ({
-  calendarIds = [],
+  calendarIds = null,
   simulationId = null,
+  onlyResourceIds = null,
   startDate = null,
   endDate = null,
 }) => {
-  return { calendarIds, simulationId, startDate, endDate };
+  return {
+    calendarIds:
+      calendarIds != null && calendarIds.length > 0 ? calendarIds : null,
+    simulationId,
+    onlyResourceIds:
+      onlyResourceIds != null && onlyResourceIds.length > 0
+        ? onlyResourceIds
+        : null,
+    startDate,
+    endDate,
+  };
 };
 
 export const isEqualEntryQueries = (query1, query2) => {
@@ -15,12 +28,12 @@ export const isEqualEntryQueries = (query1, query2) => {
     return false;
   }
 
-  // { startDate, endDate, simulationId }
   return (
     isArraysEqual(query1.calendarIds, query2.calendarIds) &&
     query1.simulationId === query2.simulationId &&
-    query1.startDate === query2.startDate &&
-    query1.endDate === query2.endDate
+    isArraysEqual(query1.onlyResourceIds, query2.onlyResourceIds) &&
+    isSameMoment(query1.startDate, query2.startDate) &&
+    isSameMoment(query1.endDate, query2.endDate)
   );
 };
 
