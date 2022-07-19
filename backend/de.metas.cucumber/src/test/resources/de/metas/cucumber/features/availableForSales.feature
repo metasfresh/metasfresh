@@ -440,7 +440,7 @@ Feature: available for sales
 
     And after not more than 30s, RabbitMQ MF_TO_ExternalSystem queue has no messages for criteria:
       | Command               | OPT.parameters.JsonAvailableForSales.ProductIdentifier |
-      | Shopware6-exportStock | p_1                                                |
+      | Shopware6-exportStock | p_1                                                    |
 
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyOrdered |
@@ -452,7 +452,7 @@ Feature: available for sales
 
     Then after not more than 30s, RabbitMQ MF_TO_ExternalSystem queue has no messages for criteria:
       | Command               | OPT.parameters.JsonAvailableForSales.ProductIdentifier |
-      | Shopware6-exportStock | p_1                                                |
+      | Shopware6-exportStock | p_1                                                    |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |
@@ -561,6 +561,8 @@ Feature: available for sales
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type    | ExternalReference                 | OPT.ExternalSystem_Config_ID.Identifier | OPT.M_Product_ID.Identifier |
       | product_ref                       | Shopware6      | Product | stockProduct_reference_14072022_5 | config_1                                | p_1                         |
 
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
       | 11                        | 540008         | 2021-07-11   | 1111           |
@@ -647,6 +649,8 @@ Feature: available for sales
     And metasfresh contains S_ExternalReference:
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type    | ExternalReference                 | OPT.ExternalSystem_Config_ID.Identifier | OPT.M_Product_ID.Identifier |
       | product_ref                       | Shopware6      | Product | stockProduct_reference_15072022_1 | config_1                                | p_1                         |
+
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
@@ -753,6 +757,8 @@ Feature: available for sales
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type    | ExternalReference                 | OPT.ExternalSystem_Config_ID.Identifier | OPT.M_Product_ID.Identifier |
       | product_ref                       | Shopware6      | Product | stockProduct_reference_15072022_2 | config_1                                | p_1                         |
 
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
       | 11                        | 540008         | 2021-07-11   | 1111           |
@@ -858,6 +864,8 @@ Feature: available for sales
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type    | ExternalReference                 | OPT.ExternalSystem_Config_ID.Identifier | OPT.M_Product_ID.Identifier |
       | product_ref                       | Shopware6      | Product | stockProduct_reference_15072022_3 | config_1                                | p_1                         |
 
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate | OPT.DocumentNo |
       | 11                        | 540008         | 2021-07-11   | 1111           |
@@ -946,6 +954,8 @@ Feature: available for sales
     And metasfresh contains S_ExternalReference:
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type    | ExternalReference                 | OPT.ExternalSystem_Config_ID.Identifier | OPT.M_Product_ID.Identifier |
       | product_ref                       | Shopware6      | Product | stockProduct_reference_15072022_4 | config_1                                | p_1                         |
+
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |

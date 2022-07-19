@@ -63,7 +63,7 @@ public class HUStockService
 				.createQueryBuilder(I_MD_Stock_From_HUs_V.class)
 				.addNotEqualsFilter(I_MD_Stock_From_HUs_V.COLUMNNAME_QtyOnHandChange, ZERO)
 				.create()
-				.iterateAndStream()
+				.list()
 				.forEach(stockFromHUs -> {
 					final StockDataUpdateRequest dataUpdateRequest = createDataUpdatedRequest(
 							stockFromHUs,
