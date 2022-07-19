@@ -6,7 +6,7 @@ import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.conflicts.CalendarConflictChangesEvent;
 import de.metas.calendar.conflicts.CalendarEntryConflict;
 import de.metas.calendar.conflicts.CalendarEntryConflicts;
-import de.metas.project.workorder.WOProjectAndResourceId;
+import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -42,7 +42,7 @@ class WOProjectCalendarConflictsConverters
 
 	public static CalendarConflictChangesEvent toEvent(
 			@NonNull final ResourceAllocationConflicts conflicts,
-			@NonNull final ImmutableSet<WOProjectAndResourceId> projectResourceIds)
+			@NonNull final ImmutableSet<WOProjectResourceId> projectResourceIds)
 	{
 		return CalendarConflictChangesEvent.builder()
 				.simulationId(conflicts.getSimulationId())
@@ -51,7 +51,7 @@ class WOProjectCalendarConflictsConverters
 				.build();
 	}
 
-	private static ImmutableSet<CalendarEntryId> toCalendarEntryIds(final @NonNull Set<WOProjectAndResourceId> projectResourceIds)
+	private static ImmutableSet<CalendarEntryId> toCalendarEntryIds(final @NonNull Set<WOProjectResourceId> projectResourceIds)
 	{
 		return projectResourceIds.stream()
 				.map(BudgetAndWOCalendarEntryIdConverters::from)

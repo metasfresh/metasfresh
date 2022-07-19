@@ -22,33 +22,35 @@
 
 package de.metas.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
+import java.sql.Timestamp;
 import java.time.temporal.TemporalUnit;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
 public class WOProjectResourceRepository
 {
-	private static final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public WOProjectResourcesCollection getByProjectIds(@NonNull final Set<ProjectId> projectIds)
@@ -73,9 +75,24 @@ public class WOProjectResourceRepository
 				.collect(WOProjectResourcesCollection.collect());
 	}
 
+	public ImmutableSet<ResourceId> getResourceIdsByProjectResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
+	{
+		if (projectResourceIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableList<Integer> resourceRepoIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
+				.create()
+				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, Integer.class);
+
+		return ResourceId.ofRepoIds(resourceRepoIds);
+	}
+
 	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)
 	{
-		return getByProjectIds(ImmutableSet.of(projectId)).get(projectId);
+		return getByProjectIds(ImmutableSet.of(projectId)).getByProjectId(projectId);
 	}
 
 	public Stream<WOProjectResource> streamByResourceIds(
@@ -103,12 +120,10 @@ public class WOProjectResourceRepository
 	public static WOProjectResource fromRecord(@NonNull final I_C_Project_WO_Resource record)
 	{
 		final TemporalUnit durationUnit = WFDurationUnit.ofCode(record.getDurationUnit()).getTemporalUnit();
-		final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
-		
+
 		return WOProjectResource.builder()
-				.id(WOProjectResourceId.ofRepoId(projectId, record.getC_Project_WO_Resource_ID()))
-				.projectId(projectId)
-				.stepId(WOProjectStepId.ofRepoId(projectId, record.getC_Project_WO_Step_ID()))
+				.id(extractWOProjectResourceId(record))
+				.stepId(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getAssignDateFrom().toInstant())
@@ -116,8 +131,52 @@ public class WOProjectResourceRepository
 						.allDay(record.isAllDay())
 						.build())
 				.durationUnit(durationUnit)
-				.duration(Duration.of(record.getDuration().longValue(), durationUnit))
+				.duration(DurationUtils.fromBigDecimal(record.getDuration(), durationUnit))
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.build();
+	}
+
+	private static void updateRecord(final I_C_Project_WO_Resource record, WOProjectResource from)
+	{
+		// don't change:
+		// id
+		// projectId
+		// stepId
+		// resourceId
+
+		record.setAssignDateFrom(Timestamp.from(from.getDateRange().getStartDate()));
+		record.setAssignDateTo(Timestamp.from(from.getDateRange().getEndDate()));
+		record.setIsAllDay(from.getDateRange().isAllDay());
+		record.setDurationUnit(WFDurationUnit.ofTemporalUnit(from.getDurationUnit()).getCode());
+		record.setDuration(DurationUtils.toBigDecimal(from.getDuration(), from.getDurationUnit()));
+		record.setDescription(from.getDescription());
+	}
+
+	@NonNull
+	public static WOProjectResourceId extractWOProjectResourceId(final @NonNull I_C_Project_WO_Resource record)
+	{
+		return WOProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Resource_ID());
+	}
+
+	public void updateProjectResourcesByIds(
+			@NonNull final Set<WOProjectResourceId> projectResourceIds,
+			@NonNull final UnaryOperator<WOProjectResource> mapper)
+	{
+		if (projectResourceIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
+				.forEach(record -> {
+					final WOProjectResource projectResource = fromRecord(record);
+					final WOProjectResource projectResourceChanged = mapper.apply(projectResource);
+					if (!Objects.equals(projectResource, projectResourceChanged))
+					{
+						updateRecord(record, projectResourceChanged);
+						InterfaceWrapperHelper.saveRecord(record);
+					}
+				});
 	}
 }

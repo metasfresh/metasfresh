@@ -3,7 +3,7 @@ package de.metas.project.workorder.conflicts;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectAndResourceId;
+import de.metas.project.workorder.WOProjectResourceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 class ResourceAllocation
 {
 	@NonNull ResourceId resourceId;
-	@NonNull WOProjectAndResourceId projectAndResourceId;
+	@NonNull WOProjectResourceId projectResourceId;
 	@Nullable SimulationPlanId appliedSimulationId;
 	@NonNull CalendarDateRange dateRange;
 

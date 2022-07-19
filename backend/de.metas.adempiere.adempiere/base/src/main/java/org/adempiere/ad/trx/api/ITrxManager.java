@@ -26,7 +26,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
+import com.google.common.collect.ImmutableList;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
@@ -504,4 +506,21 @@ public interface ITrxManager extends ISingletonService
 	void setDebugConnectionBackendId(boolean debugConnectionBackendId);
 
 	boolean isDebugConnectionBackendId();
+
+	default <T> void accumulateAndProcessAfterCommit(
+			@NonNull final String propertyName,
+			@NonNull final List<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
+	{
+		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (isActive(trx))
+		{
+			trx.accumulateAndProcessAfterCommit(propertyName, itemsToAccumulate, afterCommitListProcessor);
+		}
+		else
+		{
+			afterCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
+		}
+	}
+
 }

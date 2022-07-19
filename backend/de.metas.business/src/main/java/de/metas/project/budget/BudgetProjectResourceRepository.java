@@ -25,6 +25,7 @@ package de.metas.project.budget;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.StringUtils;
 import de.metas.money.CurrencyId;
@@ -42,14 +43,19 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_Resource_Budget;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 @Repository
 public class BudgetProjectResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public static final boolean IsAllDay_TRUE = true;
 
 	public BudgetProjectResources getByProjectId(@NonNull final ProjectId projectId)
 	{
@@ -92,8 +98,7 @@ public class BudgetProjectResourceRepository
 		final UomId durationUomId = UomId.ofRepoId(record.getC_UOM_Time_ID());
 
 		return BudgetProjectResource.builder()
-				.id(BudgetProjectResourceId.ofRepoId(record.getC_Project_Resource_Budget_ID()))
-				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.id(extractBudgetProjectResourceId(record))
 				.resourceGroupId(ResourceGroupId.ofRepoId(record.getS_Resource_Group_ID()))
 				.resourceId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
 				.durationUomId(durationUomId)
@@ -103,10 +108,24 @@ public class BudgetProjectResourceRepository
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getDateStartPlan().toInstant())
 						.endDate(record.getDateFinishPlan().toInstant())
-						.allDay(true)
+						.allDay(IsAllDay_TRUE)
 						.build())
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.build();
+	}
+
+	public static BudgetProjectResourceId extractBudgetProjectResourceId(final @NonNull I_C_Project_Resource_Budget record)
+	{
+		return BudgetProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Resource_Budget_ID());
+	}
+
+	private static void updateRecord(
+			@NonNull final I_C_Project_Resource_Budget record,
+			@NonNull final BudgetProjectResource from)
+	{
+		record.setDateStartPlan(Timestamp.from(from.getDateRange().getStartDate()));
+		record.setDateFinishPlan(Timestamp.from(from.getDateRange().getEndDate()));
+		record.setDescription(from.getDescription());
 	}
 
 	public void updateAllByProjectId(
@@ -116,17 +135,38 @@ public class BudgetProjectResourceRepository
 	{
 		queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
 				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
-				.forEach(record -> updateRecord(record, newOrgId, newCurrencyId));
+				.forEach(record -> updateRecordAndSave(record, newOrgId, newCurrencyId));
 	}
 
-	private static void updateRecord(
+	private static void updateRecordAndSave(
 			@NonNull final I_C_Project_Resource_Budget record,
 			@NonNull final OrgId newOrgId,
 			@NonNull final CurrencyId newCurrencyId)
 	{
 		record.setAD_Org_ID(newOrgId.getRepoId());
 		record.setC_Currency_ID(newCurrencyId.getRepoId());
-		InterfaceWrapperHelper.save(record);
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
+	public void updateProjectResourcesByIds(
+			@NonNull final ImmutableSet<BudgetProjectResourceId> projectResourceIds,
+			@NonNull final UnaryOperator<BudgetProjectResource> mapper)
+	{
+		if (projectResourceIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_Resource_Budget_ID, projectResourceIds)
+				.forEach(record -> {
+					final BudgetProjectResource projectResource = fromRecord(record);
+					final BudgetProjectResource projectResourceChanged = mapper.apply(projectResource);
+					if (!Objects.equals(projectResource, projectResourceChanged))
+					{
+						updateRecord(record, projectResourceChanged);
+						InterfaceWrapperHelper.saveRecord(record);
+					}
+				});
+	}
 }

@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_Resource_Budget_Simulation
@@ -191,6 +192,29 @@ public interface I_C_Project_Resource_Budget_Simulation
 	String COLUMNNAME_DateFinishPlan = "DateFinishPlan";
 
 	/**
+	 * Set Finish Plan (Previous).
+	 * Planned Finish Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateFinishPlan_Prev (@Nullable java.sql.Timestamp DateFinishPlan_Prev);
+
+	/**
+	 * Get Finish Plan (Previous).
+	 * Planned Finish Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateFinishPlan_Prev();
+
+	ModelColumn<I_C_Project_Resource_Budget_Simulation, Object> COLUMN_DateFinishPlan_Prev = new ModelColumn<>(I_C_Project_Resource_Budget_Simulation.class, "DateFinishPlan_Prev", null);
+	String COLUMNNAME_DateFinishPlan_Prev = "DateFinishPlan_Prev";
+
+	/**
 	 * Set Start Plan.
 	 * Planned Start Date
 	 *
@@ -214,6 +238,29 @@ public interface I_C_Project_Resource_Budget_Simulation
 	String COLUMNNAME_DateStartPlan = "DateStartPlan";
 
 	/**
+	 * Set Start Plan (Previous).
+	 * Planned Start Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateStartPlan_Prev (@Nullable java.sql.Timestamp DateStartPlan_Prev);
+
+	/**
+	 * Get Start Plan (Previous).
+	 * Planned Start Date
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateStartPlan_Prev();
+
+	ModelColumn<I_C_Project_Resource_Budget_Simulation, Object> COLUMN_DateStartPlan_Prev = new ModelColumn<>(I_C_Project_Resource_Budget_Simulation.class, "DateStartPlan_Prev", null);
+	String COLUMNNAME_DateStartPlan_Prev = "DateStartPlan_Prev";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -235,6 +282,27 @@ public interface I_C_Project_Resource_Budget_Simulation
 
 	ModelColumn<I_C_Project_Resource_Budget_Simulation, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Project_Resource_Budget_Simulation.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_C_Project_Resource_Budget_Simulation, Object> COLUMN_Processed = new ModelColumn<>(I_C_Project_Resource_Budget_Simulation.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Get Updated.

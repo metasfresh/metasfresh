@@ -2,10 +2,12 @@ package de.metas.project.workorder;
 
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -13,13 +15,16 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class WOProjectResourceSimulation
 {
-	@NonNull WOProjectAndResourceId projectAndResourceId;
+	@NonNull WOProjectResourceId projectResourceId;
 
 	@NonNull CalendarDateRange dateRange;
 
-	public WOProjectResourceId getProjectResourceId()
+	boolean isAppliedOnActualData;
+	CalendarDateRange dateRangeBeforeApplying;
+
+	public ProjectId getProjectId()
 	{
-		return getProjectAndResourceId().getProjectResourceId();
+		return getProjectResourceId().getProjectId();
 	}
 
 	public static WOProjectResourceSimulation reduce(@Nullable WOProjectResourceSimulation simulation, @NonNull UpdateRequest updateRequest)
@@ -27,13 +32,13 @@ public class WOProjectResourceSimulation
 		if (simulation == null)
 		{
 			return builder()
-					.projectAndResourceId(updateRequest.getProjectAndResourceId())
+					.projectResourceId(updateRequest.getProjectResourceId())
 					.dateRange(updateRequest.getDateRange())
 					.build();
 		}
 		else
 		{
-			Check.assumeEquals(simulation.getProjectAndResourceId(), updateRequest.getProjectAndResourceId(), "expected same projectAndResourceId: {}, {}", simulation, updateRequest);
+			Check.assumeEquals(simulation.getProjectResourceId(), updateRequest.getProjectResourceId(), "expected same projectResourceId: {}, {}", simulation, updateRequest);
 
 			return simulation.toBuilder()
 					.dateRange(updateRequest.getDateRange())
@@ -43,11 +48,24 @@ public class WOProjectResourceSimulation
 
 	public WOProjectResource applyOn(@NonNull final WOProjectResource resource)
 	{
-		Check.assumeEquals(resource.getWOProjectAndResourceId(), projectAndResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
+		Check.assumeEquals(resource.getId(), projectResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
 
 		return resource.toBuilder()
 				.dateRange(dateRange)
 				.duration(dateRange.getDuration())
+				.build();
+	}
+
+	public WOProjectResourceSimulation markingAsApplied(@NonNull final CalendarDateRange dateRangeBeforeApplying)
+	{
+		if (isAppliedOnActualData)
+		{
+			throw new AdempiereException("Already applied");
+		}
+
+		return toBuilder()
+				.isAppliedOnActualData(true)
+				.dateRangeBeforeApplying(dateRangeBeforeApplying)
 				.build();
 	}
 
@@ -60,7 +78,7 @@ public class WOProjectResourceSimulation
 	public static class UpdateRequest
 	{
 		@NonNull SimulationPlanId simulationId;
-		@NonNull WOProjectAndResourceId projectAndResourceId;
+		@NonNull WOProjectResourceId projectResourceId;
 
 		@NonNull CalendarDateRange dateRange;
 	}

@@ -102,12 +102,12 @@ public class MultiCalendarService
 		});
 	}
 
-	public void notifyEntryUpdatedByUser(@NonNull final CalendarEntryId entryId)
+	public void notifyEntryUpdated(@NonNull final CalendarEntryId entryId)
 	{
 		continuousQueriesDispatcher.onEntryUpdated(entryId);
 	}
 
-	public void notifyEntryDeletedByUser(@NonNull final CalendarEntryId entryId)
+	public void notifyEntryDeleted(@NonNull final CalendarEntryId entryId)
 	{
 		continuousQueriesDispatcher.onEntryDeleted(entryId, null);
 	}

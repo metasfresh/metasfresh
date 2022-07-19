@@ -18,7 +18,7 @@ import lombok.NonNull;
 public interface ITrxListenerManager
 {
 
-	public enum TrxEventTiming
+	enum TrxEventTiming
 	{
 		NONE(0),
 		/**
@@ -45,7 +45,7 @@ public interface ITrxListenerManager
 		 */
 		AFTER_CLOSE(40);
 
-		private int seqNo;
+		private final int seqNo;
 
 		TrxEventTiming(final int seqNo)
 		{
@@ -56,15 +56,10 @@ public interface ITrxListenerManager
 		 * <li>Every timing can be registered within "none", i.e. outside of any listener method.</li>
 		 * <li>otherwise, a listener can be registered within another listener's method if its timing is after that other listener method's timing.<br>
 		 * e.g. within a beforeComlete() (=> otherTiming) method you can register a listener for "afterRollBack" (=> this timing)</li>
-		 * <li>Also, we allow {@link #AFTER_COMMIT} to be registered within another after-commit because it's generally OK to have any number of commits within one transaction</li>
 		 */
 		public boolean canBeRegisteredWithinOtherTiming(@NonNull final TrxEventTiming otherTiming)
 		{
 			if (otherTiming == NONE)
-			{
-				return true;
-			}
-			else if (otherTiming == AFTER_COMMIT && this == AFTER_COMMIT)
 			{
 				return true;
 			}
@@ -76,12 +71,12 @@ public interface ITrxListenerManager
 	}
 
 	@FunctionalInterface
-	public interface EventHandlingMethod
+	interface EventHandlingMethod
 	{
 		void onTransactionEvent(ITrx trx);
 	}
 
-	public class RegisterListenerRequest
+	class RegisterListenerRequest
 	{
 		@Getter
 		private final TrxEventTiming timing;

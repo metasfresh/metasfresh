@@ -11,6 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
@@ -24,10 +25,10 @@ public class BudgetProjectSimulationPlan
 	@Builder(toBuilder = true)
 	private BudgetProjectSimulationPlan(
 			@NonNull final SimulationPlanId simulationPlanId,
-			@Nullable final ImmutableMap<BudgetProjectResourceId, BudgetProjectResourceSimulation> projectResourcesById)
+			@Nullable final Map<BudgetProjectResourceId, BudgetProjectResourceSimulation> projectResourcesById)
 	{
 		this.simulationPlanId = simulationPlanId;
-		this.projectResourcesById = projectResourcesById != null ? projectResourcesById : ImmutableMap.of();
+		this.projectResourcesById = projectResourcesById != null ? ImmutableMap.copyOf(projectResourcesById) : ImmutableMap.of();
 	}
 
 	public Collection<BudgetProjectResourceSimulation> getAll()
@@ -36,11 +37,11 @@ public class BudgetProjectSimulationPlan
 	}
 
 	BudgetProjectSimulationPlan mapByProjectResourceId(
-			@NonNull BudgetProjectAndResourceId projectAndResourceId,
+			@NonNull BudgetProjectResourceId projectResourceId,
 			@NonNull UnaryOperator<BudgetProjectResourceSimulation> mapper)
 	{
 		@Nullable
-		BudgetProjectResourceSimulation simulation = getByProjectResourceIdOrNull(projectAndResourceId.getProjectResourceId());
+		BudgetProjectResourceSimulation simulation = getByProjectResourceIdOrNull(projectResourceId);
 		final BudgetProjectResourceSimulation simulationChanged = mapper.apply(simulation);
 		if (Objects.equals(simulation, simulationChanged))
 		{
@@ -50,7 +51,7 @@ public class BudgetProjectSimulationPlan
 		else
 		{
 			Check.assumeNotNull(simulationChanged, "changed simulation cannot be null");
-			Check.assumeEquals(simulationChanged.getProjectAndResourceId(), projectAndResourceId, "projectStepAndResourceId");
+			Check.assumeEquals(simulationChanged.getProjectResourceId(), projectResourceId, "projectStepAndResourceId");
 
 			return toBuilder()
 					.projectResourcesById(CollectionUtils.mergeElementToMap(projectResourcesById, simulationChanged, BudgetProjectResourceSimulation::getProjectResourceId))

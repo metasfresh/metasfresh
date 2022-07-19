@@ -22,6 +22,7 @@
 
 package de.metas.project.budget;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.resource.ResourceGroupAndResourceId;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 @Service
 public class BudgetProjectService
@@ -62,14 +64,9 @@ public class BudgetProjectService
 		return resourceBudgetRepository.getByProjectIds(projectIds);
 	}
 
-	public BudgetProjectResource getBudgetsById(@NonNull final ProjectId projectId, @NonNull final BudgetProjectResourceId id)
+	public BudgetProjectResource getBudgetsById(@NonNull final BudgetProjectResourceId id)
 	{
-		return resourceBudgetRepository.getByProjectId(projectId).getBudgetById(id);
-	}
-
-	public BudgetProjectResource getBudgetsById(@NonNull final BudgetProjectAndResourceId id)
-	{
-		return resourceBudgetRepository.getByProjectId(id.getProjectId()).getBudgetById(id.getProjectResourceId());
+		return resourceBudgetRepository.getByProjectId(id.getProjectId()).getBudgetById(id);
 	}
 
 	public Optional<BudgetProjectResource> findBudgetForResource(
@@ -89,5 +86,12 @@ public class BudgetProjectService
 	public Optional<BudgetProject> getById(@NonNull final ProjectId projectId)
 	{
 		return projectRepository.getById(projectId);
+	}
+
+	public void updateProjectResourcesByIds(
+			@NonNull final ImmutableSet<BudgetProjectResourceId> ids,
+			@NonNull final UnaryOperator<BudgetProjectResource> mapper)
+	{
+		resourceBudgetRepository.updateProjectResourcesByIds(ids, mapper);
 	}
 }

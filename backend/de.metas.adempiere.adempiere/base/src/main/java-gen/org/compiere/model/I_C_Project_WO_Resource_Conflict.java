@@ -239,6 +239,29 @@ public interface I_C_Project_WO_Resource_Conflict
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Approved.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsApproved (boolean IsApproved);
+
+	/**
+	 * Get Approved.
+	 * Indicates if this document requires approval
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isApproved();
+
+	ModelColumn<I_C_Project_WO_Resource_Conflict, Object> COLUMN_IsApproved = new ModelColumn<>(I_C_Project_WO_Resource_Conflict.class, "IsApproved", null);
+	String COLUMNNAME_IsApproved = "IsApproved";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List

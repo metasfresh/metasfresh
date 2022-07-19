@@ -83,15 +83,12 @@ export class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { list, mandatory, defaultValue, selected, emptyText, listHash } =
-      this.props;
-    let dropdownList = this.state.dropdownList;
+    const { listHash } = this.props;
     let changedValues = {};
 
-    // If data in the list changed, we either opened or closed the selection dropdown.
-    // If we're closing it (bluring), then we don't care about the whole thing.
-    if (listHash && !prevProps.listHash) {
-      dropdownList = [...list];
+    if (listHash !== prevProps.listHash) {
+      const { list, mandatory, defaultValue, selected, emptyText } = this.props;
+      let dropdownList = [...list];
       if (!mandatory && emptyText) {
         dropdownList.push({
           caption: this.props.properties.clearValueText,
@@ -132,14 +129,7 @@ export class RawList extends PureComponent {
     }
 
     if (Object.keys(changedValues).length) {
-      this.setState(
-        {
-          ...changedValues,
-        },
-        () => {
-          this.focusDropdown();
-        }
-      );
+      this.setState({ ...changedValues }, () => this.focusDropdown());
     }
   }
 

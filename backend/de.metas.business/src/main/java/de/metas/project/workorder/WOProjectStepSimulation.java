@@ -18,7 +18,7 @@ public class WOProjectStepSimulation
 	@NonNull WOProjectStepId stepId;
 
 	@NonNull CalendarDateRange dateRange;
-
+	
 	public static WOProjectStepSimulation reduce(@Nullable WOProjectStepSimulation simulation, @NonNull UpdateRequest updateRequest)
 	{
 		if (simulation == null)

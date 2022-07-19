@@ -1,191 +1,261 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { mergeCalendarEntriesArrayToArray } from './utils/mergeCalendarEntriesArrayToArray';
-import { mergeWSEventsToCalendarEntries } from './utils/mergeWSEventsToCalendarEntries';
+import { mergeWSEntryEvents } from './utils/mergeWSEntryEvents';
 import { updateEntriesFromConflicts } from './utils/updateEntriesFromConflicts';
 import { mergeWSConflictChangesEvents } from './utils/mergeWSConflictChangesEvents';
 import { extractResourcesFromCalendarsArray } from './utils/extractResourcesFromCalendarsArray';
 import { updateResourcesFromConflicts } from './utils/updateResourcesFromConflicts';
+import { extractCalendarIdsFromArray } from './utils/extractCalendarIdsFromArray';
+import { isEqualEntryQueries, newEntryQuery } from './utils/entryQuery';
 
-export const useCalendarData = () => {
-  const [state, setState] = useState({
-    calendarsArray: [],
-    resources: [],
-    //
-    entriesQuery: { startDate: null, endDate: null, simulationId: null },
-    entriesLoading: false,
-    entries: [],
-    //
-    conflicts: [],
+export const useCalendarData = ({
+  simulationId: initialSimulationId,
+  fetchAvailableSimulationsFromAPI,
+  fetchEntriesFromAPI,
+  fetchConflictsFromAPI,
+}) => {
+  const [availableSimulations, setAvailableSimulations] = useState([]);
+  const [simulationId, setSimulationId] = useState(initialSimulationId);
+
+  const [calendars, setCalendars] = useState([]);
+  const [resources, setResources] = useState([]);
+
+  const [entries, setEntries] = useState({
+    loading: false,
+    query: null,
+    array: [],
   });
 
-  const setCalendars = (calendarsArray) => {
-    //console.log('setCalendarsArray', { calendarsArray, state });
-    setState((prevState) => ({
-      ...prevState,
-      calendarsArray: calendarsArray || [],
-      resources: extractResourcesFromCalendarsArray({
-        calendarsArray,
-        entries: prevState.entries,
-        conflicts: prevState.conflicts,
-      }),
-    }));
-  };
+  const [conflicts, setConflicts] = useState([]);
 
-  const getCalendarIds = () => {
-    return state.calendarsArray.map((calendar) => calendar.calendarId);
-  };
+  useEffect(() => loadSimulationsFromAPI(), []);
+  useEffect(() => loadConflictsFromAPI(), [simulationId]);
 
-  const getResourcesArray = () => {
-    //console.log('getResourcesArray', { state });
-    // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-    return state.resources;
-  };
+  useEffect(() => {
+    setResources(
+      updateResourcesFromConflicts({
+        resources: extractResourcesFromCalendarsArray(calendars),
+        entries: entries.array,
+        conflicts,
+      })
+    );
+  }, [calendars, entries.array, conflicts]);
 
-  const updateStateEntriesAndConflicts = (entriesMapper, conflictsMapper) => {
-    setState((prevState) => {
-      const prevEntries = prevState.entries;
-      let newEntries = entriesMapper ? entriesMapper(prevEntries) : prevEntries;
+  //
+  //
+  //
+  //
+  //
 
-      const prevConflicts = prevState.conflicts;
-      const newConflicts = conflictsMapper
-        ? conflictsMapper(prevConflicts)
-        : prevConflicts;
+  const conflictsCount = useMemo(() => {
+    return (
+      conflicts?.filter((conflict) => conflict.status === 'CONFLICT')?.length ??
+      0
+    );
+  }, [conflicts]);
 
-      if (prevEntries === newEntries && prevConflicts === newConflicts) {
-        return prevState;
-      }
+  //
+  //
+  //
+  //
+  //
 
-      newEntries = updateEntriesFromConflicts(newEntries, newConflicts);
+  const loadSimulationsFromAPI = () => {
+    console.log(`Loading simulations, including ${simulationId}...`);
 
-      const prevResources = prevState.resources;
-      const newResources = updateResourcesFromConflicts({
-        resources: prevResources,
-        conflicts: newConflicts,
-        entries: newEntries,
-      });
-
-      return {
-        ...prevState,
-        entries: newEntries,
-        conflicts: newConflicts,
-        resources: newResources,
-      };
+    fetchAvailableSimulationsFromAPI({
+      alwaysIncludeId: simulationId,
+    }).then((simulations) => {
+      console.log('Loaded simulations', { simulations });
+      setAvailableSimulations(simulations);
     });
   };
 
-  const isStateMatchingQuery = ({ startDate, endDate, simulationId }) => {
-    return (
-      state.entriesQuery.startDate === startDate &&
-      state.entriesQuery.endDate === endDate &&
-      state.entriesQuery.simulationId === simulationId
-    );
+  const addSimulationAndSelect = (newSimulation) => {
+    setAvailableSimulations((prevAvailableSimulations) => [
+      ...prevAvailableSimulations,
+      newSimulation,
+    ]);
+
+    setSimulationId(newSimulation.simulationId);
+  };
+
+  const updateEntries = (entriesMapper) => {
+    setEntries((prevState) => {
+      const prevArray = prevState.array;
+      const array = entriesMapper(prevArray);
+      return prevArray === array ? prevState : { ...prevState, array };
+    });
+  };
+
+  const setEntriesLoadingStart = ({ query }) => {
+    //console.log('setEntriesLoadingStart', { query });
+    setEntries((prevState) => ({ ...prevState, loading: true, query }));
+  };
+
+  const setEntriesLoadingDone = ({ error, query, array, onFetchSuccess }) => {
+    setEntries((prevEntries) => {
+      // Discard result if the query is not matching
+      if (
+        prevEntries.query != null &&
+        !isEqualEntryQueries(prevEntries.query, query)
+      ) {
+        console.log('Discarded entriesArray because query was not matching', {
+          error,
+          query,
+          array,
+          prevEntries,
+        });
+        return prevEntries;
+      }
+
+      // IMPORTANT: don't copy it because we don't want to trigger a "react change"
+      onFetchSuccess && onFetchSuccess(array);
+
+      console.log('setEntriesLoadingDone', { error, query, array });
+      return { ...prevEntries, loading: false, error, query, array };
+    });
   };
 
   const addEntriesArray = (entriesToAddArray) => {
     console.groupCollapsed('addEntriesArray', { entriesToAddArray });
 
-    updateStateEntriesAndConflicts(
-      (prevEntries) =>
-        mergeCalendarEntriesArrayToArray(prevEntries, entriesToAddArray),
-      (prevConflicts) => prevConflicts
+    updateEntries((prevEntries) =>
+      mergeCalendarEntriesArrayToArray(prevEntries, entriesToAddArray)
     );
 
     console.groupEnd();
+  };
+
+  const refreshEntriesFromAPI = () => {
+    console.log('Refreshing entries...', { entries });
+    if (!entries.query) {
+      return;
+    }
+
+    loadEntriesFromAPI({
+      startDate: entries.query.startDate,
+      endDate: entries.query.endDate,
+      forceRefresh: true,
+    });
+  };
+
+  const loadEntriesWithConflicts = ({
+    startDate,
+    endDate,
+    onFetchSuccess = null,
+  }) => {
+    loadEntriesFromAPI({
+      startDate,
+      endDate,
+      onFetchSuccess: (entriesArray) => {
+        const entriesWithConflicts = updateEntriesFromConflicts(
+          entriesArray,
+          conflicts
+        );
+
+        //console.log('Sending entriesWithConflicts', { entriesWithConflicts });
+        onFetchSuccess(entriesWithConflicts);
+      },
+    });
+  };
+
+  const loadEntriesFromAPI = ({
+    startDate,
+    endDate,
+    forceRefresh = false,
+    onFetchSuccess = null,
+  }) => {
+    const query = newEntryQuery({
+      calendarIds: extractCalendarIdsFromArray(calendars),
+      simulationId,
+      startDate,
+      endDate,
+    });
+    //console.log('Start loading entries...', { query, forceRefresh, entries });
+
+    // If still loading, do nothing
+    if (entries.loading) {
+      //console.log('still loading, do nothing');
+      return;
+    }
+
+    // If params matching our query (and not a force refresh)
+    // => send current entries
+    if (!forceRefresh && isEqualEntryQueries(entries.query, query)) {
+      // IMPORTANT: don't copy it because we don't want to trigger a "react change"
+      onFetchSuccess && onFetchSuccess(entries.array);
+      return;
+    }
+
+    //
+    // Load new entries
+    setEntriesLoadingStart({ query });
+    setEntries((prevState) => ({ ...prevState, loading: true, query }));
+    fetchEntriesFromAPI(query)
+      .then((entriesFromAPI) => {
+        setEntriesLoadingDone({
+          error: false,
+          query,
+          array: entriesFromAPI,
+        });
+      })
+      .catch((error) => {
+        console.log('Got error while loading entries', error);
+        setEntriesLoadingDone({
+          error: true,
+          query,
+          array: [],
+        });
+      });
+  };
+
+  const loadConflictsFromAPI = () => {
+    console.log('Loading conflicts...', { simulationId });
+    fetchConflictsFromAPI({ simulationId }).then(setConflicts);
   };
 
   const applyWSEvents = (wsEvents) => {
-    console.groupCollapsed('applyWSEvents', { wsEvents });
+    console.groupCollapsed('applyWSEvents', { wsEvents, simulationId });
 
-    updateStateEntriesAndConflicts(
-      (prevEntries) =>
-        mergeWSEventsToCalendarEntries(prevEntries, wsEvents.entryEvents),
-      (prevConflicts) =>
-        mergeWSConflictChangesEvents(prevConflicts, wsEvents.conflictEvents)
-    );
-
-    console.groupEnd();
-  };
-
-  const updateEntriesFromAPI = ({
-    startDate,
-    endDate,
-    simulationId,
-    fetchFromAPI,
-    onFetchSuccess,
-    onFetchError,
-  }) => {
-    if (
-      state.entriesLoading ||
-      isStateMatchingQuery({ startDate, endDate, simulationId })
-    ) {
-      // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-      onFetchSuccess(state.entries);
-    } else {
-      setState((prevState) => ({ ...prevState, entriesLoading: true }));
-
-      fetchFromAPI({
-        calendarIds: getCalendarIds(),
-        simulationId,
-        startDate,
-        endDate,
-      })
-        .then((entriesFromAPI) => {
-          setState((prevState) => {
-            const conflicts = prevState.conflicts;
-            const entries = updateEntriesFromConflicts(
-              entriesFromAPI,
-              conflicts
-            );
-            //onFetchSuccess(entries); // not needed
-
-            const resources = updateResourcesFromConflicts({
-              resources: prevState.resources,
-              conflicts,
-              entries,
-            });
-
-            return {
-              ...prevState,
-              resources,
-              entriesQuery: { startDate, endDate, simulationId },
-              entriesLoading: false,
-              entries,
-              conflicts,
-            };
-          });
-        })
-        .catch((error) => {
-          console.log('got error', error);
-          setState((prevState) => ({ ...prevState, entriesLoading: false }));
-          onFetchError(error);
-        });
+    const changedSimulationIds = wsEvents?.changedSimulationIds ?? [];
+    console.log('changedSimulationIds', changedSimulationIds);
+    if (changedSimulationIds.length > 0) {
+      loadSimulationsFromAPI();
     }
-  };
 
-  const setConflicts = (conflictsArray) => {
-    console.groupCollapsed('setConflicts', { conflictsArray });
+    if (simulationId && changedSimulationIds.includes(simulationId)) {
+      refreshEntriesFromAPI();
+      loadConflictsFromAPI();
+    } else {
+      setConflicts((prevConflicts) =>
+        mergeWSConflictChangesEvents(prevConflicts, wsEvents.conflictEvents)
+      );
 
-    updateStateEntriesAndConflicts(
-      (prevEntries) => prevEntries,
-      () => conflictsArray
-    );
+      updateEntries((prevEntries) =>
+        mergeWSEntryEvents(prevEntries, wsEvents.entryEvents)
+      );
+    }
 
     console.groupEnd();
-  };
-
-  const getConflictsCount = () => {
-    return state.conflicts?.length ?? 0;
   };
 
   return {
     setCalendars,
-    getResourcesArray,
+    getResourcesArray: () => resources, // IMPORTANT: don't copy it because we don't want to trigger a "react change"
+    //
+    loadSimulationsFromAPI,
+    getSimulationsArray: () => availableSimulations, // IMPORTANT: don't copy it because we don't want to trigger a "react change"
+    getSimulationId: () => simulationId,
+    setSimulationId,
+    addSimulationAndSelect,
     //
     addEntriesArray,
-    updateEntriesFromAPI,
-    applyWSEvents,
+    loadEntriesFromAPI,
+    loadEntriesWithConflicts,
     //
-    setConflicts,
-    getConflictsCount,
+    getConflictsCount: () => conflictsCount,
+    //
+    applyWSEvents,
   };
 };

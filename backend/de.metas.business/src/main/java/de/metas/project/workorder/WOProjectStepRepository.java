@@ -89,17 +89,14 @@ public class WOProjectStepRepository
 	{
 		try
 		{
-			final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
-
 			return WOProjectStep.builder()
-					.id(WOProjectStepId.ofRepoId(projectId, record.getC_Project_WO_Step_ID()))
-					.projectId(projectId)
+					.id(extractWOProjectStepId(record))
 					.seqNo(record.getSeqNo())
 					.name(record.getName())
 					.dateRange(CalendarDateRange.builder()
-									   .startDate(record.getDateStart().toInstant())
-									   .endDate(record.getDateEnd().toInstant())
-									   .build())
+							.startDate(record.getDateStart().toInstant())
+							.endDate(record.getDateEnd().toInstant())
+							.build())
 					.build();
 		}
 		catch (final Exception ex)
@@ -120,7 +117,7 @@ public class WOProjectStepRepository
 				.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, stepIds)
 				.create()
-				.map(record -> WOProjectStepId.ofRepoId(ProjectId.ofRepoId(record.getC_Project_ID()), record.getC_Project_WO_Step_ID()));
+				.map(WOProjectStepRepository::extractWOProjectStepId);
 
 		for (final WOProjectStepId stepId : stepIds)
 		{
@@ -135,6 +132,11 @@ public class WOProjectStepRepository
 			updateRecordFromDateRange(record, dateRange);
 			InterfaceWrapperHelper.save(record);
 		}
+	}
+
+	public static WOProjectStepId extractWOProjectStepId(final I_C_Project_WO_Step record)
+	{
+		return WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID());
 	}
 
 	private static void updateRecordFromDateRange(@NonNull final I_C_Project_WO_Step record, @NonNull final CalendarDateRange from)

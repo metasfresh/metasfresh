@@ -6,9 +6,10 @@ import converters from '../api/converters';
 
 const WS_DEBUG = true;
 
-export const WSEventType_addOrChange = 'addOrChange';
-export const WSEventType_remove = 'remove';
+export const WSEventType_entryAddOrChange = 'addOrChange';
+export const WSEventType_entryRemove = 'remove';
 const WSEventType_conflictsChanged = 'conflictsChanged';
+const WSEventType_simulationPlanChanged = 'simulationPlanChanged';
 
 export const useCalendarWebsocketEvents = ({ simulationId, onWSEvents }) => {
   useEffect(() => {
@@ -71,16 +72,17 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
 
   const entryEvents = [];
   const conflictEvents = [];
+  const changedSimulationIds = [];
 
   apiWSEventsArray.forEach((apiWSEvent) => {
-    if (apiWSEvent.type === WSEventType_addOrChange) {
+    if (apiWSEvent.type === WSEventType_entryAddOrChange) {
       entryEvents.push({
-        type: WSEventType_addOrChange,
+        type: WSEventType_entryAddOrChange,
         entry: converters.fromAPIEntry(apiWSEvent.entry),
       });
-    } else if (apiWSEvent.type === WSEventType_remove) {
+    } else if (apiWSEvent.type === WSEventType_entryRemove) {
       entryEvents.push({
-        type: WSEventType_remove,
+        type: WSEventType_entryRemove,
         simulationId: apiWSEvent.simulationId,
         entryId: apiWSEvent.entryId,
       });
@@ -91,12 +93,22 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
         affectedEntryIds: apiWSEvent.affectedEntryIds,
         conflicts: apiWSEvent.conflicts.map(converters.fromAPIConflict),
       });
+    } else if (apiWSEvent.type === WSEventType_simulationPlanChanged) {
+      if (!changedSimulationIds.includes(apiWSEvent.simulationId)) {
+        changedSimulationIds.push(apiWSEvent.simulationId);
+      }
+    } else {
+      console.log('Ignored unknown WS event: ', apiWSEvent);
     }
   });
 
-  if (entryEvents.length <= 0 && conflictEvents.length <= 0) {
+  if (
+    entryEvents.length <= 0 &&
+    conflictEvents.length <= 0 &&
+    changedSimulationIds.length <= 0
+  ) {
     return null;
   }
 
-  return { entryEvents, conflictEvents };
+  return { entryEvents, conflictEvents, changedSimulationIds };
 };

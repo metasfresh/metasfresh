@@ -1,11 +1,11 @@
 import {
-  WSEventType_addOrChange,
-  WSEventType_remove,
+  WSEventType_entryAddOrChange,
+  WSEventType_entryRemove,
 } from '../../useCalendarWebsocketEvents';
 import { isEqualEntries } from './isEqualEntries';
 import { indexEntriesById } from './indexEntriesById';
 
-export const mergeWSEventsToCalendarEntries = (entriesArray, wsEventsArray) => {
+export const mergeWSEntryEvents = (entriesArray, wsEventsArray) => {
   console.groupCollapsed('mergeWSEventsToCalendarEntries', {
     entriesArray,
     wsEventsArray,
@@ -21,7 +21,7 @@ export const mergeWSEventsToCalendarEntries = (entriesArray, wsEventsArray) => {
 
   let hasChanges = false;
   wsEventsArray.forEach((wsEvent) => {
-    if (wsEvent.type === WSEventType_addOrChange) {
+    if (wsEvent.type === WSEventType_entryAddOrChange) {
       if (!isEqualEntries(resultEntriesById[wsEvent.entry.id], wsEvent.entry)) {
         console.log('changing entry', {
           oldEntry: resultEntriesById[wsEvent.entry.id],
@@ -35,7 +35,7 @@ export const mergeWSEventsToCalendarEntries = (entriesArray, wsEventsArray) => {
           newEntry: wsEvent.entry,
         });
       }
-    } else if (wsEvent.type === WSEventType_remove) {
+    } else if (wsEvent.type === WSEventType_entryRemove) {
       if (wsEvent.entryId in resultEntriesById) {
         delete resultEntriesById[wsEvent.entryId];
         hasChanges = true;

@@ -57,9 +57,10 @@ export const addOrUpdateCalendarEntry = ({
     .then(converters.fromAPIUpdateResult);
 };
 
-export const fetchAvailableSimulations = () => {
+export const fetchAvailableSimulations = ({ alwaysIncludeId = null }) => {
+  const queryParams = getQueryString({ alwaysIncludeId });
   return axios
-    .get(`${API_URL}/simulations`)
+    .get(`${API_URL}/simulations?${queryParams}`)
     .then(extractAxiosResponseData)
     .then(({ simulations }) => simulations.map(converters.fromAPISimulation));
 };
