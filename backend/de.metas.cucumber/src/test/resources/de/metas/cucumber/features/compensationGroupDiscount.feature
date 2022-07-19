@@ -27,8 +27,8 @@ Feature: Allow order discount via API (compensation group)
       | Identifier     | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_60 | Endcustomer_60 | N            | Y              | ps_60                         |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN          | C_BPartner_ID.Identifier |
-      | l_60       | bPLocation60 | endcustomer_60           |
+      | Identifier | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_60       | bPLocation60 | endcustomer_60           | true                | true                |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
     """
 {

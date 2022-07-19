@@ -22,22 +22,56 @@
 
 package de.metas.cucumber.stepdefs.externalreference;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.IExternalReferenceType;
+import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.util.Services;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
 
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.externalreference.model.I_S_ExternalReference.COLUMNNAME_S_ExternalReference_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 
 public class S_ExternalReference_StepDef
 {
+	private final S_ExternalReference_StepDefData externalRefTable;
+	private final AD_User_StepDefData userTable;
+
+	private final ExternalReferenceTypes externalReferenceTypes;
+	private final ExternalSystems externalSystems;
+
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public S_ExternalReference_StepDef(
+			@NonNull final S_ExternalReference_StepDefData externalRefTable,
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final ExternalReferenceTypes externalReferenceTypes,
+			@NonNull final ExternalSystems externalSystems)
+	{
+		this.externalRefTable = externalRefTable;
+		this.userTable = userTable;
+		this.externalReferenceTypes = externalReferenceTypes;
+		this.externalSystems = externalSystems;
+	}
 
 	@Then("verify that S_ExternalReference was created")
 	public void verifyExists(@NonNull final DataTable dataTable)
@@ -59,6 +93,58 @@ public class S_ExternalReference_StepDef
 					.anyMatch();
 
 			assertThat(externalRefExists).isTrue();
+		}
+	}
+
+	@And("metasfresh contains S_ExternalReference:")
+	public void add_S_ExternalReference(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String externalSystemCode = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalSystem);
+			final IExternalSystem externalSystemType = externalSystems.ofCode(externalSystemCode)
+					.orElseThrow(() -> new AdempiereException("Unknown externalSystemCode" + externalSystemCode));
+
+			final String typeCode = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_Type);
+			final IExternalReferenceType type = externalReferenceTypes.ofCode(typeCode)
+					.orElseThrow(() -> new InvalidIdentifierException("type", typeCode));
+
+			final String externalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
+
+			final I_S_ExternalReference externalReferenceRecord = CoalesceUtil.coalesceSuppliers(
+					() -> queryBL.createQueryBuilder(I_S_ExternalReference.class)
+							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
+							.addEqualsFilter(I_S_ExternalReference.COLUMN_Type, type.getCode())
+							.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystemType.getCode())
+							.create()
+							.firstOnlyOrNull(I_S_ExternalReference.class),
+					() -> newInstanceOutOfTrx(I_S_ExternalReference.class));
+
+			assertThat(externalReferenceRecord).isNotNull();
+
+			externalReferenceRecord.setExternalSystem(externalSystemType.getCode());
+			externalReferenceRecord.setType(type.getCode());
+			externalReferenceRecord.setExternalReference(externalReference);
+
+			if (type.getCode().equals(ExternalUserReferenceType.USER_ID.getCode()))
+			{
+				final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(userIdentifier).isNotNull();
+
+				final I_AD_User user = userTable.get(userIdentifier);
+				assertThat(user).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(user.getAD_User_ID());
+			}
+			else
+			{
+				throw new AdempiereException("Unknown X_S_ExternalReference.Type! type:" + typeCode);
+			}
+
+			InterfaceWrapperHelper.saveRecord(externalReferenceRecord);
+
+			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
+			externalRefTable.put(externalReferenceIdentifier, externalReferenceRecord);
 		}
 	}
 }

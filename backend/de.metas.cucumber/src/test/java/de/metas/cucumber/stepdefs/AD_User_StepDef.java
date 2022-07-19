@@ -37,9 +37,11 @@ import org.compiere.model.I_C_BPartner;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_IsMFProcurementUser;
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_ProcurementPassword;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_EMail;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Name;
@@ -49,11 +51,11 @@ public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_AD_User> userTable;
+	private final AD_User_StepDefData userTable;
 
 	public AD_User_StepDef(
 			final C_BPartner_StepDefData bpartnerTable,
-			final StepDefData<I_AD_User> userTable)
+			final AD_User_StepDefData userTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.userTable = userTable;
@@ -92,7 +94,7 @@ public class AD_User_StepDef
 			procurementUserRecord.setProcurementPassword(tableRow.get("OPT." + COLUMNNAME_ProcurementPassword));
 		}
 
-		final String bPartnerIdentifier = tableRow.get(COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bPartnerIdentifier))
 		{
 			final I_C_BPartner bPartner = bpartnerTable.get(bPartnerIdentifier);
@@ -100,6 +102,7 @@ public class AD_User_StepDef
 		}
 		InterfaceWrapperHelper.saveRecord(userRecord);
 
-		DataTableUtil.extractRecordIdentifier(tableRow, "AD_User");
+		final String userIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		userTable.putOrReplace(userIdentifier, userRecord);
 	}
 }

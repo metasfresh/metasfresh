@@ -22,9 +22,12 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -33,14 +36,19 @@ import org.compiere.model.I_C_Location;
 import java.util.List;
 import java.util.Map;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 public class C_BPartner_Location_StepDef
 {
 	private final C_BPartner_StepDefData bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_BPartner_Location_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable)
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -66,12 +74,32 @@ public class C_BPartner_Location_StepDef
 		locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
 		InterfaceWrapperHelper.saveRecord(locationRecord);
 
-		final I_C_BPartner_Location bPartnerLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		final I_C_BPartner_Location bPartnerLocationRecord = CoalesceUtil.coalesceSuppliers(
+				() -> queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+						.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
+						.create()
+						.firstOnlyOrNull(I_C_BPartner_Location.class),
+				() -> newInstanceOutOfTrx(I_C_BPartner_Location.class));
+
+		assertThat(bPartnerLocationRecord).isNotNull();
+
 		bPartnerLocationRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		bPartnerLocationRecord.setGLN(gln);
-		bPartnerLocationRecord.setIsBillToDefault(true);
-		bPartnerLocationRecord.setIsShipTo(true);
+
+		final boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, false);
+		bPartnerLocationRecord.setIsShipToDefault(isShipToDefault);
+
+		final boolean isShipTo = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipTo, isShipToDefault);
+		bPartnerLocationRecord.setIsShipTo(isShipTo);
+
+		final boolean isBillToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, false);
+		bPartnerLocationRecord.setIsBillToDefault(isBillToDefault);
+
+		final boolean isBillTo = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsBillTo, isBillToDefault);
+		bPartnerLocationRecord.setIsBillTo(isBillTo);
+
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
 
 		bPartnerLocationTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner_Location"), bPartnerLocationRecord);

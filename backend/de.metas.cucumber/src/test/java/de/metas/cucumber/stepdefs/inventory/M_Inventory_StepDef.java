@@ -26,6 +26,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Inventory_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.document.engine.DocStatus;
@@ -70,7 +71,7 @@ public class M_Inventory_StepDef
 
 	private final M_Inventory_StepDefData inventoryTable;
 	private final StepDefData<I_M_InventoryLine> inventoryLineTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_M_HU> huTable;
 
@@ -79,7 +80,7 @@ public class M_Inventory_StepDef
 	public M_Inventory_StepDef(
 			final M_Inventory_StepDefData inventoryTable,
 			final StepDefData<I_M_InventoryLine> inventoryLineTable,
-			final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable,
+			final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			final M_Product_StepDefData productTable,
 			final StepDefData<I_M_HU> huTable)
 	{

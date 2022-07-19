@@ -14,14 +14,14 @@ Feature:product create/update using metasfresh api
   Scenario: create Product request
 
     Given metasfresh contains S_ExternalReferences
-      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code |
-      | ALBERTA             | 345                | bpartner               |
-      | ALBERTA             | 456                | bpartner               |
+      | ExternalSystem.Code | ExternalReference | ExternalReferenceType.Code |
+      | ALBERTA             | 345               | bpartner                   |
+      | ALBERTA             | 456               | bpartner                   |
 
     And the user adds JsonRequestBpartnerProductUpsertItems
-      | ProductCode  | bpartnerIdentifier | OPT.isActive | OPT.seqNo | OPT.ProductNo | OPT.Description | OPT.EAN  | OPT.GTIN  | OPT.customerLabelName | OPT.ingredients |
-      | code345      | ext-ALBERTA-345    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
-      | code345      | ext-ALBERTA-456    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
+      | ProductCode | bpartnerIdentifier | OPT.isActive | OPT.seqNo | OPT.ProductNo | OPT.Description | OPT.EAN  | OPT.GTIN  | OPT.customerLabelName | OPT.ingredients |
+      | code345     | ext-ALBERTA-345    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
+      | code345     | ext-ALBERTA-456    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
 
     And the user adds JsonRequestProductUpsertItems
       | productIdentifier | Code    | Name         | Type | uomCode | OPT.EAN  | OPT.GTIN  | OPT.Description  | OPT.isActive | OPT.ExternalReferenceURL     |
