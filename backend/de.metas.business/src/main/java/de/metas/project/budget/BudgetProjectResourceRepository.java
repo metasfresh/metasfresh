@@ -24,7 +24,6 @@ package de.metas.project.budget;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.StringUtils;
@@ -36,6 +35,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
 import de.metas.resource.ResourceGroupId;
 import de.metas.uom.UomId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,7 +44,6 @@ import org.compiere.model.I_C_Project_Resource_Budget;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -71,11 +70,11 @@ public class BudgetProjectResourceRepository
 				.build();
 	}
 
-	public Map<ProjectId, BudgetProjectResources> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public BudgetProjectResourcesCollection getByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		if (projectIds.isEmpty())
 		{
-			return ImmutableMap.of();
+			return BudgetProjectResourcesCollection.EMPTY;
 		}
 
 		final ImmutableListMultimap<ProjectId, BudgetProjectResource> budgetsByProjectId = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
@@ -89,7 +88,7 @@ public class BudgetProjectResourceRepository
 						.projectId(projectId)
 						.budgets(budgetsByProjectId.get(projectId))
 						.build())
-				.collect(ImmutableMap.toImmutableMap(BudgetProjectResources::getProjectId, Function.identity()));
+				.collect(BudgetProjectResourcesCollection.collect());
 	}
 
 	public static BudgetProjectResource fromRecord(@NonNull final I_C_Project_Resource_Budget record)
@@ -168,5 +167,29 @@ public class BudgetProjectResourceRepository
 						InterfaceWrapperHelper.saveRecord(record);
 					}
 				});
+	}
+
+	public InSetPredicate<ProjectId> getProjectIdsPredicateByResourceGroupIds(@NonNull final InSetPredicate<ResourceGroupId> resourceGroupIds)
+	{
+		if (resourceGroupIds.isNone())
+		{
+			return InSetPredicate.none();
+		}
+		else if (resourceGroupIds.isAny())
+		{
+			return InSetPredicate.any();
+		}
+		else
+		{
+			final ImmutableList<Integer> projectRepoIds = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_Group_ID, resourceGroupIds)
+					.create()
+					.listDistinct(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, Integer.class);
+
+			final ImmutableSet<ProjectId> projectIds = ProjectId.ofRepoIds(projectRepoIds);
+			return InSetPredicate.only(projectIds);
+		}
+
 	}
 }

@@ -103,6 +103,11 @@ public class ResourceService
 		return resourceRepository.getActiveResourceIdsByGroupIds(groupIds);
 	}
 
+	public ImmutableSet<ResourceGroupId> getGroupIdsByResourceIds(@NonNull final Set<ResourceId> resourceIds)
+	{
+		return resourceRepository.getGroupIdsByResourceIds(resourceIds);
+	}
+
 	public Stream<ResourceAssignment> queryResourceAssignments(final ResourceAssignmentQuery query)
 	{
 		return resourceAssignmentRepository.query(query);

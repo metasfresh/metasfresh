@@ -28,6 +28,7 @@ import de.metas.project.ProjectId;
 import de.metas.resource.ResourceGroupAndResourceId;
 import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
+import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -54,12 +55,13 @@ public class BudgetProjectService
 		this.resourceBudgetRepository = resourceBudgetRepository;
 	}
 
-	public List<BudgetProject> getAllActiveProjects()
+	public List<BudgetProject> queryAllActiveProjects(@NonNull final InSetPredicate<ResourceGroupId> resourceGroupIds)
 	{
-		return projectRepository.getAllActive();
+		final InSetPredicate<ProjectId> projectIds = resourceBudgetRepository.getProjectIdsPredicateByResourceGroupIds(resourceGroupIds);
+		return projectRepository.queryAllActiveProjects(projectIds);
 	}
 
-	public Map<ProjectId, BudgetProjectResources> getBudgetsByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public BudgetProjectResourcesCollection getBudgetsByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		return resourceBudgetRepository.getByProjectIds(projectIds);
 	}

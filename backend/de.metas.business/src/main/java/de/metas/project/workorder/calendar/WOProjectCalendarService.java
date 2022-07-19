@@ -50,7 +50,7 @@ import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
 import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.budget.BudgetProjectResourceSimulation;
-import de.metas.project.budget.BudgetProjectResources;
+import de.metas.project.budget.BudgetProjectResourcesCollection;
 import de.metas.project.budget.BudgetProjectService;
 import de.metas.project.budget.BudgetProjectSimulationPlan;
 import de.metas.project.budget.BudgetProjectSimulationService;
@@ -86,7 +86,6 @@ import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -273,21 +272,67 @@ public class WOProjectCalendarService implements CalendarService
 		}
 	}
 
+	private InSetPredicate<ResourceGroupId> getResourceGroupIdsPredicate(final InSetPredicate<CalendarResourceId> calendarResourceIds)
+	{
+		if (calendarResourceIds.isAny())
+		{
+			return InSetPredicate.any();
+		}
+		else if (calendarResourceIds.isNone())
+		{
+			return InSetPredicate.none();
+		}
+		else
+		{
+			final HashSet<ResourceId> resourceIdsSet = new HashSet<>();
+			final HashSet<ResourceGroupId> resourceGroupIdsSet = new HashSet<>();
+			for (final CalendarResourceId calendarResourceId : calendarResourceIds.toSet())
+			{
+				if (calendarResourceId == null)
+				{
+					continue;
+				}
+
+				final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
+				if (resourceId != null)
+				{
+					resourceIdsSet.add(resourceId);
+					continue;
+				}
+
+				final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);
+				if (resourceGroupId != null)
+				{
+					resourceGroupIdsSet.add(resourceGroupId);
+					//continue;
+				}
+			}
+
+			resourceGroupIdsSet.addAll(resourceService.getGroupIdsByResourceIds(resourceIdsSet));
+
+			return InSetPredicate.only(resourceGroupIdsSet);
+		}
+	}
+
 	private List<CalendarEntry> query_BudgetProjects(final CalendarQuery calendarQuery, final WOProjectFrontendURLsProvider frontendURLs)
 	{
-		// TODO consider onlyResourceIds
 		// TODO consider date range
 
-		final ImmutableMap<ProjectId, BudgetProject> budgetProjects = Maps.uniqueIndex(budgetProjectService.getAllActiveProjects(), BudgetProject::getProjectId);
-		final Map<ProjectId, BudgetProjectResources> budgetsByProjectId = budgetProjectService.getBudgetsByProjectIds(budgetProjects.keySet());
+		final InSetPredicate<ResourceGroupId> resourceGroupIds = getResourceGroupIdsPredicate(calendarQuery.getResourceIds());
+		if (resourceGroupIds.isNone())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableMap<ProjectId, BudgetProject> budgetProjects = Maps.uniqueIndex(budgetProjectService.queryAllActiveProjects(resourceGroupIds), BudgetProject::getProjectId);
+		final BudgetProjectResourcesCollection budgets = budgetProjectService.getBudgetsByProjectIds(budgetProjects.keySet());
 
 		final SimulationPlanId simulationId = calendarQuery.getSimulationId();
 		final SimulationPlanRef simulationPlanHeader = simulationId != null ? simulationPlanService.getById(simulationId) : null;
 		final BudgetProjectSimulationPlan simulationPlan = simulationId != null ? budgetProjectSimulationService.getSimulationPlanById(simulationId) : null;
 
-		return budgetsByProjectId.values()
-				.stream()
-				.flatMap(budgets -> budgets.getBudgets().stream())
+		return budgets.streamBudgets()
+				.filter(budget -> resourceGroupIds.test(budget.getResourceGroupId()))
 				.map(budget -> toCalendarEntry(
 						simulationPlan != null ? simulationPlan.applyOn(budget) : budget,
 						budgetProjects.get(budget.getProjectId()),

@@ -54,9 +54,4 @@ public class WOProjectResourcesCollection
 	{
 		return map.values().stream().flatMap(WOProjectResources::stream);
 	}
-
-	public ImmutableSet<ResourceId> getResourceIds()
-	{
-		return streamProjectResources().map(WOProjectResource::getResourceId).collect(ImmutableSet.toImmutableSet());
-	}
 }
