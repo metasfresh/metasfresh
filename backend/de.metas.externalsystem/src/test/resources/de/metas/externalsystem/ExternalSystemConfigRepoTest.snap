@@ -224,8 +224,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "isActive" : true,
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
-      "syncStockToShopware6" : false,
-      "percentageToDeductFromAvailableStock" : 0
+      "syncAvailableForSalesToShopware6" : true,
+      "percentageToDeductFromAvailableForSales" : 10
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -259,8 +259,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "isActive" : false,
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
-      "syncStockToShopware6" : false,
-      "percentageToDeductFromAvailableStock" : 0
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -303,8 +303,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "isActive" : true,
     "value" : "testShopware6Value",
     "productLookup" : "ProductNumber",
-    "syncStockToShopware6" : false,
-    "percentageToDeductFromAvailableStock" : 0
+    "syncAvailableForSalesToShopware6" : false,
+    "percentageToDeductFromAvailableForSales" : 0
   }
 ]
 
@@ -335,8 +335,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "isActive" : true,
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
-      "syncStockToShopware6" : false,
-      "percentageToDeductFromAvailableStock" : 0
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -364,8 +364,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "isActive" : true,
       "value" : "new-value",
       "productLookup" : "ProductNumber",
-      "syncStockToShopware6" : false,
-      "percentageToDeductFromAvailableStock" : 0
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"

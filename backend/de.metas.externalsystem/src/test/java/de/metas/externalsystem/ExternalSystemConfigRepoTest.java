@@ -49,6 +49,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
@@ -126,6 +127,8 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setM_PriceList_ID(1);
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setIsSyncAvailableForSalesToShopware6(true);
+		childRecord.setPercentageOfAvailableForSalesToSync(BigDecimal.TEN);
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -698,7 +701,6 @@ class ExternalSystemConfigRepoTest
 		assertThat(shopware6Config.getPriceListId()).isEqualTo(newPriceListId);
 		assertThat(shopware6Config.getValue()).isEqualTo(value);
 	}
-
 
 	@Test
 	void externalSystem_Config_getActiveByType_RabbitMQ()

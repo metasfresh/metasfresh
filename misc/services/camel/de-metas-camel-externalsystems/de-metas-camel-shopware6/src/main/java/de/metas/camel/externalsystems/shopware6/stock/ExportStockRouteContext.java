@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.stock;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.common.externalsystem.JsonAvailableAvailableForSales;
+import de.metas.common.externalsystem.JsonAvailableForSales;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,5 +36,5 @@ public class ExportStockRouteContext
 	ShopwareClient shopwareClient;
 
 	@NonNull
-	JsonAvailableAvailableForSales jsonAvailableAvailableForSales;
+	JsonAvailableForSales jsonAvailableForSales;
 }

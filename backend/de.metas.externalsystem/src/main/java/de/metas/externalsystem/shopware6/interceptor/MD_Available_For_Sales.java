@@ -47,8 +47,8 @@ public class MD_Available_For_Sales
 	}
 
 	@ModelChange( //
-			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void exportStockToShopware(@NonNull final I_MD_Available_For_Sales availableForSales)
+			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
+	public void exportAvailableForSalesToShopware(@NonNull final I_MD_Available_For_Sales availableForSales)
 	{
 		final ProductId productId = ProductId.ofRepoId(availableForSales.getM_Product_ID());
 
