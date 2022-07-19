@@ -3,10 +3,9 @@ import { mergeCalendarEntriesArrayToArray } from './utils/mergeCalendarEntriesAr
 import { mergeWSEntryEvents } from './utils/mergeWSEntryEvents';
 import { updateEntriesFromConflicts } from './utils/updateEntriesFromConflicts';
 import { mergeWSConflictChangesEvents } from './utils/mergeWSConflictChangesEvents';
-import { extractResourcesFromCalendarsArray } from './utils/extractResourcesFromCalendarsArray';
-import { updateResourcesFromConflicts } from './utils/updateResourcesFromConflicts';
 import { extractCalendarIdsFromArray } from './utils/extractCalendarIdsFromArray';
 import { isEqualEntryQueries, newEntryQuery } from './utils/entryQuery';
+import { computeResources } from './utils/computeResources';
 
 export const useCalendarData = ({
   simulationId: initialSimulationId,
@@ -34,11 +33,7 @@ export const useCalendarData = ({
 
   useEffect(() => {
     setResources(
-      updateResourcesFromConflicts({
-        resources: extractResourcesFromCalendarsArray(calendars),
-        entries: entries.array,
-        conflicts,
-      })
+      computeResources({ calendars, entries: entries.array, conflicts })
     );
   }, [calendars, entries.array, conflicts]);
 
@@ -48,12 +43,10 @@ export const useCalendarData = ({
   //
   //
 
-  const conflictsCount = useMemo(() => {
-    return (
-      conflicts?.filter((conflict) => conflict.status === 'CONFLICT')?.length ??
-      0
-    );
-  }, [conflicts]);
+  const conflictsCount = useMemo(
+    () => resources.reduce((sum, resource) => sum + resource.conflictsCount, 0),
+    [resources]
+  );
 
   //
   //

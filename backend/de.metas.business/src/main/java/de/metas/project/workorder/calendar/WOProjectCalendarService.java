@@ -247,6 +247,11 @@ public class WOProjectCalendarService implements CalendarService
 			final HashSet<ResourceGroupId> resourceGroupIdsSet = new HashSet<>();
 			for (final CalendarResourceId calendarResourceId : calendarResourceIds.toSet())
 			{
+				if (calendarResourceId == null)
+				{
+					continue;
+				}
+
 				final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
 				if (resourceId != null)
 				{

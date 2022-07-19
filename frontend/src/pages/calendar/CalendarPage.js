@@ -17,7 +17,7 @@ const updateURI = (location, { simulationId }) => {
 
 const CalendarPage = ({ location }) => {
   const onlyResourceIds = useMemo(
-    () => [location.query.resourceId],
+    () => (location.query.resourceId ? [location.query.resourceId] : null),
     [location.query.resourceId]
   );
 

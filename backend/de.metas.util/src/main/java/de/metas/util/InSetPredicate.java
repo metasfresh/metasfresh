@@ -123,5 +123,4 @@ public final class InSetPredicate<T> implements Predicate<T>
 		assertNotAny();
 		return onlyValues; // we can return it as is because it's already readonly
 	}
-
 }

@@ -143,15 +143,12 @@ const Calendar = ({
         }}
         resourceAreaHeaderContent="Resources"
         resources={calendarData.getResourcesArray()}
-        resourceLabelContent={(params) => {
-          //console.log('resourceLabelContent', { params });
-          return (
-            <CalendarResourceLabel
-              title={params.resource.title}
-              conflictsCount={params.resource.extendedProps.conflictsCount}
-            />
-          );
-        }}
+        resourceLabelContent={(params) => (
+          <CalendarResourceLabel
+            title={params.resource.title}
+            conflictsCount={params.resource.extendedProps.conflictsCount}
+          />
+        )}
         eventSources={[{ events: fetchCalendarEntries }]}
         //dateClick={handleDateClick}
         eventClick={handleEventClick}
