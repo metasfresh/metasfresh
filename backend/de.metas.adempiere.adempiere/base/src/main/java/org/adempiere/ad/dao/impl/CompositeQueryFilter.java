@@ -23,8 +23,11 @@
 package org.adempiere.ad.dao.impl;
 
 import de.metas.util.Check;
+import de.metas.util.InSetPredicate;
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -39,6 +42,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -66,7 +70,7 @@ import java.util.Properties;
 	//
 	// Status
 	// NOTE: when adding new fields here, please update #copy() method too
-	private final List<IQueryFilter<T>> filters = new ArrayList<>();
+	private final ArrayList<IQueryFilter<T>> filters = new ArrayList<>();
 	private boolean and = true;
 	private boolean _defaultAccept = true;
 
@@ -297,7 +301,6 @@ import java.util.Properties;
 	 * <li><code>resultSqlWhereClause</code> string builder/buffer
 	 * <li>and <code>resultSqlFilters</code> list.
 	 * </ul>
-	 *
 	 */
 	private void appendSqlWhereClause(final StringBuilder resultSqlWhereClause,
 									  final List<ISqlQueryFilter> resultSqlFilters,
@@ -442,16 +445,12 @@ import java.util.Properties;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> removeFilter(final IQueryFilter<T> filter)
+	public ICompositeQueryFilter<T> removeFilter(@NonNull final IQueryFilter<T> filter)
 	{
-		Check.assumeNotNull(filter, "filter not null");
-
-		if (filters == null || filters.isEmpty())
+		if (!filters.isEmpty())
 		{
-			return this;
+			filters.remove(filter);
 		}
-
-		filters.remove(filter);
 
 		return this;
 	}
@@ -612,7 +611,7 @@ import java.util.Properties;
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final String columnName, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, Arrays.asList(values))
 				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
@@ -621,7 +620,7 @@ import java.util.Properties;
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, Arrays.asList(values))
 				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
@@ -630,7 +629,7 @@ import java.util.Properties;
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), Arrays.asList(values))
 				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
@@ -639,7 +638,7 @@ import java.util.Properties;
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), Arrays.asList(values))
 				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
@@ -658,6 +657,23 @@ import java.util.Properties;
 		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
 				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
+	}
+
+	@Override
+	public <V extends RepoIdAware> ICompositeQueryFilter<T> addInArrayFilter(@NonNull final String columnName, @NonNull final InSetPredicate<V> values)
+	{
+		if (values.isAny())
+		{
+			return addFilter(ConstantQueryFilter.of(true));
+		}
+		else if (values.isNone())
+		{
+			return addFilter(ConstantQueryFilter.of(false));
+		}
+		else
+		{
+			return addInArrayFilter(columnName, values.toSet());
+		}
 	}
 
 	@Override
@@ -807,6 +823,7 @@ import java.util.Properties;
 			}
 		}
 
+		//noinspection RedundantIfStatement
 		if (and)
 		{
 			return true;
