@@ -899,4 +899,10 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=74, Updated=now(), UpdatedBy=1
 UPDATE AD_Process_Para SET AD_Reference_ID=19,Updated=TO_TIMESTAMP('2022-07-20 15:02:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542275
 ;
 
+-- 2022-07-20T20:15:13.176Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='select setBaseLanguage(@AD_Language_ID/-1@);',Updated=TO_TIMESTAMP('2022-07-20 21:15:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585075
+;
+
+
 

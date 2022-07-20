@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION Reset_System_Base_Language(p_ad_language_id numeric = -1) RETURNS VOID
+CREATE OR REPLACE FUNCTION setBaseLanguage(p_ad_language_id numeric = -1) RETURNS VOID
 AS
 $$
 DECLARE
@@ -76,7 +76,7 @@ $$
     LANGUAGE plpgsql
 ;
 
-COMMENT ON FUNCTION reset_system_base_language(Numeric) IS 'Change/Reset the system base language  given the new base language ad_language  as a parameter.
-Example:  SELECT reset_system_base_language(192);  /*en_US*/ '
+COMMENT ON FUNCTION setBaseLanguage(Numeric) IS 'Change/Reset the system base language  given the new base language ad_language  as a parameter.
+Example:  SELECT setBaseLanguage(192);  /*en_US*/ '
 ;
 
