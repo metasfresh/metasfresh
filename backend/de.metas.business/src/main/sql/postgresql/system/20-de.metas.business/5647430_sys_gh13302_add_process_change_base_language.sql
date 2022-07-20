@@ -68,7 +68,7 @@ BEGIN
                             EXECUTE final_update_query;
 
                             GET DIAGNOSTICS v_count = ROW_COUNT;
-                            RAISE NOTICE 'Table %: % rows updated', table_name, v_count;
+                            RAISE WARNING 'Table %: % rows updated', table_name, v_count;
 
                         EXCEPTION
                             WHEN OTHERS THEN
