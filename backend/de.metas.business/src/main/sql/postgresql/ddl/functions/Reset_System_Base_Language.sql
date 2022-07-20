@@ -1,5 +1,4 @@
-CREATE OR REPLACE FUNCTION Reset_System_Base_Language(p_source_language      varchar,
-                                                      p_destination_language varchar) RETURNS VOID
+CREATE OR REPLACE FUNCTION Reset_System_Base_Language(p_ad_language_id numeric = -1) RETURNS VOID
 AS
 $$
 DECLARE
@@ -18,18 +17,23 @@ DECLARE
         || 'WHERE target.base_table_id = x.base_table_id ;' ;
 BEGIN
 
-    IF (p_source_language IS NULL OR TRIM(p_source_language) = '') THEN
+    IF (p_ad_language_id IS NULL OR p_ad_language_id <= 0) THEN
+        RAISE WARNING 'No language is provided';
+        RETURN;
+    END IF;
+
+    SELECT l.ad_language INTO source_language FROM ad_language l WHERE l.isbaselanguage = 'Y';
+    SELECT l.ad_language INTO destination_language FROM ad_language l WHERE l.ad_language_id = p_ad_language_id;
+
+    IF (source_language IS NULL OR TRIM(source_language) = '') THEN
         RAISE WARNING 'No source language is provided';
         RETURN;
     END IF;
 
-    IF (p_destination_language IS NULL OR TRIM(p_destination_language) = '') THEN
+    IF (destination_language IS NULL OR TRIM(destination_language) = '') THEN
         RAISE WARNING 'No destination language is provided';
         RETURN;
     END IF;
-
-    source_language := TRIM(p_source_language);
-    destination_language := TRIM(p_destination_language);
 
     -- update languages
     UPDATE ad_language
@@ -72,7 +76,7 @@ $$
     LANGUAGE plpgsql
 ;
 
-COMMENT ON FUNCTION reset_system_base_language(VARCHAR, VARCHAR) IS 'Change/Reset the system base language  given the old ad_language as first param and destination ad_language as second param.
-Example:  SELECT reset_system_base_language(''de_DE'', ''en_US'')'
+COMMENT ON FUNCTION reset_system_base_language(Numeric) IS 'Change/Reset the system base language  given the new base language ad_language  as a parameter.
+Example:  SELECT reset_system_base_language(192);  /*en_US*/ '
 ;
 
