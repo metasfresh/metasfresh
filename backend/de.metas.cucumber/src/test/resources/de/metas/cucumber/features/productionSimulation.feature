@@ -132,6 +132,7 @@ Feature: create production simulation
 
 
   @from:cucumber
+  @Id:S0171.100
   Scenario: The simulation for qty 14 is created with duration to produce 1 qty set to 1 day,
   having both supplies and other demand in between demand date and initial 'production finished' date
     Given metasfresh contains M_Products:
