@@ -43,7 +43,7 @@ BEGIN
     -- Iterate over Trls tables
     FOR table_name IN SELECT UPPER(tablename) FROM ad_table WHERE UPPER(tablename) LIKE UPPER('%_Trl') ORDER BY 1
         LOOP
-            base_table := REPLACE(table_name, '_TRL', '');
+            base_table := SUBSTRING(table_name, 1, LENGTH(table_name) - 4);
             BEGIN
                 -- Reset query output
                 query_set_template := '';
