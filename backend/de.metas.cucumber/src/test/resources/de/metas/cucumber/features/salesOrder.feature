@@ -134,10 +134,10 @@ Feature: sales order
       | endcustomer_67 | Endcustomer_67 | N            | Y              | ps_3                          |
       | vendor_67      | vendor_67      | Y            | Y              | ps_3                          |
     And metasfresh contains C_BPartner_Products:
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | vendor_67                | p_31                    |
-      | vendor_67                | p_32                    |
-      | vendor_67                | p_31_1                  |
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.UsedForVendor |
+      | vendor_67                | p_31                    | true              |
+      | vendor_67                | p_32                    | true              |
+      | vendor_67                | p_31_1                  | true              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | POReference     | C_Payment_ID |
       | o_3        | true    | endcustomer_67           | 2021-04-17  | po_ref_BOM_mock | 1000002      |
