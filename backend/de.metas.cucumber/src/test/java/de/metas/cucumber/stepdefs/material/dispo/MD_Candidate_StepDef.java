@@ -35,6 +35,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
 import de.metas.logging.LogManager;
+import de.metas.material.dispo.commons.SimulatedCandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -46,7 +47,6 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
@@ -94,6 +94,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -120,6 +122,7 @@ public class MD_Candidate_StepDef
 	private CandidateRepositoryWriteService candidateWriteService;
 	private MaterialEventObserver materialEventObserver;
 	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
+	private SimulatedCandidateService simulatedCandidateService;
 	private final M_Product_StepDefData productTable;
 	private final MD_Candidate_StepDefData stockCandidateTable;
 	private final C_OrderLine_StepDefData orderLineTable;
@@ -147,6 +150,7 @@ public class MD_Candidate_StepDef
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
 		candidateWriteService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
+		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 
@@ -560,12 +564,7 @@ public class MD_Candidate_StepDef
 	@And("delete all simulated candidates")
 	public void delete_simulated_candidates()
 	{
-		final DeleteCandidatesQuery deleteCandidatesQuery = DeleteCandidatesQuery.builder()
-				.status(X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
-				.isActive(false)
-				.build();
-
-		candidateWriteService.deleteCandidatesAndDetailsByQuery(deleteCandidatesQuery);
+		simulatedCandidateService.deleteAllSimulatedCandidates();
 	}
 
 	@And("validate there is no simulated md_candidate")

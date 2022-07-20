@@ -27,6 +27,8 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
+import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
@@ -37,6 +39,8 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
@@ -48,6 +52,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.cucumber.stepdefs.StepDefConstants.TEST_PLANT_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_DD_NetworkDistribution_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Planning_StepDef
@@ -56,17 +61,23 @@ public class PP_Product_Planning_StepDef
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_Planning_StepDefData productPlanningTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final DD_NetworkDistribution_StepDefData ddNetworkTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	public PP_Product_Planning_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
 			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final DD_NetworkDistribution_StepDefData ddNetworkTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.productTable = productTable;
 		this.productBomVersionsTable = productBomVersionsTable;
 		this.productPlanningTable = productPlanningTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.ddNetworkTable = ddNetworkTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@Given("metasfresh contains PP_Product_Plannings")
@@ -138,6 +149,32 @@ public class PP_Product_Planning_StepDef
 			assertThat(bomVersions).isNotNull();
 
 			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
+		}
+
+		final String ddNetworkIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DD_NetworkDistribution_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if(Check.isNotBlank(ddNetworkIdentifier))
+		{
+			final I_DD_NetworkDistribution ddNetwork = ddNetworkTable.get(ddNetworkIdentifier);
+			assertThat(ddNetwork).isNotNull();
+
+			productPlanningRecord.setDD_NetworkDistribution_ID(ddNetwork.getDD_NetworkDistribution_ID());
+			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
+		}
+
+		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_IsPurchased, false);
+		if(isPurchased)
+		{
+			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
+			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
+		}
+
+		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if(Check.isNotBlank(warehouseIdentifier))
+		{
+			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+			assertThat(warehouse).isNotNull();
+
+			productPlanningRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		}
 
 		InterfaceWrapperHelper.save(productPlanningRecord);

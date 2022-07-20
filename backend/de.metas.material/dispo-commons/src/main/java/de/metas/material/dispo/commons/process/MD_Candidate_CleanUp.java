@@ -22,10 +22,8 @@
 
 package de.metas.material.dispo.commons.process;
 
+import de.metas.material.dispo.commons.SimulatedCandidateService;
 import de.metas.material.dispo.commons.candidate.CandidateId;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
-import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.process.JavaProcess;
 import de.metas.util.Loggables;
 import org.compiere.SpringContextHolder;
@@ -35,17 +33,12 @@ import java.util.stream.Collectors;
 
 public class MD_Candidate_CleanUp extends JavaProcess
 {
+	final SimulatedCandidateService candidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
+
 	@Override
 	protected String doIt()
 	{
-		final DeleteCandidatesQuery deleteCandidatesQuery = DeleteCandidatesQuery.builder()
-				.status(X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
-				.isActive(false)
-				.build();
-
-		final CandidateRepositoryWriteService candidateService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
-
-		final Set<CandidateId> deletedCandidateIDs = candidateService.deleteCandidatesAndDetailsByQuery(deleteCandidatesQuery);
+		final Set<CandidateId> deletedCandidateIDs = candidateService.deleteAllSimulatedCandidates();
 
 		final String deletedCandidatesString = deletedCandidateIDs.stream()
 				.map(CandidateId::getRepoId)
