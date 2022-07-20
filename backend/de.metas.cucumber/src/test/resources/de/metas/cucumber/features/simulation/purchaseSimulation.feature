@@ -7,6 +7,7 @@ Feature: create purchase simulation
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
+  @Id:S0171.200
   Scenario: create purchase simulation, delete order line and validate there is no purchase candidate for deleted line
     Given metasfresh contains M_Products:
       | Identifier | Name                        |
