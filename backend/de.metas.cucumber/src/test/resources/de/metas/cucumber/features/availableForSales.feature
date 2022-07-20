@@ -189,6 +189,7 @@ Feature: available for sales
   @from:cucumber
   @Id:S0168.3_100
   @Id:S0168.3_400
+  @Id:S0168.3_500
   Scenario: sync MD_Available_For_Sales when M_ShipmentSchedule is processed
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
