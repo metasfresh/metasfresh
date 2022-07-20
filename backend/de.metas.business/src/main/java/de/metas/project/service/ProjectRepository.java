@@ -22,7 +22,7 @@
 
 package de.metas.project.service;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -40,23 +40,20 @@ import de.metas.project.ProjectTypeRepository;
 import de.metas.project.RStatusId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.Node;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.X_C_Project;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -108,38 +105,20 @@ public class ProjectRepository
 		return save(record, projectData);
 	}
 
-	@NonNull
-	public Set<ProjectId> getProjectIdsUpstream(@NonNull final ProjectId projectId)
+	public ImmutableList<ProjectId> getProjectIdsUpStream(@NonNull final ProjectId projectId)
 	{
-		final Node<I_C_Project> root = Node.of(getRecordById(projectId), new ArrayList<>());
+		return DB.retrieveRows(
+				"SELECT C_Project_ID FROM getC_Project_IDs_UpStream(?)",
+				Collections.singletonList(projectId),
+				rs -> ProjectId.ofRepoId(rs.getInt(1)));
+	}
 
-		final HashSet<ProjectId> seenIds = new HashSet<>();
-
-		Node<I_C_Project> currentNode = root;
-		seenIds.add(projectId);
-
-		Optional<ProjectId> parentProjectId = Optional.ofNullable(ProjectId.ofRepoIdOrNull(currentNode.getValue().getC_Project_Parent_ID()));
-
-		while (parentProjectId.isPresent() && !seenIds.contains(parentProjectId.get()))
-		{
-			seenIds.add(parentProjectId.get()); //infinite loop protection
-
-			final I_C_Project parentProjectRecord = getRecordById(parentProjectId.get());
-
-			final Node<I_C_Project> parentNode = Node.of(parentProjectRecord, Collections.singletonList(currentNode));
-
-			currentNode.setParent(parentNode);
-
-			currentNode = parentNode;
-			parentProjectId = Optional.ofNullable(ProjectId.ofRepoIdOrNull(currentNode.getValue().getC_Project_Parent_ID()));
-		}
-
-		return root.getUpStream()
-				.stream()
-				.map(Node::getValue)
-				.map(I_C_Project::getC_Project_ID)
-				.map(ProjectId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+	public ImmutableList<ProjectId> getProjectIdsDownStream(@NonNull final ProjectId projectId)
+	{
+		return DB.retrieveRows(
+				"SELECT C_Project_ID FROM getC_Project_IDs_DownStream(?)",
+				Collections.singletonList(projectId),
+				rs -> ProjectId.ofRepoId(rs.getInt(1)));
 	}
 
 	public void updateFromProjectType(@NonNull final I_C_Project projectRecord)

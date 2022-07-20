@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -46,4 +47,5 @@ public class JsonCalendarEntriesQuery
 	@Nullable JsonDateTime endDate;
 
 	@Nullable Set<CalendarResourceId> onlyResourceIds;
+	@Nullable ProjectId onlyProjectId;
 }

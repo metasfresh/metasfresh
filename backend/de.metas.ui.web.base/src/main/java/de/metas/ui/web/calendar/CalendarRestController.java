@@ -23,6 +23,7 @@
 package de.metas.ui.web.calendar;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.calendar.CalendarConflictsQuery;
 import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryAddRequest;
 import de.metas.calendar.CalendarEntryId;
@@ -36,6 +37,7 @@ import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.project.ProjectId;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
 import de.metas.ui.web.calendar.json.JsonCalendarConflictsQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
@@ -106,8 +108,8 @@ public class CalendarRestController
 				.build();
 	}
 
-	@PostMapping("/entries/query")
-	public JsonCalendarEntriesQueryResponse queryCalendarEntries(
+	@PostMapping("/queryEntries")
+	public JsonCalendarEntriesQueryResponse queryEntries(
 			@RequestBody(required = false) @Nullable final JsonCalendarEntriesQuery query)
 	{
 		userSession.assertLoggedIn();
@@ -147,6 +149,8 @@ public class CalendarRestController
 			result.resourceIds(onlyResourceIds != null && !onlyResourceIds.isEmpty()
 					? InSetPredicate.only(onlyResourceIds)
 					: InSetPredicate.any());
+
+			result.onlyProjectId(query.getOnlyProjectId());
 		}
 
 		return result.build();
@@ -260,15 +264,24 @@ public class CalendarRestController
 				.build();
 	}
 
-	@GetMapping("/conflicts/query")
+	@GetMapping("/queryConflicts")
+	@PostMapping("/queryConflicts")
 	public JsonCalendarConflictsQueryResponse queryConflicts(
-			@RequestParam(name = "simulationId", required = false) final String simulationIdStr)
+			@RequestParam(name = "simulationId", required = false) final String simulationIdStr,
+			@RequestParam(name = "onlyResourceIds", required = false) final String onlyResourceIdsStr,
+			@RequestParam(name = "onlyProjectId", required = false) final String onlyProjectIdStr)
 	{
 		userSession.assertLoggedIn();
 
-		final SimulationPlanId simulationId = SimulationPlanId.ofNullableObject(simulationIdStr);
+		final CalendarConflictsQuery query = CalendarConflictsQuery.builder()
+				.simulationId(SimulationPlanId.ofNullableObject(simulationIdStr))
+				.resourceIds(CalendarResourceId.ofCommaSeparatedString(onlyResourceIdsStr)
+						.map(InSetPredicate::only)
+						.orElse(InSetPredicate.any()))
+				.onlyProjectId(ProjectId.ofNullableObject(onlyProjectIdStr))
+				.build();
 
-		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(simulationId)
+		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(query)
 				.stream()
 				.map(JsonCalendarConflict::of)
 				.collect(ImmutableList.toImmutableList());

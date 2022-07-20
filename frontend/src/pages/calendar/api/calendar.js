@@ -17,6 +17,7 @@ export const fetchCalendarEntries = ({
   calendarIds = null,
   simulationId = null,
   onlyResourceIds = null,
+  onlyProjectId = null,
   startDate = null,
   endDate = null,
 }) => {
@@ -24,6 +25,7 @@ export const fetchCalendarEntries = ({
     calendarIds,
     simulationId,
     onlyResourceIds,
+    onlyProjectId,
     startDate,
     endDate,
   };
@@ -38,7 +40,7 @@ export const fetchCalendarEntries = ({
   }
 
   return axios
-    .post(`${API_URL}/entries/query`, query)
+    .post(`${API_URL}/queryEntries`, query)
     .then(extractAxiosResponseData)
     .then(({ entries }) => entries.map(converters.fromAPIEntry));
 };
@@ -91,10 +93,16 @@ export const createSimulation = ({ copyFromSimulationId }) => {
 export const fetchConflicts = ({
   simulationId = null,
   onlyResourceIds = null,
+  onlyProjectId = null,
 }) => {
-  const queryParams = getQueryString({ simulationId, onlyResourceIds });
+  const queryParams = getQueryString({
+    simulationId,
+    onlyResourceIds,
+    onlyProjectId,
+  });
+
   return axios
-    .get(`${API_URL}/conflicts/query?${queryParams}`)
+    .get(`${API_URL}/queryConflicts?${queryParams}`)
     .then(extractAxiosResponseData)
     .then(({ conflicts }) => conflicts.map(converters.fromAPIConflict));
 };

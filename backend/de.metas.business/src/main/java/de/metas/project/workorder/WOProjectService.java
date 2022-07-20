@@ -59,10 +59,12 @@ public class WOProjectService
 		return woProjectRepository.getById(projectId);
 	}
 
-	public List<WOProject> queryActiveProjects(@NonNull final InSetPredicate<ResourceId> resourceIds)
+	public List<WOProject> queryActiveProjects(
+			@NonNull final InSetPredicate<ResourceId> resourceIds,
+			@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
-		final InSetPredicate<ProjectId> projectIds = woProjectResourceRepository.getProjectIdsPredicateByResourceIds(resourceIds);
-		return woProjectRepository.queryAllActiveProjects(projectIds);
+		final InSetPredicate<ProjectId> projectIdsEffective = woProjectResourceRepository.getProjectIdsPredicateByResourceIds(resourceIds, projectIds);
+		return woProjectRepository.getAllActiveProjects(projectIdsEffective);
 	}
 
 	public WOProjectResourcesCollection getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)

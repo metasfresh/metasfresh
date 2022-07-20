@@ -25,6 +25,7 @@ package de.metas.calendar;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.project.ProjectId;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,6 +45,7 @@ public class CalendarQuery
 	@NonNull @Singular ImmutableSet<CalendarServiceId> onlyCalendarServiceIds;
 	@NonNull @Singular ImmutableSet<CalendarGlobalId> onlyCalendarIds;
 	@NonNull @Builder.Default InSetPredicate<CalendarResourceId> resourceIds = InSetPredicate.any();
+	@Nullable ProjectId onlyProjectId;
 	@Nullable Instant startDate;
 	@Nullable Instant endDate;
 

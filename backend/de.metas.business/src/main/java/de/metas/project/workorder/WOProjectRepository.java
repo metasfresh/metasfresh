@@ -23,6 +23,7 @@
 package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.util.InSetPredicate;
@@ -38,7 +39,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public class WOProjectRepository
@@ -52,35 +52,43 @@ public class WOProjectRepository
 				.orElseThrow(() -> new AdempiereException("Not a Work Order project: " + record));
 	}
 
-	public List<WOProject> queryAllActiveProjects(@NonNull final InSetPredicate<ProjectId> projectIds)
+	private IQueryBuilder<I_C_Project> queryAllActiveProjects(@NonNull final InSetPredicate<ProjectId> projectIds)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
+				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectIds);
+	}
+
+	public ImmutableSet<ProjectId> getAllActiveProjectIds()
+	{
+		return getActiveProjectIds(InSetPredicate.any());
+	}
+
+	public ImmutableSet<ProjectId> getActiveProjectIds(@NonNull final InSetPredicate<ProjectId> projectIds)
+	{
+		if (projectIds.isNone())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryAllActiveProjects(projectIds).create().listIds(ProjectId::ofRepoId);
+	}
+
+	public List<WOProject> getAllActiveProjects(@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
 		if (projectIds.isNone())
 		{
 			return ImmutableList.of();
 		}
 
-		return queryAllActiveProjects()
-				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectIds)
+		return queryAllActiveProjects(projectIds)
 				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
 				.stream()
 				.map(record -> fromRecord(record).orElse(null))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public Set<ProjectId> getAllActiveProjectIds()
-	{
-		return queryAllActiveProjects()
-				.create()
-				.listIds(ProjectId::ofRepoId);
-	}
-
-	private IQueryBuilder<I_C_Project> queryAllActiveProjects()
-	{
-		return queryBL
-				.createQueryBuilder(I_C_Project.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob);
 	}
 
 	private static Optional<WOProject> fromRecord(@NonNull final I_C_Project record)

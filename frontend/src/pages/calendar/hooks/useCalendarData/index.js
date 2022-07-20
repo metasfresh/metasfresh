@@ -10,6 +10,7 @@ import { computeResources } from './utils/computeResources';
 export const useCalendarData = ({
   simulationId: initialSimulationId,
   onlyResourceIds,
+  onlyProjectId,
   fetchAvailableSimulationsFromAPI,
   fetchEntriesFromAPI,
   fetchConflictsFromAPI,
@@ -29,7 +30,10 @@ export const useCalendarData = ({
   const [conflicts, setConflicts] = useState([]);
 
   useEffect(() => loadSimulationsFromAPI(), []);
-  useEffect(() => loadConflictsFromAPI(), [simulationId, onlyResourceIds]);
+  useEffect(
+    () => loadConflictsFromAPI(),
+    [simulationId, onlyResourceIds, onlyProjectId]
+  );
 
   useEffect(() => {
     setResources(
@@ -164,6 +168,7 @@ export const useCalendarData = ({
       calendarIds: extractCalendarIdsFromArray(calendars),
       simulationId,
       onlyResourceIds,
+      onlyProjectId,
       startDate,
       endDate,
     });
@@ -206,8 +211,17 @@ export const useCalendarData = ({
   };
 
   const loadConflictsFromAPI = () => {
-    console.log('Loading conflicts...', { simulationId, onlyResourceIds });
-    fetchConflictsFromAPI({ simulationId, onlyResourceIds }).then(setConflicts);
+    console.log('Loading conflicts...', {
+      simulationId,
+      onlyResourceIds,
+      onlyProjectId,
+    });
+
+    fetchConflictsFromAPI({
+      simulationId,
+      onlyResourceIds,
+      onlyProjectId,
+    }).then(setConflicts);
   };
 
   const applyWSEvents = (wsEvents) => {

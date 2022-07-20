@@ -4,6 +4,7 @@ export const newEntryQuery = ({
   calendarIds = null,
   simulationId = null,
   onlyResourceIds = null,
+  onlyProjectId = null,
   startDate = null,
   endDate = null,
 }) => {
@@ -15,6 +16,7 @@ export const newEntryQuery = ({
       onlyResourceIds != null && onlyResourceIds.length > 0
         ? onlyResourceIds
         : null,
+    onlyProjectId: onlyProjectId ? String(onlyProjectId) : null,
     startDate,
     endDate,
   };
@@ -32,6 +34,7 @@ export const isEqualEntryQueries = (query1, query2) => {
     isArraysEqual(query1.calendarIds, query2.calendarIds) &&
     query1.simulationId === query2.simulationId &&
     isArraysEqual(query1.onlyResourceIds, query2.onlyResourceIds) &&
+    query1.onlyProjectId === query2.onlyProjectId &&
     isSameMoment(query1.startDate, query2.startDate) &&
     isSameMoment(query1.endDate, query2.endDate)
   );

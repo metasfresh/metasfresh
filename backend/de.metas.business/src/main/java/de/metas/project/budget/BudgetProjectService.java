@@ -55,10 +55,12 @@ public class BudgetProjectService
 		this.resourceBudgetRepository = resourceBudgetRepository;
 	}
 
-	public List<BudgetProject> queryAllActiveProjects(@NonNull final InSetPredicate<ResourceGroupId> resourceGroupIds)
+	public List<BudgetProject> queryAllActiveProjects(
+			@NonNull final InSetPredicate<ResourceGroupId> resourceGroupIds,
+			@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
-		final InSetPredicate<ProjectId> projectIds = resourceBudgetRepository.getProjectIdsPredicateByResourceGroupIds(resourceGroupIds);
-		return projectRepository.queryAllActiveProjects(projectIds);
+		final InSetPredicate<ProjectId> projectIdsEffective = resourceBudgetRepository.getProjectIdsPredicateByResourceGroupIds(resourceGroupIds, projectIds);
+		return projectRepository.queryAllActiveProjects(projectIdsEffective);
 	}
 
 	public BudgetProjectResourcesCollection getBudgetsByProjectIds(@NonNull final Set<ProjectId> projectIds)

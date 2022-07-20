@@ -169,27 +169,28 @@ public class BudgetProjectResourceRepository
 				});
 	}
 
-	public InSetPredicate<ProjectId> getProjectIdsPredicateByResourceGroupIds(@NonNull final InSetPredicate<ResourceGroupId> resourceGroupIds)
+	public InSetPredicate<ProjectId> getProjectIdsPredicateByResourceGroupIds(
+			@NonNull final InSetPredicate<ResourceGroupId> resourceGroupIds,
+			@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
-		if (resourceGroupIds.isNone())
+		if (resourceGroupIds.isNone() || projectIds.isNone())
 		{
 			return InSetPredicate.none();
 		}
-		else if (resourceGroupIds.isAny())
+
+		if (resourceGroupIds.isAny() && projectIds.isAny())
 		{
 			return InSetPredicate.any();
 		}
-		else
-		{
-			final ImmutableList<Integer> projectRepoIds = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_Group_ID, resourceGroupIds)
-					.create()
-					.listDistinct(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, Integer.class);
 
-			final ImmutableSet<ProjectId> projectIds = ProjectId.ofRepoIds(projectRepoIds);
-			return InSetPredicate.only(projectIds);
-		}
+		final ImmutableList<Integer> projectRepoIdsEffective = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_Group_ID, resourceGroupIds)
+				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectIds)
+				.create()
+				.listDistinct(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, Integer.class);
 
+		final ImmutableSet<ProjectId> projectIdsEffective = ProjectId.ofRepoIds(projectRepoIdsEffective);
+		return InSetPredicate.only(projectIdsEffective);
 	}
 }

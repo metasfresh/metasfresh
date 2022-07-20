@@ -29,6 +29,7 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.util.InSetPredicate;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.time.DurationUtils;
@@ -43,6 +44,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.temporal.TemporalUnit;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -91,28 +93,64 @@ public class WOProjectResourceRepository
 		return ResourceId.ofRepoIds(resourceRepoIds);
 	}
 
-	public InSetPredicate<ProjectId> getProjectIdsPredicateByResourceIds(@NonNull final InSetPredicate<ResourceId> resourceIds)
+	public InSetPredicate<WOProjectResourceId> getProjectResourceIdsPredicateByResourceIds(
+			@NonNull final InSetPredicate<ResourceId> resourceIds,
+			@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
-		if (resourceIds.isNone())
+		if (resourceIds.isNone() || projectIds.isNone())
 		{
 			return InSetPredicate.none();
 		}
-		else if (resourceIds.isAny())
+
+		if (resourceIds.isAny() && projectIds.isAny())
 		{
 			return InSetPredicate.any();
 		}
-		else
-		{
-			final ImmutableList<Integer> projectRepoIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
-					.create()
-					.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, Integer.class);
 
-			final ImmutableSet<ProjectId> projectIds = ProjectId.ofRepoIds(projectRepoIds);
-			return InSetPredicate.only(projectIds);
+		final ImmutableSet<WOProjectResourceId> projectResourceIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds)
+				.create()
+				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID)
+				.stream()
+				.map(WOProjectResourceRepository::toWOProjectResourceId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return !projectResourceIds.isEmpty()
+				? InSetPredicate.only(projectResourceIds)
+				: InSetPredicate.none();
+	}
+
+	private static WOProjectResourceId toWOProjectResourceId(final Map<String, Object> row)
+	{
+		return WOProjectResourceId.ofRepoId(
+				NumberUtils.asInt(row.get(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID)),
+				NumberUtils.asInt(row.get(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID)));
+	}
+
+	public InSetPredicate<ProjectId> getProjectIdsPredicateByResourceIds(
+			@NonNull final InSetPredicate<ResourceId> resourceIds,
+			@NonNull final InSetPredicate<ProjectId> projectIds)
+	{
+		if (resourceIds.isNone() || projectIds.isNone())
+		{
+			return InSetPredicate.none();
 		}
 
+		if (resourceIds.isAny() && projectIds.isAny())
+		{
+			return InSetPredicate.any();
+		}
+
+		final ImmutableList<Integer> projectRepoIdsEffective = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds)
+				.create()
+				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, Integer.class);
+
+		final ImmutableSet<ProjectId> projectIdsEffective = ProjectId.ofRepoIds(projectRepoIdsEffective);
+		return InSetPredicate.only(projectIdsEffective);
 	}
 
 	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)
