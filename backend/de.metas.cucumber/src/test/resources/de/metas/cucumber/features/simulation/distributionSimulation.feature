@@ -7,6 +7,7 @@ Feature: create distribution simulation
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
+  @Id:S0171.300	
   Scenario: create distribution simulation
     Given metasfresh contains M_Products:
       | Identifier | Name                            |
