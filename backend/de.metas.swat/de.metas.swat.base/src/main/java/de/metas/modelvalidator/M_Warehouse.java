@@ -76,7 +76,12 @@ public class M_Warehouse
 			return;
 		}
 		warehouse.setC_Location_ID(bpLocation.getC_Location_ID());
-		// The business partner is taken from the C_BPartner_Location!
-		warehouse.setC_BPartner_ID(bpLocation.getC_BPartner_ID());
+	}
+
+	@CalloutMethod(columnNames = I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
+	public void onPartnerChange(final I_M_Warehouse warehouse)
+	{
+		warehouse.setC_Location_ID(-1);
+		warehouse.setC_BPartner_Location_ID(-1);
 	}
 }
