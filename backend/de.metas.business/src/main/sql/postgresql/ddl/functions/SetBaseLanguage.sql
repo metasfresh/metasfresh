@@ -10,6 +10,7 @@ DECLARE
     query_set_template    text    := '';
     final_update_query    text    := '';
     v_columnname          varchar;
+    v_count               integer;
     update_query_template varchar := 'WITH X AS (SELECT * FROM base_table_trl WHERE base_table_id = %s AND ad_language =  ''%s'') '
                                          || 'UPDATE base_table as target '
                                          || 'SET %s '
@@ -18,20 +19,22 @@ DECLARE
 BEGIN
 
     IF (p_ad_language_id IS NULL OR p_ad_language_id <= 0) THEN
-        RAISE WARNING 'No language is provided';
-        RETURN;
+        RAISE EXCEPTION 'No language found for AD_Language_ID=%', p_ad_language_id;
     END IF;
 
     SELECT l.ad_language INTO source_language FROM ad_language l WHERE l.isbaselanguage = 'Y';
     SELECT l.ad_language INTO destination_language FROM ad_language l WHERE l.ad_language_id = p_ad_language_id;
 
     IF (source_language IS NULL OR TRIM(source_language) = '') THEN
-        RAISE WARNING 'No source language is provided';
-        RETURN;
+        RAISE EXCEPTION 'Previous base AD_Language was not found';
     END IF;
 
     IF (destination_language IS NULL OR TRIM(destination_language) = '') THEN
-        RAISE WARNING 'No destination language is provided';
+        RAISE EXCEPTION 'No language found for AD_Language_ID=%', p_ad_language_id;
+    END IF;
+
+    IF (source_language = destination_language) THEN
+        RAISE WARNING '% is already a base language', destination_language;
         RETURN;
     END IF;
 
@@ -63,6 +66,10 @@ BEGIN
                         BEGIN
                             final_update_query := FORMAT(REPLACE(update_query_template, 'base_table', base_table), base_table_id::varchar, destination_language, query_set_template);
                             EXECUTE final_update_query;
+
+                            GET DIAGNOSTICS v_count = ROW_COUNT;
+                            RAISE NOTICE 'Table %: % rows updated', table_name, v_count;
+
                         EXCEPTION
                             WHEN OTHERS THEN
                                 RAISE WARNING 'Execution Error : % ,  SQL= %', SQLERRM, final_update_query;
