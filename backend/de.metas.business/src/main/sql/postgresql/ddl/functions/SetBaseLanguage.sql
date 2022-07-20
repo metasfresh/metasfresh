@@ -70,9 +70,6 @@ BEGIN
                             GET DIAGNOSTICS v_count = ROW_COUNT;
                             RAISE WARNING 'Table %: % rows updated', table_name, v_count;
 
-                        EXCEPTION
-                            WHEN OTHERS THEN
-                                RAISE WARNING 'Execution Error : % ,  SQL= %', SQLERRM, final_update_query;
                         END;
                     END LOOP;
             END;
