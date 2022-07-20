@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.authorization;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Services;
@@ -31,6 +32,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_AuthToken;
 
 import java.util.Map;
@@ -42,12 +44,14 @@ public class AD_User_AuthToken_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final AD_User_AuthToken_StepDefData userAuthTokenTable;
+	private final AD_User_StepDefData userTable;
 
 	public AD_User_AuthToken_StepDef(
-			@NonNull final AD_User_AuthToken_StepDefData userAuthTokenTable
-	)
+			@NonNull final AD_User_AuthToken_StepDefData userAuthTokenTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.userAuthTokenTable = userAuthTokenTable;
+		this.userTable = userTable;
 	}
 
 	@Given("metasfresh contains AD_User_AuthToken:")
@@ -55,15 +59,22 @@ public class AD_User_AuthToken_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String userAuthTokenIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User_AuthToken.Table_Name + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final int userId = DataTableUtil.extractIntForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_User_ID);
+			final String userAuthTokenIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_User_AuthToken_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			final String userIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_User_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final Integer userId = userTable.getOptional(userIdentifier)
+					.map(I_AD_User::getAD_User_ID)
+					.orElseGet(() -> Integer.parseInt(userIdentifier));
+
 			final int roleId = DataTableUtil.extractIntForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_Role_ID);
 			final String authToken = DataTableUtil.extractStringForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AuthToken);
 
 			final I_AD_User_AuthToken userAuthToken = CoalesceUtil.coalesceSuppliers(
 					() -> queryBL.createQueryBuilder(I_AD_User_AuthToken.class)
 							.addEqualsFilter(I_AD_User_AuthToken.COLUMNNAME_AuthToken, authToken)
-							.create().firstOnly(I_AD_User_AuthToken.class),
+							.addEqualsFilter(I_AD_User_AuthToken.COLUMNNAME_AD_User_ID, userId)
+							.create()
+							.firstOnly(I_AD_User_AuthToken.class),
 					() -> InterfaceWrapperHelper.newInstance(I_AD_User_AuthToken.class));
 
 			assertThat(userAuthToken).isNotNull();
@@ -74,8 +85,7 @@ public class AD_User_AuthToken_StepDef
 
 			InterfaceWrapperHelper.saveRecord(userAuthToken);
 
-			userAuthTokenTable.put(userAuthTokenIdentifier, userAuthToken);
+			userAuthTokenTable.putOrReplace(userAuthTokenIdentifier, userAuthToken);
 		}
 	}
-
 }

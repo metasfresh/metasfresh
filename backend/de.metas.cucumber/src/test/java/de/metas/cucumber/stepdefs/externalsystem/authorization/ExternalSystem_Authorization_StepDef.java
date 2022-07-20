@@ -72,8 +72,8 @@ public class ExternalSystem_Authorization_StepDef
 		externalSystemsAuthorizationFactory.setPassword(commandLineOptions.getRabbitPassword());
 	}
 
-	@And("Custom_ExternalSystem_To_Metasfresh queue receives an auth token request")
-	public void request_external_system_authorization() throws IOException, TimeoutException
+	@And("Custom_ExternalSystem_To_Metasfresh queue receives an JsonExternalSystemMessage request")
+	public void send_JsonExternalSystemMessage() throws IOException, TimeoutException
 	{
 		final JsonExternalSystemMessage message = JsonExternalSystemMessage.builder()
 				.type(JsonExternalSystemMessageType.REQUEST_AUTHORIZATION)
@@ -94,7 +94,7 @@ public class ExternalSystem_Authorization_StepDef
 		}
 	}
 
-	@Then("^metasfresh replies on Custom_Metasfresh_To_ExternalSystem queue with (.*)$")
+	@Then("^metasfresh replies on Custom_Metasfresh_To_ExternalSystem queue with JsonExternalSystemMessagePayload (.*)$")
 	public void validate_authorization_token_obtained(@NonNull final String authToken) throws InterruptedException, IOException, TimeoutException
 	{
 		final JsonExternalSystemMessage message = receiveRequest();
@@ -111,30 +111,42 @@ public class ExternalSystem_Authorization_StepDef
 
 	private <T extends JsonExternalSystemMessage> T receiveRequest() throws IOException, TimeoutException, InterruptedException
 	{
-		final Connection connection = externalSystemsAuthorizationFactory.newConnection();
-		final Channel channel = connection.createChannel();
+		Channel channel = null;
 
-		final CountDownLatch countDownLatch = new CountDownLatch(1);
-
-		final String[] message = { null };
-		final DefaultConsumer consumer = new DefaultConsumer(channel)
+		try
 		{
-			@Override
-			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+			final Connection connection = externalSystemsAuthorizationFactory.newConnection();
+			channel = connection.createChannel();
+
+			final CountDownLatch countDownLatch = new CountDownLatch(1);
+
+			final String[] message = { null };
+			final DefaultConsumer consumer = new DefaultConsumer(channel)
 			{
-				message[0] = new String(body, StandardCharsets.UTF_8);
-				logger.info("\n[x] Received on queue '" + QUEUE_NAME_MF_TO_ES_CUSTOM + "': message= '" + message[0] + "'");
-				countDownLatch.countDown();
+				@Override
+				public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+				{
+					message[0] = new String(body, StandardCharsets.UTF_8);
+					logger.info("\n[x] Received on queue '" + QUEUE_NAME_MF_TO_ES_CUSTOM + "': message= '" + message[0] + "'");
+					countDownLatch.countDown();
+				}
+			};
+			channel.basicConsume(QUEUE_NAME_MF_TO_ES_CUSTOM, true, consumer);
+
+			logger.info("Waiting for message receipt");
+			final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS); // wait for the token reply to get added in the queue
+			assertThat(messageReceivedWithinTimeout).isTrue();
+
+			final JsonExternalSystemMessage requestToExternalSystemMessage = objectMapper.readValue(message[0], JsonExternalSystemMessage.class);
+			assertThat(requestToExternalSystemMessage).isInstanceOf(JsonExternalSystemMessage.class);
+			return (T)requestToExternalSystemMessage;
+		}
+		finally
+		{
+			if (channel != null)
+			{
+				channel.close();
 			}
-		};
-		channel.basicConsume(QUEUE_NAME_MF_TO_ES_CUSTOM, true, consumer);
-
-		logger.info("Waiting for message receipt");
-		final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS); // wait for the token reply to get added in the queue
-		assertThat(messageReceivedWithinTimeout).isTrue();
-
-		final JsonExternalSystemMessage requestToExternalSystemMessage = objectMapper.readValue(message[0], JsonExternalSystemMessage.class);
-		assertThat(requestToExternalSystemMessage).isInstanceOf(JsonExternalSystemMessage.class);
-		return (T)requestToExternalSystemMessage;
+		}
 	}
 }

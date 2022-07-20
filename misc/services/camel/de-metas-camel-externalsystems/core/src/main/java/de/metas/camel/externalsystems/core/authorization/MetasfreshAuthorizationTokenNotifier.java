@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuth
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Endpoint;
+import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.http.base.HttpOperationFailedException;
@@ -113,7 +114,12 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 			return;
 		}
 
-		final Exception exception = sentEvent.getExchange().getException();
+		final Exception exception = sentEvent.getExchange().getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+
+		if (exception == null)
+		{
+			return;
+		}
 
 		if (exception instanceof HttpOperationFailedException)
 		{
