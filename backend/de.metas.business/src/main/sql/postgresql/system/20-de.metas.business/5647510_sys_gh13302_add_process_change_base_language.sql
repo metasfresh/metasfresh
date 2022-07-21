@@ -996,6 +996,17 @@ UPDATE AD_Process_Trl SET Description='Set system base language, given the new l
 UPDATE AD_Process_Trl SET Description='Set system base language, given the new language as a parameter. ', Help='Set system base language, given the new language as a paremeter. ',Updated=TO_TIMESTAMP('2022-07-20 22:24:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585075
 ;
 
+-- 2022-07-21T15:09:32.113Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585075,111,541129,106,TO_TIMESTAMP('2022-07-21 16:09:31','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2022-07-21 16:09:31','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+;
 
+-- 2022-07-21T15:10:39.106Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsUpdateable='N',Updated=TO_TIMESTAMP('2022-07-21 16:10:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2610
+;
 
-
+-- 2022-07-21T15:10:53.414Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-07-21 16:10:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=1346
+;

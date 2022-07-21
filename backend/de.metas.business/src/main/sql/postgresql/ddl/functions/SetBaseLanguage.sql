@@ -44,7 +44,7 @@ BEGIN
     WHERE ad_language = source_language;
 
     UPDATE ad_language
-    SET isbaselanguage = 'Y', issystemlanguage = 'Y'
+    SET isbaselanguage = 'Y', issystemlanguage = 'N'
     WHERE ad_language = destination_language;
 
     -- Iterate over Trls tables
