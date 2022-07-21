@@ -58,6 +58,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13261] https://github.com/metasfresh/metasfresh/issues/13261 AvailableForSales to Shopware - Fix terminology
   * [#13286] https://github.com/metasfresh/metasfresh/issues/13286 Display document validation message
   * [#13257] https://github.com/metasfresh/metasfresh/pull/13257 available for sales stock fix
   * [#13215] https://github.com/metasfresh/metasfresh/issues/13215 Description and documentnote are not copied from doctype into shipment
