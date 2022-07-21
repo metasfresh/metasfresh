@@ -36,6 +36,8 @@ public interface WebSocketProducerFactory
 	 */
 	String getTopicNamePrefix();
 
+	default boolean isDestroyIfNoActiveSubscriptions() { return false; }
+
 	/**
 	 * Creates {@link WebSocketProducer} for given topic name
 	 */
