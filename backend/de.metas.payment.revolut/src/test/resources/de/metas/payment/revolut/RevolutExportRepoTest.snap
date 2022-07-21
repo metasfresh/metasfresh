@@ -20,6 +20,8 @@ de.metas.payment.revolut.RevolutExportRepoTest.saveAll=[
       "paymentReference" : "payReference",
       "regionName" : "region",
       "addressLine1" : "addr1",
+      "addressLine2" : "addr2",
+      "SwiftCode" : "SwiftCode", 
       "city" : "city",
       "postalCode" : "postal",
       "recipientCountryId" : 5,
