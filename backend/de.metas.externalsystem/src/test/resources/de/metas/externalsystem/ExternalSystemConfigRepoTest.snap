@@ -400,8 +400,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "productLookup" : "ProductNumber",
       "metasfreshIdJSONPath" : "JSONPathMetasfreshID",
       "shopwareIdJSONPath" : "JSONPathShopwareID",
-      "syncStockToShopware6" : true,
-      "percentageToDeductFromAvailableStock" : 10
+      "syncAvailableForSalesToShopware6" : true,
+      "percentageToDeductFromAvailableForSales" : 10
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
