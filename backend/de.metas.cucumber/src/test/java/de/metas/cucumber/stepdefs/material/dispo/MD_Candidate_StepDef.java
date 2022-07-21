@@ -95,7 +95,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -525,6 +524,12 @@ public class MD_Candidate_StepDef
 				if (!item.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
 				{
 					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the time (resp. materialDecription.date) values are different\n");
+					continue;
+				}
+
+				if (!Objects.equals(item.getBusinessCase(), tableRow.getBusinessCase()))
+				{
+					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the business case values are different\n");
 					continue;
 				}
 				return ProviderResult.resultWasFound(item);

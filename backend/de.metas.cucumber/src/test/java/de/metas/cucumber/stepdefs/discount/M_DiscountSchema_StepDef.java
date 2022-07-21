@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.discount;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;

@@ -22,10 +22,10 @@
 
 package de.metas.cucumber.stepdefs.purchasecandidate;
 
-import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -51,7 +51,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static de.metas.bpartner.api.impl.BPRelationDAO.queryBL;
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID;
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderSO_ID;
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_M_Product_ID;
@@ -80,6 +79,22 @@ public class C_PurchaseCandidate_StepDef
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
 		this.purchaseCandidateTable = purchaseCandidateTable;
+	}
+
+	@And("^no C_PurchaseCandidate found for orderLine (.*)$")
+	public void validate_no_C_PurchaseCandidate_found(@NonNull final String orderLineIdentifier)
+	{
+		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
+		assertThat(orderLineId).isNotNull();
+
+		try
+		{
+			assertThat(getQueryByOrderLineId(orderLineId).count() == 0).isTrue();
+		}
+		catch (final Throwable throwable)
+		{
+			logCurrentContextExpectedNoRecords(orderLineId);
+		}
 	}
 
 	@And("^after not more than (.*)s, C_PurchaseCandidates are found$")
