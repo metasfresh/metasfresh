@@ -29,7 +29,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
@@ -347,8 +346,8 @@ public class InvoiceCandidate
 			// subtract the qty that was already invoiced
 			return new ToInvoiceExclOverride(
 					ToInvoiceExclOverride.InvoicedQtys.SUBTRACTED,
-					qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()),
-					qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+					StockQtyAndUOMQty.toZeroIfNegative(qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys())),
+					StockQtyAndUOMQty.toZeroIfNegative(qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys())));
 		}
 		else
 		{

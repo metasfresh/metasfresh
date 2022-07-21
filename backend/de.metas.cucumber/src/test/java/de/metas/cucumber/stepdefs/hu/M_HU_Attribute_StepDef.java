@@ -1,0 +1,149 @@
+/*
+ * #%L
+ * de.metas.cucumber
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.cucumber.stepdefs.hu;
+
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
+
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+public class M_HU_Attribute_StepDef
+{
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+
+	private final M_HU_StepDefData huTable;
+
+	public M_HU_Attribute_StepDef(@NonNull final M_HU_StepDefData huTable)
+	{
+		this.huTable = huTable;
+	}
+
+	@And("M_HU_Attribute is changed")
+	public void m_hu_attribute_is_changed(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			changeHUAttribute(tableRow);
+		}
+	}
+
+	@And("^after not more than (.*)s, M_HU_Attribute is validated")
+	public void validate_m_hu_attribute(
+			final int timeoutSec,
+			@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			validateHUAttribute(timeoutSec, tableRow);
+		}
+	}
+
+	private void validateHUAttribute(
+			final int timeoutSec,
+			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int huID = huTable.getOptional(huIdentifier)
+				.map(I_M_HU::getM_HU_ID)
+				.orElseGet(() -> Integer.parseInt(huIdentifier));
+
+		final I_M_HU huRecord = InterfaceWrapperHelper.load(huID, I_M_HU.class);
+		assertThat(huRecord).isNotNull();
+
+		final String attributeCodeString = DataTableUtil.extractStringForColumnName(tableRow, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
+		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
+
+		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
+		assertThat(attributeRecord).isNotNull();
+
+		final AttributeId attributeId = AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID());
+		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
+		assertThat(huAttribute).isNotNull();
+
+		final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+
+		final Supplier<Boolean> validAttribute = () -> {
+			InterfaceWrapperHelper.refresh(huAttribute);
+
+			return valueNumber.equals(huAttribute.getValueNumber());
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, validAttribute);
+	}
+
+	private void changeHUAttribute(@NonNull final Map<String, String> tableRow)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int huID = huTable.getOptional(huIdentifier)
+				.map(I_M_HU::getM_HU_ID)
+				.orElseGet(() -> Integer.parseInt(huIdentifier));
+
+		final I_M_HU huRecord = InterfaceWrapperHelper.load(huID, I_M_HU.class);
+		assertThat(huRecord).isNotNull();
+
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(storageFactory);
+
+		final IAttributeStorage attributesStorage = attributeStorageFactory.getAttributeStorage(huRecord);
+		attributesStorage.setSaveOnChange(true);
+
+		final String attributeCodeString = DataTableUtil.extractStringForColumnName(tableRow, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
+		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
+
+		final I_M_Attribute attributeRecord = attributesStorage.getAttributeByValueKeyOrNull(attributeCode);
+		assertThat(attributeRecord).isNotNull();
+
+		final BigDecimal valueNumber = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+
+		if (valueNumber != null)
+		{
+			attributesStorage.setValue(attributeRecord, valueNumber);
+		}
+	}
+}

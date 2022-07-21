@@ -115,13 +115,22 @@ public class M_ReceiptSchedule_StepDef
 			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
 			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+			final Integer bPartnerID = bPartnerTable.getOptional(bPartnerIdentifier)
+					.map(I_C_BPartner::getC_BPartner_ID)
+					.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
+			Assertions.assertThat(bPartnerID).isNotNull();
 
 			final String bpPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bpPartnerLocationIdentifier);
+			final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
+					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+					.orElseGet(() -> Integer.parseInt(bpPartnerLocationIdentifier));
+			Assertions.assertThat(bPartnerLocationID).isNotNull();
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
+			final Integer productID = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+			Assertions.assertThat(productID).isNotNull();
 
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyOrdered);
 
@@ -130,9 +139,9 @@ public class M_ReceiptSchedule_StepDef
 
 			assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
 			assertThat(receiptSchedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
-			assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
-			assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
-			assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+			assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartnerID);
+			assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocationID);
+			assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(productID);
 			assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
 			assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
 

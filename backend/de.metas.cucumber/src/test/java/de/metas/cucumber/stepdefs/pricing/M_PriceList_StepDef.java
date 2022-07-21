@@ -254,7 +254,13 @@ public class M_PriceList_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String productPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + ".Identifier");
-			final I_M_ProductPrice productPrice = productPriceTable.get(productPriceIdentifier);
+			final Integer productPriceID = productPriceTable.getOptional(productPriceIdentifier)
+					.map(I_M_ProductPrice::getM_ProductPrice_ID)
+					.orElseGet(() -> Integer.parseInt(productPriceIdentifier));
+
+			assertThat(productPriceID).isNotNull();
+
+			final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(productPriceID, I_M_ProductPrice.class);
 
 			final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
 			productPrice.setPriceStd(priceStd);
@@ -262,6 +268,12 @@ public class M_PriceList_StepDef
 			final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 			final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 			productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
+
+			final String invoicableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
+			if (Check.isNotBlank(invoicableQtyBasedOn))
+			{
+				productPrice.setInvoicableQtyBasedOn(invoicableQtyBasedOn);
+			}
 
 			saveRecord(productPrice);
 
