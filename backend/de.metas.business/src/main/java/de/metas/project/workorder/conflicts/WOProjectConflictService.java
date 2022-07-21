@@ -8,6 +8,7 @@ import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectRepository;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceRepository;
+import de.metas.project.workorder.calendar.WOProjectResourceQuery;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationRepository;
 import de.metas.util.InSetPredicate;
@@ -16,6 +17,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Set;
 
 @Service
@@ -61,10 +63,12 @@ public class WOProjectConflictService
 			return ResourceAllocationConflicts.empty(simulationId);
 		}
 
-		final InSetPredicate<WOProjectResourceId> projectResourceIds = woProjectResourceRepository.getProjectResourceIdsPredicateByResourceIds(
-				resourceIds,
-				activeProjectIds);
-		if(projectResourceIds.isNone())
+		final InSetPredicate<WOProjectResourceId> projectResourceIds = woProjectResourceRepository.getProjectResourceIdsPredicate(
+				WOProjectResourceQuery.builder()
+						.resourceIds(resourceIds)
+						.projectIds(activeProjectIds)
+						.build());
+		if (projectResourceIds.isNone())
 		{
 			return ResourceAllocationConflicts.empty(simulationId);
 		}
@@ -72,7 +76,7 @@ public class WOProjectConflictService
 		return conflictRepository.getActualAndSimulation(simulationId, activeProjectIds, projectResourceIds);
 	}
 
-	public void checkAllConflicts(@NonNull Set<ResourceId> resourceIds)
+	public void checkAllConflicts(@NonNull Collection<ResourceId> resourceIds)
 	{
 		newConflictsChecker()
 				.resourceIds(resourceIds)

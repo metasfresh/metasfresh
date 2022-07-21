@@ -1,62 +1,55 @@
 package de.metas.ui.web.calendar.websocket;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.util.Check;
+import de.metas.i18n.Language;
+import de.metas.project.ProjectId;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.websocket.WebsocketTopicName;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
+import java.util.Map;
 
 @EqualsAndHashCode
-@ToString(of = "prefix")
 public final class CalendarWebSocketNamingStrategy
 {
 	public static final CalendarWebSocketNamingStrategy DEFAULT = new CalendarWebSocketNamingStrategy(MetasfreshRestAPIConstants.WEBSOCKET_ENDPOINT_V2 + "/calendar");
 
 	@Getter
-	private final String prefix;
-	private final String prefixAndSlash;
+	private final String topicNameWithoutParams;
 
-	private static final String NO_SIMULATION_ID_STRING = "actual";
-
-	public CalendarWebSocketNamingStrategy(@NonNull final String prefix)
+	private CalendarWebSocketNamingStrategy(@NonNull final String topicNameWithoutParams)
 	{
-		this.prefix = StringUtils.trimBlankToNull(prefix);
-		if (this.prefix == null)
+		this.topicNameWithoutParams = StringUtils.trimBlankToNull(topicNameWithoutParams);
+		if (this.topicNameWithoutParams == null)
 		{
-			throw new AdempiereException("Invalid prefix: " + prefix);
+			throw new AdempiereException("Invalid prefix: " + topicNameWithoutParams);
 		}
-
-		this.prefixAndSlash = prefix + "/";
-	}
-
-	public boolean matches(final WebsocketTopicName topicName)
-	{
-		return topicName != null && topicName.startsWith(prefixAndSlash);
 	}
 
 	public ParsedCalendarWebsocketTopicName parse(@NonNull final WebsocketTopicName topicName)
 	{
-		final String topicNameString = topicName.getAsString();
-		if (!topicNameString.startsWith(prefixAndSlash))
+		if (!topicName.startsWith(topicNameWithoutParams))
 		{
 			throw new AdempiereException("Invalid topic: " + topicName);
 		}
 
 		try
 		{
-			final String[] parts = topicNameString.substring(prefixAndSlash.length())
-					.split("/");
+			final Map<String, String> params = parseQueryParams(topicName);
 
 			return ParsedCalendarWebsocketTopicName.builder()
-					.simulationId(parts.length >= 1 ? parseSimulationIdFromString(parts[0]) : null)
-					.adLanguage(parts.length >= 2 ? StringUtils.trimBlankToNull(parts[1]) : null)
+					.topicName(topicName)
+					.simulationId(StringUtils.trimBlankToOptional(params.get("simulationId")).map(SimulationPlanId::ofObject).orElse(null))
+					.adLanguage(StringUtils.trimBlankToOptional(params.get("adLanguage")).orElseGet(Language::getBaseAD_Language))
+					.onlyResourceIds(CalendarResourceId.ofCommaSeparatedString(params.get("onlyResourceIds")).orElseGet(ImmutableSet::of))
+					.onlyProjectId(StringUtils.trimBlankToOptional((params.get("onlyProjectId"))).map(ProjectId::ofObject).orElse(null))
 					.build();
 		}
 		catch (Exception ex)
@@ -65,21 +58,12 @@ public final class CalendarWebSocketNamingStrategy
 		}
 	}
 
-	@Nullable
-	private static SimulationPlanId parseSimulationIdFromString(final String simulationIdStr)
+	private static Map<String, String> parseQueryParams(final WebsocketTopicName topicName)
 	{
-		if (Check.isBlank(simulationIdStr))
-		{
-			return null;
-		}
-		else if (NO_SIMULATION_ID_STRING.equals(simulationIdStr))
-		{
-			return null;
-		}
-		else
-		{
-			return SimulationPlanId.ofObject(simulationIdStr);
-		}
+		final String topicNameString = topicName.getAsString();
+		final int idx = topicNameString.indexOf("?");
+		return idx > 0
+				? StringUtils.parseURLQueryString(topicNameString.substring(idx + 1))
+				: ImmutableMap.of();
 	}
-
 }

@@ -43,9 +43,9 @@ public class JsonCalendarEntriesQuery
 {
 	@Nullable SimulationPlanId simulationId;
 	@Nullable @Singular Set<CalendarGlobalId> calendarIds;
-	@Nullable JsonDateTime startDate;
-	@Nullable JsonDateTime endDate;
-
 	@Nullable Set<CalendarResourceId> onlyResourceIds;
 	@Nullable ProjectId onlyProjectId;
+
+	@Nullable JsonDateTime startDate;
+	@Nullable JsonDateTime endDate;
 }

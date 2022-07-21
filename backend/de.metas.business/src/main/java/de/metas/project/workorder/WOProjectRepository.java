@@ -48,6 +48,11 @@ public class WOProjectRepository
 	public WOProject getById(@NonNull final ProjectId projectId)
 	{
 		final I_C_Project record = InterfaceWrapperHelper.load(projectId, I_C_Project.class);
+		if (record == null)
+		{
+			throw new AdempiereException("No project found for " + projectId);
+		}
+
 		return fromRecord(record)
 				.orElseThrow(() -> new AdempiereException("Not a Work Order project: " + record));
 	}

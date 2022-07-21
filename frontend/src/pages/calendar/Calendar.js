@@ -51,6 +51,8 @@ const Calendar = ({
 
   useCalendarWebsocketEvents({
     simulationId,
+    onlyResourceIds,
+    onlyProjectId,
     onWSEvents: calendarData.applyWSEvents,
   });
 

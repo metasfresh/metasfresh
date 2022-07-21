@@ -221,7 +221,7 @@ public class WOProjectCalendarService implements CalendarService
 
 		//
 		// For given onlyProjectId,
-		// * up stream: fetch all parent projects, basically to have all the budget projects hierarchy
+		// * up stream: fetch all parent projects, basically to have all the budget project hierarchy
 		// * down stream: fetch ALL children projects. So in case onlyProjectId is a budget project we will get all child budget projects and work order projects beneath
 		final ImmutableSet<ProjectId> onlyProjectIds = ImmutableSet.<ProjectId>builder()
 				.addAll(genericProjectRepository.getProjectIdsUpStream(onlyProjectId))

@@ -27,13 +27,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.calendar.WOProjectResourceQuery;
 import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -59,17 +59,24 @@ public class WOProjectService
 		return woProjectRepository.getById(projectId);
 	}
 
-	public List<WOProject> queryActiveProjects(
-			@NonNull final InSetPredicate<ResourceId> resourceIds,
-			@NonNull final InSetPredicate<ProjectId> projectIds)
+	public List<WOProject> getAllActiveProjects(@NonNull final Set<ProjectId> projectIds)
 	{
-		final InSetPredicate<ProjectId> projectIdsEffective = woProjectResourceRepository.getProjectIdsPredicateByResourceIds(resourceIds, projectIds);
-		return woProjectRepository.getAllActiveProjects(projectIdsEffective);
+		if(projectIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return woProjectRepository.getAllActiveProjects(InSetPredicate.only(projectIds));
 	}
 
-	public WOProjectResourcesCollection getResourcesByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public ImmutableList<WOProjectResource> getResources(@NonNull final WOProjectResourceQuery query)
 	{
-		return woProjectResourceRepository.getByProjectIds(projectIds);
+		final InSetPredicate<WOProjectResourceId> projectResourceIds = woProjectResourceRepository.getProjectResourceIdsPredicate(query);
+		if (projectResourceIds.isNone())
+		{
+			return ImmutableList.of();
+		}
+
+		return woProjectResourceRepository.getByIds(projectResourceIds);
 	}
 
 	public WOProjectResources getResourcesByProjectId(@NonNull final ProjectId projectId)
@@ -82,14 +89,14 @@ public class WOProjectService
 		return woProjectResourceRepository.getResourceIdsByProjectResourceIds(projectResourceIds);
 	}
 
-	public Map<ProjectId, WOProjectSteps> getStepsByProjectIds(@NonNull final Set<ProjectId> projectIds)
-	{
-		return woProjectStepRepository.getByProjectIds(projectIds);
-	}
-
 	public WOProjectSteps getStepsByProjectId(@NonNull final ProjectId projectId)
 	{
 		return woProjectStepRepository.getByProjectId(projectId);
+	}
+
+	public ImmutableList<WOProjectStep> getStepsByIds(@NonNull final Set<WOProjectStepId> stepIds)
+	{
+		return woProjectStepRepository.getByIds(stepIds);
 	}
 
 	public void updateStepsDateRange(@NonNull final Set<WOProjectStepId> projectStepIds)
