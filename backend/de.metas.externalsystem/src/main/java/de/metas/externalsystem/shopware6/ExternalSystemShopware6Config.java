@@ -77,14 +77,14 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	@Nullable
 	String shopwareIdJSONPath;
 
-	boolean syncStockToShopware6;
+	boolean syncAvailableForSalesToShopware6;
 
 	/**
 	 * Percentage - e.g. 90% - of the actually availabe stock that we report to shopware.
 	 * Can be used to maintain a safety margin.
 	 */
 	@NonNull
-	Percent percentageToDeductFromAvailableStock;
+	Percent percentageToDeductFromAvailableForSales;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -105,8 +105,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull ProductLookup productLookup,
 			final @Nullable String metasfreshIdJSONPath,
 			final @Nullable String shopwareIdJSONPath,
-			final boolean syncStockToShopware6,
-			final @Nullable Percent percentageToDeductFromAvailableStock)
+			final boolean syncAvailableForSalesToShopware6,
+			final @Nullable Percent percentageToDeductFromAvailableForSales)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -126,8 +126,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.productLookup = productLookup;
 		this.metasfreshIdJSONPath = metasfreshIdJSONPath;
 		this.shopwareIdJSONPath = shopwareIdJSONPath;
-		this.syncStockToShopware6 = syncStockToShopware6;
-		this.percentageToDeductFromAvailableStock = CoalesceUtil.coalesceNotNull(percentageToDeductFromAvailableStock, Percent.ZERO);
+		this.syncAvailableForSalesToShopware6 = syncAvailableForSalesToShopware6;
+		this.percentageToDeductFromAvailableForSales = CoalesceUtil.coalesceNotNull(percentageToDeductFromAvailableForSales, Percent.ZERO);
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

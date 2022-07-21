@@ -277,27 +277,27 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Is sync stock to Shopware6.
+	 * Set Is sync available for sales to Shopware6.
 	 * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSyncStockToShopware6 (boolean IsSyncStockToShopware6);
+	void setIsSyncAvailableForSalesToShopware6 (boolean IsSyncAvailableForSalesToShopware6);
 
 	/**
-	 * Get Is sync stock to Shopware6.
+	 * Get Is sync available for sales to Shopware6.
 	 * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSyncStockToShopware6();
+	boolean isSyncAvailableForSalesToShopware6();
 
-	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_IsSyncStockToShopware6 = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "IsSyncStockToShopware6", null);
-	String COLUMNNAME_IsSyncStockToShopware6 = "IsSyncStockToShopware6";
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_IsSyncAvailableForSalesToShopware6 = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "IsSyncAvailableForSalesToShopware6", null);
+	String COLUMNNAME_IsSyncAvailableForSalesToShopware6 = "IsSyncAvailableForSalesToShopware6";
 
 	/**
 	 * Set Address JSON-path.
@@ -482,26 +482,26 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Set Percentage deduction.
-	 * Percentage that is subtracted from the actual available stock before it is transferred to Shopware. For example, with 25% only three quarters of the actually available stock is reported to the shop.
+	 * Percentage that is subtracted from the actual available for sales before it is transferred to Shopware. For example, with 25% only three quarters of the actually available for sales is reported to the shop.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPercentageOfAvailableStockToSync (BigDecimal PercentageOfAvailableStockToSync);
+	void setPercentageOfAvailableForSalesToSync (BigDecimal PercentageOfAvailableForSalesToSync);
 
 	/**
 	 * Get Percentage deduction.
-	 * Percentage that is subtracted from the actual available stock before it is transferred to Shopware. For example, with 25% only three quarters of the actually available stock is reported to the shop.
+	 * Percentage that is subtracted from the actual available for sales before it is transferred to Shopware. For example, with 25% only three quarters of the actually available for sales is reported to the shop.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getPercentageOfAvailableStockToSync();
+	BigDecimal getPercentageOfAvailableForSalesToSync();
 
-	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_PercentageOfAvailableStockToSync = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "PercentageOfAvailableStockToSync", null);
-	String COLUMNNAME_PercentageOfAvailableStockToSync = "PercentageOfAvailableStockToSync";
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_PercentageOfAvailableForSalesToSync = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "PercentageOfAvailableForSalesToSync", null);
+	String COLUMNNAME_PercentageOfAvailableForSalesToSync = "PercentageOfAvailableForSalesToSync";
 
 	/**
 	 * Set Product Lookup.

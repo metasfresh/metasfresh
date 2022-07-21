@@ -58,6 +58,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
@@ -143,6 +144,8 @@ class ExternalSystemConfigRepoTest
 		childRecord.setM_FreightCost_ReducedVAT_Product_ID(30);
 		childRecord.setM_PriceList_ID(40);
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setIsSyncAvailableForSalesToShopware6(true);
+		childRecord.setPercentageOfAvailableForSalesToSync(BigDecimal.TEN);
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);

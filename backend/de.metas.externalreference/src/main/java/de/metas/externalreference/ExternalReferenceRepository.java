@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -170,6 +171,20 @@ public class ExternalReferenceRepository
 	}
 
 	@NonNull
+	public Stream<ExternalReference> getExternalReferencesByTypeAndConfigId(
+			@NonNull final IExternalReferenceType type,
+			@NonNull final ExternalSystemParentConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID, configId.getRepoId())
+				.create()
+				.iterateAndStream()
+				.map(this::buildExternalReference);
+	}
+
+	@NonNull
 	public Optional<ExternalReference> getExternalReferenceByMFReference(@NonNull final GetExternalReferenceByRecordIdReq request)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
@@ -185,9 +200,9 @@ public class ExternalReferenceRepository
 	@NonNull
 	public ExternalReference getById(@NonNull final ExternalReferenceId externalReferenceId)
 	{
-		final I_S_ExternalReference externalReference =  load(externalReferenceId, I_S_ExternalReference.class);
+		final I_S_ExternalReference externalReference = load(externalReferenceId, I_S_ExternalReference.class);
 
-		Check.assumeNotNull(externalReference,"There is an S_ExternalReference record for id: {}", externalReference);
+		Check.assumeNotNull(externalReference, "There is an S_ExternalReference record for id: {}", externalReference);
 
 		return buildExternalReference(externalReference);
 	}
@@ -197,7 +212,7 @@ public class ExternalReferenceRepository
 	{
 		final I_S_ExternalReference externalReference = load(externalReferenceId, I_S_ExternalReference.class);
 
-		Check.assumeNotNull(externalReference,"There is an S_ExternalReference record for id: {}", externalReference);
+		Check.assumeNotNull(externalReference, "There is an S_ExternalReference record for id: {}", externalReference);
 
 		return UserId.ofRepoId(externalReference.getCreatedBy());
 	}
@@ -277,10 +292,10 @@ public class ExternalReferenceRepository
 	private IExternalSystem extractSystem(@NonNull final I_S_ExternalReference record)
 	{
 		return externalSystems.ofCode(record.getExternalSystem()).orElseThrow(() ->
-				new AdempiereException("Unknown ExternalSystem=" + record.getExternalSystem())
-						.appendParametersToMessage()
-						.setParameter("system", record.getExternalSystem())
-						.setParameter("S_ExternalReference", record));
+																					  new AdempiereException("Unknown ExternalSystem=" + record.getExternalSystem())
+																							  .appendParametersToMessage()
+																							  .setParameter("system", record.getExternalSystem())
+																							  .setParameter("S_ExternalReference", record));
 	}
 
 	private IExternalReferenceType extractType(@NonNull final I_S_ExternalReference record)

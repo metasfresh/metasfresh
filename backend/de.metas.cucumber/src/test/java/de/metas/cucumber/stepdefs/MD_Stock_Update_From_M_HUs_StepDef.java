@@ -1,16 +1,8 @@
-package de.metas.material.cockpit.stock.process;
-
-import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.stock.HUStockService;
-import de.metas.process.JavaProcess;
-import de.metas.process.RunOutOfTrx;
-import org.compiere.SpringContextHolder;
-
 /*
  * #%L
- * metasfresh-material-cockpit
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,23 +20,25 @@ import org.compiere.SpringContextHolder;
  * #L%
  */
 
-/**
- * Reset the {@link I_MD_Stock} table.
- * May be run in parallel to "normal" production stock changes.
- *
- * @author metas-dev <dev@metasfresh.com>
- */
-public class MD_Stock_Update_From_M_HUs extends JavaProcess
+package de.metas.cucumber.stepdefs;
+
+import de.metas.material.cockpit.stock.HUStockService;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
+import io.cucumber.java.en.And;
+import org.compiere.SpringContextHolder;
+
+public class MD_Stock_Update_From_M_HUs_StepDef
 {
+	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 	private final HUStockService huStockService = SpringContextHolder.instance.getBean(HUStockService.class);
 
-	@Override
-	@RunOutOfTrx
-	protected String doIt()
+	@And("MD_Stock_Update_From_M_HUs process is called")
+	public void call_MD_Stock_Update_From_M_HUs_process()
 	{
-		huStockService.createAndHandleDataUpdateRequests(getProcessInfo().getPinstanceId());
-		addLog("Created and handled DataUpdateRequests for all MD_Stock_From_HUs_V records");
+		final PInstanceId pInstanceId = instanceDAO.createSelectionId();
 
-		return MSG_OK;
+		huStockService.createAndHandleDataUpdateRequests(pInstanceId);
 	}
 }
