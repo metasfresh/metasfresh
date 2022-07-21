@@ -400,7 +400,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		// Line Warehouse & Locator (retrieved from current Shipment)
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(currentShipment.getM_Warehouse_ID());
-			final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+			final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 			shipmentLine.setM_Locator_ID(locatorId.getRepoId());
 		}
 

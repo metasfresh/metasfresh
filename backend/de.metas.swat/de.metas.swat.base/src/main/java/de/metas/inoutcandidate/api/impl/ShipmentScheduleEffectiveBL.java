@@ -83,7 +83,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	public LocatorId getDefaultLocatorId(final I_M_ShipmentSchedule sched)
 	{
 		final WarehouseId warehouseId = getWarehouseId(sched);
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override

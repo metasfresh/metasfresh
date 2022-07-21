@@ -552,7 +552,7 @@ public class ReplenishReport extends JavaProcess
 				info += " - " + move.getDocumentNo();
 			}
 			//	To
-			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
+			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
 			//	From: Look-up Storage
 			final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(replenish.getM_Product_ID());
 			MStorage[] storages = MStorage.getWarehouse(getCtx(),
@@ -683,8 +683,8 @@ public class ReplenishReport extends JavaProcess
 			}
 
 			// To
-			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
-			final LocatorId M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(whSource.getM_Warehouse_ID()));
+			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
+			final LocatorId M_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(whSource.getM_Warehouse_ID()));
 
 			// From: Look-up Storage
 			/*

@@ -67,9 +67,7 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -120,13 +118,13 @@ public class HUMovementBL implements IHUMovementBL
 						))
 				.orElseThrow(() -> new AdempiereException("Missing AD_SysConfig record with Name = " + SYSCONFIG_DirectMove_Warehouse_ID + " for AD_Client_ID=" + adClientId + " and AD_Org_ID=" + adOrgId));
 
-		return warehouseBL.getDefaultLocatorId(directMoveWarehouseId);
+		return warehouseBL.getOrCreateDefaultLocatorId(directMoveWarehouseId);
 	}
 
 	@Override
 	public HUMovementGeneratorResult moveHUsToWarehouse(@NonNull final List<I_M_HU> hus, @NonNull final WarehouseId warehouseToId)
 	{
-		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 		return moveHUsToLocator(hus, locatorToId);
 	}
 
