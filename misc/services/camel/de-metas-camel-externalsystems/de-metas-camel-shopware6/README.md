@@ -203,6 +203,17 @@ we need to invoke the endpoint `api/v2/orders/sales/candidates/bulk`
 
 #### 1. OrderCandidate - all `metasfresh-column` values refer to `C_OLCand` columns
 
+1.1 `PaymentMethodType` - used to check if order is ready for import, otherwise the order is skipped. 
+Based on `PaymentMethodType`, order transaction must be:
+* `debit_payment` - `SEPA` -> `open` or in `progress` (`debit-payments` are automatically set to "inProgress" in the shop)
+* `pre_payment` - `Vorkasse` -> `open`
+* `invoice_payment` - `Rechnung` -> `open`
+* `pay_pal_payment_handler` - `PayPal` -> `paid`
+* `a_c_d_c_handler` - `Kredit- oder Debitkarte` -> `open` or in `progress`
+* the following types will always result in skipping the order
+  * `pay_pal_pui_payment_handler` - `Rechnungskauf Paypal`
+  * `cash_payment` - `Nachnahme`
+
 Shopware | metasfresh-column        | mandatory in mf | metasfresh-json | note |
 ---- |--------------------------| ---- | ---- | ---- |
 JsonExternalSystemRequest.orgCode | `ad_org_id`              | Y | JsonOLCandCreateRequest.orgCode | |

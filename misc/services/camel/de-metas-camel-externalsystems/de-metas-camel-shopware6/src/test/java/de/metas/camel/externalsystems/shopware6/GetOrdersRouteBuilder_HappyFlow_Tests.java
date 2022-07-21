@@ -347,6 +347,8 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		private final JsonExternalSystemRequest externalSystemRequest;
 		private final String jsonOrderLinesPath;
 		private final String jsonOrderPath;
+		private final String customJsonPaymentMethod;
+		private final String customJsonOrderTransaction;
 
 		private final int numberOfPages;
 		private final int pageSize;
@@ -365,12 +367,33 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 				final String jsonOrderPath,
 				final int pageSize)
 		{
+			this(externalSystemRequest, jsonOrderLinesPath, numberOfPages, jsonOrderPath, pageSize, null, null);
+		}
+
+		public MockBuildOrdersContextProcessor(
+				@NonNull final JsonExternalSystemRequest externalSystemRequest,
+				@Nullable final String jsonOrderLinesPath,
+				final int numberOfPages,
+				final String jsonOrderPath,
+				final int pageSize,
+				@Nullable final String customJsonPaymentMethod,
+				@Nullable final String customJsonOrderTransaction)
+
+		{
 			this.externalSystemRequest = externalSystemRequest;
 			this.numberOfPages = numberOfPages;
 
 			this.jsonOrderLinesPath = (Check.isNotBlank(jsonOrderLinesPath))
 					? jsonOrderLinesPath
 					: JSON_ORDER_LINES;
+
+			this.customJsonPaymentMethod = (Check.isNotBlank(customJsonPaymentMethod))
+					? customJsonPaymentMethod
+					: JSON_ORDER_PAYMENT_METHOD_PATH;
+
+			this.customJsonOrderTransaction = (Check.isNotBlank(customJsonOrderTransaction))
+					? customJsonOrderTransaction
+					: JSON_ORDER_TRANSACTIONS_PATH;
 
 			this.jsonOrderPath = jsonOrderPath;
 			this.pageSize = pageSize;
@@ -450,7 +473,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonOrderLines.class), any());
 
 			//5. mock order transactions
-			final InputStream orderTrxIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_TRANSACTIONS_PATH);
+			final InputStream orderTrxIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(customJsonOrderTransaction);
 			final JsonOrderTransactions orderTransactions = mapper.readValue(orderTrxIS, JsonOrderTransactions.class);
 
 			Mockito.doReturn(ResponseEntity.ok(orderTransactions))
@@ -458,7 +481,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonOrderTransactions.class), any());
 
 			//6. mock payment method
-			final InputStream paymentMethodIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_PAYMENT_METHOD_PATH);
+			final InputStream paymentMethodIS =GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(customJsonPaymentMethod);
 			final JsonPaymentMethod paymentMethod = mapper.readValue(paymentMethodIS, JsonPaymentMethod.class);
 
 			Mockito.doReturn(Optional.of(paymentMethod))
