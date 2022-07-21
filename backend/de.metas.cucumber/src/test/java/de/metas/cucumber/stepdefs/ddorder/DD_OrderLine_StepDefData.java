@@ -27,4 +27,8 @@ import org.eevolution.model.I_DD_OrderLine;
 
 public class DD_OrderLine_StepDefData extends StepDefData<I_DD_OrderLine>
 {
+	public DD_OrderLine_StepDefData()
+	{
+		super(I_DD_OrderLine.class);
+	}
 }

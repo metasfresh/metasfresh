@@ -24,4 +24,8 @@ package de.metas.cucumber.stepdefs;
 
 public class IdentifierIds_StepDefData extends StepDefData<Integer>
 {
+	public IdentifierIds_StepDefData()
+	{
+		super(null);
+	}
 }
