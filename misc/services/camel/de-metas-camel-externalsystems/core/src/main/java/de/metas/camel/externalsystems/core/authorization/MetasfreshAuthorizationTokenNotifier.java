@@ -116,20 +116,17 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 
 		final Exception exception = sentEvent.getExchange().getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
 
-		if (exception == null)
+		if (!(exception instanceof HttpOperationFailedException))
 		{
 			return;
 		}
 
-		if (exception instanceof HttpOperationFailedException)
-		{
-			final HttpOperationFailedException httpOperationFailedException = (HttpOperationFailedException)exception;
+		final HttpOperationFailedException httpOperationFailedException = (HttpOperationFailedException)exception;
 
-			if (httpOperationFailedException.getStatusCode() == 401)
-			{
-				this.customRouteController.stopAllRoutes();
-				producerTemplate.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "Trigger external system authentication for metasfresh!");
-			}
+		if (httpOperationFailedException.getStatusCode() == 401)
+		{
+			this.customRouteController.stopAllRoutes();
+			producerTemplate.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "Trigger external system authentication for metasfresh!");
 		}
 	}
 }

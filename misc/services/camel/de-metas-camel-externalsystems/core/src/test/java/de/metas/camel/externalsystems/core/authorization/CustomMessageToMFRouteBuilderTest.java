@@ -66,15 +66,14 @@ import static org.assertj.core.api.Assertions.*;
 
 public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 {
-	private static final String MOCK_CUSTOM_EXTERNAL_SYSTEM_TO_METASFRESH = "mock:Custom_ExternalSystem_To_Metasfresh";
 	private static final String MOCK_CLEAR_HU = "mock:clearHURoute";
 
 	private static final String JSON_EXTERNAL_SYSTEM_MESSAGE_RESPONSE = "10_JsonExternalSystemMessage.json";
 	private static final String JSON_HU_CLEAR_REQUEST = "20_JsonHUClear.json";
 	private static final String JSON_CLEARANCE_STATUS_REQUEST = "30_ClearanceStatusRequest.json";
 
-	MetasfreshAuthProvider metasfreshAuthProvider;
-	CustomRouteController customRouteController;
+	private MetasfreshAuthProvider metasfreshAuthProvider;
+	private CustomRouteController customRouteController;
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -100,7 +99,7 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		metasfreshAuthProvider = new MetasfreshAuthProvider();
 		customRouteController = new CustomRouteController(camelContext);
 
-		//dev-note: org.apache.camel.spring.boot.CamelContextConfiguration.beforeApplicationStart
+		//dev-note: in production code this is covered by org.apache.camel.spring.boot.CamelContextConfiguration.beforeApplicationStart
 		camelContext.setAutoStartup(false);
 
 		return camelContext;
@@ -121,10 +120,10 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		//start on demand
 		final RouteBuilder restAPIRouteBuilder = new RestAPIRouteBuilder();
 
-		//order
+		//with a start-up order set
 		final RouteBuilder externalSystemRestAPIHandler = new ExternalSystemRestAPIHandler(ImmutableList.of((IExternalSystemService)restAPIRouteBuilder));
 
-		final RoutesBuilder[] routesBuilders = new RoutesBuilder[] {
+		return new RoutesBuilder[] {
 				customMessageToMFRouteBuilder,
 				customMessageFromMFRouteBuilder,
 				errorReportRouteBuilder,
@@ -133,8 +132,6 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 				restAPIRouteBuilder,
 				externalSystemRestAPIHandler
 		};
-
-		return routesBuilders;
 	}
 
 	@Override
@@ -149,16 +146,20 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		//when
 		context.start();
 
-		//dev-note: org.apache.camel.spring.boot.CamelContextConfiguration.afterApplicationStart
+		//dev-note: in production code this is covered by org.apache.camel.spring.boot.CamelContextConfiguration.beforeApplicationStart
 		customRouteController.startAlwaysRunningRoutes();
 
-		//then
-		validateRoutesWithoutMFToken();
+		//given initial state
+		// then validate routes have the appropriate "running" status
+		validateRoutesWhenNoAuthPresent();
+
+		//given an auth token is received from MF
+		// then validate appropriate routes have started in the proper order
 		validateMFResponseWithAuthToken();
 	}
 
 	@Test
-	public void happyFlow_MetasfreshAuthorizationTokenNotifier_withAuthToken() throws Exception
+	public void givenAnExchange_whenCallingMFAPI_thenAuthNotifierProvidesAnAuthToken() throws Exception
 	{
 		//given
 		final MockCustomMessageToMFProcessor mockCustomMessageToMFProcessor = new MockCustomMessageToMFProcessor();
@@ -173,13 +174,14 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 
 		context.start();
 
-		//dev-note: org.apache.camel.spring.boot.CamelContextConfiguration.afterApplicationStart
+		//dev-note: in production code this is covered by org.apache.camel.spring.boot.CamelContextConfiguration.beforeApplicationStart
 		customRouteController.startAlwaysRunningRoutes();
 
-		validateRoutesWithoutMFToken();
+		validateRoutesWhenNoAuthPresent();
 		validateMFResponseWithAuthToken();
 
-		//validate ClearanceStatusRequest
+		//validate ClearanceStatusRequest call to MF has the appropriate auth token set
+		//dev-note: this is 100% dependent on MetasfreshAuthorizationTokenNotifier.metasfreshAPIURL
 		final MockEndpoint clearHUMockEP = getMockEndpoint(MOCK_CLEAR_HU);
 		final InputStream clearanceStatusReq = this.getClass().getResourceAsStream(JSON_CLEARANCE_STATUS_REQUEST);
 		clearHUMockEP.expectedBodiesReceived(JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(clearanceStatusReq, JsonSetClearanceStatusRequest.class));
@@ -200,7 +202,7 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	public void happyFlow_MetasfreshAuthorizationTokenNotifier_withoutAuthToken() throws Exception
+	public void givenAnExchange_whenCallingAnythingButMFAPI_thenAuthNotifierDoesntProvideAnAuthToken() throws Exception
 	{
 		//given
 		final MockCustomMessageToMFProcessor mockCustomMessageToMFProcessor = new MockCustomMessageToMFProcessor();
@@ -215,16 +217,15 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 
 		context.start();
 
-		//dev-note: org.apache.camel.spring.boot.CamelContextConfiguration.afterApplicationStart
+		//dev-note: in production code this is covered by org.apache.camel.spring.boot.CamelContextConfiguration.beforeApplicationStart
 		customRouteController.startAlwaysRunningRoutes();
 
-		validateRoutesWithoutMFToken();
+		validateRoutesWhenNoAuthPresent();
 		validateMFResponseWithAuthToken();
 
 		//validate ClearanceStatusRequest
 		final MockEndpoint clearHUMockEP = getMockEndpoint(MOCK_CLEAR_HU);
 		clearHUMockEP.expectedHeaderReceived(CoreConstants.AUTHORIZATION, metasfreshAuthProvider.getAuthToken());
-		clearHUMockEP.assertIsNotSatisfied();
 
 		//send JsonHUClear request
 		final InputStream requestBodyAsStringIS = this.getClass().getResourceAsStream(JSON_HU_CLEAR_REQUEST);
@@ -235,12 +236,13 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + CLEAR_HU_ROUTE_ID, requestBodyAsString);
 
 		//then
+		clearHUMockEP.assertIsNotSatisfied();
 		assertThat(mockCustomMessageToMFProcessor.called).isEqualTo(0);
 		assertThat(mockClearHUProcessor.called).isEqualTo(1);
 	}
 
 	@Test
-	public void happyFlow_whenErrorRoutesAreStopped() throws Exception
+	public void givenAnExchange_whenCallingMFAPI_withNoAuthTokenAvailable_thenShutdownAllRoutesAndRequestAuthToken() throws Exception
 	{
 		//given
 		final MockCustomMessageToMFProcessor mockCustomMessageToMFProcessor = new MockCustomMessageToMFProcessor();
@@ -258,7 +260,7 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		//dev-note: org.apache.camel.spring.boot.CamelContextConfiguration.afterApplicationStart
 		customRouteController.startAlwaysRunningRoutes();
 
-		validateRoutesWithoutMFToken();
+		validateRoutesWhenNoAuthPresent();
 		validateMFResponseWithAuthToken();
 
 		//send JsonHUClear request
@@ -273,10 +275,9 @@ public class CustomMessageToMFRouteBuilderTest extends CamelTestSupport
 		assertThat(mockCustomMessageToMFProcessor.called).isEqualTo(1);
 		assertThat(mockClearHUProcessor.called).isEqualTo(1);
 		validateRoutesAreStopped();
-		assertMockEndpointsSatisfied();
 	}
 
-	private void validateRoutesWithoutMFToken()
+	private void validateRoutesWhenNoAuthPresent()
 	{
 		assertThat(metasfreshAuthProvider.getAuthToken()).isNull();
 

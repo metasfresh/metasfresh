@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.message;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Services;
@@ -30,12 +29,9 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Message;
 
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.*;
 
 public class AD_Message_StepDef
 {
@@ -48,22 +44,17 @@ public class AD_Message_StepDef
 		this.messageTable = messageTable;
 	}
 
-	@And("metasfresh contains AD_Message:")
-	public void metasfresh_contains_ad_message(@NonNull final DataTable dataTable)
+	@And("load AD_Message:")
+	public void load_ad_message(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-
 			final String value = DataTableUtil.extractStringForColumnName(row, I_AD_Message.COLUMNNAME_Value);
 
-			final I_AD_Message adMessageRecord = CoalesceUtil.coalesceSuppliers(
-					() -> queryBL.createQueryBuilder(I_AD_Message.class)
-							.addStringLikeFilter(I_AD_Message.COLUMNNAME_Value, value, true)
-							.create()
-							.firstOnlyOrNull(I_AD_Message.class),
-					() -> InterfaceWrapperHelper.newInstance(I_AD_Message.class));
-
-			assertThat(adMessageRecord).isNotNull();
+			final I_AD_Message adMessageRecord = queryBL.createQueryBuilder(I_AD_Message.class)
+					.addStringLikeFilter(I_AD_Message.COLUMNNAME_Value, value, true)
+					.create()
+					.firstOnlyNotNull(I_AD_Message.class);
 
 			final String messageIdentifier = DataTableUtil.extractRecordIdentifier(row, StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			messageTable.putOrReplace(messageIdentifier, adMessageRecord);

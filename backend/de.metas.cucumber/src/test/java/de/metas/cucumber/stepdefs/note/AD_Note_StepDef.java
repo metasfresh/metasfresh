@@ -33,6 +33,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Note;
@@ -63,9 +64,9 @@ public class AD_Note_StepDef
 	}
 
 	@And("AD_Note table is reset")
-	public void reset_data_export_audit()
+	public void reset_ad_note()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE AD_Note", ITrx.TRXNAME_None);
+		DB.executeUpdateEx("DELETE FROM AD_Note", ITrx.TRXNAME_None);
 	}
 
 	@And("after not more than (.*)s, validate AD_Note:$")
@@ -79,10 +80,19 @@ public class AD_Note_StepDef
 			final String noteIdentifier = DataTableUtil.extractRecordIdentifier(row, I_AD_Note.COLUMNNAME_AD_Note_ID);
 
 			final Supplier<Boolean> adNoteRecordFound = () -> {
-				final I_AD_Note noteRecord = queryBL.createQueryBuilder(I_AD_Note.class)
-						.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Message_ID, message.getAD_Message_ID())
-						.create()
-						.firstOnly(I_AD_Note.class);
+				final IQueryBuilder<I_AD_Note> noteQueryBuilder = queryBL.createQueryBuilder(I_AD_Note.class)
+						.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Message_ID, message.getAD_Message_ID());
+
+				final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_Note.COLUMNNAME_AD_User_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+				if (Check.isNotBlank(userIdentifier))
+				{
+					final I_AD_User user = userTable.get(userIdentifier);
+					assertThat(user).isNotNull();
+
+					noteQueryBuilder.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_User_ID, user.getAD_User_ID());
+				}
+
+				final I_AD_Note noteRecord = noteQueryBuilder.create().firstOnly(I_AD_Note.class);
 
 				if (noteRecord == null)
 				{
@@ -93,16 +103,8 @@ public class AD_Note_StepDef
 				return true;
 			};
 
+			//dev-note: tryAndWait will fail if ad_note record is not found
 			StepDefUtil.tryAndWait(timeoutSec, 1000, adNoteRecordFound);
-
-			final I_AD_Note noteRecord = noteTable.get(noteIdentifier);
-
-			final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_Note.COLUMNNAME_AD_User_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(userIdentifier))
-			{
-				final I_AD_User user = userTable.get(userIdentifier);
-				assertThat(noteRecord.getAD_User_ID()).isEqualTo(user.getAD_User_ID());
-			}
 		}
 	}
 }
