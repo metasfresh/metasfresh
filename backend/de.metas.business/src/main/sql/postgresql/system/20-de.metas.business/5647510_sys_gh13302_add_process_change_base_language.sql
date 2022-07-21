@@ -906,3 +906,96 @@ UPDATE AD_Process SET SQLStatement='select setBaseLanguage(@AD_Language_ID/-1@);
 
 
 
+-- 2022-07-20T21:21:56.896Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Set system base language, given the ne language as a paremeter. ', Help='Set system base language, given the ne language as a paremeter. ', Name='Set Base Language', TechnicalNote='Set system base language, given the ne language as a paremeter. ', Value='SetBaseLanguage',Updated=TO_TIMESTAMP('2022-07-20 22:21:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:21:56.902Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Set system base language, given the ne language as a paremeter. ', IsActive='Y', Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:21:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541973
+;
+
+-- 2022-07-20T21:22:19.987Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Set system base language, given the new language as a paremeter. ', Help='Set system base language, given the new language as a paremeter. ', TechnicalNote='Set system base language, given the new language as a paremeter. ',Updated=TO_TIMESTAMP('2022-07-20 22:22:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:22:19.995Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Set system base language, given the new language as a paremeter. ', IsActive='Y', Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:22:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541973
+;
+
+-- 2022-07-20T21:23:00.028Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:23:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:23:08.172Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:23:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:23:13.952Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:23:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:23:20.674Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Change system base language, given old base language and new one as parameter. ', Help='Change system base language, given old base language and new one as paremeters. ', Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:23:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:23:20.681Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Change system base language, given old base language and new one as parameter. ', IsActive='Y', Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:23:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541973
+;
+
+-- 2022-07-20T21:23:20.663Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:23:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:23:49.843Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Change system base language, given old base language and new one as parameter.',Updated=TO_TIMESTAMP('2022-07-20 22:23:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:24:20.249Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Set system base language, given the new language as a parameter.', Help='Set system base language, given the new language as a paremeter. ',Updated=TO_TIMESTAMP('2022-07-20 22:24:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:24:20.256Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Set system base language, given the new language as a parameter.', IsActive='Y', Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:24:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541973
+;
+
+-- 2022-07-20T21:24:33.131Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Set system base language, given the new language as a parameter.', Help='Set system base language, given the new language as a paremeter.', Name='Set Base Language',Updated=TO_TIMESTAMP('2022-07-20 22:24:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:24:33.121Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Set system base language, given the new language as a parameter.', Help='Set system base language, given the new language as a paremeter.',Updated=TO_TIMESTAMP('2022-07-20 22:24:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:24:41.420Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Set system base language, given the new language as a parameter. ', Help='Set system base language, given the new language as a paremeter. ',Updated=TO_TIMESTAMP('2022-07-20 22:24:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:24:48.361Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Set system base language, given the new language as a parameter. ', Help='Set system base language, given the new language as a paremeter. ',Updated=TO_TIMESTAMP('2022-07-20 22:24:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585075
+;
+
+-- 2022-07-20T21:24:56.023Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Set system base language, given the new language as a parameter. ', Help='Set system base language, given the new language as a paremeter. ',Updated=TO_TIMESTAMP('2022-07-20 22:24:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585075
+;
+
+
+
+
