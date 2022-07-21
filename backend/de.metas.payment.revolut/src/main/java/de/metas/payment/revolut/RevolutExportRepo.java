@@ -92,7 +92,7 @@ public class RevolutExportRepo
 
 		record.setRecipientCountryId(NumberUtils.asInt(request.getRecipientCountryId(), -1));
 		record.setAddressLine1(request.getAddressLine1());
-		record.setAddressLine2(record.getAddressLine2());
+		record.setAddressLine2(request.getAddressLine2());
 		record.setPostalCode(request.getPostalCode());
 		record.setCity(request.getCity());
 		record.setRegionName(request.getRegionName());
