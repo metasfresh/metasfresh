@@ -135,11 +135,11 @@ public class DDOrderProducer
 
 			// get supply source warehouse and locator
 			final I_M_Warehouse warehouseFrom = networkDistributionLine.getM_WarehouseSource();
-			final I_M_Locator locatorFrom = warehouseBL.getDefaultLocator(warehouseFrom);
+			final I_M_Locator locatorFrom = warehouseBL.getOrCreateDefaultLocator(warehouseFrom);
 
 			// get supply target warehouse and locator
 			final I_M_Warehouse warehouseTo = networkDistributionLine.getM_Warehouse();
-			final I_M_Locator locatorTo = warehouseBL.getDefaultLocator(warehouseTo);
+			final I_M_Locator locatorTo = warehouseBL.getOrCreateDefaultLocator(warehouseTo);
 
 			//
 			// Locator From/To
