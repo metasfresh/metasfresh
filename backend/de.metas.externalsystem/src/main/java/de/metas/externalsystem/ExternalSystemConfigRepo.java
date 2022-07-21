@@ -432,8 +432,8 @@ public class ExternalSystemConfigRepo
 				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.metasfreshIdJSONPath(config.getJSONPathMetasfreshID())
 				.shopwareIdJSONPath(config.getJSONPathShopwareID())
-				.syncStockToShopware6(config.isSyncStockToShopware6())
-				.percentageToDeductFromAvailableStock(Percent.ofNullable(config.getPercentageOfAvailableStockToSync()))
+				.syncAvailableForSalesToShopware6(config.isSyncAvailableForSalesToShopware6())
+				.percentageToDeductFromAvailableForSales(Percent.ofNullable(config.getPercentageOfAvailableForSalesToSync()))
 				.build();
 	}
 

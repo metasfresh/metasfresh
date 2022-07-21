@@ -10,6 +10,6 @@
     "ClientSecret": "ClientSecret",
     "ClientId": "ClientId",
     "BasePath": "BasePath",
-    "JsonAvailableStock": "{\"productIdentifier\": {\"metasfreshId\":1,\"externalReference\":\"externalReference\"},\"stock\":10}"
+    "JsonAvailableForSales": "{\"productIdentifier\": {\"metasfreshId\":1,\"externalReference\":\"externalReference\"},\"stock\":10}"
   }
 }

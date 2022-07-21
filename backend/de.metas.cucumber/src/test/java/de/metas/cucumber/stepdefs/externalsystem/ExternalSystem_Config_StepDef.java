@@ -53,6 +53,7 @@ import org.compiere.model.I_AD_UserGroup;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +67,7 @@ import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.CO
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsAutoSendWhenCreatedByUserGroup;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncBPartnersToRabbitMQ;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncExternalReferencesToRabbitMQ;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class ExternalSystem_Config_StepDef
@@ -150,7 +152,7 @@ public class ExternalSystem_Config_StepDef
 	@And("deactivate ExternalSystem_Config")
 	public void deactivate_ExternalSystem_Config(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row: dataTable.asMaps())
+		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String configIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -160,7 +162,7 @@ public class ExternalSystem_Config_StepDef
 			final I_ExternalSystem_Config parentConfig = InterfaceWrapperHelper.load(externalSystemConfig.getExternalSystem_Config_ID(), I_ExternalSystem_Config.class);
 
 			parentConfig.setIsActive(false);
-			InterfaceWrapperHelper.saveRecord(parentConfig);
+			saveRecord(parentConfig);
 
 			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfig.getType());
 
@@ -173,7 +175,7 @@ public class ExternalSystem_Config_StepDef
 							.firstOnlyNotNull(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
 
 					configRabbitMQHttp.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(configRabbitMQHttp);
+					saveRecord(configRabbitMQHttp);
 					break;
 				case GRSSignum:
 					final I_ExternalSystem_Config_GRSSignum configGrsSignum = queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
@@ -182,7 +184,7 @@ public class ExternalSystem_Config_StepDef
 							.firstOnlyNotNull(I_ExternalSystem_Config_GRSSignum.class);
 
 					configGrsSignum.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(configGrsSignum);
+					saveRecord(configGrsSignum);
 					break;
 				case Shopware6:
 					final I_ExternalSystem_Config_Shopware6 configShopware = queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
@@ -191,10 +193,45 @@ public class ExternalSystem_Config_StepDef
 							.firstOnlyNotNull(I_ExternalSystem_Config_Shopware6.class);
 
 					configShopware.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(configShopware);
+					saveRecord(configShopware);
 					break;
 				default:
 					throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+			}
+		}
+	}
+
+	@And("update ExternalSystem_Config")
+	public void update_ExternalSystem_Config(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String configIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
+			assertThat(externalSystemConfig).isNotNull();
+
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfig.getType());
+
+			if (externalSystemType == ExternalSystemType.Shopware6)
+			{
+				final I_ExternalSystem_Config_Shopware6 configShopware = queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
+						.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID, externalSystemConfig.getExternalSystem_Config_ID())
+						.create()
+						.firstOnlyNotNull(I_ExternalSystem_Config_Shopware6.class);
+
+				final BigDecimal percentageOfAvailableForSalesToSync = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_ExternalSystem_Config_Shopware6.COLUMNNAME_PercentageOfAvailableForSalesToSync);
+
+				if (percentageOfAvailableForSalesToSync != null)
+				{
+					configShopware.setPercentageOfAvailableForSalesToSync(percentageOfAvailableForSalesToSync);
+				}
+
+				saveRecord(configShopware);
+			}
+			else
+			{
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 			}
 		}
 	}
@@ -246,8 +283,16 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigShopware6.setBaseURL("notImportant.com");
 				externalSystemConfigShopware6.setIsActive(true);
 
-				final boolean isSyncStockToShopware6 = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ExternalSystem_Config_Shopware6.COLUMNNAME_IsSyncStockToShopware6, false);
-				externalSystemConfigShopware6.setIsSyncStockToShopware6(isSyncStockToShopware6);
+				final boolean isSyncAvailableForSalesToShopware6 = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ExternalSystem_Config_Shopware6.COLUMNNAME_IsSyncAvailableForSalesToShopware6, false);
+				externalSystemConfigShopware6.setIsSyncAvailableForSalesToShopware6(isSyncAvailableForSalesToShopware6);
+
+				final BigDecimal percentageOfAvailableStockToSync = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_Shopware6.COLUMNNAME_PercentageOfAvailableForSalesToSync);
+
+				if (percentageOfAvailableStockToSync != null)
+				{
+					externalSystemConfigShopware6.setPercentageOfAvailableForSalesToSync(percentageOfAvailableStockToSync);
+				}
+
 				InterfaceWrapperHelper.save(externalSystemConfigShopware6);
 				break;
 			case RabbitMQ:
@@ -265,7 +310,7 @@ public class ExternalSystem_Config_StepDef
 				final boolean isAutoSendWhenCreatedByUserGroup = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, false);
 				externalSystemConfigRabbitMQ.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
 				final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_SubjectCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
-				if(Check.isNotBlank(userGroupIdentifier))
+				if (Check.isNotBlank(userGroupIdentifier))
 				{
 					final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);
 					assertThat(userGroup).isNotNull();
