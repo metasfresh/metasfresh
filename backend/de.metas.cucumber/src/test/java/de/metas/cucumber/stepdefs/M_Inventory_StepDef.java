@@ -120,7 +120,7 @@ public class M_Inventory_StepDef
 		final I_M_Product product = productTable.get(productIdentifier);
 
 
-		inventoryLine.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
+		inventoryLine.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
 		inventoryLine.setM_Product_ID(product.getM_Product_ID());
 
 		inventoryLine.setQtyCount(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyCount"));

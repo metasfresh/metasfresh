@@ -190,7 +190,7 @@ import lombok.NonNull;
 			notValidReasons.add("@NotFound@ @M_Warehouse_ID@");
 			return;
 		}
-		rawMaterialsLocator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(rawMaterialsWarehouse);
+		rawMaterialsLocator = Services.get(IWarehouseBL.class).getDefaultLocator(rawMaterialsWarehouse);
 		if (rawMaterialsLocator == null)
 		{
 			notValidReasons.add("@NotFound@ @M_Locator_ID@ (@M_Warehouse_ID@:" + rawMaterialsWarehouse.getName() + ")");

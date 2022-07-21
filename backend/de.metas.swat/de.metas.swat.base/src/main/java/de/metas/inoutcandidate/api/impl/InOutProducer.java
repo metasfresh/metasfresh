@@ -557,7 +557,7 @@ public class InOutProducer implements IInOutProducer
 		// Line Warehouse & Locator
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
-			final LocatorId locatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
+			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 			line.setM_Locator_ID(locatorId.getRepoId());
 		}
 

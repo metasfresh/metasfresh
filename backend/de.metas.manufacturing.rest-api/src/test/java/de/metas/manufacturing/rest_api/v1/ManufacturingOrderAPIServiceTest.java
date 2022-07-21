@@ -556,7 +556,7 @@ public class ManufacturingOrderAPIServiceTest
 			createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
-			locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+			locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
 		}
 
 		public ResourceId createPlant(final String name)

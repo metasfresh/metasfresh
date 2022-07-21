@@ -141,7 +141,7 @@ public class M_Inventory extends CalloutEngine
 		final int chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(inventory.getM_Warehouse_ID());
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(warehouseId);
+		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseId);
 
 		final I_M_InventoryLine line = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class, inventory);
 		line.setAD_Org_ID(inventory.getAD_Org_ID());

@@ -1484,7 +1484,7 @@ public class MInOut extends X_M_InOut implements IDocument
 							storageBL.addAsync(
 									getCtx(),
 									warehouseId.getRepoId(),
-									Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
+									Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
 									sLine.getM_Product_ID(),
 									ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 									BigDecimal.ZERO, reservedDiff, orderedDiff, get_TrxName());
@@ -1531,7 +1531,7 @@ public class MInOut extends X_M_InOut implements IDocument
 						storageBL.addAsync(
 								getCtx(),
 								warehouseId.getRepoId(),
-								Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
+								Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
 								sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());

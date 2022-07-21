@@ -165,7 +165,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			@Nullable final ActivityId activityId,
 			@Nullable final String description)
 	{
-		warehouseLocatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
+		warehouseLocatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 		this.inventoryDocTypeId = inventoryDocTypeId;
 		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 

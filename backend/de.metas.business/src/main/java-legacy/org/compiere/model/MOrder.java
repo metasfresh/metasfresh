@@ -1411,12 +1411,12 @@ public class MOrder extends X_C_Order implements IDocument
 							// product has default locator defined but is not from the order warehouse
 							if (locator.getM_Warehouse_ID() != lineWarehouseId.getRepoId())
 							{
-								M_Locator_ID = warehouseBL.getOrCreateDefaultLocatorId(lineWarehouseId).getRepoId();
+								M_Locator_ID = warehouseBL.getDefaultLocatorId(lineWarehouseId).getRepoId();
 							}
 						}
 						else
 						{
-							M_Locator_ID = warehouseBL.getOrCreateDefaultLocatorId(lineWarehouseId).getRepoId();
+							M_Locator_ID = warehouseBL.getDefaultLocatorId(lineWarehouseId).getRepoId();
 						}
 					}
 					// Update Storage
@@ -1808,7 +1808,7 @@ public class MOrder extends X_C_Order implements IDocument
 					MovementQty, get_TrxName());
 			if (M_Locator_ID <= 0)        // Get default Location
 			{
-				M_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId();
+				M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId();
 			}
 			//
 			ioLine.setOrderLine(oLine, M_Locator_ID, MovementQty);

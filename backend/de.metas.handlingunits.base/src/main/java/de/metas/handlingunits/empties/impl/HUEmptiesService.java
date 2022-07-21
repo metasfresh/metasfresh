@@ -30,6 +30,7 @@ import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 
@@ -90,7 +91,7 @@ public class HUEmptiesService implements IHUEmptiesService
 	public I_M_Locator getEmptiesLocator(final I_M_Warehouse warehouse)
 	{
 		final I_M_Warehouse emptiesWarehouse = getEmptiesWarehouse(warehouse);
-		final I_M_Locator emptiesLocator = InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(emptiesWarehouse), I_M_Locator.class);
+		final I_M_Locator emptiesLocator = InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse), I_M_Locator.class);
 		return emptiesLocator;
 	}
 
