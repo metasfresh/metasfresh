@@ -35,6 +35,7 @@ import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMa
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfig;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.externalsystem.JsonReplacementSource;
+import de.metas.common.externalsystem.JsonTargetFieldType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
@@ -100,7 +101,7 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 			return ImmutableMap.of();
 		}
 
-		if (leichMehlConfig.isPluFileConfigEmpty())
+		if (leichMehlConfig.hasNoPluFileConfigs())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No pluFileConfig found for IExternalSystemChildConfigId: {}! No action is performed!", leichMehlConfig.getId());
 			return ImmutableMap.of();
@@ -112,9 +113,10 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 		parameters.put(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME, leichMehlConfig.getProductBaseFolderName());
 		parameters.put(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER, String.valueOf(leichMehlConfig.getTcpPort()));
 		parameters.put(ExternalSystemConstants.PARAM_TCP_HOST, leichMehlConfig.getTcpHost());
+		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED, String.valueOf(leichMehlConfig.isPluFileExportAuditEnabled()));
 		parameters.put(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS, toJsonProductMapping(productMappingConfig.getPluFile(),
 																						   ProductId.ofRepoId(ppOrder.getM_Product_ID())));
-		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG, toJsonExternalSystemLeichMehlPluFileConfig(leichMehlConfig.getExternalSystemLeichMehlPluFileConfigList()));
+		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG, toJsonPluFileConfig(leichMehlConfig.getPluFileConfigs()));
 
 		return parameters;
 	}
@@ -172,12 +174,12 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 	}
 
 	@NonNull
-	private static String toJsonExternalSystemLeichMehlPluFileConfig(@NonNull final List<ExternalSystemLeichMehlPluFileConfig> configs)
+	private static String toJsonPluFileConfig(@NonNull final List<ExternalSystemLeichMehlPluFileConfig> configs)
 	{
 		final List<JsonExternalSystemLeichMehlPluFileConfig> jsonConfigs = configs.stream()
 				.map(config -> JsonExternalSystemLeichMehlPluFileConfig.builder()
 						.targetFieldName(config.getTargetFieldName())
-						.targetFieldType(config.getTargetFieldType())
+						.targetFieldType(JsonTargetFieldType.ofCode(config.getTargetFieldType().getCode()))
 						.replacePattern(config.getReplaceRegExp())
 						.replacement(config.getReplacement())
 						.replacementSource(JsonReplacementSource.ofCode(config.getReplacementSource().getCode()))

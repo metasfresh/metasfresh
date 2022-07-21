@@ -50,8 +50,10 @@ import org.compiere.model.I_AD_Table;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -97,7 +99,7 @@ public class AD_AttachmentEntry_StepDef
 		final String dataString = DataTableUtil.extractStringOrNullForColumnName(row, I_AD_AttachmentEntry.COLUMNNAME_BinaryData);
 		final String contentType = DataTableUtil.extractStringOrNullForColumnName(row, I_AD_AttachmentEntry.COLUMNNAME_ContentType);
 		final String URL = DataTableUtil.extractStringOrNullForColumnName(row, I_AD_AttachmentEntry.COLUMNNAME_URL);
-		final String fileIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "File.Identifier");
+		final String fileIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.File.Identifier");
 
 		final I_AD_AttachmentEntry attachmentEntry = attachmentEntryTable.get(identifier);
 
@@ -173,21 +175,37 @@ public class AD_AttachmentEntry_StepDef
 		final Map<String, String> row = table.asMaps().get(0);
 		final String orgCode = DataTableUtil.extractStringForColumnName(row, "orgCode");
 		final String type = DataTableUtil.extractStringForColumnName(row, I_AD_AttachmentEntry.Table_Name + "." + I_AD_AttachmentEntry.COLUMNNAME_Type);
-		final String fileIdentifier = DataTableUtil.extractStringForColumnName(row, "File.Identifier");
+		final String fileIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.File.Identifier");
 
-		final File file = fileTable.get(fileIdentifier);
-		assertThat(file).isNotNull();
+		final JsonAttachment.JsonAttachmentBuilder jsonAttachmentBuilder = JsonAttachment.builder();
 
-		final String fileName = file.getName();
+		if (Check.isNotBlank(fileIdentifier))
+		{
+			final File file = fileTable.get(fileIdentifier);
+			assertThat(file).isNotNull();
 
-		final String filePath = file.toPath().toUri().toString();
+			jsonAttachmentBuilder.fileName(file.getName())
+					.data(file.toPath().toUri().toString());
+		}
+		else
+		{
+			final String fileName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_AttachmentEntry.COLUMNNAME_FileName);
+			Optional.ofNullable(fileName)
+					.ifPresent(jsonAttachmentBuilder::fileName);
+
+			final String data = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_AttachmentEntry.COLUMNNAME_BinaryData);
+			if (Check.isNotBlank(data))
+			{
+				final byte[] fileData = data.getBytes();
+				final String encodedData = Base64.getEncoder().encodeToString(fileData);
+				jsonAttachmentBuilder.data(encodedData);
+			}
+		}
 
 		final JsonAttachmentSourceType jsonAttachmentSourceType = JsonAttachmentSourceType.valueOf(type);
 
-		final JsonAttachment jsonAttachment = JsonAttachment.builder()
+		final JsonAttachment jsonAttachment = jsonAttachmentBuilder
 				.type(jsonAttachmentSourceType)
-				.fileName(fileName)
-				.data(filePath)
 				.build();
 
 		final JsonAttachmentRequest.JsonAttachmentRequestBuilder jsonAttachmentRequestBuilder = JsonAttachmentRequest.builder()

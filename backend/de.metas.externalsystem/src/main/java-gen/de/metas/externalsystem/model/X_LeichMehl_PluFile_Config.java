@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements I_LeichMehl_PluFile_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -622477195L;
+	private static final long serialVersionUID = 443241880L;
 
     /** Standard Constructor */
     public X_LeichMehl_PluFile_Config (final Properties ctx, final int LeichMehl_PluFile_Config_ID, @Nullable final String trxName)
@@ -119,8 +97,6 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 	public static final String REPLACEMENTSOURCE_Product = "P";
 	/** PPOrder = PP */
 	public static final String REPLACEMENTSOURCE_PPOrder = "PP";
-	/** BOMLine = BL */
-	public static final String REPLACEMENTSOURCE_BOMLine = "BL";
 	@Override
 	public void setReplacementSource (final java.lang.String ReplacementSource)
 	{
@@ -157,6 +133,25 @@ public class X_LeichMehl_PluFile_Config extends org.compiere.model.PO implements
 		return get_ValueAsString(COLUMNNAME_TargetFieldName);
 	}
 
+	/** 
+	 * TargetFieldType AD_Reference_ID=541611
+	 * Reference name: AttributeTypeList
+	 */
+	public static final int TARGETFIELDTYPE_AD_Reference_ID=541611;
+	/** textArea = textArea */
+	public static final String TARGETFIELDTYPE_TextArea = "textArea";
+	/** EAN13 = EAN13 */
+	public static final String TARGETFIELDTYPE_EAN13 = "EAN13";
+	/** EAN128 = EAN128 */
+	public static final String TARGETFIELDTYPE_EAN128 = "EAN128";
+	/** numberField = numberField */
+	public static final String TARGETFIELDTYPE_NumberField = "numberField";
+	/** date = date */
+	public static final String TARGETFIELDTYPE_Date = "date";
+	/** unitChar = unitChar */
+	public static final String TARGETFIELDTYPE_UnitChar = "unitChar";
+	/** graphic = graphic */
+	public static final String TARGETFIELDTYPE_Graphic = "graphic";
 	@Override
 	public void setTargetFieldType (final java.lang.String TargetFieldType)
 	{

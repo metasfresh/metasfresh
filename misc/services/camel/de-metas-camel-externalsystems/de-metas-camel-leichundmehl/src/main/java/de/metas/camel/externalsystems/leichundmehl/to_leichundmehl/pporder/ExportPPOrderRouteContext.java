@@ -22,13 +22,16 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.JsonProductInfo;
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfig;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonPluFileAudit;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
+import de.metas.common.product.v2.response.JsonProduct;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -37,7 +40,7 @@ import lombok.NonNull;
 import org.apache.camel.RuntimeCamelException;
 
 import javax.annotation.Nullable;
-import java.nio.file.Path;
+import java.util.List;
 
 @Data
 @Builder
@@ -52,6 +55,8 @@ public class ExportPPOrderRouteContext
 	@NonNull
 	private final String productBaseFolderName;
 
+	private final boolean pluFileExportAuditEnabled;
+
 	@NonNull
 	private final JsonExternalSystemLeichMehlConfigProductMapping productMapping;
 
@@ -64,7 +69,7 @@ public class ExportPPOrderRouteContext
 
 	@Nullable
 	@Getter(AccessLevel.NONE)
-	private JsonProductInfo.JsonProductInfoBuilder jsonProductBuilder;
+	private JsonProduct jsonProduct;
 
 	@Nullable
 	@Getter(AccessLevel.NONE)
@@ -72,7 +77,11 @@ public class ExportPPOrderRouteContext
 
 	@Nullable
 	@Getter(AccessLevel.NONE)
-	private Path filePath;
+	private String pluFileXmlContent;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private String filename;
 
 	@NonNull
 	public JsonResponseManufacturingOrder getManufacturingOrderNonNull()
@@ -86,20 +95,14 @@ public class ExportPPOrderRouteContext
 	}
 
 	@NonNull
-	public JsonProductInfo.JsonProductInfoBuilder getProductInfoBuilderNonNull()
+	public JsonProduct getProductInfoNonNull()
 	{
-		if (this.jsonProductBuilder == null)
+		if (this.jsonProduct == null)
 		{
-			throw new RuntimeCamelException("JsonProductInfo.JsonProductInfoBuilder cannot be null!");
+			throw new RuntimeCamelException("JsonProduct cannot be null!");
 		}
 
-		return this.jsonProductBuilder;
-	}
-
-	@NonNull
-	public JsonProductInfo getProductInfoNonNull()
-	{
-		return getProductInfoBuilderNonNull().build();
+		return this.jsonProduct;
 	}
 
 	@NonNull
@@ -110,17 +113,43 @@ public class ExportPPOrderRouteContext
 			throw new RuntimeCamelException("JsonPluFileAudit cannot be null!");
 		}
 
-		return jsonPluFileAudit;
+		return this.jsonPluFileAudit;
 	}
 
 	@NonNull
-	public Path getFilePathNonNull()
+	public String getUpdatedPLUFileContent()
 	{
-		if (this.filePath == null)
+		if (this.pluFileXmlContent == null)
 		{
-			throw new RuntimeCamelException("filePath cannot be null!");
+			throw new RuntimeCamelException("pluFileXmlContent cannot be null!");
 		}
 
-		return this.filePath;
+		return this.pluFileXmlContent;
+	}
+
+	@NonNull
+	public String getFilename()
+	{
+		if (this.filename == null)
+		{
+			throw new RuntimeCamelException("filename cannot be null!");
+		}
+
+		return this.filename;
+	}
+
+	@NonNull
+	public List<String> getPluFileConfigKeys()
+	{
+		return this.pluFileConfigs.getPluFileConfigs()
+				.stream()
+				.map(JsonExternalSystemLeichMehlPluFileConfig::getTargetFieldName)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	public Integer getAdPInstance()
+	{
+		return JsonMetasfreshId.toValue(this.jsonExternalSystemRequest.getAdPInstanceId());
 	}
 }

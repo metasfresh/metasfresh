@@ -32,26 +32,15 @@ public interface LeichMehlConstants
 	String XML_PROPERTY_FILE_ENCODING_VALUE = "Windows-1252";
 	String XML_PROPERTY_VALUE_YES = "yes";
 
-	String PLU_FILE_CONFIG_JSON_PRODUCT_PATTERN = ".*JsonPath=(.*)\\@";
-	String JSON_PATH_PREFIX = "$.";
-
 	String NODE_ATTRIBUTE_TYPE = "xsi:type";
 	String NODE_ATTRIBUTE_NAME = "name";
 
 	String ELEMENT_TAG_PRINT_OBJECTS = "printObjects";
 	String ELEMENT_TAG_PRINT_OBJECT = "printObject";
 
-	String PP_ORDER_TABLE_NAME = "PP_Order";
-
-	String ATTRIBUTE_KEY_TEXTAREA = "textArea";
-	String ATTRIBUTE_KEY_EAN13 = "EAN13";
-	String ATTRIBUTE_KEY_EAN128 = "EAN128";
-	String ATTRIBUTE_KEY_NUMBER_FIELD = "numberField";
-	String ATTRIBUTE_KEY_DATE = "date";
-	String ATTRIBUTE_KEY_UNIT_CHAR = "unitChar";
-	String ATTRIBUTE_KEY_GRAPHIC = "graphic";
-
 	String ATTRIBUTE_TARGET_ELEMENT_DATA = "data";
 	String ATTRIBUTE_TARGET_ELEMENT_FORMAT = "format";
 	String ATTRIBUTE_TARGET_ELEMENT_TEMPLATE = "template";
+
+	String AD_PINSTANCE_TABLE_NAME = "AD_PInstance";
 }

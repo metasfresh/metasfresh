@@ -37,6 +37,7 @@ import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMap
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfig;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfigId;
 import de.metas.externalsystem.leichmehl.ReplacementSource;
+import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -831,8 +832,9 @@ public class ExternalSystemConfigRepo
 				.productBaseFolderName(config.getProduct_BaseFolderName())
 				.tcpPort(config.getTCP_PortNumber())
 				.tcpHost(config.getTCP_Host())
-				.externalSystemLeichMehlConfigProductMappingList(getExternalSystemLeichMehlConfigProductMappings(id))
-				.externalSystemLeichMehlPluFileConfigList(getExternalSystemLeichMehlPluFileConfigs(id))
+				.pluFileExportAuditEnabled(config.isPluFileExportAuditEnabled())
+				.productMappings(getExternalSystemLeichMehlConfigProductMappings(id))
+				.pluFileConfigs(getExternalSystemLeichMehlPluFileConfigs(id))
 				.build();
 	}
 
@@ -884,7 +886,7 @@ public class ExternalSystemConfigRepo
 				.id(ExternalSystemLeichMehlPluFileConfigId.ofRepoId(record.getLeichMehl_PluFile_Config_ID()))
 				.leichMehlConfigId(ExternalSystemLeichMehlConfigId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ID()))
 				.targetFieldName(record.getTargetFieldName())
-				.targetFieldType(record.getTargetFieldType())
+				.targetFieldType(TargetFieldType.ofCode(record.getTargetFieldType()))
 				.replacement(record.getReplacement())
 				.replaceRegExp(record.getReplaceRegExp())
 				.replacementSource(ReplacementSource.ofCode(record.getReplacementSource()))

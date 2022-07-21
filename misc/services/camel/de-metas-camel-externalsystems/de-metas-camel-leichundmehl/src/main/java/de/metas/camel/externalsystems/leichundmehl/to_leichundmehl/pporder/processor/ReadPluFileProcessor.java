@@ -22,11 +22,12 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor;
 
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluElement;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.ExportPPOrderRouteContext;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.FileUpdater;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.file.FileUpdater;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.DispatchMessageRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
@@ -37,11 +38,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -49,12 +47,19 @@ import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichM
 
 public class ReadPluFileProcessor implements Processor
 {
+	private final ProcessLogger processLogger;
+
+	public ReadPluFileProcessor(@NonNull final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+
 	@Override
 	public void process(final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
-		final String content = getFileContent(context);
+		final String content = updatePluFile(context);
 
 		final DispatchMessageRequest request = DispatchMessageRequest.builder()
 				.connectionDetails(context.getConnectionDetails())
@@ -65,7 +70,7 @@ public class ReadPluFileProcessor implements Processor
 	}
 
 	@NonNull
-	private String getFileContent(@NonNull final ExportPPOrderRouteContext context)
+	private String updatePluFile(@NonNull final ExportPPOrderRouteContext context)
 	{
 		final String productBaseFolderName = context.getProductBaseFolderName();
 		final JsonExternalSystemLeichMehlConfigProductMapping mapping = context.getProductMapping();
@@ -73,15 +78,24 @@ public class ReadPluFileProcessor implements Processor
 		try
 		{
 			final Path filePath = getPluFilePath(productBaseFolderName, mapping.getPluFile());
-			context.setFilePath(filePath);
 
-			final String fileContent = readAndUpdateFile(filePath, context);
+			final Document pluDocument = XMLUtil.readFromPath(filePath);
+
+			final JsonPluFileAudit jsonPluFileAudit = updateDocument(pluDocument, filePath, context);
+
+			final String fileContent = XMLUtil.toString(pluDocument);
 
 			final XMLPluRootElement xmlPluRootElement = XMLPluRootElement.builder()
 					.xmlPluElement(XMLPluElement.of(fileContent))
 					.build();
 
-			return XMLUtil.convertToXML(xmlPluRootElement, XMLPluRootElement.class);
+			final String xmlRootFile = XMLUtil.convertToXML(xmlPluRootElement, XMLPluRootElement.class);
+
+			context.setJsonPluFileAudit(jsonPluFileAudit);
+			context.setPluFileXmlContent(xmlRootFile);
+			context.setFilename(filePath.getFileName().toString());
+
+			return xmlRootFile;
 		}
 		catch (final Exception e)
 		{
@@ -90,34 +104,25 @@ public class ReadPluFileProcessor implements Processor
 	}
 
 	@NonNull
+	private JsonPluFileAudit updateDocument(
+			@NonNull final Document pluDocument,
+			@NonNull final Path filepath,
+			@NonNull final ExportPPOrderRouteContext context) throws TransformerException
+	{
+		final FileUpdater fileUpdater = FileUpdater.builder()
+				.fileName(filepath.getFileName().toString())
+				.document(pluDocument)
+				.context(context)
+				.processLogger(processLogger)
+				.build();
+
+		return fileUpdater.updateDocument();
+	}
+
+	@NonNull
 	private static Path getPluFilePath(@NonNull final String productBaseFolderName, @NonNull final String pluFilepath)
 	{
 		return Paths.get(FileUtil.normalizeAndValidateFilePath(productBaseFolderName),
 						 FileUtil.normalizeAndValidateFilePath(pluFilepath));
-	}
-
-	@NonNull
-	private static String readAndUpdateFile(
-			@NonNull final Path filepath,
-			@NonNull final ExportPPOrderRouteContext context) throws IOException, ParserConfigurationException, SAXException, TransformerException
-	{
-		final Document pluDocument = XMLUtil.readFromPath(filepath);
-
-		final FileUpdater fileUpdater = FileUpdater.builder()
-				.document(pluDocument)
-				.context(context)
-				.build();
-
-		fileUpdater.updateDocument();
-
-		final JsonPluFileAudit jsonPluFileAudit = JsonPluFileAudit.builder()
-				.fileName(filepath.getFileName().toString())
-				.missingKeys(fileUpdater.getMissingKeys().build())
-				.processedKeys(fileUpdater.getProcessedKeys().build())
-				.build();
-
-		context.setJsonPluFileAudit(jsonPluFileAudit);
-
-		return XMLUtil.toString(pluDocument);
 	}
 }

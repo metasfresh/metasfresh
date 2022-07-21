@@ -24,17 +24,16 @@ package de.metas.externalsystem.leichmehl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-public class ExternalSystemLeichMehlPluFileConfigId implements IExternalSystemChildConfigId
+public class ExternalSystemLeichMehlPluFileConfigId implements RepoIdAware
 {
 	int repoId;
 
@@ -51,12 +50,6 @@ public class ExternalSystemLeichMehlPluFileConfigId implements IExternalSystemCh
 		return repoId != null && repoId > 0 ? new ExternalSystemLeichMehlPluFileConfigId(repoId) : null;
 	}
 
-	@NonNull
-	public static ExternalSystemLeichMehlPluFileConfigId cast(@NonNull final IExternalSystemChildConfigId id)
-	{
-		return (ExternalSystemLeichMehlPluFileConfigId)id;
-	}
-
 	@JsonValue
 	public int toJson()
 	{
@@ -66,11 +59,5 @@ public class ExternalSystemLeichMehlPluFileConfigId implements IExternalSystemCh
 	private ExternalSystemLeichMehlPluFileConfigId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, I_LeichMehl_PluFile_Config.COLUMNNAME_LeichMehl_PluFile_Config_ID);
-	}
-
-	@Override
-	public ExternalSystemType getType()
-	{
-		return ExternalSystemType.LeichUndMehl;
 	}
 }

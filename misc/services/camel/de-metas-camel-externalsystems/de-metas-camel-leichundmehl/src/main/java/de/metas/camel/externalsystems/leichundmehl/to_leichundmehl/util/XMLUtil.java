@@ -26,9 +26,14 @@ import com.sun.xml.bind.marshaller.CharacterEscapeHandler;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
@@ -104,5 +109,40 @@ public class XMLUtil
 		marshaller.marshal(object, sw);
 
 		return sw.toString();
+	}
+
+	public static boolean hasAttribute(
+			@NonNull final Node node,
+			@NonNull final String attributeName,
+			@NonNull final String matchingValue)
+	{
+		final NamedNodeMap namedNodeMap = node.getAttributes();
+
+		final Node attributeNode = namedNodeMap.getNamedItem(attributeName);
+		if (attributeNode == null || attributeNode.getNodeValue() == null)
+		{
+			return false;
+		}
+
+		return matchingValue.equals(attributeNode.getNodeValue());
+	}
+
+	@Nullable
+	public static Element getElementByTag(@NonNull final Node node, @NonNull final String tagName)
+	{
+		final Element element = node instanceof Document
+				? ((Document)node).getDocumentElement()
+				: (Element)node;
+
+		final NodeList nodeList = element.getElementsByTagName(tagName);
+
+		if (nodeList.getLength() == 0)
+		{
+			return null;
+		}
+
+		final Node childNode = nodeList.item(0);
+
+		return (Element)childNode;
 	}
 }

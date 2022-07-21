@@ -106,4 +106,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	Timestamp getLastRunDate(@NonNull AdProcessId adProcessId, @Nullable PInstanceId pinstanceToExclude);
 
 	void saveProcessInfoLogs(PInstanceId pinstanceId, List<ProcessInfoLog> logs);
+
+	PInstanceId createPInstanceId(@NonNull AdProcessId adProcessId);
 }

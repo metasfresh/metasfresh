@@ -41,7 +41,7 @@ public class JsonExternalSystemLeichMehlPluFileConfig
 
 	@NonNull
 	@JsonProperty("targetFieldType")
-	String targetFieldType;
+	JsonTargetFieldType targetFieldType;
 
 	@NonNull
 	@JsonProperty("replacePattern")
@@ -59,7 +59,7 @@ public class JsonExternalSystemLeichMehlPluFileConfig
 	@JsonCreator
 	public JsonExternalSystemLeichMehlPluFileConfig(
 			@JsonProperty("targetFieldName") @NonNull final String targetFieldName,
-			@JsonProperty("targetFieldType") @NonNull final String targetFieldType,
+			@JsonProperty("targetFieldType") @NonNull final JsonTargetFieldType targetFieldType,
 			@JsonProperty("replacePattern") @NonNull final String replacePattern,
 			@JsonProperty("replacement") @NonNull final String replacement,
 			@JsonProperty("replacementSource") @NonNull final JsonReplacementSource replacementSource)

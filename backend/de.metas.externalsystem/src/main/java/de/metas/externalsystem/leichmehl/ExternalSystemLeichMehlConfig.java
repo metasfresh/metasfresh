@@ -53,11 +53,13 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 	@NonNull
 	String tcpHost;
 
-	@NonNull
-	List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList;
+	boolean pluFileExportAuditEnabled;
 
 	@NonNull
-	List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigList;
+	List<ExternalSystemLeichMehlConfigProductMapping> productMappings;
+
+	@NonNull
+	List<ExternalSystemLeichMehlPluFileConfig> pluFileConfigs;
 
 	@Builder
 	public ExternalSystemLeichMehlConfig(
@@ -67,8 +69,9 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 			@NonNull final String productBaseFolderName,
 			@NonNull final Integer tcpPort,
 			@NonNull final String tcpHost,
-			@NonNull final List<ExternalSystemLeichMehlConfigProductMapping> externalSystemLeichMehlConfigProductMappingList,
-			@NonNull final List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigList)
+			final boolean pluFileExportAuditEnabled,
+			@NonNull final List<ExternalSystemLeichMehlConfigProductMapping> productMappings,
+			@NonNull final List<ExternalSystemLeichMehlPluFileConfig> pluFileConfigs)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -76,8 +79,9 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 		this.productBaseFolderName = productBaseFolderName;
 		this.tcpPort = tcpPort;
 		this.tcpHost = tcpHost;
-		this.externalSystemLeichMehlConfigProductMappingList = externalSystemLeichMehlConfigProductMappingList;
-		this.externalSystemLeichMehlPluFileConfigList = externalSystemLeichMehlPluFileConfigList;
+		this.pluFileExportAuditEnabled = pluFileExportAuditEnabled;
+		this.productMappings = productMappings;
+		this.pluFileConfigs = pluFileConfigs;
 	}
 
 	public static ExternalSystemLeichMehlConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
@@ -87,19 +91,19 @@ public class ExternalSystemLeichMehlConfig implements IExternalSystemChildConfig
 
 	public boolean isProductMappingEmpty()
 	{
-		return externalSystemLeichMehlConfigProductMappingList.isEmpty();
+		return this.productMappings.isEmpty();
 	}
 
 	@NonNull
 	public Optional<ExternalSystemLeichMehlConfigProductMapping> findMappingForQuery(@NonNull final LeichMehlProductMappingQuery query)
 	{
-		return externalSystemLeichMehlConfigProductMappingList.stream()
+		return this.productMappings.stream()
 				.filter(productMapping -> productMapping.isMatchingQuery(query))
 				.min(Comparator.comparing(ExternalSystemLeichMehlConfigProductMapping::getSeqNo));
 	}
 
-	public boolean isPluFileConfigEmpty()
+	public boolean hasNoPluFileConfigs()
 	{
-		return externalSystemLeichMehlPluFileConfigList.isEmpty();
+		return this.pluFileConfigs.isEmpty();
 	}
 }

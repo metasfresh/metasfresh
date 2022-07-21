@@ -210,14 +210,14 @@ public class AttachmentRestService
 
 		request.getReferences()
 				.stream()
-				.map(this::extractTableRecordReference)
+				.map(AttachmentRestService::extractTableRecordReference)
 				.forEach(tableRecordReferenceBuilder::add);
 
 		return tableRecordReferenceBuilder.build();
 	}
 
 	@NonNull
-	private TableRecordReference extractTableRecordReference(@NonNull final JsonTableRecordReference reference)
+	private static TableRecordReference extractTableRecordReference(@NonNull final JsonTableRecordReference reference)
 	{
 		return TableRecordReference.of(reference.getTableName(), reference.getRecordId().getValue());
 	}

@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
@@ -263,7 +241,7 @@ public interface I_LeichMehl_PluFile_Config
 	 * Set Target field type.
 	 * Specifies the type of the field from the PLU file which will be updated.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -273,7 +251,7 @@ public interface I_LeichMehl_PluFile_Config
 	 * Get Target field type.
 	 * Specifies the type of the field from the PLU file which will be updated.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

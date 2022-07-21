@@ -23,15 +23,16 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.leichmehl.ReplacementSource;
+import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
@@ -46,8 +47,6 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.AfterAll;
@@ -866,7 +865,7 @@ class ExternalSystemConfigRepoTest
 	}
 
 	@Test
-	void externalSystem_Config_LeichMehl_ProductMapping_getById()
+	void givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo()
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
@@ -882,43 +881,20 @@ class ExternalSystemConfigRepoTest
 
 		saveRecord(leichMehlConfig);
 
-		ExternalSystemTestUtil.createLeichMehlProductMappingConfigBuilder()
-				.externalSystemLeichMehlConfigId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID())
-				.seqNo(10)
-				.productId(ProductId.ofRepoId(1))
-				.productCategoryId(ProductCategoryId.ofRepoId(2))
-				.bPartnerId(BPartnerId.ofRepoId(3))
-				.build();
+		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
+		productMappingRecord.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
+		productMappingRecord.setSeqNo(10);
+		productMappingRecord.setM_Product_ID(1);
+		productMappingRecord.setM_Product_Category_ID(2);
+		productMappingRecord.setC_BPartner_ID(3);
+		productMappingRecord.setPLU_File("plufile");
 
-		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
-
-		// then
-		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
-	}
-
-	@Test
-	void leichMehl_PluFile_Config_getById()
-	{
-		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
-				.build();
-
-		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
-		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
-		leichMehlConfig.setExternalSystemValue("LeichMehl");
-		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
-		leichMehlConfig.setTCP_PortNumber(8080);
-		leichMehlConfig.setTCP_Host("tcpHost");
-
-		saveRecord(leichMehlConfig);
+		saveRecord(productMappingRecord);
 
 		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
 		pluFileConfig.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
 		pluFileConfig.setTargetFieldName("targetFileName");
-		pluFileConfig.setTargetFieldType("targetFieldType");
+		pluFileConfig.setTargetFieldType(TargetFieldType.Date.getCode());
 		pluFileConfig.setReplacement("replacement");
 		pluFileConfig.setReplaceRegExp("replacePattern");
 		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());

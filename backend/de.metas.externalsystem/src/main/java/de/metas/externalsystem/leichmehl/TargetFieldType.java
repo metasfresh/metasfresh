@@ -32,26 +32,31 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 
 @AllArgsConstructor
-public enum ReplacementSource implements ReferenceListAwareEnum
+public enum TargetFieldType implements ReferenceListAwareEnum
 {
-	Product(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_Product),
-	PPOrder(X_LeichMehl_PluFile_Config.REPLACEMENTSOURCE_PPOrder);
+	TextArea(X_LeichMehl_PluFile_Config.TARGETFIELDTYPE_TextArea),
+	EAN13(X_LeichMehl_PluFile_Config.TARGETFIELDTYPE_EAN13),
+	EAN128(X_LeichMehl_PluFile_Config.TARGETFIELDTYPE_EAN128),
+	NumberField(X_LeichMehl_PluFile_Config.TARGETFIELDTYPE_NumberField),
+	Date(X_LeichMehl_PluFile_Config.TARGETFIELDTYPE_Date),
+	UnitChar(X_LeichMehl_PluFile_Config.TARGETFIELDTYPE_UnitChar),
+	Graphic(X_LeichMehl_PluFile_Config.TARGETFIELDTYPE_Graphic);
 
 	@Getter
 	@NonNull
 	private final String code;
 
 	@Nullable
-	public static ReplacementSource ofNullableCode(@Nullable final String code)
+	public static TargetFieldType ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
 	@NonNull
-	public static ReplacementSource ofCode(@NonNull final String code)
+	public static TargetFieldType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<ReplacementSource> index = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<TargetFieldType> index = ReferenceListAwareEnums.index(values());
 }

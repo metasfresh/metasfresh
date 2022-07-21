@@ -36,7 +36,6 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
-import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -100,9 +99,7 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 
 		while (ppOrderIterator.hasNext())
 		{
-			final PInstanceId pInstanceId = instanceDAO.createADPinstanceAndADPInstancePara(PInstanceRequest.builder()
-																									.processId(adProcessId)
-																									.build());
+			final PInstanceId pInstanceId = instanceDAO.createPInstanceId(adProcessId);
 
 			final TableRecordReference ppOrderRecordRef = TableRecordReference.of(ppOrderIterator.next());
 

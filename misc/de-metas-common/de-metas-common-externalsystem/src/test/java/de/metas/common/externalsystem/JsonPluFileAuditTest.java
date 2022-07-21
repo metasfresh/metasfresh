@@ -66,7 +66,6 @@ public class JsonPluFileAuditTest
 		final JsonPluFileAudit jsonPluFileAudit = JsonPluFileAudit.builder()
 				.fileName("fileName")
 				.missingKeys(ImmutableList.of("key1", "key2"))
-				.processedKeys(ImmutableList.of())
 				.build();
 
 		testSerializeDeserialize(jsonPluFileAudit);

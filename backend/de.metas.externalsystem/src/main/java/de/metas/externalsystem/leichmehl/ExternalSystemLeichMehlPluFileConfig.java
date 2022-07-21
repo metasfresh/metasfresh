@@ -22,17 +22,18 @@
 
 package de.metas.externalsystem.leichmehl;
 
-import de.metas.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
 @Value
 public class ExternalSystemLeichMehlPluFileConfig
 {
+	private final static String DEFAULT_REPLACEMENT_REGEX = ".*";
+
 	@NonNull
 	ExternalSystemLeichMehlPluFileConfigId id;
 
@@ -43,7 +44,7 @@ public class ExternalSystemLeichMehlPluFileConfig
 	String targetFieldName;
 
 	@NonNull
-	String targetFieldType;
+	TargetFieldType targetFieldType;
 
 	@NonNull
 	String replaceRegExp;
@@ -59,19 +60,12 @@ public class ExternalSystemLeichMehlPluFileConfig
 			@NonNull final ExternalSystemLeichMehlPluFileConfigId id,
 			@NonNull final ExternalSystemLeichMehlConfigId leichMehlConfigId,
 			@NonNull final String targetFieldName,
-			@NonNull final String targetFieldType,
+			@NonNull final TargetFieldType targetFieldType,
 			@Nullable final String replaceRegExp,
 			@NonNull final String replacement,
 			@NonNull final ReplacementSource replacementSource)
 	{
-		if (Check.isBlank(replaceRegExp))
-		{
-			throw new AdempiereException("ReplaceRegExp cannot be empty for config")
-					.appendParametersToMessage()
-					.setParameter("ExternalSystemLeichMehlPluFileConfigId", id);
-		}
-
-		this.replaceRegExp = replaceRegExp;
+		this.replaceRegExp = CoalesceUtil.coalesceNotNull(replaceRegExp, DEFAULT_REPLACEMENT_REGEX);
 
 		this.id = id;
 		this.leichMehlConfigId = leichMehlConfigId;

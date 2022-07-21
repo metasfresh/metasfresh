@@ -20,36 +20,25 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.experimental.UtilityClass;
 
-import java.math.BigDecimal;
-
-@Value
-@Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonPrice.JsonPriceBuilder.class)
-public class JsonPrice
+@UtilityClass
+public class JSONUtil
 {
-	@NonNull
-	@JsonProperty("productId")
-	Integer productId;
-
-	@NonNull
-	@JsonProperty("productCode")
-	String productCode;
-
-	@NonNull
-	@JsonProperty("price")
-	BigDecimal price;
-
-	@NonNull
-	@JsonProperty("taxCategoryId")
-	Integer taxCategoryId;
+	public static String writeValueAsString(@NonNull final Object obj)
+	{
+		try
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(obj);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 }
