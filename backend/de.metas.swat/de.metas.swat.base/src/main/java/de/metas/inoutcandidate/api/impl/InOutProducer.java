@@ -27,7 +27,6 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
@@ -523,7 +522,7 @@ public class InOutProducer implements IInOutProducer
 		final I_C_Order order = rs.getC_Order();
 
 		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-		if(order!=null && propagateToMInOut)
+		if (order != null && propagateToMInOut)
 		{
 			receiptHeader.setEMail(order.getEMail());
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());

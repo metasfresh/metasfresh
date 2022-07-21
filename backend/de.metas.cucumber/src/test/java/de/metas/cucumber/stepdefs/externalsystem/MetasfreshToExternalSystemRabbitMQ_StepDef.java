@@ -37,7 +37,6 @@ import de.metas.ServerBoot;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonAvailableForSales;
-import de.metas.common.externalsystem.JsonAvailableStock;
 import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -59,7 +58,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
@@ -77,9 +75,8 @@ import java.util.stream.Stream;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_AVAILABLE_STOCK;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_AVAILABLE_FOR_SALES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;

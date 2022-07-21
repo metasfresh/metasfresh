@@ -52,8 +52,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -75,7 +73,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
@@ -390,7 +387,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setDeliveryViaRule(order.getDeliveryViaRule());
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
-
 
 				if (orderEmailPropagationSysConfigRepo.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())))
 				{
