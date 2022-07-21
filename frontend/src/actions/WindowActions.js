@@ -3,7 +3,7 @@ import counterpart from 'counterpart';
 import currentDevice from 'current-device';
 
 import history from '../services/History';
-import { openInNewTab } from '../utils/index';
+import { getQueryString, openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
@@ -1310,16 +1310,24 @@ export function handleProcessResponse(response, type, id, parentId) {
       let keepProcessModal = false;
 
       if (action) {
-        const { windowId, viewId, documentId, targetTab } = action;
-        let urlPath;
-
         switch (action.type) {
-          case 'displayQRCode':
+          case 'openCalendar': {
+            await dispatch(closeModal());
+            // eslint-disable-next-line no-unused-vars
+            const { type, ...params } = action;
+            const urlPath = `/calendar?` + getQueryString(params);
+            openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
+            return;
+            //break;
+          }
+          case 'displayQRCode': {
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
+          }
           case 'openView': {
             await dispatch(closeModal());
-            urlPath = `/window/${windowId}/?viewId=${viewId}`;
+            const { windowId, viewId, targetTab } = action;
+            const urlPath = `/window/${windowId}/?viewId=${viewId}`;
             if (targetTab === 'NEW_TAB') {
               openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
               return;
@@ -1336,13 +1344,15 @@ export function handleProcessResponse(response, type, id, parentId) {
             }
             break;
           }
-          case 'openReport':
+          case 'openReport': {
             openFile(PROCESS_NAME, type, id, 'print', action.filename);
 
             break;
-          case 'openDocument':
+          }
+          case 'openDocument': {
             await dispatch(closeModal());
-            urlPath = `/window/${windowId}/${documentId}`;
+            const { windowId, documentId, targetTab } = action;
+            const urlPath = `/window/${windowId}/${documentId}`;
 
             if (targetTab === 'NEW_TAB') {
               openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
@@ -1371,7 +1381,8 @@ export function handleProcessResponse(response, type, id, parentId) {
               history.push(`/window/${action.windowId}/${action.documentId}`);
             }
             break;
-          case 'openIncludedView':
+          }
+          case 'openIncludedView': {
             await dispatch(
               setIncludedView({
                 windowId: action.windowId,
@@ -1382,7 +1393,8 @@ export function handleProcessResponse(response, type, id, parentId) {
             );
 
             break;
-          case 'closeIncludedView':
+          }
+          case 'closeIncludedView': {
             await dispatch(
               unsetIncludedView({
                 windowId: action.windowId,
@@ -1391,6 +1403,7 @@ export function handleProcessResponse(response, type, id, parentId) {
             );
 
             break;
+          }
           case 'selectViewRows': {
             // eslint-disable-next-line no-console
             console.info(
@@ -1409,6 +1422,9 @@ export function handleProcessResponse(response, type, id, parentId) {
             );
 
             break;
+          }
+          default: {
+            console.warn('Unhandled action', action);
           }
         }
       }
