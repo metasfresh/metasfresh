@@ -40,3 +40,20 @@ UPDATE AD_Column SET IsAutoApplyValidationRule='Y',Updated=TO_TIMESTAMP('2022-07
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('m_warehouse','AD_User_ID','NUMERIC(10)',null,null)
 ;
+
+
+-- 2022-07-22T08:06:53.338Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementField WHERE AD_UI_ElementField_ID=540097
+;
+
+-- 2022-07-22T08:07:23.414Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Type,Updated,UpdatedBy) VALUES (0,549701,0,541563,610451,TO_TIMESTAMP('2022-07-22 11:07:23','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,'widget',TO_TIMESTAMP('2022-07-22 11:07:23','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-07-22T08:07:31.312Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Type,Updated,UpdatedBy) VALUES (0,556263,0,541564,610451,TO_TIMESTAMP('2022-07-22 11:07:31','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,'widget',TO_TIMESTAMP('2022-07-22 11:07:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
