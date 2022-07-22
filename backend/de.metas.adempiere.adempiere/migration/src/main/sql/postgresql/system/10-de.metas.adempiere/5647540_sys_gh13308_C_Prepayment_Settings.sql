@@ -235,3 +235,137 @@ UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2022-07-21 16:34:11','
 INSERT INTO t_alter_column values('c_prepayment_settings','M_Product_Witholding_ID','NUMERIC(10)',null,null)
 ;
 
+
+
+
+
+-- 2022-07-22T08:22:13.673Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Einstellungen für Vorfinanzierungen', PrintName='Einstellungen für Vorfinanzierungen',Updated=TO_TIMESTAMP('2022-07-22 11:22:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581151 AND AD_Language='fr_CH'
+;
+
+-- 2022-07-22T08:22:13.677Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581151,'fr_CH') 
+;
+
+-- 2022-07-22T08:22:22.078Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Einstellungen für Vorfinanzierungen', PrintName='Einstellungen für Vorfinanzierungen',Updated=TO_TIMESTAMP('2022-07-22 11:22:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581151 AND AD_Language='de_DE'
+;
+
+-- 2022-07-22T08:22:22.079Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581151,'de_DE') 
+;
+
+-- 2022-07-22T08:22:22.086Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581151,'de_DE') 
+;
+
+-- 2022-07-22T08:22:22.087Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_Prepayment_Settings_ID', Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL WHERE AD_Element_ID=581151
+;
+
+-- 2022-07-22T08:22:22.088Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Prepayment_Settings_ID', Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL, AD_Element_ID=581151 WHERE UPPER(ColumnName)='C_PREPAYMENT_SETTINGS_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-07-22T08:22:22.089Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Prepayment_Settings_ID', Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL WHERE AD_Element_ID=581151 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-07-22T08:22:22.090Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581151) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581151)
+;
+
+-- 2022-07-22T08:22:22.099Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Einstellungen für Vorfinanzierungen', Name='Einstellungen für Vorfinanzierungen' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=581151)
+;
+
+-- 2022-07-22T08:22:22.101Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 581151
+;
+
+-- 2022-07-22T08:22:22.102Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL WHERE AD_Element_ID = 581151
+;
+
+-- 2022-07-22T08:22:22.103Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Einstellungen für Vorfinanzierungen', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581151
+;
+
+-- 2022-07-22T08:22:45.747Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erntekalender', PrintName='Erntekalender',Updated=TO_TIMESTAMP('2022-07-22 11:22:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581157 AND AD_Language='de_CH'
+;
+
+-- 2022-07-22T08:22:45.748Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581157,'de_CH') 
+;
+
+-- 2022-07-22T08:22:50.518Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Erntekalender', PrintName='Erntekalender',Updated=TO_TIMESTAMP('2022-07-22 11:22:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581157 AND AD_Language='de_DE'
+;
+
+-- 2022-07-22T08:22:50.519Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581157,'de_DE') 
+;
+
+-- 2022-07-22T08:22:50.530Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581157,'de_DE') 
+;
+
+-- 2022-07-22T08:22:50.532Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_Harvesting_Calendar_ID', Name='Erntekalender', Description=NULL, Help=NULL WHERE AD_Element_ID=581157
+;
+
+-- 2022-07-22T08:22:50.534Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Harvesting_Calendar_ID', Name='Erntekalender', Description=NULL, Help=NULL, AD_Element_ID=581157 WHERE UPPER(ColumnName)='C_HARVESTING_CALENDAR_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-07-22T08:22:50.536Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Harvesting_Calendar_ID', Name='Erntekalender', Description=NULL, Help=NULL WHERE AD_Element_ID=581157 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-07-22T08:22:50.537Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Erntekalender', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581157) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581157)
+;
+
+-- 2022-07-22T08:22:50.553Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Erntekalender', Name='Erntekalender' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=581157)
+;
+
+-- 2022-07-22T08:22:50.555Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Erntekalender', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 581157
+;
+
+-- 2022-07-22T08:22:50.556Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Erntekalender', Description=NULL, Help=NULL WHERE AD_Element_ID = 581157
+;
+
+-- 2022-07-22T08:22:50.557Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Erntekalender', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581157
+;
+
