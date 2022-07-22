@@ -50,3 +50,10 @@ update ad_window_trl set name = 'Service Annahme', updatedby= 99, updated = now(
 update ad_window_trl set name = 'Packvorschrift Nachweis', updatedby= 99, updated = now() where  ad_window_id = 540717 and ad_language = 'nl_NL';
 update ad_window_trl set name = 'CU-TU Assignment', updatedby= 99, updated = now() where  ad_window_id = 540191 and ad_language = 'en_US';
 update ad_window_trl set name = 'CU-TU Assignment', updatedby= 99, updated = now() where  ad_window_id = 540191 and ad_language = 'en_GB';
+
+update ad_window_trl set name = 'OLD_Warehouse', updatedby= 99, updated = now() where  ad_window_id = 139 and ad_language = 'fr_CH';
+update ad_window_trl set name = 'OLD_Warehouse', updatedby= 99, updated = now() where  ad_window_id = 139 and ad_language = 'it_CH';
+update ad_window_trl set name = 'OLD_Warehouse', updatedby= 99, updated = now() where  ad_window_id = 139 and ad_language = 'en_GB';
+update ad_window_trl set name = 'Stücklistenkonfiguration Version', updatedby= 99, updated = now() where  ad_window_id = 53006 and ad_language = 'en_GB';
+update ad_window_trl set name = 'Stücklistenkonfiguration Version', updatedby= 99, updated = now() where  ad_window_id = 53006 and ad_language = 'de_CH';
+update ad_window_trl set name = 'Stücklistenkonfiguration Version', updatedby= 99, updated = now() where  ad_window_id = 53006 and ad_language = 'nl_NL';
