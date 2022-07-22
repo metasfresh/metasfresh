@@ -136,7 +136,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	public LocatorId getLocatorEffectiveId(final I_M_ReceiptSchedule rs)
 	{
 		final WarehouseId warehouseId = getWarehouseEffectiveId(rs);
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override
