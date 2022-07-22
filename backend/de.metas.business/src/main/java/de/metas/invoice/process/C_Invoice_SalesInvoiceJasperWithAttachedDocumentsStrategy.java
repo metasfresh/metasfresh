@@ -94,7 +94,6 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		final AttachmentEntryQuery attachmentQuery = AttachmentEntryQuery.builder()
 				.referencedRecord(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId))
 				.tagSetToTrue(AttachmentTags.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF)
-				.mimeType(MimeType.TYPE_PDF)
 				.build();
 
 		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(attachmentQuery);
