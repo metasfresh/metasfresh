@@ -393,3 +393,25 @@ AddressDetail.phoneNumber | `C_BPartner_Location.phone` | N | JsonRequestLocatio
 AddressDetail.customEmail | `C_BPartner_Location.email` | N | JsonRequestLocation.email | |
 --- | `C_BPartner_Location.C_BPartner_Location_ID` | Y | JsonRequestLocationUpsertItem.locationIdentifier | `ext-Shopware6-{{locationIdentifier}}-{{suffix}}` where `suffix` can be [`-billTo`, `-shipTo`]; `locationIdentifier = computedId`
 JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | ---- | Y | JsonRequestLocationUpsert.syncAdvise | |
+
+## Workflows for pushing data to Shopware6
+
+* `Stock` - pushed via the endpoint `api/product/{id}`
+
+Pushed if the following parameter is set on window `541116 - ExternalSystem_Config_Shopware6`
+
+* `IsSyncAvailableForSalesToShopware6`
+  * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
+
+Client can set the percentage that is subtracted from the actual available for sales before it is transferred to Shopware,
+by setting the following parameter on the same window, by default it is 0:
+
+* `PercentageOfAvailableForSalesToSync`
+
+Shopware | metasfresh-column |
+---- | ---- |
+stock | *availableForSales|
+
+* `availableForSales = (MD_Available_For_Sales.QtyOnHandStock - MD_Available_For_Sales.QtyToBeShipped) * 
+(100 - ExternalSystem_Config_Shopware6.PercentageOfAvailableForSalesToSync) / 100`
+  * `MD_Available_For_Sales` counts for all records found for the exported product within the config's organisation

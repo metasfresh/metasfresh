@@ -522,7 +522,7 @@ public class InOutProducer implements IInOutProducer
 		final I_C_Order order = rs.getC_Order();
 
 		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-		if(order!=null && propagateToMInOut)
+		if (order != null && propagateToMInOut)
 		{
 			receiptHeader.setEMail(order.getEMail());
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
