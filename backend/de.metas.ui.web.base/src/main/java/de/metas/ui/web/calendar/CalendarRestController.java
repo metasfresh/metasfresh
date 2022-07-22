@@ -37,7 +37,6 @@ import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.project.ProjectId;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
 import de.metas.ui.web.calendar.json.JsonCalendarConflictsQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
@@ -151,6 +150,8 @@ public class CalendarRestController
 					: InSetPredicate.any());
 
 			result.onlyProjectId(query.getOnlyProjectId());
+
+			result.onlyCustomerId(query.getOnlyCustomerId());
 		}
 
 		return result.build();
@@ -268,8 +269,7 @@ public class CalendarRestController
 	@PostMapping("/queryConflicts")
 	public JsonCalendarConflictsQueryResponse queryConflicts(
 			@RequestParam(name = "simulationId", required = false) final String simulationIdStr,
-			@RequestParam(name = "onlyResourceIds", required = false) final String onlyResourceIdsStr,
-			@RequestParam(name = "onlyProjectId", required = false) final String onlyProjectIdStr)
+			@RequestParam(name = "onlyResourceIds", required = false) final String onlyResourceIdsStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -278,7 +278,6 @@ public class CalendarRestController
 				.resourceIds(CalendarResourceId.ofCommaSeparatedString(onlyResourceIdsStr)
 						.map(InSetPredicate::only)
 						.orElse(InSetPredicate.any()))
-				.onlyProjectId(ProjectId.ofNullableObject(onlyProjectIdStr))
 				.build();
 
 		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(query)

@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,4 +40,6 @@ public class WOProject
 	@NonNull ProjectId projectId;
 	@NonNull String name;
 	@Nullable ProjectId parentProjectId;
+
+	@Nullable BPartnerId customerId;
 }

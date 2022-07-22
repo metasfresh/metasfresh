@@ -1,5 +1,6 @@
 package de.metas.calendar.process;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.process.IProcessPrecondition;
@@ -95,8 +96,13 @@ public class OpenCalendarProcess extends JavaProcess implements IProcessPrecondi
 		}
 		else if (I_C_BPartner.Table_Name.equals(tableName))
 		{
-			// TODO: implement
-			return Optional.empty();
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(recordId);
+			if (bpartnerId == null)
+			{
+				return Optional.empty();
+			}
+
+			return Optional.of(CalendarToOpen.builder().customerId(bpartnerId).build());
 		}
 		else
 		{

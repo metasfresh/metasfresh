@@ -92,6 +92,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * General Database Interface
@@ -1712,6 +1713,13 @@ public class DB
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		return CConnection.get().getDatabase().TO_SEQUENCE_NEXTVAL(sequenceName);
+	}
+
+	public String TO_ARRAY(@NonNull final Collection<?> values, @NonNull final List<Object> paramsOut)
+	{
+		final String sql = "ARRAY[" + values.stream().map(value -> "?").collect(Collectors.joining(",")) + "]";
+		paramsOut.addAll(values);
+		return sql;
 	}
 
 	/**

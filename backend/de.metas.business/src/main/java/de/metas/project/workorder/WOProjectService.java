@@ -61,11 +61,14 @@ public class WOProjectService
 
 	public List<WOProject> getAllActiveProjects(@NonNull final Set<ProjectId> projectIds)
 	{
-		if(projectIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-		return woProjectRepository.getAllActiveProjects(InSetPredicate.only(projectIds));
+		return woProjectRepository.getAllActiveProjects(WOProjectQuery.builder()
+				.projectIds(InSetPredicate.only(projectIds))
+				.build());
+	}
+
+	public ImmutableSet<ProjectId> getActiveProjectIds(@NonNull final WOProjectQuery query)
+	{
+		return woProjectRepository.getActiveProjectIds(query);
 	}
 
 	public ImmutableList<WOProjectResource> getResources(@NonNull final WOProjectResourceQuery query)

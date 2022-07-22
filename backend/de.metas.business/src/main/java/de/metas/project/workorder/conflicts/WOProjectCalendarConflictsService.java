@@ -34,15 +34,8 @@ public class WOProjectCalendarConflictsService implements CalendarConflictsServi
 	}
 
 	@Override
-	public CalendarEntryConflicts
-	query(@NonNull final CalendarConflictsQuery query)
+	public CalendarEntryConflicts query(@NonNull final CalendarConflictsQuery query)
 	{
-		final InSetPredicate<ProjectId> projectIds = WOProjectCalendarService.getProjectIdsPredicate(query.getOnlyProjectId(), genericProjectRepository);
-		if (projectIds.isNone())
-		{
-			return CalendarEntryConflicts.EMPTY;
-		}
-
 		final InSetPredicate<ResourceId> resourceIds = WOProjectsCalendarQueryExecutor.getResourceIdsPredicate(query.getResourceIds(), resourceService);
 		if (resourceIds.isNone())
 		{
@@ -51,6 +44,6 @@ public class WOProjectCalendarConflictsService implements CalendarConflictsServi
 
 		final SimulationPlanId simulationId = query.getSimulationId();
 
-		return toCalendarEntryConflicts(woProjectConflictService.getActualAndSimulation(simulationId, resourceIds, projectIds));
+		return toCalendarEntryConflicts(woProjectConflictService.getActualAndSimulation(simulationId, resourceIds));
 	}
 }

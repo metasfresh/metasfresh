@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.i18n.IMsgBL;
@@ -1016,6 +1017,7 @@ public class ProcessExecutionResult
 	{
 		@Nullable String simulationId;
 		@Nullable String calendarResourceId;
-		String projectId;
+		@Nullable String projectId;
+		@Nullable BPartnerId customerId;
 	}
 }

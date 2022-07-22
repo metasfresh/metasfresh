@@ -29,6 +29,7 @@ const CalendarPage = ({ location }) => {
           simulationId={location.query.simulationId}
           onlyResourceIds={onlyResourceIds}
           onlyProjectId={location.query.projectId}
+          onlyCustomerId={location.query.customerId}
           onParamsChanged={({ simulationId }) =>
             updateURI(location, { simulationId })
           }

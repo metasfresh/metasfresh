@@ -28,12 +28,14 @@ const Calendar = ({
   simulationId: initialSelectedSimulationId,
   onlyResourceIds,
   onlyProjectId,
+  onlyCustomerId,
   onParamsChanged,
 }) => {
   const calendarData = useCalendarData({
     simulationId: initialSelectedSimulationId,
     onlyResourceIds,
     onlyProjectId,
+    onlyCustomerId,
     fetchAvailableSimulationsFromAPI: api.fetchAvailableSimulations,
     fetchEntriesFromAPI: api.fetchCalendarEntries,
     fetchConflictsFromAPI: api.fetchConflicts,
@@ -212,6 +214,7 @@ Calendar.propTypes = {
   simulationId: PropTypes.string,
   onlyResourceIds: PropTypes.array,
   onlyProjectId: PropTypes.string,
+  onlyCustomerId: PropTypes.string,
   onParamsChanged: PropTypes.func,
 };
 

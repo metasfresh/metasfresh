@@ -18,6 +18,7 @@ export const fetchCalendarEntries = ({
   simulationId = null,
   onlyResourceIds = null,
   onlyProjectId = null,
+  onlyCustomerId = null,
   startDate = null,
   endDate = null,
 }) => {
@@ -26,6 +27,7 @@ export const fetchCalendarEntries = ({
     simulationId,
     onlyResourceIds,
     onlyProjectId,
+    onlyCustomerId,
     startDate,
     endDate,
   };
@@ -93,12 +95,10 @@ export const createSimulation = ({ copyFromSimulationId }) => {
 export const fetchConflicts = ({
   simulationId = null,
   onlyResourceIds = null,
-  onlyProjectId = null,
 }) => {
   const queryParams = getQueryString({
     simulationId,
     onlyResourceIds,
-    onlyProjectId,
   });
 
   return axios

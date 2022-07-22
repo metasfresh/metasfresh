@@ -23,6 +23,7 @@
 package de.metas.project.service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -52,6 +53,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -113,11 +116,31 @@ public class ProjectRepository
 				rs -> ProjectId.ofRepoId(rs.getInt(1)));
 	}
 
-	public ImmutableList<ProjectId> getProjectIdsDownStream(@NonNull final ProjectId projectId)
+	public ImmutableSet<ProjectId> getProjectIdsUpStream(@NonNull final Collection<ProjectId> projectIds)
 	{
-		return DB.retrieveRows(
-				"SELECT C_Project_ID FROM getC_Project_IDs_DownStream(?)",
-				Collections.singletonList(projectId),
+		if (projectIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		return DB.retrieveUniqueRows(
+				"SELECT DISTINCT C_Project_ID FROM getC_Project_IDs_UpStream(p_C_Project_IDs:=" + DB.TO_ARRAY(projectIds, sqlParams) + ")",
+				sqlParams,
+				rs -> ProjectId.ofRepoId(rs.getInt(1)));
+	}
+
+	public ImmutableSet<ProjectId> getProjectIdsDownStream(@NonNull final Collection<ProjectId> projectIds)
+	{
+		if (projectIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		return DB.retrieveUniqueRows(
+				"SELECT DISTINCT C_Project_ID FROM getC_Project_IDs_DownStream(p_C_Project_IDs:=" + DB.TO_ARRAY(projectIds, sqlParams) + ")",
+				sqlParams,
 				rs -> ProjectId.ofRepoId(rs.getInt(1)));
 	}
 

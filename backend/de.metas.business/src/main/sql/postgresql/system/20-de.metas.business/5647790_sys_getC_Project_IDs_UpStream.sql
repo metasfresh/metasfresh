@@ -1,3 +1,6 @@
+DROP FUNCTION IF EXISTS getC_Project_IDs_UpStream(p_C_Project_ID numeric)
+;
+
 DROP FUNCTION IF EXISTS getC_Project_IDs_UpStream(
     p_C_Project_ID  numeric,
     p_C_Project_IDs numeric[]

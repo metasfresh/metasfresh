@@ -11,6 +11,7 @@ export const useCalendarData = ({
   simulationId: initialSimulationId,
   onlyResourceIds,
   onlyProjectId,
+  onlyCustomerId,
   fetchAvailableSimulationsFromAPI,
   fetchEntriesFromAPI,
   fetchConflictsFromAPI,
@@ -30,10 +31,7 @@ export const useCalendarData = ({
   const [conflicts, setConflicts] = useState([]);
 
   useEffect(() => loadSimulationsFromAPI(), []);
-  useEffect(
-    () => loadConflictsFromAPI(),
-    [simulationId, onlyResourceIds, onlyProjectId]
-  );
+  useEffect(() => loadConflictsFromAPI(), [simulationId, onlyResourceIds]);
 
   useEffect(() => {
     setResources(
@@ -169,6 +167,7 @@ export const useCalendarData = ({
       simulationId,
       onlyResourceIds,
       onlyProjectId,
+      onlyCustomerId,
       startDate,
       endDate,
     });
@@ -211,17 +210,9 @@ export const useCalendarData = ({
   };
 
   const loadConflictsFromAPI = () => {
-    console.log('Loading conflicts...', {
-      simulationId,
-      onlyResourceIds,
-      onlyProjectId,
-    });
+    console.log('Loading conflicts...', { simulationId, onlyResourceIds });
 
-    fetchConflictsFromAPI({
-      simulationId,
-      onlyResourceIds,
-      onlyProjectId,
-    }).then(setConflicts);
+    fetchConflictsFromAPI({ simulationId, onlyResourceIds }).then(setConflicts);
   };
 
   const applyWSEvents = (wsEvents) => {

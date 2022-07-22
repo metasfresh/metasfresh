@@ -24,6 +24,7 @@ package de.metas.project.workorder.calendar;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryAddRequest;
 import de.metas.calendar.CalendarEntryId;
@@ -49,6 +50,7 @@ import de.metas.project.budget.BudgetProjectResourceSimulation;
 import de.metas.project.budget.BudgetProjectService;
 import de.metas.project.budget.BudgetProjectSimulationService;
 import de.metas.project.service.ProjectRepository;
+import de.metas.project.workorder.WOProjectQuery;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResources;
@@ -69,6 +71,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -171,7 +174,7 @@ public class WOProjectCalendarService implements CalendarService
 			return Stream.empty();
 		}
 
-		final InSetPredicate<ProjectId> projectIds = getProjectIdsPredicate(calendarQuery.getOnlyProjectId(), genericProjectRepository);
+		final InSetPredicate<ProjectId> projectIds = getProjectIdsPredicate(calendarQuery.getOnlyProjectId(), calendarQuery.getOnlyCustomerId());
 		if (projectIds.isNone())
 		{
 			return Stream.empty();
@@ -210,29 +213,43 @@ public class WOProjectCalendarService implements CalendarService
 		return result.stream();
 	}
 
-	public static InSetPredicate<ProjectId> getProjectIdsPredicate(
+	public InSetPredicate<ProjectId> getProjectIdsPredicate(
 			@Nullable final ProjectId onlyProjectId,
-			@NonNull final ProjectRepository genericProjectRepository)
+			@Nullable final BPartnerId onlyCustomerId)
 	{
-		if (onlyProjectId == null)
+		final WOProjectQuery query = WOProjectQuery.builder()
+				.projectIds(onlyProjectId != null ? InSetPredicate.only(onlyProjectId) : InSetPredicate.any())
+				.onlyCustomerId(onlyCustomerId)
+				.build();
+		if (query.isAny())
 		{
 			return InSetPredicate.any();
 		}
 
-		//
-		// For given onlyProjectId,
-		// * up stream: fetch all parent projects, basically to have all the budget project hierarchy
-		// * down stream: fetch ALL children projects. So in case onlyProjectId is a budget project we will get all child budget projects and work order projects beneath
-		final ImmutableSet<ProjectId> onlyProjectIds = ImmutableSet.<ProjectId>builder()
-				.addAll(genericProjectRepository.getProjectIdsUpStream(onlyProjectId))
-				.addAll(genericProjectRepository.getProjectIdsDownStream(onlyProjectId))
-				.build();
-		if (onlyProjectIds.isEmpty())
+		final ImmutableSet<ProjectId> projectIds = woProjectService.getActiveProjectIds(query);
+		if (projectIds.isEmpty())
 		{
-			throw new AdempiereException("No project found for " + onlyProjectId);
+			return InSetPredicate.none();
 		}
 
-		return InSetPredicate.only(onlyProjectIds);
+		final ImmutableSet<ProjectId> projectIdsExpanded = expandWithUpAndDownStreams(projectIds);
+		return InSetPredicate.only(projectIdsExpanded);
+	}
+
+	/**
+	 * Expand given projectIds:
+	 * <ul>
+	 *     <li>up stream: fetch all parent projects, basically to have all the budget project hierarchy</li>
+	 *     <li>down stream: fetch ALL children projects. So in case of a budget project we will get all child budget projects and work order projects beneath</li>
+	 * </ul>
+	 */
+	private ImmutableSet<ProjectId> expandWithUpAndDownStreams(final Set<ProjectId> projectIds)
+	{
+		return ImmutableSet.<ProjectId>builder()
+				.addAll(genericProjectRepository.getProjectIdsUpStream(projectIds))
+				.addAll(genericProjectRepository.getProjectIdsDownStream(projectIds))
+				.build();
+
 	}
 
 	@Override

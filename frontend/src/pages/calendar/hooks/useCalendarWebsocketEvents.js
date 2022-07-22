@@ -19,12 +19,6 @@ export const useCalendarWebsocketEvents = ({
   onlyProjectId,
   onWSEvents,
 }) => {
-  console.log('useCalendarWebsocketEvents', {
-    simulationId,
-    onlyResourceIds,
-    onlyProjectId,
-  });
-
   useEffect(() => {
     return connectToWS({
       simulationId,

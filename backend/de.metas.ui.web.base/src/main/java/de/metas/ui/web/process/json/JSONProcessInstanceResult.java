@@ -281,6 +281,7 @@ public final class JSONProcessInstanceResult
 		@Nullable String simulationId;
 		@Nullable String resourceId;
 		@Nullable String projectId;
+		@Nullable String customerId;
 
 		private JSONOpenCalendarAction(@NonNull final OpenCalendarAction from)
 		{
@@ -288,6 +289,7 @@ public final class JSONProcessInstanceResult
 			this.simulationId = from.getSimulationId();
 			this.resourceId = from.getCalendarResourceId();
 			this.projectId = from.getProjectId();
+			this.customerId = from.getCustomerId() != null ? String.valueOf(from.getCustomerId().getRepoId()) : null;
 		}
 	}
 

@@ -5,6 +5,7 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRepository;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.WOProjectQuery;
 import de.metas.project.workorder.WOProjectRepository;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceRepository;
@@ -49,15 +50,14 @@ public class WOProjectConflictService
 
 	public ResourceAllocationConflicts getActualAndSimulation(
 			@Nullable final SimulationPlanId simulationId,
-			@NonNull final InSetPredicate<ResourceId> resourceIds,
-			@NonNull final InSetPredicate<ProjectId> projectIds)
+			@NonNull final InSetPredicate<ResourceId> resourceIds)
 	{
 		if (resourceIds.isNone())
 		{
 			return ResourceAllocationConflicts.empty(simulationId);
 		}
 
-		final InSetPredicate<ProjectId> activeProjectIds = InSetPredicate.only(woProjectRepository.getActiveProjectIds(projectIds));
+		final InSetPredicate<ProjectId> activeProjectIds = InSetPredicate.only(woProjectRepository.getActiveProjectIds(WOProjectQuery.ANY));
 		if (activeProjectIds.isNone())
 		{
 			return ResourceAllocationConflicts.empty(simulationId);
