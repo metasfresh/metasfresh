@@ -369,3 +369,61 @@ UPDATE AD_WINDOW SET Name='Erntekalender', Description=NULL, Help=NULL WHERE AD_
 UPDATE AD_Menu SET   Name = 'Erntekalender', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581157
 ;
 
+
+
+
+drop table if exists C_Prepayment_Settings;
+
+
+
+
+
+
+
+
+
+
+-- 2022-07-22T10:39:00.456Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='C_Prefinancing_Settings_ID',Updated=TO_TIMESTAMP('2022-07-22 13:39:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581151
+;
+
+-- 2022-07-22T10:39:00.474Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_Prefinancing_Settings_ID', Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL WHERE AD_Element_ID=581151
+;
+
+-- 2022-07-22T10:39:00.475Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Prefinancing_Settings_ID', Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL, AD_Element_ID=581151 WHERE UPPER(ColumnName)='C_PREFINANCING_SETTINGS_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-07-22T10:39:00.476Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Prefinancing_Settings_ID', Name='Einstellungen für Vorfinanzierungen', Description=NULL, Help=NULL WHERE AD_Element_ID=581151 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-07-22T10:39:15.305Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET TableName='C_Prefinancing_Settings',Updated=TO_TIMESTAMP('2022-07-22 13:39:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542188
+;
+
+-- 2022-07-22T10:39:15.388Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Sequence SET Name='C_Prefinancing_Settings',Updated=TO_TIMESTAMP('2022-07-22 13:39:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555977
+;
+
+-- 2022-07-22T10:39:15.394Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER SEQUENCE C_Prepayment_Settings_SEQ RENAME TO C_Prefinancing_Settings_SEQ
+;
+
+-- 2022-07-22T10:39:24.194Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ CREATE TABLE public.C_Prefinancing_Settings (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_Harvesting_Calendar_ID NUMERIC(10), C_Prefinancing_Settings_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_Product_Witholding_ID NUMERIC(10), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT CHarvestingCalendar_CPrefinancingSettings FOREIGN KEY (C_Harvesting_Calendar_ID) REFERENCES public.C_Calendar DEFERRABLE INITIALLY DEFERRED, CONSTRAINT C_Prefinancing_Settings_Key PRIMARY KEY (C_Prefinancing_Settings_ID), CONSTRAINT MProductWitholding_CPrefinancingSettings FOREIGN KEY (M_Product_Witholding_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED)
+;
+
+
+
+
+
