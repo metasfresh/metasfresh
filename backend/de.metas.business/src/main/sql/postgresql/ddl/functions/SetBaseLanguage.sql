@@ -11,6 +11,7 @@ DECLARE
     final_update_query    text    := '';
     v_columnname          varchar;
     v_count               integer;
+    columns_counter       integer := -1;
     update_query_template varchar := 'WITH X AS (SELECT * FROM base_table_trl WHERE base_table_id = %s AND ad_language =  ''%s'') '
                                          || 'UPDATE base_table as target '
                                          || 'SET %s '
@@ -54,6 +55,13 @@ BEGIN
             BEGIN
                 -- Reset query output
                 query_set_template := '';
+
+                SELECT COUNT(*) INTO columns_counter FROM ad_column WHERE istranslated = 'Y' AND ad_table_id = get_table_id(base_table);
+                IF (columns_counter <= 0) THEN
+                    RAISE WARNING 'Table %, does not contain any translated column', base_table;
+                    CONTINUE;
+                END IF;
+
                 FOR v_columnname IN SELECT columnname FROM ad_column WHERE istranslated = 'Y' AND ad_table_id = get_table_id(base_table)
                     LOOP
                         query_set_template := query_set_template || FORMAT('%s = x.%s ,', v_columnname, v_columnname);

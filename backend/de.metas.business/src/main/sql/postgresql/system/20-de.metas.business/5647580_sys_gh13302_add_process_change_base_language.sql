@@ -57,3 +57,10 @@ update ad_window_trl set name = 'OLD_Warehouse', updatedby= 99, updated = now() 
 update ad_window_trl set name = 'Stücklistenkonfiguration Version', updatedby= 99, updated = now() where  ad_window_id = 53006 and ad_language = 'en_GB';
 update ad_window_trl set name = 'Stücklistenkonfiguration Version', updatedby= 99, updated = now() where  ad_window_id = 53006 and ad_language = 'de_CH';
 update ad_window_trl set name = 'Stücklistenkonfiguration Version', updatedby= 99, updated = now() where  ad_window_id = 53006 and ad_language = 'nl_NL';
+
+update c_doctype_trl set name = 'Call order', updatedby= 99, updated = now() where  c_doctype_id = 541028 and ad_language = 'en_US';
+
+update ad_window_trl set name = 'Kontenrahmen', updatedby= 99, updated = now() where  ad_window_id = 118 and ad_language = 'nl_NL';
+update ad_window_trl set name = 'Kontenrahmen', updatedby= 99, updated = now() where  ad_window_id = 118 and ad_language = 'en_GB';
+update ad_window_trl set name = 'Kontenrahmen', updatedby= 99, updated = now() where  ad_window_id = 118 and ad_language = 'it_CH';
+update ad_window_trl set name = 'Kontenrahmen', updatedby= 99, updated = now() where  ad_window_id = 118 and ad_language = 'fr_CH';
