@@ -6,6 +6,8 @@ import Header from '../../components/header/Header';
 import history from '../../services/History';
 import { getQueryString } from '../../utils';
 
+import './CalendarPage.scss';
+
 const updateURI = (location, { simulationId }) => {
   const queryParams = getQueryString({
     ...location.query,
@@ -24,7 +26,7 @@ const CalendarPage = ({ location }) => {
   return (
     <div>
       <Header />
-      <div className="header-sticky-distance js-unselect panel-vertical-scroll dashboard">
+      <div className="calendar-container">
         <Calendar
           simulationId={location.query.simulationId}
           onlyResourceIds={onlyResourceIds}

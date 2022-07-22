@@ -38,13 +38,19 @@ export const fetchCalendarEntries = ({
       query
     );
 
-    return Promise.resolve([]);
+    return Promise.resolve({
+      query: {},
+      entries: [],
+    });
   }
 
   return axios
     .post(`${API_URL}/queryEntries`, query)
     .then(extractAxiosResponseData)
-    .then(({ entries }) => entries.map(converters.fromAPIEntry));
+    .then(({ query, entries }) => ({
+      query,
+      entries: entries.map(converters.fromAPIEntry),
+    }));
 };
 
 export const addOrUpdateCalendarEntry = ({

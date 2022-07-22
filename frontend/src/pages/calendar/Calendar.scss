@@ -1,0 +1,31 @@
+.calendar {
+  padding: 15px;
+
+  .calendar-top {
+    display: flex;
+
+    .calendar-top-left {
+      flex: 0 0 auto;
+    }
+
+    .calendar-top-center {
+      flex: 1 1 auto;
+    }
+
+    .calendar-top-right {
+      flex: 0 0 auto;
+    }
+  }
+
+  .calendar-content {
+    .fc-event.has-conflict {
+      border-left: 4px solid red !important;
+    }
+
+    .fc-resource-label.has-conflict {
+      color: red !important;
+      font-weight: bold;
+    }
+  }
+}
+

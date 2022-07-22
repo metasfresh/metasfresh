@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import './ConflictsSummary.scss';
+
 const ConflictsSummary = ({ conflictsCount }) => {
   //
   if (conflictsCount <= 0) {
@@ -8,9 +10,7 @@ const ConflictsSummary = ({ conflictsCount }) => {
   }
 
   return (
-    <span className="conflicts-summary">
-      &#9888; {conflictsCount} conflicts
-    </span>
+    <div className="conflicts-summary">&#9888; {conflictsCount} conflicts</div>
   );
 };
 
