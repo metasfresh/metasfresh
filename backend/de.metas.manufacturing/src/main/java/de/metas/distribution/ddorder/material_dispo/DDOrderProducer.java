@@ -238,7 +238,7 @@ public class DDOrderProducer
 
 		//
 		// Save DD Order Line
-			ddOrderLowLevelService.save(ddOrderline);
+		ddOrderLowLevelService.save(ddOrderline);
 	}
 
 	private DocTypeId getDocTypeId(final OrgId orgId)
@@ -246,9 +246,9 @@ public class DDOrderProducer
 		final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
 
 		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
-				.adClientId(clientId.getRepoId())
-				.adOrgId(orgId.getRepoId())
-				.build());
+												 .docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+												 .adClientId(clientId.getRepoId())
+												 .adOrgId(orgId.getRepoId())
+												 .build());
 	}
 }
