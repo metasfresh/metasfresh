@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13314](https://github.com/metasfresh/metasfresh/issues/13314) Prevent price lookup from base PLV
   * [#13296](https://github.com/metasfresh/metasfresh/issues/13296) Support additional shopware payment type
   * [#13282](https://github.com/metasfresh/metasfresh/issues/13282) OLCand => Order Extend test-coverage cover bill-, dropship- and handover-partners
   * [#13277](https://github.com/metasfresh/metasfresh/issues/13277) Sys config: address and user to update when creating an invoice
