@@ -48,7 +48,7 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -232,7 +232,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
-				.postEventNow(Mockito.any());
+				.postEventNow(Mockito.any(), null);
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
@@ -405,7 +405,7 @@ public class DemandCandiateHandlerTest
 			"5,7,3,4",
 			"5,7,-10,17",
 	})
-	void computeRequiredQty(String givenMin, String givenMax, String when, String then)
+	void computeRequiredQty(final String givenMin, final String givenMax, final String when, final String then)
 	{
 		// given
 		final MinMaxDescriptor minMaxDescriptor = MinMaxDescriptor.builder()

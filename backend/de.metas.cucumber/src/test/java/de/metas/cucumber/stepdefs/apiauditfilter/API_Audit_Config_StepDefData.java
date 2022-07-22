@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.apiauditfilter;
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_API_Audit_Config;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class API_Audit_Config_StepDefData extends StepDefData<I_API_Audit_Config>
 {
+	public API_Audit_Config_StepDefData()
+	{
+		super(I_API_Audit_Config.class);
+	}
 }

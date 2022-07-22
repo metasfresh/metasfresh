@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
 import App from './containers/App';
-import configureStore from './store/configureStore';
 import { ProvideAuth } from './hooks/useAuth';
+import { historyDoubleBackOnPopstate } from './utils';
 
-const store = configureStore();
+import store from './store/store';
 
 if (window.Cypress) {
   window.store = store;
@@ -37,3 +37,11 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('root')
 );
+
+// If there is a view generated in case one doesn't exist that view and the params are added to the URI and recorded to the history
+// as a consequence when the user hits the Back button has the impression that it is on the same page as the browser is visiting the same view
+// to deal with this case we added a `popstate` listener that will go to the correct page in history skipping
+// the case when the URL and the view are the same when the back button is pressed
+window.addEventListener('popstate', () => {
+  historyDoubleBackOnPopstate(store);
+});

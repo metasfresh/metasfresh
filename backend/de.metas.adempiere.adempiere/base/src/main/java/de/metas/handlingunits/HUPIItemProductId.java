@@ -32,6 +32,9 @@ import java.util.Optional;
  * #L%
  */
 
+/**
+ * Aka {@code M_HU_PI_Item_Product_ID}
+ */
 @Value
 public class HUPIItemProductId implements RepoIdAware
 {

@@ -4,6 +4,7 @@ import de.metas.marketing.base.model.PlatformId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 /*
  * #%L
@@ -29,6 +30,7 @@ import lombok.Value;
 
 @Value
 @Builder
+@Jacksonized
 public class CleverReachConfig
 {
 	@NonNull

@@ -1,13 +1,12 @@
 package de.metas.acct.aggregation;
 
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
+
+import java.util.Properties;
 
 /*
  * #%L

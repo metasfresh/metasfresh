@@ -36,7 +36,6 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -71,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
@@ -78,7 +78,6 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
 public class M_PriceList_StepDef
 {
-	private final OrgId defaultOrgId = StepDefConstants.ORG_ID;
 	private final CurrencyRepository currencyRepository;
 	private final M_Product_StepDefData productTable;
 	private final M_PricingSystem_StepDefData pricingSystemTable;
@@ -117,8 +116,11 @@ public class M_PriceList_StepDef
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
-		createM_PricingSystem(dataTableRow);
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			createM_PricingSystem(dataTableRow);
+		}
 	}
 
 	@And("metasfresh contains M_PriceLists")
@@ -142,7 +144,7 @@ public class M_PriceList_StepDef
 
 		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.loadOrNew(pricingSystemId, I_M_PricingSystem.class);
 
-		m_pricingSystem.setAD_Org_ID(defaultOrgId.getRepoId());
+		m_pricingSystem.setAD_Org_ID(ORG_ID.getRepoId());
 		m_pricingSystem.setName(name);
 		m_pricingSystem.setValue(value);
 		m_pricingSystem.setIsActive(isActive);
@@ -184,7 +186,7 @@ public class M_PriceList_StepDef
 			m_priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		}
 
-		m_priceList.setAD_Org_ID(defaultOrgId.getRepoId());
+		m_priceList.setAD_Org_ID(ORG_ID.getRepoId());
 		m_priceList.setM_PricingSystem_ID(pricingSystemId);
 		m_priceList.setC_Currency_ID(currencyId.getRepoId());
 		m_priceList.setName(name);
@@ -277,6 +279,9 @@ public class M_PriceList_StepDef
 			final String productPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + ".Identifier");
 			final I_M_ProductPrice productPrice = productPriceTable.get(productPriceIdentifier);
 
+			final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
+			productPrice.setPriceStd(priceStd);
+			
 			final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 			if (Check.isNotBlank(x12de355Code))
 			{

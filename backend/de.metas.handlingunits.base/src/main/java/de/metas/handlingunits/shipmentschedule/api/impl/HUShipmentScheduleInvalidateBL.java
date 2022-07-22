@@ -55,7 +55,7 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 	}
 
 	@Override
-	protected IShipmentScheduleSegment createSegmentForInOutLine(final int bPartnerId, final I_M_InOutLine inoutLine)
+	protected IShipmentScheduleSegment createSegmentForInOutLine(final int bPartnerId, final @NonNull I_M_InOutLine inoutLine)
 	{
 		final ShipmentScheduleSegmentBuilder storageSegmentBuilder = ShipmentScheduleSegments.builder();
 		storageSegmentBuilder
@@ -79,7 +79,7 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 	}
 
 	@Override
-	protected IShipmentScheduleSegment createSegmentForShipmentSchedule(final I_M_ShipmentSchedule schedule)
+	protected IShipmentScheduleSegment createSegmentForShipmentSchedule(final @NonNull I_M_ShipmentSchedule schedule)
 	{
 		boolean maybeCanRestrictToCertainPartners = false; // we will set this to true if there is any TU assigned to the shipment schedule
 

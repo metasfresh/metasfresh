@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.contract;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.StepDefData;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class C_Flatrate_Conditions_StepDefData extends StepDefData<I_C_Flatrate_Conditions>
 {
+	public C_Flatrate_Conditions_StepDefData()
+	{
+		super(I_C_Flatrate_Conditions.class);
+	}
 }

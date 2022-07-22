@@ -295,7 +295,7 @@ public class JsonPersisterService
 
 		syncJsonToContact(contactIdentifier, jsonContact, contact, parentSyncAdvise);
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// might be different from contactIdentifier
 		final IdentifierString identifierAfterUpdate = jsonRequestConsolidateService.extractIdentifier(contactIdentifier.getType(), contact);
@@ -367,7 +367,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getLocationIdentifier(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect the metasfreshIds that we got after having invoked save
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
@@ -417,7 +417,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getContactIdentifier(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect what we got
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
@@ -467,7 +467,7 @@ public class JsonPersisterService
 			identifierToBuilder.put(requestItem.getIban(), responseItemBuilder);
 		}
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		// now collect what we got
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
@@ -514,7 +514,7 @@ public class JsonPersisterService
 
 		resultBuilder.setJsonResponseBankAccountUpsertItems(syncJsonToBankAccounts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
-		bpartnerCompositeRepository.save(bpartnerComposite);
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		//
 		// supplement the metasfreshiId which we now have after the "save()"
@@ -638,10 +638,12 @@ public class JsonPersisterService
 		if (jsonBPartner.isCompanyNameSet())
 		{
 			bpartner.setCompanyName(StringUtils.trim(jsonBPartner.getCompanyName()));
+			bpartner.setCompany(Check.isNotBlank(jsonBPartner.getCompanyName()));
 		}
 		else if (isUpdateRemove)
 		{
 			bpartner.setCompanyName(null);
+			bpartner.setCompany(false);
 		}
 
 		// name
@@ -769,16 +771,16 @@ public class JsonPersisterService
 		{
 			if (jsonBPartner.getInvoiceRule() == null)
 			{
-				bpartner.setInvoiceRule(null);
+				bpartner.setCustomerInvoiceRule(null);
 			}
 			else
 			{
-				bpartner.setInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
+				bpartner.setCustomerInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
 			}
 		}
 		else if (isUpdateRemove)
 		{
-			bpartner.setInvoiceRule(null);
+			bpartner.setCustomerInvoiceRule(null);
 		}
 
 		// metasfreshId - we will never update it
@@ -1748,21 +1750,20 @@ public class JsonPersisterService
 		requestItems.stream()
 				.map(JsonRequestLocationUpsertItem::getLocationExternalRef)
 				.filter(Objects::nonNull)
-				.map(locationExternalRef ->  {
+				.map(locationExternalRef -> {
 					final ExternalId locationExternalId = ExternalId.of(locationExternalRef.getExternalReferenceItem().getLookupItem().getId());
 
 					return Optional.ofNullable(externalLocationId2MetasfreshId.get(locationExternalId))
 							.map(locationMFId -> buildExternalRefWithMetasfreshId(locationExternalRef, locationMFId))
 							.orElseGet(() -> {
 								logger.warn("*** WARN in insertBPLocationExternalRefIfMissing: no metasfreshId was found for the externalId: {}! "
-													+ "If this happened, something went wrong while upserting the bPartnerLocations", locationExternalId);
+										+ "If this happened, something went wrong while upserting the bPartnerLocations", locationExternalId);
 								return null;
 							});
 				})
 				.filter(Objects::nonNull)
-				.forEach(createExternalRefReq -> externalReferenceRestControllerService.performInsertIfMissing(createExternalRefReq, orgCode) );
+				.forEach(createExternalRefReq -> externalReferenceRestControllerService.performInsertIfMissing(createExternalRefReq, orgCode));
 	}
-
 
 	@NonNull
 	private JsonSingleExternalReferenceCreateReq buildExternalRefWithMetasfreshId(

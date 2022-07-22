@@ -1,9 +1,17 @@
 package de.metas.tourplanning.api.impl;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.order.IOrderBL;
+import de.metas.tourplanning.api.IDeliveryDayBL;
+import de.metas.tourplanning.api.IOrderDeliveryDayBL;
+import de.metas.tourplanning.model.TourId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -13,17 +21,8 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.order.IOrderBL;
-import de.metas.tourplanning.api.IDeliveryDayBL;
-import de.metas.tourplanning.api.IOrderDeliveryDayBL;
-import de.metas.tourplanning.model.TourId;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {

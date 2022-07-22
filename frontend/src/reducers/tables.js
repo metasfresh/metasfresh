@@ -112,6 +112,7 @@ const reducer = produce((draftState, action) => {
 
     case types.UPDATE_TABLE: {
       const { id, data } = action.payload;
+      const { pending } = data;
 
       const prevTableStruct = draftState[id]
         ? draftState[id]
@@ -119,7 +120,7 @@ const reducer = produce((draftState, action) => {
       let updatedSelected = {};
       let selectionValid = false;
 
-      if (data.rows && data.rows.length) {
+      if (!pending && data.rows && data.rows.length) {
         const currentSelected = original(prevTableStruct.selected);
 
         if (currentSelected.length) {

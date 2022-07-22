@@ -1,17 +1,17 @@
 package de.metas.material.event.attributes;
 
-import de.metas.util.Check;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.common.util.Check;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -41,8 +41,8 @@ public class AttributesKeyWithASI
 {
 	@JsonCreator
 	public static AttributesKeyWithASI of(
-			@JsonProperty("attributesKey") final AttributesKey attributesKey,
-			@JsonProperty("attributeSetInstanceId") final AttributeSetInstanceId attributeSetInstanceId)
+			@JsonProperty("attributesKey") @Nullable final AttributesKey attributesKey,
+			@JsonProperty("attributeSetInstanceId") @NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		if (attributesKey == null || attributesKey.isNone())
 		{

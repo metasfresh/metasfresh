@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for HC_Forum_Datenaustausch_Config
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO implements I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1798838991L;
+	private static final long serialVersionUID = 1335365195L;
 
     /** Standard Constructor */
-    public X_HC_Forum_Datenaustausch_Config (final Properties ctx, final int HC_Forum_Datenaustausch_Config_ID, final String trxName)
+    public X_HC_Forum_Datenaustausch_Config (final Properties ctx, final int HC_Forum_Datenaustausch_Config_ID, @Nullable final String trxName)
     {
       super (ctx, HC_Forum_Datenaustausch_Config_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_HC_Forum_Datenaustausch_Config (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_HC_Forum_Datenaustausch_Config (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -49,7 +50,7 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -88,6 +89,8 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	public static final int EXPORTEDXMLVERSION_AD_Reference_ID=540921;
 	/** v440 = 4.4 */
 	public static final String EXPORTEDXMLVERSION_V440 = "4.4";
+	/** v450 = 4.5 */
+	public static final String EXPORTEDXMLVERSION_V450 = "4.5";
 	@Override
 	public void setExportedXmlVersion (final java.lang.String ExportedXmlVersion)
 	{
@@ -101,7 +104,7 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setFrom_EAN (final java.lang.String From_EAN)
+	public void setFrom_EAN (final @Nullable java.lang.String From_EAN)
 	{
 		set_Value (COLUMNNAME_From_EAN, From_EAN);
 	}
@@ -133,7 +136,7 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	 */
 	public static final int IMPORTEDBPARTNERLANGUAGE_AD_Reference_ID=327;
 	@Override
-	public void setImportedBPartnerLanguage (final java.lang.String ImportedBPartnerLanguage)
+	public void setImportedBPartnerLanguage (final @Nullable java.lang.String ImportedBPartnerLanguage)
 	{
 		set_Value (COLUMNNAME_ImportedBPartnerLanguage, ImportedBPartnerLanguage);
 	}
@@ -199,7 +202,7 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setStoreDirectory (final java.lang.String StoreDirectory)
+	public void setStoreDirectory (final @Nullable java.lang.String StoreDirectory)
 	{
 		set_Value (COLUMNNAME_StoreDirectory, StoreDirectory);
 	}

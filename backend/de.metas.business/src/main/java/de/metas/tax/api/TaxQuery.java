@@ -24,10 +24,10 @@ package de.metas.tax.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -55,6 +55,9 @@ public class TaxQuery
 	Timestamp dateOfInterest;
 
 	@NonNull
+	BPartnerId bPartnerId;
+
+	@Nullable
 	BPartnerLocationAndCaptureId bPartnerLocationId;
 
 	@NonNull
@@ -63,14 +66,20 @@ public class TaxQuery
 	@Nullable
 	TaxCategoryId taxCategoryId;
 
+	@Nullable
+	CountryId shippingCountryId;
+
 	@Builder
-	public TaxQuery(@NonNull final OrgId orgId,
+	public TaxQuery(
+			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final CountryId fromCountryId,
 			@Nullable final Timestamp dateOfInterest,
-			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationId,
+			@Nullable final BPartnerLocationAndCaptureId bPartnerLocationId,
 			@NonNull final SOTrx soTrx,
-			@Nullable final TaxCategoryId taxCategoryId)
+			@Nullable final TaxCategoryId taxCategoryId,
+			@Nullable final BPartnerId bPartnerId,
+			@Nullable final CountryId shippingCountryId)
 	{
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
@@ -79,5 +88,18 @@ public class TaxQuery
 		this.bPartnerLocationId = bPartnerLocationId;
 		this.soTrx = soTrx;
 		this.taxCategoryId = taxCategoryId;
+
+		if (bPartnerLocationId != null)
+		{
+			this.bPartnerId = bPartnerLocationId.getBpartnerId();
+		}
+		else
+		{
+			Check.assumeNotNull(bPartnerId, "BPartnerId must not be null if no bPartnerLocationId was provided!");
+			Check.assumeNotNull(shippingCountryId, "ShippingCountryId must not be null if no bPartnerLocationId was provided!");
+			this.bPartnerId = bPartnerId;
+		}
+
+		this.shippingCountryId = shippingCountryId;
 	}
 }

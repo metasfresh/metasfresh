@@ -221,6 +221,31 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Created = new ModelColumn<>(I_C_PurchaseCandidate.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Tax Category.
 	 * Tax Category
 	 *
@@ -265,31 +290,6 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Created = new ModelColumn<>(I_C_PurchaseCandidate.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Bedarfs-ID.
 	 * Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
 	 *
@@ -297,7 +297,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDemandReference (String DemandReference);
+	void setDemandReference (java.lang.String DemandReference);
 
 	/**
 	 * Get Bedarfs-ID.
@@ -307,7 +307,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDemandReference();
+	java.lang.String getDemandReference();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DemandReference = new ModelColumn<>(I_C_PurchaseCandidate.class, "DemandReference", null);
 	String COLUMNNAME_DemandReference = "DemandReference";
@@ -384,7 +384,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalHeaderId (@Nullable String ExternalHeaderId);
+	void setExternalHeaderId (@Nullable java.lang.String ExternalHeaderId);
 
 	/**
 	 * Get External Header ID.
@@ -393,7 +393,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExternalHeaderId();
+	@Nullable java.lang.String getExternalHeaderId();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalHeaderId", null);
 	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
@@ -405,7 +405,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalLineId (@Nullable String ExternalLineId);
+	void setExternalLineId (@Nullable java.lang.String ExternalLineId);
 
 	/**
 	 * Get External Line ID.
@@ -414,7 +414,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExternalLineId();
+	@Nullable java.lang.String getExternalLineId();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
@@ -427,7 +427,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalPurchaseOrderURL (@Nullable String ExternalPurchaseOrderURL);
+	void setExternalPurchaseOrderURL (@Nullable java.lang.String ExternalPurchaseOrderURL);
 
 	/**
 	 * Get URL of the purchase order in an external system.
@@ -437,7 +437,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExternalPurchaseOrderURL();
+	@Nullable java.lang.String getExternalPurchaseOrderURL();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalPurchaseOrderURL = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalPurchaseOrderURL", null);
 	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
@@ -569,6 +569,27 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsRequisitionCreated = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsRequisitionCreated", null);
 	String COLUMNNAME_IsRequisitionCreated = "IsRequisitionCreated";
+
+	/**
+	 * Set Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSimulated (boolean IsSimulated);
+
+	/**
+	 * Get Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSimulated();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsSimulated = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsSimulated", null);
+	String COLUMNNAME_IsSimulated = "IsSimulated";
 
 	/**
 	 * Set Price incl. Tax.
@@ -717,6 +738,29 @@ public interface I_C_PurchaseCandidate
 	int getM_WarehousePO_ID();
 
 	String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_POReference = new ModelColumn<>(I_C_PurchaseCandidate.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Price diff..
@@ -1010,7 +1054,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSource (@Nullable String Source);
+	void setSource (@Nullable java.lang.String Source);
 
 	/**
 	 * Get Source.
@@ -1019,7 +1063,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSource();
+	@Nullable java.lang.String getSource();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Source = new ModelColumn<>(I_C_PurchaseCandidate.class, "Source", null);
 	String COLUMNNAME_Source = "Source";
@@ -1056,7 +1100,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString1 (@Nullable String UserElementString1);
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
 	 * Get UserElementString1.
@@ -1065,7 +1109,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString1();
+	@Nullable java.lang.String getUserElementString1();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString1", null);
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
@@ -1077,7 +1121,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString2 (@Nullable String UserElementString2);
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
 	 * Get UserElementString2.
@@ -1086,7 +1130,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString2();
+	@Nullable java.lang.String getUserElementString2();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString2", null);
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
@@ -1098,7 +1142,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString3 (@Nullable String UserElementString3);
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
 	 * Get UserElementString3.
@@ -1107,7 +1151,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString3();
+	@Nullable java.lang.String getUserElementString3();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString3", null);
 	String COLUMNNAME_UserElementString3 = "UserElementString3";
@@ -1119,7 +1163,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString4 (@Nullable String UserElementString4);
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
 
 	/**
 	 * Get UserElementString4.
@@ -1128,7 +1172,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString4();
+	@Nullable java.lang.String getUserElementString4();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString4", null);
 	String COLUMNNAME_UserElementString4 = "UserElementString4";
@@ -1140,7 +1184,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString5 (@Nullable String UserElementString5);
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
 
 	/**
 	 * Get UserElementString5.
@@ -1149,7 +1193,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString5();
+	@Nullable java.lang.String getUserElementString5();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString5", null);
 	String COLUMNNAME_UserElementString5 = "UserElementString5";
@@ -1161,7 +1205,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString6 (@Nullable String UserElementString6);
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
 
 	/**
 	 * Get UserElementString6.
@@ -1170,7 +1214,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString6();
+	@Nullable java.lang.String getUserElementString6();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString6", null);
 	String COLUMNNAME_UserElementString6 = "UserElementString6";
@@ -1182,7 +1226,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString7 (@Nullable String UserElementString7);
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
 
 	/**
 	 * Get UserElementString7.
@@ -1191,7 +1235,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString7();
+	@Nullable java.lang.String getUserElementString7();
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";

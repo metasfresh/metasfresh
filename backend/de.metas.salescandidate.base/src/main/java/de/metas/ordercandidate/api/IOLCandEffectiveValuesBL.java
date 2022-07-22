@@ -8,6 +8,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -169,6 +170,12 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	UomId getEffectiveUomId(I_C_OLCand olCand);
 
 	UomId getRecordOrStockUOMId(I_C_OLCand olCandRecord);
+
+	/**
+	 * @return might return zero.
+	 */
+	@NonNull
+	Quantity getQtyItemCapacity_Effective(@NonNull I_C_OLCand olCandRecord);
 
 	/**
 	 * Like {@link #getEffectiveUomId(I_C_OLCand)} , but return the actual uom.

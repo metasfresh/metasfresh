@@ -592,7 +592,7 @@ public abstract class PO
 	 *
 	 * @param ctx
 	 */
-	protected final void setCtx(@NonNull final Properties ctx)
+	public final void setCtx(@NonNull final Properties ctx)
 	{
 		this.p_ctx = ctx;
 	}
@@ -3310,11 +3310,14 @@ public abstract class PO
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						final int docTypeId = get_ValueAsInt(docTypeIndex);
-						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
-								.setDocumentModel(this)
-								.setFailOnError(false)
-								.build();
+						final int docTypeRepoId = get_ValueAsInt(docTypeIndex);
+						if (docTypeRepoId > 0)
+						{
+							value = documentNoFactory.forDocType(docTypeRepoId, false) // useDefiniteSequence=false
+									.setDocumentModel(this)
+									.setFailOnError(false)
+									.build();
+						}
 					}
 					if (value == null) 	// not overwritten by DocType and not manually entered
 					{
@@ -3591,10 +3594,14 @@ public abstract class PO
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						value = documentNoFactory.forDocType(get_ValueAsInt(docTypeIndex), false) // useDefiniteSequence=false
-								.setDocumentModel(this)
-								.setFailOnError(false)
-								.build();
+						final int docTypeRepoId = get_ValueAsInt(docTypeIndex);
+						if (docTypeRepoId > 0)
+						{
+							value = documentNoFactory.forDocType(docTypeRepoId, false) // useDefiniteSequence=false
+									.setDocumentModel(this)
+									.setFailOnError(false)
+									.build();
+						}
 					}
 					if (value == null || value == IDocumentNoBuilder.NO_DOCUMENTNO) 	// not overwritten by DocType and not manually entered
 					{
@@ -5042,9 +5049,9 @@ public abstract class PO
 	/**
 	 * Get Dynamic Attribute
 	 *
-	 * @param name
 	 * @return attribute value or null if not found
 	 */
+	@Nullable
 	public final Object getDynAttribute(final String name)
 	{
 		if (m_dynAttrs == null)

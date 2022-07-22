@@ -22,11 +22,13 @@
 
 package de.metas.pricing.interceptor;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -40,11 +42,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Callout(I_M_PriceList_Version.class)
 @Interceptor(I_M_PriceList_Version.class)

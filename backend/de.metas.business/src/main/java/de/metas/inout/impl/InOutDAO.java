@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
@@ -453,5 +454,24 @@ public class InOutDAO implements IInOutDAO
 				.list(modelClass)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(inOut -> InOutId.ofRepoId(inOut.getM_InOut_ID()), Function.identity()));
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		final I_M_InOutLine inOutLine = load(inoutLineId, I_M_InOutLine.class);
+
+		if (inOutLine == null)
+		{
+			return Optional.empty();
+		}
+
+		if (inOutLine.getReversalLine_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
 	}
 }

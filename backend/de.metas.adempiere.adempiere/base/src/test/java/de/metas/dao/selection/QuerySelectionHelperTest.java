@@ -1,14 +1,14 @@
 package de.metas.dao.selection;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Properties;
-
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -74,7 +74,7 @@ public class QuerySelectionHelperTest
 		}
 
 		@Test
-		public void unionDistictWithOrderBy()
+		public void unionDistinctWithOrderBy()
 		{
 			final Properties ctx = new Properties();
 			final String trxName = ITrx.TRXNAME_None;

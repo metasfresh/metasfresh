@@ -37,10 +37,10 @@ import javax.annotation.Nullable;
 @ToString
 public abstract class AbstractPPOrderCandidateEvent implements MaterialEvent
 {
-	private final EventDescriptor eventDescriptor;
-	private final PPOrderCandidate ppOrderCandidate;
+	protected final EventDescriptor eventDescriptor;
+	protected final PPOrderCandidate ppOrderCandidate;
 
-	private final SupplyRequiredDescriptor supplyRequiredDescriptor;
+	protected final SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 	public AbstractPPOrderCandidateEvent(
 			@NonNull final EventDescriptor eventDescriptor,

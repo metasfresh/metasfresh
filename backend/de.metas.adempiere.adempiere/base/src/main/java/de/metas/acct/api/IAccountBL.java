@@ -22,13 +22,9 @@ package de.metas.acct.api;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
+import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
-
-import de.metas.util.ISingletonService;
 
 /**
  * Business logic used to manipulate accounts (i.e. {@link I_C_ValidCombination}s)
@@ -40,15 +36,12 @@ public interface IAccountBL extends ISingletonService
 {
 	/**
 	 * Build and set {@link I_C_ValidCombination#COLUMNNAME_Combination}, {@link I_C_ValidCombination#COLUMNNAME_Description} and {@link I_C_ValidCombination#COLUMNNAME_IsFullyQualified}.
-	 * 
-	 * @param account
 	 */
 	void setValueDescription(I_C_ValidCombination account);
 
 	/**
 	 * Create a new {@link IAccountDimensionValidator} for given accounting schema.
 	 * 
-	 * @param acctSchema
 	 * @return accounting dimension validator
 	 */
 	IAccountDimensionValidator createAccountDimensionValidator(AcctSchema acctSchema);
@@ -59,16 +52,4 @@ public interface IAccountBL extends ISingletonService
 	void validate(I_C_ValidCombination account);
 
 	AccountDimension createAccountDimension(I_C_ElementValue ev, AcctSchemaId acctSchemaId);
-
-	AccountDimension createAccountDimension(I_C_ValidCombination account);
-
-	/**
-	 * Calculates Balance for AmtDr and AmtCr based on account settings (AccountSign and AccountType)
-	 * 
-	 * @param account
-	 * @param amtDr
-	 * @param amtCr
-	 * @return DR - CR (or CR - DR)
-	 */
-	BigDecimal calculateBalance(I_C_ElementValue account, BigDecimal amtDr, BigDecimal amtCr);
 }

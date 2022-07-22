@@ -22,11 +22,13 @@
 
 package de.metas.util.web.audit;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.ApiAuditLoggable;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
+import de.metas.audit.request.ApiRequestIterator;
 import de.metas.audit.apirequest.request.Status;
 import de.metas.util.Loggables;
 import de.metas.util.web.audit.dto.ApiResponse;
@@ -48,6 +50,12 @@ public class ApiRequestReplayService
 		this.apiAuditConfigRepository = apiAuditConfigRepository;
 	}
 
+	public void replayApiRequests(@NonNull final ApiRequestIterator apiRequestIterator)
+	{
+		apiRequestIterator.forEach(this::replayAction);
+	}
+
+	@VisibleForTesting
 	public void replayApiRequests(@NonNull final ImmutableList<ApiRequestAudit> apiRequestAuditTimeSortedList)
 	{
 		apiRequestAuditTimeSortedList.forEach(this::replayActionNoFailing);

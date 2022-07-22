@@ -228,7 +228,7 @@ public class AlbertaBPartnerCompositeService
 		}
 
 		final AlbertaPatient existingAlbertaPatient = existingAlbertaPatientOpt
-				.orElse(AlbertaPatient.builder()
+				.orElseGet(() -> AlbertaPatient.builder()
 								.bPartnerId(bPartnerId)
 								.build());
 
@@ -326,6 +326,16 @@ public class AlbertaBPartnerCompositeService
 		if (request.isDeactivationCommentSet())
 		{
 			syncedAlbertaBuilder.deactivationComment(request.getDeactivationComment());
+		}
+
+		if (request.isClassificationSet())
+		{
+			syncedAlbertaBuilder.classification(request.getClassification());
+		}
+
+		if (request.isCareDegreeSet())
+		{
+			syncedAlbertaBuilder.careDegree(request.getCareDegree());
 		}
 
 		if (request.isCreatedAtSet())

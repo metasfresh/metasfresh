@@ -42,7 +42,8 @@
 	ol.qtyenteredtu,
 	ol.qtyentered,
 	pm.name as container,
-	uom.UOMSymbol AS UOMSymbol
+	uom.UOMSymbol AS UOMSymbol,
+	p.M_Product_ID
 FROM
 	C_Order o
 	LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
@@ -146,6 +147,9 @@ ORDER BY
 	<field name="uomsymbol" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
 	</field>
+	<field name="m_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -162,7 +166,8 @@ ORDER BY
 	<group name="Aggregation">
 		<groupExpression><![CDATA[$F{value}+$F{displaytext}+
 $F{pricelist}+$F{priceactual}+
-$F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
+$F{uomsymbol}+$F{capacity}+$F{container}+
+$F{m_product_id}]]></groupExpression>
 		<groupFooter>
 			<band height="39">
 				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>

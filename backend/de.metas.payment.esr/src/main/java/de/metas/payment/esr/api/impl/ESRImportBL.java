@@ -145,6 +145,7 @@ public class ESRImportBL implements IESRImportBL
 			@NonNull final I_ESR_Import esrImport,
 			@NonNull final Runnable processor)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
 
 		if (!lockManager.lock(esrImport))
 		{
@@ -546,14 +547,14 @@ public class ESRImportBL implements IESRImportBL
 					{
 						continue;
 					}
-					processLinesNoInvoice(linesNoInvoices);
+					trxManager.runInThreadInheritedTrx(() -> processLinesNoInvoice(linesNoInvoices));
 				}
 				else
 				{
 					final List<I_ESR_ImportLine> linesForKey = invoiceKey2Line.get(key);
 					try
 					{
-						processLinesWithInvoice(linesForKey);
+						trxManager.runInThreadInheritedTrx(() -> processLinesWithInvoice(linesForKey));
 					}
 					catch (final Exception e)
 					{
@@ -1428,6 +1429,12 @@ public class ESRImportBL implements IESRImportBL
 
 		final ImmutableSet<ESRImportId> esrImportIds = extractESRImportIds(esrImportLines);
 		updateESRImportReconciledStatus(esrImportIds);
+	}
+
+	@Override
+	public I_ESR_Import getById(final ESRImportId esrImportId)
+	{
+		return esrImportDAO.getById(esrImportId);
 	}
 
 	private static ImmutableSet<ESRImportId> extractESRImportIds(@NonNull final List<I_ESR_ImportLine> esrImportLines)

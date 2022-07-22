@@ -25,6 +25,7 @@ package de.metas.allocation.api;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,7 +35,6 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 

@@ -9,6 +9,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 
 /*
  * #%L
@@ -42,18 +44,16 @@ public class InvoiceCandidatesTestHelper
 {
 	/**
 	 * Creates all missing invoice candidates
-	 * 
-	 * Helper method to invoke {@link IInvoiceCandidateHandler#retrieveAllModelsWithMissingCandidates(Properties, int, String)} and then
+	 *
+	 * Helper method to invoke {@link IInvoiceCandidateHandler#retrieveAllModelsWithMissingCandidates(QueryLimit)} and then
 	 * {@link IInvoiceCandidateHandler#createCandidatesFor(InvoiceCandidateGenerateRequest)} for retrieved models.
-	 * 
-	 * @param handler
-	 * @param limit
+	 *
 	 * @return invoice candidates
 	 */
-	public static List<I_C_Invoice_Candidate> createMissingCandidates(final IInvoiceCandidateHandler handler, final int limit)
+	public static List<I_C_Invoice_Candidate> createMissingCandidates(@NonNull final IInvoiceCandidateHandler handler, @NonNull final QueryLimit limit)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidatesAll = new ArrayList<>();
-		final Iterator<? extends Object> models = handler.retrieveAllModelsWithMissingCandidates(limit);
+		final Iterator<?> models = handler.retrieveAllModelsWithMissingCandidates(limit);
 		while (models.hasNext())
 		{
 			final Object model = models.next();

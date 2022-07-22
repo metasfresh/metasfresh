@@ -22,24 +22,14 @@ package org.adempiere.ad.wrapper;
  * #L%
  */
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.document.engine.IDocument;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -56,16 +46,22 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.document.engine.IDocument;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Simple implementation which binds an given interface to a internal Map.
@@ -439,9 +435,16 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		wrapper.valuesOld.clear();
 	}
 
+	public static void setCtx(@NonNull final Object model, @NonNull final Properties ctx)
+	{
+		final POJOWrapper wrapper = getWrapper(model);
+
+		wrapper.ctx = ctx;
+	}
+
 	// private final transient Logger log = CLogMgt.getLogger(getClass());
 	private final long instanceId;
-	private final Properties ctx;
+	private Properties ctx;
 	private final IPOJOLookupMap lookup;
 	private final String tableName;
 	private final Class<?> interfaceClass;

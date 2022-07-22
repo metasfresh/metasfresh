@@ -27,4 +27,8 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 
 public class ExternalSystem_Config_LeichMehl_StepDefData extends StepDefData<I_ExternalSystem_Config_LeichMehl>
 {
+	public ExternalSystem_Config_LeichMehl_StepDefData()
+	{
+		super(I_ExternalSystem_Config_LeichMehl.class);
+	}
 }

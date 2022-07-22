@@ -1,6 +1,7 @@
 package de.metas.contracts.impl;
 
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -207,6 +208,7 @@ public class FlatrateTermTestHelper
 	public final void setupModuleInterceptors_Contracts_Full()
 	{
 		final ContractOrderService contractOrderService = new ContractOrderService();
+
 		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
 
 		final OrderGroupCompensationChangesHandler groupChangesHandler = new OrderGroupCompensationChangesHandler(
@@ -223,7 +225,8 @@ public class FlatrateTermTestHelper
 				contractOrderService,
 				documentLocationBL,
 				groupChangesHandler,
-				inoutLinesWithMissingInvoiceCandidateRepo);
+				inoutLinesWithMissingInvoiceCandidateRepo,
+				new CallOrderContractService());
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

@@ -23,6 +23,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
@@ -120,6 +121,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.conditions(conditions)
 				.product(product1)
 				.orderLine(orderLine)
+				.pricingSystemId(PricingSystemId.ofRepoId(10)) // note that while C_FlatrateTerm.C_PricingSystem_ID and C_TaxCategory_ID 
+				.taxCategoryId(TaxCategoryId.ofRepoId(20)) // are not mandatory, every subscription term receives one
 				.startDate(TimeUtil.getDay(2013, 5, 27)) // yesterday
 				.build();
 
@@ -135,14 +138,13 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
 		Mockito.when(taxBL.getTaxNotNull(
-						ctx,
 						term1,
 						taxCategoryId,
 						term1.getM_Product_ID(),
 						term1.getStartDate(),
 						OrgId.ofRepoId(term1.getAD_Org_ID()),
 						(WarehouseId)null,
-						CoalesceUtil.coalesceSuppliers(
+						CoalesceUtil.coalesceSuppliersNotNull(
 								() -> ContractLocationHelper.extractDropshipLocationId(term1),
 								() -> ContractLocationHelper.extractBillToLocationId(term1)),
 						SOTrx.SALES))
@@ -245,6 +247,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 			@NonNull final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId,
 			@NonNull final I_C_Flatrate_Conditions conditions,
 			final I_M_Product product,
+			final PricingSystemId pricingSystemId,
+			final TaxCategoryId taxCategoryId,
 			final I_C_OrderLine orderLine,
 			@NonNull final Timestamp startDate,
 			final boolean isAutoRenew)
@@ -259,6 +263,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setStartDate(startDate);
 		term.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
 		term.setC_Order_Term_ID(orderLine.getC_Order_ID());
+		term.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+		term.setC_TaxCategory_ID(TaxCategoryId.toRepoId(taxCategoryId));
 		term.setIsAutoRenew(isAutoRenew);
 		term.setC_UOM_ID(uomId.getRepoId());
 

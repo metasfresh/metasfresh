@@ -125,7 +125,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Doctor doctor = doctorApi.getDoctor(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), doctorId);
+		final Doctor doctor = doctorApi.getDoctor(albertaConnectionDetails.getApiKey(), doctorId);
 
 		if (doctor == null)
 		{
@@ -145,7 +145,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final NursingHome nursingHome = nursingHomeApi.geNursingHome(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), nursingHomeId);
+		final NursingHome nursingHome = nursingHomeApi.geNursingHome(albertaConnectionDetails.getApiKey(), nursingHomeId);
 
 		if (nursingHome == null)
 		{
@@ -165,7 +165,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final NursingService nursingService = nursingServiceApi.getNursingService(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), nursingServiceId);
+		final NursingService nursingService = nursingServiceApi.getNursingService(albertaConnectionDetails.getApiKey(), nursingServiceId);
 
 		if (nursingService == null)
 		{
@@ -185,7 +185,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Hospital hospital = hospitalApi.getHospital(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), patientHospital.getHospitalId());
+		final Hospital hospital = hospitalApi.getHospital(albertaConnectionDetails.getApiKey(), patientHospital.getHospitalId());
 
 		if (hospital == null)
 		{
@@ -205,7 +205,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Payer payer = payerApi.getPayer(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), patientPayer.getPayerId());
+		final Payer payer = payerApi.getPayer(albertaConnectionDetails.getApiKey(), patientPayer.getPayerId());
 
 		if (payer == null)
 		{
@@ -225,7 +225,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Pharmacy pharmacy = pharmacyApi.getPharmacy(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), pharmacyId);
+		final Pharmacy pharmacy = pharmacyApi.getPharmacy(albertaConnectionDetails.getApiKey(), pharmacyId);
 
 		if (pharmacy == null)
 		{
@@ -245,7 +245,7 @@ public class CreateBPartnerReqProcessor implements Processor
 			return null;
 		}
 
-		final Users user = userApi.getUser(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), userId);
+		final Users user = userApi.getUser(albertaConnectionDetails.getApiKey(), userId);
 
 		if (user == null)
 		{

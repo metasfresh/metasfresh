@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO implements I_ExternalSystem_Config_RabbitMQ_HTTP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -120952676L;
+	private static final long serialVersionUID = -456924663L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_RabbitMQ_HTTP (final Properties ctx, final int ExternalSystem_Config_RabbitMQ_HTTP_ID, @Nullable final String trxName)
@@ -32,6 +32,21 @@ public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setSubjectCreatedByUserGroup_ID (final int SubjectCreatedByUserGroup_ID)
+	{
+		if (SubjectCreatedByUserGroup_ID < 1)
+			set_Value (COLUMNNAME_SubjectCreatedByUserGroup_ID, null);
+		else
+			set_Value (COLUMNNAME_SubjectCreatedByUserGroup_ID, SubjectCreatedByUserGroup_ID);
+	}
+
+	@Override
+	public int getSubjectCreatedByUserGroup_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_SubjectCreatedByUserGroup_ID);
 	}
 
 	@Override
@@ -89,6 +104,18 @@ public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO
 	}
 
 	@Override
+	public void setIsAutoSendWhenCreatedByUserGroup (final boolean IsAutoSendWhenCreatedByUserGroup)
+	{
+		set_Value (COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, IsAutoSendWhenCreatedByUserGroup);
+	}
+
+	@Override
+	public boolean isAutoSendWhenCreatedByUserGroup() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoSendWhenCreatedByUserGroup);
+	}
+
+	@Override
 	public void setIsSyncBPartnersToRabbitMQ (final boolean IsSyncBPartnersToRabbitMQ)
 	{
 		set_Value (COLUMNNAME_IsSyncBPartnersToRabbitMQ, IsSyncBPartnersToRabbitMQ);
@@ -101,7 +128,19 @@ public class X_ExternalSystem_Config_RabbitMQ_HTTP extends org.compiere.model.PO
 	}
 
 	@Override
-	public void setRemoteURL (final String RemoteURL)
+	public void setIsSyncExternalReferencesToRabbitMQ (final boolean IsSyncExternalReferencesToRabbitMQ)
+	{
+		set_Value (COLUMNNAME_IsSyncExternalReferencesToRabbitMQ, IsSyncExternalReferencesToRabbitMQ);
+	}
+
+	@Override
+	public boolean isSyncExternalReferencesToRabbitMQ() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSyncExternalReferencesToRabbitMQ);
+	}
+
+	@Override
+	public void setRemoteURL (final java.lang.String RemoteURL)
 	{
 		set_Value (COLUMNNAME_RemoteURL, RemoteURL);
 	}

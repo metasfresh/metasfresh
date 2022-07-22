@@ -27,7 +27,5 @@ public interface IProductAcctDAO extends IProductActivityProvider, ISingletonSer
 
 	Optional<AccountId> getProductAccount(AcctSchemaId acctSchemaId, ProductId productId, ProductAcctType acctType);
 
-	ActivityId getProductActivityId(ProductId productId);
-
 	Optional<AccountId> getProductCategoryAccount(@NonNull AcctSchemaId acctSchemaId, @NonNull ProductCategoryId productCategoryId, @NonNull ProductAcctType acctType);
 }
