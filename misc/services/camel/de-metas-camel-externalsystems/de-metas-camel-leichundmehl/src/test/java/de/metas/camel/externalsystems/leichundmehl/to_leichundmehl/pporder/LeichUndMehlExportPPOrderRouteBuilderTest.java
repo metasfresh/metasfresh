@@ -43,7 +43,7 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Properties;
 
@@ -168,10 +168,10 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		final JsonAttachment actualJsonAttachment = actualJsonAttachmentRequest.getAttachment();
 
 		final byte[] expectedData = Base64.getDecoder().decode(expectedJsonAttachment.getData().getBytes());
-		final String expectedDataString = new String(expectedData, StandardCharsets.UTF_8);
+		final String expectedDataString = new String(expectedData, Charset.forName("windows-1252"));
 
 		final byte[] actualData = Base64.getDecoder().decode(actualJsonAttachment.getData().getBytes());
-		final String actualDataString = new String(actualData, StandardCharsets.UTF_8);
+		final String actualDataString = new String(actualData, Charset.forName("windows-1252"));
 
 		assertThat(actualJsonAttachment.getFileName().equals(expectedJsonAttachment.getFileName())).isTrue();
 		assertThat(actualJsonAttachment.getType().equals(expectedJsonAttachment.getType())).isTrue();
