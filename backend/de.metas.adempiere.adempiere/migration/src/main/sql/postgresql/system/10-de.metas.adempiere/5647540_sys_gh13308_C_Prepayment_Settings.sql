@@ -427,3 +427,25 @@ ALTER SEQUENCE C_Prepayment_Settings_SEQ RENAME TO C_Prefinancing_Settings_SEQ
 
 
 
+
+
+-- 2022-07-22T10:56:25.514Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Einstellungen für Vorfinanzierungen', PrintName='Einstellungen für Vorfinanzierungen',Updated=TO_TIMESTAMP('2022-07-22 13:56:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581151 AND AD_Language='de_CH'
+;
+
+-- 2022-07-22T10:56:25.516Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581151,'de_CH') 
+;
+
+-- 2022-07-22T10:56:35.749Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Prefinancing Settings', PrintName='Prefinancing Settings',Updated=TO_TIMESTAMP('2022-07-22 13:56:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581151 AND AD_Language='en_US'
+;
+
+-- 2022-07-22T10:56:35.750Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581151,'en_US') 
+;
+
