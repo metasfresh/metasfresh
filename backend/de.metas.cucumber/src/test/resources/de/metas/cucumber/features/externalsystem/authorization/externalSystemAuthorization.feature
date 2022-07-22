@@ -46,7 +46,7 @@ Feature: Camel-ExternalSystem authorization
 
     Then after not more than 10s, validate AD_Note:
       | Identifier | AD_Message_ID.Identifier  | OPT.AD_User_ID.Identifier |
-      | note       | sysConfigNotFound_message | user_S0168_300            |
+      | note       | sysConfigNotFound_message | user_S0168_200            |
 
 
   @from:cucumber
