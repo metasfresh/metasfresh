@@ -403,7 +403,12 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541562
 
 -- 2022-07-21T13:41:17.234Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,581151,0,546462,542188,541562,'Y',TO_TIMESTAMP('2022-07-21 16:41:17','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','C_Prepayment_Settings','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'C_Prepayment Settings','N',10,0,TO_TIMESTAMP('2022-07-21 16:41:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,
+                    IsActive,IsAdvancedTab,IsCheckParentsChanged,
+                    IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,
+                    IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,581151,0,546462,542188,541562,'Y'
+                    ,TO_TIMESTAMP('2022-07-21 16:41:17','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','C_Prepayment_Settings','Y','N','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,
+                    'C_Prepayment Settings','N',10,0,TO_TIMESTAMP('2022-07-21 16:41:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-07-21T13:41:17.236Z
