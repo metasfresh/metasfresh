@@ -149,7 +149,7 @@ Feature: attachment creation using metasfresh api
       | attachmentEntry_1                |
     And validate the created attachment entry
       | AD_AttachmentEntry_ID.Identifier | Type | FileName     | BinaryData     | ContentType |
-      | attachmentEntry_1                | D    | test_001.txt | this is a test | text/txt    |
+      | attachmentEntry_1                | D    | test_001.txt | this is a test | text/plain  |
     And validate the created attachment multiref
       | AD_AttachmentEntry_ID.Identifier | Record_ID | TableName   |
       | attachmentEntry_1                | 2156425   | C_BPartner  |

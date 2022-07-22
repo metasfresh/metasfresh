@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.RetrieveProductCamelRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.DispatchMessageRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -42,6 +43,8 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID;
@@ -130,10 +133,6 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		final MockEndpoint logMessageRequestMockEndpoint = getMockEndpoint(MOCK_LOG_MESSAGE_ENDPOINT);
 		logMessageRequestMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedLogMessageRequestIS, LogMessageRequest.class));
 
-		final InputStream expectedJsonAttachmentRequestIS = this.getClass().getResourceAsStream(JSON_ATTACHMENT_REQUEST);
-		final MockEndpoint attachmentMockEndpoint = getMockEndpoint(MOCK_ATTACHMENT_ENDPOINT);
-		attachmentMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedJsonAttachmentRequestIS, JsonAttachmentRequest.class));
-
 		//input request
 		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
@@ -149,9 +148,34 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 
+		//validate DispatchMessageRequest
 		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
 		final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
-		assertThat(mockTCPProcessor.actualRequest.getPayload().equals(expectedDispatchMessageRequest.getPayload())).isTrue();
+		assertThat(mockTCPProcessor.actualRequest.getConnectionDetails()).isEqualTo(expectedDispatchMessageRequest.getConnectionDetails());
+		assertThat(mockTCPProcessor.actualRequest.getPayload().replaceAll("\\s+", ""))
+				.isEqualTo(expectedDispatchMessageRequest.getPayload().replaceAll("\\s+", ""));
+
+		//validate JsonAttachmentRequest
+		final InputStream expectedJsonAttachmentRequestIS = this.getClass().getResourceAsStream(JSON_ATTACHMENT_REQUEST);
+		final JsonAttachmentRequest expectedJsonAttachmentRequest = objectMapper.readValue(expectedJsonAttachmentRequestIS, JsonAttachmentRequest.class);
+
+		final JsonAttachmentRequest actualJsonAttachmentRequest = mockJsonAttachmentRequestProcessor.jsonAttachmentRequest;
+
+		assertThat(actualJsonAttachmentRequest.getOrgCode().equals(expectedJsonAttachmentRequest.getOrgCode())).isTrue();
+		assertThat(actualJsonAttachmentRequest.getTargets().equals(expectedJsonAttachmentRequest.getTargets())).isTrue();
+
+		final JsonAttachment expectedJsonAttachment = expectedJsonAttachmentRequest.getAttachment();
+		final JsonAttachment actualJsonAttachment = actualJsonAttachmentRequest.getAttachment();
+
+		final byte[] expectedData = Base64.getDecoder().decode(expectedJsonAttachment.getData().getBytes());
+		final String expectedDataString = new String(expectedData, StandardCharsets.UTF_8);
+
+		final byte[] actualData = Base64.getDecoder().decode(actualJsonAttachment.getData().getBytes());
+		final String actualDataString = new String(actualData, StandardCharsets.UTF_8);
+
+		assertThat(actualJsonAttachment.getFileName().equals(expectedJsonAttachment.getFileName())).isTrue();
+		assertThat(actualJsonAttachment.getType().equals(expectedJsonAttachment.getType())).isTrue();
+		assertThat(actualDataString).isEqualTo(expectedDataString);
 	}
 
 	@Test
@@ -192,6 +216,13 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		assertThat(mockLogMessageRequestProcessor.called).isEqualTo(0);
 		assertThat(mockJsonAttachmentRequestProcessor.called).isEqualTo(0);
 		assertMockEndpointsSatisfied();
+
+		//validate DispatchMessageRequest
+		final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
+		final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
+		assertThat(mockTCPProcessor.actualRequest.getConnectionDetails()).isEqualTo(expectedDispatchMessageRequest.getConnectionDetails());
+		assertThat(mockTCPProcessor.actualRequest.getPayload().replaceAll("\\s+", ""))
+				.isEqualTo(expectedDispatchMessageRequest.getPayload().replaceAll("\\s+", ""));
 	}
 
 	private void prepareRouteForTesting(
@@ -264,12 +295,7 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 		@Override
 		public void process(final Exchange exchange) throws IOException
 		{
-			final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
-
-			final InputStream expectedDispatchMessageRequestIS = this.getClass().getResourceAsStream(JSON_DISPATCH_MESSAGE_REQUEST);
-			final DispatchMessageRequest expectedDispatchMessageRequest = objectMapper.readValue(expectedDispatchMessageRequestIS, DispatchMessageRequest.class);
-
-			actualRequest = expectedDispatchMessageRequest;
+			actualRequest = exchange.getIn().getBody(DispatchMessageRequest.class);
 
 			called++;
 		}
@@ -289,10 +315,13 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 	private static class MockJsonAttachmentRequestProcessor implements Processor
 	{
 		private int called = 0;
+		private JsonAttachmentRequest jsonAttachmentRequest;
 
 		@Override
 		public void process(final Exchange exchange) throws Exception
 		{
+			jsonAttachmentRequest = exchange.getIn().getBody(JsonAttachmentRequest.class);
+
 			called++;
 		}
 	}

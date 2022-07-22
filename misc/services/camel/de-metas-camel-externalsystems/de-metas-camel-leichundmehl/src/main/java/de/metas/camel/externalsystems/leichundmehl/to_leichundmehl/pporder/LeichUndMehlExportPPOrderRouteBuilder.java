@@ -42,6 +42,7 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -128,17 +129,13 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		}
 
 		final String pluFileExportAuditEnabled = parameters.get(ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED);
-		if (Check.isBlank(pluFileExportAuditEnabled)) //parse nullableboolean
-		{
-			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED);
-		}
 
 		final ExportPPOrderRouteContext context = ExportPPOrderRouteContext.builder()
 				.jsonExternalSystemRequest(request)
 				.connectionDetails(ExportPPOrderHelper.getTcpConnectionDetails(parameters))
 				.productMapping(ExportPPOrderHelper.getProductMapping(parameters))
 				.productBaseFolderName(productBaseFolderName)
-				.pluFileExportAuditEnabled(Boolean.parseBoolean(pluFileExportAuditEnabled))
+				.pluFileExportAuditEnabled(StringUtils.toBoolean(pluFileExportAuditEnabled))
 				.pluFileConfigs(ExportPPOrderHelper.getPluFileConfigs(parameters))
 				.build();
 
