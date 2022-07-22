@@ -4,8 +4,6 @@ import PropTypes from 'prop-types';
 import './CalendarFilters.scss';
 
 const CalendarFilters = ({ resolvedQuery }) => {
-  console.log('ctor', { resolvedQuery });
-
   const items = convertResolvedQueryToItemData(resolvedQuery);
 
   return (

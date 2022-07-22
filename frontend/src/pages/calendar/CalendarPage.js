@@ -8,10 +8,16 @@ import { getQueryString } from '../../utils';
 
 import './CalendarPage.scss';
 
-const updateURI = (location, { simulationId }) => {
+const updateURI = (
+  location,
+  { simulationId, onlyResourceIds, onlyProjectId, onlyCustomerId }
+) => {
   const queryParams = getQueryString({
     ...location.query,
     simulationId,
+    resourceIds: onlyResourceIds ? onlyResourceIds.join(',') : null,
+    projectId: onlyProjectId,
+    customerId: onlyCustomerId,
   });
 
   history.replace(`${location.pathname}?${queryParams}`);
@@ -19,7 +25,8 @@ const updateURI = (location, { simulationId }) => {
 
 const CalendarPage = ({ location }) => {
   const onlyResourceIds = useMemo(
-    () => (location.query.resourceId ? [location.query.resourceId] : null),
+    () =>
+      location.query.resourceIds ? location.query.resourceIds.split(',') : null,
     [location.query.resourceId]
   );
 
@@ -32,9 +39,7 @@ const CalendarPage = ({ location }) => {
           onlyResourceIds={onlyResourceIds}
           onlyProjectId={location.query.projectId}
           onlyCustomerId={location.query.customerId}
-          onParamsChanged={({ simulationId }) =>
-            updateURI(location, { simulationId })
-          }
+          onParamsChanged={(params) => updateURI(location, params)}
         />
       </div>
     </div>

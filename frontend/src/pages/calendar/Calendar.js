@@ -44,8 +44,14 @@ const Calendar = ({
   const simulationId = calendarData.getSimulationId();
 
   useEffect(() => {
-    onParamsChanged && onParamsChanged({ simulationId });
-  }, [simulationId]);
+    onParamsChanged &&
+      onParamsChanged({
+        simulationId,
+        onlyResourceIds,
+        onlyProjectId,
+        onlyCustomerId,
+      });
+  }, [simulationId, onlyResourceIds, onlyProjectId, onlyCustomerId]);
 
   useEffect(() => {
     console.log('Loading calendars...');
