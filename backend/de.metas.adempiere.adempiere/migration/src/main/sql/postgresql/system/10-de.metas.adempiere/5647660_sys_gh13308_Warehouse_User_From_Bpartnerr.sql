@@ -57,3 +57,10 @@ INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_Element
 INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_ElementField_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,SeqNo,Type,Updated,UpdatedBy) VALUES (0,556263,0,541564,610451,TO_TIMESTAMP('2022-07-22 11:07:31','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,'widget',TO_TIMESTAMP('2022-07-22 11:07:31','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+
+-- 2022-07-22T11:42:49.859Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=542127
+;
