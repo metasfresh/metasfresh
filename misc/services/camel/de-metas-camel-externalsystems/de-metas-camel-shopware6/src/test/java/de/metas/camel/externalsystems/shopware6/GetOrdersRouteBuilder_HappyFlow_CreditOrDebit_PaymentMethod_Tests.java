@@ -30,8 +30,8 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonProductLookup;
-import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.jupiter.api.Test;
@@ -39,22 +39,21 @@ import org.junit.jupiter.api.Test;
 import java.io.InputStream;
 
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_UPSERT;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CLEAR;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CREATE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_STORE_RAW_DATA;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_PROCESS;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PAGE_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_OLCAND_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDERS_PAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 
-public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends GetOrdersRouteBuilder_HappyFlow_Tests
+public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod_Tests extends GetOrdersRouteBuilder_HappyFlow_Tests
 {
 	private static final String HAPPY_FLOW_CREDIT_OR_DEBIT_PAYMENTMENTHOD = "happyFlow_CreditOrDebit_PaymentMethod/";
 	private static final String JSON_SHOPWARE_MAPPINGS = HAPPY_FLOW_CREDIT_OR_DEBIT_PAYMENTMENTHOD + "01_JsonExternalSystemShopware6ConfigMappings.json";
@@ -71,7 +70,8 @@ public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends
 	{
 		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor(JSON_UPSERT_BPARTNER_RESPONSE);
 		final MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new MockSuccessfullyCreatedOLCandProcessor();
-		final MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new MockSuccessfullyClearOrdersProcessor();
+		final MockSuccessfullyProcessOLCandProcessor successfullyProcessOLCandProcessor = new MockSuccessfullyProcessOLCandProcessor();
+		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
 		final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
 		final MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage = new MockSuccessfullyCalledGetOrderPage();
 
@@ -82,8 +82,9 @@ public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends
 
 		prepareRouteForTesting(createdBPartnerProcessor,
 							   successfullyCreatedOLCandProcessor,
-							   successfullyClearOrdersProcessor,
+							   successfullyProcessOLCandProcessor,
 							   runtimeParamsProcessor,
+							   createPaymentProcessor,
 							   successfullyCalledGetOrderPage,
 							   request);
 
@@ -91,9 +92,6 @@ public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends
 
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
-
-		final MockEndpoint storeRawDataEndpoint = getMockEndpoint(MOCK_STORE_RAW_DATA);
-		storeRawDataEndpoint.expectedMessageCount(1);
 
 		// validate BPUpsertCamelRequest
 		final InputStream expectedUpsertBPartnerRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
@@ -107,11 +105,10 @@ public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends
 		final MockEndpoint olCandMockEndpoint = getMockEndpoint(MOCK_OL_CAND_CREATE);
 		olCandMockEndpoint.expectedBodiesReceived(objectMapper.readValue(olCandCreateRequestIS, JsonOLCandCreateBulkRequest.class));
 
-		//validate JsonOLCandClearRequest
-		final InputStream jsonOLCandClearRequest = this.getClass().getResourceAsStream(JSON_OL_CAND_CLEAR_REQUEST);
-
-		final MockEndpoint olCandClearEndpoint = getMockEndpoint(MOCK_OL_CAND_CLEAR);
-		olCandClearEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandClearRequest, JsonOLCandClearRequest.class));
+		//validate JsonOLCandProcessRequest
+		final InputStream jsonOLCandProcessRequestIS = this.getClass().getResourceAsStream(JSON_OL_CAND_PROCESS_REQUEST);
+		final MockEndpoint olCandProcessEndpoint = getMockEndpoint(MOCK_OL_CAND_PROCESS);
+		olCandProcessEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandProcessRequestIS, JsonOLCandProcessRequest.class));
 
 		//validate upsert runtime parameters request
 		final InputStream jsonUpsertRuntimeParamsRequest = this.getClass().getResourceAsStream(JSON_UPSERT_RUNTIME_PARAMS_REQUEST);
@@ -123,7 +120,8 @@ public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends
 
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
-		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
+		assertThat(successfullyProcessOLCandProcessor.called).isEqualTo(1);
+		assertThat(createPaymentProcessor.called).isEqualTo(0);
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(successfullyCalledGetOrderPage.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
@@ -132,8 +130,9 @@ public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends
 	private void prepareRouteForTesting(
 			final MockUpsertBPartnerProcessor upsertBPartnerProcessor,
 			final MockSuccessfullyCreatedOLCandProcessor olCandProcessor,
-			final MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
+			final MockSuccessfullyProcessOLCandProcessor processOLCandProcessor,
 			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
+			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor,
 			final MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage,
 			final JsonExternalSystemRequest request) throws Exception
 	{
@@ -149,10 +148,6 @@ public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {
-								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.STORE_RAW_DATA_ROUTE)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_STORE_RAW_DATA);
-
 								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
 										  .after()
 										  .to(MOCK_BPARTNER_UPSERT);
@@ -168,13 +163,17 @@ public class GetOrdersRouteBuilder_HappyFlow_CreditOrDebit_PaymentMethod extends
 								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
 										  .skipSendToOriginalEndpoint()
 										  .process(olCandProcessor);
+
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .process(createPaymentProcessor);
 							  });
 
-		AdviceWith.adviceWith(context, CLEAR_ORDERS_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
+		AdviceWith.adviceWith(context, PROCESS_OLCAND_ROUTE_ID,
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
 									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_OL_CAND_CLEAR)
-									  .process(olCandClearProcessor));
+									  .to(MOCK_OL_CAND_PROCESS)
+									  .process(processOLCandProcessor));
 
 		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
