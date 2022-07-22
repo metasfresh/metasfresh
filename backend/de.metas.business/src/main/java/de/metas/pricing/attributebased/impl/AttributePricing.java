@@ -1,7 +1,6 @@
 package de.metas.pricing.attributebased.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
@@ -38,7 +37,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -280,16 +278,12 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> ProductPrices.newQuery(priceListVersion)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersion)
 						.setProductId(pricingCtx.getProductId())
 						.onlyValidPrices(true)
 						.matching(_defaultMatchers)
 						.strictlyMatchingAttributes(attributeSetInstance)
-						.firstMatching(),
-
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
+						.firstMatching();
 
 		if (productPrice == null)
 		{

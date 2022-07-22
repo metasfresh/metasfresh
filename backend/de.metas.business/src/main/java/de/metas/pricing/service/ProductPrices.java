@@ -269,41 +269,6 @@ public class ProductPrices
 		}
 	}
 
-	@Nullable public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
-			@Nullable final I_M_PriceList_Version startPriceListVersion,
-			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper,
-			@NonNull final ZonedDateTime priceDate)
-	{
-		if (startPriceListVersion == null)
-		{
-			return null;
-		}
-
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-
-		final Set<Integer> checkedPriceListVersionIds = new HashSet<>();
-
-		I_M_PriceList_Version currentPriceListVersion = startPriceListVersion;
-		while (currentPriceListVersion != null)
-		{
-			// Stop here if the price list version was already considered
-			if (!checkedPriceListVersionIds.add(currentPriceListVersion.getM_PriceList_Version_ID()))
-			{
-				return null;
-			}
-
-			final T productPrice = productPriceMapper.apply(currentPriceListVersion);
-			if (productPrice != null)
-			{
-				return productPrice;
-			}
-
-			currentPriceListVersion = priceListsRepo.getBasePriceListVersionForPricingCalculationOrNull(currentPriceListVersion, priceDate);
-		}
-
-		return null;
-	}
-
 	/**
 	 * @deprecated Please use {@link IPriceListDAO#addProductPrice(AddProductPriceRequest)}. If doesn't fit, extend it ;)
 	 */
