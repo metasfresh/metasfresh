@@ -449,3 +449,44 @@ UPDATE AD_Element_Trl SET Name='Prefinancing Settings', PrintName='Prefinancing 
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581151,'en_US') 
 ;
 
+
+-- 2022-07-22T11:51:36.464Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=541562,Updated=TO_TIMESTAMP('2022-07-22 14:51:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542188
+;
+
+-- 2022-07-22T11:56:53.298Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET InternalName='C_Prefinancing_Settings',Updated=TO_TIMESTAMP('2022-07-22 14:56:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=541562
+;
+
+-- 2022-07-22T11:57:59.122Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Trl SET IsTranslated='Y', Name='Einstellungen für Vorfinanzierungen',Updated=TO_TIMESTAMP('2022-07-22 14:57:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Table_ID=542188
+;
+
+-- 2022-07-22T11:58:09.955Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Trl SET IsTranslated='Y', Name='Prefinancing Settings',Updated=TO_TIMESTAMP('2022-07-22 14:58:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Table_ID=542188
+;
+
+-- 2022-07-22T11:58:14.624Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Trl SET IsTranslated='Y', Name='Einstellungen für Vorfinanzierungen',Updated=TO_TIMESTAMP('2022-07-22 14:58:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Table_ID=542188
+;
+
+-- 2022-07-22T12:14:03.505Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET Name='Prefinancing Settings',Updated=TO_TIMESTAMP('2022-07-22 15:14:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542188
+;
+
+-- 2022-07-22T12:15:18.084Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='WIthholding Product', PrintName='WIthholding Product',Updated=TO_TIMESTAMP('2022-07-22 15:15:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542569 AND AD_Language='en_US'
+;
+
+-- 2022-07-22T12:15:18.115Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542569,'en_US') 
+;
+
