@@ -198,10 +198,10 @@ public class DDOrderProducer
 		ddOrderline.setDD_NetworkDistributionLine_ID(networkDistributionLineRecord.getDD_NetworkDistributionLine_ID());
 
 		// get supply source warehouse and locator
-		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocator(fromToWarehouse.getWarehouseFromId());
+		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(fromToWarehouse.getWarehouseFromId());
 
 		// get supply target warehouse and locator
-		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocator(fromToWarehouse.getWarehouseToId());
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(fromToWarehouse.getWarehouseToId());
 
 		//
 		// Locator From/To
