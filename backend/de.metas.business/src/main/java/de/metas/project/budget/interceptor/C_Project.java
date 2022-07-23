@@ -46,7 +46,7 @@ public class C_Project
 		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_Project record)
 	{
 		if (!ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory()).isBudget())

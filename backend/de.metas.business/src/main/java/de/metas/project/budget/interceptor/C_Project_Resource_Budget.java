@@ -47,16 +47,12 @@ public class C_Project_Resource_Budget
 		this.multiCalendarService = multiCalendarService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_C_Project_Resource_Budget record)
-	{
-		// make sure it's valid
-		BudgetProjectResourceRepository.fromRecord(record);
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(final I_C_Project_Resource_Budget record, final ModelChangeType changeType)
 	{
+		// make sure it's valid
+		BudgetProjectResourceRepository.fromRecord(record);
+
 		notifyIfUserChange(record, changeType);
 	}
 

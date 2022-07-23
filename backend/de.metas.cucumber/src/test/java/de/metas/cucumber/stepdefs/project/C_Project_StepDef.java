@@ -27,8 +27,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsert;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsertItem;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_ProjectType_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.R_Status_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -42,10 +42,12 @@ import de.metas.project.service.ProjectRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -56,6 +58,7 @@ import org.compiere.model.I_R_Status;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
@@ -63,6 +66,7 @@ public class C_Project_StepDef
 {
 	private final ProjectRepository projectRepository = SpringContextHolder.instance.getBean(ProjectRepository.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final TestContext testContext;
@@ -119,6 +123,34 @@ public class C_Project_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			validateProject(tableRow);
+		}
+	}
+
+	@And("metasfresh contains C_ProjectType")
+	public void metasfresh_contains_C_ProjectType(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String projectTypeCategory = DataTableUtil.extractStringForColumnName(tableRow, I_C_ProjectType.COLUMNNAME_ProjectCategory);
+
+			final String projectTypeName = DataTableUtil.extractStringForColumnName(tableRow, I_C_ProjectType.COLUMNNAME_Name);
+
+			final I_C_ProjectType projectTypeRecord = CoalesceUtil.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_C_ProjectType.class)
+																					   .addEqualsFilter(I_C_ProjectType.COLUMNNAME_ProjectCategory, projectTypeCategory)
+																					   .create()
+																					   .firstOnlyOrNull(I_C_ProjectType.class),
+																			   () -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_ProjectType.class));
+			assertThat(projectTypeRecord).isNotNull();
+
+			projectTypeRecord.setProjectCategory(projectTypeCategory);
+			projectTypeRecord.setName(projectTypeName);
+
+			saveRecord(projectTypeRecord);
+
+			final String projectTypeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_ProjectType.COLUMNNAME_C_ProjectType_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			projectTypeTable.put(projectTypeIdentifier, projectTypeRecord);
 		}
 	}
 

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,14 +20,39 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.common.rest_api.v2.money;
 
-import org.compiere.model.I_C_ProjectType;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-public class C_ProjectType_StepDefData extends StepDefData<I_C_ProjectType>
+import java.math.BigDecimal;
+
+@Getter
+@ToString
+@EqualsAndHashCode
+public class JsonMoney
 {
-	public C_ProjectType_StepDefData()
+	BigDecimal amount;
+
+	@ApiModelProperty(hidden = true)
+	boolean amountSet;
+
+	String currencyCode;
+
+	@ApiModelProperty(hidden = true)
+	boolean currencyCodeSet;
+
+	public void setAmount(final BigDecimal amount)
 	{
-		super(I_C_ProjectType.class);
+		this.amount = amount;
+		this.amountSet = true;
+	}
+
+	public void setCurrencyCode(final String currencyCode)
+	{
+		this.currencyCode = currencyCode;
+		this.currencyCodeSet = true;
 	}
 }
