@@ -134,11 +134,13 @@ public class PaySelectionService
 				final CountryId countryId = locationDAO.getCountryIdByLocationId(bank.getLocationId());
 				revolutPaymentExportBuilder.recipientBankCountryId(countryId);
 			}
+			revolutPaymentExportBuilder.SwiftCode(bank.getSwiftCode());
 		}		
 		final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(bpBankAccount.getCurrencyId());
 		final Amount amount = Amount.of(line.getPayAmt(), currencyCode);
 
 		final TableRecordReference recordRef = TableRecordReference.of(I_C_PaySelectionLine.Table_Name, line.getC_PaySelection_ID());
+
 
 		return revolutPaymentExportBuilder
 				.recordReference(recordRef)
@@ -148,7 +150,6 @@ public class PaySelectionService
 				.accountNo(bpBankAccount.getAccountNo())
 				.routingNo(bpBankAccount.getRoutingNo())
 				.IBAN(bpBankAccount.getIBAN())
-				.SwiftCode(bpBankAccount.getRoutingNo())
 				.build();
 	}
 
