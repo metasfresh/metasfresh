@@ -209,6 +209,31 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
 
 	/**
+	 * Set Prefinancing Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Prefinancing_Settings_ID (int C_Prefinancing_Settings_ID);
+
+	/**
+	 * Get Prefinancing Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Prefinancing_Settings_ID();
+
+	@Nullable org.compiere.model.I_C_Prefinancing_Settings getC_Prefinancing_Settings();
+
+	void setC_Prefinancing_Settings(@Nullable org.compiere.model.I_C_Prefinancing_Settings C_Prefinancing_Settings);
+
+	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Prefinancing_Settings> COLUMN_C_Prefinancing_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Prefinancing_Settings_ID", org.compiere.model.I_C_Prefinancing_Settings.class);
+	String COLUMNNAME_C_Prefinancing_Settings_ID = "C_Prefinancing_Settings_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
