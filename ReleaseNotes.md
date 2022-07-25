@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13308](https://github.com/metasfresh/metasfresh/issues/13308) Partial Payment Invoicing: prepare warehouse and prefinancing settings
   * [#13302](https://github.com/metasfresh/metasfresh/issues/13302) Change base language via Process
   * [#13314](https://github.com/metasfresh/metasfresh/issues/13314) Prevent price lookup from base PLV
   * [#13296](https://github.com/metasfresh/metasfresh/issues/13296) Support additional shopware payment type
