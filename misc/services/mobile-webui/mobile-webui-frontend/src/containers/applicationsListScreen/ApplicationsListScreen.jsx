@@ -9,6 +9,7 @@ import LogoHeader from '../../components/LogoHeader';
 import { useHistory } from 'react-router-dom';
 import { getApplicationStartFunction } from '../../apps';
 import { appLaunchersLocation } from '../../routes/launchers';
+import { useAuth } from '../../hooks/useAuth';
 
 const ApplicationsListScreen = () => {
   const applications = useSelector((state) => getAvailableApplicationsArray(state));
@@ -28,6 +29,11 @@ const ApplicationsListScreen = () => {
     }
   };
 
+  const auth = useAuth();
+  const handleLogout = () => {
+    auth.logout();
+  };
+
   return (
     <div>
       <LogoHeader />
@@ -40,6 +46,13 @@ const ApplicationsListScreen = () => {
             onClick={() => handleAppClick(app.id)}
           />
         ))}
+        <br />
+        <ApplicationButton
+          key="logout"
+          caption={'Logout'}
+          iconClassNames="fas fa-sign-out-alt"
+          onClick={() => handleLogout()}
+        />
       </div>
       <ScreenToaster />
     </div>

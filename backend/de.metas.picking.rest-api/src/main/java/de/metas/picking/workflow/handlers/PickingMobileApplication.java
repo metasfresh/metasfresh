@@ -303,4 +303,10 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.map(WFActivity::getWfActivityType)
 				.forEach(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE::assertActual);
 	}
+
+	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		// TODO unlock picking job
+	}
 }

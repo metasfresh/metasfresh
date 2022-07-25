@@ -73,6 +73,13 @@ public class WorkflowRestController
 				.build();
 	}
 
+	@PostMapping("/logout")
+	public void logout()
+	{
+		final UserId loggedUserId = Env.getLoggedUserId();
+		workflowRestAPIService.logout(loggedUserId);
+	}
+
 	@GetMapping("/apps")
 	public JsonMobileApplicationsList getMobileApplications()
 	{

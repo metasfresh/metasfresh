@@ -242,4 +242,10 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 					}
 				});
 	}
+
+	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		// TODO unlock picking job
+	}
 }

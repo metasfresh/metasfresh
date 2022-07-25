@@ -159,4 +159,10 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 					return wfProcess.<DistributionJob>mapDocument(job -> distributionRestService.processEvent(job, event));
 				});
 	}
+
+	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		// TODO implement
+	}
 }

@@ -151,6 +151,12 @@ public class WorkflowRestAPIService
 				: QueryLimit.ofInt(limitInt);
 	}
 
+	public void logout(@NonNull final UserId userId)
+	{
+		applications.stream()
+				.forEach(application -> application.logout(userId));
+	}
+
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
 		return getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
