@@ -22,16 +22,20 @@ export const updateResourcesFromConflicts = ({
     entries,
     conflicts,
   });
-  console.log(
-    'computeConflictCountsByResourceId',
-    computeConflictCountsByResourceId
-  );
+  console.log('conflictCountsByResourceId', conflictCountsByResourceId);
+
+  const entriesCountsByResourceId = computeEntriesCountsByResourceId({
+    entries,
+  });
+  console.log('entriesCountsByResourceId', entriesCountsByResourceId);
 
   const changedResources = [];
   let hasChanges = false;
   resources.forEach((resource) => {
-    const newConflictsCount = conflictCountsByResourceId[resource.id] ?? 0;
-    const changedResource = updateResource(resource, newConflictsCount);
+    const changedResource = updateResource(resource, {
+      conflictsCount: conflictCountsByResourceId[resource.id] ?? 0,
+      entriesCount: entriesCountsByResourceId[resource.id] ?? 0,
+    });
     changedResources.push(changedResource);
     if (changedResource !== resource) {
       hasChanges = true;
@@ -72,10 +76,25 @@ const computeConflictCountsByResourceId = ({ entries, conflicts }) => {
   return conflictCountsByResourceId;
 };
 
-const updateResource = (resource, conflictsCount) => {
-  console.log('updateResource', { resource, conflictsCount });
-  const oldConflictsCount = resource.conflictsCount;
-  return oldConflictsCount !== conflictsCount
-    ? { ...resource, conflictsCount }
+const computeEntriesCountsByResourceId = ({ entries }) => {
+  if (!entries) {
+    return {};
+  }
+
+  const entriesCountByResourceId = {};
+  entries.forEach((entry) => {
+    const resourceId = entry.resourceId;
+    const count = entriesCountByResourceId[resourceId] ?? 0;
+    entriesCountByResourceId[resourceId] = count + 1;
+  });
+
+  return entriesCountByResourceId;
+};
+
+const updateResource = (resource, { conflictsCount, entriesCount }) => {
+  console.log('updateResource', { resource, conflictsCount, entriesCount });
+  return resource.conflictsCount !== conflictsCount ||
+    resource.entriesCount !== entriesCount
+    ? { ...resource, conflictsCount, entriesCount }
     : resource;
 };

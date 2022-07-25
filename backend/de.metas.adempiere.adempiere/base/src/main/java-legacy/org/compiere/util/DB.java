@@ -22,6 +22,7 @@
 package org.compiere.util;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
@@ -91,6 +92,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * General Database Interface
@@ -501,7 +503,7 @@ public class DB
 	 */
 	@Deprecated
 	public CPreparedStatement prepareStatement(final String sql,
-			final int resultSetType, final int resultSetConcurrency)
+											   final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
 	}    // prepareStatement
@@ -516,9 +518,9 @@ public class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public CPreparedStatement prepareStatement(final String sql,
-			final int resultSetType,
-			final int resultSetConcurrency,
-			final String trxName)
+											   final int resultSetType,
+											   final int resultSetConcurrency,
+											   final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{
@@ -683,7 +685,7 @@ public class DB
 		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		}
-		else if(param instanceof byte[])
+		else if (param instanceof byte[])
 		{
 			pstmt.setBytes(index, (byte[])param);
 		}
@@ -773,11 +775,11 @@ public class DB
 	 */
 	@Deprecated
 	public int executeUpdate(final String sql,
-			final Object[] params,
-			@NonNull final OnFail onFail,
-			final String trxName,
-			final int timeOut,
-			final ISqlUpdateReturnProcessor updateReturnProcessor)
+							 final Object[] params,
+							 @NonNull final OnFail onFail,
+							 final String trxName,
+							 final int timeOut,
+							 final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		if (Check.isEmpty(sql, true))
 		{
@@ -966,10 +968,10 @@ public class DB
 	}    // executeUpdateEx
 
 	public int executeUpdateEx(final String sql,
-			final Object[] params,
-			final String trxName,
-			final int timeOut,
-			final ISqlUpdateReturnProcessor updateReturnProcessor)
+							   final Object[] params,
+							   final String trxName,
+							   final int timeOut,
+							   final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		return executeUpdate(sql, params, OnFail.ThrowException, trxName, timeOut, updateReturnProcessor);
 	}
@@ -1467,8 +1469,7 @@ public class DB
 
 			if (rs.next())
 			{
-				@SuppressWarnings("unchecked")
-				final T[] arr = (T[])rs.getArray(1).getArray();
+				@SuppressWarnings("unchecked") final T[] arr = (T[])rs.getArray(1).getArray();
 				return arr;
 			}
 			else
@@ -1714,6 +1715,13 @@ public class DB
 		return CConnection.get().getDatabase().TO_SEQUENCE_NEXTVAL(sequenceName);
 	}
 
+	public String TO_ARRAY(@NonNull final Collection<?> values, @NonNull final List<Object> paramsOut)
+	{
+		final String sql = "ARRAY[" + values.stream().map(value -> "?").collect(Collectors.joining(",")) + "]";
+		paramsOut.addAll(values);
+		return sql;
+	}
+
 	/**
 	 * Is this a remote client connection.
 	 * <p>
@@ -1766,7 +1774,7 @@ public class DB
 		{
 			return String.valueOf(((RepoIdAware)param).getRepoId());
 		}
-		else if(param instanceof ReferenceListAwareEnum)
+		else if (param instanceof ReferenceListAwareEnum)
 		{
 			return TO_STRING(((ReferenceListAwareEnum)param).getCode());
 		}
@@ -2164,7 +2172,7 @@ public class DB
 	}
 
 	public void createT_Selection(
-			@NonNull final PInstanceId selectionId, 
+			@NonNull final PInstanceId selectionId,
 			@NonNull final Collection<? extends RepoIdAware> selection,
 			@Nullable final String trxName)
 	{
@@ -2288,7 +2296,7 @@ public class DB
 	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
-	 * @param paramsOut  if null, the parameters will be embedded in returned SQL
+	 * @param paramsOut if null, the parameters will be embedded in returned SQL
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
@@ -2619,10 +2627,9 @@ public class DB
 		{
 			value = (AT)rs.getString(columnIndex);
 		}
-		else if(RepoIdAware.class.isAssignableFrom(returnType))
+		else if (RepoIdAware.class.isAssignableFrom(returnType))
 		{
-			@SuppressWarnings("unchecked")
-			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
+			@SuppressWarnings("unchecked") final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
 			value = (AT)RepoIdAwares.ofRepoIdOrNull(rs.getInt(columnIndex), repoIdAwareType);
 		}
 		else
@@ -2690,7 +2697,9 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
+		final ImmutableList.Builder<T> rows = ImmutableList.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader, rows::add);
+		return rows.build();
 	}
 
 	@NonNull
@@ -2699,44 +2708,20 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
+		final ImmutableList.Builder<T> rows = ImmutableList.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
+		return rows.build();
 	}
 
 	@NonNull
-	private static <T> ImmutableList<T> retrieveRows(
+	public static <T> ImmutableSet<T> retrieveUniqueRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
-			@Nullable final String trxName,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = prepareStatement(sql.toString(), trxName);
-			setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-
-			final ImmutableList.Builder<T> rows = ImmutableList.builder();
-			while (rs.next())
-			{
-				final T row = loader.retrieveRowOrNull(rs);
-				if (row != null)
-				{
-					rows.add(row);
-				}
-			}
-
-			return rows.build();
-		}
-		catch (final SQLException ex)
-		{
-			throw new DBException(ex, sql, sqlParams);
-		}
-		finally
-		{
-			close(rs, pstmt);
-		}
+		final ImmutableSet.Builder<T> rows = ImmutableSet.builder();
+		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
+		return rows.build();
 	}
 
 	public <T> T retrieveFirstRowOrNull(
@@ -2758,6 +2743,40 @@ public class DB
 			else
 			{
 				return null;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
+	}
+
+	private static <T> void retrieveRows(
+			@NonNull final CharSequence sql,
+			@Nullable final List<Object> sqlParams,
+			@Nullable final String trxName,
+			@NonNull final ResultSetRowLoader<T> loader,
+			@NonNull final Consumer<T> collector)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql.toString(), trxName);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			while (rs.next())
+			{
+				final T row = loader.retrieveRowOrNull(rs);
+				if (row != null)
+				{
+					collector.accept(row);
+				}
 			}
 		}
 		catch (final SQLException ex)

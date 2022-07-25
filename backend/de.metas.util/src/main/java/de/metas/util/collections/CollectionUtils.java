@@ -349,7 +349,7 @@ public final class CollectionUtils
 			@NonNull final ImmutableSet<T> set,
 			@Nullable final T elementToRemove)
 	{
-		if(elementToRemove == null || !set.contains(elementToRemove))
+		if (elementToRemove == null || !set.contains(elementToRemove))
 		{
 			return set;
 		}
@@ -480,6 +480,24 @@ public final class CollectionUtils
 				.stream()
 				.map(mapper)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static <T> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Function<String, T> mapper)
+	{
+		if (commaSeparatedStr == null || Check.isBlank(commaSeparatedStr))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(commaSeparatedStr)
+				.stream()
+				.map(mapper)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Nullable

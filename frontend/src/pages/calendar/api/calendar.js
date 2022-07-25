@@ -16,18 +16,41 @@ export const fetchAvailableCalendars = () => {
 export const fetchCalendarEntries = ({
   calendarIds = null,
   simulationId = null,
+  onlyResourceIds = null,
+  onlyProjectId = null,
+  onlyCustomerId = null,
   startDate = null,
   endDate = null,
 }) => {
+  const query = {
+    calendarIds,
+    simulationId,
+    onlyResourceIds,
+    onlyProjectId,
+    onlyCustomerId,
+    startDate,
+    endDate,
+  };
+
+  if (!query.calendarIds || query.calendarIds.length === 0) {
+    console.log(
+      'fetchCalendarEntries: return empty because no calendarIds',
+      query
+    );
+
+    return Promise.resolve({
+      query: {},
+      entries: [],
+    });
+  }
+
   return axios
-    .post(`${API_URL}/entries/query`, {
-      calendarIds: calendarIds || [],
-      simulationId,
-      startDate,
-      endDate,
-    })
+    .post(`${API_URL}/queryEntries`, query)
     .then(extractAxiosResponseData)
-    .then(({ entries }) => entries.map(converters.fromAPIEntry));
+    .then(({ query, entries }) => ({
+      query,
+      entries: entries.map(converters.fromAPIEntry),
+    }));
 };
 
 export const addOrUpdateCalendarEntry = ({
@@ -75,10 +98,17 @@ export const createSimulation = ({ copyFromSimulationId }) => {
     .then((simulation) => converters.fromAPISimulation(simulation));
 };
 
-export const fetchConflicts = ({ simulationId = null }) => {
-  const queryParams = getQueryString({ simulationId });
+export const fetchConflicts = ({
+  simulationId = null,
+  onlyResourceIds = null,
+}) => {
+  const queryParams = getQueryString({
+    simulationId,
+    onlyResourceIds,
+  });
+
   return axios
-    .get(`${API_URL}/conflicts/query?${queryParams}`)
+    .get(`${API_URL}/queryConflicts?${queryParams}`)
     .then(extractAxiosResponseData)
     .then(({ conflicts }) => conflicts.map(converters.fromAPIConflict));
 };

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -22,7 +23,7 @@ public final class ListAccumulator<T>
 		buffer.add(item);
 	}
 
-	public synchronized void addAll(@NonNull final List<T> items)
+	public synchronized void addAll(@NonNull final Collection<T> items)
 	{
 		if (buffer == null)
 		{

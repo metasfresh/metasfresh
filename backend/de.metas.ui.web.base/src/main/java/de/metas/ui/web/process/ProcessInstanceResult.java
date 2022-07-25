@@ -7,12 +7,10 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.Delegate;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
@@ -178,4 +176,12 @@ public class ProcessInstanceResult
 	{
 		@NonNull String code;
 	}
+
+	@lombok.Value(staticConstructor = "of")
+	public static class OpenCalendarAction implements ResultAction
+	{
+		@Delegate
+		@NonNull ProcessExecutionResult.CalendarToOpen delegate;
+	}
+
 }

@@ -2,6 +2,7 @@ package org.adempiere.ad.dao;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.process.PInstanceId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -168,6 +169,7 @@ public interface IQueryBuilder<T>
 	 * If no values were provided the record is accepted.
 	 */
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	<V> IQueryBuilder<T> addInArrayOrAllFilter(String columnName, V... values);
 
 	/**
@@ -184,6 +186,7 @@ public interface IQueryBuilder<T>
 	 * If no values were provided the record is accepted.
 	 */
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	<V> IQueryBuilder<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, V... values);
 
 	/**
@@ -199,6 +202,7 @@ public interface IQueryBuilder<T>
 	 * Filters those rows for whom the columnName's value is in given collection.
 	 * If no values were provided the record is accepted.
 	 */
+	@Deprecated
 	<V> IQueryBuilder<T> addInArrayOrAllFilter(String columnName, Collection<V> values);
 
 	/**
@@ -213,6 +217,7 @@ public interface IQueryBuilder<T>
 	 * If no values were provided the record is accepted.
 	 * Note: also works with {@link RepoIdAware} values.
 	 */
+	@Deprecated
 	<V> IQueryBuilder<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, Collection<V> values);
 
 	/**
@@ -221,6 +226,8 @@ public interface IQueryBuilder<T>
 	 * Note: also works with {@link RepoIdAware} values.
 	 */
 	<V> IQueryBuilder<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
+
+	<V extends RepoIdAware> IQueryBuilder<T> addInArrayFilter(String columnName, InSetPredicate<V> values);
 
 	/**
 	 * Notes:

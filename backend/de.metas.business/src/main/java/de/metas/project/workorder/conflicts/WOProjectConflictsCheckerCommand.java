@@ -50,7 +50,7 @@ class WOProjectConflictsCheckerCommand
 			@NonNull final WOProjectResourceRepository woProjectResourceRepository,
 			@NonNull final CalendarConflictEventsDispatcher eventsDispatcher,
 			//
-			@NonNull final Set<ResourceId> resourceIds,
+			@NonNull final Collection<ResourceId> resourceIds,
 			@Nullable final WOProjectSimulationPlan onlySimulation,
 			@Nullable final SimulationPlanId excludeSimulationId)
 	{

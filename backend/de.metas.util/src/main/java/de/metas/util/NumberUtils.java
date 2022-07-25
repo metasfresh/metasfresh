@@ -249,7 +249,7 @@ public final class NumberUtils
 		{
 			try
 			{
-				final BigDecimal bd = new BigDecimal(value.toString());
+				final BigDecimal bd = new BigDecimal(value.toString().trim());
 				return bd.intValue();
 			}
 			catch (final NumberFormatException e)

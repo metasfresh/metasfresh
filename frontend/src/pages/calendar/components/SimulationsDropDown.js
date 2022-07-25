@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import SimpleList from '../../../components/widget/List/SimpleList';
 
+import './SimulationsDropDown.scss';
+
 const KEY_ACTUAL_DATA = 'ACTUAL';
 const OPTION_ACTUAL_DATA = { key: KEY_ACTUAL_DATA, caption: 'Actual data' }; // TODO trl
 

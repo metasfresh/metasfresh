@@ -22,6 +22,7 @@
 
 package org.adempiere.ad.dao;
 
+import de.metas.util.InSetPredicate;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
@@ -121,6 +122,8 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	<V> ICompositeQueryFilter<T> addInArrayFilter(String columnName, Collection<V> values);
 
+	<V extends RepoIdAware> ICompositeQueryFilter<T> addInArrayFilter(String columnName, InSetPredicate<V> values);
+
 	/**
 	 * Filters those rows for whom the columnName's value is in given collection.
 	 * If no values were provided the record is accepted.
@@ -156,6 +159,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * If no values were provided the record is accepted.
 	 */
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(String columnName, V... values);
 
 	/**

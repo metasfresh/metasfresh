@@ -27,6 +27,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,12 +50,18 @@ public class BudgetProjectRepository
 		return fromRecord(record);
 	}
 
-	public List<BudgetProject> getAllActive()
+	public List<BudgetProject> queryAllActiveProjects(@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
+		if (projectIds.isNone())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL
 				.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget)
+				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectIds)
 				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
 				.stream()
 				.map(record -> fromRecord(record).orElse(null))

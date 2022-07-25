@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -55,6 +56,22 @@ public class WOProjectStepRepository
 		return lastSeqNo > 0
 				? lastSeqNo / 10 * 10 + 10
 				: 10;
+	}
+
+	public ImmutableList<WOProjectStep> getByIds(final Set<WOProjectStepId> stepIds)
+	{
+		if (stepIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Project_WO_Step.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, stepIds)
+				.stream()
+				.map(WOProjectStepRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Map<ProjectId, WOProjectSteps> getByProjectIds(@NonNull final Set<ProjectId> projectIds)

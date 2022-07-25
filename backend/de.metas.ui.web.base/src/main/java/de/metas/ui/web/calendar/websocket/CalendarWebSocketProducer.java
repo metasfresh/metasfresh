@@ -17,7 +17,6 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.common.util.time.SystemTime;
-import de.metas.i18n.Language;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
 import de.metas.ui.web.calendar.websocket.json.JsonAddOrChangeWebsocketEvent;
@@ -33,7 +32,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,19 +69,20 @@ class CalendarWebSocketProducer
 			final @NonNull CalendarConflictEventsDispatcher calendarConflictEventsDispatcher,
 			final @NonNull SimulationPlanService simulationPlanService,
 			//
-			final @NonNull WebsocketTopicName topicName,
-			final @Nullable SimulationPlanId simulationId,
-			final @Nullable String adLanguage)
+			final @NonNull ParsedCalendarWebsocketTopicName calendarTopicName)
 	{
 		this.multiCalendarService = multiCalendarService;
 		this.calendarConflictEventsDispatcher = calendarConflictEventsDispatcher;
 		this.simulationPlanService = simulationPlanService;
 
-		this.topicName = topicName;
-		this.adLanguage = adLanguage != null ? adLanguage : Language.getBaseAD_Language();
+		this.topicName = calendarTopicName.getTopicName();
+		this.adLanguage = calendarTopicName.getAdLanguage();
 
-		this.calendarQuery = CalendarQuery.builder().simulationId(simulationId).build();
-
+		this.calendarQuery = CalendarQuery.builder()
+				.simulationId(calendarTopicName.getSimulationId())
+				.resourceIds(calendarTopicName.getResourceIdsPredicate())
+				.onlyProjectId(calendarTopicName.getOnlyProjectId())
+				.build();
 	}
 
 	@Override
