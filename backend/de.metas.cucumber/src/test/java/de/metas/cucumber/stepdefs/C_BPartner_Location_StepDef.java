@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
@@ -52,7 +51,6 @@ public class C_BPartner_Location_StepDef
 
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_BPartner_Location_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
