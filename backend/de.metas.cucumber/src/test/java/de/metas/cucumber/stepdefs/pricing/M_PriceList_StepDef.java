@@ -237,7 +237,6 @@ public class M_PriceList_StepDef
 		final String priceListIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_PriceList_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(row, I_M_PriceList_Version.COLUMNNAME_ValidFrom);
-		final String name = DataTableUtil.extractStringForColumnName(row, I_M_PriceList_Version.COLUMNNAME_Name);
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PriceList_Version.COLUMNNAME_Description);
 		final int priceListID = priceListTable.get(priceListIdentifier).getM_PriceList_ID();
 
@@ -247,10 +246,9 @@ public class M_PriceList_StepDef
 			m_priceList_Version = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
 		}
 
-		m_priceList_Version.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		m_priceList_Version.setAD_Org_ID(ORG_ID.getRepoId());
 
 		m_priceList_Version.setM_PriceList_ID(priceListID);
-		m_priceList_Version.setName(name);
 		m_priceList_Version.setDescription(description);
 		m_priceList_Version.setValidFrom(validFrom);
 
@@ -279,9 +277,12 @@ public class M_PriceList_StepDef
 			final String productPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + ".Identifier");
 			final I_M_ProductPrice productPrice = productPriceTable.get(productPriceIdentifier);
 
-			final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
-			productPrice.setPriceStd(priceStd);
-			
+			final BigDecimal priceStd = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_PriceStd);
+			if (priceStd != null)
+			{
+				productPrice.setPriceStd(priceStd);
+			}
+
 			final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 			if (Check.isNotBlank(x12de355Code))
 			{
@@ -289,7 +290,7 @@ public class M_PriceList_StepDef
 				productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 			}
 
-			final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_ProductPrice.COLUMNNAME_IsActive, true);
+			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_ProductPrice.COLUMNNAME_IsActive, true);
 			productPrice.setIsActive(isActive);
 
 			saveRecord(productPrice);

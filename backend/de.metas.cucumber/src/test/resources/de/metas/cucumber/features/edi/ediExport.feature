@@ -74,7 +74,7 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
-    And generate shipments process is invoked
+    And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
@@ -123,3 +123,15 @@ Feature: EDI_cctop_invoic_v export format
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.VATaxID |
       | 2155894                  | null        |
+
+    And update M_Product:
+      | M_Product_ID.Identifier | OPT.GTIN |
+      | 2005577                 | null     |
+
+    And update C_BPartner_Location:
+      | C_BPartner_Location_ID.Identifier | OPT.GLN |
+      | 2205175                           | null    |
+
+    And update M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | OPT.GTIN |
+      | 3010001                            | null     |
