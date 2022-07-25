@@ -52,6 +52,12 @@ INSERT INTO AD_Document_Action_Access (AD_Client_ID, AD_Org_ID, IsActive, Create
 ;
 
 
+UPDATE ad_sequence
+SET decimalpattern = NULL, currentnext = 10000000, updated = now()
+WHERE ad_sequence_id = 555982
+;
+
+
 
 -- 2022-07-22T09:35:47.080Z
 -- URL zum Konzept
@@ -59,3 +65,32 @@ UPDATE C_DocType
 SET ad_org_id = 0, DocNoSequence_ID=555982, Updated=TO_TIMESTAMP('2022-07-22 09:35:47', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE C_DocType_ID = 541047
 ;
+
+-- 2022-07-25T18:04:33.134Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='1',Updated=TO_TIMESTAMP('2022-07-25 19:04:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542190
+;
+
+-- 2022-07-25T18:04:42.138Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsChangeLog='Y',Updated=TO_TIMESTAMP('2022-07-25 19:04:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542190
+;
+
+-- 2022-07-25T18:04:45.956Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsEnableRemoteCacheInvalidation='N',Updated=TO_TIMESTAMP('2022-07-25 19:04:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542190
+;
+
+-- 2022-07-25T18:06:38.315Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-07-25 19:06:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=702158
+;
+
+
+
+-- 2022-07-25T18:39:43.777Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='< >',Updated=TO_TIMESTAMP('2022-07-25 19:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583760
+;
+
+
