@@ -22,11 +22,12 @@
 
 package de.metas.costrevaluation;
 
+import de.metas.util.ISingletonService;
 import org.compiere.model.I_M_CostRevaluationLine;
 
 import java.util.List;
 
-public interface CostRevaluationDAO
+public interface ICostRevaluationDAO  extends ISingletonService
 {
 	List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(int costRevaluationId);
 

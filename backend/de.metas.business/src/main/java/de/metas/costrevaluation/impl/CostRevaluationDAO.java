@@ -22,7 +22,8 @@
 
 package de.metas.costrevaluation.impl;
 
-import de.metas.costrevaluation.CostRevaluationDAO;
+
+import de.metas.costrevaluation.ICostRevaluationDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,7 +33,7 @@ import org.compiere.model.I_M_CostRevaluationLine;
 
 import java.util.List;
 
-public class CostRevaluationDAOImpl  implements CostRevaluationDAO
+public class CostRevaluationDAO  implements ICostRevaluationDAO
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);

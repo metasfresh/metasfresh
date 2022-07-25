@@ -25,13 +25,17 @@ package de.metas.costrevaluation;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_CostRevaluation;
+import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class CostRevaluationDocumentHandler implements DocumentHandler
 {
@@ -40,6 +44,8 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 	{
 		return InterfaceWrapperHelper.create(docFields, I_M_CostRevaluation.class);
 	}
+
+	private final ICostRevaluationDAO costRevaluationDAO = Services.get(ICostRevaluationDAO.class);
 
 	@Override
 	public String getSummary(final DocumentTableFields docFields)
@@ -70,6 +76,14 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 	public String completeIt(final DocumentTableFields docFields)
 	{
 		final I_M_CostRevaluation costRevaluation = extractForecast(docFields);
+
+		final int costRevaluationId = costRevaluation.getM_CostRevaluation_ID();
+		final List<I_M_CostRevaluationLine> lines = costRevaluationDAO.retrieveLinesByCostRevaluationId(costRevaluationId);
+		if (lines.size() <= 0)
+		{
+			throw new AdempiereException("@NoLines@");
+		}
+
 		costRevaluation.setDocAction(IDocument.ACTION_None);
 		return IDocument.STATUS_Completed;
 	}
@@ -129,6 +143,5 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 	{
 		return -1;
 	}
-
 
 }
