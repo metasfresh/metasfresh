@@ -107,7 +107,7 @@ public class CustomerReturnLUTUConfigurationHandler
 		//
 		// Set Locator
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(customerReturn.getM_Warehouse_ID());
-		final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 		lutuConfiguration.setM_Locator_ID(locatorId.getRepoId());
 
 		//
