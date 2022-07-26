@@ -6,6 +6,7 @@ import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.project.ProjectCategory;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
 import de.metas.project.workorder.WOProject;
@@ -26,7 +27,7 @@ class ToCalendarEntryConverter
 {
 	private static final Logger logger = LogManager.getLogger(ToCalendarEntryConverter.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final WOProjectFrontendURLsProvider frontendURLs = new WOProjectFrontendURLsProvider();
+	@NonNull private final ProjectFrontendURLsProvider frontendURLs = new ProjectFrontendURLsProvider();
 
 	public CalendarEntry from(
 			@NonNull final WOProjectResource resource,
@@ -53,7 +54,7 @@ class ToCalendarEntryConverter
 				.dateRange(resource.getDateRange())
 				.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
 				.color("#FFCF60") // orange-ish
-				.url(frontendURLs.getFrontendURL(resource.getProjectId()).orElse(null))
+				.url(frontendURLs.getProjectUrl(ProjectCategory.WorkOrderJob, resource.getProjectId()).orElse(null))
 				.build();
 	}
 
@@ -99,7 +100,7 @@ class ToCalendarEntryConverter
 				.dateRange(budget.getDateRange())
 				.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
 				.color("#89D72D") // metasfresh green
-				.url(frontendURLs.getFrontendURL(budget.getProjectId()).orElse(null))
+				.url(frontendURLs.getProjectUrl(ProjectCategory.Budget, budget.getProjectId()).orElse(null))
 				.build();
 	}
 
