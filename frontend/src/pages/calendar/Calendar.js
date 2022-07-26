@@ -133,6 +133,7 @@ const Calendar = ({
       <div className="calendar-content">
         <FullCalendar
           schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
+          height="100%"
           locales={[deLocale]}
           locale={getCurrentActiveLanguage()}
           views={{
