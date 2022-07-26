@@ -175,7 +175,8 @@ public class LeichUndMehlExportPPOrderRouteBuilderTest extends CamelTestSupport
 
 		assertThat(actualJsonAttachment.getFileName().equals(expectedJsonAttachment.getFileName())).isTrue();
 		assertThat(actualJsonAttachment.getType().equals(expectedJsonAttachment.getType())).isTrue();
-		assertThat(actualDataString).isEqualTo(expectedDataString);
+		assertThat(actualDataString.replaceAll("\\s+", ""))
+				.isEqualTo(expectedDataString.replaceAll("\\s+", ""));
 	}
 
 	@Test

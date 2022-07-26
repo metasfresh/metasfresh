@@ -24,11 +24,11 @@ package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfig;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfigs;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.externalsystem.JsonPluFileAudit;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfig;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
+import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.rest_api.common.JsonMetasfreshId;

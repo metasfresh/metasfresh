@@ -20,42 +20,36 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.common.externalsystem.leichundmehl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(builder = JsonProcessedKeys.JsonProcessedKeysBuilder.class)
-public class JsonProcessedKeys
+@JsonDeserialize(builder = JsonExternalSystemLeichMehlConfigProductMapping.JsonExternalSystemLeichMehlConfigProductMappingBuilder.class)
+public class JsonExternalSystemLeichMehlConfigProductMapping
 {
 	@NonNull
-	@JsonProperty("key")
-	String key;
+	String pluFile;
 
 	@NonNull
-	@JsonProperty("oldValue")
-	String oldValue;
-
-	@NonNull
-	@JsonProperty("newValue")
-	String newValue;
+	JsonMetasfreshId productId;
 
 	@Builder
 	@JsonCreator
-	public JsonProcessedKeys(
-			@JsonProperty("key") @NonNull final String key,
-			@JsonProperty("oldValue") @NonNull final String oldValue,
-			@JsonProperty("newValue") @NonNull final String newValue)
+	public JsonExternalSystemLeichMehlConfigProductMapping(
+			@JsonProperty("pluFile") @NonNull final String pluFile,
+			@JsonProperty("productId") @NonNull final JsonMetasfreshId productId)
 	{
-		this.key = key;
-		this.oldValue = oldValue;
-		this.newValue = newValue;
+		this.pluFile = pluFile;
+		this.productId = productId;
 	}
 }
+

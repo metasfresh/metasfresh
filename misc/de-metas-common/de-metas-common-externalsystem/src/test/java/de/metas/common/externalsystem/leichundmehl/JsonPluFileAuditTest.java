@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.common.externalsystem.leichundmehl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

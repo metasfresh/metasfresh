@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.common.externalsystem.leichundmehl;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -29,36 +29,31 @@ import lombok.NonNull;
 
 import java.util.Arrays;
 
-//dev-note to be kept in sync with AD_Reference_ID=541611
-public enum JsonTargetFieldType
+//dev-note to be kept in sync with AD_Reference_ID=541598
+public enum JsonReplacementSource
 {
-	TextArea("textArea"),
-	EAN13("EAN13"),
-	EAN128("EAN128"),
-	NumberField("numberField"),
-	Date("date"),
-	UnitChar("unitChar"),
-	Graphic("graphic");
+	Product("P"),
+	PPOrder("PP");
 
 	@Getter
 	private final String code;
 
-	JsonTargetFieldType(@NonNull final String code)
+	JsonReplacementSource(@NonNull final String code)
 	{
 		this.code = code;
 	}
 
 	@NonNull
-	public static JsonTargetFieldType ofCode(@NonNull final String code)
+	public static JsonReplacementSource ofCode(@NonNull final String code)
 	{
-		final JsonTargetFieldType targetFieldType = typesByCode.get(code);
+		final JsonReplacementSource replacementSource = typesByCode.get(code);
 
-		if (targetFieldType == null)
+		if (replacementSource == null)
 		{
-			throw new IllegalArgumentException("JsonTargetFieldType does not support code: " + code);
+			throw new IllegalArgumentException("JsonReplacementSource does not support code: " + code);
 		}
-		return targetFieldType;
+		return replacementSource;
 	}
 
-	private static final ImmutableMap<String, JsonTargetFieldType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), JsonTargetFieldType::getCode);
+	private static final ImmutableMap<String, JsonReplacementSource> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), JsonReplacementSource::getCode);
 }

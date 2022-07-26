@@ -645,13 +645,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		insertSelectedIncludedRecords(pinstanceId, recordRefs);
 	}
 
-	@Override
-	public PInstanceId createPInstanceId(@NonNull final AdProcessId adProcessId)
-	{
-		final I_AD_PInstance pInstance = createAD_PInstance(adProcessId);
-		return PInstanceId.ofRepoId(pInstance.getAD_PInstance_ID());
-	}
-
 	private static final String SQL_InsertInto_AD_PInstance_SelectedIncludedRecords = "INSERT INTO " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
 			+ "(" + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_PInstance_ID
 			+ "," + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_Table_ID

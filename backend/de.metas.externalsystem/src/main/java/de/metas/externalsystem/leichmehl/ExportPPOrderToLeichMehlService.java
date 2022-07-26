@@ -31,11 +31,11 @@ import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfig;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlPluFileConfigs;
-import de.metas.common.externalsystem.JsonReplacementSource;
-import de.metas.common.externalsystem.JsonTargetFieldType;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfig;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
+import de.metas.common.externalsystem.leichundmehl.JsonReplacementSource;
+import de.metas.common.externalsystem.leichundmehl.JsonTargetFieldType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
@@ -97,13 +97,13 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 
 		if (productMappingConfig == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No config to export found for IExternalSystemChildConfigId: {} and PPOrderId: {}! No action is performed!", leichMehlConfig.getId(), ppOrderId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No config to export found for ExternalSystem_Config_LeichMehl_ID: {} and PPOrderId: {}! No action is performed!", leichMehlConfig.getId().getRepoId(), ppOrderId);
 			return ImmutableMap.of();
 		}
 
 		if (leichMehlConfig.hasNoPluFileConfigs())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No pluFileConfig found for IExternalSystemChildConfigId: {}! No action is performed!", leichMehlConfig.getId());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No pluFileConfig found for ExternalSystem_Config_LeichMehl_ID: {}! No action is performed!", leichMehlConfig.getId().getRepoId());
 			return ImmutableMap.of();
 		}
 

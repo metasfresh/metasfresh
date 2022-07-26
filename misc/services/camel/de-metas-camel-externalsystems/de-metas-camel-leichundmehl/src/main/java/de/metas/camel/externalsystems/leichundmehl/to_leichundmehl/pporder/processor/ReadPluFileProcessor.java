@@ -30,8 +30,8 @@ import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.Expor
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.file.FileUpdater;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.DispatchMessageRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
-import de.metas.common.externalsystem.JsonPluFileAudit;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
 import de.metas.common.util.FileUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;

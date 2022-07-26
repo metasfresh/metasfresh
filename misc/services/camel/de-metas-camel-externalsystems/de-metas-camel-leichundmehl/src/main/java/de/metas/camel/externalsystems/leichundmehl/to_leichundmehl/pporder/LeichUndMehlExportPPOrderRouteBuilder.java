@@ -33,7 +33,7 @@ import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.proce
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.JSONUtil;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.externalsystem.JsonPluFileAudit;
+import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrder;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.rest_api.common.JsonMetasfreshId;

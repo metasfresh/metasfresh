@@ -28,29 +28,21 @@ import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.ExportToExternalSystemService;
-import de.metas.process.AdProcessId;
-import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
 
 public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
-	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 
 	@Nullable
 	@Override
@@ -78,6 +70,11 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
+		if (context.isMoreThanOneSelected())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
 		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
 		{
 			return ProcessPreconditionsResolution.reject();
@@ -91,32 +88,13 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 	{
 		addLog("Calling with params: externalSystemChildConfigId: {}", getExternalSystemChildConfigId());
 
-		final Iterator<I_PP_Order> ppOrderIterator = getSelectedPPOrderRecords();
-
 		final IExternalSystemChildConfigId externalSystemChildConfigId = getExternalSystemChildConfigId();
 
-		final AdProcessId adProcessId = getProcessInfo().getAdProcessId();
+		final TableRecordReference ppOrderRecordRef = TableRecordReference.of(getTable_ID(), getRecord_ID());
 
-		while (ppOrderIterator.hasNext())
-		{
-			final PInstanceId pInstanceId = instanceDAO.createPInstanceId(adProcessId);
-
-			final TableRecordReference ppOrderRecordRef = TableRecordReference.of(ppOrderIterator.next());
-
-			getExportPPOrderToExternalSystem().exportToExternalSystem(externalSystemChildConfigId, ppOrderRecordRef, pInstanceId);
-		}
+		getExportPPOrderToExternalSystem().exportToExternalSystem(externalSystemChildConfigId, ppOrderRecordRef, getPinstanceId());
 
 		return JavaProcess.MSG_OK;
-	}
-
-	@NonNull
-	private Iterator<I_PP_Order> getSelectedPPOrderRecords()
-	{
-		final IQueryBuilder<I_PP_Order> ppOrderQuery = retrieveSelectedRecordsQueryBuilder(I_PP_Order.class);
-
-		return ppOrderQuery
-				.create()
-				.iterate(I_PP_Order.class);
 	}
 
 	protected abstract ExternalSystemType getExternalSystemType();
