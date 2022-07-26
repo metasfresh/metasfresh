@@ -20,20 +20,25 @@
  * #L%
  */
 
-package de.metas.costrevaluation;
+package de.metas.costrevaluation.model.interceptor;
 
-import de.metas.costrevaluation.impl.CostRevaluationId;
-import de.metas.document.DocTypeId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import org.compiere.model.I_M_CostRevaluationLine;
+import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.model.I_M_CostRevaluation;
+import org.springframework.stereotype.Component;
 
-import java.util.List;
-
-public interface ICostRevaluationDAO extends ISingletonService
+@Component
+@Interceptor(I_M_CostRevaluation.class)
+public class M_CostRevaluation
 {
-	List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(@NonNull CostRevaluationId costRevaluationId);
 
-	DocTypeId retrieveCostRevaluationDocTypeId();
+	@Init
+	public void init()
+	{
+		Services.get(IProgramaticCalloutProvider.class)
+				.registerAnnotatedCallout(new de.metas.costrevaluation.callout.M_CostRevaluation());
+	}
 
 }

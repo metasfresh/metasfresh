@@ -22,11 +22,13 @@
 
 package de.metas.costrevaluation.callout;
 
+import de.metas.costrevaluation.ICostRevaluationDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.compiere.model.I_C_DocType;
@@ -35,21 +37,19 @@ import org.compiere.model.I_M_CostRevaluation;
 @Callout(I_M_CostRevaluation.class)
 public class M_CostRevaluation
 {
-
 	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_C_DocType_ID)
-	public void onDocTypeChanged(final I_M_CostRevaluation costRevaluation)
+	public void onDocTypeChanged(@NonNull final I_M_CostRevaluation costRevaluation)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(costRevaluation.getC_DocType_ID());
+		final DocTypeId docTypeId = Services.get(ICostRevaluationDAO.class).retrieveCostRevaluationDocTypeId();
 		if (docTypeId == null)
 		{
 			return;
 		}
 
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+		final I_C_DocType costRevaluationDocType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(docType)
+				.setNewDocType(costRevaluationDocType)
 				.setOldDocumentNo(costRevaluation.getDocumentNo())
 				.setDocumentModel(costRevaluation)
 				.buildOrNull();
