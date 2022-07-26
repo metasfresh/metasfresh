@@ -417,6 +417,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			setEMail(order.getEMail());
 		}
+
 		setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 		// Drop shipment

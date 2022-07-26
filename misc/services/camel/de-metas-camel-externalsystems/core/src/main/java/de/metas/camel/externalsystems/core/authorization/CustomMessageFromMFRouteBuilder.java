@@ -42,6 +42,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 {
+	public static final String CUSTOM_MESSAGE_FROM_MF_ROUTE_ID = "RabbitMQ_custom_message_from_MF_Route_ID";
 	private final static String CUSTOM_FROM_MF_ROUTE_ID = "RabbitMQ_custom_from_MF_ID";
 
 	@NonNull
@@ -67,8 +68,13 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 
 		from(CUSTOM_FROM_MF_ROUTE)
 				.routeId(CUSTOM_FROM_MF_ROUTE_ID)
-				.streamCaching()
 				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
+				.to(direct(CUSTOM_MESSAGE_FROM_MF_ROUTE_ID));
+
+		from(direct(CUSTOM_MESSAGE_FROM_MF_ROUTE_ID))
+				.routeId(CUSTOM_MESSAGE_FROM_MF_ROUTE_ID)
+				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
+				.streamCaching()
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemMessage.class))
 				.process(this::processCustomMessage);
 	}
