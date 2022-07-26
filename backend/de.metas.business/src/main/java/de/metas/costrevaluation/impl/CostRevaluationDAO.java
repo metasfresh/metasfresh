@@ -26,6 +26,7 @@ package de.metas.costrevaluation.impl;
 import de.metas.costrevaluation.ICostRevaluationDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,10 +40,8 @@ public class CostRevaluationDAO  implements ICostRevaluationDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(final int costRevaluationId)
+	public List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
 	{
-		Check.assumeGreaterThanZero(costRevaluationId, "costRevaluationId");
-
 		return queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
 				.addEqualsFilter(I_M_CostRevaluationLine.COLUMN_M_CostRevaluation_ID, costRevaluationId)
 				.filter(ActiveRecordQueryFilter.getInstance(I_M_CostRevaluationLine.class))
@@ -51,12 +50,4 @@ public class CostRevaluationDAO  implements ICostRevaluationDAO
 				.list();
 	}
 
-	@Override
-	public I_M_CostRevaluationLine getCostRevaluationLineById(final int costRevaluationLineId)
-	{
-
-		Check.assumeGreaterThanZero(costRevaluationLineId, "costRevaluationLineId");
-
-		return InterfaceWrapperHelper.load(costRevaluationLineId, I_M_CostRevaluationLine.class);
-	}
 }

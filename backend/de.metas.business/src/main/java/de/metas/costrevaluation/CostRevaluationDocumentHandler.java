@@ -22,6 +22,7 @@
 
 package de.metas.costrevaluation;
 
+import de.metas.costrevaluation.impl.CostRevaluationId;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -39,18 +40,17 @@ import java.util.List;
 
 public class CostRevaluationDocumentHandler implements DocumentHandler
 {
+	private final ICostRevaluationDAO costRevaluationDAO = Services.get(ICostRevaluationDAO.class);
 
-	private static I_M_CostRevaluation extractForecast(final DocumentTableFields docFields)
+	private static I_M_CostRevaluation extractRecord(final DocumentTableFields docFields)
 	{
 		return InterfaceWrapperHelper.create(docFields, I_M_CostRevaluation.class);
 	}
 
-	private final ICostRevaluationDAO costRevaluationDAO = Services.get(ICostRevaluationDAO.class);
-
 	@Override
 	public String getSummary(final DocumentTableFields docFields)
 	{
-		return extractForecast(docFields).getDocumentNo();
+		return extractRecord(docFields).getDocumentNo();
 	}
 
 	@Override
@@ -62,24 +62,24 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 	@Override
 	public int getDoc_User_ID(final DocumentTableFields docFields)
 	{
-		return extractForecast(docFields).getCreatedBy();
+		return extractRecord(docFields).getCreatedBy();
 	}
 
 	@Override
 	public LocalDate getDocumentDate(final DocumentTableFields docFields)
 	{
-		final I_M_CostRevaluation costRevaluation = extractForecast(docFields);
+		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
 		return TimeUtil.asLocalDate(costRevaluation.getDateAcct());
 	}
 
 	@Override
 	public String completeIt(final DocumentTableFields docFields)
 	{
-		final I_M_CostRevaluation costRevaluation = extractForecast(docFields);
+		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
 
 		final int costRevaluationId = costRevaluation.getM_CostRevaluation_ID();
-		final List<I_M_CostRevaluationLine> lines = costRevaluationDAO.retrieveLinesByCostRevaluationId(costRevaluationId);
-		if (lines.size() <= 0)
+		final List<I_M_CostRevaluationLine> lines = costRevaluationDAO.retrieveLinesByCostRevaluationId(CostRevaluationId.ofRepoId(costRevaluationId));
+		if (lines.isEmpty())
 		{
 			throw new AdempiereException("@NoLines@");
 		}
@@ -91,9 +91,7 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 	@Override
 	public void reactivateIt(final DocumentTableFields docFields)
 	{
-		final I_M_CostRevaluation costRevaluation = extractForecast(docFields);
-		costRevaluation.setProcessed(false);
-		costRevaluation.setDocAction(IDocument.ACTION_Complete);
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
