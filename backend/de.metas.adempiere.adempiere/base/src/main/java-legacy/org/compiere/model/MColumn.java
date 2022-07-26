@@ -799,7 +799,7 @@ public class MColumn extends X_AD_Column
 
 	public static boolean isSuggestSelectionColumn(String columnName, boolean caseSensitive)
 	{
-		if (Check.isEmpty(columnName, true))
+		if (columnName == null || Check.isBlank(columnName))
 			return false;
 		//
 		if (columnName.equals("Value") || (!caseSensitive && columnName.equalsIgnoreCase("Value")))
@@ -810,8 +810,9 @@ public class MColumn extends X_AD_Column
 			return true;
 		else if (columnName.equals("Description") || (!caseSensitive && columnName.equalsIgnoreCase("Description")))
 			return true;
-		else if (columnName.indexOf("Name") != -1
-				|| (!caseSensitive && columnName.toUpperCase().indexOf("Name".toUpperCase()) != -1))
+		else if (columnName.contains("Name") || (!caseSensitive && columnName.toUpperCase().contains("Name".toUpperCase())))
+			return true;
+		else if(columnName.equals("DocStatus") || (!caseSensitive && columnName.equalsIgnoreCase("DocStatus")))
 			return true;
 		else
 			return false;

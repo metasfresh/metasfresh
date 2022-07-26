@@ -6,7 +6,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -14,6 +13,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
+import org.compiere.model.X_AD_Column;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  * #L%
  */
 
-@Callout(I_AD_Column.class)
+@Callout(value = I_AD_Column.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 @Component
 public class AD_Column
 {
@@ -57,7 +57,7 @@ public class AD_Column
 	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
-	public void onColumnName(final I_AD_Column column, final ICalloutField field)
+	public void onColumnName(final I_AD_Column column)
 	{
 		if (column == null || Check.isBlank(column.getColumnName()))
 		{
@@ -66,14 +66,19 @@ public class AD_Column
 
 		final String columnName = column.getColumnName();
 		column.setIsAllowLogging(columnBL.getDefaultAllowLoggingByColumnName(columnName));
-	}
 
-	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
-	public void onColumnName(final I_AD_Column column)
-	{
 		if (MColumn.isSuggestSelectionColumn(column.getColumnName(), true))
 		{
 			column.setIsSelectionColumn(true);
+		}
+	}
+
+	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_IsSelectionColumn })
+	public void onIsSelectionColumn(final I_AD_Column column)
+	{
+		if (column.isSelectionColumn() && Check.isBlank(column.getFilterOperator()))
+		{
+			column.setFilterOperator(X_AD_Column.FILTEROPERATOR_EqualsOrLike);
 		}
 	}
 
@@ -82,6 +87,7 @@ public class AD_Column
 	{
 		if (column.getAD_Element_ID() <= 0)
 		{
+			//noinspection ConstantConditions
 			column.setColumnName(null);
 			column.setName(null);
 			return;
