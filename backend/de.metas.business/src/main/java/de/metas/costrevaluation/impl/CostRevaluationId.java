@@ -24,7 +24,6 @@ package de.metas.costrevaluation.impl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.mforecast.impl.ForecastId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -58,5 +57,10 @@ public class CostRevaluationId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static CostRevaluationId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new CostRevaluationId(repoId) : null;
 	}
 }
