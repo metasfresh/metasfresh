@@ -25,7 +25,9 @@ package org.adempiere.ad.dao.impl;
 import com.google.common.collect.ImmutableMap;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
@@ -401,6 +403,13 @@ import java.util.Properties;
 	}
 
 	@Override
+	public <V extends RepoIdAware> IQueryBuilder<T> addInArrayFilter(@NonNull final String columnName, @NonNull final InSetPredicate<V> values)
+	{
+		filters.addInArrayFilter(columnName, values);
+		return this;
+	}
+
+	@Override
 	public <V> IQueryBuilder<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values)
 	{
 		filters.addNotInArrayFilter(column, values);
@@ -705,6 +714,7 @@ import java.util.Properties;
 		filters.addIntervalIntersection(lowerBoundColumnName, upperBoundColumnName, lowerBoundValue, upperBoundValue);
 		return this;
 	}
+
 	@Override
 	public IQueryBuilder<T> addIntervalIntersection(
 			@NonNull final String lowerBoundColumnName,

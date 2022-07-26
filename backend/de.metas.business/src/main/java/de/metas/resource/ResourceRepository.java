@@ -85,9 +85,29 @@ class ResourceRepository
 		return getResourcesMap().getAllActive();
 	}
 
-	public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(final ResourceTypeId resourceTypeId)
+	public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(@NonNull final ResourceTypeId resourceTypeId)
 	{
 		return getResourcesMap().getActiveResourceIdsByResourceTypeId(resourceTypeId);
+	}
+
+	public ImmutableSet<ResourceId> getActiveResourceIdsByGroupIds(@NonNull final Set<ResourceGroupId> groupIds)
+	{
+		if (groupIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getResourcesMap().getActiveResourceIdsByGroupIds(groupIds);
+	}
+
+	public ImmutableSet<ResourceGroupId> getGroupIdsByResourceIds(@NonNull final Set<ResourceId> resourceIds)
+	{
+		if (resourceIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getResourcesMap().getGroupIdsByResourceIds(resourceIds);
 	}
 
 	private ResourcesMap getResourcesMap()
@@ -162,6 +182,28 @@ class ResourceRepository
 			return allActive.stream()
 					.filter(resource -> ResourceTypeId.equals(resource.getResourceTypeId(), resourceTypeId))
 					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		public ImmutableSet<ResourceId> getActiveResourceIdsByGroupIds(final Set<ResourceGroupId> groupIds)
+		{
+			if (groupIds.isEmpty())
+			{
+				return ImmutableSet.of();
+			}
+
+			return allActive.stream()
+					.filter(resource -> groupIds.contains(resource.getResourceGroupId()))
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		public ImmutableSet<ResourceGroupId> getGroupIdsByResourceIds(@NonNull final Set<ResourceId> resourceIds)
+		{
+			return resourceIds.stream()
+					.map(byId::get)
+					.filter(Objects::nonNull)
+					.map(Resource::getResourceGroupId)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 

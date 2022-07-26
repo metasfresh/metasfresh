@@ -23,18 +23,22 @@
 package de.metas.ui.web.calendar;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.calendar.CalendarConflictsQuery;
 import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryAddRequest;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarEntryUpdateRequest;
 import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarQuery;
+import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.MultiCalendarService;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.product.ResourceId;
+import de.metas.resource.ResourceGroupId;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
 import de.metas.ui.web.calendar.json.JsonCalendarConflictsQueryResponse;
 import de.metas.ui.web.calendar.json.JsonCalendarEntriesQuery;
@@ -51,10 +55,17 @@ import de.metas.ui.web.calendar.json.JsonSimulationCreateRequest;
 import de.metas.ui.web.calendar.json.JsonSimulationRef;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.user.UserId;
+import de.metas.util.InSetPredicate;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_Resource_Group;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,6 +78,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Api
 @RestController
@@ -77,6 +91,11 @@ public class CalendarRestController
 	private final MultiCalendarService calendarService;
 	private final SimulationPlanService simulationService;
 
+	private final LookupDataSource bpartnerLookup;
+	private final LookupDataSource resourceLookup;
+	private final LookupDataSource resourceGroupLookup;
+	private final LookupDataSource projectLookup;
+
 	public CalendarRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final MultiCalendarService calendarService,
@@ -85,6 +104,11 @@ public class CalendarRestController
 		this.userSession = userSession;
 		this.calendarService = calendarService;
 		this.simulationService = simulationService;
+
+		this.bpartnerLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.resourceLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_S_Resource.Table_Name);
+		this.resourceGroupLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_S_Resource_Group.Table_Name);
+		this.projectLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
 	}
 
 	@GetMapping("/available")
@@ -103,20 +127,22 @@ public class CalendarRestController
 				.build();
 	}
 
-	@PostMapping("/entries/query")
-	public JsonCalendarEntriesQueryResponse queryCalendarEntries(
-			@RequestBody(required = false) @Nullable final JsonCalendarEntriesQuery query)
+	@PostMapping("/queryEntries")
+	public JsonCalendarEntriesQueryResponse queryEntries(
+			@RequestBody(required = false) @Nullable final JsonCalendarEntriesQuery request)
 	{
 		userSession.assertLoggedIn();
 
 		final ZoneId timeZone = userSession.getTimeZone();
 		final String adLanguage = userSession.getAD_Language();
 
-		final ImmutableList<JsonCalendarEntry> jsonEntries = calendarService.query(toCalendarQuery(query))
+		final CalendarQuery query = toCalendarQuery(request);
+		final ImmutableList<JsonCalendarEntry> jsonEntries = calendarService.query(query)
 				.map(entry -> JsonCalendarEntry.of(entry, timeZone, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonCalendarEntriesQueryResponse.builder()
+				.query(toResponseResolvedQuery(query, adLanguage))
 				.entries(jsonEntries)
 				.build();
 	}
@@ -139,9 +165,60 @@ public class CalendarRestController
 			{
 				result.endDate(query.getEndDate().toInstant());
 			}
+
+			final Set<CalendarResourceId> onlyResourceIds = query.getOnlyResourceIds();
+			result.resourceIds(onlyResourceIds != null && !onlyResourceIds.isEmpty()
+					? InSetPredicate.only(onlyResourceIds)
+					: InSetPredicate.any());
+
+			result.onlyProjectId(query.getOnlyProjectId());
+
+			result.onlyCustomerId(query.getOnlyCustomerId());
 		}
 
 		return result.build();
+	}
+
+	private JsonCalendarEntriesQueryResponse.ResolvedQuery toResponseResolvedQuery(@NonNull final CalendarQuery query, @NonNull final String adLanguage)
+	{
+		return JsonCalendarEntriesQueryResponse.ResolvedQuery.builder()
+				.simulationId(query.getSimulationId())
+				.onlyResources(toJSONLookupValueFromResourceIds(query.getResourceIds(), adLanguage))
+				.onlyProject(JSONLookupValue.ofNullableLookupValue(projectLookup.findById(query.getOnlyProjectId()), adLanguage))
+				.onlyCustomer(JSONLookupValue.ofNullableLookupValue(bpartnerLookup.findById(query.getOnlyCustomerId()), adLanguage))
+				.build();
+	}
+
+	private List<JSONLookupValue> toJSONLookupValueFromResourceIds(@Nullable final InSetPredicate<CalendarResourceId> resourceIds, @NonNull final String adLanguage)
+	{
+		if (resourceIds == null || resourceIds.isAny())
+		{
+			return null;
+		}
+
+		return resourceIds.toSet()
+				.stream()
+				.map(calendarResourceId -> toJSONLookupValue(calendarResourceId, adLanguage))
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	private JSONLookupValue toJSONLookupValue(@NonNull final CalendarResourceId calendarResourceId, @NonNull final String adLanguage)
+	{
+		final ResourceId resourceId = calendarResourceId.toRepoIdOrNull(ResourceId.class);
+		if (resourceId != null)
+		{
+			return JSONLookupValue.ofNullableLookupValue(resourceLookup.findById(resourceId), adLanguage);
+		}
+
+		final ResourceGroupId resourceGroupId = calendarResourceId.toRepoIdOrNull(ResourceGroupId.class);
+		if (resourceGroupId != null)
+		{
+			return JSONLookupValue.ofNullableLookupValue(resourceGroupLookup.findById(resourceGroupId), adLanguage);
+		}
+
+		return null;
 	}
 
 	@PostMapping("/entries/add")
@@ -234,13 +311,17 @@ public class CalendarRestController
 	}
 
 	@GetMapping("/simulations")
-	public JsonGetAvailableSimulationsResponse getAvailableSimulations()
+	public JsonGetAvailableSimulationsResponse getDraftSimulations(
+			@RequestParam(name = "alwaysIncludeId", required = false) final String alwaysIncludeIdStr
+	)
 	{
 		userSession.assertLoggedIn();
 
+		final SimulationPlanId alwaysIncludeId = SimulationPlanId.ofNullableObject(alwaysIncludeIdStr);
+
 		return JsonGetAvailableSimulationsResponse.builder()
 				.simulations(
-						simulationService.getAllNotProcessed()
+						simulationService.getAllDrafts(alwaysIncludeId)
 								.stream()
 								.map(JsonSimulationRef::of)
 								.sorted(Comparator.comparing(JsonSimulationRef::getName))
@@ -248,15 +329,22 @@ public class CalendarRestController
 				.build();
 	}
 
-	@GetMapping("/conflicts/query")
+	@GetMapping("/queryConflicts")
+	@PostMapping("/queryConflicts")
 	public JsonCalendarConflictsQueryResponse queryConflicts(
-			@RequestParam(name = "simulationId", required = false) final String simulationIdStr)
+			@RequestParam(name = "simulationId", required = false) final String simulationIdStr,
+			@RequestParam(name = "onlyResourceIds", required = false) final String onlyResourceIdsStr)
 	{
 		userSession.assertLoggedIn();
 
-		final SimulationPlanId simulationId = SimulationPlanId.ofNullableObject(simulationIdStr);
+		final CalendarConflictsQuery query = CalendarConflictsQuery.builder()
+				.simulationId(SimulationPlanId.ofNullableObject(simulationIdStr))
+				.resourceIds(CalendarResourceId.ofCommaSeparatedString(onlyResourceIdsStr)
+						.map(InSetPredicate::only)
+						.orElse(InSetPredicate.any()))
+				.build();
 
-		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(simulationId)
+		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(query)
 				.stream()
 				.map(JsonCalendarConflict::of)
 				.collect(ImmutableList.toImmutableList());

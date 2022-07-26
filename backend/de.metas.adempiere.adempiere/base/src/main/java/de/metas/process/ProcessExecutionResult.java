@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.i18n.IMsgBL;
@@ -25,6 +26,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -173,6 +176,11 @@ public class ProcessExecutionResult
 	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private DisplayQRCode displayQRCode;
+
+	@Getter
+	@Setter
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private CalendarToOpen calendarToOpen;
 
 	/**
 	 * Webui's viewId on which this process was executed.
@@ -1035,5 +1043,17 @@ public class ProcessExecutionResult
 		{
 			this.code = code;
 		}
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static class CalendarToOpen
+	{
+		@Nullable String simulationId;
+		@Nullable String calendarResourceId;
+		@Nullable String projectId;
+		@Nullable BPartnerId customerId;
 	}
 }

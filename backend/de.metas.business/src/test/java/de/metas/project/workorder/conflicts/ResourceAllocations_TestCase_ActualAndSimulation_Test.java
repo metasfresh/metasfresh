@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectAndResourceId;
+import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
@@ -37,8 +37,8 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 	}
 
 	private static final SimulationPlanId SIMULATION1 = SimulationPlanId.ofRepoId(1);
-	private static final WOProjectAndResourceId PR1 = WOProjectAndResourceId.ofRepoIds(1, 1);
-	private static final WOProjectAndResourceId PR2 = WOProjectAndResourceId.ofRepoIds(1, 2);
+	private static final WOProjectResourceId PR1 = WOProjectResourceId.ofRepoId(1, 1);
+	private static final WOProjectResourceId PR2 = WOProjectResourceId.ofRepoId(1, 2);
 
 	private static final Instant refInstant = LocalDate.parse("2022-06-01").atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant();
 
@@ -53,11 +53,11 @@ public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 				.build();
 	}
 
-	ResourceAllocation alloc(int startDay, int endDay, @Nullable SimulationPlanId simulationId, WOProjectAndResourceId projectAndResourceId)
+	ResourceAllocation alloc(int startDay, int endDay, @Nullable SimulationPlanId simulationId, WOProjectResourceId projectResourceId)
 	{
 		return ResourceAllocation.builder()
 				.resourceId(ResourceId.ofRepoId(1))
-				.projectAndResourceId(projectAndResourceId)
+				.projectResourceId(projectResourceId)
 				.appliedSimulationId(simulationId)
 				.dateRange(allDay(startDay, endDay))
 				.build();

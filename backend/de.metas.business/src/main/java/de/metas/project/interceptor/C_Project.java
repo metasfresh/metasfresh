@@ -23,11 +23,8 @@
 package de.metas.project.interceptor;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -42,7 +39,6 @@ public class C_Project
 {
 	private static final AdMessageKey MSG_CIRCULAR_REFERENCE = AdMessageKey.of("ProjectCircularReference");
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ProjectRepository projectRepository;
 
 	public C_Project(@NonNull final ProjectRepository projectRepository)
@@ -53,21 +49,19 @@ public class C_Project
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Project.COLUMNNAME_C_Project_Parent_ID)
 	public void assertNotCircularReference(@NonNull final I_C_Project projectRecord)
 	{
-		final ProjectId parentProjectId = ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_Parent_ID());
-
-		if (parentProjectId == null)
+		final ProjectId newParentId = ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_Parent_ID());
+		if (newParentId == null)
 		{
 			return;
 		}
 
 		final ProjectId projectId = ProjectId.ofRepoId(projectRecord.getC_Project_ID());
 
-		if (projectRepository.getProjectIdsUpstream(parentProjectId).contains(projectId))
+		if (projectRepository.getProjectIdsUpStream(newParentId).contains(projectId))
 		{
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_CIRCULAR_REFERENCE);
-			throw new AdempiereException(message).markAsUserValidationError()
-					.appendParametersToMessage()
-					.setParameter("ParentProjectID", projectRecord.getC_Project_Parent_ID());
+			throw new AdempiereException(MSG_CIRCULAR_REFERENCE)
+					.markAsUserValidationError()
+					.setParameter("C_Project_Parent_ID", newParentId);
 		}
 	}
 }

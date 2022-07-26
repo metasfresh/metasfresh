@@ -76,7 +76,5 @@ public class JsonDateTime
 	@Deprecated
 	public String toString() {return toJson();}
 
-	public ZonedDateTime toZonedDateTime() {return DateTimeConverters.fromObjectToZonedDateTime(string);}
-
 	public Instant toInstant() {return DateTimeConverters.fromObjectToInstant(string);}
 }

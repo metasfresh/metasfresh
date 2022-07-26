@@ -12,23 +12,26 @@ import de.metas.calendar.continuous_query.CalendarContinuousQueryListener;
 import de.metas.calendar.continuous_query.EntryChangedEvent;
 import de.metas.calendar.continuous_query.EntryDeletedEvent;
 import de.metas.calendar.continuous_query.Event;
+import de.metas.calendar.simulation.SimulationPlanChangesListener;
 import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.calendar.simulation.SimulationPlanRef;
+import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.common.util.time.SystemTime;
-import de.metas.i18n.Language;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
 import de.metas.ui.web.calendar.json.JsonCalendarEntry;
 import de.metas.ui.web.calendar.websocket.json.JsonAddOrChangeWebsocketEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonConflictsChangedWebsocketEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonRemoveWebsocketEvent;
+import de.metas.ui.web.calendar.websocket.json.JsonSimulationPlanChangedEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonWebsocketEvent;
 import de.metas.ui.web.calendar.websocket.json.JsonWebsocketEventsList;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.websocket.sender.WebsocketSender;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,32 +42,47 @@ import java.util.stream.Collectors;
  *     <li>this producer will listen to {@link CalendarConflictChangesEvent}s and will forward them to websocket topic.</li>
  * </ul>
  */
-class CalendarWebSocketProducer implements WebSocketProducer, CalendarContinuousQueryListener, CalendarConflictEventsListener
+class CalendarWebSocketProducer
+		implements
+		WebSocketProducer,
+		CalendarContinuousQueryListener,
+		CalendarConflictEventsListener,
+		SimulationPlanChangesListener
 {
+	// services:
 	@NonNull private final MultiCalendarService multiCalendarService;
 	@NonNull private final CalendarConflictEventsDispatcher calendarConflictEventsDispatcher;
-	@NonNull final WebsocketTopicName topicName;
+	@NonNull private final SimulationPlanService simulationPlanService;
+
+	// params:
+	@NonNull private final WebsocketTopicName topicName;
 	@NonNull private final String adLanguage;
 	@NonNull private final CalendarQuery calendarQuery;
-
 	private WebsocketSender websocketSender;
+
+	// state:
 	private CalendarContinuousQuery continuousQuery;
 
-	CalendarWebSocketProducer(
-			@NonNull final MultiCalendarService multiCalendarService,
-			@NonNull final CalendarConflictEventsDispatcher calendarConflictEventsDispatcher,
-			@NonNull final WebsocketTopicName topicName,
-			@Nullable final SimulationPlanId simulationId,
-			@Nullable final String adLanguage)
+	@Builder
+	private CalendarWebSocketProducer(
+			final @NonNull MultiCalendarService multiCalendarService,
+			final @NonNull CalendarConflictEventsDispatcher calendarConflictEventsDispatcher,
+			final @NonNull SimulationPlanService simulationPlanService,
+			//
+			final @NonNull ParsedCalendarWebsocketTopicName calendarTopicName)
 	{
 		this.multiCalendarService = multiCalendarService;
 		this.calendarConflictEventsDispatcher = calendarConflictEventsDispatcher;
-		this.topicName = topicName;
-		this.adLanguage = adLanguage != null ? adLanguage : Language.getBaseAD_Language();
-		this.calendarQuery = CalendarQuery.builder()
-				.simulationId(simulationId)
-				.build();
+		this.simulationPlanService = simulationPlanService;
 
+		this.topicName = calendarTopicName.getTopicName();
+		this.adLanguage = calendarTopicName.getAdLanguage();
+
+		this.calendarQuery = CalendarQuery.builder()
+				.simulationId(calendarTopicName.getSimulationId())
+				.resourceIds(calendarTopicName.getResourceIdsPredicate())
+				.onlyProjectId(calendarTopicName.getOnlyProjectId())
+				.build();
 	}
 
 	@Override
@@ -83,7 +101,13 @@ class CalendarWebSocketProducer implements WebSocketProducer, CalendarContinuous
 		}
 		continuousQuery.subscribe(this);
 
-		calendarConflictEventsDispatcher.subscribe(calendarQuery.getSimulationId(), this);
+		final SimulationPlanId simulationId = calendarQuery.getSimulationId();
+		calendarConflictEventsDispatcher.subscribe(simulationId, this);
+
+		if (simulationId != null)
+		{
+			simulationPlanService.subscribe(simulationId, this);
+		}
 	}
 
 	@Override
@@ -96,7 +120,13 @@ class CalendarWebSocketProducer implements WebSocketProducer, CalendarContinuous
 			continuousQuery.unsubscribe(this);
 		}
 
-		calendarConflictEventsDispatcher.unsubscribe(calendarQuery.getSimulationId(), this);
+		final SimulationPlanId simulationId = calendarQuery.getSimulationId();
+		calendarConflictEventsDispatcher.unsubscribe(simulationId, this);
+
+		if (simulationId != null)
+		{
+			simulationPlanService.unsubscribe(simulationId, this);
+		}
 	}
 
 	@Override
@@ -105,26 +135,28 @@ class CalendarWebSocketProducer implements WebSocketProducer, CalendarContinuous
 	@Override
 	public void onCalendarConflictChangesEvents(final @NonNull ImmutableList<CalendarConflictChangesEvent> events) {forwardConflictChangesEventToWebsocket(events);}
 
+	@Override
+	public void onSimulationPlanAfterComplete(@NonNull final SimulationPlanRef simulationRef)
+	{
+		sendToWebsocket(JsonWebsocketEventsList.ofEvent(JsonSimulationPlanChangedEvent.builder()
+				.simulationId(simulationRef.getId())
+				.processed(simulationRef.isProcessed())
+				.build()));
+	}
+
 	private void forwardConflictChangesEventToWebsocket(final @NonNull ImmutableList<CalendarConflictChangesEvent> events)
 	{
-		websocketSender.convertAndSend(
-				topicName,
-				JsonWebsocketEventsList.builder()
-						.events(events.stream()
-								.map(this::toJsonWebsocketEvent)
-								.collect(ImmutableList.toImmutableList()))
-						.build());
+		sendToWebsocket(JsonWebsocketEventsList.ofList(events.stream().map(this::toJsonWebsocketEvent).collect(ImmutableList.toImmutableList())));
 	}
 
 	private void forwardQueryEventsToWebsocket(final @NonNull List<Event> events)
 	{
-		websocketSender.convertAndSend(
-				topicName,
-				JsonWebsocketEventsList.builder()
-						.events(events.stream()
-								.map(this::toJsonWebsocketEvent)
-								.collect(ImmutableList.toImmutableList()))
-						.build());
+		sendToWebsocket(JsonWebsocketEventsList.ofList(events.stream().map(this::toJsonWebsocketEvent).collect(ImmutableList.toImmutableList())));
+	}
+
+	private void sendToWebsocket(@NonNull final JsonWebsocketEventsList events)
+	{
+		websocketSender.convertAndSend(topicName, events);
 	}
 
 	private JsonWebsocketEvent toJsonWebsocketEvent(final Event event)

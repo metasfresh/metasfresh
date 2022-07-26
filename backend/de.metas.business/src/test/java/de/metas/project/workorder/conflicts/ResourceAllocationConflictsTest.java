@@ -2,7 +2,7 @@ package de.metas.project.workorder.conflicts;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.project.workorder.WOProjectAndResourceId;
+import de.metas.project.workorder.WOProjectResourceId;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -11,16 +11,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ResourceAllocationConflictsTest
 {
 
-	private static final WOProjectAndResourceId P1R1 = WOProjectAndResourceId.ofRepoIds(1, 1);
-	private static final WOProjectAndResourceId P1R2 = WOProjectAndResourceId.ofRepoIds(1, 2);
-	private static final WOProjectAndResourceId P1R3 = WOProjectAndResourceId.ofRepoIds(1, 3);
+	private static final WOProjectResourceId P1R1 = WOProjectResourceId.ofRepoId(1, 1);
+	private static final WOProjectResourceId P1R2 = WOProjectResourceId.ofRepoId(1, 2);
+	private static final WOProjectResourceId P1R3 = WOProjectResourceId.ofRepoId(1, 3);
 
 	private static final SimulationPlanId SIMULATION1 = SimulationPlanId.ofRepoId(1);
 
 	@SuppressWarnings("SameParameterValue")
 	private static ResourceAllocationConflict conflict(
-			WOProjectAndResourceId pr1,
-			WOProjectAndResourceId pr2,
+			WOProjectResourceId pr1,
+			WOProjectResourceId pr2,
 			ResourceAllocationConflictStatus status,
 			SimulationPlanId simulationId)
 	{

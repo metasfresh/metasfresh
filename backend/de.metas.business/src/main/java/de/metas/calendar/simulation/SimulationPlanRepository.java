@@ -7,10 +7,12 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_SimulationPlan;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
@@ -23,7 +25,7 @@ public class SimulationPlanRepository
 			.tableName(I_C_SimulationPlan.Table_Name)
 			.build();
 
-	private final CCache<Integer, ImmutableSet<SimulationPlanId>> cacheNotProcessedIds = CCache.<Integer, ImmutableSet<SimulationPlanId>>builder()
+	private final CCache<Integer, ImmutableSet<SimulationPlanId>> cacheDraftIds = CCache.<Integer, ImmutableSet<SimulationPlanId>>builder()
 			.tableName(I_C_SimulationPlan.Table_Name)
 			.build();
 
@@ -34,7 +36,8 @@ public class SimulationPlanRepository
 		final I_C_SimulationPlan record = InterfaceWrapperHelper.newInstance(I_C_SimulationPlan.class);
 		record.setName(name);
 		record.setAD_User_Responsible_ID(responsibleUserId.getRepoId());
-		record.setProcessed(false);
+		record.setDocStatus(SimulationPlanDocStatus.Drafted.getCode());
+		record.setProcessed(SimulationPlanDocStatus.Drafted.isProcessed());
 		InterfaceWrapperHelper.saveRecord(record);
 
 		final SimulationPlanRef simulation = fromRecord(record);
@@ -49,9 +52,19 @@ public class SimulationPlanRepository
 				.id(SimulationPlanId.ofRepoId(record.getC_SimulationPlan_ID()))
 				.name(record.getName())
 				.responsibleUserId(UserId.ofRepoId(record.getAD_User_Responsible_ID()))
+				.docStatus(SimulationPlanDocStatus.ofCode(record.getDocStatus()))
 				.processed(record.isProcessed())
 				.created(record.getCreated().toInstant())
 				.build();
+	}
+
+	public SimulationPlanRef changeDocStatus(@NonNull final SimulationPlanId simulationId, @NonNull final SimulationPlanDocStatus docStatus)
+	{
+		final I_C_SimulationPlan record = retrieveRecordById(simulationId);
+		record.setDocStatus(docStatus.getCode());
+		record.setProcessed(docStatus.isProcessed());
+		InterfaceWrapperHelper.saveRecord(record);
+		return fromRecord(record);
 	}
 
 	public SimulationPlanRef getById(@NonNull final SimulationPlanId id)
@@ -59,16 +72,38 @@ public class SimulationPlanRepository
 		return cacheById.getOrLoad(id, this::retrieveById);
 	}
 
-	public Collection<SimulationPlanRef> getAllNotProcessed()
+	public ImmutableSet<SimulationPlanId> getDraftSimulationIds()
 	{
-		final ImmutableSet<SimulationPlanId> notProcessedIds = cacheNotProcessedIds.getOrLoad(0, this::retrieveNotProcessedIds);
-		return cacheById.getAllOrLoad(notProcessedIds, this::retrieveByIds);
+		return cacheDraftIds.getOrLoad(0, this::retrieveDraftIds);
+	}
+
+	public Collection<SimulationPlanRef> getAllDrafts(@Nullable final SimulationPlanId alwaysIncludeId)
+	{
+		ImmutableSet<SimulationPlanId> simulationIds = getDraftSimulationIds();
+		if (alwaysIncludeId != null && !simulationIds.contains(alwaysIncludeId))
+		{
+			simulationIds = ImmutableSet.<SimulationPlanId>builder()
+					.addAll(simulationIds)
+					.add(alwaysIncludeId)
+					.build();
+		}
+
+		return cacheById.getAllOrLoad(simulationIds, this::retrieveByIds);
 	}
 
 	private SimulationPlanRef retrieveById(@NonNull final SimulationPlanId id)
 	{
+		return fromRecord(retrieveRecordById(id));
+	}
+
+	private I_C_SimulationPlan retrieveRecordById(final @NonNull SimulationPlanId id)
+	{
 		final I_C_SimulationPlan record = InterfaceWrapperHelper.load(id, I_C_SimulationPlan.class);
-		return fromRecord(record);
+		if (record == null)
+		{
+			throw new AdempiereException("No simulation plan found for " + id);
+		}
+		return record;
 	}
 
 	private ImmutableMap<SimulationPlanId, SimulationPlanRef> retrieveByIds(@NonNull final Set<SimulationPlanId> ids)
@@ -85,12 +120,13 @@ public class SimulationPlanRepository
 				.collect(ImmutableMap.toImmutableMap(SimulationPlanRef::getId, simulation -> simulation));
 	}
 
-	private ImmutableSet<SimulationPlanId> retrieveNotProcessedIds()
+	private ImmutableSet<SimulationPlanId> retrieveDraftIds()
 	{
 		return queryBL
 				.createQueryBuilder(I_C_SimulationPlan.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SimulationPlan.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_C_SimulationPlan.COLUMNNAME_DocStatus, SimulationPlanDocStatus.Drafted)
 				.create()
 				.listIds(SimulationPlanId::ofRepoId);
 	}

@@ -15,6 +15,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.ReportResultData;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenCalendarAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
@@ -42,13 +43,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.slf4j.Logger;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -404,7 +402,7 @@ public class ADProcessPostProcessService
 		}
 		//
 		// Close underlying modal view
-		else if(processExecutionResult.isCloseWebuiModalView())
+		else if (processExecutionResult.isCloseWebuiModalView())
 		{
 			return ProcessInstanceResult.CloseViewAction.instance;
 		}
@@ -415,6 +413,12 @@ public class ADProcessPostProcessService
 			return DisplayQRCodeAction.builder()
 					.code(processExecutionResult.getDisplayQRCode().getCode())
 					.build();
+		}
+		//
+		// Calendar
+		else if (processExecutionResult.getCalendarToOpen() != null)
+		{
+			return OpenCalendarAction.of(processExecutionResult.getCalendarToOpen());
 		}
 		//
 		// No action

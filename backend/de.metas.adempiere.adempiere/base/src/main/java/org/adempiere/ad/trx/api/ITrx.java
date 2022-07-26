@@ -8,8 +8,8 @@ import org.adempiere.exceptions.DBException;
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -200,7 +200,7 @@ public interface ITrx
 
 	default <T> void accumulateAndProcessAfterCommit(
 			@NonNull final String propertyName,
-			@NonNull final List<T> itemsToAccumulate,
+			@NonNull final Collection<T> itemsToAccumulate,
 			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
 	{
 		getProperty(propertyName, () -> {

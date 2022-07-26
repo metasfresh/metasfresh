@@ -22,7 +22,6 @@
 
 package de.metas.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.project.ProjectId;
 import de.metas.util.Check;
@@ -33,18 +32,18 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-/**
- * Note that this class is somewhat redundant with {@link WOProjectAndStepId}.
- * One Of the two should be refactored away. The remaining class should be RepoIdAware.
- */
 @Value
 public class WOProjectStepId implements RepoIdAware
 {
 
-	@JsonCreator
 	public static WOProjectStepId ofRepoId(@NonNull final ProjectId projectId, final int repoId)
 	{
 		return new WOProjectStepId(projectId, repoId);
+	}
+
+	public static WOProjectStepId ofRepoId(final int projectRepoId, final int repoId)
+	{
+		return new WOProjectStepId(ProjectId.ofRepoId(projectRepoId), repoId);
 	}
 
 	@Nullable
@@ -64,7 +63,7 @@ public class WOProjectStepId implements RepoIdAware
 
 	@NonNull
 	ProjectId projectId;
-	
+
 	private WOProjectStepId(@NonNull final ProjectId projectId, final int repoId)
 	{
 		this.projectId = projectId;

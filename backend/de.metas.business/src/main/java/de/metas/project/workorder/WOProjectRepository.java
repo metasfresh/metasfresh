@@ -23,6 +23,8 @@
 package de.metas.project.workorder;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
@@ -34,10 +36,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public class WOProjectRepository
@@ -47,33 +49,67 @@ public class WOProjectRepository
 	public WOProject getById(@NonNull final ProjectId projectId)
 	{
 		final I_C_Project record = InterfaceWrapperHelper.load(projectId, I_C_Project.class);
+		if (record == null)
+		{
+			throw new AdempiereException("No project found for " + projectId);
+		}
+
 		return fromRecord(record)
 				.orElseThrow(() -> new AdempiereException("Not a Work Order project: " + record));
 	}
 
-	public List<WOProject> getAllActiveProjects()
+	@Nullable
+	private IQueryBuilder<I_C_Project> toSqlQuery(@NonNull final WOProjectQuery query)
 	{
-		return queryAllActiveProjects()
+		if (query.isNone())
+		{
+			return null;
+		}
+
+		final IQueryBuilder<I_C_Project> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
+				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, query.getProjectIds());
+
+		if (query.getOnlyCustomerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_BPartner_ID, query.getOnlyCustomerId());
+		}
+
+		return queryBuilder;
+	}
+
+	public ImmutableSet<ProjectId> getAllActiveProjectIds()
+	{
+		return getActiveProjectIds(WOProjectQuery.ANY);
+	}
+
+	public ImmutableSet<ProjectId> getActiveProjectIds(@NonNull final WOProjectQuery query)
+	{
+		final IQueryBuilder<I_C_Project> sqlQuery = toSqlQuery(query);
+		if (sqlQuery == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return sqlQuery.create().listIds(ProjectId::ofRepoId);
+	}
+
+	public List<WOProject> getAllActiveProjects(@NonNull final WOProjectQuery query)
+	{
+		final IQueryBuilder<I_C_Project> sqlQuery = toSqlQuery(query);
+		if (sqlQuery == null)
+		{
+			return ImmutableList.of();
+		}
+
+		return sqlQuery
 				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
 				.stream()
 				.map(record -> fromRecord(record).orElse(null))
-				.filter(Objects::nonNull)
+				.filter(Objects::nonNull) // shall not happen
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public Set<ProjectId> getAllActiveProjectIds()
-	{
-		return queryAllActiveProjects()
-				.create()
-				.listIds(ProjectId::ofRepoId);
-	}
-
-	private IQueryBuilder<I_C_Project> queryAllActiveProjects()
-	{
-		return queryBL
-				.createQueryBuilder(I_C_Project.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob);
 	}
 
 	private static Optional<WOProject> fromRecord(@NonNull final I_C_Project record)
@@ -88,6 +124,7 @@ public class WOProjectRepository
 						.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
 						.name(record.getName())
 						.parentProjectId(ProjectId.ofRepoIdOrNull(record.getC_Project_Parent_ID()))
+						.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 						.build());
 	}
 }

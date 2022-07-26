@@ -24,7 +24,6 @@ package de.metas.project.budget.interceptor;
 
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.MultiCalendarService;
-import de.metas.project.budget.BudgetProjectAndResourceId;
 import de.metas.project.budget.BudgetProjectResourceRepository;
 import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
 import lombok.NonNull;
@@ -79,19 +78,18 @@ public class C_Project_Resource_Budget
 		final CalendarEntryId entryId = extractCalendarEntryId(record);
 		if (changeType.isNewOrChange() && record.isActive())
 		{
-			multiCalendarService.notifyEntryUpdatedByUser(entryId);
+			multiCalendarService.notifyEntryUpdated(entryId);
 		}
 		else
 		{
-			multiCalendarService.notifyEntryDeletedByUser(entryId);
+			multiCalendarService.notifyEntryDeleted(entryId);
 		}
 	}
 
 	@NonNull
 	private static CalendarEntryId extractCalendarEntryId(final I_C_Project_Resource_Budget record)
 	{
-		final BudgetProjectAndResourceId projectAndResourceId = BudgetProjectResourceRepository.fromRecord(record).getProjectAndResourceId();
-		return BudgetAndWOCalendarEntryIdConverters.from(projectAndResourceId);
+		return BudgetAndWOCalendarEntryIdConverters.from(BudgetProjectResourceRepository.extractBudgetProjectResourceId(record));
 	}
 
 }
