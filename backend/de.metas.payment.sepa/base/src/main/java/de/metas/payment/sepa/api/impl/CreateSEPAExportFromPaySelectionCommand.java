@@ -104,7 +104,16 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
 		exportLine.setDescription(sourceInvoice.getDescription());
 
-		exportLine.setIBAN(toNullOrRemoveSpaces(bpBankAccount.getIBAN()));
+		final String IBAN;
+		if (toNullOrRemoveSpaces(bpBankAccount.getIBAN()) != null)
+		{
+			IBAN = toNullOrRemoveSpaces(bpBankAccount.getIBAN());
+		}
+		else
+		{
+			IBAN = toNullOrRemoveSpaces(bpBankAccount.getQR_IBAN());
+		}
+		exportLine.setIBAN(IBAN);
 
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field
