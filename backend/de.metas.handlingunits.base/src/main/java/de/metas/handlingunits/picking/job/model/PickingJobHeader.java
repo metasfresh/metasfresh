@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
 @Value
@@ -17,5 +18,5 @@ public class PickingJobHeader
 	@NonNull String customerName;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
-	@NonNull UserId lockedBy;
+	@Nullable UserId lockedBy;
 }

@@ -371,7 +371,7 @@ class PickingJobLoaderAndSaver
 						.customerName(loadingSupportingServices().getBPartnerName(deliveryBPLocationId.getBpartnerId()))
 						.deliveryBPLocationId(deliveryBPLocationId)
 						.deliveryRenderedAddress(record.getDeliveryToAddress())
-						.lockedBy(UserId.ofRepoId(record.getPicking_User_ID()))
+						.lockedBy(UserId.ofRepoIdOrNull(record.getPicking_User_ID()))
 						.build())
 				.pickingSlot(pickingSlot)
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
