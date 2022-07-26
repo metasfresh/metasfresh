@@ -565,7 +565,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_HU_ID.Identifier | M_Attribute_ID.Value | OPT.ValueNumber |
       | processedTopHU     | WeightGross          | 51              |
 
-    And after not more than 30s, M_HU_Attribute is validated
+    And M_HU_Attribute is validated
       | M_HU_ID.Identifier | M_Attribute_ID.Value | ValueNumber |
       | processedTopHU     | WeightGross          | 51.000      |
 
@@ -648,7 +648,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_HU_ID.Identifier | M_Attribute_ID.Value | OPT.ValueNumber |
       | processedTopHU     | WeightGross          | 60              |
 
-    And after not more than 30s, M_HU_Attribute is validated
+    And M_HU_Attribute is validated
       | M_HU_ID.Identifier | M_Attribute_ID.Value | ValueNumber |
       | processedTopHU     | WeightGross          | 60.000      |
 
@@ -730,7 +730,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_HU_ID.Identifier | M_Attribute_ID.Value | OPT.ValueNumber |
       | processedTopHU     | WeightGross          | 51              |
 
-    And after not more than 30s, M_HU_Attribute is validated
+    And M_HU_Attribute is validated
       | M_HU_ID.Identifier | M_Attribute_ID.Value | ValueNumber |
       | processedTopHU     | WeightGross          | 51.000      |
 
@@ -813,7 +813,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_HU_ID.Identifier | M_Attribute_ID.Value | OPT.ValueNumber |
       | processedTopHU     | WeightGross          | 60              |
 
-    And after not more than 30s, M_HU_Attribute is validated
+    And M_HU_Attribute is validated
       | M_HU_ID.Identifier | M_Attribute_ID.Value | ValueNumber |
       | processedTopHU     | WeightGross          | 60.000      |
 

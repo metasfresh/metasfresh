@@ -209,4 +209,12 @@ public class StockQtyAndUOMQty
 				? stockQtyAndUOMQty.toZero()
 				: stockQtyAndUOMQty;
 	}
+
+	@NonNull
+	public static StockQtyAndUOMQty toZeroIfPositive(@NonNull final StockQtyAndUOMQty stockQtyAndUOMQty)
+	{
+		return stockQtyAndUOMQty.signum() > 0
+				? stockQtyAndUOMQty.toZero()
+				: stockQtyAndUOMQty;
+	}
 }

@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -44,7 +43,6 @@ import org.compiere.model.I_M_Attribute;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -73,27 +71,23 @@ public class M_HU_Attribute_StepDef
 		}
 	}
 
-	@And("^after not more than (.*)s, M_HU_Attribute is validated")
-	public void validate_m_hu_attribute(
-			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+	@And("M_HU_Attribute is validated")
+	public void validate_m_hu_attribute(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			validateHUAttribute(timeoutSec, tableRow);
+			validateHUAttribute(tableRow);
 		}
 	}
 
-	private void validateHUAttribute(
-			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	private void validateHUAttribute(@NonNull final Map<String, String> tableRow)
 	{
 		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int huID = huTable.getOptional(huIdentifier)
+		final int huId = huTable.getOptional(huIdentifier)
 				.map(I_M_HU::getM_HU_ID)
 				.orElseGet(() -> Integer.parseInt(huIdentifier));
 
-		final I_M_HU huRecord = InterfaceWrapperHelper.load(huID, I_M_HU.class);
+		final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
 		assertThat(huRecord).isNotNull();
 
 		final String attributeCodeString = DataTableUtil.extractStringForColumnName(tableRow, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
@@ -107,14 +101,7 @@ public class M_HU_Attribute_StepDef
 		assertThat(huAttribute).isNotNull();
 
 		final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
-
-		final Supplier<Boolean> validAttribute = () -> {
-			InterfaceWrapperHelper.refresh(huAttribute);
-
-			return valueNumber.equals(huAttribute.getValueNumber());
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, validAttribute);
+		assertThat(valueNumber).isEqualByComparingTo(huAttribute.getValueNumber());
 	}
 
 	private void changeHUAttribute(@NonNull final Map<String, String> tableRow)
