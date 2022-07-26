@@ -91,7 +91,10 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	@Override
 	@NonNull
-	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
+	public MobileApplicationInfo getApplicationInfo()
+	{
+		return APPLICATION_INFO;
+	}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(
@@ -307,6 +310,6 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@Override
 	public void logout(final @NonNull UserId userId)
 	{
-		// TODO unlock picking job
+		pickingJobRestService.logout(userId);
 	}
 }

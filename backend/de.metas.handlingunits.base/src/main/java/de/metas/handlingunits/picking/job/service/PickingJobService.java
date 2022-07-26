@@ -17,6 +17,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobReleaseAllCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
@@ -115,6 +116,16 @@ public class PickingJobService
 				.pickingJob(pickingJob)
 				//
 				.build().execute();
+	}
+
+	public void releaseAllForUserId(@NonNull final UserId userId)
+	{
+		PickingJobReleaseAllCommand.builder()
+				.pickingJobLockService(pickingJobLockService)
+				.pickingJobHUReservationService(pickingJobHUReservationService)
+				.pickingJobs(getDraftJobsByPickerId(userId))
+				.build()
+				.execute();
 	}
 
 	public void abortForSalesOrderId(@NonNull final OrderId salesOrderId)

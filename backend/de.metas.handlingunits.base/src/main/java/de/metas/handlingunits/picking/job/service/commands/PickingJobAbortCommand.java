@@ -72,7 +72,7 @@ public class PickingJobAbortCommand
 		return pickingJob;
 	}
 
-	private PickingJob unpickAllStepsAndSave(PickingJob pickingJob)
+	private PickingJob unpickAllStepsAndSave(final PickingJob pickingJob)
 	{
 		return PickingJobUnPickCommand.builder()
 				.pickingJobRepository(pickingJobRepository)

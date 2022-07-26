@@ -99,10 +99,24 @@ public class PickingJobRestService
 		return pickingJobService.processStepEvents(pickingJob, events);
 	}
 
-	public PickingJob abort(@NonNull final PickingJob pickingJob) {return pickingJobService.abort(pickingJob);}
+	public PickingJob abort(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.abort(pickingJob);
+	}
 
-	public PickingJob complete(@NonNull final PickingJob pickingJob) {return pickingJobService.complete(pickingJob);}
+	public PickingJob complete(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.complete(pickingJob);
+	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons() {return pickingJobService.getQtyRejectedReasons();}
+	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	{
+		return pickingJobService.getQtyRejectedReasons();
+	}
+
+	public void logout(@NonNull final UserId userId)
+	{
+		pickingJobService.releaseAllForUserId(userId);
+	}
 
 }
