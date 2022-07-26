@@ -1,41 +1,42 @@
 const converters = {
-  fromAPICalendar: (calendar) => ({
-    calendarId: calendar.calendarId,
-    name: calendar.name,
-    resources: calendar.resources.map(converters.fromAPIResource),
+  fromAPICalendar: (apiCalendar) => ({
+    calendarId: apiCalendar.calendarId,
+    name: apiCalendar.name,
+    resources: apiCalendar.resources.map(converters.fromAPIResource),
   }),
 
-  fromAPIResource: (resource) =>
-    converters.fullcalendar_io.fromAPIResource(resource),
+  fromAPIResource: (apiResource) =>
+    converters.fullcalendar_io.fromAPIResource(apiResource),
 
-  fromAPIUpdateResult: (updateResult) => {
-    //console.log('fromAPIUpdateResult', { updateResult });
+  fromAPIUpdateResult: (apiUpdateResult) => {
+    //console.log('fromAPIUpdateResult', { apiUpdateResult });
     return [
-      converters.fromAPIEntry(updateResult.changedEntry),
-      ...updateResult.otherChangedEntries.map((entry) =>
+      converters.fromAPIEntry(apiUpdateResult.changedEntry),
+      ...apiUpdateResult.otherChangedEntries.map((entry) =>
         converters.fromAPIEntry(entry)
       ),
     ];
   },
 
-  fromAPIEntry: (entry) => {
-    //console.log('fromAPIEntry', { entry });
+  fromAPIEntry: (apiEntry) => {
+    //console.log('fromAPIEntry', { apiEntry });
     return {
-      calendarId: entry.calendarId,
-      ...converters.fullcalendar_io.fromAPIEntry(entry),
+      calendarId: apiEntry.calendarId,
+      ...converters.fullcalendar_io.fromAPIEntry(apiEntry),
     };
   },
 
-  fromAPISimulation: (simulation) => ({
-    simulationId: simulation.id,
-    name: simulation.name,
+  fromAPISimulation: (apiSimulation) => ({
+    simulationId: apiSimulation.id,
+    name: apiSimulation.name,
+    processed: apiSimulation.processed,
   }),
 
-  fromAPIConflict: (conflict) => ({
-    entryId1: conflict.entryId1,
-    entryId2: conflict.entryId2,
-    simulationId: conflict.simulationId,
-    status: conflict.status,
+  fromAPIConflict: (apiConflict) => ({
+    entryId1: apiConflict.entryId1,
+    entryId2: apiConflict.entryId2,
+    simulationId: apiConflict.simulationId,
+    status: apiConflict.status,
   }),
 
   //

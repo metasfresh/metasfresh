@@ -102,20 +102,20 @@ public class MultiCalendarService
 		});
 	}
 
-	public void notifyEntryUpdatedByUser(@NonNull final CalendarEntryId entryId)
+	public void notifyEntryUpdated(@NonNull final CalendarEntryId entryId)
 	{
 		continuousQueriesDispatcher.onEntryUpdated(entryId);
 	}
 
-	public void notifyEntryDeletedByUser(@NonNull final CalendarEntryId entryId)
+	public void notifyEntryDeleted(@NonNull final CalendarEntryId entryId)
 	{
 		continuousQueriesDispatcher.onEntryDeleted(entryId, null);
 	}
 
-	public CalendarEntryConflicts getConflicts(@Nullable SimulationPlanId simulationId)
+	public CalendarEntryConflicts getConflicts(@NonNull final CalendarConflictsQuery query)
 	{
 		return calendarConflictsServices.stream()
-				.map(conflictsService -> conflictsService.query(simulationId))
+				.map(conflictsService -> conflictsService.query(query))
 				.reduce(CalendarEntryConflicts::mergeFrom)
 				.orElse(CalendarEntryConflicts.EMPTY);
 	}

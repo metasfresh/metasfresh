@@ -345,6 +345,18 @@ public final class CollectionUtils
 		return result.build();
 	}
 
+	public static <T> ImmutableSet<T> removeElement(
+			@NonNull final ImmutableSet<T> set,
+			@Nullable final T elementToRemove)
+	{
+		if (elementToRemove == null || !set.contains(elementToRemove))
+		{
+			return set;
+		}
+
+		return set.stream().filter(element -> !element.equals(elementToRemove)).collect(ImmutableSet.toImmutableSet());
+	}
+
 	public static <K, V> ImmutableMap<K, V> mapValue(
 			@NonNull final ImmutableMap<K, V> map,
 			@NonNull final K key,
@@ -468,6 +480,24 @@ public final class CollectionUtils
 				.stream()
 				.map(mapper)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static <T> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Function<String, T> mapper)
+	{
+		if (commaSeparatedStr == null || Check.isBlank(commaSeparatedStr))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(commaSeparatedStr)
+				.stream()
+				.map(mapper)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Nullable

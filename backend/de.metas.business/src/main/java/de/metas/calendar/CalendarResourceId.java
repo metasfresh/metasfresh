@@ -25,6 +25,8 @@ package de.metas.calendar;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
@@ -35,12 +37,15 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @EqualsAndHashCode
 public class CalendarResourceId
 {
 	private final String type;
 	private final int repoId;
+
+	private static final Splitter CSV_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
 	private CalendarResourceId(@NonNull final String type, final int repoId)
 	{
@@ -80,6 +85,19 @@ public class CalendarResourceId
 		{
 			throw new AdempiereException("Invalid calendar resource ID: `" + string + "`", ex);
 		}
+	}
+
+	public static Optional<ImmutableSet<CalendarResourceId>> ofCommaSeparatedString(@Nullable final String string)
+	{
+		final String stringNorm = StringUtils.trimBlankToNull(string);
+		if (stringNorm == null)
+		{
+			return Optional.empty();
+		}
+
+		return CSV_SPLITTER.splitToStream(stringNorm)
+				.map(CalendarResourceId::ofString)
+				.collect(GuavaCollectors.toOptionalImmutableSet());
 	}
 
 	@JsonValue

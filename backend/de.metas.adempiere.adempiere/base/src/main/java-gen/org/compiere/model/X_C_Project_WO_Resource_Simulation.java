@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO implements I_C_Project_WO_Resource_Simulation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2088479782L;
+	private static final long serialVersionUID = -864211424L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource_Simulation (final Properties ctx, final int C_Project_WO_Resource_Simulation_ID, @Nullable final String trxName)
@@ -47,6 +47,18 @@ public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setAssignDateFrom_Prev (final @Nullable java.sql.Timestamp AssignDateFrom_Prev)
+	{
+		set_Value (COLUMNNAME_AssignDateFrom_Prev, AssignDateFrom_Prev);
+	}
+
+	@Override
+	public java.sql.Timestamp getAssignDateFrom_Prev() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_AssignDateFrom_Prev);
+	}
+
+	@Override
 	public void setAssignDateTo (final java.sql.Timestamp AssignDateTo)
 	{
 		set_Value (COLUMNNAME_AssignDateTo, AssignDateTo);
@@ -56,6 +68,18 @@ public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO im
 	public java.sql.Timestamp getAssignDateTo() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_AssignDateTo);
+	}
+
+	@Override
+	public void setAssignDateTo_Prev (final @Nullable java.sql.Timestamp AssignDateTo_Prev)
+	{
+		set_Value (COLUMNNAME_AssignDateTo_Prev, AssignDateTo_Prev);
+	}
+
+	@Override
+	public java.sql.Timestamp getAssignDateTo_Prev() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_AssignDateTo_Prev);
 	}
 
 	@Override
@@ -152,5 +176,29 @@ public class X_C_Project_WO_Resource_Simulation extends org.compiere.model.PO im
 	public boolean isAllDay() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllDay);
+	}
+
+	@Override
+	public void setIsAllDay_Prev (final boolean IsAllDay_Prev)
+	{
+		set_Value (COLUMNNAME_IsAllDay_Prev, IsAllDay_Prev);
+	}
+
+	@Override
+	public boolean isAllDay_Prev() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllDay_Prev);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 }

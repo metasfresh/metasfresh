@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Calendar from './Calendar';
 import Header from '../../components/header/Header';
@@ -6,25 +6,40 @@ import Header from '../../components/header/Header';
 import history from '../../services/History';
 import { getQueryString } from '../../utils';
 
-const updateURI = (location, { simulationId }) => {
+import './CalendarPage.scss';
+
+const updateURI = (
+  location,
+  { simulationId, onlyResourceIds, onlyProjectId, onlyCustomerId }
+) => {
   const queryParams = getQueryString({
     ...location.query,
     simulationId,
+    resourceIds: onlyResourceIds ? onlyResourceIds.join(',') : null,
+    projectId: onlyProjectId,
+    customerId: onlyCustomerId,
   });
 
   history.replace(`${location.pathname}?${queryParams}`);
 };
 
 const CalendarPage = ({ location }) => {
+  const onlyResourceIds = useMemo(
+    () =>
+      location.query.resourceIds ? location.query.resourceIds.split(',') : null,
+    [location.query.resourceId]
+  );
+
   return (
     <div>
       <Header />
-      <div className="header-sticky-distance js-unselect panel-vertical-scroll dashboard">
+      <div className="calendar-container">
         <Calendar
           simulationId={location.query.simulationId}
-          onParamsChanged={({ simulationId }) =>
-            updateURI(location, { simulationId })
-          }
+          onlyResourceIds={onlyResourceIds}
+          onlyProjectId={location.query.projectId}
+          onlyCustomerId={location.query.customerId}
+          onParamsChanged={(params) => updateURI(location, params)}
         />
       </div>
     </div>

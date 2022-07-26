@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Resource_Budget_Simulation extends org.compiere.model.PO implements I_C_Project_Resource_Budget_Simulation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1915583611L;
+	private static final long serialVersionUID = 1345973835L;
 
     /** Standard Constructor */
     public X_C_Project_Resource_Budget_Simulation (final Properties ctx, final int C_Project_Resource_Budget_Simulation_ID, @Nullable final String trxName)
@@ -131,6 +131,18 @@ public class X_C_Project_Resource_Budget_Simulation extends org.compiere.model.P
 	}
 
 	@Override
+	public void setDateFinishPlan_Prev (final @Nullable java.sql.Timestamp DateFinishPlan_Prev)
+	{
+		set_Value (COLUMNNAME_DateFinishPlan_Prev, DateFinishPlan_Prev);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateFinishPlan_Prev() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateFinishPlan_Prev);
+	}
+
+	@Override
 	public void setDateStartPlan (final java.sql.Timestamp DateStartPlan)
 	{
 		set_Value (COLUMNNAME_DateStartPlan, DateStartPlan);
@@ -140,5 +152,29 @@ public class X_C_Project_Resource_Budget_Simulation extends org.compiere.model.P
 	public java.sql.Timestamp getDateStartPlan() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateStartPlan);
+	}
+
+	@Override
+	public void setDateStartPlan_Prev (final @Nullable java.sql.Timestamp DateStartPlan_Prev)
+	{
+		set_Value (COLUMNNAME_DateStartPlan_Prev, DateStartPlan_Prev);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateStartPlan_Prev() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateStartPlan_Prev);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 }

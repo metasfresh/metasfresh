@@ -163,7 +163,7 @@ public class WorkOrderProjectResourceRepository
 				.duration(resourceRecord.getDuration())
 				.durationUnit(resourceRecord.getDurationUnit())
 				.budgetProjectId(ProjectId.ofRepoIdOrNull(resourceRecord.getBudget_Project_ID()))
-				.projectResourceBudgetId(BudgetProjectResourceId.ofRepoIdOrNull(resourceRecord.getC_Project_Resource_Budget_ID()))
+				.projectResourceBudgetId(BudgetProjectResourceId.ofRepoIdOrNull(resourceRecord.getBudget_Project_ID(), resourceRecord.getC_Project_Resource_Budget_ID()))
 				.externalId(ExternalId.ofOrNull(resourceRecord.getExternalId()))
 				.build();
 	}

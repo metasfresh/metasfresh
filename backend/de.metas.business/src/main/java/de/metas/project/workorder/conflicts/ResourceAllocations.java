@@ -94,8 +94,8 @@ class ResourceAllocations
 				//
 				// Case: we have a conflict
 				final ProjectResourceIdsPair projectResourceIdsPair = ProjectResourceIdsPair.of(
-						resourceAllocation1.getProjectAndResourceId(),
-						resourceAllocation2.getProjectAndResourceId());
+						resourceAllocation1.getProjectResourceId(),
+						resourceAllocation2.getProjectResourceId());
 				if (resourceAllocation1.isInConflictWith(resourceAllocation2))
 				{
 					conflicts.add(ResourceAllocationConflict.builder()

@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_WO_Resource_Simulation
@@ -73,6 +74,29 @@ public interface I_C_Project_WO_Resource_Simulation
 	String COLUMNNAME_AssignDateFrom = "AssignDateFrom";
 
 	/**
+	 * Set Zuordnung von (previous).
+	 * Ressource zuordnen ab
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAssignDateFrom_Prev (@Nullable java.sql.Timestamp AssignDateFrom_Prev);
+
+	/**
+	 * Get Zuordnung von (previous).
+	 * Ressource zuordnen ab
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getAssignDateFrom_Prev();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_AssignDateFrom_Prev = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "AssignDateFrom_Prev", null);
+	String COLUMNNAME_AssignDateFrom_Prev = "AssignDateFrom_Prev";
+
+	/**
 	 * Set Assign To.
 	 * Assign resource until
 	 *
@@ -94,6 +118,29 @@ public interface I_C_Project_WO_Resource_Simulation
 
 	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_AssignDateTo = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "AssignDateTo", null);
 	String COLUMNNAME_AssignDateTo = "AssignDateTo";
+
+	/**
+	 * Set Zuordnung bis (previous).
+	 * Ressource zuordnen bis
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAssignDateTo_Prev (@Nullable java.sql.Timestamp AssignDateTo_Prev);
+
+	/**
+	 * Get Zuordnung bis (previous).
+	 * Ressource zuordnen bis
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getAssignDateTo_Prev();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_AssignDateTo_Prev = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "AssignDateTo_Prev", null);
+	String COLUMNNAME_AssignDateTo_Prev = "AssignDateTo_Prev";
 
 	/**
 	 * Set Project.
@@ -256,6 +303,48 @@ public interface I_C_Project_WO_Resource_Simulation
 
 	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_IsAllDay = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "IsAllDay", null);
 	String COLUMNNAME_IsAllDay = "IsAllDay";
+
+	/**
+	 * Set All day (previous).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllDay_Prev (boolean IsAllDay_Prev);
+
+	/**
+	 * Get All day (previous).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllDay_Prev();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_IsAllDay_Prev = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "IsAllDay_Prev", null);
+	String COLUMNNAME_IsAllDay_Prev = "IsAllDay_Prev";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_C_Project_WO_Resource_Simulation, Object> COLUMN_Processed = new ModelColumn<>(I_C_Project_WO_Resource_Simulation.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Get Updated.

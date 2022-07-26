@@ -3,7 +3,7 @@ package de.metas.project.workorder.conflicts;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectAndResourceId;
+import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
@@ -36,12 +36,12 @@ public class ResourceAllocations_TestCase_TwoActualAllocations_Test
 				ImmutableList.of(
 						ResourceAllocation.builder()
 								.resourceId(ResourceId.ofRepoId(1))
-								.projectAndResourceId(WOProjectAndResourceId.ofRepoIds(1, 1))
+								.projectResourceId(WOProjectResourceId.ofRepoId(1, 1))
 								.dateRange(dateRange1)
 								.build(),
 						ResourceAllocation.builder()
 								.resourceId(ResourceId.ofRepoId(1))
-								.projectAndResourceId(WOProjectAndResourceId.ofRepoIds(1, 2))
+								.projectResourceId(WOProjectResourceId.ofRepoId(1, 2))
 								.dateRange(dateRange2)
 								.build()
 				)

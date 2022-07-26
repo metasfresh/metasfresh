@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CCache;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.project.ProjectId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -17,6 +16,8 @@ import org.compiere.model.I_C_Project_WO_Resource_Simulation;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.function.UnaryOperator;
 
@@ -67,23 +68,45 @@ public class BudgetProjectSimulationRepository
 	private static BudgetProjectResourceSimulation fromRecord(@NonNull final I_C_Project_Resource_Budget_Simulation record)
 	{
 		return BudgetProjectResourceSimulation.builder()
-				.projectAndResourceId(BudgetProjectAndResourceId.of(
-						ProjectId.ofRepoId(record.getC_Project_ID()),
-						BudgetProjectResourceId.ofRepoId(record.getC_Project_Resource_Budget_ID())))
+				.projectResourceId(extractBudgetProjectResourceId(record))
 				.dateRange(CalendarDateRange.builder()
 						.startDate(record.getDateStartPlan().toInstant())
 						.endDate(record.getDateFinishPlan().toInstant())
-						.allDay(true)
+						.allDay(BudgetProjectResourceRepository.IsAllDay_TRUE)
 						.build())
+				.isAppliedOnActualData(record.isProcessed())
+				.dateRangeBeforeApplying(extractDateRangeBeforeApplying(record))
+				.build();
+	}
+
+	@Nullable
+	private static CalendarDateRange extractDateRangeBeforeApplying(final I_C_Project_Resource_Budget_Simulation record)
+	{
+		final Timestamp dateStartPlan_prev = record.getDateStartPlan_Prev();
+		final Timestamp dateFinishPlan_prev = record.getDateFinishPlan_Prev();
+		if (dateStartPlan_prev == null || dateFinishPlan_prev == null)
+		{
+			return null;
+		}
+
+		return CalendarDateRange.builder()
+				.startDate(dateStartPlan_prev.toInstant())
+				.endDate(dateFinishPlan_prev.toInstant())
+				.allDay(BudgetProjectResourceRepository.IsAllDay_TRUE)
 				.build();
 	}
 
 	private static void updateRecord(final I_C_Project_Resource_Budget_Simulation record, final BudgetProjectResourceSimulation from)
 	{
-		record.setC_Project_ID(from.getProjectAndResourceId().getProjectId().getRepoId());
-		record.setC_Project_Resource_Budget_ID(from.getProjectAndResourceId().getProjectResourceId().getRepoId());
+		record.setC_Project_ID(from.getProjectResourceId().getProjectId().getRepoId());
+		record.setC_Project_Resource_Budget_ID(from.getProjectResourceId().getRepoId());
 		record.setDateStartPlan(TimeUtil.asTimestamp(from.getDateRange().getStartDate()));
 		record.setDateFinishPlan(TimeUtil.asTimestamp(from.getDateRange().getEndDate()));
+
+		record.setProcessed(from.isAppliedOnActualData());
+		record.setDateStartPlan(from.getDateRangeBeforeApplying() != null ? Timestamp.from(from.getDateRangeBeforeApplying().getStartDate()) : null);
+		record.setDateFinishPlan(from.getDateRangeBeforeApplying() != null ? Timestamp.from(from.getDateRangeBeforeApplying().getEndDate()) : null);
+		//record.setIsAllDay_Prev(from.getDateRangeBeforeApplying() != null && from.getDateRangeBeforeApplying().isAllDay());
 	}
 
 	public void savePlan(@NonNull final BudgetProjectSimulationPlan plan)
@@ -92,7 +115,7 @@ public class BudgetProjectSimulationRepository
 				.createQueryBuilder(I_C_Project_Resource_Budget_Simulation.class)
 				.addEqualsFilter(I_C_Project_Resource_Budget_Simulation.COLUMNNAME_C_SimulationPlan_ID, plan.getSimulationPlanId())
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(record -> BudgetProjectResourceId.ofRepoId(record.getC_Project_Resource_Budget_ID())));
+				.collect(GuavaCollectors.toHashMapByKey(BudgetProjectSimulationRepository::extractBudgetProjectResourceId));
 
 		for (final BudgetProjectResourceSimulation resource : plan.getAll())
 		{
@@ -111,15 +134,21 @@ public class BudgetProjectSimulationRepository
 		InterfaceWrapperHelper.deleteAll(existingRecords.values());
 	}
 
+	@NonNull
+	private static BudgetProjectResourceId extractBudgetProjectResourceId(final I_C_Project_Resource_Budget_Simulation record)
+	{
+		return BudgetProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Resource_Budget_ID());
+	}
+
 	public OldAndNewValues<BudgetProjectResourceSimulation> createOrUpdate(@NonNull final BudgetProjectResourceSimulation.UpdateRequest request)
 	{
 		BudgetProjectSimulationPlan simulationPlan = getSimulationPlanById(request.getSimulationId());
 		final BudgetProjectSimulationPlan changedSimulationPlan = simulationPlan.mapByProjectResourceId(
-				request.getProjectAndResourceId(),
+				request.getProjectResourceId(),
 				existingSimulation -> BudgetProjectResourceSimulation.reduce(existingSimulation, request)
 		);
 
-		final BudgetProjectResourceId projectResourceId = request.getProjectAndResourceId().getProjectResourceId();
+		final BudgetProjectResourceId projectResourceId = request.getProjectResourceId();
 		return OldAndNewValues.ofOldAndNewValues(
 				simulationPlan.getByProjectResourceIdOrNull(projectResourceId),
 				changedSimulationPlan.getByProjectResourceId(projectResourceId)

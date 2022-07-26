@@ -23,9 +23,11 @@
 package de.metas.calendar;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.util.lang.RepoIdAware;
+import de.metas.project.ProjectId;
+import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -33,7 +35,6 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.Objects;
 
 @Value
 @Builder
@@ -44,7 +45,9 @@ public class CalendarQuery
 
 	@NonNull @Singular ImmutableSet<CalendarServiceId> onlyCalendarServiceIds;
 	@NonNull @Singular ImmutableSet<CalendarGlobalId> onlyCalendarIds;
-	@NonNull @Singular ImmutableSet<CalendarResourceId> onlyResourceIds;
+	@NonNull @Builder.Default InSetPredicate<CalendarResourceId> resourceIds = InSetPredicate.any();
+	@Nullable ProjectId onlyProjectId;
+	@Nullable BPartnerId onlyCustomerId;
 	@Nullable Instant startDate;
 	@Nullable Instant endDate;
 
@@ -63,9 +66,9 @@ public class CalendarQuery
 		return onlyCalendarIds.isEmpty() || onlyCalendarIds.contains(calendarId);
 	}
 
-	public boolean isMatchingResourceId(@NonNull final CalendarResourceId resourceId)
+	private boolean isMatchingResourceId(@NonNull final CalendarResourceId resourceId)
 	{
-		return onlyResourceIds.isEmpty() || onlyResourceIds.contains(resourceId);
+		return resourceIds.test(resourceId);
 	}
 
 	public boolean isMatchingDateRange(@NonNull final CalendarDateRange dateRange)
@@ -80,14 +83,5 @@ public class CalendarQuery
 				&& isMatchingCalendarId(entry.getCalendarId())
 				&& isMatchingResourceId(entry.getResourceId())
 				&& isMatchingDateRange(entry.getDateRange());
-	}
-
-	public <T extends RepoIdAware> ImmutableSet<T> getOnlyResourceIdsOfType(@NonNull final Class<T> clazz)
-	{
-		return onlyResourceIds
-				.stream()
-				.map(calendarResourceId -> calendarResourceId.toRepoIdOrNull(clazz))
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -7,6 +7,7 @@ import de.metas.audit.data.model.DataExportAuditLogId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.invoice.InvoiceVerificationRunId;
+import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
@@ -96,6 +97,7 @@ public class All_RepoIdAware_Classes_Test
 			//
 			.skip(MediatedCommissionSettingsLineId.class)
 			//
+			.skip(BudgetProjectResourceId.class)
 			.skip(WOProjectResourceId.class)
 			.skip(WOProjectStepId.class)
 			;

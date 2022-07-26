@@ -116,6 +116,27 @@ public interface I_C_SimulationPlan
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDocStatus();
+
+	ModelColumn<I_C_SimulationPlan, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_SimulationPlan.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
