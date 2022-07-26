@@ -89,24 +89,6 @@ public class AppConfiguration
 				.addEventNotifier(new MetasfreshAuthorizationTokenNotifier(metasfreshAuthProvider, metasfreshAPIBaseURL, customRouteController, producerTemplate));
 	}
 
-	@PostConstruct
-	public void authorizationTokenNotifier()
-	{
-		final String metasfreshAPIBaseURL = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
-
-		if (Check.isBlank(metasfreshAPIBaseURL))
-		{
-			throw new RuntimeException("Missing mandatory property! property = " + ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
-		}
-
-		final MetasfreshAuthProvider metasfreshAuthProvider = context.getBean(MetasfreshAuthProvider.class);
-		final CustomRouteController customRouteController = customRouteController();
-		final ProducerTemplate producerTemplate = producerTemplate();
-
-		camelContext.getManagementStrategy()
-				.addEventNotifier(new MetasfreshAuthorizationTokenNotifier(metasfreshAuthProvider, metasfreshAPIBaseURL, customRouteController, producerTemplate));
-	}
-
 	@Bean
 	CamelContextConfiguration contextConfiguration()
 	{
