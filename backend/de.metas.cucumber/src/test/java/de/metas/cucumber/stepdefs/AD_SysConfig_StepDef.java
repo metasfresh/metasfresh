@@ -54,7 +54,8 @@ public class AD_SysConfig_StepDef
 		switch (sysconfigType)
 		{
 			case "String":
-				sysConfigBL.setValue(sysConfigName, sysconfigValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+				final String value = DataTableUtil.nullToken2Null(sysconfigValue);
+				sysConfigBL.setValue(sysConfigName, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 				break;
 			case "boolean":
 				final boolean booleanValue = Boolean.parseBoolean(sysconfigValue);
