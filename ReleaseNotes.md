@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13337](https://github.com/metasfresh/metasfresh/issues/13337) Adjustment Payment/Bank Statement Windows
   * [#13338](https://github.com/metasfresh/metasfresh/issues/13338) Support QR IBAN in SEPA export 
   * [#13280](https://github.com/metasfresh/metasfresh/issues/13280) Revolut Export Fixes
   * [#13308](https://github.com/metasfresh/metasfresh/issues/13308) Partial Payment Invoicing: prepare warehouse and prefinancing settings
