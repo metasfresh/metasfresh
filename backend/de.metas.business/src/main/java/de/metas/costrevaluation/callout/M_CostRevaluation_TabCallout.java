@@ -28,65 +28,31 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.ad.ui.spi.TabCalloutAdapter;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.X_C_DocType;
-import org.springframework.stereotype.Component;
+import org.compiere.util.Env;
 
-import javax.annotation.PostConstruct;
+import java.util.Objects;
 
-@Component
-@Callout(I_M_CostRevaluation.class)
-public class M_CostRevaluation implements ITabCallout
+public class M_CostRevaluation_TabCallout extends TabCalloutAdapter
 {
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
-	@PostConstruct
-	public void postConstruct()
-	{
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
-		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_M_CostRevaluation.Table_Name, getClass());
-	}
-
 	@Override
-	public void onNew(@NonNull final ICalloutRecord calloutRecord)
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final I_M_CostRevaluation costRevaluation = calloutRecord.getModel(I_M_CostRevaluation.class);
-		setDocTypeId(costRevaluation);
-	}
-
-	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_C_DocType_ID)
-	public void onDocTypeChanged(@NonNull final I_M_CostRevaluation costRevaluation)
-	{
-		setDocumentNo(costRevaluation);
-	}
-
-	private void setDocTypeId(final I_M_CostRevaluation costRevaluation)
-	{
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_CostRevaluation)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
-				.adClientId(costRevaluation.getAD_Client_ID())
-				.adOrgId(costRevaluation.getAD_Org_ID())
-				.build());
-		if (docTypeId == null)
-		{
-			return;
-		}
+				.adClientId(Env.getClientId().getRepoId())
+				.adOrgId(Env.getOrgId().getRepoId())
+				.build();
 
-		costRevaluation.setC_DocType_ID(docTypeId.getRepoId());
-	}
+		final DocTypeId docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
+		final I_M_CostRevaluation costRevaluation = calloutRecord.getModel(I_M_CostRevaluation.class);
 
-	private void setDocumentNo(final I_M_CostRevaluation costRevaluation)
-	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(costRevaluation.getC_DocType_ID());
-		if (docTypeId == null)
+		if (Objects.isNull(docTypeId) || Objects.isNull(costRevaluation))
 		{
 			return;
 		}

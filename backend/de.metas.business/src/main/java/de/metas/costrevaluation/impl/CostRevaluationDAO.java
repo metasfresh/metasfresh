@@ -22,26 +22,19 @@
 
 package de.metas.costrevaluation.impl;
 
-
 import de.metas.costrevaluation.ICostRevaluationDAO;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.compiere.model.I_M_CostRevaluationLine;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 
 import java.util.List;
 
-public class CostRevaluationDAO  implements ICostRevaluationDAO
+public class CostRevaluationDAO implements ICostRevaluationDAO
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IDocTypeDAO docTypeDAO  = Services.get(IDocTypeDAO.class);
 
 	@Override
 	public List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
@@ -52,20 +45,6 @@ public class CostRevaluationDAO  implements ICostRevaluationDAO
 				.orderBy(I_M_CostRevaluationLine.COLUMN_M_CostRevaluationLine_ID)
 				.create()
 				.list();
-	}
-
-
-	@Override
-	public DocTypeId retrieveCostRevaluationDocTypeId()
-	{
-		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_CostRevaluation)
-				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
-				.adClientId(Env.getClientId().getRepoId())
-				.adOrgId(Env.getOrgId().getRepoId())
-				.build();
-
-		return docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
 	}
 
 }

@@ -23,7 +23,6 @@
 package de.metas.costrevaluation;
 
 import de.metas.costrevaluation.impl.CostRevaluationId;
-import de.metas.document.DocTypeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_CostRevaluationLine;
@@ -33,7 +32,5 @@ import java.util.List;
 public interface ICostRevaluationDAO extends ISingletonService
 {
 	List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(@NonNull CostRevaluationId costRevaluationId);
-
-	DocTypeId retrieveCostRevaluationDocTypeId();
 
 }
