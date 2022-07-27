@@ -35,6 +35,8 @@ import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
+import java.util.Objects;
+
 public class M_CostRevaluation_TabCallout extends TabCalloutAdapter
 {
 	@Override
@@ -50,7 +52,7 @@ public class M_CostRevaluation_TabCallout extends TabCalloutAdapter
 		final DocTypeId docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
 		final I_M_CostRevaluation costRevaluation = calloutRecord.getModel(I_M_CostRevaluation.class);
 
-		if (docTypeId == null || costRevaluation == null)
+		if (Objects.isNull(docTypeId) || Objects.isNull(costRevaluation))
 		{
 			return;
 		}
