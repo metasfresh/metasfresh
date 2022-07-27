@@ -42,13 +42,12 @@ public class M_CostRevaluation
 	public void onDocTypeChanged(@NonNull final I_M_CostRevaluation costRevaluation)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(costRevaluation.getC_DocType_ID());
-		final I_C_DocType costRevaluationDocType = Services.get(IDocTypeDAO.class).getById(docTypeId);
-
-		if (Objects.isNull(docTypeId) || Objects.isNull(costRevaluationDocType))
+		if (Objects.isNull(docTypeId))
 		{
 			return;
 		}
 
+		final I_C_DocType costRevaluationDocType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(costRevaluationDocType)
