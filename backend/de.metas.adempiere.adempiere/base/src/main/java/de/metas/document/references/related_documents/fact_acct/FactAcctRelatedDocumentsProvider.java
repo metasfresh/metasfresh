@@ -23,6 +23,7 @@
 package de.metas.document.references.related_documents.fact_acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
@@ -59,6 +60,8 @@ public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvid
 
 	private final AtomicBoolean enabled = new AtomicBoolean(true);
 
+	private static final String TABLENAME_Fact_Acct_Transactions_View = "Fact_Acct_Transactions_View";
+
 	public FactAcctRelatedDocumentsProvider()
 	{
 	}
@@ -86,7 +89,10 @@ public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvid
 
 		//
 		// Get the Fact_Acct AD_Window_ID
-		final AdWindowId factAcctWindowId = RecordWindowFinder.findAdWindowId(I_Fact_Acct.Table_Name).orElse(null);
+		final AdWindowId factAcctWindowId = CoalesceUtil.coalesceSuppliers(
+				() -> RecordWindowFinder.findAdWindowId(TABLENAME_Fact_Acct_Transactions_View).orElse(null),
+				() -> RecordWindowFinder.findAdWindowId(I_Fact_Acct.Table_Name).orElse(null)
+		);
 		if (factAcctWindowId == null)
 		{
 			return ImmutableList.of();
