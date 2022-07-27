@@ -46,7 +46,6 @@ import javax.annotation.PostConstruct;
 public class M_CostRevaluation implements ITabCallout
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory = Services.get(IDocumentNoBuilderFactory.class);
 
 	@PostConstruct
 	public void postConstruct()
@@ -92,7 +91,7 @@ public class M_CostRevaluation implements ITabCallout
 			return;
 		}
 
-		final IDocumentNoInfo documentNoInfo = documentNoBuilderFactory
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docTypeDAO.getById(docTypeId))
 				.setOldDocumentNo(costRevaluation.getDocumentNo())
@@ -102,5 +101,8 @@ public class M_CostRevaluation implements ITabCallout
 		{
 			costRevaluation.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
+
 	}
 }
+
+
