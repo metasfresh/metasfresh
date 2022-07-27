@@ -141,16 +141,6 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_PaySelectionLine> getProcessedLines(@NonNull final I_C_PaySelection paySelection)
-	{
-		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_C_PaySelectionLine.class);
-	}
-
-	@Override
 	public List<I_C_Payment> retrievePostedWithoutFactAcct(final Properties ctx, final Timestamp startTime)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
@@ -191,7 +181,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(I_C_Payment payment)
+	public List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Payment payment)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
