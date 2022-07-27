@@ -23,26 +23,36 @@
 package de.metas.costrevaluation.callout;
 
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_CostRevaluation;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 
 import java.util.Objects;
 
-@Callout(I_M_CostRevaluation.class)
-public class M_CostRevaluation
+public class M_CostRevaluation_TabCallout extends TabCalloutAdapter
 {
-	@CalloutMethod(columnNames = I_M_CostRevaluation.COLUMNNAME_C_DocType_ID)
-	public void onDocTypeChanged(@NonNull final I_M_CostRevaluation costRevaluation)
+	@Override
+	public void onNew(final ICalloutRecord calloutRecord)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(costRevaluation.getC_DocType_ID());
-		if (Objects.isNull(docTypeId))
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_CostRevaluation)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(Env.getClientId().getRepoId())
+				.adOrgId(Env.getOrgId().getRepoId())
+				.build();
+
+		final DocTypeId docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(docTypeQuery);
+		final I_M_CostRevaluation costRevaluation = calloutRecord.getModel(I_M_CostRevaluation.class);
+
+		if (Objects.isNull(docTypeId) || Objects.isNull(costRevaluation))
 		{
 			return;
 		}
