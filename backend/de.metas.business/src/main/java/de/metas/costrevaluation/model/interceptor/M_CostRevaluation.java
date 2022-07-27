@@ -22,10 +22,12 @@
 
 package de.metas.costrevaluation.model.interceptor;
 
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.compiere.model.I_M_CostRevaluation;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +41,9 @@ public class M_CostRevaluation
 	{
 		Services.get(IProgramaticCalloutProvider.class)
 				.registerAnnotatedCallout(new de.metas.costrevaluation.callout.M_CostRevaluation());
+
+		Services.get(ITabCalloutFactory.class)
+				.registerTabCalloutForTable(I_M_CostRevaluation.Table_Name, de.metas.costrevaluation.callout.M_CostRevaluation_TabCallout.class);
 	}
 
 }
