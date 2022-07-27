@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import FullCalendar from '@fullcalendar/react';
@@ -26,37 +26,36 @@ import CalendarResourceLabel from './components/CalendarResourceLabel';
 import CalendarFilters from './components/CalendarFilters';
 
 const Calendar = ({
-  simulationId: initialSelectedSimulationId,
+  view,
+  simulationId,
   onlyResourceIds,
   onlyProjectId,
   onlyCustomerId,
   onParamsChanged,
 }) => {
+  const notifyParamsChanged = (changedParams) => {
+    const params = {
+      view,
+      simulationId,
+      onlyResourceIds,
+      onlyProjectId,
+      onlyCustomerId,
+      ...changedParams,
+    };
+    console.log('notifyParamsChanged', { changedParams, params });
+    onParamsChanged && onParamsChanged(params);
+  };
+
   const calendarData = useCalendarData({
-    simulationId: initialSelectedSimulationId,
+    simulationId,
     onlyResourceIds,
     onlyProjectId,
     onlyCustomerId,
+    fetchAvailableCalendarsFromAPI: api.fetchAvailableCalendars,
     fetchAvailableSimulationsFromAPI: api.fetchAvailableSimulations,
     fetchEntriesFromAPI: api.fetchCalendarEntries,
     fetchConflictsFromAPI: api.fetchConflicts,
   });
-  const simulationId = calendarData.getSimulationId();
-
-  useEffect(() => {
-    onParamsChanged &&
-      onParamsChanged({
-        simulationId,
-        onlyResourceIds,
-        onlyProjectId,
-        onlyCustomerId,
-      });
-  }, [simulationId, onlyResourceIds, onlyProjectId, onlyCustomerId]);
-
-  useEffect(() => {
-    console.log('Loading calendars...');
-    api.fetchAvailableCalendars().then(calendarData.setCalendars);
-  }, []);
 
   useCalendarWebsocketEvents({
     simulationId,
@@ -105,6 +104,11 @@ const Calendar = ({
       });
   };
 
+  // Calendar Key:
+  // * view - it's important to be part of the key, else the Calendar component when we do browser back/forward between different view types
+  // noinspection UnnecessaryLocalVariableJS
+  const calendarKey = view;
+
   return (
     <div className="calendar">
       <div className="calendar-top">
@@ -120,12 +124,17 @@ const Calendar = ({
             selectedSimulationId={simulationId}
             onOpenDropdown={() => calendarData.loadSimulationsFromAPI()}
             onSelect={(simulation) => {
-              calendarData.setSimulationId(simulation?.simulationId);
+              notifyParamsChanged({ simulationId: simulation?.simulationId });
             }}
             onNew={() => {
               api
                 .createSimulation({ copyFromSimulationId: simulationId })
-                .then(calendarData.addSimulationAndSelect);
+                .then((simulation) => {
+                  calendarData.addSimulation(simulation);
+                  notifyParamsChanged({
+                    simulationId: simulation.simulationId,
+                  });
+                });
             }}
           />
         </div>
@@ -133,6 +142,7 @@ const Calendar = ({
       <div className="calendar-content">
         <FullCalendar
           schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
+          key={calendarKey}
           height="100%"
           locales={[deLocale]}
           locale={getCurrentActiveLanguage()}
@@ -143,7 +153,7 @@ const Calendar = ({
               slotLabelFormat: [{ month: 'long' }],
             },
           }}
-          initialView="resourceTimelineYear"
+          initialView={view}
           plugins={[
             dayGridPlugin,
             timeGridPlugin,
@@ -167,6 +177,12 @@ const Calendar = ({
             />
           )}
           eventSources={[{ events: fetchCalendarEntries }]}
+          datesSet={(params) => {
+            const newView = params.view.type;
+            if (view !== newView) {
+              notifyParamsChanged({ view: newView });
+            }
+          }}
           //dateClick={handleDateClick}
           eventClick={handleEventClick}
           eventClassNames={(params) => {
@@ -223,6 +239,7 @@ const Calendar = ({
 };
 
 Calendar.propTypes = {
+  view: PropTypes.string.isRequired,
   simulationId: PropTypes.string,
   onlyResourceIds: PropTypes.array,
   onlyProjectId: PropTypes.string,

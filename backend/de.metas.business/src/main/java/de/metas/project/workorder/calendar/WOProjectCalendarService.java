@@ -194,6 +194,8 @@ public class WOProjectCalendarService implements CalendarService
 						.projectIds(projectIds)
 						.calendarResourceIds(calendarQuery.getResourceIds())
 						.simulationId(calendarQuery.getSimulationId())
+						.startDate(calendarQuery.getStartDate())
+						.endDate(calendarQuery.getEndDate())
 						//
 						.build().execute());
 		result.addAll(

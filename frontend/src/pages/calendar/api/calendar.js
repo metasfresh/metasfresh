@@ -1,6 +1,6 @@
 import axios from 'axios';
 import converters from './converters';
-import { getQueryString } from '../../../utils';
+import { buildURL } from '../../../utils';
 
 const API_URL = `${config.API_URL}/calendars`;
 
@@ -81,9 +81,8 @@ export const addOrUpdateCalendarEntry = ({
 };
 
 export const fetchAvailableSimulations = ({ alwaysIncludeId = null }) => {
-  const queryParams = getQueryString({ alwaysIncludeId });
   return axios
-    .get(`${API_URL}/simulations?${queryParams}`)
+    .get(buildURL(`${API_URL}/simulations`, { alwaysIncludeId }))
     .then(extractAxiosResponseData)
     .then(({ simulations }) => simulations.map(converters.fromAPISimulation));
 };
@@ -102,13 +101,13 @@ export const fetchConflicts = ({
   simulationId = null,
   onlyResourceIds = null,
 }) => {
-  const queryParams = getQueryString({
-    simulationId,
-    onlyResourceIds,
-  });
-
   return axios
-    .get(`${API_URL}/queryConflicts?${queryParams}`)
+    .get(
+      buildURL(`${API_URL}/queryConflicts`, {
+        simulationId,
+        onlyResourceIds,
+      })
+    )
     .then(extractAxiosResponseData)
     .then(({ conflicts }) => conflicts.map(converters.fromAPIConflict));
 };

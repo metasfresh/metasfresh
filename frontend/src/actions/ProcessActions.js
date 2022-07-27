@@ -3,7 +3,7 @@ import {
   setProcessPending,
   setProcessSaved,
 } from './AppActions';
-import { getQueryString, openInNewTab } from '../utils';
+import { buildURL, openInNewTab } from '../utils';
 import history from '../services/History';
 import { setIncludedView, unsetIncludedView } from './ViewActions';
 import { getTableId } from '../reducers/tables';
@@ -50,7 +50,7 @@ export const handleProcessResponse = (
             await dispatch(closeModal());
             // eslint-disable-next-line no-unused-vars
             const { type, ...params } = action;
-            const urlPath = `/calendar?` + getQueryString(params);
+            const urlPath = buildURL('/calendar', params);
             openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
             return;
             //break;
