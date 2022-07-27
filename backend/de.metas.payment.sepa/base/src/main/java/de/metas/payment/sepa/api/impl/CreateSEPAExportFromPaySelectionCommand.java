@@ -7,7 +7,6 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -28,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -106,15 +106,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
 		exportLine.setDescription(sourceInvoice.getDescription());
 
-		final String IBAN;
-		if (toNullOrRemoveSpaces(bpBankAccount.getIBAN()) != null)
-		{
-			IBAN = toNullOrRemoveSpaces(bpBankAccount.getIBAN());
-		}
-		else
-		{
-			IBAN = toNullOrRemoveSpaces(bpBankAccount.getQR_IBAN());
-		}
+		final String IBAN = toNullOrRemoveSpaces(coalesce(bpBankAccount.getIBAN(), bpBankAccount.getQR_IBAN()));
 		exportLine.setIBAN(IBAN);
 
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
@@ -162,7 +154,9 @@ class CreateSEPAExportFromPaySelectionCommand
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
 
-		header.setIBAN(toNullOrRemoveSpaces(bpBankAccount.getIBAN()));
+		final String IBAN = toNullOrRemoveSpaces(coalesce(bpBankAccount.getIBAN(), bpBankAccount.getQR_IBAN()));
+		header.setIBAN(IBAN);
+
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());
