@@ -16,10 +16,12 @@ const updateURI = (
   location,
   { simulationId, onlyResourceIds, onlyProjectId, onlyCustomerId, view }
 ) => {
+  // IMPORTANT: keep the URL query param names
+  // in sync with de.metas.ui.web.process.json.JSONProcessInstanceResult.JSONOpenCalendarAction
   const url = buildURL(location.pathname, {
     ...location.query,
     simulationId,
-    resourceIds: onlyResourceIds ? onlyResourceIds.join(',') : null,
+    resourceId: onlyResourceIds ? onlyResourceIds.join(',') : null,
     projectId: onlyProjectId,
     customerId: onlyCustomerId,
     view,
@@ -33,7 +35,7 @@ const CalendarPage = ({ location }) => {
 
   const onlyResourceIds = useMemo(
     () =>
-      location.query.resourceIds ? location.query.resourceIds.split(',') : null,
+      location.query.resourceId ? location.query.resourceId.split(',') : null,
     [location.query.resourceId]
   );
 
