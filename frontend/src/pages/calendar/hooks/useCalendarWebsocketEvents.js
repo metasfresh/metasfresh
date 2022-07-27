@@ -37,13 +37,6 @@ const toWSTopicName = ({ simulationId, onlyResourceIds, onlyProjectId }) => {
     onlyProjectId,
   });
 
-  console.log('toWSTopicName', {
-    simulationId,
-    onlyResourceIds,
-    onlyProjectId,
-    queryParams,
-  });
-
   return queryParams
     ? `${WS_TOPIC_NAME_PREFIX}?${queryParams}`
     : WS_TOPIC_NAME_PREFIX;

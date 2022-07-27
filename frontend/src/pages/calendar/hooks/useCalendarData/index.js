@@ -8,16 +8,16 @@ import { isEqualEntryQueries, newEntryQuery } from './utils/entryQuery';
 import { computeResources } from './utils/computeResources';
 
 export const useCalendarData = ({
-  simulationId: initialSimulationId,
+  simulationId,
   onlyResourceIds,
   onlyProjectId,
   onlyCustomerId,
+  fetchAvailableCalendarsFromAPI,
   fetchAvailableSimulationsFromAPI,
   fetchEntriesFromAPI,
   fetchConflictsFromAPI,
 }) => {
   const [availableSimulations, setAvailableSimulations] = useState([]);
-  const [simulationId, setSimulationId] = useState(initialSimulationId);
 
   const [calendars, setCalendars] = useState([]);
   const [resources, setResources] = useState([]);
@@ -30,6 +30,11 @@ export const useCalendarData = ({
   });
 
   const [conflicts, setConflicts] = useState([]);
+
+  useEffect(() => {
+    console.log('Loading calendars...');
+    fetchAvailableCalendarsFromAPI().then(setCalendars);
+  }, []);
 
   useEffect(() => loadSimulationsFromAPI(), []);
   useEffect(() => loadConflictsFromAPI(), [simulationId, onlyResourceIds]);
@@ -68,13 +73,11 @@ export const useCalendarData = ({
     });
   };
 
-  const addSimulationAndSelect = (newSimulation) => {
+  const addSimulation = (newSimulation) => {
     setAvailableSimulations((prevAvailableSimulations) => [
       ...prevAvailableSimulations,
       newSimulation,
     ]);
-
-    setSimulationId(newSimulation.simulationId);
   };
 
   const updateEntries = (entriesMapper) => {
@@ -259,14 +262,11 @@ export const useCalendarData = ({
   };
 
   return {
-    setCalendars,
     getResourcesArray: () => resources, // IMPORTANT: don't copy it because we don't want to trigger a "react change"
     //
     loadSimulationsFromAPI,
     getSimulationsArray: () => availableSimulations, // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-    getSimulationId: () => simulationId,
-    setSimulationId,
-    addSimulationAndSelect,
+    addSimulation,
     //
     addEntriesArray,
     loadEntries,
