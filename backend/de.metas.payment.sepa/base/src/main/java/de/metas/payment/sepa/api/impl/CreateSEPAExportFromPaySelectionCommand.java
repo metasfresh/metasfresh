@@ -23,6 +23,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -106,8 +107,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
 		exportLine.setDescription(sourceInvoice.getDescription());
 
-		final String IBAN = toNullOrRemoveSpaces(coalesce(bpBankAccount.getIBAN(), bpBankAccount.getQR_IBAN()));
-		exportLine.setIBAN(IBAN);
+		exportLine.setIBAN(selectIBANOrNull(bpBankAccount));
 
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field
@@ -153,10 +153,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
-
-		final String IBAN = toNullOrRemoveSpaces(coalesce(bpBankAccount.getIBAN(), bpBankAccount.getQR_IBAN()));
-		header.setIBAN(IBAN);
-
+		header.setIBAN(selectIBANOrNull(bpBankAccount));
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());
@@ -193,6 +190,14 @@ class CreateSEPAExportFromPaySelectionCommand
 			return null;
 		}
 		return from.replace(" ", "");
+	}
+
+	private String selectIBANOrNull(@NonNull final I_C_BP_BankAccount bp_bankAccount)
+	{
+		return coalesceSuppliers(
+				() -> toNullOrRemoveSpaces(bp_bankAccount.getIBAN()),
+				() -> toNullOrRemoveSpaces(bp_bankAccount.getQR_IBAN())
+		);
 	}
 
 }
