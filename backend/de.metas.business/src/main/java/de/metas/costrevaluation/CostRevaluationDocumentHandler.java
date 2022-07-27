@@ -26,9 +26,9 @@ import de.metas.costrevaluation.impl.CostRevaluationId;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
-import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.util.TimeUtil;
@@ -40,7 +40,7 @@ import java.util.List;
 
 public class CostRevaluationDocumentHandler implements DocumentHandler
 {
-	private final ICostRevaluationDAO costRevaluationDAO = Services.get(ICostRevaluationDAO.class);
+	private final CostRevaluationRepository costRevaluationRepo = SpringContextHolder.instance.getBean(CostRevaluationRepository.class);
 
 	private static I_M_CostRevaluation extractRecord(final DocumentTableFields docFields)
 	{
@@ -77,8 +77,8 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 	{
 		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
 
-		final int costRevaluationId = costRevaluation.getM_CostRevaluation_ID();
-		final List<I_M_CostRevaluationLine> lines = costRevaluationDAO.retrieveLinesByCostRevaluationId(CostRevaluationId.ofRepoId(costRevaluationId));
+		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(costRevaluation.getM_CostRevaluation_ID());
+		final List<I_M_CostRevaluationLine> lines = costRevaluationRepo.retrieveLinesByCostRevaluationId(costRevaluationId);
 		if (lines.isEmpty())
 		{
 			throw new AdempiereException("@NoLines@");
