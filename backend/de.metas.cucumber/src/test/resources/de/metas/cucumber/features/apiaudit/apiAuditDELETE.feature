@@ -21,7 +21,7 @@ Feature: API Audit DELETE http method
 """
     And there are added records in API_Request_Audit
       | Method | Path                                                                          | AD_User.Name | Status      |
-      | DELETE | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
+      | DELETE | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen OR Verarbeitet |
 
     And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary |
@@ -41,7 +41,7 @@ Feature: API Audit DELETE http method
 
     Then there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status    |
-      | DELETE | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen |
+      | DELETE | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen OR Verarbeitet |
 
     And there are no records in API_Request_Audit_Log
       | Logmessage | AD_Issue.Summary |
@@ -99,7 +99,7 @@ Feature: API Audit DELETE http method
 
     Then there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status    |
-      | DELETE | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Empfangen |
+      | DELETE | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Empfangen OR Verarbeitet |
 
     And there are no records in API_Request_Audit_Log
       | Logmessage | AD_Issue.Summary |

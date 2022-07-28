@@ -78,7 +78,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -94,9 +93,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Immutable
@@ -106,7 +105,7 @@ class UserRolePermissions implements IUserRolePermissions
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
 
 	private static final Set<OrgId> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique
-	private static final Set<OrgId> TABLE_ORGACCESS_ALL  = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique;
+	private static final Set<OrgId> TABLE_ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique;
 
 	private static final AdMessageKey MSG_AccessTableNoView = AdMessageKey.of("AccessTableNoView");
 	private static final AdMessageKey MSG_AccessTableNoUpdate = AdMessageKey.of("AccessTableNoUpdate");
@@ -225,11 +224,20 @@ class UserRolePermissions implements IUserRolePermissions
 		menuInfo = builder.getMenuInfo();
 	}
 
-	private RecordAccessService recordAccessService() { return SpringContextHolder.instance.getBean(RecordAccessService.class); }
+	private RecordAccessService recordAccessService()
+	{
+		return SpringContextHolder.instance.getBean(RecordAccessService.class);
+	}
 
-	private IRolePermLoggingBL rolePermLoggingBL() { return Services.get(IRolePermLoggingBL.class); }
+	private IRolePermLoggingBL rolePermLoggingBL()
+	{
+		return Services.get(IRolePermLoggingBL.class);
+	}
 
-	private CustomizedWindowInfoMap getCustomizedWindowInfoMap() { return SpringContextHolder.instance.getBean(CustomizedWindowInfoMapRepository.class).get(); }
+	private CustomizedWindowInfoMap getCustomizedWindowInfoMap()
+	{
+		return SpringContextHolder.instance.getBean(CustomizedWindowInfoMapRepository.class).get();
+	}
 
 	@Override
 	public String toStringX()
@@ -254,12 +262,12 @@ class UserRolePermissions implements IUserRolePermissions
 		Joiner.on(Env.NL + Env.NL)
 				.skipNulls()
 				.appendTo(sb, miscPermissions, constraints, orgPermissions, tableOrgPermissions, tablePermissions, columnPermissions
-						// don't show followings because they could be to big, mainly when is not a manual role:
-						// , windowPermissions
-						// , processPermissions
-						// , taskPermissions
-						// , formPermissions
-						// , workflowPermissions
+						  // don't show followings because they could be to big, mainly when is not a manual role:
+						  // , windowPermissions
+						  // , processPermissions
+						  // , taskPermissions
+						  // , formPermissions
+						  // , workflowPermissions
 				);
 
 		return sb.toString();
@@ -375,15 +383,15 @@ class UserRolePermissions implements IUserRolePermissions
 		return menuInfo;
 	}
 
-	private Set<OrgId> getOrgAccess( @Nullable final String tableName, final Access access)
+	private Set<OrgId> getOrgAccess(@Nullable final String tableName, final Access access)
 	{
 		final Optional<Set<OrgId>> orgsWithAccess = tableOrgPermissions.getOrgsWithAccess(tableName, access);
 
-		if(orgsWithAccess.isPresent())
+		if (orgsWithAccess.isPresent())
 		{
 			final Set<OrgId> orgIds = orgsWithAccess.get();
 
-			if(orgIds.contains(OrgId.ANY))
+			if (orgIds.contains(OrgId.ANY))
 			{
 				return TABLE_ORGACCESS_ALL;
 			}
@@ -409,29 +417,23 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public Set<KeyNamePair> getLoginClients()
+	public Set<ClientId> getLoginClientIds()
 	{
-		final Set<KeyNamePair> clientsList = new TreeSet<>();
-		for (final OrgResource orgResource : getLoginOrgs())
-		{
-			clientsList.add(orgResource.asClientKeyNamePair());
-		}
-
-		return clientsList;
+		return getLoginOrgs()
+				.stream()
+				.map(OrgResource::getClientId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
-	public String getOrgWhere(@Nullable final String tableName, final Access access)
+	public Optional<String> getOrgWhere(@Nullable final String tableName, final Access access)
 	{
 		final Set<OrgId> adOrgIds = getOrgAccess(tableName, access);
-		if (adOrgIds == ORGACCESS_ALL)
-		{
-			return "1=1"; // no org filter
-		}
 
-		if(adOrgIds == TABLE_ORGACCESS_ALL)
+		if (adOrgIds == TABLE_ORGACCESS_ALL || adOrgIds == ORGACCESS_ALL)
 		{
-			return "AD_Org_ID IS NOT NULL";
+			return Optional.empty();
 		}
 
 		//
@@ -453,19 +455,19 @@ class UserRolePermissions implements IUserRolePermissions
 		{
 			if (sb.length() > 0)
 			{
-				return "AD_Org_ID=" + sb;
+				return Optional.of("AD_Org_ID=" + sb);
 			}
 			else
 			{
 				logger.error("No Access Org records");
-				return "AD_Org_ID=-1";    // No Access Record
+				return Optional.of("AD_Org_ID=-1");    // No Access Record
 			}
 		}
 		else
 		{
-			return "AD_Org_ID IN (" + sb + ")";
+			return Optional.of("AD_Org_ID IN (" + sb + ")");
 		}
-	}    // getOrgWhereValue
+	}
 
 	/**
 	 * Access to Org
@@ -482,12 +484,7 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 
 		final Set<OrgId> orgs = getOrgAccess(tableName, access);
-		if (orgs == ORGACCESS_ALL)
-		{
-			return true;
-		}
-
-		if(orgs == TABLE_ORGACCESS_ALL)
+		if (orgs == ORGACCESS_ALL || orgs == TABLE_ORGACCESS_ALL)
 		{
 			return true;
 		}

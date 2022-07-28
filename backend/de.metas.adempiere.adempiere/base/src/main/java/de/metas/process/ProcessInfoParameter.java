@@ -1,30 +1,28 @@
 package de.metas.process;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 import de.metas.util.Check;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.function.Function;
 
 /**
  * Immutable Process Parameter
  *
  * @author Jorg Janke
- * @version $Id: ProcessInfoParameter.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
- *
  * @author Teo Sarca, www.arhipac.ro
- *         <li>FR [ 2430845 ] Add ProcessInfoParameter.getParameterAsBoolean method
+ * <li>FR [ 2430845 ] Add ProcessInfoParameter.getParameterAsBoolean method
+ * @version $Id: ProcessInfoParameter.java,v 1.2 2006/07/30 00:54:44 jjanke Exp $
  */
 public final class ProcessInfoParameter implements Serializable
 {
@@ -49,7 +47,6 @@ public final class ProcessInfoParameter implements Serializable
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
-
 
 	public static ProcessInfoParameter of(final String parameterName, final String parameterValue)
 	{
@@ -205,13 +202,12 @@ public final class ProcessInfoParameter implements Serializable
 	{
 		return mapper.apply(getParameterAsInt(-1));
 	}
-	
+
 	@Nullable
 	public <T extends RepoIdAware> T getParameterAsRepoId(@NonNull final Class<T> type)
 	{
 		return RepoIdAwares.ofRepoIdOrNull(getParameterAsInt(-1), type);
 	}
-
 
 	public int getParameter_ToAsInt()
 	{
@@ -296,6 +292,12 @@ public final class ProcessInfoParameter implements Serializable
 	public ZonedDateTime getParameterAsZonedDateTime()
 	{
 		return TimeUtil.asZonedDateTime(m_Parameter);
+	}
+
+	@Nullable
+	public Instant getParameterAsInstant()
+	{
+		return TimeUtil.asInstant(m_Parameter);
 	}
 
 	@Nullable

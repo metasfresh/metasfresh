@@ -42,24 +42,40 @@ import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestDAO;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.request.api.RequestCandidate;
+import de.metas.user.UserGroupId;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserGroupUserAssignment;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -73,14 +89,19 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -104,9 +125,17 @@ public class BPartnerQuickInputService
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+	private final UserGroupRepository userGroupRepository;
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
+
+	private final AdMessageKey MSG_C_BPartnerCreatedFromAnotherOrg = AdMessageKey.of("C_BPartnerCreatedFromAnotherOrg");
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
@@ -117,7 +146,8 @@ public class BPartnerQuickInputService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPartnerAttributesRepository bpartnerAttributesRepository,
 			@NonNull final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository,
-			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository)
+			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository,
+			@NonNull final UserGroupRepository userGroupRepository)
 	{
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
 		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
@@ -128,6 +158,8 @@ public class BPartnerQuickInputService
 		this.bpartnerAttributesRepository = bpartnerAttributesRepository;
 		this.bpartnerRelatedRecordsRepository = bpartnerRelatedRecordsRepository;
 		this.bpartnerContactAttributesRepository = bpartnerContactAttributesRepository;
+		this.userGroupRepository = userGroupRepository;
+
 	}
 
 	public Optional<AdWindowId> getNewBPartnerWindowId()
@@ -186,9 +218,9 @@ public class BPartnerQuickInputService
 			else
 			{
 				return ExplainedOptional.of(NameAndGreeting.builder()
-						.name(companyname)
-						.greetingId(GreetingId.ofRepoIdOrNull(bpartner.getC_Greeting_ID())) // preserve current greeting
-						.build());
+													.name(companyname)
+													.greetingId(GreetingId.ofRepoIdOrNull(bpartner.getC_Greeting_ID())) // preserve current greeting
+													.build());
 			}
 		}
 		else
@@ -240,7 +272,8 @@ public class BPartnerQuickInputService
 	 * <p>
 	 * Task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
-	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template)
+	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template,
+			@NonNull final NewRecordContext newRecordContext)
 	{
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
 
@@ -267,6 +300,9 @@ public class BPartnerQuickInputService
 				.forEach(contact -> contact.setBPartnerLocationId(bpartnerLocationId));
 		bpartnerCompositeRepository.save(bpartnerComposite);
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
+
+		createRequestAndNotifyUserGroupIfNeeded(bpartnerComposite,
+												newRecordContext);
 
 		//
 		// Copy BPartner Attributes
@@ -298,6 +334,84 @@ public class BPartnerQuickInputService
 
 		//
 		return bpartnerId;
+	}
+
+	private void createRequestAndNotifyUserGroupIfNeeded(final BPartnerComposite bpartnerComposite,
+			final @NonNull NewRecordContext newRecordContext)
+	{
+		final OrgId partnerOrgId = bpartnerComposite.getOrgId();
+
+		final OrgId loginOrgId = newRecordContext.getLoginOrgId();
+
+		final UserId loggedUserId = newRecordContext.getLoggedUserId();
+
+		final String loginLanguage = newRecordContext.getLoginLanguage();
+
+		if (loginOrgId.equals(partnerOrgId))
+		{
+			//nothing to do
+			return;
+		}
+
+		final String loginUserName = userDAO.retrieveUserFullName(loggedUserId);
+		final String loginOrgName = orgDAO.retrieveOrgName(loginOrgId);
+		final String partnerName = bpartnerComposite.getBpartner().getName();
+		final String partnerOrgName = orgDAO.retrieveOrgName(partnerOrgId);
+
+		final String summary = TranslatableStrings.adMessage(MSG_C_BPartnerCreatedFromAnotherOrg,
+															 loginUserName,
+															 loginOrgName,
+															 partnerName,
+															 partnerOrgName).translate(loginLanguage);
+
+		final RequestTypeId requestTypeId = requestTypeDAO.retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
+
+		final BPartnerId bPartnerId = bpartnerComposite.getBpartner().getId();
+		final I_R_Request partnerCreatedFromAnotherOrgRequest = createPartnerCreatedFromAnotherOrgRequest(partnerOrgId, summary, requestTypeId, bPartnerId);
+
+		final UserNotificationRequest.TargetRecordAction targetRecordAction = UserNotificationRequest
+				.TargetRecordAction
+				.of(I_R_Request.Table_Name, partnerCreatedFromAnotherOrgRequest.getR_Request_ID());
+
+		final OrgId requestOrgId = OrgId.ofRepoId(partnerCreatedFromAnotherOrgRequest.getAD_Org_ID());
+		final UserGroupId userGroupId = orgDAO.getPartnerCreatedFromAnotherOrgNotifyUserGroupID(requestOrgId);
+
+		if (userGroupId == null)
+		{
+			// nobody to notify
+			return;
+		}
+
+		userGroupRepository
+				.getByUserGroupId(userGroupId)
+				.streamAssignmentsFor(userGroupId, Instant.now())
+				.map(UserGroupUserAssignment::getUserId)
+				.map(userId -> UserNotificationRequest.builder()
+						.recipientUserId(userId)
+						.contentADMessage(MSG_C_BPartnerCreatedFromAnotherOrg)
+						.contentADMessageParam(loginUserName)
+						.contentADMessageParam(loginOrgName)
+						.contentADMessageParam(partnerName)
+						.contentADMessageParam(partnerOrgName)
+						.targetAction(targetRecordAction)
+						.build())
+				.forEach(notificationBL::send);
+	}
+
+	private I_R_Request createPartnerCreatedFromAnotherOrgRequest(final OrgId partnerOrgId, final String summary, final RequestTypeId requestTypeId, final BPartnerId bPartnerId)
+	{
+		final RequestCandidate requestCandidate = RequestCandidate.builder()
+				.summary(summary)
+				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
+				.orgId(partnerOrgId)
+				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
+				.requestTypeId(requestTypeId)
+				.partnerId(bPartnerId)
+				.dateDelivered(SystemTime.asZonedDateTime())
+
+				.build();
+
+		return requestDAO.createRequest(requestCandidate);
 	}
 
 	@NonNull
@@ -367,11 +481,11 @@ public class BPartnerQuickInputService
 		// BPartner Location
 		final BPartnerLocation bpLocation = BPartnerLocation.builder()
 				.locationType(BPartnerLocationType.builder()
-						.billTo(true)
-						.billToDefault(true)
-						.shipTo(true)
-						.shipToDefault(true)
-						.build())
+									  .billTo(true)
+									  .billToDefault(true)
+									  .shipTo(true)
+									  .shipToDefault(true)
+									  .build())
 				.name(".")
 				.existingLocationId(existingLocationId)
 				.build();
@@ -392,25 +506,29 @@ public class BPartnerQuickInputService
 				final boolean isPurchaseContact = template.isVendor();
 
 				contacts.add(BPartnerContact.builder()
-						.transientId(transientId)
-						.contactType(BPartnerContactType.builder()
-								.defaultContact(isDefaultContact)
-								.billToDefault(isDefaultContact)
-								.shipToDefault(isDefaultContact)
-								.sales(isSalesContact)
-								.salesDefault(isSalesContact && isDefaultContact)
-								.purchase(isPurchaseContact)
-								.purchaseDefault(isPurchaseContact && isDefaultContact)
-								.build())
-						.newsletter(contactTemplate.isNewsletter())
-						.membershipContact(contactTemplate.isMembershipContact())
-						.firstName(contactTemplate.getFirstname())
-						.lastName(contactTemplate.getLastname())
-						.name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
-						.greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
-						.phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
-						.email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
-						.build());
+									 .transientId(transientId)
+									 .contactType(BPartnerContactType.builder()
+														  .defaultContact(isDefaultContact)
+														  .billToDefault(isDefaultContact)
+														  .shipToDefault(isDefaultContact)
+														  .sales(isSalesContact)
+														  .salesDefault(isSalesContact && isDefaultContact)
+														  .purchase(isPurchaseContact)
+														  .purchaseDefault(isPurchaseContact && isDefaultContact)
+														  .build())
+									 .newsletter(contactTemplate.isNewsletter())
+									 .membershipContact(contactTemplate.isMembershipContact())
+									 .firstName(contactTemplate.getFirstname())
+									 .lastName(contactTemplate.getLastname())
+									 .name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
+									 .greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
+									 .phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
+									 .email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
+									 .birthday(TimeUtil.asLocalDate(contactTemplate.getBirthday(), orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(contactTemplate.getAD_Org_ID()))))
+									 .invoiceEmailEnabled(de.metas.common.util.StringUtils.toBoolean(contactTemplate.getIsInvoiceEmailEnabled(), null))
+									 .phone2(StringUtils.trimBlankToNull(contactTemplate.getPhone2()))
+									 .title(StringUtils.trimBlankToNull(contactTemplate.getTitle()))
+									 .build());
 			}
 		}
 

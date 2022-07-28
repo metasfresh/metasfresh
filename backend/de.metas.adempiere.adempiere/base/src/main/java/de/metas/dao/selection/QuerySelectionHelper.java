@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -189,7 +190,8 @@ public class QuerySelectionHelper
 			@NonNull final String querySelectionUUID)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(clazz);
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(clazz);
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final String keyColumnName = poInfo.getKeyColumnName();
 		final String keyColumnNameFQ = tableName + "." + keyColumnName;
 
 		//

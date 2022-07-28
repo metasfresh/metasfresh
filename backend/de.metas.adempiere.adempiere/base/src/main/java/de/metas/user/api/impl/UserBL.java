@@ -53,6 +53,8 @@ import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
+
+
 	private static final Logger logger = LogManager.getLogger(UserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
@@ -435,12 +437,19 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+	public Language getUserLanguage(@NonNull final UserId userId)
+	{
+		final I_AD_User user = getById(userId);
+		return getUserLanguage(user);
+	}
+
+	@Override
 	public Language getUserLanguage(@NonNull final I_AD_User userRecord)
 	{
 		final String languageStr = CoalesceUtil.coalesceSuppliers(
-				() -> userRecord.getAD_Language(),
+				userRecord::getAD_Language,
 				() -> getBPartnerLanguage(userRecord),
-				() -> Env.getADLanguageOrBaseLanguage());
+				Env::getADLanguageOrBaseLanguage);
 
 		return Language.getLanguage(languageStr);
 	}
@@ -478,6 +487,7 @@ public class UserBL implements IUserBL
 	@Override
 	public void deleteUserDependency(@NonNull final I_AD_User userRecord)
 	{
+
 		UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
 
 		valuePreferenceDAO.deleteUserPreferenceByUserId(userId);
@@ -494,6 +504,7 @@ public class UserBL implements IUserBL
 		getUserMailRepository().deleteUserMailByUserId(userId);
 
 		getUserQueryRepository().deleteUserQueryByUserId(userId);
+
 	}
 
 }

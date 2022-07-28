@@ -38,6 +38,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -104,6 +106,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	@Override
 	public I_C_Flatrate_Term getById(final int flatrateTermId)
@@ -117,7 +120,6 @@ public class FlatrateDAO implements IFlatrateDAO
 	{
 		return load(flatrateTermId, I_C_Flatrate_Term.class);
 	}
-
 
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
@@ -236,7 +238,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Cached
-	/* package */List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(
+		/* package */List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(
 			@CacheCtx final Properties ctx,
 			final int flatrateConditionsId,
 			final String trxName)
@@ -626,6 +628,13 @@ public class FlatrateDAO implements IFlatrateDAO
 				.iterate(I_C_Flatrate_Term.class);
 	}
 
+	@Override
+	public ImmutableList<I_C_Flatrate_Term> retrieveTermsAsList(@NonNull final FlatrateDataId flatrateDataId)
+	{
+		return getFlatrateTermQueryForFlatrateDataId(flatrateDataId)
+				.listImmutable(I_C_Flatrate_Term.class);
+	}
+
 	private IQuery<I_C_Flatrate_Term> getFlatrateTermQueryForFlatrateDataId(final FlatrateDataId flatrateDataId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
@@ -923,7 +932,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_Data retriveOrCreateFlatrateData(final I_C_BPartner bPartner)
+	public I_C_Flatrate_Data retrieveOrCreateFlatrateData(final I_C_BPartner bPartner)
 	{
 		I_C_Flatrate_Data existingData = queryBL.createQueryBuilder(I_C_Flatrate_Data.class, bPartner)
 				.addEqualsFilter(I_C_Flatrate_Data.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
@@ -934,8 +943,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (existingData == null)
 		{
 			existingData = InterfaceWrapperHelper.create(getCtx(bPartner),
-					I_C_Flatrate_Data.class,
-					getTrxName(bPartner));
+														 I_C_Flatrate_Data.class,
+														 getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			existingData.setHasContracts(false);
@@ -981,9 +990,9 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_Conditions getConditionsById (final ConditionsId flatrateConditionsId )
+	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)
 	{
-		return  load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
+		return load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
 	}
 
 	@Override
@@ -991,6 +1000,23 @@ public class FlatrateDAO implements IFlatrateDAO
 	{
 		InterfaceWrapperHelper.save(flatrateTerm);
 	}
+
+	@Override
+	public I_C_Invoice_Candidate retrieveInvoiceCandidate(final I_C_Flatrate_Term term)
+	{
+
+		final AdTableId tableId = tableDAO.retrieveAdTableId(I_C_Flatrate_Term.Table_Name);
+
+		final I_C_Invoice_Candidate ic = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, term.getC_Flatrate_Term_ID())
+				.create()
+				.firstOnly(I_C_Invoice_Candidate.class);
+		return ic;
+	}
+
+
 
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#bPartnerId#typeConditions")
 	public List<I_C_Flatrate_Term> retrieveTerms(

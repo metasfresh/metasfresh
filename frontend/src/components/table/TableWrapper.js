@@ -319,7 +319,8 @@ class TableWrapper extends PureComponent {
       tabIndex,
       isModal,
       queryLimitHit,
-      supportQuickInput,
+      quickInputSupport,
+      newRecordInputMode,
       tabInfo,
       allowShortcut,
       disablePaginationShortcuts,
@@ -394,7 +395,8 @@ class TableWrapper extends PureComponent {
                 docId,
                 tabIndex,
                 isBatchEntry,
-                supportQuickInput,
+                quickInputSupport,
+                newRecordInputMode,
               }}
               docType={windowId}
               tabId={tabId}

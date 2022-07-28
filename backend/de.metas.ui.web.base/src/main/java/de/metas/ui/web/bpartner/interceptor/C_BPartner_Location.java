@@ -22,6 +22,8 @@
 
 package de.metas.ui.web.bpartner.interceptor;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_PostalChange;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
@@ -47,12 +49,15 @@ import org.compiere.model.I_C_Postal;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+
 @Interceptor(I_C_BPartner_Location.class)
 @Component
 public class C_BPartner_Location
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final DocumentCollection documentCollection;
 
@@ -63,14 +68,41 @@ public class C_BPartner_Location
 		this.documentCollection = documentCollection;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_C_Location_ID)
 	public void afterChange(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		if (Execution.isCurrentExecutionAvailable()
-				&& isAskForOrgChangeOnRegionChange()
-				&& InterfaceWrapperHelper.isValueChanged(bpLocation, I_C_BPartner_Location.COLUMNNAME_C_Location_ID))
+		final LocationId newLocationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+		final I_C_BPartner_Location bpLocationOld = InterfaceWrapperHelper.createOld(bpLocation, I_C_BPartner_Location.class);
+		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
+
+		showOrgChangeModalIfNeeded(bpLocation, newLocationId, oldLocationId);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_Previous_ID)
+	public void afterPreviousIdChange(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		final LocationId newLocationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpLocation.getC_BPartner_ID(), bpLocation.getPrevious_ID());
+		if (bpartnerLocationId == null)
 		{
-			final LocationId newLocationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+			return;
+		}
+
+		final I_C_BPartner_Location bpLocationOld = bPartnerDAO.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		if (bpLocationOld == null)
+		{
+			return;
+		}
+		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
+
+		showOrgChangeModalIfNeeded(bpLocation, newLocationId, oldLocationId);
+	}
+
+	private void showOrgChangeModalIfNeeded(final @NonNull I_C_BPartner_Location bpLocation, final LocationId newLocationId, @Nullable final LocationId oldLocationId)
+	{
+		if (Execution.isCurrentExecutionAvailable()
+				&& isAskForOrgChangeOnRegionChange())
+		{
 			final I_C_Location newLocation = locationDAO.getById(newLocationId);
 			final PostalId newPostalId = PostalId.ofRepoIdOrNull(newLocation.getC_Postal_ID());
 
@@ -80,8 +112,6 @@ public class C_BPartner_Location
 				return;
 			}
 
-			final I_C_BPartner_Location bpLocationOld = InterfaceWrapperHelper.createOld(bpLocation, I_C_BPartner_Location.class);
-			final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
 			final I_C_Location oldLocation = oldLocationId != null ? locationDAO.getById(oldLocationId) : null;
 			final PostalId oldPostalId = oldLocationId == null ? null : PostalId.ofRepoIdOrNull(oldLocation.getC_Postal_ID());
 

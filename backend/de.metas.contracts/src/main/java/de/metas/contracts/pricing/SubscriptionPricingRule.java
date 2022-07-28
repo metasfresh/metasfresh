@@ -1,5 +1,6 @@
 package de.metas.contracts.pricing;
 
+import ch.qos.logback.classic.Level;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.SubscriptionDiscountLine;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -15,10 +16,13 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -43,15 +47,16 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		if (result.isCalculated())
 		{
-			logger.debug("Not applying because already calculated");
+			loggable.addLog("Not applying because already calculated");
 			return false;
 		}
 
 		if (pricingCtx.getCountryId() == null)
 		{
-			logger.debug("Not applying because pricingCtx has no C_Country_ID; pricingCtx={}", pricingCtx);
+			loggable.addLog("Not applying because pricingCtx has no C_Country_ID; pricingCtx={}", pricingCtx);
 			return false;
 		}
 
@@ -59,13 +64,7 @@ public class SubscriptionPricingRule implements IPricingRule
 		final I_C_Flatrate_Conditions flatrateConditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 		if (flatrateConditions == null)
 		{
-			logger.debug("Not applying because referencedObject has no C_Flatrate_Conditions; referencedObject={}", referencedObject);
-			return false;
-		}
-
-		if (flatrateConditions.getM_PricingSystem_ID() <= 0)
-		{
-			logger.debug("Not applying because the flatrateConditions of the referencedObject has no pricing system; referencedObject={}; flatrateConditions={}", referencedObject, flatrateConditions);
+			loggable.addLog("Not applying because referencedObject has no C_Flatrate_Conditions; referencedObject={}", referencedObject);
 			return false;
 		}
 
@@ -77,27 +76,50 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		final Object referencedObject = pricingCtx.getReferencedObject();
-
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
-		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
 
-		final SubscriptionDiscountLine subscriptionDiscountLine = getSubscriptionDiscountOrNull(pricingCtx, conditions);
+		// subscription-discount
+		final SubscriptionDiscountLine subscriptionDiscountLine;
+		if (!pricingCtx.isDisallowDiscount())
+		{
+			subscriptionDiscountLine = getSubscriptionDiscountOrNull(pricingCtx, conditions);
+		}
+		else
+		{
+			loggable.addLog("pricingCtx does not allow discounts; -> not considering C_Subscr_Discount; pricingCtx={}", pricingCtx);
+			subscriptionDiscountLine = null;
+		}
 
-		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
+		// alternate pricing-system
+		final IPricingResult subscriptionPricingResult;
+		if (conditions.getM_PricingSystem_ID() > 0)
+		{
+			loggable.addLog("START Invoking pricing engine with M_PricingSystem_ID={}", conditions.getM_PricingSystem_ID());
+			final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
+			final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
+			subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
+			loggable.addLog("END Invoking pricing engine with M_PricingSystem_ID={}", conditions.getM_PricingSystem_ID());
+		}
+		else
+		{
+			subscriptionPricingResult = result;
+		}
 
-		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
-
-		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(pricingCtx, subscriptionDiscountLine, subscriptionPricingResult);
-
+		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(subscriptionDiscountLine, subscriptionPricingResult);
 		copySubscriptionResultIntoResult(combinedPricingResult, result);
-
 		copyDiscountIntoResultIfAllowedByPricingContext(combinedPricingResult, result, pricingCtx);
 	}
 
-	private IPricingResult aggregateSubscriptionDiscount(final @NonNull IPricingContext pricingCtx, @Nullable final SubscriptionDiscountLine subscriptionDiscountLine, final IPricingResult subscriptionPricingResult)
+	private IPricingResult aggregateSubscriptionDiscount(
+			@Nullable final SubscriptionDiscountLine subscriptionDiscountLine,
+			@NonNull final IPricingResult subscriptionPricingResult)
 	{
-		if (subscriptionDiscountLine != null && subscriptionDiscountLine.isPrioritiseOwnDiscount() && !pricingCtx.isDisallowDiscount())
+		if (subscriptionDiscountLine != null
+				&& !subscriptionPricingResult.isDisallowDiscount()
+				&& (!subscriptionPricingResult.isDiscountCalculated() || subscriptionDiscountLine.isPrioritiseOwnDiscount()))
 		{
 			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
 		}
@@ -171,6 +193,11 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingResult subscriptionPricingResult,
 			@NonNull final IPricingResult result)
 	{
+		if (Util.same(subscriptionPricingResult, result))
+		{
+			return; // no need to copy anything
+		}
+
 		result.setCurrencyId(subscriptionPricingResult.getCurrencyId());
 		result.setPriceUomId(subscriptionPricingResult.getPriceUomId());
 		result.setCalculated(subscriptionPricingResult.isCalculated());

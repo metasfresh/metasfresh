@@ -28,12 +28,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
+import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Value
 @Builder
@@ -71,6 +73,10 @@ public class JsonProduct
 	@Nullable
 	@JsonProperty("updatedAt")
 	ZonedDateTime updatedAt;
+
+	@Nullable
+	@JsonProperty("price")
+	List<JsonPrice> prices;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")

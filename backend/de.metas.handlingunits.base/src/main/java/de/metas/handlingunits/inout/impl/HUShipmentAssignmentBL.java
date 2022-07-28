@@ -22,21 +22,6 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.InSubQueryFilter;
-import org.adempiere.ad.dao.impl.NotQueryFilter;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Locator;
-
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -56,6 +41,18 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.InSubQueryFilter;
+import org.adempiere.ad.dao.impl.NotQueryFilter;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_InOut;
+
+import java.util.List;
+import java.util.Properties;
 
 public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 {
@@ -83,7 +80,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				.build();
 	}
 
-	private final void assertShipment(@NonNull final I_M_InOut inout)
+	private void assertShipment(@NonNull final I_M_InOut inout)
 	{
 		Check.assume(inout.isSOTrx(), "inout shall be a shipment: {}", inout);
 	}
@@ -171,8 +168,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 			alloc.setM_InOutLine(null);
 			alloc.setIsActive(false); // NOTE: deactivating the line because we assume this method was called when a shipment was voided/reversed.
 			alloc.setDescription("Deactivated because the shipment line "
-			+ shipmentLine
-			+ " was voided or reversed. ");
+					+ shipmentLine
+					+ " was voided or reversed. ");
 			InterfaceWrapperHelper.save(alloc);
 		}
 	}
@@ -197,9 +194,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 				.create();
 
 		final IQueryFilter<I_M_HU> assignedQueryFilter = InSubQueryFilter.of(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Assignment.COLUMNNAME_M_HU_ID, queryHUAssignments);
-		final IQueryFilter<I_M_HU> notAssignedQueryFilter = NotQueryFilter.of(assignedQueryFilter);
 
-		return notAssignedQueryFilter;
+		return NotQueryFilter.of(assignedQueryFilter);
 	}
 
 	private void setHUStatus(final IHUContext huContext, final I_M_HU hu, final boolean shipped)
@@ -230,11 +226,9 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 
 			//
 			// Restore after-picking locator
-			final I_M_Locator pickingLocator = Services.get(IHUWarehouseDAO.class).suggestAfterPickingLocator(hu.getM_Locator_ID());
-			if (pickingLocator != null)
-			{
-				hu.setM_Locator_ID(pickingLocator.getM_Locator_ID());
-			}
+			Services.get(IHUWarehouseDAO.class)
+					.suggestAfterPickingLocatorId(hu.getM_Locator_ID())
+					.ifPresent(pickingLocatorId -> hu.setM_Locator_ID(pickingLocatorId.getRepoId()));
 		}
 
 		Services.get(IHandlingUnitsDAO.class).saveHU(hu);

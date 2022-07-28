@@ -22,6 +22,7 @@
 
 package de.metas.contracts.commission.commissioninstance.services.hierarchy;
 
+import com.google.common.collect.Iterables;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
@@ -30,6 +31,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Iterator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -67,12 +70,47 @@ class CommissionHierarchyFactoryTest
 		saveRecord(headOfSalesRecord);
 
 		// invoke the method under test
-		final Hierarchy result = new CommissionHierarchyFactory().createFor(BPartnerId.ofRepoId(salesRep1.getC_BPartner_ID()));
+		final Hierarchy result = new CommissionHierarchyFactory()
+				.createForCustomer(BPartnerId.ofRepoId(salesRep1.getC_BPartner_ID()),
+								   BPartnerId.ofRepoId(salesSuperVisor.getC_BPartner_ID()));
 
 		assertThat(result.getParent(node(salesRep2.getC_BPartner_ID()))).isNotPresent();
 		assertThat(result.getParent(node(salesRep1.getC_BPartner_ID()))).contains(node(salesSuperVisor.getC_BPartner_ID()));
 		assertThat(result.getParent(node(salesSuperVisor.getC_BPartner_ID()))).contains(node(headOfSalesRecord.getC_BPartner_ID()));
 		assertThat(result.getParent(node(headOfSalesRecord.getC_BPartner_ID()))).isNotPresent();
+	}
+
+	@Test
+	void createFor_SameCustomerAndSalesRep()
+	{
+		final I_C_BPartner headOfSalesRecord = newInstance(I_C_BPartner.class);
+		saveRecord(headOfSalesRecord);
+
+		final I_C_BPartner salesSuperVisor = newInstance(I_C_BPartner.class);
+		salesSuperVisor.setC_BPartner_SalesRep_ID(headOfSalesRecord.getC_BPartner_ID());
+		saveRecord(salesSuperVisor);
+
+		final I_C_BPartner salesRep1 = newInstance(I_C_BPartner.class);
+		salesRep1.setC_BPartner_SalesRep_ID(salesSuperVisor.getC_BPartner_ID());
+		saveRecord(salesRep1);
+
+		// add a cycle to make sure the code can handle it
+		headOfSalesRecord.setBPartner_Parent_ID(salesRep1.getC_BPartner_ID());
+		saveRecord(headOfSalesRecord);
+
+		final BPartnerId salesRepId = BPartnerId.ofRepoId(salesRep1.getC_BPartner_ID());
+
+		// invoke the method under test
+		final Hierarchy result = new CommissionHierarchyFactory().createForCustomer(salesRepId, salesRepId);
+
+		final Iterable<HierarchyNode> hierarchyNodes = result.getUpStream(Beneficiary.of(salesRepId));
+
+		final Iterator<HierarchyNode> hierarchyIterator = hierarchyNodes.iterator();
+		assertThat(Iterables.size(hierarchyNodes)).isEqualTo(3);
+		assertThat(hierarchyIterator.next()).isEqualTo(node(salesRep1.getC_BPartner_ID()));
+		assertThat(hierarchyIterator.next()).isEqualTo(node(salesSuperVisor.getC_BPartner_ID()));
+		assertThat(hierarchyIterator.next()).isEqualTo(node(headOfSalesRecord.getC_BPartner_ID()));
+		assertThat(hierarchyIterator.hasNext()).isFalse();
 	}
 
 	private HierarchyNode node(final int id)

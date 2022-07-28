@@ -54,6 +54,11 @@ public class PricingBLTest
 		helper = new PricingTestHelper();
 	}
 
+	/**
+	 * UOM conversion: one KRT contains 4 PCE
+	 * The pricing result is 2€ per PCE and is then converted to KRT
+	 * As each KRT has 4PCE in it, we expect 2€*4=8€ per KRT
+	 */
 	@Test
 	public void convertResultToContextUOMIfNeeded_Test()
 	{

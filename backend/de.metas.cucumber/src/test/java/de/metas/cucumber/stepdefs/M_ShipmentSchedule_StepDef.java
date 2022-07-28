@@ -74,7 +74,7 @@ public class M_ShipmentSchedule_StepDef
 	/**
 	 * Match the shipment scheds and load them with their identifier into the shipmentScheduleTable.
 	 */
-	@Then("^after not more than (.*)s, M_ShipmentSchedules are found:$")
+	@And("^after not more than (.*)s, M_ShipmentSchedules are found:$")
 	public void thereAreShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		// create query per table row; run the queries repeatedly until they succeed or the timeout is exceeded

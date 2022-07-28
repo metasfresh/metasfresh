@@ -48,6 +48,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -373,6 +374,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
 
+			invoice.setSalesRep_ID(UserId.toRepoId(invoiceHeader.getSalesRepId()));
+
 			setC_DocType(invoice, invoiceHeader);
 
 			final BPartnerInfo billTo = invoiceHeader.getBillTo();
@@ -399,7 +402,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setM_InOut_ID(invoiceHeader.getM_InOut_ID()); // task 06630
 			}
 
-			//
+			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

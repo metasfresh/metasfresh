@@ -72,4 +72,5 @@ public class SwaggerDocConstants
 			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
 			+ "* or something like `val-<M_Shipper.value>`\n";
 
+	public static final String AD_SEQ_NO_ID_DOC = "AD_SeqNo_ID for the seqNo to be retrieved";
 }

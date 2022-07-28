@@ -188,7 +188,7 @@ public class HierarchyCommissionConfigFactoryTest
 		// when
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(configData.getOrgId())
-				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.commissionHierarchy(commissionHierarchyFactory.createForCustomer(endCustomerId, salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.commissionTriggerType(commissionTriggerType)
@@ -271,7 +271,7 @@ public class HierarchyCommissionConfigFactoryTest
 		// when
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
-				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.commissionHierarchy(commissionHierarchyFactory.createForCustomer(endCustomerId,salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.commissionTriggerType(commissionTriggerType)
@@ -326,7 +326,7 @@ public class HierarchyCommissionConfigFactoryTest
 
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
-				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.commissionHierarchy(commissionHierarchyFactory.createForCustomer(endCustomerId, salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.commissionTriggerType(commissionTriggerType)
@@ -400,7 +400,7 @@ public class HierarchyCommissionConfigFactoryTest
 
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
-				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.commissionHierarchy(commissionHierarchyFactory.createForCustomer(endCustomerId, salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.commissionTriggerType(commissionTriggerType)
@@ -467,7 +467,7 @@ public class HierarchyCommissionConfigFactoryTest
 
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
-				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.commissionHierarchy(commissionHierarchyFactory.createForCustomer(endCustomerId, salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.commissionTriggerType(commissionTriggerType)
@@ -534,7 +534,7 @@ public class HierarchyCommissionConfigFactoryTest
 		// when
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
-				.commissionHierarchy(commissionHierarchyFactory.createFor(salesRepLvl0Id))
+				.commissionHierarchy(commissionHierarchyFactory.createForCustomer(salesRepLvl0Id,salesRepLvl1Id))
 				.customerBPartnerId(salesRepLvl0Id)
 				.salesRepBPartnerId(salesRepLvl1Id)
 				.commissionTriggerType(commissionTriggerType)
@@ -592,7 +592,7 @@ public class HierarchyCommissionConfigFactoryTest
 
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
-				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.commissionHierarchy(commissionHierarchyFactory.createForCustomer(endCustomerId, salesRepLvl0Id))
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.commissionTriggerType(commissionTriggerType)

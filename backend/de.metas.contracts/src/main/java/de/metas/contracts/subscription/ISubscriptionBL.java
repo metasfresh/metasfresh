@@ -10,12 +10,12 @@ package de.metas.contracts.subscription;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,6 +39,7 @@ import de.metas.product.ProductAndCategoryId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.GregorianCalendar;
@@ -64,16 +65,13 @@ public interface ISubscriptionBL extends ISingletonService
 	 *
 	 * @param ctx
 	 * @param pricingSystemId
-	 * @param deliveries
-	 *            instances with {@link I_C_SubscriptionProgress#COLUMNNAME_EventType} =
-	 *            {@link X_C_SubscriptionProgress#EVENTTYPE_Lieferung}.
+	 * @param deliveries      instances with {@link I_C_SubscriptionProgress#COLUMNNAME_EventType} =
+	 *                        {@link X_C_SubscriptionProgress#EVENTTYPE_Delivery}.
 	 * @return a positive number if the deliveries would be more expensive with the given pricing system. A negative
-	 *         number if they would be less expensive.
-	 * @throws IllegalArgumentException
-	 *             if not all {@link I_C_SubscriptionProgress} instances if the list are deliveries or if not all
-	 *             deliveries belong to the same order line or if there is no pricing system with the given id.
-	 * @throws ProductNotOnPriceListException
-	 *             if the product can't be delivered according to the new pricing system.
+	 * number if they would be less expensive.
+	 * @throws IllegalArgumentException       if not all {@link I_C_SubscriptionProgress} instances if the list are deliveries or if not all
+	 *                                        deliveries belong to the same order line or if there is no pricing system with the given id.
+	 * @throws ProductNotOnPriceListException if the product can't be delivered according to the new pricing system.
 	 */
 	BigDecimal computePriceDifference(Properties ctx, PricingSystemId pricingSystemId, List<I_C_SubscriptionProgress> deliveries, String trxName);
 
@@ -100,11 +98,9 @@ public interface ISubscriptionBL extends ISingletonService
 	 * subscription deliveries, starting from the given date.
 	 *
 	 * @param trans
-	 * @param date
-	 *            note that the method uses a {@link GregorianCalendar} to make the computations. Because different
-	 *            months have different numbers of days, the result might be different for different <code>date</code>
-	 *            values.
-	 *
+	 * @param date  note that the method uses a {@link GregorianCalendar} to make the computations. Because different
+	 *              months have different numbers of days, the result might be different for different <code>date</code>
+	 *              values.
 	 * @return
 	 */
 	int computeNumberOfRuns(I_C_Flatrate_Transition trans, Timestamp date);
@@ -115,8 +111,7 @@ public interface ISubscriptionBL extends ISingletonService
 	 * Creates a new term for the given order line
 	 *
 	 * @param ol
-	 * @param completeIt
-	 *            if <code>true</code>, then the new term is completed
+	 * @param completeIt if <code>true</code>, then the new term is completed
 	 * @return
 	 */
 	I_C_Flatrate_Term createSubscriptionTerm(I_C_OrderLine ol, boolean completeIt);
@@ -142,4 +137,17 @@ public interface ISubscriptionBL extends ISingletonService
 			@NonNull I_C_OrderLine ol,
 			@NonNull SOTrx soTrx,
 			boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
+
+	/**
+	 * Creates a Price change record in <code>C_SubscriptionProgress</code>
+	 * @param term
+	 */
+	void createPriceChange(@NonNull final I_C_Flatrate_Term term);
+
+	/**
+	 * Creates a Price change record in <code>C_SubscriptionProgress</code>
+	 * @param term
+	 */
+	void createQtyChange(@NonNull final I_C_Flatrate_Term term,
+			@Nullable final BigDecimal newQty);
 }

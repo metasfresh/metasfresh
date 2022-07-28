@@ -22,6 +22,10 @@ package de.metas.contracts;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
+import de.metas.contracts.FlatrateTermRequest.FlatrateTermPriceRequest;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -77,6 +81,13 @@ public interface IFlatrateBL extends ISingletonService
 	 * Updates various fields of the given entry, all based of the entry's current Qty_Reported and ActualQty values
 	 */
 	void updateEntry(I_C_Flatrate_DataEntry dataEntry);
+
+	void updateFlatrateTermProductAndPrice(@NonNull FlatrateTermPriceRequest request);
+	void updateFlatrateTermBillBPartner(FlatrateTermBillPartnerRequest request);
+
+	I_C_Flatrate_Term getById(@NonNull FlatrateTermId flatrateTermId);
+
+	ImmutableList<I_C_Flatrate_Term> retrieveNextFlatrateTerms(@NonNull I_C_Flatrate_Term term);
 
 	/**
 	 * term to extend

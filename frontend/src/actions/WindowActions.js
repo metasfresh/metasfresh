@@ -404,9 +404,9 @@ export function indicatorState(state) {
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
  */
-export function fetchTab({ tabId, windowId, docId, query }) {
+export function fetchTab({ tabId, windowId, docId, orderBy }) {
   return (dispatch) => {
-    return getTabRequest(tabId, windowId, docId, query)
+    return getTabRequest(tabId, windowId, docId, orderBy)
       .then((response) => {
         const tableId = getTableId({ windowId, docId, tabId });
         const tableData = { result: response };

@@ -23,7 +23,10 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -68,7 +71,6 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -79,6 +81,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
@@ -112,6 +115,21 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
+
+	@Override
+	public IAutoCloseable huLoaderInProgress()
+	{
+		loadInProgress.set(true);
+		return () -> loadInProgress.set(false);
+	}
+
+	@Override
+	public boolean isHULoaderInProgress()
+	{
+		return CoalesceUtil.coalesceNotNull(loadInProgress.get(), false);
+	}
+
 	@Override
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
@@ -122,6 +140,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds)
 	{
 		return handlingUnitsRepo.getByIds(huIds);
+	}
+
+	@Override
+	public ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
+		return Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));
 	}
 
 	@Override
@@ -254,7 +279,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void markDestroyed(@NonNull final IHUContext huContext, final I_M_HU hu)
 	{
-		if(huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
+		if (huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
 		{
 			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
 			return;
@@ -286,7 +311,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public boolean isDestroyed(final I_M_HU hu)
 	{
-		return !hu.isActive();
+		return hu.getHUStatus().equals(X_M_HU.HUSTATUS_Destroyed);
 	}
 
 	@Override
@@ -572,7 +597,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		return getTopLevelHUs(query).stream()
 				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
-				.collect(GuavaCollectors.toImmutableSet());
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -834,7 +859,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public Set<HuId> getVHUIds(@NonNull final HuId huId)
+	public ImmutableSet<HuId> getVHUIds(@NonNull final HuId huId)
 	{
 		final List<I_M_HU> vhus = getVHUs(huId);
 		return extractHuIds(vhus);
@@ -848,7 +873,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public Set<HuId> getVHUIds(@NonNull final Set<HuId> huIds)
+	public ImmutableSet<HuId> getVHUIds(@NonNull final Set<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{

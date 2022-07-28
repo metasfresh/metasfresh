@@ -36,7 +36,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.pricing.trade_margin.ComputeSalesRepPriceRequest;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginService;
 import de.metas.lang.SOTrx;

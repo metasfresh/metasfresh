@@ -32,9 +32,13 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonUOM;
 import de.metas.common.externalsystem.JsonUOMMapping;
 import de.metas.common.externalsystem.JsonUOMMappings;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.apache.camel.RuntimeCamelException;
+
+import javax.annotation.Nullable;
 
 @UtilityClass
 public class GetProductsRouteHelper
@@ -70,5 +74,39 @@ public class GetProductsRouteHelper
 				.normalRates(request.getParameters().get(ExternalSystemConstants.PARAM_NORMAL_VAT_RATES))
 				.reducedRates(request.getParameters().get(ExternalSystemConstants.PARAM_REDUCED_VAT_RATES))
 				.build();
+	}
+
+	@Nullable
+	public PriceListBasicInfo getTargetPriceListInfo(@NonNull final JsonExternalSystemRequest request)
+	{
+		final String targetPriceListIdStr = request.getParameters().get(ExternalSystemConstants.PARAM_TARGET_PRICE_LIST_ID);
+
+		if (Check.isBlank(targetPriceListIdStr))
+		{
+			return null;
+		}
+
+		final JsonMetasfreshId priceListId = JsonMetasfreshId.of(Integer.parseInt(targetPriceListIdStr));
+
+		final PriceListBasicInfo.PriceListBasicInfoBuilder targetPriceListInfoBuilder = PriceListBasicInfo.builder();
+		targetPriceListInfoBuilder.priceListId(priceListId);
+
+		final String isTaxIncluded = request.getParameters().get(ExternalSystemConstants.PARAM_IS_TAX_INCLUDED);
+
+		if (isTaxIncluded == null)
+		{
+			throw new RuntimeCamelException("isTaxIncluded is missing although priceListId is specified, targetPriceListId: " + priceListId);
+		}
+		targetPriceListInfoBuilder.isTaxIncluded(Boolean.parseBoolean(isTaxIncluded));
+
+		final String targetCurrencyCode = request.getParameters().get(ExternalSystemConstants.PARAM_PRICE_LIST_CURRENCY_CODE);
+
+		if (targetCurrencyCode == null)
+		{
+			throw new RuntimeCamelException("targetCurrencyCode param is missing although priceListId is specified, targetPriceListId: " + priceListId);
+		}
+		targetPriceListInfoBuilder.currencyCode(targetCurrencyCode);
+
+		return targetPriceListInfoBuilder.build();
 	}
 }

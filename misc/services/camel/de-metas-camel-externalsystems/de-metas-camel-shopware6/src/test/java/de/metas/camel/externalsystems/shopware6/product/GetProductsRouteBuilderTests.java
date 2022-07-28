@@ -33,6 +33,7 @@ import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.UpsertProductPriceList;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
+import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.unit.UOMInfoProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
@@ -63,6 +64,8 @@ import java.util.stream.Collectors;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CURRENCY_ID;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UNIT_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UNIT_ID;
 import static de.metas.camel.externalsystems.shopware6.product.GetProductsRouteBuilder.ATTACH_CONTEXT_PROCESSOR_ID;
@@ -199,12 +202,18 @@ public class GetProductsRouteBuilderTests extends CamelTestSupport
 					.unitId2Code(ImmutableMap.of(MOCK_UNIT_ID, MOCK_UNIT_CODE))
 					.build();
 
+			final CurrencyInfoProvider currencyInfoProvider = CurrencyInfoProvider.builder()
+					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
+					.build();
+
 			final ImportProductsRouteContext productsContext = ImportProductsRouteContext.builder()
 					.shopwareClient(shopwareClient)
 					.externalSystemRequest(request)
 					.orgCode(request.getOrgCode())
 					.nextImportStartingTimestamp(Instant.parse(updatedAfter))
 					.shopwareUomInfoProvider(shopwareUomInfoProvider)
+					.currencyInfoProvider(currencyInfoProvider)
+					.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 					.uomMappings(GetProductsRouteHelper.getUOMMappingRules(request))
 					.taxCategoryProvider(GetProductsRouteHelper.getTaxCategoryProvider(request))
 					.build();

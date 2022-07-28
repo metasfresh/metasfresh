@@ -19,6 +19,7 @@ package org.compiere.model;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -31,9 +32,11 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.location.LocationId;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
@@ -41,7 +44,6 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
@@ -76,6 +78,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -106,6 +109,8 @@ public class CalloutOrder extends CalloutEngine
 	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
 
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
+
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -377,7 +382,9 @@ public class CalloutOrder extends CalloutEngine
 				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
 				// metas (2009 0027 G1): making sure that the default billTo
 				// and shipTo location is used
-				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
+				+ " ORDER BY lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
+				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault + " DESC"
+				+ " , lbill." + I_C_BPartner_Location.COLUMNNAME_IsBillTo + " DESC"
 				+ " , lship." + I_C_BPartner_Location.COLUMNNAME_IsShipTo + " DESC"
 				// metas end
 				// 08578 take default users first.
@@ -399,7 +406,7 @@ public class CalloutOrder extends CalloutEngine
 
 				if (isCopyOrgFromBPartner())
 				{
-					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, null,Access.WRITE);
+					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, null, Access.WRITE);
 
 					if (userHasOrgPermissions)
 					{
@@ -1618,7 +1625,13 @@ public class CalloutOrder extends CalloutEngine
 				if (warehouseId != null)
 				{
 					final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
-					order.setDropShip_Location_ID(warehouse.getC_BPartner_Location_ID());
+
+					OrderDocumentLocationAdapterFactory
+							.deliveryLocationAdapter(order)
+							.setFrom(DocumentLocation.builder()
+											 .bpartnerLocationId(BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()))
+											 .locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
+											 .build());
 				}
 				order.setDropShip_User_ID(-1);
 
@@ -1635,12 +1648,7 @@ public class CalloutOrder extends CalloutEngine
 			return false;
 		}
 
-		if (!orderLine.isEnforcePriceLimit())
-		{
-			return false;
-		}
-
-		return true;
+		return orderLine.isEnforcePriceLimit();
 	}
 
 	public String attributeSetInstance(final ICalloutField calloutField)

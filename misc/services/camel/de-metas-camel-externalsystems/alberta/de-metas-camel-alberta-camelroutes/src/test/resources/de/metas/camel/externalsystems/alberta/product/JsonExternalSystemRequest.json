@@ -4,6 +4,7 @@
   "command": "pushProducts",
   "adPInstanceId": 10009935,
   "externalSystemConfigId": 1,
+  "traceId": "traceId",
   "parameters": {
     "APIKey": "APIKey",
     "Tenant": "Tenant",
