@@ -29,6 +29,8 @@ import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.product.processor.ProductUpsertProcessor;
 import de.metas.camel.externalsystems.shopware6.product.processor.GetProductsProcessor;
 import de.metas.camel.externalsystems.shopware6.product.processor.ProductPriceProcessor;
@@ -54,6 +56,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRoute.GET_CURRENCY_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.unit.GetUnitsRouteBuilder.GET_UOM_MAPPINGS_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -189,12 +192,23 @@ public class GetProductsRouteBuilder extends RouteBuilder
 		final UOMInfoProvider uomInfoProvider = (UOMInfoProvider) producerTemplate
 				.sendBody("direct:" + GET_UOM_MAPPINGS_ROUTE_ID, ExchangePattern.InOut, getUnitsRequest);
 
+		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
+				.baseUrl(basePath)
+				.clientId(clientId)
+				.clientSecret(clientSecret)
+				.build();
+
+		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider)producerTemplate
+				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
+
 		final ImportProductsRouteContext productsContext = ImportProductsRouteContext.builder()
 				.shopwareClient(shopwareClient)
 				.externalSystemRequest(request)
 				.orgCode(request.getOrgCode())
 				.nextImportStartingTimestamp(Instant.parse(updatedAfter))
 				.shopwareUomInfoProvider(uomInfoProvider)
+				.currencyInfoProvider(currencyInfoProvider)
+				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
 				.uomMappings(GetProductsRouteHelper.getUOMMappingRules(request))
 				.taxCategoryProvider(GetProductsRouteHelper.getTaxCategoryProvider(request))
 				.build();

@@ -36,6 +36,7 @@ import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -75,6 +76,7 @@ public class RabbitMQExternalSystemService
 	private final DataExportAuditLogRepository dataExportAuditLogRepository;
 	private final DataExportAuditRepository dataExportAuditRepository;
 	private final Debouncer<BPartnerId> syncBPartnerDebouncer;
+	private final ExternalSystemConfigService externalSystemConfigService;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -84,12 +86,14 @@ public class RabbitMQExternalSystemService
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
-			@NonNull final DataExportAuditRepository dataExportAuditRepository)
+			@NonNull final DataExportAuditRepository dataExportAuditRepository,
+			@NonNull final ExternalSystemConfigService externalSystemConfigService)
 	{
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
 		this.externalSystemMessageSender = externalSystemMessageSender;
 		this.dataExportAuditLogRepository = dataExportAuditLogRepository;
 		this.dataExportAuditRepository = dataExportAuditRepository;
+		this.externalSystemConfigService = externalSystemConfigService;
 		this.syncBPartnerDebouncer = Debouncer.<BPartnerId>builder()
 				.name("syncBPartnerDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.rabbitmqhttp.debouncer.bufferMaxSize", 100))
@@ -154,6 +158,8 @@ public class RabbitMQExternalSystemService
 								   .adPInstanceId(JsonMetasfreshId.ofOrNull(PInstanceId.toRepoId(pInstanceId)))
 								   .command(EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER)
 								   .parameters(buildParameters(rabbitMQConfig, bpartnerId))
+								   .traceId(externalSystemConfigService.getTraceId())
+								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 								   .build());
 	}
 
@@ -182,6 +188,7 @@ public class RabbitMQExternalSystemService
 		parameters.put(ExternalSystemConstants.PARAM_RABBITMQ_HTTP_ROUTING_KEY, rabbitMQConfig.getRoutingKey());
 		parameters.put(ExternalSystemConstants.PARAM_BPARTNER_ID, String.valueOf(bpartnerId.getRepoId()));
 		parameters.put(ExternalSystemConstants.PARAM_RABBIT_MQ_AUTH_TOKEN, rabbitMQConfig.getAuthToken());
+		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, rabbitMQConfig.getValue());
 
 		return parameters;
 	}

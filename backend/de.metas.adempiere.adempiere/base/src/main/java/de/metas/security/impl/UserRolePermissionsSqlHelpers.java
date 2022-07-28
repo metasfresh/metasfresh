@@ -79,11 +79,6 @@ final class UserRolePermissionsSqlHelpers
 		return _role.getRoleId();
 	}
 
-	private boolean hasAccessAllOrgs()
-	{
-		return _role.isAccessAllOrgs();
-	}
-
 	private Set<UserGroupId> getUserGroupIds()
 	{
 		Set<UserGroupId> userGroupIds = this._userGroupIds;
@@ -109,7 +104,7 @@ final class UserRolePermissionsSqlHelpers
 		return _role.getClientWhere(tableName, tableAlias, access);
 	}
 
-	private String getOrgWhere(@Nullable final String tableName, final Access access)
+	private Optional<String> getOrgWhere(@Nullable final String tableName, final Access access)
 	{
 		return _role.getOrgWhere(tableName, access);
 	}
@@ -213,17 +208,17 @@ final class UserRolePermissionsSqlHelpers
 			sqlAcessSqlWhereClause.append(getClientWhere(mainTableNameOrAlias, tableAlias, access));
 
 			// Org Access
-			if (!hasAccessAllOrgs())
+			final String mainTableName = mainSqlSelect.getFirstTableNameOrEmpty();
+			final String orgWhereClause = getOrgWhere(mainTableName, access).orElse(null);
+			if(orgWhereClause != null && !Check.isBlank(orgWhereClause))
 			{
-				sqlAcessSqlWhereClause.append("\n /* security-org */ ");
-				sqlAcessSqlWhereClause.append(" AND ");
+				sqlAcessSqlWhereClause.append("\n /* security-org */ AND ");
 				if (fullyQualified)
 				{
 					sqlAcessSqlWhereClause.append(mainTableNameOrAlias).append(".");
 				}
 
-				final String mainTableName = mainSqlSelect.getFirstTableNameOrEmpty();
-				sqlAcessSqlWhereClause.append(getOrgWhere(mainTableName, access));
+				sqlAcessSqlWhereClause.append(orgWhereClause);
 			}
 		}
 		else

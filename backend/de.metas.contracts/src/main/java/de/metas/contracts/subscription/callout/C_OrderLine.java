@@ -59,6 +59,7 @@ public class C_OrderLine
 
 		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false; // when the subscription changed, update all prices
 
+		ol.setIsManualDiscount(false);
 		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
 		if (subscriptionId <= 0)
 		{

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 488231696L;
+	private static final long serialVersionUID = -1546156104L;
 
     /** Standard Constructor */
     public X_AD_OrgInfo (final Properties ctx, final int AD_OrgInfo_ID, @Nullable final String trxName)
@@ -89,6 +89,60 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	public int getAD_WF_Responsible_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_WF_Responsible_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_UserGroup getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class);
+	}
+
+	@Override
+	public void setC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup(final org.compiere.model.I_AD_UserGroup C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class, C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup);
+	}
+
+	@Override
+	public void setC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID (final int C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID)
+	{
+		if (C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID, C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID);
+	}
+
+	@Override
+	public int getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_UserGroup getC_BP_SupplierApproval_Expiration_Notify_UserGroup()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class);
+	}
+
+	@Override
+	public void setC_BP_SupplierApproval_Expiration_Notify_UserGroup(final org.compiere.model.I_AD_UserGroup C_BP_SupplierApproval_Expiration_Notify_UserGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class, C_BP_SupplierApproval_Expiration_Notify_UserGroup);
+	}
+
+	@Override
+	public void setC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID (final int C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID)
+	{
+		if (C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID, C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID);
+	}
+
+	@Override
+	public int getC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID);
 	}
 
 	@Override

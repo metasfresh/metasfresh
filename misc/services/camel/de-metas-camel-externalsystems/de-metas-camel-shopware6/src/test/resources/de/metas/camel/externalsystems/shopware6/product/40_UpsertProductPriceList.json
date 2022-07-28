@@ -1,5 +1,5 @@
 {
-  "priceListIdentifier": "targetPriceListId",
+  "priceListIdentifier": "121",
   "jsonRequestProductPriceUpsert": {
     "requestItems": [
       {
@@ -8,7 +8,7 @@
           "orgCode": "001",
           "productIdentifier": "ext-Shopware6-!!productId!!",
           "taxCategory": "NORMAL",
-          "priceStd": 0
+          "priceStd": 2.4
         }
       }
     ],

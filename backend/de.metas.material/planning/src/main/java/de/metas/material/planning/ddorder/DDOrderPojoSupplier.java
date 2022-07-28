@@ -275,6 +275,7 @@ public class DDOrderPojoSupplier
 				.forProductIdAndAttributeSetInstanceId(
 						ProductId.toRepoId(mrpContext.getProductId()),
 						AttributeSetInstanceId.toRepoId(mrpContext.getAttributeSetInstanceId()));
+
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(asiAware);
 
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);

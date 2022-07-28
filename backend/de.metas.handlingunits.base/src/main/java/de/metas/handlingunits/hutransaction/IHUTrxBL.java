@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.hutransaction;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -125,7 +126,7 @@ public interface IHUTrxBL extends ISingletonService
 	 * @param trxLines
 	 */
 	void reverseTrxLines(IHUContext huContext, List<I_M_HU_Trx_Line> trxLines);
-
+	
 	/**
 	 * Link a given {@code hu} to its parent.
 	 * <p>

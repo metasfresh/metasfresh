@@ -26,6 +26,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineMainLocationAdapter;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -76,5 +77,14 @@ public class C_OrderLine
 	public void updateBPartnerAddress(final I_C_OrderLine orderLine)
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
+	}
+
+	@CalloutMethod(columnNames = {
+			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
+			I_C_OrderLine.COLUMNNAME_C_BPartner_Location_ID},
+			skipIfCopying = true)
+	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_OrderLine orderLine)
+	{
+		documentLocationBL.updateCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 	}
 }

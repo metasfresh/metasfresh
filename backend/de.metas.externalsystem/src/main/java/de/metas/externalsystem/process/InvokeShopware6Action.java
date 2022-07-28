@@ -39,18 +39,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_PATH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_SECRET;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_TARGET_PRICE_LIST_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UOM_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE;
 
@@ -62,6 +63,10 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	@Param(parameterName = PARAM_ORDERNO)
 	private String orderNo;
 
+	private static final String PARAM_ORDERID = "OrderId";
+	@Param(parameterName = PARAM_ORDERID)
+	private String orderId;
+	
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -94,6 +99,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, invokeShopwareService.getConfigMappings(shopware6Config));
 		parameters.put(PARAM_UOM_MAPPINGS, invokeShopwareService.getUOMMappings(shopware6Config));
+		parameters.put(PARAM_CHILD_CONFIG_VALUE, shopware6Config.getValue());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{
@@ -117,10 +123,12 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 			parameters.put(PARAM_ORDER_NO, orderNo);
 		}
 
-		if (shopware6Config.getPriceListId() != null)
+		if(EmptyUtil.isNotBlank(orderId))
 		{
-			parameters.put(PARAM_TARGET_PRICE_LIST_ID, String.valueOf(shopware6Config.getPriceListId().getRepoId()));
+			parameters.put(PARAM_ORDER_ID, orderId);
 		}
+		
+		parameters.putAll(invokeShopwareService.getPriceListParams(shopware6Config.getPriceListId()));
 
 		return parameters;
 	}

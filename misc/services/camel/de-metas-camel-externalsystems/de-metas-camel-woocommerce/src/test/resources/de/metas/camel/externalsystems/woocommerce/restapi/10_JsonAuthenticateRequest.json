@@ -1,5 +1,6 @@
 {
   "grantedAuthority": "WOO",
   "authKey": "authKey",
-  "pinstance": 123
+  "pinstance": 123,
+  "orgCode": "orgCode"
 }

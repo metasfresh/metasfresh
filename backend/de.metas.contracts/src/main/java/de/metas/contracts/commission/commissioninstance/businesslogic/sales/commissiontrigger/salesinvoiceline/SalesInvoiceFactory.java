@@ -193,21 +193,27 @@ public class SalesInvoiceFactory
 
 		final CommissionPoints forecastCommissionPoints = CommissionPoints.of(invoicedLineAmount.toBigDecimal());
 
-		return deductTaxAmount(forecastCommissionPoints, invoiceLineRecord);
+		return deductTaxAmount(forecastCommissionPoints, invoiceLineRecord, invoiceRecord.isTaxIncluded());
 	}
 
+	@NonNull
 	private CommissionPoints deductTaxAmount(
 			@NonNull final CommissionPoints commissionPoints,
-			@NonNull final I_C_InvoiceLine invoiceLineRecord)
+			@NonNull final I_C_InvoiceLine invoiceLineRecord,
+			final boolean isTaxIncluded)
 	{
 		if (commissionPoints.isZero())
 		{
 			return commissionPoints;
 		}
 
-		final BigDecimal taxAdjustedAmount = invoiceLineRecord
-				.getLineNetAmt()
-				.subtract(invoiceLineRecord.getTaxAmtInfo());
+		BigDecimal taxAdjustedAmount = invoiceLineRecord.getLineNetAmt();
+
+		if (isTaxIncluded)
+		{
+			taxAdjustedAmount = taxAdjustedAmount.subtract(invoiceLineRecord.getTaxAmtInfo());
+		}
+
 		return CommissionPoints.of(taxAdjustedAmount);
 	}
 }

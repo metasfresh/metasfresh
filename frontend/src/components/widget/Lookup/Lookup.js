@@ -553,6 +553,7 @@ class Lookup extends Component {
                     onFocus={this.handleListFocus}
                     onBlur={this.handleListBlur}
                     compositeWidgetData={widgetData}
+                    wrapperElement={this.dropdown}
                     {...{
                       dataId,
                       entity,

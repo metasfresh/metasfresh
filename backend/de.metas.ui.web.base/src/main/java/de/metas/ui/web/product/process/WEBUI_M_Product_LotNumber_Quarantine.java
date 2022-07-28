@@ -1,21 +1,13 @@
 package de.metas.ui.web.product.process;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_InOut;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
-import de.metas.handlingunits.ddorder.api.impl.HUs2DDOrderProducer.HUToDistribute;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddorder.producer.HUToDistribute;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -30,6 +22,14 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_InOut;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -60,35 +60,31 @@ import de.metas.util.Services;
  * all be put in a DD_Order and sent to the Quarantine warehouse.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTemplate
 		implements
 		IProcessPrecondition
 {
-	@Autowired
-	private LotNumberQuarantineRepository lotNoQuarantineRepo;
-
-	@Autowired
-	private HULotNumberQuarantineService huLotNoQuarantineService;
+	private final LotNumberQuarantineRepository lotNoQuarantineRepo = SpringContextHolder.instance.getBean(LotNumberQuarantineRepository.class);
+	private final HULotNumberQuarantineService huLotNoQuarantineService = SpringContextHolder.instance.getBean(HULotNumberQuarantineService.class);
 
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
-	private final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final ILotNumberDateAttributeDAO lotNumberDateAttributeDAO = Services.get(ILotNumberDateAttributeDAO.class);
-	private final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService = SpringContextHolder.instance.getBean(DDOrderMoveScheduleService.class);
 
-	private List<HUToDistribute> husToQuarantine = new ArrayList<>();
+	private final ArrayList<HUToDistribute> husToQuarantine = new ArrayList<>();
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		getView().streamByIds(getSelectedRowIds())
 				.map(row -> row.getId().toInt())
 				.distinct()
 				.forEach(this::createQuarantineHUsByLotNoQuarantineId);
 
-		huDDOrderBL.createQuarantineDDOrderForHUs(husToQuarantine);
+		ddOrderService.createQuarantineDDOrderForHUs(husToQuarantine);
 
 		setInvoiceCandsInDispute();
 
@@ -119,30 +115,25 @@ public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTempla
 		final LotNumberQuarantine lotNoQuarantine = lotNoQuarantineRepo.getById(lotNoQuarantineId);
 
 		final I_M_Attribute lotNoAttribute = lotNumberDateAttributeDAO.getLotNumberAttribute();
-
 		if (lotNoAttribute == null)
 		{
 			throw new AdempiereException("Not lotNo attribute found.");
 		}
 
-		final int productId = lotNoQuarantine.getProductId();
-		final String lotNoValue = lotNoQuarantine.getLotNo();
-
 		final List<I_M_HU> husForAttributeStringValue = retrieveHUsForAttributeStringValue(
-				productId,
+				lotNoQuarantine.getProductId(),
 				lotNoAttribute,
-				lotNoValue);
+				lotNoQuarantine.getLotNo());
 
 		for (final I_M_HU hu : husForAttributeStringValue)
 		{
-			if (huDDOrderDAO.existsDDOrderLineCandidateForHUId(hu.getM_HU_ID()))
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+			if (ddOrderMoveScheduleService.isScheduledToMove(huId))
 			{
 				// the HU is already quarantined
 				continue;
 			}
-			final List<de.metas.handlingunits.model.I_M_InOutLine> inOutLinesForHU = huInOutDAO
-					.retrieveInOutLinesForHU(hu);
-
+			final List<de.metas.handlingunits.model.I_M_InOutLine> inOutLinesForHU = huInOutDAO.retrieveInOutLinesForHU(hu);
 			if (Check.isEmpty(inOutLinesForHU))
 			{
 				continue;
@@ -151,13 +142,11 @@ public class WEBUI_M_Product_LotNumber_Quarantine extends ViewBasedProcessTempla
 			huLotNoQuarantineService.markHUAsQuarantine(hu);
 
 			final I_M_InOut firstReceipt = inOutLinesForHU.get(0).getM_InOut();
-			final int bpartnerId = firstReceipt.getC_BPartner_ID();
-			final int bpLocationId = firstReceipt.getC_BPartner_Location_ID();
+			final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(firstReceipt.getC_BPartner_ID(), firstReceipt.getC_BPartner_Location_ID());
 
 			husToQuarantine.add(HUToDistribute.builder()
 					.hu(hu)
 					.quarantineLotNo(lotNoQuarantine)
-					.bpartnerId(bpartnerId)
 					.bpartnerLocationId(bpLocationId)
 					.build());
 		}

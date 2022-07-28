@@ -25,6 +25,7 @@ package de.metas.externalsystem.process;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
@@ -34,31 +35,48 @@ import de.metas.common.externalsystem.JsonUOMMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyRepository;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_M_PriceList;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
+
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_IS_TAX_INCLUDED;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PRICE_LIST_CURRENCY_CODE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_TARGET_PRICE_LIST_ID;
 
 @Service
 public class InvokeShopwareService
 {
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private final DocTypeService docTypeService;
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-	public InvokeShopwareService(@NonNull final DocTypeService docTypeService)
+	private final DocTypeService docTypeService;
+	private final CurrencyRepository currencyRepository;
+
+	public InvokeShopwareService(
+			@NonNull final DocTypeService docTypeService,
+			@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.docTypeService = docTypeService;
+		this.currencyRepository = currencyRepository;
 	}
 
 	@NonNull
@@ -120,6 +138,32 @@ public class InvokeShopwareService
 					.appendParametersToMessage()
 					.setParameter("shopware6ConfigId", shopware6Config.getId().getRepoId());
 		}
+	}
+
+	@NonNull
+	public Map<String, String> getPriceListParams(@Nullable final PriceListId priceListId)
+	{
+		if (priceListId == null)
+		{
+			return ImmutableMap.of();
+		}
+
+		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+
+		if (priceList == null)
+		{
+			throw new AdempiereException("No price list for priceListId: " + priceListId.getRepoId());
+		}
+
+		final Currency currency = currencyRepository.getById(priceList.getC_Currency_ID());
+
+		final ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
+
+		mapBuilder.put(PARAM_TARGET_PRICE_LIST_ID, String.valueOf(priceList.getM_PriceList_ID()));
+		mapBuilder.put(PARAM_IS_TAX_INCLUDED, String.valueOf(priceList.isTaxIncluded()));
+		mapBuilder.put(PARAM_PRICE_LIST_CURRENCY_CODE, currency.getCurrencyCode().toThreeLetterCode());
+
+		return mapBuilder.build();
 	}
 
 	@NonNull

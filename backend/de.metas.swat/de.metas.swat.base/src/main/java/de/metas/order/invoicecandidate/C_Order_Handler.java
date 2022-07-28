@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
@@ -70,7 +71,7 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	 * @see C_OrderLine_Handler#getModelForInvoiceCandidateGenerateScheduling(Object)
 	 */
 	@Override
-	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
+	public List<InvoiceCandidateGenerateRequest> expandRequest(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		final IC_OrderLine_HandlerDAO orderLineHandlerDAO = Services.get(IC_OrderLine_HandlerDAO.class);
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
@@ -96,8 +97,7 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Create the order line requests and return them
-		final List<InvoiceCandidateGenerateRequest> of = InvoiceCandidateGenerateRequest.ofAll(orderLineHandlers, orderLines);
-		return of;
+		return InvoiceCandidateGenerateRequest.ofAll(orderLineHandlers, orderLines);
 	}
 
 	/**

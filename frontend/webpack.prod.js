@@ -74,14 +74,14 @@ module.exports = {
         exclude: /\w*(logo)\w*\.(jpg|png)$/,
         type: 'asset/resource',
         generator: {
-          filename: '[path][name].[hash].[ext]',
+          filename: '[path][name]-[git-revision-hash][ext]',
         },
       },
       {
         test: /\w*(logo)\w*\.(jpg|png)$/,
         type: 'asset/resource',
         generator: {
-          filename: '[path][name].[ext]',
+          filename: '[path][name][ext]',
         },
       },
       {

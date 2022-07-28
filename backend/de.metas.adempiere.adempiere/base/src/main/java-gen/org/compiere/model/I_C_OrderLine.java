@@ -225,6 +225,26 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
+	 * Set C_BPartner_Vendor_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
+
+	/**
+	 * Get C_BPartner_Vendor_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Vendor_ID();
+
+	String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
+
+	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
@@ -2409,6 +2429,27 @@ public interface I_C_OrderLine
 
 	String COLUMNNAME_TradeBom_Product_ID = "TradeBom_Product_ID";
 	
+	/**
+	 * Set Traded Commission Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTraded_Commission_Percent (@Nullable BigDecimal Traded_Commission_Percent);
+
+	/**
+	 * Get Traded Commission Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTraded_Commission_Percent();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Traded_Commission_Percent = new ModelColumn<>(I_C_OrderLine.class, "Traded_Commission_Percent", null);
+	String COLUMNNAME_Traded_Commission_Percent = "Traded_Commission_Percent";
+
 	/**
 	 * Get Updated.
 	 * Date this record was updated

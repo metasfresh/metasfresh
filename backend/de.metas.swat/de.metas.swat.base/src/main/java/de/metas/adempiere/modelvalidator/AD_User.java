@@ -2,13 +2,14 @@ package de.metas.adempiere.modelvalidator;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.title.Title;
 import de.metas.title.TitleId;
 import de.metas.title.TitleRepository;
+import de.metas.user.UserId;
 import de.metas.user.UserPOCopyRecordSupport;
 import de.metas.user.api.IUserBL;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -18,10 +19,12 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 
 import java.util.Optional;
 
@@ -36,10 +39,12 @@ import java.util.Optional;
 @Callout(I_AD_User.class)
 public class AD_User
 {
+	private static final AdMessageKey MSG_UserDelete = AdMessageKey.of("LoggedInUserCannotBeDeleted");
+
 	private final IBPartnerBL bpPartnerService = Services.get(IBPartnerBL.class);
 	private final TitleRepository titleRepository = SpringContextHolder.instance.getBean(TitleRepository.class);
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
+
 	@Init
 	public void init()
 	{
@@ -106,9 +111,17 @@ public class AD_User
 		bpPartnerService.updateNameAndGreetingFromContacts(bPartnerId);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_DELETE})
-	public void beforeDelete(@NonNull final I_AD_User userRecord)
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_DELETE},
+			ifUIAction = true)
+	public void beforeDelete_UIAction(@NonNull final I_AD_User userRecord)
 	{
+		final UserId loggedInUserId = Env.getLoggedUserIdIfExists().orElse(null);
+		if (loggedInUserId != null && loggedInUserId.getRepoId() == userRecord.getAD_User_ID())
+		{
+			throw new AdempiereException(MSG_UserDelete)
+					.setParameter("AD_User_ID", userRecord.getAD_User_ID())
+					.setParameter("Name", userRecord.getName());
+		}
 		userBL.deleteUserDependency(userRecord);
 	}
 

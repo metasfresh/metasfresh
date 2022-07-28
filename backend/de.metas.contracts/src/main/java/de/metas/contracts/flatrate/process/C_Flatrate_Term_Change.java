@@ -47,7 +47,7 @@ public class C_Flatrate_Term_Change extends C_Flatrate_Term_Change_Base
 				.addOnlyContextClient();
 	}
 
-	private final Iterable<I_C_Flatrate_Term> retrieveSelection(final PInstanceId adPInstanceId)
+	private Iterable<I_C_Flatrate_Term> retrieveSelection(final PInstanceId adPInstanceId)
 	{
 		return () -> queryBL
 				.createQueryBuilder(I_C_Flatrate_Term.class)

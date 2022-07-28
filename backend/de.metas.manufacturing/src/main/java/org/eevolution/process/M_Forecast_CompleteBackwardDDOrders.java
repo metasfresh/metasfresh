@@ -10,29 +10,28 @@ package org.eevolution.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.process.JavaProcess;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Forecast;
-import org.eevolution.api.IDDOrderBL;
-
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
 public class M_Forecast_CompleteBackwardDDOrders extends JavaProcess
 {
+	private final DDOrderLowLevelService ddOrderLowLevelService = SpringContextHolder.instance.getBean(DDOrderLowLevelService.class);
 
 	private I_M_Forecast p_forecast;
 
@@ -43,10 +42,10 @@ public class M_Forecast_CompleteBackwardDDOrders extends JavaProcess
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final I_M_Forecast forecast = getM_Forecast();
-		Services.get(IDDOrderBL.class).completeBackwardDDOrders(forecast);
+		ddOrderLowLevelService.completeBackwardDDOrders(forecast);
 
 		return MSG_OK;
 	}

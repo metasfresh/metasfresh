@@ -1,15 +1,14 @@
 package de.metas.contracts.commission.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Commission_Instance
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Commission_Instance
+public interface I_C_Commission_Instance 
 {
 
 	String Table_Name = "C_Commission_Instance";
@@ -191,6 +190,52 @@ public interface I_C_Commission_Instance
 	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
 
 	/**
+	 * Set Date.
+	 * Document date of the commission trigger
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCommissionDate (java.sql.Timestamp CommissionDate);
+
+	/**
+	 * Get Date.
+	 * Document date of the commission trigger
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCommissionDate();
+
+	ModelColumn<I_C_Commission_Instance, Object> COLUMN_CommissionDate = new ModelColumn<>(I_C_Commission_Instance.class, "CommissionDate", null);
+	String COLUMNNAME_CommissionDate = "CommissionDate";
+
+	/**
+	 * Set Commission trigger.
+	 * Type of the document that triggered the commission instance
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCommissionTrigger_Type (java.lang.String CommissionTrigger_Type);
+
+	/**
+	 * Get Commission trigger.
+	 * Type of the document that triggered the commission instance
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCommissionTrigger_Type();
+
+	ModelColumn<I_C_Commission_Instance, Object> COLUMN_CommissionTrigger_Type = new ModelColumn<>(I_C_Commission_Instance.class, "CommissionTrigger_Type", null);
+	String COLUMNNAME_CommissionTrigger_Type = "CommissionTrigger_Type";
+
+	/**
 	 * Set Sales order.
 	 * Order
 	 *
@@ -243,74 +288,6 @@ public interface I_C_Commission_Instance
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Date.
-	 * Document date of the commission trigger
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCommissionDate (java.sql.Timestamp CommissionDate);
-
-	/**
-	 * Get Date.
-	 * Document date of the commission trigger
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCommissionDate();
-
-	ModelColumn<I_C_Commission_Instance, Object> COLUMN_CommissionDate = new ModelColumn<>(I_C_Commission_Instance.class, "CommissionDate", null);
-	String COLUMNNAME_CommissionDate = "CommissionDate";
-
-	/**
-	 * Set Commission trigger.
-	 * Type of the document that triggered the commission instance
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCommissionTrigger_Type (String CommissionTrigger_Type);
-
-	/**
-	 * Get Commission trigger.
-	 * Type of the document that triggered the commission instance
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getCommissionTrigger_Type();
-
-	ModelColumn<I_C_Commission_Instance, Object> COLUMN_CommissionTrigger_Type = new ModelColumn<>(I_C_Commission_Instance.class, "CommissionTrigger_Type", null);
-	String COLUMNNAME_CommissionTrigger_Type = "CommissionTrigger_Type";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -336,6 +313,28 @@ public interface I_C_Commission_Instance
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -359,26 +358,6 @@ public interface I_C_Commission_Instance
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Ordered product.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Product_Order_ID (int M_Product_Order_ID);
-
-	/**
-	 * Get Ordered product.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Product_Order_ID();
-
-	String COLUMNNAME_M_Product_Order_ID = "M_Product_Order_ID";
-
-	/**
 	 * Set Commission trigger time.
 	 *
 	 * <br>Type: DateTime
@@ -398,6 +377,26 @@ public interface I_C_Commission_Instance
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_MostRecentTriggerTimestamp = new ModelColumn<>(I_C_Commission_Instance.class, "MostRecentTriggerTimestamp", null);
 	String COLUMNNAME_MostRecentTriggerTimestamp = "MostRecentTriggerTimestamp";
+
+	/**
+	 * Set Ordered product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_Order_ID (int M_Product_Order_ID);
+
+	/**
+	 * Get Ordered product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_Order_ID();
+
+	String COLUMNNAME_M_Product_Order_ID = "M_Product_Order_ID";
 
 	/**
 	 * Set Ordered based points.
@@ -470,7 +469,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPOReference (@Nullable String POReference);
+	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -480,7 +479,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPOReference();
+	@Nullable java.lang.String getPOReference();
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_POReference = new ModelColumn<>(I_C_Commission_Instance.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";

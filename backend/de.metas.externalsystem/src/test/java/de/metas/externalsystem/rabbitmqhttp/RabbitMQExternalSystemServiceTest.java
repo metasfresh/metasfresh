@@ -29,6 +29,7 @@ import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
@@ -41,6 +42,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
@@ -59,16 +61,20 @@ public class RabbitMQExternalSystemServiceTest
 
 	private JsonExternalSystemRequest expectedJsonExternalSystemRequest;
 	private RabbitMQExternalSystemService rabbitMQExternalSystemService;
+	private ExternalSystemConfigService externalSystemConfigServiceMock;
 
 	@BeforeEach
 	public void init() throws IOException
 	{
+		externalSystemConfigServiceMock = Mockito.mock(ExternalSystemConfigService.class);
+
 		AdempiereTestHelper.get().init();
 
 		rabbitMQExternalSystemService = new RabbitMQExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
 																		  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 																		  new DataExportAuditLogRepository(),
-																		  new DataExportAuditRepository());
+																		  new DataExportAuditRepository(),
+																		  externalSystemConfigServiceMock);
 
 		createPrerequisites();
 
@@ -81,6 +87,8 @@ public class RabbitMQExternalSystemServiceTest
 	public void given_whenToJsonExternalSystemRequest_thenReturnExternalSystemRequest()
 	{
 		// given
+		Mockito.when(externalSystemConfigServiceMock.getTraceId()).thenReturn("traceId");
+
 		final PInstanceId pInstanceId = PInstanceId.ofRepoId(3);
 		final ExternalSystemRabbitMQConfigId externalSystemRabbitMQConfigId = ExternalSystemRabbitMQConfigId.ofRepoId(2);
 
@@ -111,6 +119,8 @@ public class RabbitMQExternalSystemServiceTest
 		externalSystemParentConfig.setName("ParentConfig");
 		externalSystemParentConfig.setIsActive(true);
 		externalSystemParentConfig.setType(ExternalSystemType.RabbitMQ.getCode());
+		externalSystemParentConfig.setWriteAudit(true);
+		externalSystemParentConfig.setAuditFileFolder("fileFolder");
 
 		saveRecord(externalSystemParentConfig);
 

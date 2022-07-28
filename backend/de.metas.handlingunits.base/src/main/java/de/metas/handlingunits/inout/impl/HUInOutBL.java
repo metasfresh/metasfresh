@@ -70,6 +70,7 @@ import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -91,7 +92,6 @@ public class HUInOutBL implements IHUInOutBL
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -338,9 +338,9 @@ public class HUInOutBL implements IHUInOutBL
 	public void moveHUsToQualityReturnWarehouse(final List<I_M_HU> husToReturn)
 	{
 		final List<I_M_Warehouse> warehouses = huWarehouseDAO.retrieveQualityReturnWarehouses();
-		final I_M_Warehouse qualityReturnWarehouse = warehouses.get(0);
+		final WarehouseId qualityReturnWarehouseId = WarehouseId.ofRepoId(warehouses.get(0).getM_Warehouse_ID());
 
-		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouse);
+		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouseId);
 	}
 
 	@Override
@@ -435,7 +435,7 @@ public class HUInOutBL implements IHUInOutBL
 			return true;
 		}
 		final ImmutableSet<HuId> topLevelHUs = handlingUnitsBL.getTopLevelHUs(huIds);
-		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(HuId.toRepoIds(topLevelHUs))
+		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(topLevelHUs)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Planning)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNoAttr.getValue())
 				.createQueryBuilder()

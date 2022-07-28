@@ -204,14 +204,14 @@ public interface IUserRolePermissions
 
 	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);
 
-	String getOrgWhere(@Nullable String tableName, Access access);
+	Optional<String> getOrgWhere(@Nullable String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 
 	// FRESH-560: Retrieve the org IDs also as a list
 	Set<OrgId> getAD_Org_IDs_AsSet();
 
-	Set<KeyNamePair> getLoginClients();
+	Set<ClientId> getLoginClientIds();
 
 	Set<OrgResource> getLoginOrgs();
 

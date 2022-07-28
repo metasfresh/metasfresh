@@ -221,33 +221,32 @@ export async function quickActionsRequest({
   childView,
   parentView,
 }) {
-  let query = null;
-
+  let requestBody;
   if (childView && childView.viewId) {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
-    });
+    };
   } else if (parentView && parentView.viewId) {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
-    });
+    };
   } else {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
-    });
+    };
   }
 
-  return get(`
-    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
-    query ? `?${query}` : ''
-  }`);
+  return post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/quickActions`,
+    requestBody
+  );
 }
 
 /*
@@ -336,7 +335,7 @@ export function patchViewAttributesRequest(
  * @param {number} windowId
  * @param {string} viewId
  * @param {string} rowId
- * @param {attribute} - field name
+ * @param attribute
  */
 export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
   return get(

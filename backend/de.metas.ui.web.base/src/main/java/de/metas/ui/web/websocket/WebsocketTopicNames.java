@@ -6,6 +6,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
