@@ -14,6 +14,8 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
  * <li>there is a method for each type defined in {@link org.compiere.model.StateChangeEvent}.
  * <li>each new {@link ICalloutRecord} will get a new instance of {@link ITabCallout} so it's safe to have fields in your implementations.
  * </ul>
+ *
+ *
  */
 public interface ITabCallout
 {

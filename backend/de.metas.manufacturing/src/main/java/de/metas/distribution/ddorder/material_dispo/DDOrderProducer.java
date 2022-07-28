@@ -1,6 +1,5 @@
 package de.metas.distribution.ddorder.material_dispo;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.document.DocTypeId;
@@ -17,17 +16,19 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
@@ -36,11 +37,8 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_DD_Order;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
