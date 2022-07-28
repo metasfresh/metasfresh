@@ -91,18 +91,18 @@ public class M_CostRevaluation implements ITabCallout
 			return;
 		}
 
-		final I_C_DocType costRevaluationDocType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(costRevaluationDocType)
+				.setNewDocType(docTypeDAO.getById(docTypeId))
 				.setOldDocumentNo(costRevaluation.getDocumentNo())
 				.setDocumentModel(costRevaluation)
 				.buildOrNull();
-
 		if (documentNoInfo != null && documentNoInfo.isDocNoControlled())
 		{
 			costRevaluation.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
-	}
 
+	}
 }
+
+
