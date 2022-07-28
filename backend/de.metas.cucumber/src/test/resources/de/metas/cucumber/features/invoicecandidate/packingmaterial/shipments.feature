@@ -135,7 +135,6 @@ Feature: Packing material invoice candidates: shipments
 
     When the shipment identified by shipment_1 is completed
 
-#todo mi: remove product id from step def
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
