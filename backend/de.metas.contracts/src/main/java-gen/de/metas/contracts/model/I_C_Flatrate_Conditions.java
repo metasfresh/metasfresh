@@ -1,9 +1,8 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
@@ -51,6 +50,27 @@ public interface I_C_Flatrate_Conditions
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Customer Margin Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Customer_Trade_Margin_ID (int C_Customer_Trade_Margin_ID);
+
+	/**
+	 * Get Customer Margin Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Customer_Trade_Margin_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Customer_Trade_Margin_ID", null);
+	String COLUMNNAME_C_Customer_Trade_Margin_ID = "C_Customer_Trade_Margin_ID";
 
 	/**
 	 * Set Contract Terms.
@@ -147,6 +167,73 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
 
 	/**
+	 * Set License fee settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_LicenseFeeSettings_ID (int C_LicenseFeeSettings_ID);
+
+	/**
+	 * Get License fee settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_LicenseFeeSettings_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_LicenseFeeSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_LicenseFeeSettings_ID", null);
+	String COLUMNNAME_C_LicenseFeeSettings_ID = "C_LicenseFeeSettings_ID";
+
+	/**
+	 * Set Brokerage commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_MediatedCommissionSettings_ID (int C_MediatedCommissionSettings_ID);
+
+	/**
+	 * Get Brokerage commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_MediatedCommissionSettings_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_MediatedCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_MediatedCommissionSettings_ID", null);
+	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
+
+	/**
+	 * Set Prefinancing Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Prefinancing_Settings_ID (int C_Prefinancing_Settings_ID);
+
+	/**
+	 * Get Prefinancing Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Prefinancing_Settings_ID();
+
+	@Nullable org.compiere.model.I_C_Prefinancing_Settings getC_Prefinancing_Settings();
+
+	void setC_Prefinancing_Settings(@Nullable org.compiere.model.I_C_Prefinancing_Settings C_Prefinancing_Settings);
+
+	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Prefinancing_Settings> COLUMN_C_Prefinancing_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Prefinancing_Settings_ID", org.compiere.model.I_C_Prefinancing_Settings.class);
+	String COLUMNNAME_C_Prefinancing_Settings_ID = "C_Prefinancing_Settings_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -172,7 +259,7 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Subscription discount.
+	 * Set Abo-Rabatt.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -181,7 +268,7 @@ public interface I_C_Flatrate_Conditions
 	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
 
 	/**
-	 * Get Subscription discount.
+	 * Get Abo-Rabatt.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
