@@ -9,7 +9,7 @@ updates:
   - package-ecosystem: "npm" # See documentation for possible values
     target-branch: "master_dependabot_resolve_vulnerabilities"
     open-pull-requests-limit: 0
-    directory: "/" # Location of package manifests
+    directory: "/frontend" # Location of package manifests
     schedule:
       interval: "daily"
     
