@@ -20,13 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.invoicecandidate_inoutline;
 
-public enum StepDefDocAction
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+
+public class C_InvoiceCandidate_InOutLine_StepDefData extends StepDefData<I_C_InvoiceCandidate_InOutLine>
 {
-	completed,
-	reactivated,
-	reversed,
-	voided,
-	closed
+	public C_InvoiceCandidate_InOutLine_StepDefData()
+	{
+		super(I_C_InvoiceCandidate_InOutLine.class);
+	}
 }

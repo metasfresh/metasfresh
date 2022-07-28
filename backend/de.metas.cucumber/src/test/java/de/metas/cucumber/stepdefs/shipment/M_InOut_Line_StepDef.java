@@ -32,6 +32,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -104,6 +105,28 @@ public class M_InOut_Line_StepDef
 		}
 	}
 
+	@And("update M_InOutLine:")
+	public void update_M_InOutLine(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_InOutLine shipmentLine = shipmentLineTable.get(shipmentLineIdentifier);
+			assertThat(shipmentLine).isNotNull();
+
+			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_M_InOutLine.COLUMNNAME_QtyEntered);
+			shipmentLine.setQtyEntered(qtyEntered);
+
+			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, I_M_InOutLine.COLUMNNAME_MovementQty);
+			shipmentLine.setMovementQty(movementQty);
+
+			InterfaceWrapperHelper.saveRecord(shipmentLine);
+
+			shipmentLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
+		}
+	}
+
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
@@ -117,5 +140,11 @@ public class M_InOut_Line_StepDef
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
+
+		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_QtyEntered);
+		if (qtyEntered != null)
+		{
+			assertThat(shipmentLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
+		}
 	}
 }

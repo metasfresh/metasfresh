@@ -96,6 +96,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_B
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Async_Batch_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
@@ -402,11 +403,19 @@ public class C_Invoice_Candidate_StepDef
 				assertThat(invoiceCandidate.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
 			}
 
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String orderLineIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orderLineIdentifier))
 			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				assertThat(invoiceCandidate.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+				final String orderLineIdentifierValue = DataTableUtil.nullToken2Null(orderLineIdentifier);
+				if (orderLineIdentifierValue != null)
+				{
+					final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+					assertThat(invoiceCandidate.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+				}
+				else
+				{
+					assertThat(invoiceCandidate.getC_OrderLine_ID()).isEqualTo(0);
+				}
 			}
 
 			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_PaymentRule);
@@ -414,6 +423,13 @@ public class C_Invoice_Candidate_StepDef
 			if (Check.isNotBlank(paymentRule))
 			{
 				assertThat(invoiceCandidate.getPaymentRule()).isEqualTo(paymentRule);
+			}
+
+			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(productIdentifier))
+			{
+				final I_M_Product product = productTable.get(productIdentifier);
+				assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 			}
 		}
 	}
@@ -552,6 +568,44 @@ public class C_Invoice_Candidate_StepDef
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isInvoiceCandidateProcessed(invoiceCandidate, row), () -> logCurrentContext(invoiceCandidate, row));
 
 			DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
+		}
+	}
+
+	@And("there is no C_Invoice_Candidate for M_Product") //todo av: refactor to check iciol
+	public void validate_no_C_Invoice_Candidate_for_M_Product(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+
+		for (final Map<String, String> row : tableRows)
+		{
+			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+					.addOnlyActiveRecordsFilter();
+
+			if (Check.isNotBlank(productIdentifier))
+			{
+				final I_M_Product product = productTable.get(productIdentifier);
+				queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID());
+			}
+
+			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderIdentifier))
+			{
+				final I_C_Order order = orderTable.get(orderIdentifier);
+				queryBuilder.addEqualsFilter(COLUMNNAME_C_Order_ID, order.getC_Order_ID());
+			}
+
+			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderLineIdentifier))
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				queryBuilder.addEqualsFilter(COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+			}
+
+			final I_C_Invoice_Candidate candidate = queryBuilder.create()
+					.firstOnlyOrNull(I_C_Invoice_Candidate.class);
+
+			assertThat(candidate).isNull();
 		}
 	}
 
@@ -772,15 +826,53 @@ public class C_Invoice_Candidate_StepDef
 
 	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
 	{
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-
 		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice)
-				.create()
+		final IQueryBuilder<I_C_Invoice_Candidate> invCandQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice);
+
+
+		if (shipmentLine)
+		{
+			//todo av: use inoutlineid to find out inv cand id via c_invoicecandidate_inoutline
+			// todo av addEqualsFilter for inv cand id
+		}
+
+		if (qtyDelivered)
+		{
+			//todo av: addEqualsFilter for qtyDelivered
+		}
+
+		if (orderLine)
+		{
+			//todo av addEqualsFilter for orderLine
+		}
+
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice);
+
+		final String orderLineIdentifier = DataTableUtil.extractNullableStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orderLineIdentifier))
+		{
+			final String orderLineIdentifierValue = DataTableUtil.nullToken2Null(orderLineIdentifier);
+			if (orderLineIdentifierValue != null)
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+			}
+			else
+			{
+				queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, null);
+			}
+		}
+
+		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyDelivered);
+		if (qtyDelivered != null)
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
+		}
+
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
 		if (!invoiceCandidate.isPresent())
@@ -809,6 +901,8 @@ public class C_Invoice_Candidate_StepDef
 	{
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
+
+		InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
 
 		if (invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
