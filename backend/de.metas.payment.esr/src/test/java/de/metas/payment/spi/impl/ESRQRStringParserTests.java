@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.Test;
 
-import de.metas.banking.payment.IPaymentString;
+import de.metas.banking.payment.PaymentString;
 
 /*
  * #%L
@@ -54,7 +54,7 @@ public class ESRQRStringParserTests
 	@Test
 	public void parseESRWithoutAmount()
 	{
-		final IPaymentString result = ESRQRStringParser.instance.parse(Env.getCtx(), "042>000000162591872680005352198+ 012000007>");
+		final PaymentString result = ESRQRStringParser.instance.parse(Env.getCtx(), "042>000000162591872680005352198+ 012000007>");
 		assertThat(result.getReferenceNoComplete()).isEqualTo("000000162591872680005352198");
 		assertThat(result.getPostAccountNo()).isEqualTo("012000007");
 	}
@@ -62,7 +62,7 @@ public class ESRQRStringParserTests
 	@Test
 	public void parseESRWithAmount()
 	{
-		final IPaymentString result = ESRQRStringParser.instance.parse(Env.getCtx(), "0100000214000>10360022841297+ 010001456>");
+		final PaymentString result = ESRQRStringParser.instance.parse(Env.getCtx(), "0100000214000>10360022841297+ 010001456>");
 		assertThat(result.getReferenceNoComplete()).isEqualTo("000000000000010360022841297");
 		assertThat(result.getPostAccountNo()).isEqualTo("010001456");
 	}
@@ -70,7 +70,7 @@ public class ESRQRStringParserTests
 	@Test
 	public void parseQR()
 	{
-		final IPaymentString result = ESRQRStringParser.instance.parse(Env.getCtx(), 
+		final PaymentString result = ESRQRStringParser.instance.parse(Env.getCtx(), 
 				  "SPC\n"
 				+ "0200\n"
 				+ "1\n"
@@ -104,11 +104,11 @@ public class ESRQRStringParserTests
 				+ "EPD\n"
 				+ "\n"
 				);
-		assertTrue(result.isQRPaymentString());
-		assertThat(result.getIbanAccountNo()).isEqualTo("CH4409000000909909999");
+		assertTrue(result.isQrPaymentString());
+		assertThat(result.getIBAN()).isEqualTo("CH4409000000909909999");
 		assertThat(result.getReferenceNoComplete()).isEqualTo("000000000000010360022841297");
 		assertThat(result.getAmount()).isEqualTo(new BigDecimal("999.99"));
-		assertTrue(result.isQRIBAN());
+		assertTrue(result.isQrIBAN());
 	}
 
 }
