@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.document.DocTypeId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -48,6 +49,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
@@ -76,6 +78,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -96,7 +99,6 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_B
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Async_Batch_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
@@ -140,6 +142,7 @@ public class C_Invoice_Candidate_StepDef
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final C_Tax_StepDefData taxTable;
+	private final M_InOutLine_StepDefData inoutLineTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -149,7 +152,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final C_Tax_StepDefData taxTable)
+			@NonNull final C_Tax_StepDefData taxTable,
+			@NonNull final M_InOutLine_StepDefData inoutLineTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -159,6 +163,7 @@ public class C_Invoice_Candidate_StepDef
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
 		this.taxTable = taxTable;
+		this.inoutLineTable = inoutLineTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -571,42 +576,17 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	@And("there is no C_Invoice_Candidate for M_Product") //todo av: refactor to check iciol
-	public void validate_no_C_Invoice_Candidate_for_M_Product(@NonNull final DataTable dataTable)
+	@And("^there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: (.*)$")
+	public void validate_no_C_InvoiceCandidate_InOutLine_for_M_InOut(@NonNull final String shipmentLineIdentifier)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		final I_M_InOutLine shipmentLine = inoutLineTable.get(shipmentLineIdentifier);
 
-		for (final Map<String, String> row : tableRows)
-		{
-			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-					.addOnlyActiveRecordsFilter();
+		final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, shipmentLine.getM_InOutLine_ID())
+				.create()
+				.firstOnlyOrNull(I_C_InvoiceCandidate_InOutLine.class);
 
-			if (Check.isNotBlank(productIdentifier))
-			{
-				final I_M_Product product = productTable.get(productIdentifier);
-				queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID());
-			}
-
-			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderIdentifier))
-			{
-				final I_C_Order order = orderTable.get(orderIdentifier);
-				queryBuilder.addEqualsFilter(COLUMNNAME_C_Order_ID, order.getC_Order_ID());
-			}
-
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderLineIdentifier))
-			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				queryBuilder.addEqualsFilter(COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
-			}
-
-			final I_C_Invoice_Candidate candidate = queryBuilder.create()
-					.firstOnlyOrNull(I_C_Invoice_Candidate.class);
-
-			assertThat(candidate).isNull();
-		}
+		assertThat(invoiceCandidateInOutLine).isNull();
 	}
 
 	private void updateInvoiceCandidates(@NonNull final Map<String, String> row)
@@ -831,25 +811,24 @@ public class C_Invoice_Candidate_StepDef
 		final IQueryBuilder<I_C_Invoice_Candidate> invCandQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice);
 
+		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		if (shipmentLine)
+		if (shipmentLineIdentifier != null)
 		{
-			//todo av: use inoutlineid to find out inv cand id via c_invoicecandidate_inoutline
-			// todo av addEqualsFilter for inv cand id
-		}
+			final I_M_InOutLine shipmentLine = inoutLineTable.get(shipmentLineIdentifier);
 
-		if (qtyDelivered)
-		{
-			//todo av: addEqualsFilter for qtyDelivered
-		}
+			final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+					.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, shipmentLine.getM_InOutLine_ID())
+					.create()
+					.firstOnlyOrNull(I_C_InvoiceCandidate_InOutLine.class);
 
-		if (orderLine)
-		{
-			//todo av addEqualsFilter for orderLine
-		}
+			if (invoiceCandidateInOutLine == null)
+			{
+				return false;
+			}
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, qtyToInvoice);
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateInOutLine.getC_Invoice_Candidate_ID());
+		}
 
 		final String orderLineIdentifier = DataTableUtil.extractNullableStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(orderLineIdentifier))
@@ -858,21 +837,21 @@ public class C_Invoice_Candidate_StepDef
 			if (orderLineIdentifierValue != null)
 			{
 				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+				invCandQueryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
 			}
 			else
 			{
-				queryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, null);
+				invCandQueryBuilder.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID, null);
 			}
 		}
 
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyDelivered);
 		if (qtyDelivered != null)
 		{
-			queryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
 		}
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder.create()
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
 		if (!invoiceCandidate.isPresent())

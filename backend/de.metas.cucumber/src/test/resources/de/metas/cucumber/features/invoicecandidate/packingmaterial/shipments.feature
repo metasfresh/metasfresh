@@ -1,4 +1,5 @@
 @from:cucumber
+@shipments
 Feature: Packing material invoice candidates: shipments
 
   Background:
@@ -24,8 +25,8 @@ Feature: Packing material invoice candidates: shipments
       | pp_1       | plv_SO                            | salesProduct            | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_SO                            | packingProduct          | 2.0      | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name         | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | bpartner_1 | BPartnerName | Y              | ps_1                          | D               |
+      | Identifier | Name                 | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | bpartner_1 | BPartnerName_S0160_4 | Y              | ps_1                          | D               |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name        |
       | huPackingTU           | huPackingTU |
@@ -77,16 +78,14 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -129,20 +128,18 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 9          | 9           |
 
     When the shipment identified by shipment_1 is completed
 
-
+#todo mi: remove product id from step def
     And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -186,9 +183,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 15         | 15          |
@@ -196,9 +191,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -242,16 +237,14 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -309,9 +302,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 9          | 9           |
@@ -319,9 +310,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -379,9 +370,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 15         | 15          |
@@ -389,9 +378,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -449,16 +438,14 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -530,9 +517,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 9          | 9           |
@@ -540,9 +525,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -614,9 +599,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 15         | 15          |
@@ -624,9 +607,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -698,9 +681,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered | OPT.C_OrderLine_ID.Identifier |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            | ol_1                          |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             | null                          |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 15         | 15          |
@@ -708,9 +689,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -739,9 +720,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_3            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
@@ -749,9 +728,9 @@ Feature: Packing material invoice candidates: shipments
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
     And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_3                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_3                     | o_1                       | null                      | 10               | 10           | shipmentLine_3                |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | shipmentLine_1                | 100              |
@@ -792,16 +771,14 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -876,16 +853,14 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -960,16 +935,14 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -1008,8 +981,6 @@ Feature: Packing material invoice candidates: shipments
 
   @from:cucumber
   @Id:S0160.2_210
-  @dev:runThisOne
-
   Scenario: order product w/ packing material, decrease qty for shipment, complete it then reactivate and void shipment
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
@@ -1042,9 +1013,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 9          | 9           |
@@ -1052,9 +1021,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -1093,8 +1062,6 @@ Feature: Packing material invoice candidates: shipments
 
   @from:cucumber
   @Id:S0160.2_220
-  @dev:runThisOne
-
   Scenario: order product w/ packing material, increase qty for shipment, complete it then reactivate and void shipment
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
@@ -1127,9 +1094,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 15         | 15          |
@@ -1137,9 +1102,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -1179,7 +1144,6 @@ Feature: Packing material invoice candidates: shipments
 
   @from:cucumber
   @Id:S0160.2_230
-  @dev:runThisOne
   Scenario: order product w/ packing material, create and complete shipment then revert it
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
@@ -1211,16 +1175,14 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -1278,9 +1240,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 9          | 9           |
@@ -1288,9 +1248,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -1348,9 +1308,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 15         | 15          |
@@ -1358,9 +1316,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -1418,16 +1376,14 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
 
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 10               | 10           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -1485,9 +1441,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 9          | 9           |
@@ -1495,9 +1449,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 9                | 9            | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
@@ -1555,9 +1509,7 @@ Feature: Packing material invoice candidates: shipments
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.QtyEntered |
       | shipmentLine_1            | shipment_1            | salesProduct            | 100         | false     | 100            |
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
-    And there is no C_Invoice_Candidate for M_Product
-      | OPT.M_Product_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | packingProduct              | o_1                       | ol_2                          |
+    And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
       | M_InOutLine_ID.Identifier | QtyEntered | MovementQty |
       | shipmentLine_2            | 15         | 15          |
@@ -1565,9 +1517,9 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_Product_ID.Identifier |
-      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | salesProduct                |
-      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | packingProduct              |
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
+      | invoiceCand_1                     | o_1                       | ol_1                      | 100              | 100          | shipmentLine_1                |
+      | invoiceCand_2                     | o_1                       | null                      | 15               | 15           | shipmentLine_2                |
     And validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | CO        |
