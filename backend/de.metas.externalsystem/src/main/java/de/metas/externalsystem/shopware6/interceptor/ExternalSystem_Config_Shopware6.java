@@ -73,7 +73,7 @@ public class ExternalSystem_Config_Shopware6
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_Shopware6.COLUMNNAME_PercentageOfAvailableForSalesToSync })
+			ifColumnsChanged = { I_ExternalSystem_Config_Shopware6.COLUMNNAME_PercentageOfAvailableForSalesToSync, I_ExternalSystem_Config_Shopware6.COLUMNNAME_IsSyncAvailableForSalesToShopware6 })
 	public void syncAvailableForSalesToShopware(@NonNull final I_ExternalSystem_Config_Shopware6 config)
 	{
 		if (!config.isSyncAvailableForSalesToShopware6())
