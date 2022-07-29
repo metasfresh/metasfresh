@@ -1021,8 +1021,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 
-	static private boolean isInvalidQRReference(final String reference)
+	static private boolean isInvalidQRReference(final String StructuredRemittanceInfo)
 	{
+		final String reference = StringUtils.cleanWhitespace(StructuredRemittanceInfo);
+
 		if(reference.length() != 27)
 		{
 			return false;
@@ -1031,9 +1033,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		final int[] checkSequence = {0,9,4,6,8,2,7,1,3,5};
 		int carryOver = 0;
 
-		for (int i = 1; i < reference.length() - 1; i++)
+		for (int i = 1; i <= reference.length() - 1; i++)
 		{
-			final int idx = ((carryOver + Integer.parseInt(reference.substring(i - 1, i))) % 10);
+			int idx = ((carryOver + Integer.parseInt(reference.substring(i - 1, i))) % 10);
 			carryOver = checkSequence[idx];
 		}
 
