@@ -35,6 +35,7 @@ const Calendar = ({
   onlyResourceIds,
   onlyProjectId,
   onlyCustomerId,
+  onlyResponsibleId,
   onParamsChanged,
 }) => {
   const notifyParamsChanged = (changedParams) => {
@@ -44,6 +45,7 @@ const Calendar = ({
       onlyResourceIds,
       onlyProjectId,
       onlyCustomerId,
+      onlyResponsibleId,
       ...changedParams,
     };
     console.log('notifyParamsChanged', { changedParams, params });
@@ -55,6 +57,7 @@ const Calendar = ({
     onlyResourceIds,
     onlyProjectId,
     onlyCustomerId,
+    onlyResponsibleId,
     fetchAvailableCalendarsFromAPI: api.fetchAvailableCalendars,
     fetchAvailableSimulationsFromAPI: api.fetchAvailableSimulations,
     fetchEntriesFromAPI: api.fetchCalendarEntries,
@@ -241,6 +244,7 @@ Calendar.propTypes = {
   onlyResourceIds: PropTypes.array,
   onlyProjectId: PropTypes.string,
   onlyCustomerId: PropTypes.string,
+  onlyResponsibleId: PropTypes.string,
   onParamsChanged: PropTypes.func,
 };
 

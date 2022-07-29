@@ -12,6 +12,7 @@ export const useCalendarData = ({
   onlyResourceIds,
   onlyProjectId,
   onlyCustomerId,
+  onlyResponsibleId,
   fetchAvailableCalendarsFromAPI,
   fetchAvailableSimulationsFromAPI,
   fetchEntriesFromAPI,
@@ -188,6 +189,7 @@ export const useCalendarData = ({
       onlyResourceIds,
       onlyProjectId,
       onlyCustomerId,
+      onlyResponsibleId,
       startDate,
       endDate,
     });

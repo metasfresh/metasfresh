@@ -19,6 +19,7 @@ export const fetchCalendarEntries = ({
   onlyResourceIds = null,
   onlyProjectId = null,
   onlyCustomerId = null,
+  onlyResponsibleId = null,
   startDate = null,
   endDate = null,
 }) => {
@@ -28,6 +29,7 @@ export const fetchCalendarEntries = ({
     onlyResourceIds,
     onlyProjectId,
     onlyCustomerId,
+    onlyResponsibleId,
     startDate,
     endDate,
   };
