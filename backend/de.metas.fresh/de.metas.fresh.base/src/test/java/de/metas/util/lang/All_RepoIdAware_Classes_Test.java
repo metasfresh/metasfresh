@@ -96,6 +96,8 @@ public class All_RepoIdAware_Classes_Test
 			//
 			.skip(ExternalSystemOtherConfigId.class)
 			//
+			.skip(de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId.class)
+			//
 			.skip(MediatedCommissionSettingsLineId.class)
 			//
 			.skip(BudgetProjectResourceId.class)
