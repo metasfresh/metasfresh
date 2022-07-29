@@ -56,12 +56,8 @@ const setSelectedValue = function (dropdownList, selected, defaultValue) {
   return changedValues;
 };
 
-/**
- * @file Class based component.
- * @module RawList
- * @extends Component
- */
-export class RawList extends PureComponent {
+// NOTE: exporting it (without wrapping with onClickOutsideHOC) for testing purposes
+export class RawList0 extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -309,8 +305,6 @@ export class RawList extends PureComponent {
       field,
       listHash,
       wrapperElement,
-      enableOnClickOutside,
-      disableOnClickOutside,
     } = this.props;
 
     let value = '';
@@ -460,8 +454,6 @@ export class RawList extends PureComponent {
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
-              onMount={() => disableOnClickOutside && disableOnClickOutside()}
-              onUnmount={() => enableOnClickOutside && enableOnClickOutside()}
             />
           )
         }
@@ -531,7 +523,7 @@ export class RawList extends PureComponent {
  * @prop {func} enableOnClickOutside - callback to be used to enable click outside for parent component
  * @prop {func} disableOnClickOutside - callback to be used to disable click outside for parent component
  */
-RawList.propTypes = {
+RawList0.propTypes = {
   className: PropTypes.string,
   filter: PropTypes.object,
   readonly: PropTypes.bool,
@@ -573,9 +565,9 @@ RawList.propTypes = {
   disableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
 };
 
-RawList.defaultProps = {
+RawList0.defaultProps = {
   tabIndex: -1,
   clearable: true,
 };
 
-export default onClickOutsideHOC(RawList);
+export default onClickOutsideHOC(RawList0);
