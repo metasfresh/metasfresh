@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13323](https://github.com/metasfresh/metasfresh/issues/13323) Partial Payment Invoicing: flatrate conditions
   * [#13339](https://github.com/metasfresh/metasfresh/issues/13339) Final Product Costprice S1: tables and window
   * [#13354](https://github.com/metasfresh/metasfresh/issues/13354) Accounting Transactions sidelist Reference for documents missing again 
   * [#13337](https://github.com/metasfresh/metasfresh/issues/13337) Adjustment Payment/Bank Statement Windows
