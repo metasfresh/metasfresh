@@ -668,7 +668,10 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
 	/** MarginCommission = MarginCommission */
 	public static final String TYPE_CONDITIONS_MarginCommission = "MarginCommission";
-
+	/** LicenseFee = LicenseFee */
+	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
+	/** CallOrder = CallOrder */
+	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{
