@@ -24,6 +24,10 @@ import './Calendar.scss';
 import ConflictsSummary from './components/ConflictsSummary';
 import CalendarResourceLabel from './components/CalendarResourceLabel';
 import CalendarFilters from './components/CalendarFilters';
+import {
+  getEventClassNames,
+  renderEventContent,
+} from './components/CalendarEvent';
 
 const Calendar = ({
   view,
@@ -124,7 +128,7 @@ const Calendar = ({
             selectedSimulationId={simulationId}
             onOpenDropdown={() => calendarData.loadSimulationsFromAPI()}
             onSelect={(simulation) => {
-              notifyParamsChanged({ simulationId: simulation?.simulationId });
+              calendarData.setSimulationId(simulation?.simulationId);
             }}
             onNew={() => {
               api
@@ -185,15 +189,8 @@ const Calendar = ({
           }}
           //dateClick={handleDateClick}
           eventClick={handleEventClick}
-          eventClassNames={(params) => {
-            if (params.event.extendedProps.conflict) {
-              return ['has-conflict'];
-            }
-          }}
-          eventContent={(params) => {
-            //console.log('eventContent', { params });
-            return <div>{params.event.title}</div>;
-          }}
+          eventClassNames={getEventClassNames}
+          eventContent={renderEventContent}
           eventDragStart={(event) => {
             console.log('eventDragStart', { event });
           }}
