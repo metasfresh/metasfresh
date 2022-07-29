@@ -204,4 +204,20 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(output).isEqualTo(expected);
 	}
 
+
+	@Test
+	public void testIsInvalidQRReference()
+	{
+		assertIsInvalidQRReferenceWorks("", true);
+		assertIsInvalidQRReferenceWorks("33 36170 00113 54610 59304 00000", true);
+		assertIsInvalidQRReferenceWorks("333617000113546105930400000", false);
+		assertIsInvalidQRReferenceWorks("210000000003139471430009017", false);
+	}
+
+	private void assertIsInvalidQRReferenceWorks(String input, boolean expected)
+	{
+		boolean result = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isInvalidQRReference(input);
+		assertThat(result).isEqualTo(expected);
+	}
+
 }
