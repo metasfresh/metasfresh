@@ -29,7 +29,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
