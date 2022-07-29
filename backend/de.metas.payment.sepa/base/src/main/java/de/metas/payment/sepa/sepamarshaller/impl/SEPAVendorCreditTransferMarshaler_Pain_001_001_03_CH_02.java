@@ -690,7 +690,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 				if (!Check.isEmpty(bankAccount.getQR_IBAN(),true))
 				{
-					Check.errorIf(isInvalidQRReference(line.getStructuredRemittanceInfo()), SepaMarshallerException.class,
+					final String QRReference = StringUtils.cleanWhitespace(line.getStructuredRemittanceInfo());
+
+					Check.errorIf(isInvalidQRReference(QRReference), SepaMarshallerException.class,
 								  "SEPA_ExportLine {} has to valid QR Reference", createInfo(line));
 
 					final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
@@ -703,7 +705,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					tp.setCdOrPrtry(cdOrPrtry);
 					cdOrPrtry.setPrtry("QRR");
 
-					cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
+					cdtrRefInf.setRef(QRReference);
 				}
 				else
 				{
@@ -1021,10 +1023,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 
-	static private boolean isInvalidQRReference(final String StructuredRemittanceInfo)
+	static private boolean isInvalidQRReference(final String reference)
 	{
-		final String reference = StringUtils.cleanWhitespace(StructuredRemittanceInfo);
-
 		if(reference.length() != 27)
 		{
 			return false;
