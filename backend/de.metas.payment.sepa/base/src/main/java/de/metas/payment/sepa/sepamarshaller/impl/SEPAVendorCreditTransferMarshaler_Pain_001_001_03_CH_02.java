@@ -714,7 +714,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				{
 					// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
 					// because it's much less complicated
-					final String reference = Optional.of(StringUtils.trimBlankToNull(line.getStructuredRemittanceInfo())).orElseGet(line::getDescription);
+					final String reference = StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription);
 
 					// provide the line-description (if set) as unstructured remittance info
 					if (Check.isBlank(reference))
