@@ -1,6 +1,5 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Prefinancing_Settings
@@ -54,7 +53,7 @@ public interface I_C_Prefinancing_Settings
 	 * Set Harvesting Calendar.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
@@ -63,20 +62,20 @@ public interface I_C_Prefinancing_Settings
 	 * Get Harvesting Calendar.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_Harvesting_Calendar_ID();
 
-	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+	org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
 
-	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+	void setC_Harvesting_Calendar(org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
 
 	ModelColumn<I_C_Prefinancing_Settings, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_Prefinancing_Settings.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
 	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
-	 * Set Prepayment Settings.
+	 * Set Prefinancing Settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -85,7 +84,7 @@ public interface I_C_Prefinancing_Settings
 	void setC_Prefinancing_Settings_ID (int C_Prefinancing_Settings_ID);
 
 	/**
-	 * Get Prepayment Settings.
+	 * Get Prefinancing Settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -145,19 +144,19 @@ public interface I_C_Prefinancing_Settings
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Produkt für Einbehalt.
+	 * Set WIthholding Product.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_Product_Witholding_ID (int M_Product_Witholding_ID);
 
 	/**
-	 * Get Produkt für Einbehalt.
+	 * Get WIthholding Product.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_Product_Witholding_ID();
