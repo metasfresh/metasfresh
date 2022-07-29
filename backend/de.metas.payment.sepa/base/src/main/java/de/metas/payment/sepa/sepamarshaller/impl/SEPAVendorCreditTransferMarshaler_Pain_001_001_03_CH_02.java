@@ -47,6 +47,9 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.DocumentType3Code;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -684,23 +687,45 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				Check.errorIf(paymentType == PAYMENT_TYPE_1, SepaMarshallerException.class,
 						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
-				// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
-				// because it's much less complicated
-				final String reference = Check.isEmpty(line.getStructuredRemittanceInfo(), true)
-						? line.getDescription()
-						: line.getStructuredRemittanceInfo();
 
-				// provide the line-description (if set) as unstructured remittance info
-				if (Check.isEmpty(reference, true))
+				if (!Check.isEmpty(bankAccount.getQR_IBAN(),true))
 				{
-					// at least add a "." to make sure the node exists.
-					rmtInf.setUstrd(".");
+					Check.errorIf(isInvalidQRReference(line.getStructuredRemittanceInfo()), SepaMarshallerException.class,
+								  "SEPA_ExportLine {} has to valid QR Reference", createInfo(line));
+
+					final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
+					rmtInf.setStrd(strd);
+					final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
+					strd.setCdtrRefInf(cdtrRefInf);
+					final CreditorReferenceType2 tp = objectFactory.createCreditorReferenceType2();
+					cdtrRefInf.setTp(tp);
+					final CreditorReferenceType1Choice cdOrPrtry = objectFactory.createCreditorReferenceType1Choice();
+					tp.setCdOrPrtry(cdOrPrtry);
+					cdOrPrtry.setPrtry("QRR");
+
+					cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
 				}
 				else
 				{
-					final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
-					rmtInf.setUstrd(validReference);
+					// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
+					// because it's much less complicated
+					final String reference = Check.isEmpty(line.getStructuredRemittanceInfo(), true)
+							? line.getDescription()
+							: line.getStructuredRemittanceInfo();
+
+					// provide the line-description (if set) as unstructured remittance info
+					if (Check.isEmpty(reference, true))
+					{
+						// at least add a "." to make sure the node exists.
+						rmtInf.setUstrd(".");
+					}
+					else
+					{
+						final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
+						rmtInf.setUstrd(validReference);
+					}
 				}
+
 			}
 			else
 			{
@@ -993,5 +1018,25 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	{
 		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
 		return bpartnerService.getBPartnerName(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
+	}
+
+
+	static private boolean isInvalidQRReference(final String reference)
+	{
+		if(reference.length() != 27)
+		{
+			return false;
+		}
+
+		final int[] checkSequence = {0,9,4,6,8,2,7,1,3,5};
+		int carryOver = 0;
+
+		for (int i = 1; i < reference.length() - 1; i++)
+		{
+			final int idx = ((carryOver + Integer.parseInt(reference.substring(i - 1, i))) % 10);
+			carryOver = checkSequence[idx];
+		}
+
+		return (Integer.parseInt(reference.substring(26)) == (10 - carryOver) % 10);
 	}
 }
