@@ -1027,7 +1027,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	{
 		if(reference.length() != 27)
 		{
-			return false;
+			return true;
 		}
 
 		final int[] checkSequence = {0,9,4,6,8,2,7,1,3,5};
@@ -1039,6 +1039,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			carryOver = checkSequence[idx];
 		}
 
-		return (Integer.parseInt(reference.substring(26)) == (10 - carryOver) % 10);
+		return !(Integer.parseInt(reference.substring(26)) == (10 - carryOver) % 10);
 	}
 }
