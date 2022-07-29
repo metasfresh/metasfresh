@@ -70,8 +70,7 @@ public class JsonWorkOrderResourceUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean durationSet;
 
-	// TODO: turn into enum
-	String durationUnit;
+	JsonDurationUnit durationUnit;
 	@ApiModelProperty(hidden = true)
 	boolean durationUnitSet;
 
@@ -101,7 +100,7 @@ public class JsonWorkOrderResourceUpsertRequest
 		this.durationSet = true;
 	}
 
-	public void setDurationUnit(final String durationUnit)
+	public void setDurationUnit(final JsonDurationUnit durationUnit)
 	{
 		this.durationUnit = durationUnit;
 		this.durationUnitSet = true;

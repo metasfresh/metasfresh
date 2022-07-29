@@ -37,6 +37,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -90,8 +91,16 @@ public class WOProject
 	@Nullable
 	LocalDate dateFinish;
 
+	@Nullable
+	String specialistConsultantId;
+
+	@Nullable
+	Instant dateOfProvisionByBPartner;
+
 	@Singular
 	List<WOProjectStep> projectSteps;
+
+	List<WOProjectObjectUnderTest> projectObjectsUnderTest;
 
 	@NonNull
 	public ProjectId getProjectIdNonNull()

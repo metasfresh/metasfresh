@@ -169,12 +169,12 @@ public class WorkOrderProjectRestService
 			}
 
 			final WOProject projectData = workOrderProjectJsonToInternalConverter.updateWOProjectFromJson(request, null);
-			final ProjectId createdProjectId = projectRepository.save(projectData).getProjectIdNonNull();
+			final WOProject updatedProjectData = projectRepository.save(projectData);
 
 			final ImmutableList.Builder<JsonWorkOrderStepUpsertResponse> stepListBuilder = ImmutableList.builder();
 
 			return JsonWorkOrderProjectUpsertResponse.builder()
-					.projectId(JsonMetasfreshId.of(createdProjectId.getRepoId()))
+					.projectId(JsonMetasfreshId.of(updatedProjectData.getProjectIdNonNull().getRepoId()))
 					.syncOutcome(JsonResponseUpsertItem.SyncOutcome.CREATED)
 					.createdStepIds(stepListBuilder.build())
 					.build();
@@ -238,12 +238,12 @@ public class WorkOrderProjectRestService
 		{
 			final JsonWorkOrderStepResponse.JsonWorkOrderStepResponseBuilder jsonWorkOrderStepResponseBuilder = JsonWorkOrderStepResponse.builder()
 					.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(stepData.getWOProjectStepIdNonNull())))
-					.dateEnd(Optional.ofNullable(stepData.getDateEnd()).map(Instant::toString).orElse(""))
-					.dateStart(Optional.ofNullable(stepData.getDateStart()).map(Instant::toString).orElse(""))
+					.dateEnd(Optional.ofNullable(stepData.getDateEnd()).map(Instant::toString).orElse(null))
+					.dateStart(Optional.ofNullable(stepData.getDateStart()).map(Instant::toString).orElse(null))
 					.seqNo(stepData.getSeqNoNonNull())
 					.description(stepData.getDescription())
 					.name(stepData.getName())
-					.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(stepData.getProjectId())));
+					.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(stepData.getProjectIdNonNull())));
 
 			for (final WOProjectResource resourceData : stepData.getProjectResources())
 			{

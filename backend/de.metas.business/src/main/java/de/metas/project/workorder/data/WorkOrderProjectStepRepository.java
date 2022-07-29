@@ -24,12 +24,12 @@ package de.metas.project.workorder.data;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.WOProjectStepRepository;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -54,8 +54,6 @@ public class WorkOrderProjectStepRepository
 
 	private final WOProjectStepRepository woProjectStepRepository;
 	private final WorkOrderProjectResourceRepository workOrderProjectResourceRepository;
-
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public WorkOrderProjectStepRepository(
 			@NonNull final WOProjectStepRepository woProjectStepRepository,
@@ -99,7 +97,7 @@ public class WorkOrderProjectStepRepository
 		}
 		else if (stepData.getExternalId() != null)
 		{
-			existingWoProjectStepId = getByProjectId(stepData.getProjectId())
+			existingWoProjectStepId = getByProjectId(stepData.getProjectIdNonNull())
 					.stream()
 					.filter(s -> Objects.equals(s.getExternalId(), stepData.getExternalId()))
 					.findAny()
@@ -117,7 +115,7 @@ public class WorkOrderProjectStepRepository
 			stepRecord.setName(stepData.getName());
 		}
 
-		final ProjectId projectId = stepData.getProjectId(); // not null at this point
+		final ProjectId projectId = stepData.getProjectIdNonNull();
 		if (stepData.getSeqNo() == null)
 		{
 			stepRecord.setSeqNo(woProjectStepRepository.getNextSeqNo(projectId));
@@ -131,12 +129,26 @@ public class WorkOrderProjectStepRepository
 		stepRecord.setDateStart(TimeUtil.asTimestamp(stepData.getDateStart()));
 		stepRecord.setDescription(stepData.getDescription());
 		stepRecord.setC_Project_ID(projectId.getRepoId());
-		
+
 		stepRecord.setExternalId(ExternalId.toValue(stepData.getExternalId()));
+
+		stepRecord.setWOPartialReportDate(TimeUtil.asTimestamp(stepData.getWoPartialReportDate()));
+		stepRecord.setWOPlannedResourceDurationHours(NumberUtils.asInt(stepData.getWoPlannedResourceDurationHours(), -1));
+		stepRecord.setWODeliveryDate(TimeUtil.asTimestamp(stepData.getDeliveryDate()));
+		stepRecord.setWOTargetStartDate(TimeUtil.asTimestamp(stepData.getWoTargetStartDate()));
+		stepRecord.setWOTargetEndDate(TimeUtil.asTimestamp(stepData.getWoTargetEndDate()));
+		stepRecord.setWOPlannedPersonDurationHours(NumberUtils.asInt(stepData.getWoPlannedPersonDurationHours(), -1));
+		stepRecord.setWOFindingsReleasedDate(TimeUtil.asTimestamp(stepData.getWoFindingsReleasedDate()));
+		stepRecord.setWOFindingsCreatedDate(TimeUtil.asTimestamp(stepData.getWoFindingsCreatedDate()));
+
+		if (stepData.getWoStepStatus() != null)
+		{
+			stepRecord.setWOStepStatus(stepData.getWoStepStatus().getCode());
+		}
 
 		saveRecord(stepRecord);
 
-		final WOProjectStepId woProjectStepId = WOProjectStepId.ofRepoId(stepData.getProjectId(), stepRecord.getC_Project_WO_Step_ID());
+		final WOProjectStepId woProjectStepId = WOProjectStepId.ofRepoId(projectId, stepRecord.getC_Project_WO_Step_ID());
 		for (final WOProjectResource woProjectResource : stepData.getProjectResources())
 		{
 			workOrderProjectResourceRepository.save(woProjectResource.withWoProjectStepId(woProjectStepId));

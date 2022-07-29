@@ -28,6 +28,8 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.rest_api.v2.project.workorder.JsonDurationUnit;
+import de.metas.common.rest_api.v2.project.workorder.JsonWOStepStatus;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
@@ -41,6 +43,7 @@ import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.workorder.WOProjectStepRepository;
+import de.metas.project.workorder.data.WorkOrderProjectObjectUnderTestRepository;
 import de.metas.project.workorder.data.WorkOrderProjectRepository;
 import de.metas.project.workorder.data.WorkOrderProjectResourceRepository;
 import de.metas.project.workorder.data.WorkOrderProjectStepRepository;
@@ -93,7 +96,7 @@ class WorkOrderProjectRestServiceTest
 		resource.setS_ResourceType_ID(resourceType.getS_ResourceType_ID());
 		resource.setInternalName("internalName");
 		resource.setValue("resourceValue");
-		
+
 		InterfaceWrapperHelper.save(resource);
 
 		final IDocumentNoBuilderFactory documentNoBuilderFactory = Mockito.mock(IDocumentNoBuilderFactory.class);
@@ -107,7 +110,10 @@ class WorkOrderProjectRestServiceTest
 				new WorkOrderProjectResourceRepository());
 
 		final ProjectTypeRepository projectTypeRepository = new ProjectTypeRepository();
-		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory, projectTypeRepository, workOrderProjectStepRepository);
+		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory,
+																									 projectTypeRepository,
+																									 workOrderProjectStepRepository,
+																									 new WorkOrderProjectObjectUnderTestRepository());
 
 		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
 		final WorkOrderProjectJsonToInternalConverter workOrderProjectJsonToInternalConverter = new WorkOrderProjectJsonToInternalConverter(resourceService);
@@ -160,8 +166,9 @@ class WorkOrderProjectRestServiceTest
 		stepRequest1.setWOFindingsCreatedDate(LocalDate.parse("2022-08-01"));
 		stepRequest1.setWOFindingsReleasedDate(LocalDate.parse("2022-08-03"));
 		stepRequest1.setWoPartialReportDate(LocalDate.parse("2022-08-02"));
+		stepRequest1.setWoPlannedResourceDurationHours(3);
 		stepRequest1.setWOPlannedPersonDurationHours(20);
-		stepRequest1.setWOStepStatus(10);
+		stepRequest1.setWOStepStatus(JsonWOStepStatus.CANCELED);
 		stepRequest1.setWOTargetEndDate(LocalDate.parse("2022-07-31"));
 		stepRequest1.setWOTargetStartDate(LocalDate.parse("2022-07-21"));
 
@@ -171,7 +178,7 @@ class WorkOrderProjectRestServiceTest
 		resourceRequest1.setResourceIdentifier("int-" + resource.getInternalName());
 		resourceRequest1.setTestFacilityGroupName("testFacilityGroupName");
 		resourceRequest1.setExternalId(JsonExternalId.of("resourceRequest1-externalId"));
-		resourceRequest1.setDurationUnit("h");
+		resourceRequest1.setDurationUnit(JsonDurationUnit.h);
 		resourceRequest1.setDuration(BigDecimal.TEN);
 		resourceRequest1.setAssignDateFrom(LocalDate.parse("2022-08-07"));
 		resourceRequest1.setAssignDateTo(LocalDate.parse("2022-08-08"));

@@ -1101,21 +1101,22 @@ public interface I_C_Project
 	/**
 	 * Set Specialist consultant.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSpecialist_Consultant_ID (int Specialist_Consultant_ID);
+	void setSpecialist_Consultant_ID (@Nullable java.lang.String Specialist_Consultant_ID);
 
 	/**
 	 * Get Specialist consultant.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getSpecialist_Consultant_ID();
+	@Nullable java.lang.String getSpecialist_Consultant_ID();
 
+	ModelColumn<I_C_Project, Object> COLUMN_Specialist_Consultant_ID = new ModelColumn<>(I_C_Project.class, "Specialist_Consultant_ID", null);
 	String COLUMNNAME_Specialist_Consultant_ID = "Specialist_Consultant_ID";
 
 	/**

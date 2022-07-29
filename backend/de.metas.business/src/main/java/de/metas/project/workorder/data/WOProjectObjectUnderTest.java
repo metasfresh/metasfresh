@@ -22,32 +22,32 @@
 
 package de.metas.project.workorder.data;
 
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertRequest;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectStepId;
+import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.List;
 
 @Value
 @Builder
-public class WOProjectStep
+public class WOProjectObjectUnderTest
 {
 	@Nullable
-	@Getter
-	WOProjectStepId woProjectStepId;
+	WOProjectObjectUnderTestId id;
 
 	@NonNull
-	String name;
+	Integer numberOfObjectsUnderTest;
+
+	@NonNull
+	ExternalId externalId;
 
 	@With
 	@Nullable
@@ -55,68 +55,29 @@ public class WOProjectStep
 	ProjectId projectId;
 
 	@Nullable
-	String description;
+	String woDeliveryNote;
 
 	@Nullable
-	Integer seqNo;
+	String woManufacturer;
 
 	@Nullable
-	Instant dateStart;
+	String woObjectType;
 
 	@Nullable
-	Instant dateEnd;
+	String woObjectName;
 
 	@Nullable
-	ExternalId externalId;
-
-	@Nullable
-	Instant woPartialReportDate;
-
-	@Nullable
-	Integer woPlannedResourceDurationHours;
-
-	@Nullable
-	Instant deliveryDate;
-
-	@Nullable
-	Instant woTargetStartDate;
-
-	@Nullable
-	Instant woTargetEndDate;
-
-	@Nullable
-	Integer woPlannedPersonDurationHours;
-
-	@Nullable
-	WOStepStatus woStepStatus;
-
-	@Nullable
-	Instant woFindingsReleasedDate;
-
-	@Nullable
-	Instant woFindingsCreatedDate;
-
-	@Singular
-	List<WOProjectResource> projectResources;
+	String woObjectWhereabouts;
 
 	@NonNull
-	public WOProjectStepId getWOProjectStepIdNonNull()
+	public WOProjectObjectUnderTestId getIdNonNull()
 	{
-		if (woProjectStepId == null)
+		if (id == null)
 		{
-			throw new AdempiereException("WOProjectStepId cannot be null at this stage!");
+			throw new AdempiereException("WOProjectObjectUnderTestId cannot be null at this stage!");
 		}
-		return woProjectStepId;
-	}
 
-	@NonNull
-	public Integer getSeqNoNonNull()
-	{
-		if (seqNo == null)
-		{
-			throw new AdempiereException("WOProjectStep SeqNo cannot be null at this stage!");
-		}
-		return seqNo;
+		return id;
 	}
 
 	@NonNull
@@ -128,5 +89,19 @@ public class WOProjectStep
 		}
 
 		return projectId;
+	}
+
+	@NonNull
+	public static WOProjectObjectUnderTest fromJson(@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request)
+	{
+		return WOProjectObjectUnderTest.builder()
+				.numberOfObjectsUnderTest(request.getNumberOfObjectsUnderTest())
+				.externalId(ExternalId.of(request.getExternalId().getValue()))
+				.woDeliveryNote(request.getWoDeliveryNote())
+				.woManufacturer(request.getWoManufacturer())
+				.woObjectType(request.getWoObjectType())
+				.woObjectName(request.getWoObjectName())
+				.woObjectWhereabouts(request.getWoObjectWhereabouts())
+				.build();
 	}
 }

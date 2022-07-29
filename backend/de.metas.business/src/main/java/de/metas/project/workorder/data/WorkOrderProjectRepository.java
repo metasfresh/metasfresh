@@ -45,7 +45,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -58,15 +57,18 @@ public class WorkOrderProjectRepository
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final ProjectTypeRepository projectTypeRepository;
 	private final WorkOrderProjectStepRepository workOrderProjectStepRepository;
+	private final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository;
 
 	public WorkOrderProjectRepository(
 			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
 			@NonNull final ProjectTypeRepository projectTypeRepository,
-			@NonNull final WorkOrderProjectStepRepository workOrderProjectStepRepository)
+			@NonNull final WorkOrderProjectStepRepository workOrderProjectStepRepository,
+			@NonNull final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository)
 	{
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.projectTypeRepository = projectTypeRepository;
 		this.workOrderProjectStepRepository = workOrderProjectStepRepository;
+		this.workOrderProjectObjectUnderTestRepository = workOrderProjectObjectUnderTestRepository;
 	}
 
 	@NonNull
@@ -134,6 +136,8 @@ public class WorkOrderProjectRepository
 		projectRecord.setDateContract(TimeUtil.asTimestamp(woProject.getDateContract()));
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(woProject.getDateFinish()));
 		projectRecord.setC_Project_Reference_Ext(woProject.getProjectReferenceExt());
+		projectRecord.setSpecialist_Consultant_ID(woProject.getSpecialistConsultantId());
+		projectRecord.setDateOfProvisionByBPartner(TimeUtil.asTimestamp(woProject.getDateOfProvisionByBPartner()));
 
 		updateFromProjectType(projectRecord, woProject);
 
@@ -143,6 +147,12 @@ public class WorkOrderProjectRepository
 		{
 			final WOProjectStep stepDataToSave = woProjectStep.withProjectId(ProjectId.ofRepoId(projectRecord.getC_Project_ID()));
 			workOrderProjectStepRepository.save(stepDataToSave);
+		}
+
+		for (final WOProjectObjectUnderTest objectUnderTest : woProject.getProjectObjectsUnderTest())
+		{
+			final WOProjectObjectUnderTest objectUnderTestToSave = objectUnderTest.withProjectId(ProjectId.ofRepoId(projectRecord.getC_Project_ID()));
+			workOrderProjectObjectUnderTestRepository.save(objectUnderTestToSave);
 		}
 
 		return ofRecord(projectRecord);
@@ -193,9 +203,9 @@ public class WorkOrderProjectRepository
 	{
 		final OrgId projectOrgId = OrgId.ofRepoId(projectRecord.getAD_Org_ID());
 
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_ID());
+		final ProjectId projectId = ProjectId.ofRepoId(projectRecord.getC_Project_ID());
 
-		final WOProject.WOProjectBuilder woProjectBuilder = WOProject.builder()
+		return WOProject.builder()
 				.projectId(projectId)
 				.orgId(projectOrgId)
 				.name(projectRecord.getName())
@@ -210,11 +220,11 @@ public class WorkOrderProjectRepository
 				.salesRepId(UserId.ofRepoIdOrNull(projectRecord.getSalesRep_ID()))
 				.projectReferenceExt(projectRecord.getC_Project_Reference_Ext())
 				.dateContract(TimeUtil.asLocalDate(projectRecord.getDateContract(), projectOrgId))
-				.dateFinish(TimeUtil.asLocalDate(projectRecord.getDateFinish(), projectOrgId));
-
-		final List<WOProjectStep> steps = workOrderProjectStepRepository.getByProjectId(projectId);
-		woProjectBuilder.projectSteps(steps);
-
-		return woProjectBuilder.build();
+				.dateFinish(TimeUtil.asLocalDate(projectRecord.getDateFinish(), projectOrgId))
+				.specialistConsultantId(projectRecord.getSpecialist_Consultant_ID())
+				.dateOfProvisionByBPartner(TimeUtil.asInstant(projectRecord.getDateOfProvisionByBPartner()))
+				.projectSteps(workOrderProjectStepRepository.getByProjectId(projectId))
+				.projectObjectsUnderTest(workOrderProjectObjectUnderTestRepository.getByProjectId(projectId))
+				.build();
 	}
 }

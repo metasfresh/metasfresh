@@ -48,8 +48,11 @@ class WorkOrderProjectRepositoryTest
 
 		final IDocumentNoBuilderFactory documentNoBuilderFactory = Mockito.mock(IDocumentNoBuilderFactory.class);
 		final WorkOrderProjectStepRepository workOrderProjectStepRepository = new WorkOrderProjectStepRepository(new WOProjectStepRepository(), new WorkOrderProjectResourceRepository());
-		
-		workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory, new ProjectTypeRepository(), workOrderProjectStepRepository);
+
+		workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory,
+																	new ProjectTypeRepository(),
+																	workOrderProjectStepRepository,
+																	new WorkOrderProjectObjectUnderTestRepository());
 	}
 
 	@Test
@@ -72,10 +75,10 @@ class WorkOrderProjectRepositoryTest
 		final I_C_Project projectRecord = InterfaceWrapperHelper.load(result.getProjectId(), I_C_Project.class);
 
 	}
-	
+
 	@Test
 	void saveExisting()
 	{
-		
+
 	}
 }

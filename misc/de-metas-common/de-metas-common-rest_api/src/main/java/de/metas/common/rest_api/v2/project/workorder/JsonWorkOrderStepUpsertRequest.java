@@ -87,7 +87,7 @@ public class JsonWorkOrderStepUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean woPlannedPersonDurationHoursSet;
 
-	Integer woStepStatus;
+	JsonWOStepStatus woStepStatus;
 	@ApiModelProperty(hidden = true)
 	boolean woStepStatusSet;
 
@@ -172,7 +172,7 @@ public class JsonWorkOrderStepUpsertRequest
 		this.woPlannedPersonDurationHoursSet = true;
 	}
 
-	public void setWOStepStatus(final Integer woStepStatus)
+	public void setWOStepStatus(final JsonWOStepStatus woStepStatus)
 	{
 		this.woStepStatus = woStepStatus;
 		this.woStepStatusSet = true;

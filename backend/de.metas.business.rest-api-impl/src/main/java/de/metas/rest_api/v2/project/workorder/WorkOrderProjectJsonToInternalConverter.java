@@ -22,9 +22,12 @@
 
 package de.metas.rest_api.v2.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.project.workorder.JsonWOStepStatus;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertRequest;
@@ -36,8 +39,10 @@ import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.workorder.data.WOProject;
+import de.metas.project.workorder.data.WOProjectObjectUnderTest;
 import de.metas.project.workorder.data.WOProjectResource;
 import de.metas.project.workorder.data.WOProjectStep;
+import de.metas.project.workorder.data.WOStepStatus;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -51,6 +56,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -138,15 +144,6 @@ public class WorkOrderProjectJsonToInternalConverter
 			updatedWOProjectBuilder.bPartnerId(existingWOProject.getBPartnerId());
 		}
 
-		if (request.isCurrencyIdSet() || existingWOProject == null)
-		{
-			updatedWOProjectBuilder.currencyId(CurrencyId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getCurrencyId())));
-		}
-		else
-		{
-			updatedWOProjectBuilder.currencyId(existingWOProject.getCurrencyId());
-		}
-
 		if (request.isNameSet() || existingWOProject == null)
 		{
 			updatedWOProjectBuilder.name(request.getName());
@@ -201,8 +198,28 @@ public class WorkOrderProjectJsonToInternalConverter
 			updatedWOProjectBuilder.isActive(existingWOProject.getIsActive());
 		}
 
+		if (request.isSpecialistConsultantIdSet() || existingWOProject == null)
+		{
+			updatedWOProjectBuilder.specialistConsultantId(request.getSpecialistConsultantId());
+		}
+		else
+		{
+			updatedWOProjectBuilder.specialistConsultantId(existingWOProject.getSpecialistConsultantId());
+		}
+
+		if (request.isDateOfProvisionByBPartnerSet() || existingWOProject == null)
+		{
+			updatedWOProjectBuilder.dateOfProvisionByBPartner(TimeUtil.asInstant(request.getDateOfProvisionByBPartner(), orgId));
+		}
+		else
+		{
+			updatedWOProjectBuilder.dateOfProvisionByBPartner(existingWOProject.getDateOfProvisionByBPartner());
+		}
+
 		final Map<JsonExternalId, JsonWorkOrderStepUpsertRequest> jsonProjectSteps = request.getSteps().stream()
 				.collect(Collectors.toMap(JsonWorkOrderStepUpsertRequest::getExternalId, Function.identity()));
+
+		final ImmutableList.Builder<WOProjectStep> projectSteps = ImmutableList.builder();
 
 		if (existingWOProject != null)
 		{
@@ -222,17 +239,22 @@ public class WorkOrderProjectJsonToInternalConverter
 						orgId,
 						matchedJsonProjectStep,
 						existingProjectStep);
-				updatedWOProjectBuilder.projectStep(updatedWOProjectStep);
+				projectSteps.add(updatedWOProjectStep);
 			}
 		}
+
 		for (final JsonWorkOrderStepUpsertRequest remainingJsonProjectStep : jsonProjectSteps.values())
 		{
 			final WOProjectStep newWOProjectStep = updateWOProjectStepFromJson(
 					orgId,
 					remainingJsonProjectStep,
 					null);
-			updatedWOProjectBuilder.projectStep(newWOProjectStep);
+			projectSteps.add(newWOProjectStep);
 		}
+
+		updatedWOProjectBuilder.projectSteps(projectSteps.build());
+
+		updatedWOProjectBuilder.projectObjectsUnderTest(getObjectUnderTestList(request.getObjectsUnderTest(), existingWOProject));
 
 		return updatedWOProjectBuilder.build();
 	}
@@ -245,10 +267,6 @@ public class WorkOrderProjectJsonToInternalConverter
 	{
 		final WOProjectStep.WOProjectStepBuilder updatedWOProjectStepBuilder = WOProjectStep.builder()
 				.name(request.getName());
-		if (woProjectStepToUpdate != null)
-		{
-			updatedWOProjectStepBuilder.name(request.getName());
-		}
 
 		if (request.isSeqNoSet() || woProjectStepToUpdate == null)
 		{
@@ -287,6 +305,87 @@ public class WorkOrderProjectJsonToInternalConverter
 			updatedWOProjectStepBuilder.description(woProjectStepToUpdate.getDescription());
 		}
 
+		if (request.isWoPartialReportDateSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.woPartialReportDate(TimeUtil.asInstant(request.getWoPartialReportDate()));
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.woPartialReportDate(woProjectStepToUpdate.getWoPartialReportDate());
+		}
+
+		if (request.isWoPlannedResourceDurationHoursSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.woPlannedResourceDurationHours(request.getWoPlannedResourceDurationHours());
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.woPlannedResourceDurationHours(woProjectStepToUpdate.getWoPlannedResourceDurationHours());
+		}
+
+		if (request.isDeliveryDateSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.deliveryDate(TimeUtil.asInstant(request.getDeliveryDate()));
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.deliveryDate(woProjectStepToUpdate.getDeliveryDate());
+		}
+
+		if (request.isWoTargetStartDateSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.woTargetStartDate(TimeUtil.asInstant(request.getWoTargetStartDate()));
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.woTargetStartDate(woProjectStepToUpdate.getWoTargetStartDate());
+		}
+
+		if (request.isWoTargetEndDateSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.woTargetEndDate(TimeUtil.asInstant(request.getWoTargetEndDate()));
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.woTargetEndDate(woProjectStepToUpdate.getWoTargetEndDate());
+		}
+
+		if (request.isWoPlannedPersonDurationHoursSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.woPlannedPersonDurationHours(request.getWoPlannedPersonDurationHours());
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.woPlannedPersonDurationHours(woProjectStepToUpdate.getWoPlannedPersonDurationHours());
+		}
+
+		if (request.isWoStepStatusSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.woStepStatus(toWoStepStatus(request.getWoStepStatus()));
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.woStepStatus(woProjectStepToUpdate.getWoStepStatus());
+		}
+
+		if (request.isWoFindingsReleasedDateSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.woFindingsReleasedDate(TimeUtil.asInstant(request.getWoFindingsReleasedDate()));
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.woFindingsReleasedDate(woProjectStepToUpdate.getWoFindingsReleasedDate());
+		}
+
+		if (request.isWoFindingsCreatedDateSet() || woProjectStepToUpdate == null)
+		{
+			updatedWOProjectStepBuilder.woFindingsCreatedDate(TimeUtil.asInstant(request.getWoFindingsCreatedDate()));
+		}
+		else
+		{
+			updatedWOProjectStepBuilder.woFindingsCreatedDate(woProjectStepToUpdate.getWoFindingsCreatedDate());
+		}
+
 		final Map<JsonExternalId, JsonWorkOrderResourceUpsertRequest> jsonProjectResources = request.getResourceRequests().stream()
 				.collect(Collectors.toMap(JsonWorkOrderResourceUpsertRequest::getExternalId, Function.identity()));
 
@@ -321,7 +420,7 @@ public class WorkOrderProjectJsonToInternalConverter
 					.assignDateFrom(assignDateFrom)
 					.assignDateTo(assignDateTo)
 					.duration(remainingJsonProjectResource.getDuration())
-					.durationUnit(remainingJsonProjectResource.getDurationUnit())
+					.durationUnit(remainingJsonProjectResource.getDurationUnit().name())
 					.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(remainingJsonProjectResource.getExternalId())))
 					.build();
 
@@ -381,6 +480,7 @@ public class WorkOrderProjectJsonToInternalConverter
 		return updatedWOProjectResourceBuilder.build();
 	}
 
+	@NonNull
 	private ResourceId extractResourceId(
 			@NonNull final OrgId orgId,
 			@NonNull final JsonWorkOrderResourceUpsertRequest request
@@ -418,5 +518,154 @@ public class WorkOrderProjectJsonToInternalConverter
 						.resourceIdentifier(request.getResourceIdentifier())
 						.parentResource(request)
 						.build());
+	}
+
+	@NonNull
+	private List<WOProjectObjectUnderTest> getObjectUnderTestList(
+			@NonNull final List<JsonWorkOrderObjectUnderTestUpsertRequest> jsonObjectUnderTests,
+			@Nullable final WOProject existingWOProject)
+	{
+		final Map<JsonExternalId, JsonWorkOrderObjectUnderTestUpsertRequest> jsonObjectUnderTestMap = jsonObjectUnderTests
+				.stream()
+				.collect(Collectors.toMap(JsonWorkOrderObjectUnderTestUpsertRequest::getExternalId, Function.identity()));
+
+		final ImmutableList.Builder<WOProjectObjectUnderTest> objectsUnderTest = ImmutableList.builder();
+
+		if (existingWOProject != null)
+		{
+			for (final WOProjectObjectUnderTest existingObjectUnderTest : existingWOProject.getProjectObjectsUnderTest())
+			{
+				if (existingObjectUnderTest.getExternalId() == null)
+				{
+					continue; // can't match an object that has no external ID
+				}
+
+				final JsonExternalId externalId = JsonExternalId.of(existingObjectUnderTest.getExternalId().getValue());
+				final JsonWorkOrderObjectUnderTestUpsertRequest matchedJsonObjectUnderTest = jsonObjectUnderTestMap.remove(externalId);
+				if (matchedJsonObjectUnderTest == null)
+				{
+					continue;
+				}
+
+				final WOProjectObjectUnderTest updatedObjectUnderTest = syncObjectUnderTestWithJson(
+						existingObjectUnderTest,
+						matchedJsonObjectUnderTest);
+
+				objectsUnderTest.add(updatedObjectUnderTest);
+			}
+		}
+
+		jsonObjectUnderTestMap.values()
+				.stream()
+				.map(WOProjectObjectUnderTest::fromJson)
+				.forEach(objectsUnderTest::add);
+
+		return objectsUnderTest.build();
+	}
+
+	@NonNull
+	private WOProjectObjectUnderTest syncObjectUnderTestWithJson(
+			@NonNull final WOProjectObjectUnderTest objectUnderTest,
+			@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request)
+	{
+		final WOProjectObjectUnderTest.WOProjectObjectUnderTestBuilder builder = WOProjectObjectUnderTest.builder();
+
+		if (request.isNumberOfObjectsUnderTestSet())
+		{
+			builder.numberOfObjectsUnderTest(request.getNumberOfObjectsUnderTest());
+		}
+		else
+		{
+			builder.numberOfObjectsUnderTest(objectUnderTest.getNumberOfObjectsUnderTest());
+		}
+
+		if (request.isWoDeliveryNoteSet())
+		{
+			builder.woDeliveryNote(request.getWoDeliveryNote());
+		}
+		else
+		{
+			builder.woDeliveryNote(objectUnderTest.getWoDeliveryNote());
+		}
+
+		if (request.isWoManufacturerSet())
+		{
+			builder.woManufacturer(request.getWoManufacturer());
+		}
+		else
+		{
+			builder.woManufacturer(objectUnderTest.getWoManufacturer());
+		}
+
+		if (request.isWoObjectTypeSet())
+		{
+			builder.woObjectType(request.getWoObjectType());
+		}
+		else
+		{
+			builder.woObjectType(objectUnderTest.getWoObjectType());
+		}
+
+		if (request.isWoObjectNameSet())
+		{
+			builder.woObjectName(request.getWoObjectName());
+		}
+		else
+		{
+			builder.woObjectName(objectUnderTest.getWoObjectName());
+		}
+
+		if (request.isWoObjectWhereaboutsSet())
+		{
+			builder.woObjectWhereabouts(request.getWoObjectWhereabouts());
+		}
+		else
+		{
+			builder.woObjectWhereabouts(objectUnderTest.getWoObjectWhereabouts());
+		}
+
+		if (request.isExternalIdSet())
+		{
+			builder.externalId(ExternalId.of(request.getExternalId().getValue()));
+		}
+		else
+		{
+			builder.externalId(objectUnderTest.getExternalId());
+		}
+
+		return builder.build();
+	}
+
+	@Nullable
+	private WOStepStatus toWoStepStatus(@Nullable JsonWOStepStatus jsonWOStepStatus)
+	{
+		if (jsonWOStepStatus == null)
+		{
+			return null;
+		}
+
+		switch (jsonWOStepStatus)
+		{
+			case CREATED:
+				return WOStepStatus.CREATED;
+			case RECEIVED:
+				return WOStepStatus.RECEIVED;
+			case RELEASED:
+				return WOStepStatus.RELEASED;
+			case EARMARKED:
+				return WOStepStatus.EARMARKED;
+			case READYFORTESTING:
+				return WOStepStatus.READYFORTESTING;
+			case INTESTING:
+				return WOStepStatus.INTESTING;
+			case EXECUTED:
+				return WOStepStatus.EXECUTED;
+			case READY:
+				return WOStepStatus.READY;
+			case CANCELED:
+				return WOStepStatus.CANCELED;
+			default:
+				throw new IllegalStateException("JsonWOStepStatus not supported: " + jsonWOStepStatus);
+		}
 	}
 }
