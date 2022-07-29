@@ -309,8 +309,6 @@ export class RawList extends PureComponent {
       field,
       listHash,
       wrapperElement,
-      enableOnClickOutside,
-      disableOnClickOutside,
     } = this.props;
 
     let value = '';
@@ -460,8 +458,6 @@ export class RawList extends PureComponent {
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
-              onMount={() => disableOnClickOutside && disableOnClickOutside()}
-              onUnmount={() => enableOnClickOutside && enableOnClickOutside()}
             />
           )
         }
