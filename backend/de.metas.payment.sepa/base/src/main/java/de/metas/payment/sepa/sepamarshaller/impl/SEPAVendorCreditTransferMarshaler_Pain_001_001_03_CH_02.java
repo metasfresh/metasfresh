@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
@@ -688,12 +689,14 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
 
-				if (!Check.isEmpty(bankAccount.getQR_IBAN(),true))
+				if (!Check.isBlank(bankAccount.getQR_IBAN()))
 				{
 					final String QRReference = StringUtils.cleanWhitespace(line.getStructuredRemittanceInfo());
 
-					Check.errorIf(isInvalidQRReference(QRReference), SepaMarshallerException.class,
-								  "SEPA_ExportLine {} has to valid QR Reference", createInfo(line));
+					if(isInvalidQRReference(QRReference))
+					{
+						throw new SepaMarshallerException("SEPA_ExportLine " + createInfo(line) + " has no valid QR Reference");
+					}
 
 					final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
 					rmtInf.setStrd(strd);
@@ -711,12 +714,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				{
 					// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
 					// because it's much less complicated
-					final String reference = Check.isEmpty(line.getStructuredRemittanceInfo(), true)
-							? line.getDescription()
-							: line.getStructuredRemittanceInfo();
+					final String reference = Optional.of(StringUtils.trimBlankToNull(line.getStructuredRemittanceInfo())).orElseGet(line::getDescription);
 
 					// provide the line-description (if set) as unstructured remittance info
-					if (Check.isEmpty(reference, true))
+					if (Check.isBlank(reference))
 					{
 						// at least add a "." to make sure the node exists.
 						rmtInf.setUstrd(".");
@@ -1022,8 +1023,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		return bpartnerService.getBPartnerName(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
 	}
 
-
-	static private boolean isInvalidQRReference(final String reference)
+	@VisibleForTesting
+	static boolean isInvalidQRReference(final String reference)
 	{
 		if(reference.length() != 27)
 		{
