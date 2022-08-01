@@ -60,3 +60,25 @@ UPDATE AD_Ref_List SET Value='InterimInvoice', ValueName='InterimInvoice',Update
 INSERT INTO t_alter_column values('c_flatrate_conditions','Type_Conditions','VARCHAR(40)',null,null)
 ;
 
+
+
+
+-- 2022-08-01T15:48:17.285Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET MandatoryLogic='@Type_Conditions/''''@=''InterimInvoice''',Updated=TO_TIMESTAMP('2022-08-01 18:48:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583805
+;
+
+-- 2022-08-01T15:48:31.295Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET MandatoryLogic='@Type_Conditions/''''@=''InterimInvoice''',Updated=TO_TIMESTAMP('2022-08-01 18:48:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=545656
+;
+
+-- 2022-08-01T15:49:25.126Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type_Conditions/''''@=''InterimInvoice''',Updated=TO_TIMESTAMP('2022-08-01 18:49:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=702171
+;
+
+
+
+
+
