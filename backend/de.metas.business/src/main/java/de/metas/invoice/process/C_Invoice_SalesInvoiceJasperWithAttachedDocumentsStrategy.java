@@ -1,6 +1,7 @@
 package de.metas.invoice.process;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.lowagie.text.Document;
@@ -39,6 +40,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import static de.metas.invoice.process.XmlToPdfConverter.getPDF;
+import static de.metas.invoice.process.XmlToPdfConverter.stringToPdfTransformer;
 
 /*
  * #%L
@@ -136,9 +138,11 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 			{
 				try
 				{
-					newEntry = attachmentEntryService.createNewAttachment(attachment.getId(), attachment.getName(), getPDF(attachment.getFilename()));
+					final byte[] data = attachmentEntryService.retrieveData(attachment.getId());
+					final String xml = new String(data, StandardCharsets.UTF_8);
+					newEntry = attachmentEntryService.createNewAttachment(attachment.getId(), attachment.getName(), stringToPdfTransformer(xml));
 				}
-				catch (ParserConfigurationException | IOException | SAXException | TransformerException | DocumentException e)
+				catch (ParserConfigurationException | IOException | DocumentException e)
 				{
 					throw new RuntimeException(e);
 				}

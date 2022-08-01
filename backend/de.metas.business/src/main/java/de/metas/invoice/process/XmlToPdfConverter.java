@@ -56,7 +56,7 @@ public class XmlToPdfConverter
 		return stringToPdfTransformer(stringFromXml);
 	}
 
-	private static byte[] stringToPdfTransformer(final String string) throws ParserConfigurationException, IOException, DocumentException
+	public static byte[] stringToPdfTransformer(final String string) throws ParserConfigurationException, IOException, DocumentException
 	{
 		final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
