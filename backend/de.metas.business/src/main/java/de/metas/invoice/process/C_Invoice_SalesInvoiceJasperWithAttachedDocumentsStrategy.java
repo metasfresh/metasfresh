@@ -1,7 +1,10 @@
 package de.metas.invoice.process;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
@@ -30,6 +33,12 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import static de.metas.invoice.process.XmlToPdfConverter.getPDF;
 
 /*
  * #%L
@@ -97,6 +106,14 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 				.build();
 
 		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(attachmentQuery);
+
+		for (final AttachmentEntry attachment : attachments)
+		{
+			if (MimeType.TYPE_XML.equals(attachment.getMimeType()))
+			{
+				replaceXmlPdfAttachment(attachments);
+			}
+		}
 		final ImmutableList<PdfDataProvider> additionalPdfData = attachments.stream()
 				.map(AttachmentEntry::getId)
 				.map(attachmentEntryService::retrieveData)
@@ -107,6 +124,27 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		final Resource result = ExecuteReportStrategyUtil.concatenatePDF(invoiceData, additionalPdfData);
 
 		return ExecuteReportResult.of(outputType, result);
+	}
+
+	private void replaceXmlPdfAttachment(final List<AttachmentEntry> attachments)
+	{
+		AttachmentEntry newEntry;
+
+		for (final AttachmentEntry attachment : attachments)
+		{
+			if (MimeType.TYPE_XML.equals(attachment.getMimeType()))
+			{
+				try
+				{
+					newEntry = attachmentEntryService.createNewAttachment(attachment.getId(), attachment.getName(), getPDF(attachment.getFilename()));
+				}
+				catch (ParserConfigurationException | IOException | SAXException | TransformerException | DocumentException e)
+				{
+					throw new RuntimeException(e);
+				}
+				attachments.set(attachments.indexOf(attachment), newEntry);
+			}
+		}
 	}
 
 }
