@@ -112,7 +112,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		{
 			if (MimeType.TYPE_XML.equals(attachment.getMimeType()))
 			{
-				replaceXmlPdfAttachment(attachments,invoiceId);
+				replaceXmlPdfAttachment(attachments, invoiceId);
 			}
 		}
 		final ImmutableList<PdfDataProvider> additionalPdfData = attachments.stream()
@@ -142,14 +142,15 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 					//final AdTableId invoiceTable_ID = adTableDAO.retrieveAdTableId(I_C_Invoice.Table_Name);
 					//final TableRecordReference tableRecordReference =TableRecordReference.of(invoiceTable_ID.getRepoId(), invoiceId.getRepoId());
-					final TableRecordReference tableRecordReference =TableRecordReference.of(318, 1000085);
-					newEntry = attachmentEntryService.createNewAttachment(tableRecordReference, attachment.getName()+".pdf", stringToPdfTransformer(xml));
+					final TableRecordReference tableRecordReference = TableRecordReference.of(318, 1000085);
+					newEntry = attachmentEntryService.createNewAttachment(tableRecordReference, attachment.getName() + ".pdf", stringToPdfTransformer(xml));
 				}
 				catch (ParserConfigurationException | IOException | DocumentException e)
 				{
 					throw new RuntimeException(e);
 				}
-				attachments.set(attachments.indexOf(attachment), newEntry);
+				attachments.remove(attachment);
+				attachments.add(newEntry);
 			}
 		}
 	}
