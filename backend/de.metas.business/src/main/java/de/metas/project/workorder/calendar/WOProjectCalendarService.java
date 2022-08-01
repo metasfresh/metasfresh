@@ -174,7 +174,10 @@ public class WOProjectCalendarService implements CalendarService
 			return Stream.empty();
 		}
 
-		final InSetPredicate<ProjectId> projectIds = getProjectIdsPredicate(calendarQuery.getOnlyProjectId(), calendarQuery.getOnlyCustomerId());
+		final InSetPredicate<ProjectId> projectIds = getProjectIdsPredicate(
+				calendarQuery.getOnlyProjectId(),
+				calendarQuery.getOnlyCustomerId(),
+				calendarQuery.getOnlyProjectResponsibleId());
 		if (projectIds.isNone())
 		{
 			return Stream.empty();
@@ -217,11 +220,13 @@ public class WOProjectCalendarService implements CalendarService
 
 	public InSetPredicate<ProjectId> getProjectIdsPredicate(
 			@Nullable final ProjectId onlyProjectId,
-			@Nullable final BPartnerId onlyCustomerId)
+			@Nullable final BPartnerId onlyCustomerId,
+			@Nullable final UserId onlyResponsibleId)
 	{
 		final WOProjectQuery query = WOProjectQuery.builder()
 				.projectIds(onlyProjectId != null ? InSetPredicate.only(onlyProjectId) : InSetPredicate.any())
 				.onlyCustomerId(onlyCustomerId)
+				.onlyResponsibleId(onlyResponsibleId)
 				.build();
 		if (query.isAny())
 		{
