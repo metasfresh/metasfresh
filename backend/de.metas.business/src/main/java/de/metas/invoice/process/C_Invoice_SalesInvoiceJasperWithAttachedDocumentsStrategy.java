@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
@@ -34,12 +36,9 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
-import static de.metas.invoice.process.XmlToPdfConverter.getPDF;
 import static de.metas.invoice.process.XmlToPdfConverter.stringToPdfTransformer;
 
 /*
@@ -113,7 +112,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		{
 			if (MimeType.TYPE_XML.equals(attachment.getMimeType()))
 			{
-				replaceXmlPdfAttachment(attachments);
+				replaceXmlPdfAttachment(attachments,invoiceId);
 			}
 		}
 		final ImmutableList<PdfDataProvider> additionalPdfData = attachments.stream()
@@ -128,7 +127,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		return ExecuteReportResult.of(outputType, result);
 	}
 
-	private void replaceXmlPdfAttachment(final List<AttachmentEntry> attachments)
+	private void replaceXmlPdfAttachment(final List<AttachmentEntry> attachments, final InvoiceId invoiceId)
 	{
 		AttachmentEntry newEntry;
 
@@ -140,7 +139,11 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 				{
 					final byte[] data = attachmentEntryService.retrieveData(attachment.getId());
 					final String xml = new String(data, StandardCharsets.UTF_8);
-					newEntry = attachmentEntryService.createNewAttachment(attachment.getId(), attachment.getName(), stringToPdfTransformer(xml));
+					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+					//final AdTableId invoiceTable_ID = adTableDAO.retrieveAdTableId(I_C_Invoice.Table_Name);
+					//final TableRecordReference tableRecordReference =TableRecordReference.of(invoiceTable_ID.getRepoId(), invoiceId.getRepoId());
+					final TableRecordReference tableRecordReference =TableRecordReference.of(318, 1000085);
+					newEntry = attachmentEntryService.createNewAttachment(tableRecordReference, attachment.getName()+".pdf", stringToPdfTransformer(xml));
 				}
 				catch (ParserConfigurationException | IOException | DocumentException e)
 				{
