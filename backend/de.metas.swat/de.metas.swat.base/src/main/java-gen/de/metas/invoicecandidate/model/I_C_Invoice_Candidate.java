@@ -2511,6 +2511,29 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_packingmaterialname = "packingmaterialname";
 
 	/**
+	 * Set Payment Rule.
+	 * How you pay the invoice
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRule (@Nullable java.lang.String PaymentRule);
+
+	/**
+	 * Get Payment Rule.
+	 * How you pay the invoice
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_Invoice_Candidate.class, "PaymentRule", null);
+	String COLUMNNAME_PaymentRule = "PaymentRule";
+
+	/**
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
