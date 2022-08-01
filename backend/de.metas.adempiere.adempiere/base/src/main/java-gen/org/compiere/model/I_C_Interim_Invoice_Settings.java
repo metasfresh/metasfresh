@@ -2,14 +2,14 @@ package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for C_Prefinancing_Settings
+/** Generated Interface for C_Interim_Invoice_Settings
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Prefinancing_Settings 
+public interface I_C_Interim_Invoice_Settings 
 {
 
-	String Table_Name = "C_Prefinancing_Settings";
+	String Table_Name = "C_Interim_Invoice_Settings";
 
 //	/** AD_Table_ID=542188 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -71,29 +71,29 @@ public interface I_C_Prefinancing_Settings
 
 	void setC_Harvesting_Calendar(org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
 
-	ModelColumn<I_C_Prefinancing_Settings, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_Prefinancing_Settings.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	ModelColumn<I_C_Interim_Invoice_Settings, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_Interim_Invoice_Settings.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
 	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
-	 * Set Prefinancing Settings.
+	 * Set Interim Invoice Settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Prefinancing_Settings_ID (int C_Prefinancing_Settings_ID);
+	void setC_Interim_Invoice_Settings_ID (int C_Interim_Invoice_Settings_ID);
 
 	/**
-	 * Get Prefinancing Settings.
+	 * Get Interim Invoice Settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Prefinancing_Settings_ID();
+	int getC_Interim_Invoice_Settings_ID();
 
-	ModelColumn<I_C_Prefinancing_Settings, Object> COLUMN_C_Prefinancing_Settings_ID = new ModelColumn<>(I_C_Prefinancing_Settings.class, "C_Prefinancing_Settings_ID", null);
-	String COLUMNNAME_C_Prefinancing_Settings_ID = "C_Prefinancing_Settings_ID";
+	ModelColumn<I_C_Interim_Invoice_Settings, Object> COLUMN_C_Interim_Invoice_Settings_ID = new ModelColumn<>(I_C_Interim_Invoice_Settings.class, "C_Interim_Invoice_Settings_ID", null);
+	String COLUMNNAME_C_Interim_Invoice_Settings_ID = "C_Interim_Invoice_Settings_ID";
 
 	/**
 	 * Get Created.
@@ -105,7 +105,7 @@ public interface I_C_Prefinancing_Settings
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Prefinancing_Settings, Object> COLUMN_Created = new ModelColumn<>(I_C_Prefinancing_Settings.class, "Created", null);
+	ModelColumn<I_C_Interim_Invoice_Settings, Object> COLUMN_Created = new ModelColumn<>(I_C_Interim_Invoice_Settings.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -140,7 +140,7 @@ public interface I_C_Prefinancing_Settings
 	 */
 	boolean isActive();
 
-	ModelColumn<I_C_Prefinancing_Settings, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Prefinancing_Settings.class, "IsActive", null);
+	ModelColumn<I_C_Interim_Invoice_Settings, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Interim_Invoice_Settings.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
@@ -173,7 +173,7 @@ public interface I_C_Prefinancing_Settings
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Prefinancing_Settings, Object> COLUMN_Updated = new ModelColumn<>(I_C_Prefinancing_Settings.class, "Updated", null);
+	ModelColumn<I_C_Interim_Invoice_Settings, Object> COLUMN_Updated = new ModelColumn<>(I_C_Interim_Invoice_Settings.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

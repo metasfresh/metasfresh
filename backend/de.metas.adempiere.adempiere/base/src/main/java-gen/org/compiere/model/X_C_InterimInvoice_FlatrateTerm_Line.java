@@ -5,23 +5,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for C_PartialPayment_Overview_Line
+/** Generated Model for C_InterimInvoice_FlatrateTerm_Line
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_PartialPayment_Overview_Line extends org.compiere.model.PO implements I_C_PartialPayment_Overview_Line, org.compiere.model.I_Persistent 
+public class X_C_InterimInvoice_FlatrateTerm_Line extends org.compiere.model.PO implements I_C_InterimInvoice_FlatrateTerm_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 186757629L;
+	private static final long serialVersionUID = -1098088481L;
 
     /** Standard Constructor */
-    public X_C_PartialPayment_Overview_Line (final Properties ctx, final int C_PartialPayment_Overview_Line_ID, @Nullable final String trxName)
+    public X_C_InterimInvoice_FlatrateTerm_Line (final Properties ctx, final int C_InterimInvoice_FlatrateTerm_Line_ID, @Nullable final String trxName)
     {
-      super (ctx, C_PartialPayment_Overview_Line_ID, trxName);
+      super (ctx, C_InterimInvoice_FlatrateTerm_Line_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_PartialPayment_Overview_Line (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_InterimInvoice_FlatrateTerm_Line (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -35,30 +35,45 @@ public class X_C_PartialPayment_Overview_Line extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public org.compiere.model.I_C_Calendar getC_Calendar()
+	public org.compiere.model.I_C_InterimInvoice_FlatrateTerm getC_InterimInvoice_FlatrateTerm()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+		return get_ValueAsPO(COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, org.compiere.model.I_C_InterimInvoice_FlatrateTerm.class);
 	}
 
 	@Override
-	public void setC_Calendar(final org.compiere.model.I_C_Calendar C_Calendar)
+	public void setC_InterimInvoice_FlatrateTerm(final org.compiere.model.I_C_InterimInvoice_FlatrateTerm C_InterimInvoice_FlatrateTerm)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Calendar);
+		set_ValueFromPO(COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, org.compiere.model.I_C_InterimInvoice_FlatrateTerm.class, C_InterimInvoice_FlatrateTerm);
 	}
 
 	@Override
-	public void setC_Calendar_ID (final int C_Calendar_ID)
+	public void setC_InterimInvoice_FlatrateTerm_ID (final int C_InterimInvoice_FlatrateTerm_ID)
 	{
-		if (C_Calendar_ID < 1) 
-			set_Value (COLUMNNAME_C_Calendar_ID, null);
+		if (C_InterimInvoice_FlatrateTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Calendar_ID, C_Calendar_ID);
+			set_Value (COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, C_InterimInvoice_FlatrateTerm_ID);
 	}
 
 	@Override
-	public int getC_Calendar_ID() 
+	public int getC_InterimInvoice_FlatrateTerm_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Calendar_ID);
+		return get_ValueAsInt(COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID);
+	}
+
+	@Override
+	public void setC_InterimInvoice_FlatrateTerm_Line_ID (final int C_InterimInvoice_FlatrateTerm_Line_ID)
+	{
+		if (C_InterimInvoice_FlatrateTerm_Line_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_InterimInvoice_FlatrateTerm_Line_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_InterimInvoice_FlatrateTerm_Line_ID, C_InterimInvoice_FlatrateTerm_Line_ID);
+	}
+
+	@Override
+	public int getC_InterimInvoice_FlatrateTerm_Line_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_InterimInvoice_FlatrateTerm_Line_ID);
 	}
 
 	@Override
@@ -113,48 +128,6 @@ public class X_C_PartialPayment_Overview_Line extends org.compiere.model.PO impl
 	public int getC_InvoiceLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_InvoiceLine_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_PartialPayment_Overview getC_PartialPayment_Overview()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PartialPayment_Overview_ID, org.compiere.model.I_C_PartialPayment_Overview.class);
-	}
-
-	@Override
-	public void setC_PartialPayment_Overview(final org.compiere.model.I_C_PartialPayment_Overview C_PartialPayment_Overview)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PartialPayment_Overview_ID, org.compiere.model.I_C_PartialPayment_Overview.class, C_PartialPayment_Overview);
-	}
-
-	@Override
-	public void setC_PartialPayment_Overview_ID (final int C_PartialPayment_Overview_ID)
-	{
-		if (C_PartialPayment_Overview_ID < 1) 
-			set_Value (COLUMNNAME_C_PartialPayment_Overview_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_PartialPayment_Overview_ID, C_PartialPayment_Overview_ID);
-	}
-
-	@Override
-	public int getC_PartialPayment_Overview_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PartialPayment_Overview_ID);
-	}
-
-	@Override
-	public void setC_PartialPayment_Overview_Line_ID (final int C_PartialPayment_Overview_Line_ID)
-	{
-		if (C_PartialPayment_Overview_Line_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_PartialPayment_Overview_Line_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_PartialPayment_Overview_Line_ID, C_PartialPayment_Overview_Line_ID);
-	}
-
-	@Override
-	public int getC_PartialPayment_Overview_Line_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PartialPayment_Overview_Line_ID);
 	}
 
 	@Override

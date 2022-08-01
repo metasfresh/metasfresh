@@ -3,14 +3,14 @@ package org.compiere.model;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for C_PartialPayment_Overview_Line
+/** Generated Interface for C_InterimInvoice_FlatrateTerm_Line
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_PartialPayment_Overview_Line 
+public interface I_C_InterimInvoice_FlatrateTerm_Line 
 {
 
-	String Table_Name = "C_PartialPayment_Overview_Line";
+	String Table_Name = "C_InterimInvoice_FlatrateTerm_Line";
 
 //	/** AD_Table_ID=542194 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -51,31 +51,50 @@ public interface I_C_PartialPayment_Overview_Line
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Calendar.
-	 * Accounting Calendar Name
+	 * Set Interim Invoice Flatrate Term.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Calendar_ID (int C_Calendar_ID);
+	void setC_InterimInvoice_FlatrateTerm_ID (int C_InterimInvoice_FlatrateTerm_ID);
 
 	/**
-	 * Get Calendar.
-	 * Accounting Calendar Name
+	 * Get Interim Invoice Flatrate Term.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Calendar_ID();
+	int getC_InterimInvoice_FlatrateTerm_ID();
 
-	@Nullable org.compiere.model.I_C_Calendar getC_Calendar();
+	@Nullable org.compiere.model.I_C_InterimInvoice_FlatrateTerm getC_InterimInvoice_FlatrateTerm();
 
-	void setC_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Calendar);
+	void setC_InterimInvoice_FlatrateTerm(@Nullable org.compiere.model.I_C_InterimInvoice_FlatrateTerm C_InterimInvoice_FlatrateTerm);
 
-	ModelColumn<I_C_PartialPayment_Overview_Line, org.compiere.model.I_C_Calendar> COLUMN_C_Calendar_ID = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "C_Calendar_ID", org.compiere.model.I_C_Calendar.class);
-	String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, org.compiere.model.I_C_InterimInvoice_FlatrateTerm> COLUMN_C_InterimInvoice_FlatrateTerm_ID = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "C_InterimInvoice_FlatrateTerm_ID", org.compiere.model.I_C_InterimInvoice_FlatrateTerm.class);
+	String COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID = "C_InterimInvoice_FlatrateTerm_ID";
+
+	/**
+	 * Set Interim Invoice Flatrate Term.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_InterimInvoice_FlatrateTerm_Line_ID (int C_InterimInvoice_FlatrateTerm_Line_ID);
+
+	/**
+	 * Get Interim Invoice Flatrate Term.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_InterimInvoice_FlatrateTerm_Line_ID();
+
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, Object> COLUMN_C_InterimInvoice_FlatrateTerm_Line_ID = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "C_InterimInvoice_FlatrateTerm_Line_ID", null);
+	String COLUMNNAME_C_InterimInvoice_FlatrateTerm_Line_ID = "C_InterimInvoice_FlatrateTerm_Line_ID";
 
 	/**
 	 * Set Invoice.
@@ -101,7 +120,7 @@ public interface I_C_PartialPayment_Overview_Line
 
 	void setC_Invoice(@Nullable org.compiere.model.I_C_Invoice C_Invoice);
 
-	ModelColumn<I_C_PartialPayment_Overview_Line, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
@@ -128,54 +147,8 @@ public interface I_C_PartialPayment_Overview_Line
 
 	void setC_InvoiceLine(@Nullable org.compiere.model.I_C_InvoiceLine C_InvoiceLine);
 
-	ModelColumn<I_C_PartialPayment_Overview_Line, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
 	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
-
-	/**
-	 * Set Akontozahlung Übersicht.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PartialPayment_Overview_ID (int C_PartialPayment_Overview_ID);
-
-	/**
-	 * Get Akontozahlung Übersicht.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PartialPayment_Overview_ID();
-
-	@Nullable org.compiere.model.I_C_PartialPayment_Overview getC_PartialPayment_Overview();
-
-	void setC_PartialPayment_Overview(@Nullable org.compiere.model.I_C_PartialPayment_Overview C_PartialPayment_Overview);
-
-	ModelColumn<I_C_PartialPayment_Overview_Line, org.compiere.model.I_C_PartialPayment_Overview> COLUMN_C_PartialPayment_Overview_ID = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "C_PartialPayment_Overview_ID", org.compiere.model.I_C_PartialPayment_Overview.class);
-	String COLUMNNAME_C_PartialPayment_Overview_ID = "C_PartialPayment_Overview_ID";
-
-	/**
-	 * Set Akontozahlung Übersicht Position.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_PartialPayment_Overview_Line_ID (int C_PartialPayment_Overview_Line_ID);
-
-	/**
-	 * Get Akontozahlung Übersicht Position.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_PartialPayment_Overview_Line_ID();
-
-	ModelColumn<I_C_PartialPayment_Overview_Line, Object> COLUMN_C_PartialPayment_Overview_Line_ID = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "C_PartialPayment_Overview_Line_ID", null);
-	String COLUMNNAME_C_PartialPayment_Overview_Line_ID = "C_PartialPayment_Overview_Line_ID";
 
 	/**
 	 * Get Created.
@@ -187,7 +160,7 @@ public interface I_C_PartialPayment_Overview_Line
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_PartialPayment_Overview_Line, Object> COLUMN_Created = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "Created", null);
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, Object> COLUMN_Created = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -222,7 +195,7 @@ public interface I_C_PartialPayment_Overview_Line
 	 */
 	boolean isActive();
 
-	ModelColumn<I_C_PartialPayment_Overview_Line, Object> COLUMN_IsActive = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "IsActive", null);
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, Object> COLUMN_IsActive = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
@@ -249,7 +222,7 @@ public interface I_C_PartialPayment_Overview_Line
 
 	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
 
-	ModelColumn<I_C_PartialPayment_Overview_Line, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
@@ -276,7 +249,7 @@ public interface I_C_PartialPayment_Overview_Line
 
 	void setM_InOutLine(@Nullable org.compiere.model.I_M_InOutLine M_InOutLine);
 
-	ModelColumn<I_C_PartialPayment_Overview_Line, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
 	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
@@ -289,7 +262,7 @@ public interface I_C_PartialPayment_Overview_Line
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_PartialPayment_Overview_Line, Object> COLUMN_Updated = new ModelColumn<>(I_C_PartialPayment_Overview_Line.class, "Updated", null);
+	ModelColumn<I_C_InterimInvoice_FlatrateTerm_Line, Object> COLUMN_Updated = new ModelColumn<>(I_C_InterimInvoice_FlatrateTerm_Line.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

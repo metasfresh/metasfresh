@@ -6,23 +6,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for C_PartialPayment_Overview
+/** Generated Model for C_InterimInvoice_FlatrateTerm
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_PartialPayment_Overview extends org.compiere.model.PO implements I_C_PartialPayment_Overview, org.compiere.model.I_Persistent 
+public class X_C_InterimInvoice_FlatrateTerm extends org.compiere.model.PO implements I_C_InterimInvoice_FlatrateTerm, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1237575771L;
+	private static final long serialVersionUID = -162909973L;
 
     /** Standard Constructor */
-    public X_C_PartialPayment_Overview (final Properties ctx, final int C_PartialPayment_Overview_ID, @Nullable final String trxName)
+    public X_C_InterimInvoice_FlatrateTerm (final Properties ctx, final int C_InterimInvoice_FlatrateTerm_ID, @Nullable final String trxName)
     {
-      super (ctx, C_PartialPayment_Overview_ID, trxName);
+      super (ctx, C_InterimInvoice_FlatrateTerm_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_PartialPayment_Overview (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_InterimInvoice_FlatrateTerm (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -33,33 +33,6 @@ public class X_C_PartialPayment_Overview extends org.compiere.model.PO implement
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Calendar getC_Calendar()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class);
-	}
-
-	@Override
-	public void setC_Calendar(final org.compiere.model.I_C_Calendar C_Calendar)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Calendar);
-	}
-
-	@Override
-	public void setC_Calendar_ID (final int C_Calendar_ID)
-	{
-		if (C_Calendar_ID < 1) 
-			set_Value (COLUMNNAME_C_Calendar_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Calendar_ID, C_Calendar_ID);
-	}
-
-	@Override
-	public int getC_Calendar_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Calendar_ID);
 	}
 
 	@Override
@@ -78,18 +51,48 @@ public class X_C_PartialPayment_Overview extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setC_Invoice_Candidate_Prepayment_ID (final int C_Invoice_Candidate_Prepayment_ID)
+	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
 	{
-		if (C_Invoice_Candidate_Prepayment_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_Candidate_Prepayment_ID, null);
+		if (C_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_Candidate_Prepayment_ID, C_Invoice_Candidate_Prepayment_ID);
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
 	}
 
 	@Override
-	public int getC_Invoice_Candidate_Prepayment_ID() 
+	public int getC_Flatrate_Term_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_Prepayment_ID);
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public void setC_Interim_Invoice_Candidate_ID (final int C_Interim_Invoice_Candidate_ID)
+	{
+		if (C_Interim_Invoice_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_C_Interim_Invoice_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Interim_Invoice_Candidate_ID, C_Interim_Invoice_Candidate_ID);
+	}
+
+	@Override
+	public int getC_Interim_Invoice_Candidate_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Interim_Invoice_Candidate_ID);
+	}
+
+	@Override
+	public void setC_InterimInvoice_FlatrateTerm_ID (final int C_InterimInvoice_FlatrateTerm_ID)
+	{
+		if (C_InterimInvoice_FlatrateTerm_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, C_InterimInvoice_FlatrateTerm_ID);
+	}
+
+	@Override
+	public int getC_InterimInvoice_FlatrateTerm_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID);
 	}
 
 	@Override
@@ -162,21 +165,6 @@ public class X_C_PartialPayment_Overview extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setC_PartialPayment_Overview_ID (final int C_PartialPayment_Overview_ID)
-	{
-		if (C_PartialPayment_Overview_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_PartialPayment_Overview_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_PartialPayment_Overview_ID, C_PartialPayment_Overview_ID);
-	}
-
-	@Override
-	public int getC_PartialPayment_Overview_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PartialPayment_Overview_ID);
-	}
-
-	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -216,6 +204,19 @@ public class X_C_PartialPayment_Overview extends org.compiere.model.PO implement
 	public BigDecimal getPriceActual() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceActual);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyDeliveredInUOM (final @Nullable BigDecimal QtyDeliveredInUOM)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredInUOM, QtyDeliveredInUOM);
+	}
+
+	@Override
+	public BigDecimal getQtyDeliveredInUOM() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
