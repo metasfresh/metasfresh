@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,33 +20,46 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.project.workorder;
+package de.metas.rest_api.v2.project.workorder.responsemapper;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
+
+import javax.annotation.Nullable;
+import java.util.Map;
 
 @Value
-public class JsonWorkOrderResourceUpsertResponse
+public class WOProjectStepResponseMapper
 {
 	@NonNull
-	JsonMetasfreshId resourceId;
+	ExternalId stepExternalId;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
+	@NonFinal
+	JsonMetasfreshId stepMetasfreshId;
+
+	@NonNull
+	Map<ExternalId, WOProjectResourceResponseMapper> resourceToExternalIdMap;
+
 	@Builder
-	@JsonCreator
-	public JsonWorkOrderResourceUpsertResponse(
-			@NonNull @JsonProperty("resourceId") final JsonMetasfreshId resourceId,
-			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
-	)
+	public WOProjectStepResponseMapper(
+			@NonNull final ExternalId stepExternalId,
+			@NonNull final JsonResponseUpsertItem.SyncOutcome syncOutcome,
+			@NonFinal final JsonMetasfreshId stepMetasfreshId,
+			@Nullable final Map<ExternalId, WOProjectResourceResponseMapper> resourceToExternalIdMap)
 	{
-		this.resourceId = resourceId;
+		this.stepExternalId = stepExternalId;
 		this.syncOutcome = syncOutcome;
+		this.stepMetasfreshId = stepMetasfreshId;
+		this.resourceToExternalIdMap = CoalesceUtil.coalesce(resourceToExternalIdMap, ImmutableMap.of());
 	}
 }

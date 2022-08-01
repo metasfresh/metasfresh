@@ -22,6 +22,8 @@
 
 package de.metas.project.workorder.data;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
@@ -29,7 +31,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
@@ -96,8 +97,49 @@ public class WOProjectStep
 	@Nullable
 	Instant woFindingsCreatedDate;
 
-	@Singular
+	@NonNull
 	List<WOProjectResource> projectResources;
+
+	@Builder
+	public WOProjectStep(
+			@Nullable final WOProjectStepId woProjectStepId,
+			@NonNull final String name,
+			@Nullable final ProjectId projectId,
+			@Nullable final String description,
+			@Nullable final Integer seqNo,
+			@Nullable final Instant dateStart,
+			@Nullable final Instant dateEnd,
+			@Nullable final ExternalId externalId,
+			@Nullable final Instant woPartialReportDate,
+			@Nullable final Integer woPlannedResourceDurationHours,
+			@Nullable final Instant deliveryDate,
+			@Nullable final Instant woTargetStartDate,
+			@Nullable final Instant woTargetEndDate,
+			@Nullable final Integer woPlannedPersonDurationHours,
+			@Nullable final WOStepStatus woStepStatus,
+			@Nullable final Instant woFindingsReleasedDate,
+			@Nullable final Instant woFindingsCreatedDate,
+			@Nullable final List<WOProjectResource> projectResources)
+	{
+		this.woProjectStepId = woProjectStepId;
+		this.name = name;
+		this.projectId = projectId;
+		this.description = description;
+		this.seqNo = seqNo;
+		this.dateStart = dateStart;
+		this.dateEnd = dateEnd;
+		this.externalId = externalId;
+		this.woPartialReportDate = woPartialReportDate;
+		this.woPlannedResourceDurationHours = woPlannedResourceDurationHours;
+		this.deliveryDate = deliveryDate;
+		this.woTargetStartDate = woTargetStartDate;
+		this.woTargetEndDate = woTargetEndDate;
+		this.woPlannedPersonDurationHours = woPlannedPersonDurationHours;
+		this.woStepStatus = woStepStatus;
+		this.woFindingsReleasedDate = woFindingsReleasedDate;
+		this.woFindingsCreatedDate = woFindingsCreatedDate;
+		this.projectResources = CoalesceUtil.coalesce(projectResources, ImmutableList.of());
+	}
 
 	@NonNull
 	public WOProjectStepId getWOProjectStepIdNonNull()
@@ -128,5 +170,16 @@ public class WOProjectStep
 		}
 
 		return projectId;
+	}
+
+	@NonNull
+	public ExternalId getExternalIdNonNull()
+	{
+		if (this.externalId == null)
+		{
+			throw new AdempiereException("ExternalId cannot be null at this stage!");
+		}
+
+		return this.externalId;
 	}
 }

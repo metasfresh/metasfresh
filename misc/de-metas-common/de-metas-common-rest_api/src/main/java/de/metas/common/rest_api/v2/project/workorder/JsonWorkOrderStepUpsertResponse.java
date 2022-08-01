@@ -30,11 +30,17 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.List;
+
 @Value
 public class JsonWorkOrderStepUpsertResponse
 {
 	@NonNull
-	JsonMetasfreshId createdStepId;
+	JsonMetasfreshId projectStepId;
+
+	@Nullable
+	List<JsonWorkOrderResourceUpsertResponse> resourceIds;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
@@ -42,11 +48,13 @@ public class JsonWorkOrderStepUpsertResponse
 	@Builder
 	@JsonCreator
 	public JsonWorkOrderStepUpsertResponse(
-			@NonNull @JsonProperty("createdStepId") final JsonMetasfreshId createdStepId,
+			@NonNull @JsonProperty("projectStepId") final JsonMetasfreshId projectStepId,
+			@Nullable @JsonProperty("resourceIds") final List<JsonWorkOrderResourceUpsertResponse> resourceIds,
 			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
 	)
 	{
-		this.createdStepId = createdStepId;
+		this.projectStepId = projectStepId;
+		this.resourceIds = resourceIds;
 		this.syncOutcome = syncOutcome;
 	}
 }

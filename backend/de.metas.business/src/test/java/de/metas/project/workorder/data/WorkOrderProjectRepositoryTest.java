@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.data;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectTypeRepository;
@@ -61,12 +62,12 @@ class WorkOrderProjectRepositoryTest
 		final WOProject woProject = WOProject.builder()
 				.orgId(OrgId.ofRepoId(10))
 				.name("name")
-				.projectStep(WOProjectStep.builder().name("name")
-									 .projectResource(WOProjectResource.builder()
-															  .assignDateFrom(Instant.parse("2022-07-01T10:15:30.00Z"))
-															  .assignDateTo(Instant.parse("2022-07-14T10:15:30.00Z"))
-															  .build())
-									 .build())
+				.projectSteps(ImmutableList.of(WOProjectStep.builder().name("name")
+													   .projectResources(ImmutableList.of(WOProjectResource.builder()
+																								  .assignDateFrom(Instant.parse("2022-07-01T10:15:30.00Z"))
+																								  .assignDateTo(Instant.parse("2022-07-14T10:15:30.00Z"))
+																								  .build()))
+													   .build()))
 				.build();
 		final WOProject result = workOrderProjectRepository.save(woProject);
 

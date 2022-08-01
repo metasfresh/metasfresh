@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,33 +20,26 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.project.workorder;
+package de.metas.rest_api.v2.project.workorder.responsemapper;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 @Value
-public class JsonWorkOrderResourceUpsertResponse
+@Builder
+public class WOProjectResourceResponseMapper
 {
 	@NonNull
-	JsonMetasfreshId resourceId;
+	ExternalId resourceExternalId;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
-	@Builder
-	@JsonCreator
-	public JsonWorkOrderResourceUpsertResponse(
-			@NonNull @JsonProperty("resourceId") final JsonMetasfreshId resourceId,
-			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
-	)
-	{
-		this.resourceId = resourceId;
-		this.syncOutcome = syncOutcome;
-	}
+	@NonFinal
+	JsonMetasfreshId resourceMetasfreshId;
 }

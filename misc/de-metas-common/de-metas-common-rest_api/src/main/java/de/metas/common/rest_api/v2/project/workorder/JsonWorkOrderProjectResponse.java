@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -71,11 +72,11 @@ public class JsonWorkOrderProjectResponse
 
 	@Nullable
 	@JsonProperty("dateContract")
-	String dateContract;
+	LocalDate dateContract;
 
 	@Nullable
 	@JsonProperty("dateFinish")
-	String dateFinish;
+	LocalDate dateFinish;
 
 	@Nullable
 	@JsonProperty("bPartnerId")
@@ -98,8 +99,20 @@ public class JsonWorkOrderProjectResponse
 	Boolean isActive;
 
 	@Nullable
+	@JsonProperty("specialistConsultantId")
+	String specialistConsultantId;
+
+	@Nullable
+	@JsonProperty("dateOfProvisionByBPartner")
+	LocalDate dateOfProvisionByBPartner;
+
+	@Nullable
 	@JsonProperty("steps")
 	List<JsonWorkOrderStepResponse> steps;
+
+	@Nullable
+	@JsonProperty("objectsUnderTest")
+	List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest;
 
 	@JsonCreator
 	@Builder
@@ -112,14 +125,17 @@ public class JsonWorkOrderProjectResponse
 			@Nullable @JsonProperty("currencyId") final JsonMetasfreshId currencyId,
 			@Nullable @JsonProperty("salesRepId") final JsonMetasfreshId salesRepId,
 			@Nullable @JsonProperty("description") final String description,
-			@Nullable @JsonProperty("dateContract") final String dateContract,
-			@Nullable @JsonProperty("dateFinish") final String dateFinish,
+			@Nullable @JsonProperty("dateContract") final LocalDate dateContract,
+			@Nullable @JsonProperty("dateFinish") final LocalDate dateFinish,
 			@Nullable @JsonProperty("bPartnerId") final JsonMetasfreshId bPartnerId,
 			@Nullable @JsonProperty("projectReferenceExt") final String projectReferenceExt,
 			@Nullable @JsonProperty("projectParentId") final JsonMetasfreshId projectParentId,
 			@NonNull @JsonProperty("orgCode") final String orgCode,
 			@Nullable @JsonProperty("isActive") final Boolean isActive,
-			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepResponse> steps)
+			@Nullable @JsonProperty("specialistConsultantId") final String specialistConsultantId,
+			@Nullable @JsonProperty("dateOfProvisionByBPartner") final LocalDate dateOfProvisionByBPartner,
+			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepResponse> steps,
+			@Nullable @JsonProperty("objectsUnderTest") List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest)
 	{
 		this.projectId = projectId;
 		this.value = value;
@@ -136,6 +152,9 @@ public class JsonWorkOrderProjectResponse
 		this.projectParentId = projectParentId;
 		this.orgCode = orgCode;
 		this.isActive = isActive;
+		this.specialistConsultantId = specialistConsultantId;
+		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
 		this.steps = steps;
+		this.objectsUnderTest = objectsUnderTest;
 	}
 }

@@ -28,12 +28,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.rest_api.v2.project.workorder.JsonWOStepStatus;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectsUnderTestResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepResponse;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResponse;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
@@ -48,11 +49,14 @@ import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.project.workorder.data.WOProject;
+import de.metas.project.workorder.data.WOProjectObjectUnderTest;
 import de.metas.project.workorder.data.WOProjectResource;
 import de.metas.project.workorder.data.WOProjectStep;
+import de.metas.project.workorder.data.WOStepStatus;
 import de.metas.project.workorder.data.WorkOrderProjectRepository;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.project.workorder.responsemapper.WOProjectResponseMapper;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -60,12 +64,13 @@ import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -79,12 +84,12 @@ public class WorkOrderProjectRestService
 
 	private final WorkOrderProjectRepository projectRepository;
 	private final ProjectTypeRepository projectTypeRepository;
-	private final WorkOrderProjectJsonToInternalConverter workOrderProjectJsonToInternalConverter;
+	private final WorkOrderMapper workOrderProjectJsonToInternalConverter;
 
 	public WorkOrderProjectRestService(
 			@NonNull final WorkOrderProjectRepository projectRepository,
 			@NonNull final ProjectTypeRepository projectTypeRepository,
-			@NonNull final WorkOrderProjectJsonToInternalConverter workOrderProjectJsonToInternalConverter)
+			@NonNull final WorkOrderMapper workOrderProjectJsonToInternalConverter)
 	{
 		this.projectRepository = projectRepository;
 		this.projectTypeRepository = projectTypeRepository;
@@ -93,13 +98,12 @@ public class WorkOrderProjectRestService
 
 	public JsonWorkOrderProjectResponse getWorkOrderProjectDataById(@NonNull final ProjectId projectId)
 	{
-		final WOProject projectData = projectRepository.getOptionalById(projectId)
+		return projectRepository.getOptionalById(projectId)
+				.map(projectData -> toJsonWorkOrderProjectResponse(projectData))
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceName("Work Order Project")
 						.resourceIdentifier(String.valueOf(projectId.getRepoId()))
 						.build());
-
-		return toJsonWorkOrderProjectResponse(projectData);
 	}
 
 	@NonNull
@@ -123,6 +127,8 @@ public class WorkOrderProjectRestService
 				IdentifierString.ofOrNull(request.getProjectIdentifier()),
 				request);
 
+		final WOProjectResponseMapper.WOProjectResponseMapperBuilder responseMapper = WOProjectResponseMapper.builder();
+
 		if (existingWOProjectOpt.isPresent())
 		{
 			final WOProject existingWOProject = existingWOProjectOpt.get();
@@ -130,14 +136,10 @@ public class WorkOrderProjectRestService
 			final ProjectId existingWOProjectId = existingWOProject.getProjectIdNonNull();
 			logger.debug("Found Work Order Project with id={}", existingWOProjectId);
 
-			final JsonWorkOrderProjectUpsertResponse.JsonWorkOrderProjectUpsertResponseBuilder projectResponseBuilder =
-					JsonWorkOrderProjectUpsertResponse.builder()
-							.projectId(JsonMetasfreshId.of(existingWOProjectId.getRepoId()));
+			final WOProject jsonUpdatedWOProject = workOrderProjectJsonToInternalConverter.mapWOProjectFromJson(responseMapper, request, existingWOProject);
+			final JsonResponseUpsertItem.SyncOutcome projectSyncOutcome = updateExistingWOProject(responseMapper, jsonUpdatedWOProject, woProjectSyncAdvise);
 
-			final WOProject jsonUpdatedWOProject = workOrderProjectJsonToInternalConverter.updateWOProjectFromJson(request, existingWOProject);
-			updateExistingWOProject(projectResponseBuilder, jsonUpdatedWOProject, woProjectSyncAdvise);
-
-			return projectResponseBuilder.build();
+			return null; //todo fp return response + handle DO NOTHING for children
 		}
 		else if (woProjectSyncAdvise.isFailIfNotExists())
 		{
@@ -150,15 +152,19 @@ public class WorkOrderProjectRestService
 		else
 		{
 			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getCurrencyId()));
+
 			if (currencyId == null)
 			{
 				throw new MissingPropertyException("currencyId", request);
 			}
+
 			final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectTypeId()));
+
 			if (projectTypeId == null)
 			{
 				throw new MissingPropertyException("projectTypeId", request);
 			}
+
 			if (projectTypeRepository.getByIdOrNull(projectTypeId) == null)
 			{
 				throw MissingResourceException.builder()
@@ -168,32 +174,29 @@ public class WorkOrderProjectRestService
 						.build();
 			}
 
-			final WOProject projectData = workOrderProjectJsonToInternalConverter.updateWOProjectFromJson(request, null);
+			final WOProject projectData = workOrderProjectJsonToInternalConverter.mapWOProjectFromJson(responseMapper, request, null);
 			final WOProject updatedProjectData = projectRepository.save(projectData);
 
-			final ImmutableList.Builder<JsonWorkOrderStepUpsertResponse> stepListBuilder = ImmutableList.builder();
-
-			return JsonWorkOrderProjectUpsertResponse.builder()
-					.projectId(JsonMetasfreshId.of(updatedProjectData.getProjectIdNonNull().getRepoId()))
-					.syncOutcome(JsonResponseUpsertItem.SyncOutcome.CREATED)
-					.createdStepIds(stepListBuilder.build())
-					.build();
+			return null;
 		}
 	}
 
-	private void updateExistingWOProject(
-			@NonNull final JsonWorkOrderProjectUpsertResponse.JsonWorkOrderProjectUpsertResponseBuilder responseBuilder,
+	@NonNull
+	private JsonResponseUpsertItem.SyncOutcome updateExistingWOProject(
+			@NonNull final WOProjectResponseMapper.WOProjectResponseMapperBuilder responseMapper,
 			@NonNull final WOProject existingWOProject,
 			@NonNull final SyncAdvise syncAdvise)
 	{
 		if (syncAdvise.getIfExists().isUpdate())
 		{
-			projectRepository.save(existingWOProject);
-			responseBuilder.syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED);
+			final WOProject updatedWOProject = projectRepository.save(existingWOProject);
+			responseMapper.syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED);
+			return JsonResponseUpsertItem.SyncOutcome.UPDATED; //todo fp handle here
 		}
 		else
 		{
-			responseBuilder.syncOutcome(JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE);
+			responseMapper.syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED);
+			return JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE;
 		}
 	}
 
@@ -232,57 +235,155 @@ public class WorkOrderProjectRestService
 	@NonNull
 	private JsonWorkOrderProjectResponse toJsonWorkOrderProjectResponse(@NonNull final WOProject projectData)
 	{
-		final ImmutableList.Builder<JsonWorkOrderStepResponse> stepsResponseBuilder = ImmutableList.builder();
-
-		for (final WOProjectStep stepData : projectData.getProjectSteps())
-		{
-			final JsonWorkOrderStepResponse.JsonWorkOrderStepResponseBuilder jsonWorkOrderStepResponseBuilder = JsonWorkOrderStepResponse.builder()
-					.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(stepData.getWOProjectStepIdNonNull())))
-					.dateEnd(Optional.ofNullable(stepData.getDateEnd()).map(Instant::toString).orElse(null))
-					.dateStart(Optional.ofNullable(stepData.getDateStart()).map(Instant::toString).orElse(null))
-					.seqNo(stepData.getSeqNoNonNull())
-					.description(stepData.getDescription())
-					.name(stepData.getName())
-					.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(stepData.getProjectIdNonNull())));
-
-			for (final WOProjectResource resourceData : stepData.getProjectResources())
-			{
-				final JsonWorkOrderResourceResponse jsonWorkOrderResourceResponse = JsonWorkOrderResourceResponse.builder()
-						.woResourceId(JsonMetasfreshId.of(WOProjectResourceId.toRepoId(resourceData.getWOProjectResourceIdNotNull())))
-						.resourceId(JsonMetasfreshId.ofOrNull(ResourceId.toRepoId(resourceData.getResourceId())))
-						.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(resourceData.getWoProjectStepId())))
-						.budgetProjectId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(resourceData.getBudgetProjectId())))
-						.projectResourceBudgetId(JsonMetasfreshId.ofOrNull(BudgetProjectResourceId.toRepoId(resourceData.getProjectResourceBudgetId())))
-						.assignDateFrom(resourceData.getAssignDateFrom().toString())
-						.assignDateTo(resourceData.getAssignDateTo().toString())
-						.duration(resourceData.getDuration())
-						.durationUnit(resourceData.getDurationUnit())
-						.isAllDay(resourceData.getIsAllDay())
-						.isActive(resourceData.getIsActive())
-						.build();
-				jsonWorkOrderStepResponseBuilder.resource(jsonWorkOrderResourceResponse);
-			}
-
-			stepsResponseBuilder.add(jsonWorkOrderStepResponseBuilder.build());
-		}
-
 		return JsonWorkOrderProjectResponse.builder()
-				.bPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(projectData.getBPartnerId())))
-				.currencyId(JsonMetasfreshId.ofOrNull(CurrencyId.toRepoId(projectData.getCurrencyId())))
-				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(projectData.getProjectParentId())))
+				.projectId(JsonMetasfreshId.of(projectData.getProjectIdNonNull().getRepoId()))
+				.value(projectData.getValueNonNull())
+				.name(projectData.getNameNonNull())
 				.projectTypeId(JsonMetasfreshId.of(ProjectTypeId.toRepoId(projectData.getProjectTypeId())))
 				.priceListVersionId(JsonMetasfreshId.ofOrNull(PriceListVersionId.toRepoId(projectData.getPriceListVersionId())))
-				.orgCode(orgDAO.retrieveOrgValue(projectData.getOrgId()))
-				.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(projectData.getProjectIdNonNull())))
-				.dateContract(Optional.ofNullable(projectData.getDateContract()).map(LocalDate::toString).orElse(""))
-				.dateFinish(Optional.ofNullable(projectData.getDateFinish()).map(LocalDate::toString).orElse(""))
-				.description(projectData.getDescription())
-				.projectReferenceExt(projectData.getProjectReferenceExt())
-				.name(projectData.getNameNonNull())
+				.currencyId(JsonMetasfreshId.ofOrNull(CurrencyId.toRepoId(projectData.getCurrencyId())))
 				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(projectData.getSalesRepId())))
+				.description(projectData.getDescription())
+				.dateContract(TimeUtil.asLocalDate(projectData.getDateContract()))
+				.dateFinish(TimeUtil.asLocalDate(projectData.getDateFinish()))
+				.bPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(projectData.getBPartnerId())))
+				.projectReferenceExt(projectData.getProjectReferenceExt())
+				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(projectData.getProjectParentId())))
+				.orgCode(orgDAO.retrieveOrgValue(projectData.getOrgId()))
 				.isActive(projectData.getIsActive())
-				.value(projectData.getValueNonNull())
-				.steps(stepsResponseBuilder.build())
+				.specialistConsultantId(projectData.getSpecialistConsultantId())
+				.dateOfProvisionByBPartner(TimeUtil.asLocalDate(projectData.getDateOfProvisionByBPartner()))
+				.steps(toJsonWorkOrderStepResponse(projectData.getProjectSteps()))
+				.build();
+	}
+
+	@NonNull
+	private ImmutableList<JsonWorkOrderStepResponse> toJsonWorkOrderStepResponse(@Nullable final List<WOProjectStep> woProjectSteps)
+	{
+		if (woProjectSteps == null || woProjectSteps.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return woProjectSteps.stream()
+				.map(WorkOrderProjectRestService::toJsonWorkOrderStepResponse)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static JsonWorkOrderStepResponse toJsonWorkOrderStepResponse(@NonNull final WOProjectStep woProjectStep)
+	{
+		return JsonWorkOrderStepResponse.builder()
+				.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(woProjectStep.getWOProjectStepIdNonNull())))
+				.name(woProjectStep.getName())
+				.projectId(JsonMetasfreshId.of(woProjectStep.getProjectIdNonNull().getRepoId()))
+				.description(woProjectStep.getDescription())
+				.seqNo(woProjectStep.getSeqNoNonNull())
+				.dateStart(TimeUtil.asLocalDate(woProjectStep.getDateStart()))
+				.dateEnd(TimeUtil.asLocalDate(woProjectStep.getDateEnd()))
+				// .externalId(JsonMetasfreshId.ofOrNull(Integer.valueOf(ExternalId.toValue(woProjectStep.getExternalId())))) //todo fp resolve this
+				.woPartialReportDate(TimeUtil.asLocalDate(woProjectStep.getWoPartialReportDate()))
+				.woPlannedResourceDurationHours(woProjectStep.getWoPlannedResourceDurationHours())
+				.deliveryDate(TimeUtil.asLocalDate(woProjectStep.getDeliveryDate()))
+				.woTargetStartDate(TimeUtil.asLocalDate(woProjectStep.getWoTargetStartDate()))
+				.woTargetEndDate(TimeUtil.asLocalDate(woProjectStep.getWoTargetEndDate()))
+				.woPlannedPersonDurationHours(woProjectStep.getWoPlannedPersonDurationHours())
+				.woStepStatus(toJsonWOStepStatus(woProjectStep.getWoStepStatus()))
+				.woFindingsReleasedDate(TimeUtil.asLocalDate(woProjectStep.getWoFindingsReleasedDate()))
+				.woFindingsCreatedDate(TimeUtil.asLocalDate(woProjectStep.getWoFindingsCreatedDate()))
+				.resources(toJsonWorkOrderResourceResponse(woProjectStep.getProjectResources()))
+				.build();
+	}
+
+	@Nullable
+	private static JsonWOStepStatus toJsonWOStepStatus(@Nullable final WOStepStatus woStepStatus)
+	{
+		if (woStepStatus == null)
+		{
+			return null;
+		}
+
+		switch (woStepStatus)
+		{
+			case CREATED:
+				return JsonWOStepStatus.CREATED;
+			case RECEIVED:
+				return JsonWOStepStatus.RECEIVED;
+			case RELEASED:
+				return JsonWOStepStatus.RELEASED;
+			case EARMARKED:
+				return JsonWOStepStatus.EARMARKED;
+			case READYFORTESTING:
+				return JsonWOStepStatus.READYFORTESTING;
+			case INTESTING:
+				return JsonWOStepStatus.INTESTING;
+			case EXECUTED:
+				return JsonWOStepStatus.EXECUTED;
+			case READY:
+				return JsonWOStepStatus.READY;
+			case CANCELED:
+				return JsonWOStepStatus.CANCELED;
+			default:
+				throw new AdempiereException("Unhandeled woStepStatus: " + woStepStatus);
+		}
+	}
+
+	@Nullable
+	private static ImmutableList<JsonWorkOrderResourceResponse> toJsonWorkOrderResourceResponse(@Nullable final List<WOProjectResource> resources)
+	{
+		if (resources == null || resources.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return resources.stream()
+				.map(WorkOrderProjectRestService::toJsonWorkOrderResourceResponse)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static JsonWorkOrderResourceResponse toJsonWorkOrderResourceResponse(@NonNull final WOProjectResource resourceData)
+	{
+		return JsonWorkOrderResourceResponse.builder()
+				.woResourceId(JsonMetasfreshId.of(WOProjectResourceId.toRepoId(resourceData.getWOProjectResourceIdNotNull())))
+				.resourceId(JsonMetasfreshId.ofOrNull(ResourceId.toRepoId(resourceData.getResourceId())))
+				.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(resourceData.getWoProjectStepId())))
+				.budgetProjectId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(resourceData.getBudgetProjectId())))
+				.projectResourceBudgetId(JsonMetasfreshId.ofOrNull(BudgetProjectResourceId.toRepoId(resourceData.getProjectResourceBudgetId())))
+				.assignDateFrom(resourceData.getAssignDateFrom().toString())
+				.assignDateTo(resourceData.getAssignDateTo().toString())
+				.duration(resourceData.getDuration())
+				.durationUnit(resourceData.getDurationUnit())
+				.isAllDay(resourceData.getIsAllDay())
+				.isActive(resourceData.getIsActive())
+				.build();
+	}
+
+	@Nullable
+	private static List<JsonWorkOrderObjectsUnderTestResponse> toJsonWorkOrderObjectsUnderTestResponse(@Nullable final List<WOProjectObjectUnderTest> objectsUnderTest)
+	{
+		if (objectsUnderTest == null || objectsUnderTest.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return objectsUnderTest.stream()
+				.map(WorkOrderProjectRestService::toJsonWorkOrderObjectsUnderTestResponse)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static JsonWorkOrderObjectsUnderTestResponse toJsonWorkOrderObjectsUnderTestResponse(@Nullable final WOProjectObjectUnderTest objectUnderTest)
+	{
+		return JsonWorkOrderObjectsUnderTestResponse.builder()
+				.objectUnderTestId(JsonMetasfreshId.of(objectUnderTest.getIdNonNull().getRepoId()))
+				.numberOfObjectsUnderTest(objectUnderTest.getNumberOfObjectsUnderTest())
+				// .externalId(JsonMetasfreshId.ofOrNull(Integer.valueOf(ExternalId.toValue(objectUnderTest.getExternalId())))) //todo fp resolve this
+				.woDeliveryNote(objectUnderTest.getWoDeliveryNote())
+				.woManufacturer(objectUnderTest.getWoManufacturer())
+				.woObjectType(objectUnderTest.getWoObjectType())
+				.woObjectName(objectUnderTest.getWoObjectName())
+				.woObjectWhereabouts(objectUnderTest.getWoObjectWhereabouts())
 				.build();
 	}
 }

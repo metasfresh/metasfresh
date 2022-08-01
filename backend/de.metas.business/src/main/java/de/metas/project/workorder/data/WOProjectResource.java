@@ -90,4 +90,14 @@ public class WOProjectResource
 		}
 		return woProjectResourceId;
 	}
+
+	@NonNull
+	public ExternalId getExternalIdNotNull()
+	{
+		if (this.externalId == null)
+		{
+			throw new AdempiereException("ExternalId cannot be null at this stage!");
+		}
+		return this.externalId;
+	}
 }

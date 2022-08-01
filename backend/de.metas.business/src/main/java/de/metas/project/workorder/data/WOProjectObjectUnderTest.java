@@ -22,7 +22,6 @@
 
 package de.metas.project.workorder.data;
 
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertRequest;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.lang.ExternalId;
@@ -46,7 +45,7 @@ public class WOProjectObjectUnderTest
 	@NonNull
 	Integer numberOfObjectsUnderTest;
 
-	@NonNull
+	@Nullable
 	ExternalId externalId;
 
 	@With
@@ -72,36 +71,33 @@ public class WOProjectObjectUnderTest
 	@NonNull
 	public WOProjectObjectUnderTestId getIdNonNull()
 	{
-		if (id == null)
+		if (this.id == null)
 		{
 			throw new AdempiereException("WOProjectObjectUnderTestId cannot be null at this stage!");
 		}
 
-		return id;
+		return this.id;
 	}
 
 	@NonNull
 	public ProjectId getProjectIdNonNull()
 	{
-		if (projectId == null)
+		if (this.projectId == null)
 		{
 			throw new AdempiereException("ProjectId cannot be null at this stage!");
 		}
 
-		return projectId;
+		return this.projectId;
 	}
 
 	@NonNull
-	public static WOProjectObjectUnderTest fromJson(@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request)
+	public ExternalId getExternalIdNonNull()
 	{
-		return WOProjectObjectUnderTest.builder()
-				.numberOfObjectsUnderTest(request.getNumberOfObjectsUnderTest())
-				.externalId(ExternalId.of(request.getExternalId().getValue()))
-				.woDeliveryNote(request.getWoDeliveryNote())
-				.woManufacturer(request.getWoManufacturer())
-				.woObjectType(request.getWoObjectType())
-				.woObjectName(request.getWoObjectName())
-				.woObjectWhereabouts(request.getWoObjectWhereabouts())
-				.build();
+		if (this.externalId == null)
+		{
+			throw new AdempiereException("ExternalId cannot be null at this stage!");
+		}
+
+		return this.externalId;
 	}
 }

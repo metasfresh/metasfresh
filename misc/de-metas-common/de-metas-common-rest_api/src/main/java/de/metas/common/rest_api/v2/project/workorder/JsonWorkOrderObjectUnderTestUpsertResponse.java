@@ -31,22 +31,22 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class JsonWorkOrderResourceUpsertResponse
+public class JsonWorkOrderObjectUnderTestUpsertResponse
 {
 	@NonNull
-	JsonMetasfreshId resourceId;
+	JsonMetasfreshId objectUnderTestId;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
 	@Builder
 	@JsonCreator
-	public JsonWorkOrderResourceUpsertResponse(
-			@NonNull @JsonProperty("resourceId") final JsonMetasfreshId resourceId,
+	public JsonWorkOrderObjectUnderTestUpsertResponse(
+			@NonNull @JsonProperty("objectUnderTestId") final JsonMetasfreshId objectUnderTestId,
 			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
 	)
 	{
-		this.resourceId = resourceId;
+		this.objectUnderTestId = objectUnderTestId;
 		this.syncOutcome = syncOutcome;
 	}
 }

@@ -22,8 +22,10 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -31,7 +33,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER_DOC;
@@ -115,10 +116,8 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(required = true)
 	SyncAdvise syncAdvise;
 
-	List<JsonWorkOrderStepUpsertRequest> steps = new ArrayList<>();
-
 	@ApiModelProperty(hidden = true)
-	boolean stepsSet;
+	private boolean syncAdviseSet;
 
 	String bpartnerDepartment;
 
@@ -151,7 +150,12 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	private boolean dateOfProvisionByBPartnerSet;
 
-	List<JsonWorkOrderObjectUnderTestUpsertRequest> objectsUnderTest = new ArrayList<>();
+	private List<JsonWorkOrderStepUpsertRequest> steps;
+
+	@ApiModelProperty(hidden = true)
+	boolean stepsSet;
+
+	private List<JsonWorkOrderObjectUnderTestUpsertRequest> objectsUnderTest;
 
 	@ApiModelProperty(hidden = true)
 	boolean objectsUnderTestSet;
@@ -240,11 +244,12 @@ public class JsonWorkOrderProjectUpsertRequest
 	public void setSyncAdvise(final SyncAdvise syncAdvise)
 	{
 		this.syncAdvise = syncAdvise;
+		this.syncAdviseSet = true;
 	}
 
 	public void setSteps(final List<JsonWorkOrderStepUpsertRequest> steps)
 	{
-		this.steps = steps;
+		this.steps = CoalesceUtil.coalesce(steps, ImmutableList.of());
 		this.stepsSet = true;
 	}
 
@@ -292,7 +297,7 @@ public class JsonWorkOrderProjectUpsertRequest
 
 	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertRequest> objectsUnderTest)
 	{
-		this.objectsUnderTest = objectsUnderTest;
+		this.objectsUnderTest = CoalesceUtil.coalesce(objectsUnderTest, ImmutableList.of());
 		this.objectsUnderTestSet = true;
 	}
 }

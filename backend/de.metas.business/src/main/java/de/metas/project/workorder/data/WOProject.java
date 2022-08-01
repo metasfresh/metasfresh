@@ -22,7 +22,9 @@
 
 package de.metas.project.workorder.data;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
@@ -32,7 +34,6 @@ import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -42,7 +43,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Value
-@Builder
 public class WOProject
 {
 	@Nullable
@@ -97,10 +97,54 @@ public class WOProject
 	@Nullable
 	Instant dateOfProvisionByBPartner;
 
-	@Singular
+	@NonNull
 	List<WOProjectStep> projectSteps;
 
+	@NonNull
 	List<WOProjectObjectUnderTest> projectObjectsUnderTest;
+
+	@Builder
+	public WOProject(
+			@Nullable final ProjectId projectId,
+			@NonNull final OrgId orgId,
+			@Nullable final CurrencyId currencyId,
+			@Nullable final String name,
+			@Nullable final String value,
+			@Nullable final Boolean isActive,
+			@Nullable final PriceListVersionId priceListVersionId,
+			@Nullable final String description,
+			@Nullable final ProjectId projectParentId,
+			@Nullable final ProjectTypeId projectTypeId,
+			@Nullable final String projectReferenceExt,
+			@Nullable final BPartnerId bPartnerId,
+			@Nullable final UserId salesRepId,
+			@Nullable final LocalDate dateContract,
+			@Nullable final LocalDate dateFinish,
+			@Nullable final String specialistConsultantId,
+			@Nullable final Instant dateOfProvisionByBPartner,
+			@Nullable final List<WOProjectStep> projectSteps,
+			@Nullable final List<WOProjectObjectUnderTest> projectObjectsUnderTest)
+	{
+		this.projectId = projectId;
+		this.orgId = orgId;
+		this.currencyId = currencyId;
+		this.name = name;
+		this.value = value;
+		this.isActive = isActive;
+		this.priceListVersionId = priceListVersionId;
+		this.description = description;
+		this.projectParentId = projectParentId;
+		this.projectTypeId = projectTypeId;
+		this.projectReferenceExt = projectReferenceExt;
+		this.bPartnerId = bPartnerId;
+		this.salesRepId = salesRepId;
+		this.dateContract = dateContract;
+		this.dateFinish = dateFinish;
+		this.specialistConsultantId = specialistConsultantId;
+		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
+		this.projectSteps = CoalesceUtil.coalesce(projectSteps, ImmutableList.of());
+		this.projectObjectsUnderTest = CoalesceUtil.coalesce(projectObjectsUnderTest, ImmutableList.of());
+	}
 
 	@NonNull
 	public ProjectId getProjectIdNonNull()

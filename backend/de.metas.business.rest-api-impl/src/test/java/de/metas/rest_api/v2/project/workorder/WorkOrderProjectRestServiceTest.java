@@ -116,7 +116,7 @@ class WorkOrderProjectRestServiceTest
 																									 new WorkOrderProjectObjectUnderTestRepository());
 
 		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
-		final WorkOrderProjectJsonToInternalConverter workOrderProjectJsonToInternalConverter = new WorkOrderProjectJsonToInternalConverter(resourceService);
+		final WorkOrderMapper workOrderProjectJsonToInternalConverter = new WorkOrderMapper(resourceService);
 		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository, projectTypeRepository, workOrderProjectJsonToInternalConverter);
 	}
 

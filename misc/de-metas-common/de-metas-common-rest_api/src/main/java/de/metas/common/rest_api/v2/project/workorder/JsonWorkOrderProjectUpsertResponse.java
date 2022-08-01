@@ -40,7 +40,10 @@ public class JsonWorkOrderProjectUpsertResponse
 	JsonMetasfreshId projectId;
 
 	@NonNull
-	List<JsonWorkOrderStepUpsertResponse> createdStepIds;
+	List<JsonWorkOrderStepUpsertResponse> projectStepIds;
+
+	@NonNull
+	List<JsonWorkOrderObjectUnderTestUpsertResponse> objectUnderTestIds;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
@@ -49,12 +52,14 @@ public class JsonWorkOrderProjectUpsertResponse
 	@JsonCreator
 	public JsonWorkOrderProjectUpsertResponse(
 			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@Singular @JsonProperty("createdStepIds") final List<JsonWorkOrderStepUpsertResponse> createdStepIds,
+			@Singular @JsonProperty("projectStepIds") final List<JsonWorkOrderStepUpsertResponse> projectStepIds,
+			@NonNull  @JsonProperty("objectUnderTestIds") final List<JsonWorkOrderObjectUnderTestUpsertResponse> objectUnderTestIds,
 			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
 	)
 	{
 		this.projectId = projectId;
-		this.createdStepIds = createdStepIds;
+		this.projectStepIds = projectStepIds;
+		this.objectUnderTestIds = objectUnderTestIds;
 		this.syncOutcome = syncOutcome;
 	}
 }

@@ -23,9 +23,11 @@
 package de.metas.rest_api.v2.project.workorder;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.project.workorder.JsonWOStepStatus;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
@@ -46,6 +48,10 @@ import de.metas.project.workorder.data.WOStepStatus;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.project.workorder.responsemapper.WOProjectObjectUnderTestResponseMapper;
+import de.metas.rest_api.v2.project.workorder.responsemapper.WOProjectResourceResponseMapper;
+import de.metas.rest_api.v2.project.workorder.responsemapper.WOProjectResponseMapper;
+import de.metas.rest_api.v2.project.workorder.responsemapper.WOProjectStepResponseMapper;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -66,25 +72,49 @@ import java.util.stream.Collectors;
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
 @Service
-public class WorkOrderProjectJsonToInternalConverter
+public class WorkOrderMapper
 {
+	@NonNull
 	private final ResourceService resourceService;
 
-	public WorkOrderProjectJsonToInternalConverter(@NonNull final ResourceService resourceService)
+	public WorkOrderMapper(@NonNull final ResourceService resourceService)
 	{
 		this.resourceService = resourceService;
 	}
 
 	@NonNull
-	public WOProject updateWOProjectFromJson(
+	public WOProject mapWOProjectFromJson(
+			@NonNull final WOProjectResponseMapper.WOProjectResponseMapperBuilder responseMapper,
 			@NonNull final JsonWorkOrderProjectUpsertRequest request,
 			@Nullable final WOProject existingWOProject)
 	{
 		final OrgId orgId = retrieveOrgIdOrDefault(request.getOrgCode());
 
+		final WOProject.WOProjectBuilder mappedWOProject = mapWOProject(orgId, request, existingWOProject);
+
+		if (request.isStepsSet())
+		{
+			mappedWOProject.projectSteps(mapWOProjectStep(responseMapper, orgId, request.getSteps(), existingWOProject));
+		}
+
+		if (request.isObjectsUnderTestSet())
+		{
+			mappedWOProject.projectObjectsUnderTest(mapObjectsUnderTest(responseMapper, request.getObjectsUnderTest(), existingWOProject));
+		}
+
+		return mappedWOProject.build();
+	}
+
+	@NonNull
+	private WOProject.WOProjectBuilder mapWOProject(
+			@NonNull final OrgId orgId,
+			@NonNull final JsonWorkOrderProjectUpsertRequest request,
+			@Nullable final WOProject existingWOProject)
+	{
 		final WOProject.WOProjectBuilder updatedWOProjectBuilder = WOProject.builder()
 				.projectTypeId(ProjectTypeId.ofRepoId(request.getProjectTypeId().getValue()))
 				.orgId(orgId);
+
 		if (existingWOProject != null)
 		{
 			updatedWOProjectBuilder.projectId(existingWOProject.getProjectIdNonNull());
@@ -216,51 +246,98 @@ public class WorkOrderProjectJsonToInternalConverter
 			updatedWOProjectBuilder.dateOfProvisionByBPartner(existingWOProject.getDateOfProvisionByBPartner());
 		}
 
-		final Map<JsonExternalId, JsonWorkOrderStepUpsertRequest> jsonProjectSteps = request.getSteps().stream()
+		return updatedWOProjectBuilder;
+	}
+
+	@NonNull
+	private List<WOProjectStep> mapWOProjectStep(
+			@NonNull final WOProjectResponseMapper.WOProjectResponseMapperBuilder responseMapper,
+			@NonNull final OrgId orgId,
+			@NonNull final List<JsonWorkOrderStepUpsertRequest> requestSteps,
+			@Nullable final WOProject existingWOProject)
+	{
+		final Map<JsonExternalId, JsonWorkOrderStepUpsertRequest> jsonProjectStepsMap = requestSteps.stream()
 				.collect(Collectors.toMap(JsonWorkOrderStepUpsertRequest::getExternalId, Function.identity()));
 
+		final Map<ExternalId, WOProjectStep> wpProjectStepsToUpdate = woProjectStepToUpdateMap(existingWOProject);
+
 		final ImmutableList.Builder<WOProjectStep> projectSteps = ImmutableList.builder();
+		final ImmutableMap.Builder<ExternalId, WOProjectStepResponseMapper> stepToExternalIdMap = ImmutableMap.builder();
 
-		if (existingWOProject != null)
+		for (final Map.Entry<ExternalId, WOProjectStep> woProjectStepEntry : wpProjectStepsToUpdate.entrySet())
 		{
-			for (final WOProjectStep existingProjectStep : existingWOProject.getProjectSteps())
+			final ExternalId externalId = woProjectStepEntry.getKey();
+			final JsonExternalId jsonExternalId = JsonExternalId.of(externalId.getValue());
+
+			final WOProjectStep existingWOProjectStep = woProjectStepEntry.getValue();
+			final JsonWorkOrderStepUpsertRequest matchedRequest = jsonProjectStepsMap.get(jsonExternalId);
+
+			if (matchedRequest == null)
 			{
-				if (existingProjectStep.getExternalId() == null)
-				{
-					continue; // can't match a step that has no external ID
-				}
-				final JsonExternalId existingJsonExtenalId = JsonExternalId.of(existingProjectStep.getExternalId().getValue());
-				final JsonWorkOrderStepUpsertRequest matchedJsonProjectStep = jsonProjectSteps.remove(existingJsonExtenalId);
-				if (matchedJsonProjectStep == null)
-				{
-					continue;
-				}
-				final WOProjectStep updatedWOProjectStep = updateWOProjectStepFromJson(
-						orgId,
-						matchedJsonProjectStep,
-						existingProjectStep);
-				projectSteps.add(updatedWOProjectStep);
+				continue;
 			}
-		}
 
-		for (final JsonWorkOrderStepUpsertRequest remainingJsonProjectStep : jsonProjectSteps.values())
-		{
-			final WOProjectStep newWOProjectStep = updateWOProjectStepFromJson(
+			final WOProjectStepResponseMapper.WOProjectStepResponseMapperBuilder stepResponseMapper = WOProjectStepResponseMapper.builder();
+
+			final WOProjectStep updatedWOProjectStep = updateWOProjectStepFromJson(
+					stepResponseMapper,
 					orgId,
-					remainingJsonProjectStep,
-					null);
-			projectSteps.add(newWOProjectStep);
+					matchedRequest,
+					existingWOProjectStep);
+
+			stepResponseMapper.stepExternalId(updatedWOProjectStep.getExternalIdNonNull())
+					.syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED);
+
+			stepToExternalIdMap.put(updatedWOProjectStep.getExternalIdNonNull(), stepResponseMapper.build());
+
+			projectSteps.add(updatedWOProjectStep);
+
+			//remove the updated keys from map
+			jsonProjectStepsMap.remove(jsonExternalId);
 		}
 
-		updatedWOProjectBuilder.projectSteps(projectSteps.build());
+		for (final JsonWorkOrderStepUpsertRequest jsonStep : jsonProjectStepsMap.values())
+		{
+			final WOProjectStepResponseMapper.WOProjectStepResponseMapperBuilder stepResponseMapper = WOProjectStepResponseMapper.builder();
 
-		updatedWOProjectBuilder.projectObjectsUnderTest(getObjectUnderTestList(request.getObjectsUnderTest(), existingWOProject));
+			final WOProjectStep createdWoProjectStep = updateWOProjectStepFromJson(stepResponseMapper, orgId, jsonStep, null);
 
-		return updatedWOProjectBuilder.build();
+			projectSteps.add(createdWoProjectStep);
+
+			stepResponseMapper.stepExternalId(createdWoProjectStep.getExternalIdNonNull())
+					.syncOutcome(JsonResponseUpsertItem.SyncOutcome.CREATED);
+
+			stepToExternalIdMap.put(createdWoProjectStep.getExternalIdNonNull(), stepResponseMapper.build());
+		}
+
+		responseMapper.stepToExternalIdMap(stepToExternalIdMap.build());
+
+		return projectSteps.build();
+	}
+
+	@NonNull
+	private Map<ExternalId, WOProjectStep> woProjectStepToUpdateMap(@Nullable final WOProject existingWOProject)
+	{
+		if (existingWOProject == null)
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<WOProjectStep> woProjectSteps = existingWOProject.getProjectSteps();
+
+		if (woProjectSteps == null || woProjectSteps.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return woProjectSteps.stream()
+				.filter(step -> step.getExternalId() != null)
+				.collect(Collectors.toMap(WOProjectStep::getExternalId, Function.identity()));
 	}
 
 	@NonNull
 	private WOProjectStep updateWOProjectStepFromJson(
+			@NonNull final WOProjectStepResponseMapper.WOProjectStepResponseMapperBuilder stepResponseMapper,
 			@NonNull final OrgId orgId,
 			@NonNull final JsonWorkOrderStepUpsertRequest request,
 			@Nullable final WOProjectStep woProjectStepToUpdate)
@@ -386,52 +463,104 @@ public class WorkOrderProjectJsonToInternalConverter
 			updatedWOProjectStepBuilder.woFindingsCreatedDate(woProjectStepToUpdate.getWoFindingsCreatedDate());
 		}
 
-		final Map<JsonExternalId, JsonWorkOrderResourceUpsertRequest> jsonProjectResources = request.getResourceRequests().stream()
-				.collect(Collectors.toMap(JsonWorkOrderResourceUpsertRequest::getExternalId, Function.identity()));
-
-		if (woProjectStepToUpdate != null)
-		{
-			for (final WOProjectResource existingProjectResource : woProjectStepToUpdate.getProjectResources())
-			{
-				if (existingProjectResource.getExternalId() == null)
-				{
-					continue; // can't match a resource that has no external ID
-				}
-				final JsonExternalId existingJsonExtenalId = JsonExternalId.of(existingProjectResource.getExternalId().getValue());
-				final WOProjectResource updatedResource = updateWOProjectResourceFromJson(
-						orgId,
-						jsonProjectResources.remove(existingJsonExtenalId),
-						existingProjectResource);
-				updatedWOProjectStepBuilder.projectResource(updatedResource);
-			}
-		}
-
-		for (final JsonWorkOrderResourceUpsertRequest remainingJsonProjectResource : jsonProjectResources.values())
-		{
-			final ResourceId resourceId = extractResourceId(orgId, remainingJsonProjectResource);
-
-			final Instant assignDateFrom = TimeUtil.asInstant(remainingJsonProjectResource.getAssignDateFrom(), orgId);
-			final Instant assignDateTo = TimeUtil.asEndOfDayInstant(remainingJsonProjectResource.getAssignDateTo(), orgId);
-
-			final WOProjectResource projectResource = WOProjectResource.builder()
-					.resourceId(resourceId)
-					.isActive(remainingJsonProjectResource.getIsActive())
-					.isAllDay(remainingJsonProjectResource.getIsAllDay())
-					.assignDateFrom(assignDateFrom)
-					.assignDateTo(assignDateTo)
-					.duration(remainingJsonProjectResource.getDuration())
-					.durationUnit(remainingJsonProjectResource.getDurationUnit().name())
-					.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(remainingJsonProjectResource.getExternalId())))
-					.build();
-
-			updatedWOProjectStepBuilder.projectResource(projectResource);
-		}
-
-		return updatedWOProjectStepBuilder.build();
+		return updatedWOProjectStepBuilder
+				.projectResources(mapWOProjectResource(stepResponseMapper, orgId, request.getResourceRequests(), woProjectStepToUpdate))
+				.build();
 	}
 
 	@NonNull
-	private WOProjectResource updateWOProjectResourceFromJson(
+	private List<WOProjectResource> mapWOProjectResource(
+			@NonNull final WOProjectStepResponseMapper.WOProjectStepResponseMapperBuilder stepResponseMapper,
+			@NonNull final OrgId orgId,
+			@Nullable final List<JsonWorkOrderResourceUpsertRequest> jsonResources,
+			@Nullable final WOProjectStep woProjectStepToUpdate)
+	{
+		if (jsonResources == null || jsonResources.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final Map<JsonExternalId, JsonWorkOrderResourceUpsertRequest> jsonProjectResources = jsonResources.stream()
+				.collect(Collectors.toMap(JsonWorkOrderResourceUpsertRequest::getExternalId, Function.identity()));
+
+		final Map<ExternalId, WOProjectResource> woProjectResourceToUpdateMap = woProjectResourceToUpdateMap(woProjectStepToUpdate);
+
+		final ImmutableList.Builder<WOProjectResource> resourcesResponse = ImmutableList.builder();
+		final ImmutableMap.Builder<ExternalId, WOProjectResourceResponseMapper> resourceToExternalIdMap = ImmutableMap.builder();
+
+		for (final Map.Entry<ExternalId, WOProjectResource> woProjectResourceEntry : woProjectResourceToUpdateMap.entrySet())
+		{
+			final ExternalId externalId = woProjectResourceEntry.getKey();
+			final JsonExternalId jsonExternalId = JsonExternalId.of(externalId.getValue());
+
+			final JsonWorkOrderResourceUpsertRequest jsonResource = jsonProjectResources.get(jsonExternalId);
+
+			if (jsonResource == null)
+			{
+				continue;
+			}
+
+			final WOProjectResource woProjectResource = woProjectResourceEntry.getValue();
+
+			final WOProjectResource updatedResource = updateWOProjectResource(
+					orgId,
+					jsonResource,
+					woProjectResource);
+
+			final WOProjectResourceResponseMapper resourceResponseMapper = WOProjectResourceResponseMapper.builder()
+					.resourceExternalId(updatedResource.getExternalIdNotNull())
+					.syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED)
+					.build();
+
+			resourceToExternalIdMap.put(updatedResource.getExternalIdNotNull(), resourceResponseMapper);
+			resourcesResponse.add(updatedResource);
+
+			//remove updated keys
+			jsonProjectResources.remove(jsonExternalId);
+		}
+
+		jsonProjectResources.values()
+				.forEach(jsonResource -> {
+							 final WOProjectResource createdWOResource = createWOProjectResource(orgId, jsonResource);
+
+							 resourcesResponse.add(createdWOResource);
+
+							 final WOProjectResourceResponseMapper resourceResponseMapper = WOProjectResourceResponseMapper.builder()
+									 .resourceExternalId(createdWOResource.getExternalIdNotNull())
+									 .syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED)
+									 .build();
+
+							 resourceToExternalIdMap.put(createdWOResource.getExternalIdNotNull(), resourceResponseMapper);
+						 }
+				);
+
+		stepResponseMapper.resourceToExternalIdMap(resourceToExternalIdMap.build());
+
+		return resourcesResponse.build();
+	}
+
+	@NonNull
+	private Map<ExternalId, WOProjectResource> woProjectResourceToUpdateMap(@Nullable final WOProjectStep existingWOStep)
+	{
+		if (existingWOStep == null)
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<WOProjectResource> woProjectResources = existingWOStep.getProjectResources();
+
+		if (woProjectResources == null || woProjectResources.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return woProjectResources.stream()
+				.filter(step -> step.getExternalId() != null)
+				.collect(Collectors.toMap(WOProjectResource::getExternalId, Function.identity()));
+	}
+
+	@NonNull
+	private WOProjectResource updateWOProjectResource(
 			@NonNull final OrgId orgId,
 			@NonNull final JsonWorkOrderResourceUpsertRequest request,
 			@NonNull final WOProjectResource existingWOProjectResource)
@@ -481,6 +610,28 @@ public class WorkOrderProjectJsonToInternalConverter
 	}
 
 	@NonNull
+	private WOProjectResource createWOProjectResource(
+			@NonNull final OrgId orgId,
+			@NonNull final JsonWorkOrderResourceUpsertRequest resourceRequest)
+	{
+		final ResourceId resourceId = extractResourceId(orgId, resourceRequest);
+
+		final Instant assignDateFrom = TimeUtil.asInstant(resourceRequest.getAssignDateFrom(), orgId);
+		final Instant assignDateTo = TimeUtil.asEndOfDayInstant(resourceRequest.getAssignDateTo(), orgId);
+
+		return WOProjectResource.builder()
+				.resourceId(resourceId)
+				.isActive(resourceRequest.getIsActive())
+				.isAllDay(resourceRequest.getIsAllDay())
+				.assignDateFrom(assignDateFrom)
+				.assignDateTo(assignDateTo)
+				.duration(resourceRequest.getDuration())
+				.durationUnit(resourceRequest.getDurationUnit().name())
+				.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(resourceRequest.getExternalId())))
+				.build();
+	}
+
+	@NonNull
 	private ResourceId extractResourceId(
 			@NonNull final OrgId orgId,
 			@NonNull final JsonWorkOrderResourceUpsertRequest request
@@ -521,7 +672,8 @@ public class WorkOrderProjectJsonToInternalConverter
 	}
 
 	@NonNull
-	private List<WOProjectObjectUnderTest> getObjectUnderTestList(
+	private List<WOProjectObjectUnderTest> mapObjectsUnderTest(
+			@NonNull final WOProjectResponseMapper.WOProjectResponseMapperBuilder responseMapper,
 			@NonNull final List<JsonWorkOrderObjectUnderTestUpsertRequest> jsonObjectUnderTests,
 			@Nullable final WOProject existingWOProject)
 	{
@@ -530,6 +682,7 @@ public class WorkOrderProjectJsonToInternalConverter
 				.collect(Collectors.toMap(JsonWorkOrderObjectUnderTestUpsertRequest::getExternalId, Function.identity()));
 
 		final ImmutableList.Builder<WOProjectObjectUnderTest> objectsUnderTest = ImmutableList.builder();
+		final ImmutableMap.Builder<ExternalId, WOProjectObjectUnderTestResponseMapper> objectUnderTestToExternalIdMap = ImmutableMap.builder();
 
 		if (existingWOProject != null)
 		{
@@ -542,29 +695,49 @@ public class WorkOrderProjectJsonToInternalConverter
 
 				final JsonExternalId externalId = JsonExternalId.of(existingObjectUnderTest.getExternalId().getValue());
 				final JsonWorkOrderObjectUnderTestUpsertRequest matchedJsonObjectUnderTest = jsonObjectUnderTestMap.remove(externalId);
+
 				if (matchedJsonObjectUnderTest == null)
 				{
 					continue;
 				}
 
-				final WOProjectObjectUnderTest updatedObjectUnderTest = syncObjectUnderTestWithJson(
+				final WOProjectObjectUnderTest updatedObjectUnderTest = mapObjectUnderTest(
 						existingObjectUnderTest,
 						matchedJsonObjectUnderTest);
 
 				objectsUnderTest.add(updatedObjectUnderTest);
+
+				final WOProjectObjectUnderTestResponseMapper objectUnderTestResponseMapper = WOProjectObjectUnderTestResponseMapper.builder()
+						.objectUnderTestExternalId(updatedObjectUnderTest.getExternalIdNonNull())
+						.syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED)
+						.build();
+
+				objectUnderTestToExternalIdMap.put(updatedObjectUnderTest.getExternalIdNonNull(), objectUnderTestResponseMapper);
 			}
 		}
 
 		jsonObjectUnderTestMap.values()
 				.stream()
-				.map(WOProjectObjectUnderTest::fromJson)
-				.forEach(objectsUnderTest::add);
+				.map(WorkOrderMapper::createNewObjectUnderTestFromJson)
+				.forEach(objectUnderTest -> {
+					objectsUnderTest.add(objectUnderTest);
+
+					final WOProjectObjectUnderTestResponseMapper objectUnderTestResponseMapper = WOProjectObjectUnderTestResponseMapper.builder()
+							.objectUnderTestExternalId(objectUnderTest.getExternalIdNonNull())
+							.syncOutcome(JsonResponseUpsertItem.SyncOutcome.CREATED)
+							.build();
+
+					objectUnderTestToExternalIdMap.put(objectUnderTest.getExternalIdNonNull(), objectUnderTestResponseMapper);
+
+				});
+
+		responseMapper.objectUnderTestToExternalIdMap(objectUnderTestToExternalIdMap.build());
 
 		return objectsUnderTest.build();
 	}
 
 	@NonNull
-	private WOProjectObjectUnderTest syncObjectUnderTestWithJson(
+	private WOProjectObjectUnderTest mapObjectUnderTest(
 			@NonNull final WOProjectObjectUnderTest objectUnderTest,
 			@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request)
 	{
@@ -636,8 +809,22 @@ public class WorkOrderProjectJsonToInternalConverter
 		return builder.build();
 	}
 
+	@NonNull
+	public static WOProjectObjectUnderTest createNewObjectUnderTestFromJson(@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request)
+	{
+		return WOProjectObjectUnderTest.builder()
+				.numberOfObjectsUnderTest(request.getNumberOfObjectsUnderTest())
+				.externalId(ExternalId.of(request.getExternalId().getValue()))
+				.woDeliveryNote(request.getWoDeliveryNote())
+				.woManufacturer(request.getWoManufacturer())
+				.woObjectType(request.getWoObjectType())
+				.woObjectName(request.getWoObjectName())
+				.woObjectWhereabouts(request.getWoObjectWhereabouts())
+				.build();
+	}
+
 	@Nullable
-	private WOStepStatus toWoStepStatus(@Nullable JsonWOStepStatus jsonWOStepStatus)
+	private static WOStepStatus toWoStepStatus(@Nullable JsonWOStepStatus jsonWOStepStatus)
 	{
 		if (jsonWOStepStatus == null)
 		{
