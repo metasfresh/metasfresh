@@ -397,23 +397,6 @@ public class ADWindowDAO implements IADWindowDAO
 		copyTabs(targetWindow, sourceWindow);
 	}
 
-	private void copyWindowTrl(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
-	{
-		final String sqlDelete = "DELETE FROM AD_Window_Trl WHERE AD_Window_ID = " + targetWindowId.getRepoId();
-		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
-		logger.debug("AD_Window_Trl deleted: {}", countDelete);
-
-		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language, " +
-				" AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, " +
-				" Name, Description, Help, IsTranslated) " +
-				" SELECT " + targetWindowId.getRepoId() + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
-				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
-				" FROM AD_Window_Trl WHERE AD_Window_ID = " + sourceWindowId.getRepoId();
-
-		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
-		logger.debug("AD_Window_Trl inserted: {}", countInsert);
-	}
-
 	private void copyUISections(
 			@NonNull final CopyContext copyCtx,
 			@NonNull final I_AD_Tab targetTab,
