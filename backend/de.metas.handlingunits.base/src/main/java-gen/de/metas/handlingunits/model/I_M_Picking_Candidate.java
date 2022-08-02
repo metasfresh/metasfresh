@@ -1,8 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Picking_Candidate
  *  @author metasfresh (generated) 
@@ -254,6 +255,26 @@ public interface I_M_Picking_Candidate
 
 	ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_PackTo_HU_PI_ID = new ModelColumn<>(I_M_Picking_Candidate.class, "PackTo_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
 	String COLUMNNAME_PackTo_HU_PI_ID = "PackTo_HU_PI_ID";
+
+	/**
+	 * Set Pick To Packing Instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackTo_HU_PI_Item_Product_ID (int PackTo_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Pick To Packing Instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPackTo_HU_PI_Item_Product_ID();
+
+	String COLUMNNAME_PackTo_HU_PI_Item_Product_ID = "PackTo_HU_PI_Item_Product_ID";
 
 	/**
 	 * Set Pick From HU.

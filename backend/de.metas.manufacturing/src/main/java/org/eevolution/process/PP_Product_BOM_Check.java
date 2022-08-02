@@ -1,8 +1,18 @@
 package org.eevolution.process;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -15,16 +25,7 @@ import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Title: Check BOM Structure (free of cycles) Description: Tree cannot contain BOMs which are already referenced
@@ -146,11 +147,13 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		updateProductLLCAndMarkAsVerified(product);
 
 		// Get Default BOM from this product
-		final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOM(product).orElse(null);
-		if (bom == null)
-		{
-			throw new AdempiereException("No Default BOM found for " + product.getValue() + "_" + product.getName());
-		}
+		final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.orElseThrow(() -> {
+					final ITranslatableString errorMsg = msgBL.getTranslatableMsgText(AdMessageKey.of("NO_Default_PP_Product_BOM_For_Product"),
+																					  product.getValue() + "_" + product.getName());
+
+					return new AdempiereException(errorMsg);
+				});
 
 		// Check All BOM Lines
 		for (final I_PP_Product_BOMLine tbomline : productBOMDAO.retrieveLines(bom))

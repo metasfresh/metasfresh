@@ -105,6 +105,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 			if (bpId > 0)
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
+				huAttributes.setSaveOnChange(true);
 				huAttributes.saveChangesIfNeeded();
 			}
 		}

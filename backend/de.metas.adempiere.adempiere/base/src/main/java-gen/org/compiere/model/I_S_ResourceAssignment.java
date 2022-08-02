@@ -1,215 +1,327 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for S_ResourceAssignment
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_S_ResourceAssignment 
 {
 
-    /** TableName=S_ResourceAssignment */
-    public static final String Table_Name = "S_ResourceAssignment";
+	String Table_Name = "S_ResourceAssignment";
 
-    /** AD_Table_ID=485 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=485 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(1);
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
-    /** Load Meta Data */
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Assign From.
+	 * Assign resource from
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAssignDateFrom (java.sql.Timestamp AssignDateFrom);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Assign From.
+	 * Assign resource from
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getAssignDateFrom();
 
-    /** Column name AssignDateFrom */
-    public static final String COLUMNNAME_AssignDateFrom = "AssignDateFrom";
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_AssignDateFrom = new ModelColumn<>(I_S_ResourceAssignment.class, "AssignDateFrom", null);
+	String COLUMNNAME_AssignDateFrom = "AssignDateFrom";
 
-	/** Set Assign From.
-	  * Assign resource from
-	  */
-	public void setAssignDateFrom (Timestamp AssignDateFrom);
+	/**
+	 * Set Assign To.
+	 * Assign resource until
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAssignDateTo (@Nullable java.sql.Timestamp AssignDateTo);
 
-	/** Get Assign From.
-	  * Assign resource from
-	  */
-	public Timestamp getAssignDateFrom();
+	/**
+	 * Get Assign To.
+	 * Assign resource until
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getAssignDateTo();
 
-    /** Column name AssignDateTo */
-    public static final String COLUMNNAME_AssignDateTo = "AssignDateTo";
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_AssignDateTo = new ModelColumn<>(I_S_ResourceAssignment.class, "AssignDateTo", null);
+	String COLUMNNAME_AssignDateTo = "AssignDateTo";
 
-	/** Set Assign To.
-	  * Assign resource until
-	  */
-	public void setAssignDateTo (Timestamp AssignDateTo);
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-	/** Get Assign To.
-	  * Assign resource until
-	  */
-	public Timestamp getAssignDateTo();
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_Created = new ModelColumn<>(I_S_ResourceAssignment.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_Description = new ModelColumn<>(I_S_ResourceAssignment.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
 
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_IsActive = new ModelColumn<>(I_S_ResourceAssignment.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set All day.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllDay (boolean IsAllDay);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get All day.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllDay();
 
-    /** Column name IsConfirmed */
-    public static final String COLUMNNAME_IsConfirmed = "IsConfirmed";
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_IsAllDay = new ModelColumn<>(I_S_ResourceAssignment.class, "IsAllDay", null);
+	String COLUMNNAME_IsAllDay = "IsAllDay";
 
-	/** Set Confirmed.
-	  * Assignment is confirmed
-	  */
-	public void setIsConfirmed (boolean IsConfirmed);
+	/**
+	 * Set Confirmed.
+	 * Assignment is confirmed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsConfirmed (boolean IsConfirmed);
 
-	/** Get Confirmed.
-	  * Assignment is confirmed
-	  */
-	public boolean isConfirmed();
+	/**
+	 * Get Confirmed.
+	 * Assignment is confirmed
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isConfirmed();
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_IsConfirmed = new ModelColumn<>(I_S_ResourceAssignment.class, "IsConfirmed", null);
+	String COLUMNNAME_IsConfirmed = "IsConfirmed";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
 
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_Name = new ModelColumn<>(I_S_ResourceAssignment.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
-	/** Set Quantity.
-	  * Quantity
-	  */
-	public void setQty (BigDecimal Qty);
+	/**
+	 * Set Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQty (@Nullable BigDecimal Qty);
 
-	/** Get Quantity.
-	  * Quantity
-	  */
-	public BigDecimal getQty();
+	/**
+	 * Get Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQty();
 
-    /** Column name S_ResourceAssignment_ID */
-    public static final String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_Qty = new ModelColumn<>(I_S_ResourceAssignment.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
-	/** Set Resource Assignment.
-	  * Resource Assignment
-	  */
-	public void setS_ResourceAssignment_ID (int S_ResourceAssignment_ID);
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
 
-	/** Get Resource Assignment.
-	  * Resource Assignment
-	  */
-	public int getS_ResourceAssignment_ID();
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
 
-    /** Column name S_Resource_ID */
-    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
-	/** Set Resource.
-	  * Resource
-	  */
-	public void setS_Resource_ID (int S_Resource_ID);
+	/**
+	 * Set Ressourcenzuordnung.
+	 * Resource Assignment
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setS_ResourceAssignment_ID (int S_ResourceAssignment_ID);
 
-	/** Get Resource.
-	  * Resource
-	  */
-	public int getS_Resource_ID();
+	/**
+	 * Get Ressourcenzuordnung.
+	 * Resource Assignment
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getS_ResourceAssignment_ID();
 
-	public I_S_Resource getS_Resource() throws RuntimeException;
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_S_ResourceAssignment_ID = new ModelColumn<>(I_S_ResourceAssignment.class, "S_ResourceAssignment_ID", null);
+	String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
 
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	ModelColumn<I_S_ResourceAssignment, Object> COLUMN_Updated = new ModelColumn<>(I_S_ResourceAssignment.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.invoicecandidate.modelvalidator.ilhandler.ILHandlerModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -66,11 +67,7 @@ public class C_ILCandHandler
 					continue;
 				}
 
-				final ILHandlerModelInterceptor modelInterceptor = ILHandlerModelInterceptor.builder()
-						.setTableName(tableName)
-						.setCreateInvoiceCandidates(handler.isCreateMissingCandidatesAutomatically())
-						.setCreateInvoiceCandidatesTiming(handler.getAutomaticallyCreateMissingCandidatesDocTiming())
-						.build();
+				final ILHandlerModelInterceptor modelInterceptor = new ILHandlerModelInterceptor(handler);
 				engine.addModelValidator(modelInterceptor);
 			}
 		}

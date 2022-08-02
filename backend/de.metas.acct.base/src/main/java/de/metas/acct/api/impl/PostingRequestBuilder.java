@@ -65,7 +65,7 @@ import lombok.ToString;
 @ToString(of = { "_force", "_clientId", "_documentRef", "_postImmediate", "_postWithoutServer", "_failOnError" })
 /* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
-	public static final Topic NOTIFICATIONS_TOPIC = Topic.remote("de.metas.acct.UserNotifications");
+	public static final Topic NOTIFICATIONS_TOPIC = Topic.distributed("de.metas.acct.UserNotifications");
 
 	// services
 	private static final transient Logger logger = LogManager.getLogger(PostingRequestBuilder.class);

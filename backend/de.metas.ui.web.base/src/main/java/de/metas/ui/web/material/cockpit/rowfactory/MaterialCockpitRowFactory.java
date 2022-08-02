@@ -10,14 +10,15 @@ import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_S_Resource;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -58,12 +59,15 @@ public class MaterialCockpitRowFactory
 		LocalDate date;
 
 		@NonNull
+		@Singular("productIdToListEvenIfEmpty")
 		ImmutableSet<ProductId> productIdsToListEvenIfEmpty;
 
 		@NonNull
+		@Singular
 		List<I_MD_Cockpit> cockpitRecords;
 
 		@NonNull
+		@Singular
 		List<I_MD_Stock> stockRecords;
 
 		boolean includePerPlantDetailRows;
@@ -131,7 +135,7 @@ public class MaterialCockpitRowFactory
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_S_Resource.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.Plant)
 				.create()
 				.list();
 	}
@@ -146,7 +150,7 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
 			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
@@ -160,7 +164,7 @@ public class MaterialCockpitRowFactory
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
 
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
 			mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}

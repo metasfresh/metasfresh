@@ -34,27 +34,27 @@ import lombok.Value;
 public class DhlClientConfig
 {
 	@NonNull
-	private final String baseUrl;
+	String baseUrl;
 
 	@NonNull
-	private final String applicationID; // CIG Auth (https://entwickler.dhl.de/en/group/ep/authentifizierung)
+	String applicationID; // CIG Auth (https://entwickler.dhl.de/en/group/ep/authentifizierung)
 
 	@NonNull
-	private final String applicationToken; // CIG Auth (https://entwickler.dhl.de/en/group/ep/authentifizierung)
+	String applicationToken; // CIG Auth (https://entwickler.dhl.de/en/group/ep/authentifizierung)
 
 	@NonNull
-	private final String accountNumber; // DHL Business Customer Portal (also presented as EKP)
+	String accountNumber; // DHL Business Customer Portal (also presented as EKP)
 
 	@NonNull
-	private final String username; // DHL Business Customer Portal
+	String username; // DHL Business Customer Portal
 
 	@NonNull
-	private final String signature; // DHL Business Customer Portal
+	String signature; // DHL Business Customer Portal
 
 	@NonNull
-	private final UomId lengthUomId;
+	UomId lengthUomId;
 
 	@NonNull
-	private final String trackingUrlBase;
+	String trackingUrlBase;
 
 }

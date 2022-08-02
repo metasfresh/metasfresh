@@ -30,6 +30,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -151,6 +154,8 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
 	}
 
 	protected void initialize()

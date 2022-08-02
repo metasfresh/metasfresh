@@ -1,6 +1,5 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -21,7 +20,6 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationLine;
-import de.metas.order.compensationGroup.GroupCreateRequest;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupTemplate;
@@ -31,6 +29,9 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantitys;
+import de.metas.ui.web.order.BOMExploderCommand;
+import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -38,9 +39,7 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -50,11 +49,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.eevolution.api.BOMUse;
-import org.eevolution.api.IProductBOMBL;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.ProductBOMLineId;
-import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -96,8 +90,6 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
-	private final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
@@ -228,9 +220,8 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.orderId(orderId)
 				.productId(productAndAttributes.getProductId())
 				.attributes(productAndAttributes.getAttributes())
-				.uomId(uomId)
 				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
-				.qty(quickInputQty)
+				.qty(Quantitys.create(quickInputQty, uomId))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
@@ -239,50 +230,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 	private List<OrderLineCandidate> explodePhantomBOM(final OrderLineCandidate initialCandidate)
 	{
-		final ProductId bomProductId = initialCandidate.getProductId();
-		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOMByProductId(bomProductId).orElse(null);
-		if (bom == null)
-		{
-			return ImmutableList.of(initialCandidate);
-		}
-
-		final BOMUse bomUse = BOMUse.ofNullableCode(bom.getBOMUse());
-		if (!BOMUse.Phantom.equals(bomUse))
-		{
-			return ImmutableList.of(initialCandidate);
-		}
-
-		GroupId compensationGroupId = null;
-
-		final ArrayList<OrderLineCandidate> result = new ArrayList<>();
-		final List<I_PP_Product_BOMLine> bomLines = bomsRepo.retrieveLines(bom);
-		for (final I_PP_Product_BOMLine bomLine : bomLines)
-		{
-			final ProductBOMLineId bomLineId = ProductBOMLineId.ofRepoId(bomLine.getPP_Product_BOMLine_ID());
-			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty());
-
-			final AttributeSetInstanceId bomLineAsiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
-			final ImmutableAttributeSet attributes = asiBL.getImmutableAttributeSetById(bomLineAsiId);
-
-			if (compensationGroupId == null)
-			{
-				compensationGroupId = orderGroupsRepo.createNewGroupId(GroupCreateRequest.builder()
-						.orderId(initialCandidate.getOrderId())
-						.name(productBL.getProductName(bomProductId))
-						.build());
-			}
-
-			result.add(initialCandidate.toBuilder()
-					.productId(bomLineProductId)
-					.attributes(attributes)
-					.qty(bomLineQty)
-					.compensationGroupId(compensationGroupId)
-					.explodedFromBOMLineId(bomLineId)
-					.build());
-		}
-
-		return result;
+		return BOMExploderCommand.builder()
+				.bomToUse(BOMUse.Phantom)
+				.initialCandidate(initialCandidate)
+				.build()
+				.execute();
 	}
 
 	private void updateOrderLine(final I_C_OrderLine to, final OrderLineCandidate candidate)
@@ -323,12 +275,12 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		huPackingAware.setBpartnerId(candidate.getBpartnerId());
 		huPackingAware.setInDispute(false);
 		huPackingAware.setProductId(candidate.getProductId());
-		huPackingAware.setUomId(candidate.getUomId());
+		huPackingAware.setUomId(candidate.getQty().getUomId());
 		huPackingAware.setAsiId(createASI(candidate.getProductId(), candidate.getAttributes()));
 		huPackingAware.setPiItemProductId(candidate.getPiItemProductId());
 
 		//
-		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, candidate.getQty());
+		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, candidate.getQty().toBigDecimal());
 
 		//
 		// Validate:
@@ -363,41 +315,4 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
-	@Value
-	@Builder(toBuilder = true)
-	private static class OrderLineCandidate
-	{
-		@NonNull
-		OrderId orderId;
-
-		@NonNull
-		ProductId productId;
-
-		@NonNull
-		ImmutableAttributeSet attributes;
-
-		@NonNull
-		UomId uomId;
-
-		@Nullable
-		HUPIItemProductId piItemProductId;
-
-		@NonNull
-		BigDecimal qty;
-
-		@Nullable
-		ShipmentAllocationBestBeforePolicy bestBeforePolicy;
-
-		@Nullable
-		BPartnerId bpartnerId;
-
-		@NonNull
-		SOTrx soTrx;
-
-		@Nullable
-		GroupId compensationGroupId;
-
-		@Nullable
-		ProductBOMLineId explodedFromBOMLineId;
-	}
 }

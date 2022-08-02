@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Process
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1522330060L;
+	private static final long serialVersionUID = -1946797104L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -360,6 +360,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public void setIsUpdateExportDate (final boolean IsUpdateExportDate)
+	{
+		set_Value (COLUMNNAME_IsUpdateExportDate, IsUpdateExportDate);
+	}
+
+	@Override
+	public boolean isUpdateExportDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateExportDate);
+	}
+
+	@Override
 	public void setIsUseBPartnerLanguage (final boolean IsUseBPartnerLanguage)
 	{
 		set_Value (COLUMNNAME_IsUseBPartnerLanguage, IsUseBPartnerLanguage);
@@ -596,4 +608,17 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	{
 		return get_ValueAsString(COLUMNNAME_WorkflowValue);
 	}
+
+	@Override
+	public void setIsLogWarning (final boolean IsLogWarning)
+	{
+		set_Value (COLUMNNAME_IsLogWarning, IsLogWarning);
+	}
+
+	@Override
+	public boolean isLogWarning()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
+	}
+
 }

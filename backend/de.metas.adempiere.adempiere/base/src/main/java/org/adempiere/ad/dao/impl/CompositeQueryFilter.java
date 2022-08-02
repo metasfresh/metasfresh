@@ -22,13 +22,12 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.util.Check;
+import de.metas.util.InSetPredicate;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -39,11 +38,16 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Composite Query Filters. Contains a set of {@link IQueryFilter} joined together by AND or OR (see {@link #setJoinAnd()}, {@link #setJoinOr()}).
@@ -66,7 +70,7 @@ import javax.annotation.Nullable;
 	//
 	// Status
 	// NOTE: when adding new fields here, please update #copy() method too
-	private final List<IQueryFilter<T>> filters = new ArrayList<>();
+	private final ArrayList<IQueryFilter<T>> filters = new ArrayList<>();
 	private boolean and = true;
 	private boolean _defaultAccept = true;
 
@@ -112,7 +116,7 @@ import javax.annotation.Nullable;
 		}
 
 		@Override
-		public final boolean accept(final T model)
+		public boolean accept(final T model)
 		{
 			final List<IQueryFilter<T>> nonSqlFilters = getNonSqlFiltersToUse();
 			final boolean defaultAccept = isDefaultAccept();
@@ -168,7 +172,7 @@ import javax.annotation.Nullable;
 		return copy;
 	}
 
-	private final void compileIfNeeded()
+	private void compileIfNeeded()
 	{
 		//
 		// Check: if is alread compiled, there is no need to compile it again
@@ -232,7 +236,7 @@ import javax.annotation.Nullable;
 				else
 				{
 					sqlFilters = null;
-					nonSqlFilters = Collections.<IQueryFilter<T>>singletonList(compositeFilter);
+					nonSqlFilters = Collections.singletonList(compositeFilter);
 				}
 			}
 			//
@@ -297,14 +301,10 @@ import javax.annotation.Nullable;
 	 * <li><code>resultSqlWhereClause</code> string builder/buffer
 	 * <li>and <code>resultSqlFilters</code> list.
 	 * </ul>
-	 *
-	 * @param resultSqlWhereClause
-	 * @param resultSqlFilters
-	 * @param sqlFiltersToAppend
 	 */
-	private final void appendSqlWhereClause(final StringBuilder resultSqlWhereClause,
-			final List<ISqlQueryFilter> resultSqlFilters,
-			final List<ISqlQueryFilter> sqlFiltersToAppend)
+	private void appendSqlWhereClause(final StringBuilder resultSqlWhereClause,
+									  final List<ISqlQueryFilter> resultSqlFilters,
+									  final List<ISqlQueryFilter> sqlFiltersToAppend)
 	{
 		//
 		// If there are no SQL filters to append, return right away
@@ -445,16 +445,12 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> removeFilter(final IQueryFilter<T> filter)
+	public ICompositeQueryFilter<T> removeFilter(@NonNull final IQueryFilter<T> filter)
 	{
-		Check.assumeNotNull(filter, "filter not null");
-
-		if (filters == null || filters.isEmpty())
+		if (!filters.isEmpty())
 		{
-			return this;
+			filters.remove(filter);
 		}
-
-		filters.remove(filter);
 
 		return this;
 	}
@@ -471,7 +467,7 @@ import javax.annotation.Nullable;
 		return setJoinAnd(false);
 	}
 
-	private final ICompositeQueryFilter<T> setJoinAnd(final boolean and)
+	private ICompositeQueryFilter<T> setJoinAnd(final boolean and)
 	{
 		if (this.and == and)
 		{
@@ -526,14 +522,6 @@ import javax.annotation.Nullable;
 	{
 		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
 		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addStringNotLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
-	{
-		final String columnName = column.getColumnName();
-		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
-		return addFilter(NotQueryFilter.of(filter));
 	}
 
 	@Override
@@ -623,7 +611,7 @@ import javax.annotation.Nullable;
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final String columnName, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, Arrays.asList(values))
 				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
@@ -632,7 +620,7 @@ import javax.annotation.Nullable;
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, Arrays.asList(values))
 				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
@@ -641,7 +629,7 @@ import javax.annotation.Nullable;
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), Arrays.asList(values))
 				.setDefaultReturnWhenEmpty(true);
 		return addFilter(filter);
 	}
@@ -650,7 +638,7 @@ import javax.annotation.Nullable;
 	@SuppressWarnings("unchecked")
 	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final V... values)
 	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
+		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), Arrays.asList(values))
 				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
 	}
@@ -669,6 +657,23 @@ import javax.annotation.Nullable;
 		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
 				.setDefaultReturnWhenEmpty(false);
 		return addFilter(filter);
+	}
+
+	@Override
+	public <V extends RepoIdAware> ICompositeQueryFilter<T> addInArrayFilter(@NonNull final String columnName, @NonNull final InSetPredicate<V> values)
+	{
+		if (values.isAny())
+		{
+			return addFilter(ConstantQueryFilter.of(true));
+		}
+		else if (values.isNone())
+		{
+			return addFilter(ConstantQueryFilter.of(false));
+		}
+		else
+		{
+			return addInArrayFilter(columnName, values.toSet());
+		}
 	}
 
 	@Override
@@ -716,8 +721,8 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final String columnName,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+															 final String subQueryColumnName,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -729,8 +734,8 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final String columnName,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+																final String subQueryColumnName,
+																final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -743,8 +748,8 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final ModelColumn<T, ?> column,
-			final ModelColumn<ST, ?> subQueryColumn,
-			final IQuery<ST> subQuery)
+																final ModelColumn<ST, ?> subQueryColumn,
+																final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -758,8 +763,8 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final ModelColumn<T, ?> column,
-			final ModelColumn<ST, ?> subQueryColumn,
-			final IQuery<ST> subQuery)
+															 final ModelColumn<ST, ?> subQueryColumn,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -779,9 +784,9 @@ import javax.annotation.Nullable;
 
 	@Override
 	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final String columnName,
-			final IQueryFilterModifier modifier,
-			final String subQueryColumnName,
-			final IQuery<ST> subQuery)
+															 final IQueryFilterModifier modifier,
+															 final String subQueryColumnName,
+															 final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(tableName)
@@ -795,11 +800,10 @@ import javax.annotation.Nullable;
 	public boolean accept(final T model)
 	{
 		final boolean defaultAccept = isDefaultAccept();
-		final boolean accepted = accept(model, filters, defaultAccept);
-		return accepted;
+		return accept(model, filters, defaultAccept);
 	}
 
-	private final boolean accept(final T model, final List<IQueryFilter<T>> filters, final boolean defaultAccept)
+	private boolean accept(final T model, final List<IQueryFilter<T>> filters, final boolean defaultAccept)
 	{
 		if (filters == null || filters.isEmpty())
 		{
@@ -819,6 +823,7 @@ import javax.annotation.Nullable;
 			}
 		}
 
+		//noinspection RedundantIfStatement
 		if (and)
 		{
 			return true;
@@ -872,7 +877,7 @@ import javax.annotation.Nullable;
 	 *
 	 * @return nonSQL filters
 	 */
-	private final List<IQueryFilter<T>> getNonSqlFiltersToUse()
+	private List<IQueryFilter<T>> getNonSqlFiltersToUse()
 	{
 		final List<ISqlQueryFilter> sqlFilters = getSqlFilters();
 		final List<IQueryFilter<T>> nonSqlFilters = getNonSqlFilters();
@@ -1040,5 +1045,36 @@ import javax.annotation.Nullable;
 		_compiled = false;
 		return this;
 
+	}
+
+	@Override
+	public CompositeQueryFilter<T> addIntervalIntersection(
+			@NonNull final String lowerBoundColumnName,
+			@NonNull final String upperBoundColumnName,
+			@Nullable final ZonedDateTime lowerBoundValue,
+			@Nullable final ZonedDateTime upperBoundValue)
+	{
+		addIntervalIntersection(
+				lowerBoundColumnName,
+				upperBoundColumnName,
+				lowerBoundValue != null ? lowerBoundValue.toInstant() : null,
+				upperBoundValue != null ? upperBoundValue.toInstant() : null);
+
+		return this;
+	}
+
+	@Override
+	public CompositeQueryFilter<T> addIntervalIntersection(
+			@NonNull final String lowerBoundColumnName,
+			@NonNull final String upperBoundColumnName,
+			@Nullable final Instant lowerBoundValue,
+			@Nullable final Instant upperBoundValue)
+	{
+		addFilter(new DateIntervalIntersectionQueryFilter<>(
+				ModelColumnNameValue.forColumnName(lowerBoundColumnName),
+				ModelColumnNameValue.forColumnName(upperBoundColumnName),
+				lowerBoundValue,
+				upperBoundValue));
+		return this;
 	}
 }

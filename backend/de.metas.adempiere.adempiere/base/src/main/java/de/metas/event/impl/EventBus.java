@@ -22,18 +22,6 @@ package de.metas.event.impl;
  * #L%
  */
 
-import java.util.IdentityHashMap;
-
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
@@ -41,14 +29,16 @@ import com.google.common.eventbus.SubscriberExceptionHandler;
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventBusStats;
+import de.metas.event.EventEnqueuer;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
+import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.event.log.EventLogEntryCollector;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
-import de.metas.util.Check;
 import de.metas.util.JSONObjectMapper;
+import de.metas.util.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -77,11 +67,7 @@ final class EventBus implements IEventBus
 		logger.error(errmsg, exception);
 	};
 
-	private static final String PROP_Body = "body";
 	private static final JSONObjectMapper<Object> sharedJsonSerializer = JSONObjectMapper.forClass(Object.class);
-
-	@Getter
-	private final String topicName;
 
 	private com.google.common.eventbus.EventBus eventBus;
 
@@ -93,29 +79,37 @@ final class EventBus implements IEventBus
 	@Getter
 	private final boolean async;
 
-	/**
-	 * The default type is local, unless the factory makes this event bus "remote" by registering some sort of forwarder-subscriber.
-	 */
 	@Getter
-	private Type type = Type.LOCAL;
+	@NonNull
+	private final Topic topic;
 
 	private final ExecutorService executorOrNull;
 
 	private final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector;
 
+	private final EventEnqueuer eventEnqueuer;
+
+	private final EventBusMonitoringService eventBusMonitoringService;
+
+	private final EventLogService eventLogService;
+
 	/**
 	 * @param executor if not null, the system creates an {@link AsyncEventBus}; also, it shuts down this executor on {@link #destroy()}
 	 */
 	public EventBus(
-			@NonNull final String topicName,
+			@NonNull final Topic topic,
 			@Nullable final ExecutorService executor,
-			@NonNull final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector)
+			@NonNull final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector,
+			@NonNull final EventEnqueuer eventEnqueuer,
+			@NonNull final EventBusMonitoringService eventBusMonitoringService,
+			@NonNull final EventLogService eventLogService)
 	{
-		Check.assumeNotEmpty(topicName, "name not empty");
-
 		this.micrometerEventBusStatsCollector = micrometerEventBusStatsCollector;
 		this.executorOrNull = executor;
-		this.topicName = topicName;
+		this.topic = topic;
+		this.eventEnqueuer = eventEnqueuer;
+		this.eventBusMonitoringService = eventBusMonitoringService;
+		this.eventLogService = eventLogService;
 
 		if (executor == null)
 		{
@@ -135,18 +129,10 @@ final class EventBus implements IEventBus
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("topicName", topicName)
-				.add("type", type)
+				.add("topicName", topic.getName())
+				.add("type", topic.getType())
 				.add("destroyed", destroyed ? Boolean.TRUE : null)
 				.toString();
-	}
-
-	/**
-	 * To be invoked only by the factory.
-	 */
-	/* package */void setTypeRemote()
-	{
-		this.type = Type.REMOTE;
 	}
 
 	void destroy()
@@ -183,6 +169,12 @@ final class EventBus implements IEventBus
 		if (destroyed)
 		{
 			logger.warn("Attempt to register a listener to a destroyed bus. Ignored. \n Bus: {} \n Listener: {}", this, listener);
+			return;
+		}
+
+		if (subscribedEventListener2GuavaListener.get(listener) != null)
+		{
+			logger.warn("Attempt to register a listener that was already registered. Ignored. \n Bus: {} \n Listener: {}", this, listener);
 			return;
 		}
 
@@ -223,17 +215,17 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void postObject(@NonNull final Object obj)
+	public void enqueueObject(@NonNull final Object obj)
 	{
 		final String json = sharedJsonSerializer.writeValueAsString(obj);
-		postEvent(Event.builder()
-						  .putProperty(PROP_Body, json)
-						  .shallBeLogged()
-						  .build());
+		enqueueEvent(Event.builder()
+							 .withBody(json)
+							 .shallBeLogged()
+							 .build());
 	}
 
 	@Override
-	public void postEvent(@NonNull final Event event)
+	public void processEvent(@NonNull final Event event)
 	{
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
@@ -244,25 +236,52 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			final Event eventToPost;
+			logger.debug("{} - Posting event: {}", this, event);
+			eventBus.post(event);
 
-			// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
-			if (event.isShallBeLogged() && event.isLocalEvent())
+			micrometerEventBusStatsCollector.incrementEventsEnqueued();
+		}
+	}
+
+	public void enqueueEvent(@NonNull final Event event)
+	{
+		try (final MDCCloseable ignored = EventMDC.putEvent(event))
+		{
+			// Do nothing if destroyed
+			if (destroyed)
 			{
-				eventToPost = event.withStatusWasLogged();
+				logger.warn("Attempt to enqueue an event using a destroyed bus. Ignored. \n Bus: {} \n Event: {}", this, event);
+				return;
+			}
 
-				final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
-				eventLogService.saveEvent(eventToPost, this);
+			final Event eventToEnqueue;
+
+			if (event.isShallBeLogged())
+			{
+				eventToEnqueue = event.withStatusWasLogged();
+				eventLogService.saveEvent(eventToEnqueue, getTopic());
 			}
 			else
 			{
-				eventToPost = event;
+				eventToEnqueue = event;
 			}
 
-			logger.debug("{} - Posting event: {}", this, eventToPost);
-			eventBus.post(eventToPost);
-
-			micrometerEventBusStatsCollector.incrementEventsEnqueued();
+			try
+			{
+				if (EventBusConfig.isMonitorIncomingEvents())
+				{
+					eventBusMonitoringService.addInfosAndMonitorSpan(eventToEnqueue, topic, this::enqueueEvent0);
+				}
+				else
+				{
+					logger.debug("{} - Enqueueing event: {}", this, eventToEnqueue);
+					enqueueEvent0(eventToEnqueue);
+				}
+			}
+			catch (final Exception e)
+			{
+				logger.warn(StringUtils.formatMessage("Failed to enqueue event to topic name. Ignored; topicName={}; event={}", topic.getName(), event), e);
+			}
 		}
 	}
 
@@ -291,7 +310,7 @@ final class EventBus implements IEventBus
 			{
 				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
-				final String json = event.getPropertyAsString(PROP_Body);
+				final String json = event.getBody();
 				final T obj = jsonDeserializer.readValue(json);
 				eventConsumer.accept(obj);
 			}
@@ -309,7 +328,7 @@ final class EventBus implements IEventBus
 		public void onEvent(@NonNull final Event event)
 		{
 			micrometerEventBusStatsCollector.incrementEventsDequeued();
-			
+
 			micrometerEventBusStatsCollector
 					.getEventProcessingTimer()
 					.record(() ->
@@ -368,5 +387,17 @@ final class EventBus implements IEventBus
 	public EventBusStats getStats()
 	{
 		return micrometerEventBusStatsCollector.snapshot();
+	}
+
+	private void enqueueEvent0(final Event event)
+	{
+		if (Type.LOCAL == topic.getType())
+		{
+			eventEnqueuer.enqueueLocalEvent(event, topic);
+		}
+		else
+		{
+			eventEnqueuer.enqueueDistributedEvent(event, topic);
+		}
 	}
 }

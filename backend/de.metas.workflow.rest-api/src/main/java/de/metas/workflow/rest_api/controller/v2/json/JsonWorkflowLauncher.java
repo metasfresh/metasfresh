@@ -43,6 +43,7 @@ public class JsonWorkflowLauncher
 	@NonNull String caption;
 	@Nullable String startedWFProcessId;
 	@NonNull Map<String, Object> wfParameters;
+	boolean showWarningSign;
 
 	public static JsonWorkflowLauncher of(
 			@NonNull final WorkflowLauncher workflowLauncher,
@@ -65,6 +66,7 @@ public class JsonWorkflowLauncher
 				.caption(caption)
 				.startedWFProcessId(WFProcessId.getAsStringOrNull(startedWFProcessId))
 				.wfParameters(wfParameters.toJson(jsonOpts::convertValueToJson))
+				.showWarningSign(workflowLauncher.isPartiallyHandledBefore())
 				.build();
 	}
 }

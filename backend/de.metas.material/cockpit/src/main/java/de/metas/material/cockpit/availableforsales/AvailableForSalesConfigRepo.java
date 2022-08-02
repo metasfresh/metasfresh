@@ -45,6 +45,7 @@ public class AvailableForSalesConfigRepo
 			.tableName(I_MD_AvailableForSales_Config.Table_Name)
 			.build();
 
+	@NonNull
 	public AvailableForSalesConfig getConfig(@NonNull final ConfigQuery query)
 	{
 		cache.getOrLoad(query, () -> retrieveConfigRecord(query));
@@ -52,20 +53,22 @@ public class AvailableForSalesConfigRepo
 		return retrieveConfigRecord(query);
 	}
 
+	@NonNull
 	private AvailableForSalesConfig retrieveConfigRecord(@NonNull final ConfigQuery query)
 	{
 		final I_MD_AvailableForSales_Config configRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_AvailableForSales_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_AvailableForSales_Config.COLUMN_AD_Client_ID, query.getClientId())
-				.addInArrayFilter(I_MD_AvailableForSales_Config.COLUMN_AD_Org_ID, query.getOrgId(), OrgId.ANY)
-				.orderByDescending(I_MD_AvailableForSales_Config.COLUMN_AD_Org_ID)
+				.addEqualsFilter(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Client_ID, query.getClientId())
+				.addInArrayFilter(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+				.orderByDescending(I_MD_AvailableForSales_Config.COLUMNNAME_AD_Org_ID)
 				.create()
 				.first();
 
 		return ofRecord(configRecord);
 	}
 
+	@NonNull
 	private AvailableForSalesConfig ofRecord(@Nullable final I_MD_AvailableForSales_Config configRecord)
 	{
 		if (configRecord == null)

@@ -25,6 +25,7 @@ const plugins = [
   }),
   new HtmlWebpackPlugin({
     template: './index.html',
+    favicon: './favicon.png',
   }),
   new GitRevisionPlugin(),
   new CopyWebpackPlugin({
@@ -55,7 +56,7 @@ module.exports = {
     errorDetails: true,
   },
   devtool: 'cheap-module-source-map',
-  entry: ['./src/index.jsx', './favicon.png'],
+  entry: ['./src/index.jsx'],
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
@@ -85,7 +86,7 @@ module.exports = {
         },
       },
       {
-        test: /\.css$/,
+        test: /\.(css|scss)$/,
         use: [
           'style-loader',
           { loader: 'css-loader', options: { importLoaders: 1 } },

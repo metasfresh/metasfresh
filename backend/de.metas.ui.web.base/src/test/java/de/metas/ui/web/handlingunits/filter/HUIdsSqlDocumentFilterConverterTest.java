@@ -75,7 +75,7 @@ public class HUIdsSqlDocumentFilterConverterTest
 		final FilterSql result = converters.getSql(
 				filters,
 				SqlOptions.usingTableAlias("dummyTableAlias"),
-				SqlDocumentFilterConverterContext.EMPTY);
+				SqlDocumentFilterConverterContext.builder().build());
 		System.out.println("Got result " + result);
 
 		return assertThat(result)

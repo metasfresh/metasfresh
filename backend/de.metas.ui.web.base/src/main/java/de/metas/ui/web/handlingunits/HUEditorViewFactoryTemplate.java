@@ -27,14 +27,18 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.BarcodeScannerType;
 import de.metas.process.IADProcessDAO;
@@ -48,6 +52,8 @@ import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescripto
 import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
+import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -67,12 +73,14 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
+import org.adempiere.ad.column.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -80,8 +88,10 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,13 +105,15 @@ import java.util.Set;
 
 public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 {
-	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
+	private static final Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private HUReservationService huReservationService;
+	@Autowired
+	private WebuiDocumentReferencesService webuiDocumentReferencesService;
 
 	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
@@ -231,11 +243,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		//
 		// View field: BestBeforeDate
 		{
-			final String sqlBestBeforeDate = HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID);
+			final ColumnSql sqlBestBeforeDate = ColumnSql.ofSql(
+					HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID),
+					sqlViewBinding.getTableAlias());
+
 			sqlViewBinding.field(SqlViewRowFieldBinding.builder()
 					.fieldName(HUEditorRow.FIELDNAME_BestBeforeDate)
 					.widgetType(DocumentFieldWidgetType.LocalDate)
-					// .columnSql(sqlBestBeforeDate)
 					.sqlSelectValue(SqlSelectValue.builder()
 							.virtualColumnSql(sqlBestBeforeDate)
 							.columnNameAlias(HUEditorRow.FIELDNAME_BestBeforeDate)
@@ -259,7 +273,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	}
 
 	@Nullable
-	protected String getAdditionalSqlWhereClause() { return null; }
+	protected String getAdditionalSqlWhereClause() {return null;}
 
 	protected final DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
@@ -317,6 +331,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewLayoutBuilder.build();
 	}
 
+	protected boolean isMaterialReceipt() {return false;}
+
 	@Override
 	public final HUEditorView createView(final @NonNull CreateViewRequest request)
 	{
@@ -324,8 +340,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 		//
 		// Referencing documentPaths and tableName (i.e. from where are we coming, e.g. receipt schedule)
-		final Set<DocumentPath> referencingDocumentPaths = request.getReferencingDocumentPaths();
-		final String referencingTableName = extractReferencingTablename(referencingDocumentPaths);
+		final String referencingTableName = extractReferencingTablename(request.getReferencingDocumentPaths());
 
 		final SqlViewBinding sqlViewBinding = getSqlViewBinding();
 
@@ -340,6 +355,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
 							.readonly(attributesAlwaysReadonly)
+							.isMaterialReceipt(isMaterialReceipt())
 							.build())
 					.sqlViewBinding(sqlViewBinding)
 					.huReservationService(huReservationService);
@@ -354,7 +370,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			// Filters
 			@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
-			final DocumentFilterList stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
+			final DocumentFilterList stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds())
+					.mergeWithNullable(
+							extractReferencedDocumentFilter(
+									request.getViewId().getWindowId(),
+									request.getSingleReferencingDocumentPathOrNull(),
+									request.getDocumentReferenceId())
+					);
 			final DocumentFilterDescriptorsProvider filterDescriptors = getViewFilterDescriptors();
 			final DocumentFilterList userFilters = request.getFiltersUnwrapped(filterDescriptors);
 
@@ -367,7 +389,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setStickyFilters(stickyFilters)
 					.setFilters(userFilters)
 					.setFilterDescriptors(filterDescriptors)
-					.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
+					.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
 					.orderBys(sqlViewBinding.getDefaultOrderBys())
 					.setActions(request.getActions())
 					.addAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
@@ -419,6 +441,33 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return referencingTableName;
 	}
 
+	@Nullable
+	private DocumentFilter extractReferencedDocumentFilter(
+			@NonNull final WindowId targetWindowId,
+			@Nullable final DocumentPath referencedDocumentPath,
+			@Nullable final WebuiDocumentReferenceId documentReferenceId)
+	{
+		if (referencedDocumentPath == null
+				|| referencedDocumentPath.isComposedKey())
+		{
+			return null;
+		}
+
+		// Skip if we are zooming into a non-standard HU window.
+		// If we don't do this, it will fail below where we try finding out the related document reference info
+		if (targetWindowId.toAdWindowIdOrNull() == null)
+		{
+			return null;
+		}
+
+		return webuiDocumentReferencesService.getDocumentReferenceFilter(
+						referencedDocumentPath,
+						targetWindowId,
+						documentReferenceId,
+						RelatedDocumentsPermissionsFactory.allowAll())
+				.orElse(null);
+	}
+
 	/**
 	 * @param filterOnlyIds {@code null} means "no restriction". Empty means "select none"
 	 */
@@ -450,11 +499,11 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	{
 		private static final String FILTER_ID = "barcode";
 
-		public static final transient HUBarcodeSqlDocumentFilterConverter instance = new HUBarcodeSqlDocumentFilterConverter();
+		public static final HUBarcodeSqlDocumentFilterConverter instance = new HUBarcodeSqlDocumentFilterConverter();
 
 		public static DocumentFilterDescriptor createDocumentFilterDescriptor()
 		{
-			final ITranslatableString barcodeCaption = Services.get(IMsgBL.class).translatable("Barcode");
+			final ITranslatableString barcodeCaption = TranslatableStrings.adElementOrMessage("Barcode");
 			return DocumentFilterDescriptor.builder()
 					.setFilterId(FILTER_ID)
 					.setDisplayName(barcodeCaption)
@@ -486,36 +535,46 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				final SqlOptions sqlOpts_NOTUSED,
 				@NonNull final SqlDocumentFilterConverterContext context)
 		{
-			final Object barcodeObj = filter.getParameter(PARAM_Barcode).getValue();
-			if (barcodeObj == null)
+			final String barcodeString = StringUtils.trimBlankToNull(filter.getParameterValueAsString(PARAM_Barcode, null));
+			if (barcodeString == null)
 			{
-				throw new IllegalArgumentException("Barcode parameter is null: " + filter);
+				// shall not happen
+				throw new AdempiereException("Barcode parameter is not set: " + filter);
 			}
 
-			final String barcode = barcodeObj.toString().trim();
-			if (barcode.isEmpty())
+			//
+			// Get M_HU_IDs by barcode
+			final ImmutableSet<HuId> huIds;
+			final GlobalQRCode globalQRCode = GlobalQRCode.parse(barcodeString).orNullIfError();
+			if (globalQRCode != null)
 			{
-				throw new IllegalArgumentException("Barcode parameter is empty: " + filter);
+				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
+				final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+				final HuId huId = huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
+				huIds = huId != null ? ImmutableSet.of(huId) : ImmutableSet.of();
+			}
+			else
+			{
+				final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+				huIds = handlingUnitsDAO.createHUQueryBuilder()
+						.setContext(PlainContextAware.newOutOfTrx())
+						.onlyContextClient(false) // avoid enforcing context AD_Client_ID because it might be that we are not in a user thread (so no context)
+						.setOnlyWithBarcode(barcodeString)
+						.setOnlyTopLevelHUs(false)
+						.createQueryBuilder()
+						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
+						.create()
+						.listIds(HuId::ofRepoId);
 			}
 
-			final ImmutableSet<HuId> huIds = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
-					.setContext(PlainContextAware.newOutOfTrx())
-					.onlyContextClient(false) // avoid enforcing context AD_Client_ID because it might be that we are not in a user thread (so no context)
-					.setOnlyWithBarcode(barcode)
-					.setOnlyTopLevelHUs(false)
-					.createQueryBuilder()
-					.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
-					.create()
-					.listIds(HuId::ofRepoId);
 			if (huIds.isEmpty())
 			{
 				return FilterSql.ALLOW_NONE;
 			}
 
-			final ImmutableSet<HuId> topLevelHuIds = Services.get(IHandlingUnitsBL.class).getTopLevelHUs(huIds);
-
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			final ImmutableSet<HuId> topLevelHuIds = handlingUnitsBL.getTopLevelHUs(huIds);
 			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, topLevelHuIds);
-
 			return FilterSql.ofWhereClause(SqlAndParams.of(sqlQueryFilter.getSql(), sqlQueryFilter.getSqlParams(Env.getCtx())));
 		}
 	}

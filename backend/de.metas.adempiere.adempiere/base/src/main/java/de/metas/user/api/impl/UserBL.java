@@ -211,6 +211,8 @@ public class UserBL implements IUserBL
 				true // html
 		);
 
+		email.forceRealEmailRecipients();
+
 		final String message = mailTextBuilder.getFullMailText();
 		if (mailTextBuilder.isHtml())
 		{
@@ -335,27 +337,6 @@ public class UserBL implements IUserBL
 	private int getMinPasswordLength()
 	{
 		return sysConfigBL.getIntValue(SYS_MIN_PASSWORD_LENGTH, 8);
-	}
-
-	@Override
-	public String buildContactName(@Nullable final String firstName, @Nullable final String lastName)
-	{
-		final StringBuilder contactName = new StringBuilder();
-		if (lastName != null && !Check.isBlank(lastName))
-		{
-			contactName.append(lastName.trim());
-		}
-
-		if (firstName != null && !Check.isBlank(firstName))
-		{
-			if (contactName.length() > 0)
-			{
-				contactName.append(", ");
-			}
-			contactName.append(firstName.trim());
-		}
-
-		return contactName.toString();
 	}
 
 	@Override

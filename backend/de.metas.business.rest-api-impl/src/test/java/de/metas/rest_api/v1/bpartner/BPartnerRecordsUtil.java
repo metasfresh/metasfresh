@@ -165,6 +165,7 @@ public class BPartnerRecordsUtil
 				bpBankAccountRecord.setAD_Org_ID(AD_ORG_ID);
 				bpBankAccountRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 				bpBankAccountRecord.setIBAN("INITIAL-IBAN-1");
+				bpBankAccountRecord.setSwiftCode("INITIAL-SWIFTCODE-1");
 				bpBankAccountRecord.setC_Currency_ID(currencyId.getRepoId());
 				setCreatedByAndWhen(bpBankAccountRecord, adUserId); // have to do it manually because we are setting the record ID too
 				saveRecord(bpBankAccountRecord);

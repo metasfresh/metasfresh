@@ -16,7 +16,7 @@ def build(final MvnConf mvnConf,
     stage('Build misc services') {
         currentBuild.description = """${currentBuild.description}<p/>
 			<h2>misc services</h2>"""
-
+      
         dir('mobile-webui/mobile-webui-frontend') {
             def buildFile = load('buildfile.groovy')
             buildFile.build(mvnConf, scmVars, forceBuild, forceSkipMobileWebui)
@@ -25,12 +25,14 @@ def build(final MvnConf mvnConf,
             def buildFile = load('buildfile.groovy')
             buildFile.build(mvnConf, scmVars, forceBuild, forceSkipProcurementWebui)
         }
-       
+
         withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
             dir('camel/de-metas-camel-edi') {
                 def ediBuildFile = load('buildfile.groovy')
                 ediBuildFile.build(mvnConf, scmVars, forceBuild)
             }
+        }
+        withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
             dir('camel/de-metas-camel-externalsystems') {
                 def ediBuildFile = load('buildfile.groovy')
                 ediBuildFile.build(mvnConf, scmVars, forceBuild)

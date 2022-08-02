@@ -1,14 +1,15 @@
 package de.metas.ordercandidate.api;
 
-import java.util.Comparator;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -133,4 +134,13 @@ public class OLCandAggregation
 		}
 	}
 
+	@NonNull
+	public String computeHeaderAggregationKey(@NonNull final OLCand olCand)
+	{
+		return getOrderByColumns()
+				.stream()
+				.map(olCand::getValueByColumn)
+				.map(String::valueOf)
+				.collect(Collectors.joining(OrderCandidate_Constants.HEADER_AGGREGATION_KEY_DELIMITER));
+	}
 }

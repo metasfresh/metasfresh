@@ -117,7 +117,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// FIXME: do we still need this?
 		// Update DB:
 		final String sql = "UPDATE PP_Order SET Processed=? WHERE PP_Order_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	}
 
 	@Override
@@ -174,7 +174,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				{
 					throw new LiberoException("@CannotChangeDocType@"
 							+ "\n@PP_Order_BOMLine_ID@: " + line
-							+ "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse()
+							+ "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
 							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
 				}
 			}
@@ -408,7 +408,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
 
 		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(changeEvent);
+		materialEventService.enqueueEventAfterNextCommit(changeEvent);
 
 		return true;
 	}

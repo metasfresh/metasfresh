@@ -35,6 +35,7 @@ import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.greeting.GreetingStandardType;
 import de.metas.user.UserGroupRepository;
@@ -91,7 +92,8 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 				new BPartnerAttributesRepository(),
 				new BpartnerRelatedRecordsRepository(),
 				new BPartnerContactAttributesRepository(),
-				new UserGroupRepository());
+				new UserGroupRepository(),
+				NullCustomizedWindowInfoMapRepository.instance);
 
 		greeting_MR = createGreeting(GreetingStandardType.MR);
 		greeting_MRS = createGreeting(GreetingStandardType.MRS);
@@ -118,7 +120,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 
 		refresh(partner);
 		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " + firstName);
-		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
+		assertThat(partner.getC_Greeting_ID()).isEqualTo(-1);
 	}
 
 	@Test

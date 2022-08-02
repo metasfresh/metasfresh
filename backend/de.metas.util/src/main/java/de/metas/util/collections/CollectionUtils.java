@@ -2,6 +2,7 @@ package de.metas.util.collections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -18,7 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -286,7 +290,7 @@ public final class CollectionUtils
 			return ImmutableList.of();
 		}
 
-		ImmutableList.Builder<R> result = ImmutableList.builder();
+		final ImmutableList.Builder<R> result = ImmutableList.builder();
 		boolean hasChanges = false;
 		for (final T item : collection)
 		{
@@ -301,6 +305,93 @@ public final class CollectionUtils
 
 		//noinspection unchecked
 		return hasChanges ? result.build() : (ImmutableList<R>)collection;
+	}
+
+	public static <T> ImmutableList<T> filter(
+			@NonNull final ImmutableList<T> list,
+			@NonNull final Predicate<T> predicate)
+	{
+		if (list.isEmpty())
+		{
+			return list;
+		}
+
+		ImmutableList.Builder<T> result = null;
+		for (int i = 0, size = list.size(); i < size; i++)
+		{
+			final T item = list.get(i);
+			if (!predicate.test(item))
+			{
+				if (result == null)
+				{
+					result = ImmutableList.builder();
+					result.addAll(list.subList(0, i));
+				}
+			}
+			else
+			{
+				if (result != null)
+				{
+					result.add(item);
+				}
+			}
+		}
+
+		if (result == null)
+		{
+			return list;
+		}
+
+		return result.build();
+	}
+
+	public static <T> ImmutableSet<T> removeElement(
+			@NonNull final ImmutableSet<T> set,
+			@Nullable final T elementToRemove)
+	{
+		if (elementToRemove == null || !set.contains(elementToRemove))
+		{
+			return set;
+		}
+
+		return set.stream().filter(element -> !element.equals(elementToRemove)).collect(ImmutableSet.toImmutableSet());
+	}
+
+	public static <K, V> ImmutableMap<K, V> mapValue(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final K key,
+			@NonNull final UnaryOperator<V> mappingFunction)
+	{
+		return mapValues(
+				map,
+				(currentKey, currentValue) -> currentKey.equals(key) ? mappingFunction.apply(currentValue) : currentValue);
+	}
+
+	public static <K, V, W> ImmutableMap<K, W> mapValues(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final BiFunction<K, V, W> mappingFunction)
+	{
+		if (map.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<K, W> result = ImmutableMap.builder();
+		boolean hasChanges = false;
+		for (final K key : map.keySet())
+		{
+			final V item = map.get(key);
+			final W changedItem = mappingFunction.apply(key, item);
+			result.put(key, changedItem);
+
+			if (!hasChanges && !Objects.equals(item, changedItem))
+			{
+				hasChanges = true;
+			}
+		}
+
+		//noinspection unchecked
+		return hasChanges ? result.build() : (ImmutableMap<K, W>)map;
 	}
 
 	/**
@@ -391,6 +482,24 @@ public final class CollectionUtils
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public static <T> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Function<String, T> mapper)
+	{
+		if (commaSeparatedStr == null || Check.isBlank(commaSeparatedStr))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(commaSeparatedStr)
+				.stream()
+				.map(mapper)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@Nullable
 	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
 	{
@@ -440,6 +549,43 @@ public final class CollectionUtils
 			{
 				return result;
 			}
+		}
+	}
+
+	public static <K, V> ImmutableMap<K, V> mergeElementToMap(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final V element,
+			@NonNull final Function<V, K> keyExtractor)
+	{
+		final K key = keyExtractor.apply(element);
+		final V oldElement = map.get(key);
+		if (Objects.equals(element, oldElement))
+		{
+			return map;
+		}
+
+		final LinkedHashMap<K, V> newMap = new LinkedHashMap<>(map);
+		newMap.put(key, element);
+		return ImmutableMap.copyOf(newMap);
+	}
+
+	public static <K, V> ImmutableMap<K, V> mergeMaps(
+			@NonNull final ImmutableMap<K, V> map1,
+			@NonNull final ImmutableMap<K, V> map2)
+	{
+		if (map2.isEmpty())
+		{
+			return map1;
+		}
+		else if (map1.isEmpty())
+		{
+			return map2;
+		}
+		else
+		{
+			final LinkedHashMap<K, V> result = new LinkedHashMap<>(map1);
+			result.putAll(map2);
+			return ImmutableMap.copyOf(result);
 		}
 	}
 }

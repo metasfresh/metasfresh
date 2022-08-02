@@ -1,20 +1,18 @@
 package de.metas.ui.web.view.template;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
-
-import org.adempiere.util.lang.SynchronizedMutable;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.util.lang.SynchronizedMutable;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -71,7 +69,7 @@ public class SynchronizedRowsIndexHolder<T extends IViewRow>
 	{
 		return holder.getValue().getRecordIdsToRefresh(rowIds, idMapper);
 	}
-
+	
 	public void compute(@NonNull final UnaryOperator<ImmutableRowsIndex<T>> remappingFunction)
 	{
 		holder.compute(remappingFunction);

@@ -22,8 +22,7 @@ package de.metas.async.processor;
  * #L%
  */
 
-
-import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 
 /**
  * Responsible for managing registered {@link IQueueProcessor}.
@@ -37,28 +36,21 @@ public interface IQueueProcessorsExecutor
 {
 	/**
 	 * Instantiates and configures the right {@link IQueueProcessor} for given definition.
+	 * Starts the underlying {@link de.metas.async.processor.impl.planner.QueueProcessorPlanner} if not started already.
 	 * 
 	 * @param processorDef
 	 */
-	void addQueueProcessor(I_C_Queue_Processor processorDef);
+	void addQueueProcessor(QueueProcessorDescriptor processorDef);
 
 	/**
 	 * Unregisters the {@link IQueueProcessor} for given C_Queue_Processor_ID.
 	 * 
 	 * @param queueProcessorId
-	 * @return true if processor unregistered or it was never registered
 	 */
-	boolean removeQueueProcessor(final int queueProcessorId);
+	void removeQueueProcessor(final QueueProcessorId queueProcessorId);
 
 	/**
-	 * Unregister all {@link IQueueProcessor}s.
-	 * 
-	 * @return true if all were unregistered; false if some of them could not be registered
-	 */
-	boolean removeAllQueueProcessor();
-
-	/**
-	 * Stops all {@link IQueueProcessor} threads
+	 * Stops all {@link de.metas.async.processor.impl.planner.QueueProcessorPlanner} and {@link IQueueProcessor} threads
 	 */
 	void shutdown();
 
@@ -68,7 +60,5 @@ public interface IQueueProcessorsExecutor
 	 * @param queueProcessorId
 	 * @return
 	 */
-	IQueueProcessor getQueueProcessor(int queueProcessorId);
-
-
+	IQueueProcessor getQueueProcessor(QueueProcessorId queueProcessorId);
 }

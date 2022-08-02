@@ -25,8 +25,12 @@ package de.metas.procurement.base.rabbitmq;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
+import de.metas.rabbitmq.RabbitMQAuditEntry;
+import de.metas.rabbitmq.RabbitMQAuditService;
+import de.metas.rabbitmq.RabbitMQDirection;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.net.NetUtils;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
@@ -40,13 +44,16 @@ import java.nio.charset.StandardCharsets;
 public class SenderToProcurementWeb
 {
 	private final RabbitTemplate rabbitTemplate;
+	private final RabbitMQAuditService rabbitLogger;
 	private final Queue queue;
 
 	public SenderToProcurementWeb(
 			@NonNull final RabbitTemplate rabbitTemplate,
+			@NonNull final RabbitMQAuditService rabbitLogger,
 			@NonNull @Qualifier(Constants.QUEUE_NAME_MF_TO_PW) final Queue queue)
 	{
 		this.rabbitTemplate = rabbitTemplate;
+		this.rabbitLogger = rabbitLogger;
 		this.queue = queue;
 	}
 
@@ -68,5 +75,14 @@ public class SenderToProcurementWeb
 		messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
 		rabbitTemplate.convertAndSend(queue.getName(), new Message(messageAsBytes, messageProperties));
+
+		rabbitLogger.log(RabbitMQAuditEntry.builder()
+								 .queueName(queue.getName())
+								 .direction(RabbitMQDirection.OUT)
+								 .content(requestToProcurementWeb)
+								 .eventUUID(requestToProcurementWeb.getEventId())
+								 .relatedEventUUID(requestToProcurementWeb.getRelatedEventId())
+								 .host(NetUtils.getLocalHost())
+								 .build());
 	}
 }

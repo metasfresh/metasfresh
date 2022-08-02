@@ -1,9 +1,8 @@
 package de.metas.material.cockpit.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Cockpit_DocumentDetail
  *  @author metasfresh (generated) 
@@ -168,27 +167,6 @@ public interface I_MD_Cockpit_DocumentDetail
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Abo-Verlauf.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
-
-	/**
-	 * Get Abo-Verlauf.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_SubscriptionProgress_ID();
-
-	ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_C_SubscriptionProgress_ID = new ModelColumn<>(I_MD_Cockpit_DocumentDetail.class, "C_SubscriptionProgress_ID", null);
-	String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -214,6 +192,27 @@ public interface I_MD_Cockpit_DocumentDetail
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Abo-Verlauf.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
+
+	/**
+	 * Get Abo-Verlauf.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_SubscriptionProgress_ID();
+
+	ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_C_SubscriptionProgress_ID = new ModelColumn<>(I_MD_Cockpit_DocumentDetail.class, "C_SubscriptionProgress_ID", null);
+	String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -235,6 +234,52 @@ public interface I_MD_Cockpit_DocumentDetail
 
 	ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_IsActive = new ModelColumn<>(I_MD_Cockpit_DocumentDetail.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set DocumentDetails.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Cockpit_DocumentDetail_ID (int MD_Cockpit_DocumentDetail_ID);
+
+	/**
+	 * Get DocumentDetails.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Cockpit_DocumentDetail_ID();
+
+	ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_MD_Cockpit_DocumentDetail_ID = new ModelColumn<>(I_MD_Cockpit_DocumentDetail.class, "MD_Cockpit_DocumentDetail_ID", null);
+	String COLUMNNAME_MD_Cockpit_DocumentDetail_ID = "MD_Cockpit_DocumentDetail_ID";
+
+	/**
+	 * Set Material Cockpit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Cockpit_ID (int MD_Cockpit_ID);
+
+	/**
+	 * Get Material Cockpit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Cockpit_ID();
+
+	de.metas.material.cockpit.model.I_MD_Cockpit getMD_Cockpit();
+
+	void setMD_Cockpit(de.metas.material.cockpit.model.I_MD_Cockpit MD_Cockpit);
+
+	ModelColumn<I_MD_Cockpit_DocumentDetail, de.metas.material.cockpit.model.I_MD_Cockpit> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit_DocumentDetail.class, "MD_Cockpit_ID", de.metas.material.cockpit.model.I_MD_Cockpit.class);
+	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
 
 	/**
 	 * Set Material Receipt Candidates.
@@ -277,52 +322,6 @@ public interface I_MD_Cockpit_DocumentDetail
 
 	ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_MD_Cockpit_DocumentDetail.class, "M_ShipmentSchedule_ID", null);
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-	/**
-	 * Set DocumentDetails.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Cockpit_DocumentDetail_ID (int MD_Cockpit_DocumentDetail_ID);
-
-	/**
-	 * Get DocumentDetails.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Cockpit_DocumentDetail_ID();
-
-	ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_MD_Cockpit_DocumentDetail_ID = new ModelColumn<>(I_MD_Cockpit_DocumentDetail.class, "MD_Cockpit_DocumentDetail_ID", null);
-	String COLUMNNAME_MD_Cockpit_DocumentDetail_ID = "MD_Cockpit_DocumentDetail_ID";
-
-	/**
-	 * Set Material Cockpit.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Cockpit_ID (int MD_Cockpit_ID);
-
-	/**
-	 * Get Material Cockpit.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Cockpit_ID();
-
-	I_MD_Cockpit getMD_Cockpit();
-
-	void setMD_Cockpit(I_MD_Cockpit MD_Cockpit);
-
-	ModelColumn<I_MD_Cockpit_DocumentDetail, I_MD_Cockpit> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit_DocumentDetail.class, "MD_Cockpit_ID", I_MD_Cockpit.class);
-	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
 
 	/**
 	 * Set Qty Ordered.

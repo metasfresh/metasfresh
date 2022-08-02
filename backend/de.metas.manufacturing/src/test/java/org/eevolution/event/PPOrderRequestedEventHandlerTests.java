@@ -1,21 +1,32 @@
 package org.eevolution.event;
 
-import static de.metas.document.engine.IDocument.STATUS_Completed;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.material.event.MaterialEventObserver;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderData;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.service.ClientId;
@@ -32,43 +43,39 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_AD_Workflow;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_PP_Product_BOM;
 import org.eevolution.model.validator.PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.event.pporder.MaterialDispoGroupId;
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
-import de.metas.util.Services;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static de.metas.document.engine.IDocument.STATUS_Completed;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -123,6 +130,8 @@ public class PPOrderRequestedEventHandlerTests
 		AdempiereTestHelper.get().init();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, adClientId.getRepoId());
 
+		SpringContextHolder.registerJUnitBean(new ProductBOMVersionsDAO());
+
 		final I_C_Order order = newInstance(I_C_Order.class);
 		save(order);
 
@@ -141,14 +150,23 @@ public class PPOrderRequestedEventHandlerTests
 		bomMainProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		save(bomMainProduct);
 
+		final I_PP_Product_BOMVersions productBomVersions = newInstance(I_PP_Product_BOMVersions.class);
+		productBomVersions.setM_Product_ID(bomMainProduct.getM_Product_ID());
+		productBomVersions.setName("Name");
+		save(productBomVersions);
+
 		final I_PP_Product_BOM productBom = newInstance(I_PP_Product_BOM.class);
 		productBom.setM_Product_ID(bomMainProduct.getM_Product_ID());
 		productBom.setC_UOM_ID(uom.getC_UOM_ID());
+		productBom.setValidFrom(TimeUtil.asTimestamp(Instant.now().minus(1, ChronoUnit.HOURS)));
+		productBom.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Completed);
+		productBom.setPP_Product_BOMVersions_ID(productBomVersions.getPP_Product_BOMVersions_ID());
 		save(productBom);
+
 
 		productPlanning = newInstance(I_PP_Product_Planning.class);
 		productPlanning.setAD_Workflow_ID(routingId.getRepoId());
-		productPlanning.setPP_Product_BOM_ID(productBom.getPP_Product_BOM_ID());
+		productPlanning.setPP_Product_BOMVersions_ID(productBomVersions.getPP_Product_BOMVersions_ID());
 		productPlanning.setIsDocComplete(true);
 		save(productPlanning);
 
@@ -199,17 +217,19 @@ public class PPOrderRequestedEventHandlerTests
 				bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(adClientId, orgId))
-				.materialDispoGroupId(PPORDER_POJO_GROUPID)
-				.datePromised(de.metas.common.util.time.SystemTime.asInstant())
-				.dateStartSchedule(de.metas.common.util.time.SystemTime.asInstant())
-				.plantId(ResourceId.ofRepoId(110))
-				.orderLineId(orderLine.getC_OrderLine_ID())
-				.productDescriptor(productDescriptor)
-				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
-				.qtyRequired(TEN)
-				.qtyDelivered(ONE)
-				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+				.ppOrderData(PPOrderData.builder()
+									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(adClientId, orgId))
+									 .materialDispoGroupId(PPORDER_POJO_GROUPID)
+									 .datePromised(SystemTime.asInstant())
+									 .dateStartSchedule(SystemTime.asInstant())
+									 .plantId(ResourceId.ofRepoId(110))
+									 .orderLineId(orderLine.getC_OrderLine_ID())
+									 .productDescriptor(productDescriptor)
+									 .productPlanningId(productPlanning.getPP_Product_Planning_ID())
+									 .qtyRequired(TEN)
+									 .qtyDelivered(ONE)
+									 .warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
+									 .build())
 				.build();
 
 		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler();
@@ -262,9 +282,14 @@ public class PPOrderRequestedEventHandlerTests
 	{
 		assertThat(ppOrder).isNotNull();
 		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
-		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(productPlanning.getPP_Product_BOM_ID());
 
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+
+		final ProductBOMVersionsId productBOMVersionsId = ProductBOMVersionsId.ofRepoId(productPlanning.getPP_Product_BOMVersions_ID());
+		final ProductBOMId productBOMId = productBOMsRepo.getLatestBOMByVersion(productBOMVersionsId).orElse(null);
+
+		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(ProductBOMId.toRepoId(productBOMId));
+
 		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(ProductBOMId.ofRepoId(ppOrder.getPP_Product_BOM_ID()));
 		assertThat(ppOrder.getM_Product_ID()).isEqualTo(productBOM.getM_Product_ID());
 
@@ -326,14 +351,16 @@ public class PPOrderRequestedEventHandlerTests
 		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
 				materialEventConverter,
-				PlainEventBusFactory.newInstance());
+				PlainEventBusFactory.newInstance(),
+				new MaterialEventObserver());
 		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(
 				ppOrderConverter,
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
-				new PPOrderBOMBL()));
+				new PPOrderBOMBL(),
+				new ProductBOMVersionsDAO()));
 	}
 
 	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final BOMComponentType componentType)

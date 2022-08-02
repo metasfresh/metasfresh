@@ -65,7 +65,7 @@ public class SwaggerDocConstants
 	public static final String PRODUCT_IDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
 			+ "* a plain `<M_Product_ID>`\n"
 			+ "* or something like `val-<M_Product.Value>`\n"
-			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference> where <ExternalReference> translates to an identifier of the product within the given <ExternalSystem>";
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the product within the given `<ExternalSystem>`";
 
 	public static final String SHIPPER_IDENTIFIER_DOC = "Identifier of the M_Shipper in question. Can be\n"
 			+ "* a plain `<M_Shipper_ID>`\n"
@@ -73,4 +73,21 @@ public class SwaggerDocConstants
 			+ "* or something like `val-<M_Shipper.value>`\n";
 
 	public static final String AD_SEQ_NO_ID_DOC = "AD_SeqNo_ID for the seqNo to be retrieved";
+
+	public static final String HU_IDENTIFIER_DOC = "Identifier of the handling unit in question. Can be\n"
+			+ "* a plain `<M_HU_ID>`";
+
+	public static final String ACTIVITY_IDENTIFIER_DOC = "Identifier of the activity in question. Can be\n"
+			+ "* a plain `<C_Activity_ID>`\n"
+			+ "* or something like `val-<C_Activity.Value>`";
+
+	public static final String PROJECT_IDENTIFIER_DOC = "Identifier of the project in question. Can be\n"
+			+ "* a plain `<C_Project_ID>`\n"
+			+ "* or something like `ext-<C_Project.ProjectReferenceExt>`\n"
+			+ "* or something like `val-<C_Project.value>`\n";
+
+	public static final String RESOURCE_IDENTIFIER_DOC = "Identifier of the project in question. Can be\n"
+			+ "* a plain `<S_Resource_ID>`\n"
+			+ "* or something like `val-<S_Resource.Value>`\n"
+			+ "* or something like `int-<S_Resource.InternalName>`\n";
 }

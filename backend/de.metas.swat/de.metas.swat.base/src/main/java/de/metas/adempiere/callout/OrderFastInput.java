@@ -32,6 +32,7 @@ import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -304,7 +305,7 @@ public class OrderFastInput extends CalloutEngine
 		// 3834
 		final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(ol.getC_BPartner_ID());
-		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
+		Services.get(IBPartnerProductBL.class).assertNotExcludedFromTransaction(SOTrx.ofBooleanNotNull(order.isSOTrx()), productId, partnerId);
 
 		//
 		// set the prices before saveEx, because otherwise, priceEntered is

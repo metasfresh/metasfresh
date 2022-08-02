@@ -1,117 +1,44 @@
 import counterpart from 'counterpart';
+import translations_en from './translations_en';
+import translations_de from './translations_de';
+
+import { getApplicationMessages } from '../apps';
+
+/** Just a shortcut & abstraction of counterpart's translate function */
+export const trl = (key, ...args) => {
+  return counterpart.translate(key, ...args);
+};
 
 export const setupCounterpart = () => {
   console.log('Setting up counterpart defaults...');
 
-  counterpart.setMissingEntryGenerator(function (key) {
-    // eslint-disable-next-line no-console
-    console.error(`Missing translation: ${key}`);
+  counterpart.setMissingEntryGenerator(generateMissingTranslation);
+  counterpart.registerTranslations('en', translations_en);
+  counterpart.registerTranslations('de', translations_de);
+
+  const applicationsMessages = getApplicationMessages();
+  Object.keys(applicationsMessages).forEach((locale) => {
+    counterpart.registerTranslations(locale, applicationsMessages[locale]);
+    console.log(`Registered apps messages ${locale}`, applicationsMessages[locale]);
+  });
+
+  //setLanguage('de_DE'); // used only for debugging
+};
+
+const generateMissingTranslation = (key) => {
+  // eslint-disable-next-line no-console
+  console.error(`Missing translation: ${key}`);
+
+  if (!key) {
+    return '';
+  }
+
+  const idx = key.lastIndexOf('.');
+  if (idx > 0) {
+    return key.substring(idx + 1);
+  } else {
     return `${key}`;
-  });
-
-  counterpart.registerTranslations('en', {
-    appName: 'Mobile UI',
-    general: {
-      Product: 'Product',
-      Locator: 'Locator',
-      Barcode: 'Barcode',
-      QtyToPick: 'Qty to pick',
-      QtyPicked: 'Qty picked',
-      PleaseTryAgain: 'Please try again',
-    },
-    login: {
-      submitButton: 'Login',
-    },
-    mobileui: {
-      manufacturing: {
-        appName: 'Production',
-      },
-      picking: {
-        appName: 'Picking',
-      },
-      distribution: {
-        appName: 'Distribution',
-      },
-    },
-    activities: {
-      scanBarcode: {
-        defaultCaption: 'Scan',
-        invalidScannedBarcode: 'Scanned code is invalid',
-      },
-      picking: {
-        PickingLine: 'Picking Line',
-        scanHUBarcode: 'Scan HU',
-        notEligibleHUBarcode: 'HU barcode not matching',
-        invalidQtyPicked: 'Invalid qty picked',
-        confirmDone: 'Done',
-        rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
-        unPickBtn: 'Unpick',
-        toPick: 'To Pick',
-        picked: 'Picked',
-      },
-      confirmButton: {
-        default: {
-          caption: 'Confirm',
-          promptQuestion: 'Are you sure?',
-          yes: 'Yes',
-          no: 'No',
-        },
-      },
-    },
-  });
-
-  counterpart.registerTranslations('de', {
-    appName: 'Kommissionierung',
-    general: {
-      Product: 'Produkt',
-      Locator: 'Lagerort',
-      Barcode: 'Barcode',
-      QtyToPick: 'Qty to pick',
-      QtyPicked: 'Menge (Lagereinheit)',
-      PleaseTryAgain: 'Please try again',
-    },
-    login: {
-      submitButton: 'Login',
-    },
-    mobileui: {
-      manufacturing: {
-        appName: 'Production',
-      },
-      picking: {
-        appName: 'Picking',
-      },
-      distribution: {
-        appName: 'Distribution',
-      },
-    },
-    activities: {
-      scanBarcode: {
-        defaultCaption: 'Scan',
-        invalidScannedBarcode: 'Scanned code is invalid',
-      },
-      picking: {
-        PickingLine: 'Picking Line',
-        scanHUBarcode: 'Scan HU',
-        notEligibleHUBarcode: 'HU barcode not matching',
-        invalidQtyPicked: 'Invalid qty picked',
-        confirmDone: 'Done',
-        rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
-        unPickBtn: 'Unpick',
-        toPick: 'To Pick',
-        picked: 'Picked',
-      },
-      confirmButton: {
-        default: {
-          caption: 'Confirm',
-          promptQuestion: 'Are you sure?',
-          yes: 'Yes',
-          no: 'No',
-        },
-      },
-    },
-  });
-
-  // setLanguage('de_DE');
+  }
 };
 
 export const setLanguage = (language) => {

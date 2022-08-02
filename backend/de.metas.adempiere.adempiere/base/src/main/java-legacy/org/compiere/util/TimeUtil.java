@@ -3,7 +3,11 @@ package org.compiere.util;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -1629,6 +1633,20 @@ public class TimeUtil
 	}
 
 	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
+	{
+		if (ts == null)
+		{
+			return null;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+		return asLocalDate(ts, zoneId);
+	}
+
+	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{
 		if (obj == null)
@@ -1767,6 +1785,20 @@ public class TimeUtil
 		return timestamp != null ? timestamp.toInstant().atZone(SystemTime.zoneId()) : null;
 	}
 
+	@Nullable
+	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
+	{
+		if (ts == null)
+		{
+			return null;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+		return asZonedDateTime(ts, zoneId);
+	}
+	
 	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
 		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;
@@ -1854,6 +1886,27 @@ public class TimeUtil
 	}
 
 	@Nullable
+	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final OrgId orgId)
+	{
+		if(localDate == null)
+		{
+			return null;
+		}
+		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
+
+		return asInstant(endOfDay, orgId);
+	}
+	
+	@Nullable
+	public static Instant asInstant(
+			@Nullable final Object obj,
+			@NonNull final OrgId orgId)
+	{
+		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(orgId);
+		return asInstant(obj,timeZone);
+	}
+	
+	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,
 			@NonNull final ZoneId zoneId)
@@ -1861,6 +1914,10 @@ public class TimeUtil
 		if (obj == null)
 		{
 			return null;
+		}
+		else if (obj instanceof InstantAndOrgId)
+		{
+			return ((InstantAndOrgId)obj).toInstant();
 		}
 		else if (obj instanceof Instant)
 		{
@@ -2063,16 +2120,18 @@ public class TimeUtil
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
+	public static Range<Instant> toInstantsRange(
 			@Nullable final java.sql.Timestamp from,
 			@Nullable final java.sql.Timestamp to)
 	{
-		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
+		return toInstantsRange(
+				from != null ? from.toInstant() : null,
+				to != null ? to.toInstant() : null);
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
-			@Nullable final LocalDate from,
-			@Nullable final LocalDate to)
+	public static Range<Instant> toInstantsRange(
+			@Nullable final Instant from,
+			@Nullable final Instant to)
 	{
 		if (from == null)
 		{
@@ -2084,4 +2143,8 @@ public class TimeUtil
 		}
 	}
 
+	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
+	{
+		return timestamp2.getTime() - timestamp1.getTime();
+	}
 }    // TimeUtil

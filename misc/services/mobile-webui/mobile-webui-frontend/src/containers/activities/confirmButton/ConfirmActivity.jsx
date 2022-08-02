@@ -1,47 +1,54 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { userConfirmation } from '../../../api/confirmation';
-import ConfirmButton from './ConfirmButton';
-import { history } from '../../../store/store';
+import { postUserConfirmation } from '../../../api/confirmation';
+import { setActivityUserConfirmed } from '../../../actions/UserConfirmationActions';
+import ConfirmButton from '../../../components/buttons/ConfirmButton';
+import { toastError } from '../../../utils/toast';
+import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
-class ConfirmActivity extends PureComponent {
-  onUserConfirmed = () => {
-    const { wfProcessId, activityId, isLastActivity } = this.props;
-    userConfirmation({ wfProcessId, activityId }).then(() => {
-      if (isLastActivity) {
-        history.push('/');
-      }
-    });
+const ConfirmActivity = ({
+  wfProcessId,
+  activityId,
+  caption,
+  promptQuestion,
+  isUserEditable,
+  completeStatus,
+  isLastActivity,
+}) => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const onUserConfirmed = () => {
+    postUserConfirmation({ wfProcessId, activityId })
+      .then(() => dispatch(setActivityUserConfirmed({ wfProcessId, activityId })))
+      .then(() => {
+        if (isLastActivity) {
+          history.push('/');
+        }
+      })
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
-  render() {
-    console.log('CONFIRM PROPS: ', this.props);
-
-    const {
-      caption,
-      componentProps: { promptQuestion },
-      isUserEditable,
-    } = this.props;
-
-    return (
-      <div className="mt-5">
-        <ConfirmButton
-          caption={caption}
-          promptQuestion={promptQuestion}
-          isUserEditable={isUserEditable}
-          onUserConfirmed={this.onUserConfirmed}
-        />
-      </div>
-    );
-  }
-}
+  return (
+    <div className="mt-5">
+      <ConfirmButton
+        caption={caption}
+        promptQuestion={promptQuestion}
+        isUserEditable={isUserEditable}
+        completeStatus={completeStatus}
+        onUserConfirmed={onUserConfirmed}
+      />
+    </div>
+  );
+};
 
 ConfirmActivity.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  caption: PropTypes.string,
-  componentProps: PropTypes.object.isRequired,
+  caption: PropTypes.string.isRequired,
+  promptQuestion: PropTypes.string,
   isUserEditable: PropTypes.bool.isRequired,
+  completeStatus: PropTypes.string.isRequired,
   isLastActivity: PropTypes.bool.isRequired,
 };
 

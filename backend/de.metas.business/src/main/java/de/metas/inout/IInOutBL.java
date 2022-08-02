@@ -184,4 +184,8 @@ public interface IInOutBL extends ISingletonService
 	I_R_Request createRequestFromInOut(I_M_InOut inOut);
 
 	LocalDate retrieveMovementDate(I_M_InOut inOut);
+
+	String getLocationEmail(InOutId ofRepoId);
+
+	void updateDescriptionAndDescriptionBottomFromDocType(@NonNull I_M_InOut inOut);
 }

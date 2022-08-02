@@ -3,7 +3,7 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-Shopware6-customerId",
+        "bpartnerIdentifier": "customerId",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
@@ -11,6 +11,11 @@
             "name":"firstName lastName",
             "companyName": "company",
             "customer": true,
+            "priceListId": 121,
+            "group":"test_group",
+            "groupSet":true,
+            "vatId": "vatId12",
+            "vatIdSet": true,
             "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
@@ -28,7 +33,10 @@
                   "city": "Billing City",
                   "countryCode": "DE",
                   "shipTo": false,
-                  "billTo": true
+                  "billTo": true,
+                  "bpartnerName": "company, firstName lastName",
+                  "phone": "phoneNumber",
+                  "email": "billingEmailAddress@example.com"
                 }
               },
               {
@@ -41,7 +49,10 @@
                   "city": "Test City",
                   "countryCode": "DE",
                   "shipTo": true,
-                  "billTo": false
+                  "billTo": false,
+                  "bpartnerName": "company, firstName lastName",
+                  "phone": "phoneNumber",
+                  "email": "shippingOrderAddress@example.com"
                 }
               }
             ],
@@ -53,32 +64,19 @@
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-Shopware6-customerId-billTo",
+                "contactIdentifier": "ext-Shopware6-customerId",
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
-                  "email": "someEamil@web.de",
+                  "email": "orderCustomerEmail@example.com",
                   "invoiceEmailEnabled": true,
-                  "phone": "phoneNumber",
-                  "shipToDefault": false,
-                  "billToDefault": true
-                }
-              },
-              {
-                "contactIdentifier": "ext-Shopware6-customerId-shipTo",
-                "contact": {
-                  "firstName": "firstName",
-                  "lastName": "lastName",
-                  "email": "someEamil@web.de",
-                  "invoiceEmailEnabled": true,
-                  "phone": "phoneNumber",
                   "shipToDefault": true,
-                  "billToDefault": false
+                  "billToDefault": true
                 }
               }
             ],
             "syncAdvise": {
-              "ifNotExists": "FAIL",
+              "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
             }
           }

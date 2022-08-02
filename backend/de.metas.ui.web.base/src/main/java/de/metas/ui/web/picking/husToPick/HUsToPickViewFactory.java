@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;

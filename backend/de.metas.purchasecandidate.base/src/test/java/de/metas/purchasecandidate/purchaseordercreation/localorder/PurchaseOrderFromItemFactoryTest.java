@@ -28,6 +28,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -243,7 +244,7 @@ public class PurchaseOrderFromItemFactoryTest
 		return PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), salesOrderLine.getC_OrderLine_ID()))
-				.orgId(OrgId.ofRepoId(3))
+				.orgId(OrgId.ofRepoId(Env.CTXVALUE_AD_Org_ID_Any))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())

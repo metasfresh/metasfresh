@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<invoice:request xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:invoice="http://www.forum-datenaustausch.ch/invoice" xsi:schemaLocation="http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_450.xsd" xmlns="http://www.forum-datenaustausch.ch/invoice" language="de" modus="test" validation_status="0">
+    <invoice:processing print_at_intermediate="1">
+        <invoice:transport from="7601001302112" to="2099999999999">
+            <invoice:via via="2099999999999" sequence_id="1"/>
+        </invoice:transport>
+    </invoice:processing>
+    <invoice:payload type="invoice" copy="0" storno="0">
+        <invoice:invoice request_timestamp="1519659528" request_date="2018-02-26T00:00:00" request_id="123"/>
+        <invoice:body role="physician" place="practice">
+            <invoice:prolog>
+                <invoice:package name="TarPoint" copyright="ZMT" version="100" id="1025180126"/>
+                <invoice:generator name="GeneralInvoiceRequestManager 4.40.010" copyright="suva 2000-17" version="440">
+                    <invoice:depends_on name="tarmedValidator100 ATL Module" copyright="Suva" version="100" id="1128170301"/>
+                </invoice:generator>
+            </invoice:prolog>
+            <invoice:tiers_payant>
+                <invoice:biller ean_party="2011234567890" zsr="H121111" uid_number="CHE108791452">
+                    <invoice:company>
+                        <invoice:companyname>Biller AG</invoice:companyname>
+                        <invoice:department>Abteilung Inkasso</invoice:department>
+                        <invoice:postal>
+                            <invoice:street>Billerweg 128</invoice:street>
+                            <invoice:zip>4414</invoice:zip>
+                            <invoice:city>Frenkendorf</invoice:city>
+                        </invoice:postal>
+                        <invoice:telecom>
+                            <invoice:phone>061 956 99 00</invoice:phone>
+                            <invoice:fax>061 956 99 10</invoice:fax>
+                        </invoice:telecom>
+                        <invoice:online>
+                            <invoice:email>info@biller.ch</invoice:email>
+                        </invoice:online>
+                    </invoice:company>
+                </invoice:biller>
+                <invoice:debitor ean_party="7634567890000">
+                    <invoice:company>
+                        <invoice:companyname>Krankenkasse AG</invoice:companyname>
+                        <invoice:department>Sektion Basel</invoice:department>
+                        <invoice:postal>
+                            <invoice:street>Kassengraben 222</invoice:street>
+                            <invoice:zip>4000</invoice:zip>
+                            <invoice:city>Basel</invoice:city>
+                        </invoice:postal>
+                    </invoice:company>
+                </invoice:debitor>
+                <invoice:provider ean_party="7634567890111" zsr="P123456" specialty="FMH Innere Medizin">
+                    <invoice:person salutation="Frau" title="Dr. med.">
+                        <invoice:familyname>Ärztin</invoice:familyname>
+                        <invoice:givenname>Patricia</invoice:givenname>
+                        <invoice:postal>
+                            <invoice:street>Arztgasse 17b5</invoice:street>
+                            <invoice:zip statecode="BS">4000</invoice:zip>
+                            <invoice:city>Basel</invoice:city>
+                        </invoice:postal>
+                        <invoice:telecom>
+                            <invoice:phone>061 956 99 00</invoice:phone>
+                            <invoice:fax>061 956 99 10</invoice:fax>
+                        </invoice:telecom>
+                    </invoice:person>
+                </invoice:provider>
+                <invoice:insurance ean_party="7634567890000">
+                    <invoice:company>
+                        <invoice:companyname>Krankenkasse AG</invoice:companyname>
+                        <invoice:department>Sektion Basel</invoice:department>
+                        <invoice:postal>
+                            <invoice:street>Kassengraben 222</invoice:street>
+                            <invoice:zip>4000</invoice:zip>
+                            <invoice:city>Basel</invoice:city>
+                        </invoice:postal>
+                    </invoice:company>
+                </invoice:insurance>
+                <invoice:patient gender="male" birthdate="1964-02-28T00:00:00" ssn="1234">
+                    <invoice:person salutation="Herr">
+                        <invoice:familyname>Muster</invoice:familyname>
+                        <invoice:givenname>Peter</invoice:givenname>
+                        <invoice:postal>
+                            <invoice:street>Musterstrasse 5</invoice:street>
+                            <invoice:zip>7304</invoice:zip>
+                            <invoice:city>Maienfeld</invoice:city>
+                        </invoice:postal>
+                    </invoice:person>
+                </invoice:patient>
+                <invoice:guarantor>
+                    <invoice:person salutation="Herr">
+                        <invoice:familyname>Garant</invoice:familyname>
+                        <invoice:givenname>Xaver</invoice:givenname>
+                        <invoice:postal>
+                            <invoice:street>Garantenallee 12</invoice:street>
+                            <invoice:zip>7300</invoice:zip>
+                            <invoice:city>Chur</invoice:city>
+                        </invoice:postal>
+                    </invoice:person>
+                </invoice:guarantor>
+                <invoice:referrer ean_party="2034567890333" zsr="R234567">
+                    <invoice:person salutation="Herr" title="Dr. med.">
+                        <invoice:familyname>Ueberweiser</invoice:familyname>
+                        <invoice:givenname>Herbert</invoice:givenname>
+                        <invoice:postal>
+                            <invoice:street>Referrerstrasse 11</invoice:street>
+                            <invoice:zip statecode="AG">5000</invoice:zip>
+                            <invoice:city>Aarau</invoice:city>
+                        </invoice:postal>
+                        <invoice:telecom>
+                            <invoice:phone>061 956 99 00</invoice:phone>
+                        </invoice:telecom>
+                    </invoice:person>
+                </invoice:referrer>
+                <invoice:employer reg_number="123">
+                    <invoice:company>
+                        <invoice:companyname>Arbeitgeber AG</invoice:companyname>
+                        <invoice:department>R&amp;D</invoice:department>
+                        <invoice:postal>
+                            <invoice:street>Arbeitsplatz 3-5</invoice:street>
+                            <invoice:zip statecode="BL">4410</invoice:zip>
+                            <invoice:city>Liestal</invoice:city>
+                        </invoice:postal>
+                    </invoice:company>
+                </invoice:employer>
+                <invoice:balance currency="CHF" amount="111.56" amount_obligations="111.56" amount_due="111.55">
+                    <invoice:vat vat="0.00" vat_number="CHE108791452">
+                        <invoice:vat_rate vat="0.00" vat_rate="0" amount="111.56"/>
+                    </invoice:vat>
+                </invoice:balance>
+            </invoice:tiers_payant>
+            <invoice:esr9 type="16or27" participant_number="01-432-5" reference_number="00 00000 00000 00000 00000 01236" coding_line="0100000111555&gt;000000000000000000000001236+ 010004325&gt;">
+                <invoice:creditor>
+                    <invoice:company>
+                        <invoice:companyname>Biller AG</invoice:companyname>
+                        <invoice:postal>
+                            <invoice:street>Billerweg 128</invoice:street>
+                            <invoice:zip countrycode="CH">4414</invoice:zip>
+                            <invoice:city>Frenkendorf</invoice:city>
+                        </invoice:postal>
+                    </invoice:company>
+                </invoice:creditor>
+            </invoice:esr9>
+            <invoice:kvg case_date="2018-02-26T00:00:00"/>
+            <invoice:treatment date_begin="2018-02-26T00:00:00" date_end="2018-02-26T00:00:00" canton="BS" reason="accident" apid="tarPoint" acid="tarPoint"/>
+            <invoice:services>
+                <invoice:service_ex record_id="1" tariff_type="001" code="00.2520" session="1" quantity="1" date_begin="2018-02-26T00:00:00" provider_id="2012345678901" responsible_id="2012345678911" billing_role="both" medical_role="self_employed" body_location="none" unit_mt="110" unit_factor_mt="0.91" scale_factor_mt="0.93" amount_mt="93.09" unit_tt="0" unit_factor_tt="0.91" scale_factor_tt="1"
+                                    amount="93.09" service_attributes="0" obligation="1" name="Notfall-Inkonvenienzpauschale B, Mo-So 19-22, Sa 12-19, So 7-19"/>
+                <invoice:service_ex record_id="2" tariff_type="001" code="00.0010" session="1" quantity="1" date_begin="2018-02-26T00:00:00" provider_id="2012345678901" responsible_id="2012345678911" billing_role="both" medical_role="self_employed" body_location="none" unit_mt="10.42" unit_factor_mt="0.91" scale_factor_mt="0.93" amount_mt="8.82" unit_tt="8.19" unit_factor_tt="0.91"
+                                    scale_factor_tt="1" amount_tt="7.45" amount="16.27" service_attributes="0" obligation="1" name="Konsultation, erste 5 Min. (Grundkonsultation)"/>
+                <invoice:service_ex record_id="3" tariff_type="001" code="00.2530" ref_code="00.0010" session="1" quantity="1" date_begin="2018-02-26T00:00:00" provider_id="2012345678901" responsible_id="2012345678911" billing_role="both" medical_role="self_employed" body_location="none" unit_mt="9.69" unit_factor_mt="0.91" scale_factor_mt="0.25" amount_mt="2.20" unit_tt="8.19"
+                                    unit_factor_tt="0.91" scale_factor_tt="0" amount="2.20" service_attributes="0" obligation="1" name="(+) %-Zuschlag für Notfall B, Mo-So 19-22, Sa 12-19, So 7-19"/>
+            </invoice:services>
+        </invoice:body>
+    </invoice:payload>
+</invoice:request>
+

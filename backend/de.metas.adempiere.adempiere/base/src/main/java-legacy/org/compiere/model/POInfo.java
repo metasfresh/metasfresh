@@ -836,6 +836,12 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return m_columns.get(index).IsMandatory;
 	}   // isMandatory
 
+	public boolean isColumnMandatory(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return isColumnMandatory(columnIndex);
+	}
+
 	// metas-03035 begin
 	// method has been added to find out which table a given column references
 	//
@@ -896,21 +902,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final int columnIndex = getColumnIndex(columnName);
 		return isColumnUpdateable(columnIndex);
 	}   // isUpdateable
-
-	/**
-	 * Set all columns updateable
-	 *
-	 * @param updateable updateable
-	 * @deprecated This method will be deleted in future because our {@link POInfo} has to be immutable.
-	 */
-	@Deprecated
-	public void setUpdateable(final boolean updateable)
-	{
-		for (final POInfoColumn m_column : m_columns)
-		{
-			m_column.IsUpdateable = updateable;
-		}
-	}    // setUpdateable
 
 	@Nullable
 	public String getReferencedTableNameOrNull(final String columnName)

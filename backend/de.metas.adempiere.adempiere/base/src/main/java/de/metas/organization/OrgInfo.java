@@ -1,21 +1,19 @@
 package de.metas.organization;
 
-import java.time.ZoneId;
-
-import de.metas.user.UserGroupId;
-import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.WarehouseId;
-
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.calendar.CalendarId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
+import de.metas.workflow.WFResponsibleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import de.metas.workflow.WFResponsibleId;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 
 /*
  * #%L
@@ -69,6 +67,11 @@ public class OrgInfo
 	BPartnerLocationId orgBPartnerLocationId;
 	String reportsPathPrefix;
 	ZoneId timeZone;
+
+	/**
+	 * If the sysconfig FlatrateTerm_Handler#SYS_Config_AUTO_INVOICE is set to N then this is ignored
+	 */
+	boolean autoInvoiceFlatrateTerms;
 
 
 	@Nullable

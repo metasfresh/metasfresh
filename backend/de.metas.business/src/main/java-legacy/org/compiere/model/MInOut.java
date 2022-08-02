@@ -16,21 +16,55 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostingService;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IMatchInvBL;
+import de.metas.materialtransaction.IMTransactionDAO;
+import de.metas.order.DeliveryRule;
+import de.metas.order.IMatchPOBL;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.IOrderDAO;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
+import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportType;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -45,46 +79,18 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvBL;
-import de.metas.materialtransaction.IMTransactionDAO;
-import de.metas.order.DeliveryRule;
-import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
-import de.metas.order.IOrderDAO;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.product.IProductBL;
-import de.metas.product.IStorageBL;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Shipment Model
@@ -106,6 +112,9 @@ import de.metas.util.Services;
 public class MInOut extends X_M_InOut implements IDocument
 {
 	private static final long serialVersionUID = 132321718005732306L;
+
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	/**
 	 * Create new Shipment by copying
@@ -387,6 +396,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_Charge_ID(order.getC_Charge_ID());
 		setChargeAmt(order.getChargeAmt());
 		//
+		setC_Incoterms_ID(order.getC_Incoterms_ID());
+		setIncotermLocation(order.getIncotermLocation());
 		setC_Project_ID(order.getC_Project_ID());
 		setDateOrdered(order.getDateOrdered());
 		setDescription(order.getDescription());
@@ -396,6 +407,19 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser1_ID(order.getUser1_ID());
 		setUser2_ID(order.getUser2_ID());
 		setPriorityRule(order.getPriorityRule());
+
+		final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+
+		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(
+				ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
+
+		if(propagateToMInOut)
+		{
+			setEMail(order.getEMail());
+		}
+
+		setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+
 		// Drop shipment
 		// metas start: cg: 01717
 		if (order.isSOTrx())
@@ -423,7 +447,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		final IPOService poService = Services.get(IPOService.class);
 
-		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(order, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
@@ -485,6 +509,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_Charge_ID(invoice.getC_Charge_ID());
 		setChargeAmt(invoice.getChargeAmt());
 		//
+		setC_Incoterms_ID(invoice.getC_Incoterms_ID());
+		setIncotermLocation(invoice.getIncotermLocation());
 		setC_Project_ID(invoice.getC_Project_ID());
 		setDateOrdered(invoice.getDateOrdered());
 		setDescription(invoice.getDescription());
@@ -492,6 +518,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		setAD_OrgTrx_ID(invoice.getAD_OrgTrx_ID());
 		setUser1_ID(invoice.getUser1_ID());
 		setUser2_ID(invoice.getUser2_ID());
+		setEMail(invoice.getEMail());
+		setAD_InputDataSource_ID(invoice.getAD_InputDataSource_ID());
 
 		// metas
 		copyAdditionalCols(order);
@@ -567,6 +595,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		setAD_OrgTrx_ID(original.getAD_OrgTrx_ID());
 		setUser1_ID(original.getUser1_ID());
 		setUser2_ID(original.getUser2_ID());
+		setC_Incoterms_ID(original.getC_Incoterms_ID());
+		setIncotermLocation(original.getIncotermLocation());
+		setEMail(original.getEMail());
 
 		// DropShipment
 		setIsDropShip(original.isDropShip());
@@ -834,7 +865,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final String sql = "UPDATE M_InOutLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE M_InOut_ID=" + getM_InOut_ID();
-		final int noLine = DB.executeUpdate(sql, get_TrxName());
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		m_lines = null;
 		log.debug("{} - Lines={}", processed, noLine);
 	} // setProcessed
@@ -1071,7 +1102,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		if ("".equals(poService.getValue(this, I_M_InOut.COLUMNNAME_Incoterm)))
+		if ("".equals(poService.getValue(this, I_M_InOut.COLUMNNAME_C_Incoterms_ID)))
 		{
 			poService.setValue(this, I_M_InOut.COLUMNNAME_IncotermLocation, "");
 		}
@@ -1100,7 +1131,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM M_InOut o WHERE ol.M_InOut_ID=o.M_InOut_ID) "
 					+ "WHERE M_InOut_ID=" + getC_Order_ID();
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Lines -> #{}", no);
 		}
 		return true;
@@ -1191,7 +1222,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			if (product != null)
 			{
 				Volume = Volume.add(product.getVolume().multiply(line.getMovementQty()));
-				Weight = Weight.add(product.getWeight().multiply(line.getMovementQty()));
+				Weight = Weight.add(getProductWeight(product, line));
 			}
 			//
 			if (line.getM_AttributeSetInstance_ID() > 0)
@@ -1224,6 +1255,17 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		return IDocument.STATUS_InProgress;
 	} // prepareIt
+
+	/**
+	  * Use M_Product.Weight or fall back to a KGM-UOM-conversion to the the product's weight.
+	  */
+	private BigDecimal getProductWeight(final @NonNull MProduct product, final @NonNull MInOutLine line)
+	{
+		return CoalesceUtil.firstGreaterThanZeroBigDecimalSupplier(
+				() -> product.getWeight().multiply(line.getMovementQty()),
+				() -> uomConversionBL.convertFromProductUOM(ProductId.ofRepoIdOrNull(product.getM_Product_ID()), uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM), line.getMovementQty()));
+	}
+
 
 	private void checkCreditLimit()
 	{
@@ -1484,7 +1526,7 @@ public class MInOut extends X_M_InOut implements IDocument
 							storageBL.addAsync(
 									getCtx(),
 									warehouseId.getRepoId(),
-									Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+									Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
 									sLine.getM_Product_ID(),
 									ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 									BigDecimal.ZERO, reservedDiff, orderedDiff, get_TrxName());
@@ -1531,7 +1573,7 @@ public class MInOut extends X_M_InOut implements IDocument
 						storageBL.addAsync(
 								getCtx(),
 								warehouseId.getRepoId(),
-								Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+								Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
 								sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
@@ -2182,7 +2224,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(this, counter, I_M_InOut.COLUMNNAME_DescriptionBottom);
 		// metas end

@@ -253,6 +253,7 @@ public class ReferenceListAwareEnums
 
 	@Value
 	@Builder
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private static class ReferenceListAwareDescriptor
 	{
 		@NonNull Function<String, ReferenceListAwareEnum> ofCodeFunction;
@@ -278,7 +279,12 @@ public class ReferenceListAwareEnums
 		@Nullable
 		public T ofNullableCode(@Nullable final String code)
 		{
-			return Check.isNotBlank(code) ? ofCode(code) : null;
+			return code != null && Check.isNotBlank(code) ? ofCode(code) : null;
+		}
+
+		public Optional<T> optionalOfNullableCode(@Nullable final String code)
+		{
+			return Optional.ofNullable(ofNullableCode(code));
 		}
 
 		public T ofCode(@NonNull final String code)

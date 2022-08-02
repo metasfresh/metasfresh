@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_Warehouse
  *  @author metasfresh (generated) 
@@ -455,6 +456,31 @@ public interface I_M_Warehouse
 	String COLUMNNAME_M_WarehouseSource_ID = "M_WarehouseSource_ID";
 
 	/**
+	 * Set Manufacturing Warehouse Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturing_Warehouse_Group_ID (int Manufacturing_Warehouse_Group_ID);
+
+	/**
+	 * Get Manufacturing Warehouse Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getManufacturing_Warehouse_Group_ID();
+
+	@Nullable org.compiere.model.I_M_Warehouse_Group getManufacturing_Warehouse_Group();
+
+	void setManufacturing_Warehouse_Group(@Nullable org.compiere.model.I_M_Warehouse_Group Manufacturing_Warehouse_Group);
+
+	ModelColumn<I_M_Warehouse, org.compiere.model.I_M_Warehouse_Group> COLUMN_Manufacturing_Warehouse_Group_ID = new ModelColumn<>(I_M_Warehouse.class, "Manufacturing_Warehouse_Group_ID", org.compiere.model.I_M_Warehouse_Group.class);
+	String COLUMNNAME_Manufacturing_Warehouse_Group_ID = "Manufacturing_Warehouse_Group_ID";
+
+	/**
 	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List
@@ -614,4 +640,27 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, Object> COLUMN_Value = new ModelColumn<>(I_M_Warehouse.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_ID();
+
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
 }

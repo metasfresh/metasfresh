@@ -132,7 +132,7 @@ public class OrderAttachmentRowsLoaderTest
 	}
 
 	@Test
-	public void givenAttachmentLinkedToPOAndSOCustomer_whenLoad_thenLoadFromSO()
+	public void givenAttachmentLinkedToPOAndSOCustomer_whenLoad_thenLoadFromSOCustomer()
 	{
 		//given
 		final I_C_Order purchaseOrder = createPurchaseOrder();
@@ -155,7 +155,7 @@ public class OrderAttachmentRowsLoaderTest
 		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
 
 		assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(attachmentEntry.getId(), TableRecordReference.of(bpartnerRecord)));
-		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.FALSE);
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.TRUE);
 		assertThat(orderAttachmentRow.getPatient().getId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());

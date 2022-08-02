@@ -22,38 +22,18 @@ package de.metas.pricing.service.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.organization.IOrgDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import java.util.Objects;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -102,6 +82,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -254,7 +235,7 @@ public class PricingBL implements IPricingBL
 		return result;
 	}
 
-	private static boolean isManualPrice(final IPricingContext pricingCtx)
+	public static boolean isManualPrice(final IPricingContext pricingCtx)
 	{
 		// Direct
 		{
@@ -285,7 +266,7 @@ public class PricingBL implements IPricingBL
 	 *
 	 * @return configured pricing context (to be used in pricing calculations)
 	 */
-	private IPricingContext setupPricingContext(final IPricingContext pricingCtx)
+	private IPricingContext setupPricingContext(@NonNull final IPricingContext pricingCtx)
 	{
 		final IEditablePricingContext pricingCtxToUse = pricingCtx.copy();
 		setupPriceListAndDate(pricingCtxToUse);

@@ -78,6 +78,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -108,22 +109,22 @@ public class InterfaceWrapperHelper
 	public static final String COLUMNNAME_Updated = "Updated";
 	public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	private static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
+	private static POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
 		return POJOLookupMap.getInMemoryDatabaseForModel(modelClass);
 	}
 
-	private static final POJOLookupMap getInMemoryDatabaseForTableName(final String tableName)
+	private static POJOLookupMap getInMemoryDatabaseForTableName(final String tableName)
 	{
 		return POJOLookupMap.getInMemoryDatabaseForTableName(tableName);
 	}
 
-	private static final boolean isInMemoryDatabaseOnly()
+	private static boolean isInMemoryDatabaseOnly()
 	{
 		return org.compiere.Adempiere.isUnitTestMode();
 	}
 
-	public static final void registerHelper(final IInterfaceWrapperHelper helper)
+	public static void registerHelper(final IInterfaceWrapperHelper helper)
 	{
 		helpers.addFactory(helper);
 	}
@@ -136,7 +137,6 @@ public class InterfaceWrapperHelper
 	 * The method invokes {@link #newInstance(Class, Object, boolean)} with <code>useCLientOrgFromProvider = true</code>.
 	 * <p>
 	 *
-	 * @param cl
 	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)
 	 * @return new instance
 	 */
@@ -148,7 +148,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Creates a new instance of the given object using same context and trxName as <code>contextProvider</code>
 	 *
-	 * @param cl
 	 * @param contextProvider any object that carries a context (e.g. a PO, a wrapped PO, GridTab, a wrapped GridTab etc)<br>
 	 *            <p>
 	 *            IMPORTANT:</b> If contextProvider's transaction name is NULL and we have a thread inherited transaction, then use that one,
@@ -184,8 +183,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Convenient method to create a new instance of given class, using current context and current transaction.
-	 *
-	 * @param modelClass
 	 */
 	public static <T> T newInstance(final Class<T> modelClass)
 	{
@@ -196,8 +193,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Convenient method to create a new instance of given class, using current context and no transaction.
-	 *
-	 * @param modelClass
 	 */
 	public static <T> T newInstanceOutOfTrx(final Class<T> modelClass)
 	{
@@ -239,14 +234,12 @@ public class InterfaceWrapperHelper
 	/**
 	 * See {@link #create(Object, Class)} for additional infos.
 	 *
-	 * @param model
 	 * @param modelClass model class
 	 * @param useOldValues
 	 *            <ul>
 	 *            <li>true if old values shall be used
 	 *            <li>false if model's old values flag shall BE PRESERVED. i.e. if it was "true" we shall use old values, if it was "false" we shall NOT use old values.
 	 *            </ul>
-	 * @return
 	 *
 	 * @deprecated Because this method is tricky and we consider to make it private, please use:
 	 *             <ul>
@@ -279,10 +272,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Wraps given the <code>model</code> and uses the <b>old</b> values for all model getters.
 	 * See {@link #create(Object, Class)} for more informations.
-	 *
-	 * @param model
-	 * @param cl
-	 * @return
 	 */
 	public static <T> T createOld(final Object model, final Class<T> cl)
 	{
@@ -325,13 +314,6 @@ public class InterfaceWrapperHelper
 	 * <li>this method might or might not benefit from caching, depending on how {@link IModelCacheService} was configured.
 	 * <li>if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
-	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param id
-	 * @param cl
-	 * @param trxName
-	 * @return
 	 */
 	public static <T> T create(final Properties ctx, final String tableName, final int id, final Class<T> cl, final String trxName)
 	{
@@ -462,8 +444,6 @@ public class InterfaceWrapperHelper
 	 * Refresh all models that were given using {@link #refresh(Object)}.
 	 *
 	 * NOTE: developers are encouraged to use this method because here we would be able to do more optimizations.
-	 *
-	 * @param models
 	 */
 	public static <T> void refreshAll(final Iterable<T> models)
 	{
@@ -480,9 +460,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Like {@link #refreshAll(Iterable)}, but uses {@link #refresh(Object, String)} instead.
-	 *
-	 * @param models
-	 * @param trxName
 	 */
 	public static <T> void refreshAll(final Iterable<T> models, final String trxName)
 	{
@@ -513,7 +490,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Reload given model from database.
 	 *
-	 * @param model
 	 * @param discardChanges hint for actual handler to tell that if there are any unsaved changes, it's ok to discard them.
 	 */
 	public static void refresh(final Object model, final boolean discardChanges)
@@ -626,6 +602,24 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	public static void setCtx(@NonNull final Object model, @NonNull final Properties ctx)
+	{
+		if (POWrapper.isHandled(model))
+		{
+			POWrapper.setCtx(model, ctx);
+		}
+		else if (POJOWrapper.isHandled(model))
+		{
+			POJOWrapper.setCtx(model, ctx);
+		}
+		else
+		{
+			final AdempiereException ex = new AdempiereException("Model not handled: " + model + "(class=" + model.getClass() + "). Ignored.");
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+			logger.warn("Could not set ctx to given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issueId);
+		}
+	}
+
 	private static Object extractModelToSave(final Object model)
 	{
 		final Object modelToSave;
@@ -718,7 +712,8 @@ public class InterfaceWrapperHelper
 	 *
 	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without throwing an exception.
 	 */
-	public static String getTrxName(final Object model, final boolean ignoreIfNotHandled)
+	@Nullable
+	public static String getTrxName(@Nullable final Object model, final boolean ignoreIfNotHandled)
 	{
 		if (model == null)
 		{
@@ -837,17 +832,17 @@ public class InterfaceWrapperHelper
 	/* package */@SuppressWarnings("serial")
 	static class MissingTableNameException extends AdempiereException
 	{
-		private static final MissingTableNameException notFound(final Class<?> modelClass)
+		private static MissingTableNameException notFound(final Class<?> modelClass)
 		{
 			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ")");
 		}
 
-		private static final MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
+		private static MissingTableNameException notFound(final Class<?> modelClass, final String fallbackTableName)
 		{
 			return new MissingTableNameException("@NotFound@ @TableName@ (class=" + modelClass + ", fallbackTableName=" + fallbackTableName + ")");
 		}
 
-		private static final MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
+		private static MissingTableNameException notMatching(final Class<?> modelClass, final String modelClassTableName, final String expectedTableName)
 		{
 			return new MissingTableNameException("modelClass's table name is not matching the expected table name:"
 					+ "\n modelClass=" + modelClass
@@ -861,7 +856,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	private static final IModelClassInfo getModelClassInfoOrNull(@Nullable final Class<?> clazz)
+	private static IModelClassInfo getModelClassInfoOrNull(@Nullable final Class<?> clazz)
 	{
 		return ModelClassIntrospector
 				.getInstance()
@@ -906,8 +901,6 @@ public class InterfaceWrapperHelper
 	 * If the modelClass has a table name but it's not matching the expectedTableName (if not null) an exception will be thrown.
 	 * If the modelClass does not hava a table name and <code>expectedTableName</code> is null an exception will be thrown.
 	 *
-	 * @param modelClass
-	 * @param expectedTableName
 	 * @return model table name; never returns null
 	 */
 	public static String getTableName(final Class<?> modelClass, @Nullable final String expectedTableName)
@@ -946,7 +939,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final boolean isModelInterface(@Nullable final Class<?> modelClass)
+	public static boolean isModelInterface(@Nullable final Class<?> modelClass)
 	{
 		if (modelClass == null)
 		{
@@ -972,10 +965,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param clazz
 	 * @return AD_Table_ID or <code>-1</code>.
 	 */
-	public static final int getTableIdOrNull(final Class<?> clazz)
+	public static int getTableIdOrNull(final Class<?> clazz)
 	{
 		final String tableName = getTableNameOrNull(clazz);
 		if (tableName == null)
@@ -986,7 +978,7 @@ public class InterfaceWrapperHelper
 
 	}
 
-	public static final String getKeyColumnName(final Class<?> clazz)
+	public static String getKeyColumnName(final Class<?> clazz)
 	{
 		final String tableName = getTableName(clazz);
 		return getKeyColumnName(tableName);
@@ -996,11 +988,8 @@ public class InterfaceWrapperHelper
 	 * Returns <code>tableName + "_ID"</code>.
 	 * <p>
 	 * Hint: if you need a method that does not just assume, but actually verifies the key column name, use {@link de.metas.adempiere.service.IColumnBL#getSingleKeyColumn(String)}.
-	 *
-	 * @param tableName
-	 * @return
 	 */
-	public static final String getKeyColumnName(final String tableName)
+	public static String getKeyColumnName(final String tableName)
 	{
 		// NOTE: we assume the key column name is <TableName>_ID
 		final String keyColumnName = tableName + "_ID"; // TODO: hardcoded
@@ -1248,6 +1237,14 @@ public class InterfaceWrapperHelper
 		return Optional.ofNullable(value);
 	}
 
+	@NonNull
+	public static <T extends RepoIdAware> Optional<T> getRepoIdOptional(@NonNull final Object model, @NonNull final String columnName, @NonNull final Function<Integer, T> idMapper)
+	{
+		return getValueOptional(model, columnName)
+				.map(columnValue -> (Integer)columnValue)
+				.map(idMapper);
+	}
+
 	/**
 	 * Gets [columnName]_Override if the override column is available and not null, else column name value is returned.
 	 *
@@ -1265,7 +1262,7 @@ public class InterfaceWrapperHelper
 		return value;
 	}
 
-	private static final <T> T getValue(final Object model,
+	private static <T> T getValue(final Object model,
 			final String columnName,
 			final boolean throwExIfColumnNotFound,
 			final boolean useOverrideColumnIfAvailable)
@@ -1294,12 +1291,12 @@ public class InterfaceWrapperHelper
 	 *
 	 * If column was not found in <code>model</code> a warning will be logged but no exception will be thrown
 	 *
-	 * @param model
-	 * @param columnName
-	 * @param value
 	 * @return true if value was set
 	 */
-	public static boolean setValue(final Object model, final String columnName, final Object value)
+	public static boolean setValue(
+			@NonNull final Object model,
+			@NonNull final String columnName, 
+			@Nullable final Object value)
 	{
 		final boolean throwExIfColumnNotFound = false;
 		return setValue(model, columnName, value, throwExIfColumnNotFound);
@@ -1310,8 +1307,6 @@ public class InterfaceWrapperHelper
 	 *
 	 * If a column was not found in <code>model</code>, an exception will be thrown.
 	 *
-	 * @param model
-	 * @param values
 	 * @return true if all values were set
 	 */
 	public static boolean setValues(final Object model, final Map<String, Object> values)
@@ -1339,9 +1334,6 @@ public class InterfaceWrapperHelper
 			@Nullable final Object value,
 			final boolean throwExIfColumnNotFound)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assumeNotNull(columnName, "columnName is not null");
-
 		return helpers.setValue(model, columnName, value, throwExIfColumnNotFound);
 	}
 
@@ -1387,7 +1379,8 @@ public class InterfaceWrapperHelper
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
 	 */
-	public static <T> T getDynAttribute(final Object model, final String attributeName)
+	@Nullable
+	public static <T> T getDynAttribute(@NonNull final Object model, @NonNull final String attributeName)
 	{
 		return helpers.getDynAttribute(model, attributeName);
 	}

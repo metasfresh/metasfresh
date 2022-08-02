@@ -73,7 +73,7 @@ public class NoteDelete extends JavaProcess
 		if (p_KeepLogDays > 0)
 			sql += " AND (Created+" + p_KeepLogDays + ") < now()";
 		//
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		return "@Deleted@ = " + no;
 	}	//	doIt
 

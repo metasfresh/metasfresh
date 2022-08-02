@@ -1,77 +1,89 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { v4 as uuidv4 } from 'uuid';
-import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
+import React, { useEffect, useRef } from 'react';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { map } from 'lodash';
-
-import { populateLaunchers } from '../../actions/LauncherActions';
-import { getLaunchers } from '../../api/launchers';
-import WFLauncherButton from './WFLauncherButton';
 import * as ws from '../../utils/websocket';
 
-class WFLaunchersScreen extends Component {
-  componentDidMount() {
-    const { populateLaunchers, applicationId } = this.props;
+import { getLaunchers } from '../../api/launchers';
+import { appLaunchersBarcodeScannerLocation } from '../../routes/launchers';
+import { populateLaunchers } from '../../actions/LauncherActions';
+import { getApplicationLaunchers } from '../../reducers/launchers';
 
-    getLaunchers(applicationId).then((launchers) => {
-      populateLaunchers({ applicationId, launchers });
+import WFLauncherButton from './WFLauncherButton';
+import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
+import { getTokenFromState } from '../../reducers/appHandler';
+
+const WFLaunchersScreen = () => {
+  const {
+    params: { applicationId },
+  } = useRouteMatch();
+
+  //
+  // Load application launchers
+  const dispatch = useDispatch();
+  useEffect(() => {
+    getLaunchers(applicationId).then((applicationLaunchers) => {
+      dispatch(populateLaunchers({ applicationId, applicationLaunchers }));
     });
-  }
+  }, [applicationId]);
 
-  componentDidUpdate() {
-    if (!this.wsClient) {
-      const { userToken, applicationId } = this.props;
-      this.wsClient = ws.connectAndSubscribe({
+  //
+  // Connect to WebSocket topic
+  const userToken = useSelector((state) => getTokenFromState(state));
+  const wsClientRef = useRef(null);
+  useEffect(() => {
+    if (!wsClientRef.current) {
+      wsClientRef.current = ws.connectAndSubscribe({
         topic: `/v2/userWorkflows/launchers/${userToken}/${applicationId}`,
-        onWebsocketMessage: this.onWebsocketMessage,
+        debug: false,
+        onWebsocketMessage: (message) => {
+          const applicationLaunchers = JSON.parse(message.body);
+          dispatch(populateLaunchers({ applicationId, applicationLaunchers }));
+        },
       });
     }
-  }
 
-  componentWillUnmount() {
-    ws.disconnectClient(this.wsClient);
-    this.wsClient = null;
-  }
+    return () => {
+      if (wsClientRef.current) {
+        ws.disconnectClient(wsClientRef.current);
+        wsClientRef.current = null;
+      }
+    };
+  }, []);
 
-  onWebsocketMessage = (message) => {
-    const { populateLaunchers, applicationId } = this.props;
-    const { launchers } = JSON.parse(message.body);
-    populateLaunchers({ applicationId, launchers });
+  const history = useHistory();
+  const onScanBarcodeButtonClicked = () => {
+    history.push(appLaunchersBarcodeScannerLocation({ applicationId }));
   };
 
-  render() {
-    const { launchers } = this.props;
+  const applicationLaunchers = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
-    return (
-      <div className="container launchers-container">
-        {map(launchers, (launcher) => {
-          let key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + uuidv4();
-          return <WFLauncherButton key={key} id={key} {...launcher} />;
-        })}
-      </div>
-    );
-  }
-}
+  return (
+    <div className="container launchers-container">
+      {applicationLaunchers.scanBarcodeToStartJobSupport && (
+        <>
+          <div className="mt-0">
+            <ButtonWithIndicator caption="Scan barcode" onClick={onScanBarcodeButtonClicked} />
+          </div>
+          <br />
+        </>
+      )}
 
-WFLaunchersScreen.propTypes = {
-  //
-  // Props
-  launchers: PropTypes.object.isRequired,
-  userToken: PropTypes.string.isRequired,
-  applicationId: PropTypes.string.isRequired,
-  //
-  // Actions
-  populateLaunchers: PropTypes.func.isRequired,
+      {map(applicationLaunchers.list, (launcher, index) => {
+        const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+        return (
+          <WFLauncherButton
+            key={key}
+            applicationId={launcher.applicationId}
+            caption={launcher.caption}
+            startedWFProcessId={launcher.startedWFProcessId}
+            wfParameters={launcher.wfParameters}
+            showWarningSign={launcher.showWarningSign}
+          />
+        );
+      })}
+    </div>
+  );
 };
 
-const mapStateToProps = (state, { match }) => {
-  const { applicationId } = match.params;
-  return {
-    applicationId,
-    launchers: state.launchers[applicationId],
-    userToken: state.appHandler.token,
-  };
-};
-
-export default withRouter(connect(mapStateToProps, { populateLaunchers })(WFLaunchersScreen));
+export default WFLaunchersScreen;

@@ -26,7 +26,6 @@ import de.metas.Profiles;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.NonNull;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
@@ -40,18 +39,18 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile(Profiles.PROFILE_App)
 public class PickingRestController
 {
-	private final PickingMobileApplication pickingWorkflowService;
+	private final PickingMobileApplication pickingMobileApplication;
 
 	public PickingRestController(
-			@NonNull final PickingMobileApplication pickingWorkflowService)
+			@NonNull final PickingMobileApplication pickingMobileApplication)
 	{
-		this.pickingWorkflowService = pickingWorkflowService;
+		this.pickingMobileApplication = pickingMobileApplication;
 	}
 
 	@PostMapping("/events")
 	public void postEvents(
 			@RequestBody @NonNull final JsonPickingEventsList eventsList)
 	{
-		pickingWorkflowService.processStepEvents(eventsList, Env.getLoggedUserId());
+		pickingMobileApplication.processStepEvents(eventsList, Env.getLoggedUserId());
 	}
 }

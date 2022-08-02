@@ -25,6 +25,8 @@ package de.metas.workflow.rest_api.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -38,6 +40,11 @@ public final class WFActivityId
 	public static WFActivityId ofString(@NonNull final String value)
 	{
 		return new WFActivityId(value);
+	}
+
+	public static <T extends RepoIdAware> WFActivityId ofId(@NonNull final T id)
+	{
+		return new WFActivityId(String.valueOf(id.getRepoId()));
 	}
 
 	private final String value;
@@ -55,6 +62,11 @@ public final class WFActivityId
 	public String getAsString()
 	{
 		return value;
+	}
+
+	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> type)
+	{
+		return RepoIdAwares.ofObject(value, type);
 	}
 
 	public static boolean equals(@Nullable final WFActivityId o1, @Nullable final WFActivityId o2)

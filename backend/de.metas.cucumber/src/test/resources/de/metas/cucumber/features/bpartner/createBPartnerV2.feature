@@ -17,7 +17,7 @@ Feature: create or update BPartner v2
          "externalReferenceUrl":"www.ExternalReferenceURL.com",
          "bpartnerComposite":{
             "bpartner":{
-               "code":"test_code",
+               "code":"test_code1",
                "name":"test_name",
                "companyName":"test_company",
                "parentId":null,
@@ -25,6 +25,7 @@ Feature: create or update BPartner v2
                "language":"de",
                "url":null,
                "group":"test-group",
+               "priceListId": 2008396,
                "vatId":null
             },
             "locations":{
@@ -93,8 +94,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | externalIdentifier | OPT.Code  | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId |
-      | ext-ALBERTA-001    | test_code | test_name | test_company    | null         | null      | de           | null    | test-group | null      |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code   | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId | OPT.M_PricingSystem_ID |
+      | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company    | null         | null      | de           | null    | test-group | null      | 2000837                |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal |
       | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       |
@@ -136,8 +137,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was updated for externalIdentifier
-      | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId |
-      | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId |
+      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      |
 
   Scenario: Update a BPartner contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code

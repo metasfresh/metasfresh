@@ -23,6 +23,7 @@ package de.metas.util;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
@@ -38,6 +39,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -1044,5 +1047,36 @@ public final class StringUtils
 			insertPosition += groupSize + groupSeparator.length();
 		}
 		return result.toString();
+	}
+
+	public static Map<String, String> parseURLQueryString(@Nullable final String query)
+	{
+		final String queryNorm = trimBlankToNull(query);
+		if (queryNorm == null)
+		{
+			return ImmutableMap.of();
+		}
+
+		final HashMap<String, String> params = new HashMap<String, String>();
+		for (final String param : queryNorm.split("&"))
+		{
+			final String key;
+			final String value;
+			final int idx = param.indexOf("=");
+			if (idx < 0)
+			{
+				key = param;
+				value = null;
+			}
+			else
+			{
+				key = param.substring(0, idx);
+				value = param.substring(idx + 1);
+			}
+			params.put(key, value);
+		}
+
+		return params;
+
 	}
 }

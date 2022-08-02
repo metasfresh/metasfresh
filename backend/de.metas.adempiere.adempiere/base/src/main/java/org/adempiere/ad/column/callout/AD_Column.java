@@ -6,7 +6,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -14,6 +13,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
+import org.compiere.model.X_AD_Column;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
@@ -41,11 +41,14 @@ import java.util.regex.Pattern;
  * #L%
  */
 
-@Callout(I_AD_Column.class)
+@Callout(value = I_AD_Column.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 @Component
 public class AD_Column
 {
 	public static final String ENTITYTYPE_Dictionary = "D";
+
+	private final IColumnBL columnBL = Services.get(IColumnBL.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	public AD_Column()
 	{
@@ -54,7 +57,7 @@ public class AD_Column
 	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
-	public void onColumnName(final I_AD_Column column, final ICalloutField field)
+	public void onColumnName(final I_AD_Column column)
 	{
 		if (column == null || Check.isBlank(column.getColumnName()))
 		{
@@ -62,15 +65,20 @@ public class AD_Column
 		}
 
 		final String columnName = column.getColumnName();
-		column.setIsAllowLogging(Services.get(IColumnBL.class).getDefaultAllowLoggingByColumnName(columnName));
-	}
+		column.setIsAllowLogging(columnBL.getDefaultAllowLoggingByColumnName(columnName));
 
-	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
-	public void onColumnName(final I_AD_Column column)
-	{
 		if (MColumn.isSuggestSelectionColumn(column.getColumnName(), true))
 		{
 			column.setIsSelectionColumn(true);
+		}
+	}
+
+	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_IsSelectionColumn })
+	public void onIsSelectionColumn(final I_AD_Column column)
+	{
+		if (column.isSelectionColumn() && Check.isBlank(column.getFilterOperator()))
+		{
+			column.setFilterOperator(X_AD_Column.FILTEROPERATOR_EqualsOrLike);
 		}
 	}
 
@@ -79,6 +87,7 @@ public class AD_Column
 	{
 		if (column.getAD_Element_ID() <= 0)
 		{
+			//noinspection ConstantConditions
 			column.setColumnName(null);
 			column.setName(null);
 			return;
@@ -93,10 +102,10 @@ public class AD_Column
 		column.setName(element.getName());
 		column.setDescription(element.getDescription());
 		column.setHelp(element.getHelp());
-		column.setIsCalculated(Services.get(IColumnBL.class).getDefaultIsCalculatedByColumnName(elementColumnName));
+		column.setIsCalculated(columnBL.getDefaultIsCalculatedByColumnName(elementColumnName));
 
 		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
-		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
+		final I_AD_Table table = adTableDAO.retrieveTable(adTableId);
 
 		String entityType = table.getEntityType();
 
@@ -117,12 +126,12 @@ public class AD_Column
 		updateIsExcludeFromZoomTargets(column);
 	}
 
-	private static void setTypeAndLength(final I_AD_Column column)
+	private void setTypeAndLength(final I_AD_Column column)
 	{
 		final String columnName = column.getColumnName();
 		final int previousDisplayType = column.getAD_Reference_ID();
 		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
-		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
+		final I_AD_Table table = adTableDAO.retrieveTable(adTableId);
 		final String tableName = table.getTableName();
 
 		if (columnName.equalsIgnoreCase(tableName + "_ID"))
@@ -333,6 +342,12 @@ public class AD_Column
 		column.setIsIdentifier(true);
 		column.setSeqNo(1);
 		column.setFieldLength(40);
+	}
+
+	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnSQL })
+	public void upadteIsLazyLoading(final I_AD_Column column)
+	{
+		column.setIsLazyLoading(adTableDAO.isVirtualColumn(column));
 	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_AD_Reference_ID })

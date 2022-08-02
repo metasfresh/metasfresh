@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -26,7 +27,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -76,6 +77,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	// services
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	private static final AdMessageKey MSG_InvalidProduct = AdMessageKey.of("de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU.InvalidProduct");
 
@@ -240,6 +242,12 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	private HuId performPickCU()
 	{
 		final HuId huIdToSplit = retrieveHUIdToSplit();
+
+		final ProductId productId = getProductId();
+
+		// validating the attributes here because it doesn't make sense to split the HU if it can't be used
+		huAttributesBL.validateMandatoryPickingAttributes(huIdToSplit, productId);
+
 		final List<I_M_HU> splitHUs = HUSplitBuilderCoreEngine.builder()
 				.huToSplit(handlingUnitsDAO.getById(huIdToSplit))
 				.requestProvider(this::createSplitAllocationRequest)

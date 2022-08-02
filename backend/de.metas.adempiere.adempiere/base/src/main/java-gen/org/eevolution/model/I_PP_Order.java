@@ -452,6 +452,69 @@ public interface I_PP_Order
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Current Receiving LU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_Receiving_LU_HU_ID (int Current_Receiving_LU_HU_ID);
+
+	/**
+	 * Get Current Receiving LU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_Receiving_LU_HU_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_Current_Receiving_LU_HU_ID = new ModelColumn<>(I_PP_Order.class, "Current_Receiving_LU_HU_ID", null);
+	String COLUMNNAME_Current_Receiving_LU_HU_ID = "Current_Receiving_LU_HU_ID";
+
+	/**
+	 * Set Current Receiving TU instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_Receiving_TU_PI_Item_Product_ID (int Current_Receiving_TU_PI_Item_Product_ID);
+
+	/**
+	 * Get Current Receiving TU instructions.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_Receiving_TU_PI_Item_Product_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_Current_Receiving_TU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order.class, "Current_Receiving_TU_PI_Item_Product_ID", null);
+	String COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID = "Current_Receiving_TU_PI_Item_Product_ID";
+
+	/**
+	 * Set Current Scale DeviceId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrentScaleDeviceId (@Nullable java.lang.String CurrentScaleDeviceId);
+
+	/**
+	 * Get Current Scale DeviceId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrentScaleDeviceId();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_CurrentScaleDeviceId = new ModelColumn<>(I_PP_Order.class, "CurrentScaleDeviceId", null);
+	String COLUMNNAME_CurrentScaleDeviceId = "CurrentScaleDeviceId";
+
+	/**
 	 * Set DateConfirm.
 	 *
 	 * <br>Type: DateTime
@@ -563,7 +626,7 @@ public interface I_PP_Order
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Zugesagter Termin.
+	 * Set Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -573,7 +636,7 @@ public interface I_PP_Order
 	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
+	 * Get Date Promised.
 	 * Date Order was promised
 	 *
 	 * <br>Type: DateTime
@@ -609,7 +672,8 @@ public interface I_PP_Order
 	String COLUMNNAME_DateStart = "DateStart";
 
 	/**
-	 * Set DateStartSchedule.
+	 * Set Date Start Schedule.
+	 * Scheduled start date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -618,7 +682,8 @@ public interface I_PP_Order
 	void setDateStartSchedule (java.sql.Timestamp DateStartSchedule);
 
 	/**
-	 * Get DateStartSchedule.
+	 * Get Date Start Schedule.
+	 * Scheduled start date for this Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -1032,6 +1097,27 @@ public interface I_PP_Order
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Packing Instruction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packing Instruction.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order.class, "M_HU_PI_Item_Product_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
+	/**
 	 * Set Locator.
 	 * Warehouse Locator
 	 *
@@ -1074,6 +1160,27 @@ public interface I_PP_Order
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Shipment Candidate.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ShipmentSchedule_ID();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_PP_Order.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set Warehouse.
@@ -1295,7 +1402,7 @@ public interface I_PP_Order
 	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
 
 	/**
-	 * Set BOM & Formula.
+	 * Set BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -1305,7 +1412,7 @@ public interface I_PP_Order
 	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
-	 * Get BOM & Formula.
+	 * Get BOM & Formula Version.
 	 * BOM & Formula
 	 *
 	 * <br>Type: Search
@@ -1323,6 +1430,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Product Planning.
+	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1332,6 +1440,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Product Planning.
+	 * Product Planning
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1517,8 +1626,7 @@ public interface I_PP_Order
 	String COLUMNNAME_QtyBeforeClose = "QtyBeforeClose";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Delivered Quantity
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1527,8 +1635,7 @@ public interface I_PP_Order
 	void setQtyDelivered (BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Delivered Quantity
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1692,7 +1799,7 @@ public interface I_PP_Order
 	String COLUMNNAME_RepairServicePerformed_Product_ID = "RepairServicePerformed_Product_ID";
 
 	/**
-	 * Set Ressource.
+	 * Set Resource.
 	 * Resource
 	 *
 	 * <br>Type: Table
@@ -1702,7 +1809,7 @@ public interface I_PP_Order
 	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Ressource.
+	 * Get Resource.
 	 * Resource
 	 *
 	 * <br>Type: Table

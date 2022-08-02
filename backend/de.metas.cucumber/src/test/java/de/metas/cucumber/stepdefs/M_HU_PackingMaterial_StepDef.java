@@ -37,11 +37,11 @@ import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_Nam
 
 public class M_HU_PackingMaterial_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_M_HU_PackingMaterial> packingMaterial;
 
 	public M_HU_PackingMaterial_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_M_HU_PackingMaterial> packingMaterial)
 	{
 		this.productTable = productTable;

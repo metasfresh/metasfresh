@@ -1,25 +1,7 @@
 package de.metas.ordercandidate.spi.impl;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Properties;
-
 import de.metas.currency.CurrencyPrecision;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -30,17 +12,34 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -78,7 +77,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomsDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final IOLCandBL olCandBL;
@@ -123,20 +122,22 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			throw new AdempiereException(TranslatableStrings.parse(msg));
 		}
 
+		validateAndSetPriceInformation(olCand);
+
 		handleUOMForTUIfRequired(olCand); // get QtyItemCapacity from de.metas.handlingunit if required
 
 		validateLocation(olCand);
-		validatePrice(olCand);
+
 		validateUOM(olCand);
 	}
 
 	private void handleUOMForTUIfRequired(@NonNull final I_C_OLCand olCand)
 	{
-		if (olCandCapacityProvider.isProviderNeededForOLCand(olCand))
-		{
-			final Quantity qtyItemCapacity = olCandCapacityProvider.computeQtyItemCapacity(olCand);
-			olCand.setQtyItemCapacity(qtyItemCapacity.toBigDecimal());
-		}
+		// *always* set the internal quantity. IsManualQtyItemCapacity decides if we use it
+		olCandCapacityProvider.computeQtyItemCapacity(olCand)
+				.filter(capacity -> !capacity.isInfinite())
+				.map(capacity -> capacity.toBigDecimal())
+				.ifPresent(olCand::setQtyItemCapacityInternal);
 	}
 
 	private void validateLocation(@NonNull final I_C_OLCand olCand)
@@ -193,8 +194,10 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		}
 	}
 
-	private void validatePrice(@NonNull final I_C_OLCand olCand)
+	private void validateAndSetPriceInformation(@NonNull final I_C_OLCand olCand)
 	{
+		final HUPIItemProductId olCandPackingInstructionId = olCandEffectiveValuesBL.getEffectivePackingInstructions(olCand);
+
 		if (olCand.isManualPrice())
 		{
 			// still, make sure that we have a currency set
@@ -226,6 +229,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 			// Set the price actual as the price entered; possible discounts will be applied later
 			olCand.setPriceActual(olCand.getPriceEntered());
+
+			if (olCandPackingInstructionId == null)
+			{
+				olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId()));
+			}
 
 			if (pricingResult.getTaxCategoryId() == null)
 			{
@@ -269,7 +277,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		// task 08803: we provide the pricing result and expect that OLCandPricingASIListener will keep the ASI up to date
 		DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT.setValue(olCand, pricingResult);
 
-		if (priceUOMInternalId != null && uomsRepo.isUOMForTUs(priceUOMInternalId))
+		if (priceUOMInternalId != null && uomsDAO.isUOMForTUs(priceUOMInternalId))
 		{
 			// this olCand has a TU/Gebinde price-UOM; that mean that despite the imported UOM may be PCE, we import UOM="TU" into our order line.
 			olCand.setC_UOM_Internal_ID(priceUOMInternalId.getRepoId());
@@ -279,6 +287,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			// this olCand has no TU/Gebinde price-UOM, so we just continue with the olCand's imported UOM
 			final UomId internalUomId = olCandEffectiveValuesBL.getRecordOrStockUOMId(olCand);
 			olCand.setC_UOM_Internal_ID(internalUomId.getRepoId());
+		}
+
+		if (olCandPackingInstructionId == null)
+		{
+			olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId()));
 		}
 	}
 
@@ -316,6 +329,16 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	{
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olCand);
 		final I_C_UOM targetUOMRecord = olCandEffectiveValuesBL.getC_UOM_Effective(olCand);
+
+		if (uomsDAO.isUOMForTUs(UomId.ofRepoId(targetUOMRecord.getC_UOM_ID())))
+		{
+			if (olCandEffectiveValuesBL.getQtyItemCapacity_Effective(olCand).signum() <= 0)
+			{
+				final String msg = "@NotFound@ @QtyItemCapacity@";
+				throw new AdempiereException(TranslatableStrings.parse(msg));
+			}
+			return;
+		}
 
 		final BigDecimal convertedQty = uomConversionBL.convertToProductUOM(
 				productId,

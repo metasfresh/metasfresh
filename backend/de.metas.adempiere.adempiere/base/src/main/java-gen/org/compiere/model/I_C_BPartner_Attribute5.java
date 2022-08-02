@@ -71,7 +71,8 @@ public interface I_C_BPartner_Attribute5
 	String COLUMNNAME_Attributes5 = "Attributes5";
 
 	/**
-	 * Set C_BPartner Attribute5.
+	 * Set Customer Motivation.
+	 * Customer Motivation
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -80,7 +81,8 @@ public interface I_C_BPartner_Attribute5
 	void setC_BPartner_Attribute5_ID (int C_BPartner_Attribute5_ID);
 
 	/**
-	 * Get C_BPartner Attribute5.
+	 * Get Customer Motivation.
+	 * Customer Motivation
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

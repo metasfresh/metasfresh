@@ -36,12 +36,12 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.X_AD_UI_Element;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -101,6 +101,10 @@ public class ADWindowDAO implements IADWindowDAO
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()
 				.firstOnly(I_AD_Window.class);
+		if (window == null)
+		{
+			throw new AdempiereException("No window found for " + adWindowId);
+		}
 		return window.getInternalName();
 	}
 
@@ -398,7 +402,7 @@ public class ADWindowDAO implements IADWindowDAO
 	private void copyWindowTrl(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
 	{
 		final String sqlDelete = "DELETE FROM AD_Window_Trl WHERE AD_Window_ID = " + targetWindowId.getRepoId();
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Window_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language, " +
@@ -408,7 +412,7 @@ public class ADWindowDAO implements IADWindowDAO
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Window_Trl WHERE AD_Window_ID = " + sourceWindowId.getRepoId();
 
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Window_Trl inserted: {}", countInsert);
 	}
 
@@ -486,7 +490,7 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceUISectionId, "sourceUISectionId");
 
 		final String sqlDelete = "DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + targetUISectionId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_UI_Section_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language, " +
@@ -495,7 +499,7 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetUISectionId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, IsTranslated " +
 				" FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + sourceUISectionId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_UI_Section_Trl inserted: {}", countInsert);
 	}
 
@@ -638,10 +642,27 @@ public class ADWindowDAO implements IADWindowDAO
 
 		for (final I_AD_UI_Element sourceUIElement : sourceUIElements)
 		{
-			final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
-			copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
+			if (isValidSourceUIElement(sourceUIElement))
+			{
+				final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
+				copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
+			}
+		}
+	}
+
+	private boolean isValidSourceUIElement(final I_AD_UI_Element sourceUIElements)
+	{
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
+		{
+			return sourceUIElements.getLabels_Tab_ID() > 0 && sourceUIElements.getLabels_Tab().isActive();
 		}
 
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
+		{
+			return sourceUIElements.getInline_Tab_ID() > 0 && sourceUIElements.getInline_Tab().isActive();
+		}
+
+		return true;
 	}
 
 	private void copyUIElement(
@@ -687,27 +708,27 @@ public class ADWindowDAO implements IADWindowDAO
 		//
 		// Labels
 		{
-			final int sourceLabelsTabId = sourceElement.getLabels_Tab_ID();
-			final int targetLabelsTabId = sourceLabelsTabId > 0
+			final AdTabId sourceLabelsTabId = AdTabId.ofRepoIdOrNull(sourceElement.getLabels_Tab_ID());
+			final AdTabId targetLabelsTabId = sourceLabelsTabId != null
 					? copyCtx.getTargetTabIdBySourceTabId(sourceLabelsTabId)
-					: -1;
-			targetElement.setLabels_Tab_ID(targetLabelsTabId);
+					: null;
+			targetElement.setLabels_Tab_ID(AdTabId.toRepoId(targetLabelsTabId));
 
-			final int sourceLabelsSelectorFieldId = sourceElement.getLabels_Selector_Field_ID();
-			final int targetLabelsSelectorFieldId = sourceLabelsSelectorFieldId > 0
+			final AdFieldId sourceLabelsSelectorFieldId = AdFieldId.ofRepoIdOrNull(sourceElement.getLabels_Selector_Field_ID());
+			final AdFieldId targetLabelsSelectorFieldId = sourceLabelsSelectorFieldId != null
 					? copyCtx.getTargetFieldIdBySourceFieldId(sourceLabelsSelectorFieldId)
-					: -1;
-			targetElement.setLabels_Selector_Field_ID(targetLabelsSelectorFieldId);
+					: null;
+			targetElement.setLabels_Selector_Field_ID(AdFieldId.toRepoId(targetLabelsSelectorFieldId));
 		}
 
 		//
 		// Inline Tab
 		{
-			final int sourceInlineTabId = sourceElement.getInline_Tab_ID();
-			final int targetInlineTabId = sourceInlineTabId > 0
+			final AdTabId sourceInlineTabId = AdTabId.ofRepoIdOrNull(sourceElement.getInline_Tab_ID());
+			final AdTabId targetInlineTabId = sourceInlineTabId != null
 					? copyCtx.getTargetTabIdBySourceTabId(sourceInlineTabId)
-					: -1;
-			targetElement.setInline_Tab_ID(targetInlineTabId);
+					: null;
+			targetElement.setInline_Tab_ID(AdTabId.toRepoId(targetInlineTabId));
 		}
 
 		if (targetElement.getSeqNo() <= 0)
@@ -815,21 +836,18 @@ public class ADWindowDAO implements IADWindowDAO
 	@ToString
 	private static class CopyContext
 	{
-		private final HashMap<Integer, Integer> targetFieldIdsBySourceFieldId = new HashMap<>();
-		private final HashMap<Integer, Integer> targetTabIdsBySourceTabId = new HashMap<>();
+		private final HashMap<AdFieldId, AdFieldId> targetFieldIdsBySourceFieldId = new HashMap<>();
+		private final HashMap<AdTabId, AdTabId> targetTabIdsBySourceTabId = new HashMap<>();
 
-		public void put_SourceTabId_And_TargetTabId(final int sourceTabId, final int targetTabId)
+		public void put_SourceTabId_And_TargetTabId(@NonNull final AdTabId sourceTabId, @NonNull final AdTabId targetTabId)
 		{
-			Check.assumeGreaterThanZero(sourceTabId, "sourceTabId");
-			Check.assumeGreaterThanZero(targetTabId, "targetTabId");
-
 			targetTabIdsBySourceTabId.put(sourceTabId, targetTabId);
 		}
 
-		public int getTargetTabIdBySourceTabId(final int sourceTabId)
+		public AdTabId getTargetTabIdBySourceTabId(final AdTabId sourceTabId)
 		{
-			final Integer targetTabId = targetTabIdsBySourceTabId.get(sourceTabId);
-			if (targetTabId == null || targetTabId <= 0)
+			final AdTabId targetTabId = targetTabIdsBySourceTabId.get(sourceTabId);
+			if (targetTabId == null)
 			{
 				throw new AdempiereException("no Target tab ID found for sourceTabId=" + sourceTabId)
 						.setParameter("targetTabIdsBySourceTabId", targetTabIdsBySourceTabId)
@@ -838,18 +856,15 @@ public class ADWindowDAO implements IADWindowDAO
 			return targetTabId;
 		}
 
-		public void put_SourceFieldId_And_TargetFieldId(final int sourceFieldId, final int targetFieldId)
+		public void put_SourceFieldId_And_TargetFieldId(@NonNull final AdFieldId sourceFieldId, @NonNull final AdFieldId targetFieldId)
 		{
-			Check.assumeGreaterThanZero(sourceFieldId, "sourceFieldId");
-			Check.assumeGreaterThanZero(targetFieldId, "targetFieldId");
-
 			targetFieldIdsBySourceFieldId.put(sourceFieldId, targetFieldId);
 		}
 
-		public int getTargetFieldIdBySourceFieldId(final int sourceFieldId)
+		public AdFieldId getTargetFieldIdBySourceFieldId(final AdFieldId sourceFieldId)
 		{
-			final Integer targetFieldId = targetFieldIdsBySourceFieldId.get(sourceFieldId);
-			if (targetFieldId == null || targetFieldId <= 0)
+			final AdFieldId targetFieldId = targetFieldIdsBySourceFieldId.get(sourceFieldId);
+			if (targetFieldId == null)
 			{
 				throw new AdempiereException("no Target field ID found for sourceFieldId=" + sourceFieldId)
 						.setParameter("targetFieldIdsBySourceFieldId", targetFieldIdsBySourceFieldId)
@@ -869,6 +884,13 @@ public class ADWindowDAO implements IADWindowDAO
 		copyUISections(copyCtx, targetTab, sourceTab);
 
 		return AdTabId.ofRepoId(targetTab.getAD_Tab_ID());
+	}
+
+	@Override
+	public AdTabId copyTabToWindow(@NonNull final AdTabId sourceTabId, @NonNull final AdWindowId targetWindowId)
+	{
+		final I_AD_Tab sourceTab = load(sourceTabId, I_AD_Tab.class);
+		return copyTabToWindow(sourceTab, targetWindowId);
 	}
 
 	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
@@ -911,7 +933,7 @@ public class ADWindowDAO implements IADWindowDAO
 		logger.debug("Copying tab {} to {}", sourceTab, targetWindow);
 
 		final I_AD_Tab targetTab = createOrUpdateTab(targetWindow, existingTargetTab, sourceTab);
-		copyCtx.put_SourceTabId_And_TargetTabId(sourceTab.getAD_Tab_ID(), targetTab.getAD_Tab_ID());
+		copyCtx.put_SourceTabId_And_TargetTabId(AdTabId.ofRepoId(sourceTab.getAD_Tab_ID()), AdTabId.ofRepoId(targetTab.getAD_Tab_ID()));
 
 		copyTabTrl(targetTab.getAD_Tab_ID(), sourceTab.getAD_Tab_ID());
 		copyTabCallouts(targetTab, sourceTab);
@@ -963,7 +985,7 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceTabId, "sourceTabId");
 
 		final String sqlDelete = "DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = " + targetTabId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Tab_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language, " +
@@ -972,7 +994,7 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetTabId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description,  Help, CommitWarning, IsTranslated " +
 				" FROM AD_Tab_Trl WHERE AD_Tab_ID = " + sourceTabId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Tab_Trl inserted: {}", countInsert);
 	}
 
@@ -1052,7 +1074,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 		save(targetField);
 
-		copyCtx.put_SourceFieldId_And_TargetFieldId(sourceField.getAD_Field_ID(), targetField.getAD_Field_ID());
+		copyCtx.put_SourceFieldId_And_TargetFieldId(AdFieldId.ofRepoId(sourceField.getAD_Field_ID()), AdFieldId.ofRepoId(targetField.getAD_Field_ID()));
 
 		copyFieldTrl(targetField.getAD_Field_ID(), sourceField.getAD_Field_ID());
 	}
@@ -1073,7 +1095,7 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceFieldId, "sourceFieldId");
 
 		final String sqlDelete = "DELETE FROM AD_Field_Trl WHERE AD_Field_ID = " + targetFieldId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Field_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language, " +
@@ -1082,7 +1104,7 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetFieldId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Field_Trl WHERE AD_Field_ID = " + sourceFieldId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Field_Trl inserted: {}", countInsert);
 	}
 
@@ -1213,9 +1235,9 @@ public class ADWindowDAO implements IADWindowDAO
 		switch (soTrx)
 		{
 			case SALES:
-				return CoalesceUtil.coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getAD_Window_ID()), defaultValue);
+				return CoalesceUtil.coalesceNotNull(AdWindowId.ofRepoIdOrNull(adTableRecord.getAD_Window_ID()), defaultValue);
 			case PURCHASE:
-				return CoalesceUtil.coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getPO_Window_ID()), defaultValue);
+				return CoalesceUtil.coalesceNotNull(AdWindowId.ofRepoIdOrNull(adTableRecord.getPO_Window_ID()), defaultValue);
 			default:
 				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
 		}

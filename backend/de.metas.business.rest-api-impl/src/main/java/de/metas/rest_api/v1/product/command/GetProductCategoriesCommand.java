@@ -1,17 +1,15 @@
 package de.metas.rest_api.v1.product.command;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product_Category;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.product.ProductCategoryId;
 import de.metas.rest_api.v1.product.ProductsServicesFacade;
-import de.metas.rest_api.product.response.JsonGetProductCategoriesResponse;
-import de.metas.rest_api.product.response.JsonProductCategory;
+import de.metas.rest_api.v1.product.response.JsonGetProductCategoriesResponse;
+import de.metas.rest_api.v1.product.response.JsonProductCategory;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product_Category;
 
 /*
  * #%L

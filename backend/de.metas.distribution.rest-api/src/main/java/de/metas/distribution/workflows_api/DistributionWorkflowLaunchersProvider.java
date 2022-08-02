@@ -14,7 +14,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.api.IWarehouseBL;
 
-import java.time.Duration;
 import java.util.ArrayList;
 
 class DistributionWorkflowLaunchersProvider
@@ -31,8 +30,7 @@ class DistributionWorkflowLaunchersProvider
 
 	public WorkflowLaunchersList provideLaunchers(
 			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
+			@NonNull final QueryLimit suggestedLimit)
 	{
 		return computeLaunchers(userId, suggestedLimit);
 	}

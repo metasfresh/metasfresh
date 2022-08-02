@@ -28,6 +28,7 @@ import lombok.experimental.UtilityClass;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -135,6 +136,14 @@ public class CoalesceUtil
 				firstValidValue(Objects::nonNull, values),
 				"At least one of the given suppliers={} has to return not-null", (Object[])values);
 	}
+
+	@SafeVarargs
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNullSupplied(@Nullable final Supplier<T>... values)
+	{
+		return Optional.ofNullable(coalesceSuppliers(values));
+	}
+
 	
 	@SafeVarargs
 	@Nullable
@@ -179,8 +188,49 @@ public class CoalesceUtil
 		return 0;
 	}
 
+	/**
+	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
+	 *
+	 * @return first greater than zero value or zero
+	 */
+	@NonNull
+	public BigDecimal firstGreaterThanZero(@Nullable final BigDecimal... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final BigDecimal value : values)
+		{
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
 	@SafeVarargs
-	public int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
+	@NonNull
+	public BigDecimal firstGreaterThanZeroBigDecimalSupplier(@NonNull final Supplier<BigDecimal>... suppliers)
+	{
+		if (suppliers == null || suppliers.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final Supplier<BigDecimal> supplier : suppliers)
+		{
+			final BigDecimal value = supplier.get();
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
+	@SafeVarargs
+	public int firstGreaterThanZeroIntegerSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
 		if (suppliers == null || suppliers.length == 0)
 		{
@@ -225,7 +275,6 @@ public class CoalesceUtil
 		return null;
 	}
 
-	@Nullable
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{

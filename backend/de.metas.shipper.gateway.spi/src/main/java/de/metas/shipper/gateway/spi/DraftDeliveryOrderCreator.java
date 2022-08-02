@@ -11,6 +11,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
@@ -45,21 +46,21 @@ public interface DraftDeliveryOrderCreator
 
 	@Value
 	@Builder
-	public static class CreateDraftDeliveryOrderRequest
+	class CreateDraftDeliveryOrderRequest
 	{
 		DeliveryOrderKey deliveryOrderKey;
 
-		int allPackagesGrossWeightInKg;
+		BigDecimal allPackagesGrossWeightInKg;
 		String allPackagesContentDescription;
 		Set<PackageId> mpackageIds;
 	}
 
 	@Value
-	public static final class DeliveryOrderKey
+  	class DeliveryOrderKey
 	{
 		ShipperId shipperId;
 		ShipperTransportationId shipperTransportationId;
-		int fromOrgId;
+		int fromOrgId;				
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
 		LocalDate pickupDate;

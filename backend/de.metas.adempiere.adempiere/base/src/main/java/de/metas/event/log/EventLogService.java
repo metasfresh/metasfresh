@@ -1,26 +1,24 @@
 package de.metas.event.log;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.PlainContextAware;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.event.Event;
-import de.metas.event.IEventBus;
+import de.metas.event.Topic;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.event.remote.JacksonJsonEventSerializer;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.PlainContextAware;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -89,7 +87,7 @@ public class EventLogService
 
 	public EventLogId saveEvent(
 			@NonNull final Event event,
-			@NonNull final IEventBus eventBus)
+			@NonNull final Topic eventBusTopic)
 	{
 		final String eventString = JacksonJsonEventSerializer.instance.toString(event);
 
@@ -97,8 +95,8 @@ public class EventLogService
 		eventLogRecord.setEvent_UUID(event.getUuid().toString());
 		eventLogRecord.setEventTime(Timestamp.from(event.getWhen()));
 		eventLogRecord.setEventData(eventString);
-		eventLogRecord.setEventTopicName(eventBus.getTopicName());
-		eventLogRecord.setEventTypeName(eventBus.getType().toString());
+		eventLogRecord.setEventTopicName(eventBusTopic.getName());
+		eventLogRecord.setEventTypeName(eventBusTopic.getType().toString());
 
 		save(eventLogRecord);
 

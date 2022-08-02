@@ -31,6 +31,27 @@ public interface I_M_InOut
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_M_InOut.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -297,6 +318,52 @@ public interface I_M_InOut
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_M_InOut.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_M_InOut, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_M_InOut.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
 	 * Set Invoice.
 	 * Invoice Identifier
 	 *
@@ -371,27 +438,6 @@ public interface I_M_InOut
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getChargeAmt();
-
-	ModelColumn<I_M_InOut, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_M_InOut.class, "ChargeAmt", null);
-	String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Create Confirm.
@@ -578,7 +624,7 @@ public interface I_M_InOut
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferadresse.
+	 * Set Diff. Shipment Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -587,7 +633,7 @@ public interface I_M_InOut
 	void setDeliveryToAddress (@Nullable java.lang.String DeliveryToAddress);
 
 	/**
-	 * Get Lieferadresse.
+	 * Get Diff. Shipment Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -599,8 +645,8 @@ public interface I_M_InOut
 	String COLUMNNAME_DeliveryToAddress = "DeliveryToAddress";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -609,8 +655,8 @@ public interface I_M_InOut
 	void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -845,6 +891,27 @@ public interface I_M_InOut
 	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_EMail = new ModelColumn<>(I_M_InOut.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -956,29 +1023,6 @@ public interface I_M_InOut
 	String COLUMNNAME_GenerateTo = "GenerateTo";
 
 	/**
-	 * Set Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIncoterm (@Nullable java.lang.String Incoterm);
-
-	/**
-	 * Get Incoterm.
-	 * Internationale Handelsklauseln (engl. International Commercial Terms)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIncoterm();
-
-	ModelColumn<I_M_InOut, Object> COLUMN_Incoterm = new ModelColumn<>(I_M_InOut.class, "Incoterm", null);
-	String COLUMNNAME_Incoterm = "Incoterm";
-
-	/**
 	 * Set IncotermLocation.
 	 * Anzugebender Ort für Handelsklausel
 	 *
@@ -1069,7 +1113,7 @@ public interface I_M_InOut
 	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Streckengeschäft.
+	 * Set Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -1079,7 +1123,7 @@ public interface I_M_InOut
 	void setIsDropShip (boolean IsDropShip);
 
 	/**
-	 * Get Streckengeschäft.
+	 * Get Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -1289,6 +1333,52 @@ public interface I_M_InOut
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
+	 * Set Bewegungs-Datum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMovementDate (java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Bewegungs-Datum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getMovementDate();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_MovementDate = new ModelColumn<>(I_M_InOut.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
+
+	/**
+	 * Set Bewegungs-Art.
+	 * Method of moving the inventory
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMovementType (java.lang.String MovementType);
+
+	/**
+	 * Get Bewegungs-Art.
+	 * Method of moving the inventory
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getMovementType();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_MovementType = new ModelColumn<>(I_M_InOut.class, "MovementType", null);
+	String COLUMNNAME_MovementType = "MovementType";
+
+	/**
 	 * Set Warenrücksendung - Freigabe (RMA).
 	 * Return Material Authorization
 	 *
@@ -1384,52 +1474,6 @@ public interface I_M_InOut
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMovementDate (java.sql.Timestamp MovementDate);
-
-	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getMovementDate();
-
-	ModelColumn<I_M_InOut, Object> COLUMN_MovementDate = new ModelColumn<>(I_M_InOut.class, "MovementDate", null);
-	String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
-	 * Set Bewegungs-Art.
-	 * Method of moving the inventory
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMovementType (java.lang.String MovementType);
-
-	/**
-	 * Get Bewegungs-Art.
-	 * Method of moving the inventory
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getMovementType();
-
-	ModelColumn<I_M_InOut, Object> COLUMN_MovementType = new ModelColumn<>(I_M_InOut.class, "MovementType", null);
-	String COLUMNNAME_MovementType = "MovementType";
 
 	/**
 	 * Set Kommissionier-Datum.

@@ -43,7 +43,7 @@ import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
-import org.adempiere.util.lang.SynchronizedMutable.OldAndNewValues;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -270,6 +270,9 @@ public final class DefaultView implements IEditableView
 		return selectionsRef.isQueryLimitHit();
 	}
 
+	@Override
+	public EmptyReason getEmptyReason() {return selectionsRef.getEmptyReason();}
+
 	public ViewRowIdsOrderedSelection getDefaultSelectionBeforeFacetsFiltering()
 	{
 		return selectionsRef.getDefaultSelectionBeforeFacetsFiltering();
@@ -301,6 +304,12 @@ public final class DefaultView implements IEditableView
 		selectionsRef.forgetCurrentSelections();
 
 		logger.debug("View closed with reason={}: {}", reason, this);
+	}
+
+	@Override
+	public void afterDestroy()
+	{
+		selectionsRef.forgetCurrentSelections();
 	}
 
 	@Override
@@ -361,6 +370,7 @@ public final class DefaultView implements IEditableView
 				.orderBys(orderedSelection.getOrderBys())
 				.rows(rows)
 				.columnInfos(extractViewResultColumns(rows))
+				.emptyReason(orderedSelection.getEmptyReason())
 				.build();
 	}
 
@@ -740,6 +750,7 @@ public final class DefaultView implements IEditableView
 	// Builder
 	//
 	//
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private ViewId viewId;
@@ -945,7 +956,7 @@ public final class DefaultView implements IEditableView
 			return this;
 		}
 
-		public Builder refreshViewOnChangeEvents(boolean refreshViewOnChangeEvents)
+		public Builder refreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
 		{
 			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 			return this;

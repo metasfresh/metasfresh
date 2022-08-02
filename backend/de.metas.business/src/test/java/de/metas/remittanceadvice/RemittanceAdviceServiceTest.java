@@ -52,7 +52,6 @@ import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
-import org.jpedal.fonts.tt.Loca;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -67,7 +66,7 @@ import java.util.Map;
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RemittanceAdviceServiceTest
 {

@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.util.Check;
@@ -41,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -68,6 +69,11 @@ public final class PickingJob
 	private final PickingJobDocStatus docStatus;
 
 	@Getter
+	private final boolean isReadyToReview;
+	@Getter
+	private final boolean isApproved;
+
+	@Getter
 	private final PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
@@ -77,7 +83,9 @@ public final class PickingJob
 			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
 			final @NonNull ImmutableList<PickingJobLine> lines,
 			final @NonNull ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives,
-			final @NonNull PickingJobDocStatus docStatus)
+			final @NonNull PickingJobDocStatus docStatus,
+			final boolean isReadyToReview,
+			final boolean isApproved)
 	{
 		Check.assumeNotEmpty(lines, "lines not empty");
 
@@ -88,38 +96,16 @@ public final class PickingJob
 		this.lines = lines;
 		this.pickFromAlternatives = pickFromAlternatives;
 		this.docStatus = docStatus;
+		this.isReadyToReview = isReadyToReview;
+		this.isApproved = isApproved;
 
 		this.progress = computeProgress(lines);
 	}
 
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
 	{
-		int countPickedLines = 0;
-		int countNotPickedLines = 0;
-		for (final PickingJobLine line : lines)
-		{
-			if (line.getProgress().isDone())
-			{
-				countPickedLines++;
-			}
-			else
-			{
-				countNotPickedLines++;
-			}
-		}
-
-		if (countPickedLines <= 0)
-		{
-			return countNotPickedLines <= 0
-					? PickingJobProgress.DONE // shall NOT happen because we have at least one line
-					: PickingJobProgress.NOT_STARTED;
-		}
-		else
-		{
-			return countNotPickedLines <= 0
-					? PickingJobProgress.DONE
-					: PickingJobProgress.IN_PROGRESS;
-		}
+		final ImmutableSet<PickingJobProgress> lineProgresses = lines.stream().map(PickingJobLine::getProgress).collect(ImmutableSet.toImmutableSet());
+		return PickingJobProgress.reduce(lineProgresses);
 	}
 
 	public void assertNotProcessed()
@@ -182,8 +168,25 @@ public final class PickingJob
 		return withChangedLines(line -> line.withChangedStep(stepId, stepMapper));
 	}
 
-	public PickingJob withChangedSteps(final UnaryOperator<PickingJobStep> stepMapper)
+	public PickingJob withChangedSteps(
+			@NonNull final Set<PickingJobStepId> stepIds,
+			@NonNull final UnaryOperator<PickingJobStep> stepMapper)
 	{
-		return withChangedLines(line -> line.withChangedSteps(stepMapper));
+		if (stepIds.isEmpty())
+		{
+			return this;
+		}
+
+		return withChangedLines(line -> line.withChangedSteps(stepIds, stepMapper));
+	}
+
+	public PickingJob withIsReadyToReview() {return isReadyToReview ? this : toBuilder().isReadyToReview(true).build();}
+
+	public PickingJob withApproved()
+	{
+		return toBuilder()
+				.isReadyToReview(false)
+				.isApproved(true)
+				.build();
 	}
 }

@@ -10,6 +10,7 @@ import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -70,13 +71,21 @@ public class OrderLineBuilder
 	private boolean built = false;
 
 	private ProductId productId;
+
 	private AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
+
 	private Quantity qty;
 
-	@Nullable private BigDecimal manualPrice;
+	@Nullable
+	private BigDecimal manualPrice;
+
+	@Nullable
+	private UomId priceUomId;
+
 	private BigDecimal manualDiscount;
 
-	@Nullable private String description;
+	@Nullable
+	private String description;
 
 	private boolean hideWhenPrinting;
 
@@ -85,6 +94,12 @@ public class OrderLineBuilder
 	private I_C_OrderLine createdOrderLine;
 
 	private Dimension dimension;
+
+	@Nullable
+	private String productDescription;
+
+	@Nullable
+	private ActivityId activityId;
 
 	/* package */ OrderLineBuilder(@NonNull final OrderFactory parent)
 	{
@@ -114,6 +129,7 @@ public class OrderLineBuilder
 		{
 			orderLine.setIsManualPrice(true);
 			orderLine.setPriceEntered(manualPrice);
+			orderLine.setPrice_UOM_ID(UomId.toRepoId(priceUomId));
 		}
 
 		if (manualDiscount != null)
@@ -135,6 +151,8 @@ public class OrderLineBuilder
 		}
 
 		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
+		orderLine.setProductDescription(productDescription);
+		orderLine.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		saveRecord(orderLine);
 
@@ -222,6 +240,13 @@ public class OrderLineBuilder
 		return qty != null ? qty.getUomId() : null;
 	}
 
+	public OrderLineBuilder priceUomId(@Nullable final UomId priceUomId)
+	{
+		assertNotBuilt();
+		this.priceUomId = priceUomId;
+		return this;
+	}
+
 	public OrderLineBuilder manualPrice(@Nullable final BigDecimal manualPrice)
 	{
 		assertNotBuilt();
@@ -250,9 +275,13 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
+	public boolean isProductAndUomMatching(
+			@Nullable final ProductId productId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			@Nullable final UomId uomId)
 	{
-		return ProductId.equals(getProductId(), productId)
+		return ProductId.equals(this.productId, productId)
+				&& AttributeSetInstanceId.equals(asiId, attributeSetInstanceId)
 				&& UomId.equals(getUomId(), uomId);
 	}
 
@@ -282,4 +311,15 @@ public class OrderLineBuilder
 		return this;
 	}
 
+	public OrderLineBuilder productDescription(@Nullable final String productDescription)
+	{
+		this.productDescription = productDescription;
+		return this;
+	}
+
+	public OrderLineBuilder activityId(@Nullable final ActivityId activityId)
+	{
+		this.activityId = activityId;
+		return this;
+	}
 }

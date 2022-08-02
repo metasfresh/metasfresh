@@ -1,18 +1,8 @@
 package de.metas.util.lang;
 
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -20,6 +10,14 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 /*
  * #%L
@@ -74,31 +72,48 @@ public class RepoIdAwares
 
 	public static <T extends RepoIdAware> T ofRepoId(final int repoId, final Class<T> repoIdClass)
 	{
-		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
-
-		@SuppressWarnings("unchecked")
-		final T id = (T)repoIdAwareDescriptor.getOfRepoIdFunction().apply(repoId);
-
-		return id;
+		return getOfRepoIdFunction(repoIdClass).apply(repoId);
 	}
 
-	public static <T extends RepoIdAware> T ofRepoId(final String repoIdStr, final Class<T> repoIdClass)
+	public static <T extends RepoIdAware> IntFunction<T> getOfRepoIdFunction(final Class<T> repoIdClass)
 	{
-		final Integer repoId = NumberUtils.asIntegerOrNull(repoIdStr);
-		if (repoId == null)
+		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
+		//noinspection unchecked
+		return (IntFunction<T>)repoIdAwareDescriptor.getOfRepoIdFunction();
+	}
+
+
+	public static <T extends RepoIdAware> T ofObject(@NonNull final Object repoIdObj, final Class<T> repoIdClass)
+	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
+		return ofObject(repoIdObj, repoIdClass, ofRepoIdFunction);
+	}
+
+	public static <T extends RepoIdAware> T ofObject(
+			@NonNull final Object repoIdObj,
+			@NonNull final Class<T> repoIdClass,
+			@NonNull final IntFunction<T> ofRepoIdFunction)
+	{
+		if (repoIdClass.isInstance(repoIdObj))
 		{
-			throw Check.mkEx("Invalid repoId value: " + repoId);
+			return repoIdClass.cast(repoIdObj);
 		}
 
-		return ofRepoId(repoId, repoIdClass);
+		final Integer repoId = NumberUtils.asIntegerOrNull(repoIdObj);
+		if (repoId == null)
+		{
+			throw Check.mkEx("Cannot convert `" + repoIdObj + "` (" + repoIdObj.getClass() + ") to " + repoIdClass.getSimpleName());
+		}
+
+		return ofRepoIdFunction.apply(repoId);
 	}
+
 
 	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, final Class<T> repoIdClass)
 	{
 		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
 
-		@SuppressWarnings("unchecked")
-		final T id = (T)repoIdAwareDescriptor.getOfRepoIdOrNullFunction().apply(repoId);
+		@SuppressWarnings("unchecked") final T id = (T)repoIdAwareDescriptor.getOfRepoIdOrNullFunction().apply(repoId);
 
 		return id;
 	}
@@ -107,10 +122,22 @@ public class RepoIdAwares
 			@Nullable final String commaSeparatedStr,
 			@NonNull final Class<T> repoIdClass)
 	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
 		return CollectionUtils.ofCommaSeparatedList(
 				commaSeparatedStr,
-				repoIdStr -> ofRepoId(repoIdStr, repoIdClass));
+				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
 	}
+
+	public static <T extends RepoIdAware> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Class<T> repoIdClass)
+	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
+		return CollectionUtils.ofCommaSeparatedSet(
+				commaSeparatedStr,
+				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
+	}
+
 
 	public static int toRepoId(@Nullable final RepoIdAware repoIdAware)
 	{

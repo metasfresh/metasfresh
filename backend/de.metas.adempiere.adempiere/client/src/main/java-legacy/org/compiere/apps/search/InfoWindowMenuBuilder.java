@@ -1,15 +1,12 @@
 package org.compiere.apps.search;
 
-import java.awt.Event;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.util.Properties;
-
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.KeyStroke;
-
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.security.IUserRolePermissions;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
@@ -20,14 +17,12 @@ import org.compiere.model.MMenu;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
-import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
-import de.metas.security.IUserRolePermissions;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.Properties;
 
 /**
  * Helper class used to create, add and handle the Info windows menu items.
@@ -101,14 +96,6 @@ public final class InfoWindowMenuBuilder
 		{
 			AEnv.addMenuItem(InfoBuilder.ACTION_InfoBPartner, null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.SHIFT_MASK + Event.ALT_MASK), menu, standardInfoWindowLauncher);
 		}
-		if (role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Account))
-		{
-			AEnv.addMenuItem(InfoBuilder.ACTION_InfoAccount, null, KeyStroke.getKeyStroke(KeyEvent.VK_I, Event.ALT_MASK + Event.CTRL_MASK), menu, standardInfoWindowLauncher);
-		}
-		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Schedule))
-		{
-			AEnv.addMenuItem(InfoBuilder.ACTION_InfoSchedule, null, null, menu, standardInfoWindowLauncher);
-		}
 		// FR [ 1966328 ]
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_MRP))
 		{
@@ -140,10 +127,6 @@ public final class InfoWindowMenuBuilder
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CashJournal))
 		{
 			AEnv.addMenuItem(InfoBuilder.ACTION_InfoCashLine, "Info", null, menu, standardInfoWindowLauncher);
-		}
-		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Resource))
-		{
-			AEnv.addMenuItem(InfoBuilder.ACTION_InfoAssignment, "Info", null, menu, standardInfoWindowLauncher);
 		}
 		if (role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Asset))
 		{
@@ -211,14 +194,6 @@ public final class InfoWindowMenuBuilder
 		{
 			InfoBuilder.showAsset(parentFrame, windowNo);
 		}
-		else if (actionCommand.equals(InfoBuilder.ACTION_InfoAccount) && role.hasPermission(IUserRolePermissions.PERMISSION_ShowAcct))
-		{
-			new org.compiere.acct.AcctViewer();
-		}
-		else if (actionCommand.equals(InfoBuilder.ACTION_InfoSchedule) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Schedule))
-		{
-			new org.compiere.apps.search.InfoSchedule(parentFrame, null, false);
-		}
 		// FR [ 1966328 ]
 		else if (actionCommand.equals(InfoBuilder.ACTION_InfoMRP) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_MRP))
 		{
@@ -251,10 +226,6 @@ public final class InfoWindowMenuBuilder
 		else if (actionCommand.equals(InfoBuilder.ACTION_InfoCashLine) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_CashJournal))
 		{
 			InfoBuilder.showCashLine(parentFrame, windowNo, "");
-		}
-		else if (actionCommand.equals(InfoBuilder.ACTION_InfoAssignment) && role.hasPermission(IUserRolePermissions.PERMISSION_InfoWindow_Resource))
-		{
-			InfoBuilder.showAssignment(parentFrame, windowNo, "");
 		}
 	}
 

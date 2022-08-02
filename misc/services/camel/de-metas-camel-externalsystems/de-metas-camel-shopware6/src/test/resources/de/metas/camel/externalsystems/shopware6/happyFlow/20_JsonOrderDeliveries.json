@@ -1,5 +1,5 @@
 {
-  "total": 1,
+  "total": 2,
   "data": [
     {
       "shippingDateLatest": "2021-03-03T00:00:00.000+00:00",
@@ -47,7 +47,14 @@
         "versionId": "shippingAddressVersion_notUpToDate",
         "createdAt": "2021-02-25T15:27:34.518+00:00",
         "updatedAt": "2021-02-26T15:27:34.518+00:00",
-        "id": "shippingAddressId"
+        "company": "company",
+        "department": "department",
+        "title": "title",
+        "id": "shippingAddressId",
+        "salutationId": "salutationId",
+        "customFields": {
+          "deliveryNotificationEmailAddress": "shippingOrderAddress@example.com"
+        }
       },
       "shippingCosts": {
         "calculatedTaxes": [

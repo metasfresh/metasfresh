@@ -26,13 +26,13 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUTopLevel;
@@ -48,6 +48,8 @@ import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 
@@ -56,15 +58,23 @@ import java.util.Properties;
 
 public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 {
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
 	@Override
 	public final void assignHU(
 			@NonNull final org.compiere.model.I_M_InOutLine shipmentLine,
 			@NonNull final HUTopLevel huToAssign,
 			final boolean isTransferPackingMaterials)
 	{
-		// services
-		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-
 		//
 		// Create LU/TU assignment
 		final Properties ctx = InterfaceWrapperHelper.getCtx(shipmentLine);
@@ -88,25 +98,35 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	@Override
 	public void updateHUsOnShipmentComplete(final I_M_InOut shipment)
 	{
-		assertShipment(shipment);
+		updateHUsOnShipmentStatusChange(shipment, X_M_HU.HUSTATUS_Shipped);
+	}
 
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@Override
+	public void updateHUsOnShipmentReactivate(@NonNull final I_M_InOut shipment)
+	{
+		updateHUsOnShipmentStatusChange(shipment, X_M_HU.HUSTATUS_Picked);
+	}
+
+	private void updateHUsOnShipmentStatusChange(
+			@NonNull final I_M_InOut shipment,
+			@NonNull final String huStatus)
+	{
+		assertShipment(shipment);
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
-		// Iterate each shipment line, get assigned HUs and change HUStatus to Shipped
 		for (final I_M_InOutLine shipmentLine : shipmentLines)
 		{
-			updateHUsOnShipmentComplete(shipmentLine);
+			updateHUsOnShipmentStatusChange(shipmentLine, huStatus);
 		}
 	}
 
-	private void updateHUsOnShipmentComplete(final I_M_InOutLine shipmentLine)
+	private void updateHUsOnShipmentStatusChange(
+			@NonNull final I_M_InOutLine shipmentLine,
+			@NonNull final String huStatus)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(shipmentLine);
-		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 		final int locatorId = shipmentLine.getM_Locator_ID();
 
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(shipmentLine);
@@ -116,8 +136,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 			hu.setM_Locator_ID(locatorId);
 
 			// Change HU's status to Shipped
-			final boolean shipped = true;
-			setHUStatus(huContext, hu, shipped);
+			setHUStatus(huContext, hu, huStatus);
 		}
 	}
 
@@ -125,8 +144,6 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	public void removeHUAssignments(final I_M_InOut shipment)
 	{
 		assertShipment(shipment);
-
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
@@ -144,32 +161,27 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		Check.assume(shipmentLine.getM_InOutLine_ID() > 0, "shipment line is saved");
 		//
 		// Remove HU Assignments and update HU Status
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(shipmentLine);
-		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(shipmentLine);
 		for (final I_M_HU hu : hus)
 		{
-			// Change HU's status to Picked
-			final boolean shipped = false;
-			setHUStatus(huContext, hu, shipped);
+			// Change HU's status to Active
+			setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 		}
 		//
 		huAssignmentBL.unassignAllHUs(shipmentLine);
 
 		//
 		// Unlink shipment line from shipment schedule allocations
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : shipmentScheduleAllocDAO.retrieveAllForInOutLine(shipmentLine, I_M_ShipmentSchedule_QtyPicked.class))
 		{
 			alloc.setM_InOutLine(null);
 			alloc.setIsActive(false); // NOTE: deactivating the line because we assume this method was called when a shipment was voided/reversed.
 			alloc.setDescription("Deactivated because the shipment line "
-					+ shipmentLine
-					+ " was voided or reversed. ");
+										 + shipmentLine
+										 + " was voided or reversed. ");
 			InterfaceWrapperHelper.save(alloc);
 		}
 	}
@@ -177,8 +189,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	@Override
 	public IQueryFilter<I_M_HU> createHUsNotAssignedToShipmentsFilter(final IContextAware contextProvider)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int inoutLineTableId = Services.get(IADTableDAO.class).retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name);
+		final int inoutLineTableId = tableDAO.retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name);
 
 		final IQuery<I_M_InOut> queryShipments = queryBL.createQueryBuilder(I_M_InOut.class, contextProvider)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
@@ -198,13 +209,14 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		return NotQueryFilter.of(assignedQueryFilter);
 	}
 
-	private void setHUStatus(final IHUContext huContext, final I_M_HU hu, final boolean shipped)
+	private void setHUStatus(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final String status)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 		//
 		// HU was shipped
-		if (shipped)
+		if (X_M_HU.HUSTATUS_Shipped.equals(status))
 		{
 			// Change HU's status to Shipped
 
@@ -221,16 +233,20 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		// HU was not shipped (i.e. it was shipped before shipment was reversed)
 		else
 		{
-			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
-			hu.setIsActive(true); // deactivate it because it shall not be available in our system anymore
+			huStatusBL.setHUStatus(huContext, hu, status);
+			hu.setIsActive(true);
 
-			//
-			// Restore after-picking locator
-			Services.get(IHUWarehouseDAO.class)
-					.suggestAfterPickingLocatorId(hu.getM_Locator_ID())
-					.ifPresent(pickingLocatorId -> hu.setM_Locator_ID(pickingLocatorId.getRepoId()));
+			final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
+
+			if (locator.isAfterPickingLocator())
+			{
+				final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+
+				// Restore default locator
+				hu.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
+			}
 		}
 
-		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
+		handlingUnitsDAO.saveHU(hu);
 	}
 }

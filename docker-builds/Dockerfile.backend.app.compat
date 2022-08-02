@@ -1,0 +1,17 @@
+ARG REFNAME=local
+
+FROM metasfresh/metas-mvn-backend:$REFNAME as backend
+FROM metasfresh/metas-app:$REFNAME as app
+
+RUN yum update -y && yum -y install nc postgresql && yum -y clean all && rm -rf /var/cache
+
+ARG VERSION
+ENV VERSION=$VERSION
+
+RUN touch local_settings.properties && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties
+RUN mkdir /opt/metasfresh/dist && echo "build.version=$VERSION" > /opt/metasfresh/dist/build-info.properties
+# /backend/metasfresh-dist/dist/target/build-info/build-info.properties
+
+RUN mv metasfresh-app.jar metasfresh_server.jar
+
+COPY --from=backend /backend/metasfresh-dist/dist/target/dist ./dist/

@@ -232,7 +232,7 @@ public class MDocType extends X_C_DocType
 				+ " AND rol.IsManual='N'"
 				+ ")";
 
-			int docact = DB.executeUpdate(sqlDocAction, get_TrxName());
+			int docact = DB.executeUpdateAndSaveErrorOnFail(sqlDocAction, get_TrxName());
 			log.debug("AD_Document_Action_Access=" + docact);
 		}
 		return success;
@@ -248,7 +248,7 @@ public class MDocType extends X_C_DocType
 	{
 		if(success) {
 			//delete access records
-			int docactDel = DB.executeUpdate("DELETE FROM AD_Document_Action_Access WHERE C_DocType_ID=" + get_IDOld(), get_TrxName());
+			int docactDel = DB.executeUpdateAndSaveErrorOnFail("DELETE FROM AD_Document_Action_Access WHERE C_DocType_ID=" + get_IDOld(), get_TrxName());
 			log.debug("Deleting AD_Document_Action_Access=" + docactDel + " for C_DocType_ID: " + get_IDOld());
 		}
 		return success;

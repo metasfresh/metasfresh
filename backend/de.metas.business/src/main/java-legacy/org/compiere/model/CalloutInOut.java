@@ -31,6 +31,8 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.location.LocationId;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -80,6 +82,9 @@ public class CalloutInOut extends CalloutEngine
 	private static final String CTXNAME_C_BPartner_ID = "C_BPartner_ID";
 	private static final String CTXNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
+	private static final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository =
+			SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+
 	/**
 	 * C_Order - Order Defaults.
 	 */
@@ -109,6 +114,15 @@ public class CalloutInOut extends CalloutEngine
 		inout.setC_Project_ID(order.getC_Project_ID());
 		inout.setUser1_ID(order.getUser1_ID());
 		inout.setUser2_ID(order.getUser2_ID());
+		inout.setC_Incoterms_ID(order.getC_Incoterms_ID());
+		inout.setIncotermLocation(order.getIncotermLocation());
+
+		if(orderEmailPropagationSysConfigRepository.isPropagateToMInOut(
+				ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
+		{
+			inout.setEMail(order.getEMail());
+		}
+		inout.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 		// Warehouse (05251 begin: we need to use the advisor)
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
@@ -165,6 +179,9 @@ public class CalloutInOut extends CalloutEngine
 			inout.setM_Shipper_ID(originalReceipt.getM_Shipper_ID());
 			inout.setFreightCostRule(originalReceipt.getFreightCostRule());
 			inout.setFreightAmt(originalReceipt.getFreightAmt());
+			inout.setC_Incoterms_ID(originalReceipt.getC_Incoterms_ID());
+			inout.setIncotermLocation(originalReceipt.getIncotermLocation());
+			inout.setEMail(originalReceipt.getEMail());
 
 			InOutDocumentLocationAdapterFactory.locationAdapter(inout).setFrom(originalReceipt);
 		}
@@ -346,7 +363,7 @@ public class CalloutInOut extends CalloutEngine
 
 		inout.setAD_Org_ID(warehouse.getAD_Org_ID());
 
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
+		final I_M_Locator locator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(warehouse);
 		calloutField.putContext(CTXNAME_M_Locator_ID, locator == null ? -1 : locator.getM_Locator_ID());
 
 		return NO_ERROR;
@@ -579,7 +596,7 @@ public class CalloutInOut extends CalloutEngine
 		final WarehouseId allowedWarehouseId = WarehouseId.ofRepoIdOrNull(inout.getM_Warehouse_ID());
 		if (allowedWarehouseId != null)  // shall never be null
 		{
-			final LocatorId defaultLocatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(allowedWarehouseId);
+			final LocatorId defaultLocatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(allowedWarehouseId);
 			inoutLine.setM_Locator_ID(defaultLocatorId.getRepoId());
 		}
 

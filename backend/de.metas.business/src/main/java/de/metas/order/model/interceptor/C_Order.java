@@ -200,6 +200,22 @@ public class C_Order
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
+	public void updateProjectFromOrder(@NonNull final I_C_Order order)
+	{
+		if (order.getC_Project_ID() <= 0)
+		{
+			return; // let possible existing project assignment be
+		}
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			orderLine.setC_Project_ID(order.getC_Project_ID());
+			orderDAO.save(orderLine);
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID,
@@ -211,6 +227,28 @@ public class C_Order
 
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_SalesRep_ID());
 		bpartnerBL.validateSalesRep(bPartnerId, salesRepId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	public void setIncoterms(final I_C_Order order)
+	{
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
+
+		final int c_Incoterms;
+
+		if (order.isSOTrx())
+		{
+			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
+		}
+		else
+		{
+			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
+		}
+
+		order.setC_Incoterms_ID(c_Incoterms);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
@@ -228,28 +266,30 @@ public class C_Order
 	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
 	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_C_BPartner_ID })
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void setPaymentRule(final I_C_Order order)
 	{
-		if (!InterfaceWrapperHelper.isCopying(order))
+		if (!InterfaceWrapperHelper.isUIAction(order) || InterfaceWrapperHelper.isCopying(order))
 		{
-			final I_C_BPartner bpartner = order.getC_BPartner();
-			final PaymentRule paymentRule;
-			if (bpartner != null && bpartner.getPaymentRule() != null)
-			{
-				paymentRule = order.isSOTrx()
-						? PaymentRule.ofCode(bpartner.getPaymentRule())
-						: PaymentRule.ofCode(bpartner.getPaymentRulePO());
-			}
-			else
-			{
-				paymentRule = invoiceBL.getDefaultPaymentRule();
-			}
-			order.setPaymentRule(paymentRule.getCode());
+			return;
 		}
+
+		final I_C_BPartner bpartner = order.getC_BPartner();
+		final PaymentRule paymentRule;
+		if (order.isSOTrx() && bpartner != null && bpartner.getPaymentRule() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
+		}
+		else if (!order.isSOTrx() && bpartner != null && bpartner.getPaymentRulePO() != null)
+		{
+			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRulePO());
+		}
+		else
+		{
+			paymentRule = invoiceBL.getDefaultPaymentRule();
+		}
+
+		order.setPaymentRule(paymentRule.getCode());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -509,18 +549,7 @@ public class C_Order
 		validateSupplierApprovals(order);
 	}
 
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = I_C_Order.COLUMNNAME_DatePromised )
-	public void updateOrderLineFromContract(final I_C_Order order)
-	{
-		orderDAO.retrieveOrderLines(order)
-				.stream()
-				.filter(line -> line.getC_Flatrate_Conditions_ID() > 0)
-				.forEach(orderLineBL::updatePrices);
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
 	public void validateVoidActionForMediatedOrder(final I_C_Order order)
 	{
 		if (orderBL.isMediated(order))

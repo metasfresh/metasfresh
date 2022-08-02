@@ -80,6 +80,13 @@ export function enableTutorial(flag = true) {
   };
 }
 
+export function connectionError({ errorType }) {
+  return {
+    type: types.CONNECTION_ERROR,
+    errorType,
+  };
+}
+
 export function addNotification(
   title,
   msg,

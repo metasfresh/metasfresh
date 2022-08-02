@@ -3,27 +3,7 @@
  */
 package de.metas.currency.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_ConversionType;
-import org.compiere.model.I_C_ConversionType_Default;
-import org.compiere.model.I_C_Conversion_Rate;
-import org.compiere.model.I_C_Currency;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
@@ -38,8 +18,25 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_ConversionType_Default;
+import org.compiere.model.I_C_Conversion_Rate;
+import org.compiere.model.I_C_Currency;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L

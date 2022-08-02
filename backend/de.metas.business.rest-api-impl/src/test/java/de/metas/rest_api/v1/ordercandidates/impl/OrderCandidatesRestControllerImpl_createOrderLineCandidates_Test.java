@@ -33,7 +33,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.location.impl.DocumentLocationBL;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -41,8 +41,8 @@ import de.metas.money.CurrencyId;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.IOLCandBL;
-import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandSPIRegistry;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
@@ -53,7 +53,12 @@ import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
@@ -194,6 +199,8 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
+		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+
 		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
@@ -236,6 +243,8 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
 
 			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
+
+			SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -278,11 +287,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				olCandBL,
 				new DummyOLCandWithUOMForTUsCapacityProvider());
 
-		final OLCandRegistry olCandRegistry = new OLCandRegistry(
+		final OLCandSPIRegistry olCandSPIRegistry = new OLCandSPIRegistry(
 				Optional.empty(),
 				Optional.empty(),
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
-		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
@@ -293,16 +302,16 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
 	{
 		@Override
-		public boolean isProviderNeededForOLCand(final I_C_OLCand olCand)
+		public boolean isProviderNeededForOLCand(@NonNull final I_C_OLCand olCand)
 		{
 			return false;
 		}
 
-		@Nullable
+		@NonNull
 		@Override
-		public Quantity computeQtyItemCapacity(final I_C_OLCand olCand)
+		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
-			return null;
+			return Optional.of(Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID())));
 		}
 	}
 

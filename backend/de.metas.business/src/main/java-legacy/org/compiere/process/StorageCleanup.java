@@ -88,7 +88,7 @@ public class StorageCleanup extends JavaProcess
 		String sql = "DELETE FROM M_Storage "
 				+ "WHERE QtyOnHand = 0 AND QtyReserved = 0 AND QtyOrdered = 0"
 				+ " AND Created < now()-3";
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		log.info("Deleted Empty #" + no);
 
 		//

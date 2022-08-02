@@ -13,6 +13,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
@@ -74,6 +75,7 @@ public class ExternallyReferencedCandidate
 				.qtyDelivered(newIC.getQtyDelivered())
 				.qtyOrdered(newIC.getQtyOrdered())
 				.soTrx(newIC.getSoTrx())
+				.projectId(newIC.getProjectId())
 				.invoiceDetailItems(newIC.getInvoiceDetailItems());
 	}
 
@@ -129,6 +131,8 @@ public class ExternallyReferencedCandidate
 
 	private String lineDescription;
 
+	private ProjectId projectId;
+
 	private List<InvoiceDetailItem> invoiceDetailItems;
 
 	@Builder
@@ -158,6 +162,7 @@ public class ExternallyReferencedCandidate
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
+			@Nullable final ProjectId projectId,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -185,6 +190,7 @@ public class ExternallyReferencedCandidate
 		this.taxId = taxId;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.projectId = projectId;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 
 		final CurrencyId currencyId = CollectionUtils

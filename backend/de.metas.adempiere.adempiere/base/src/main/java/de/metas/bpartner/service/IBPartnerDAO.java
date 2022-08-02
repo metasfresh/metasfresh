@@ -170,7 +170,9 @@ public interface IBPartnerDAO extends ISingletonService
 	ImmutableSet<BPartnerContactId> getContactIdsByRepoIds(@NonNull Set<Integer> repoIds);
 
 	@Nullable
-	I_AD_User getContactById(BPartnerContactId contactId);
+	I_AD_User getContactById(@NonNull BPartnerContactId contactId);
+
+	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
 
 	@Nullable
 	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
@@ -269,7 +271,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
-	CountryId getCountryId(BPartnerLocationId bpLocationId);
+	@NonNull
+	CountryId getCountryId(@NonNull BPartnerLocationId bpLocationId);
 	/**
 	 * Retrieve default/first bill to location.
 	 *

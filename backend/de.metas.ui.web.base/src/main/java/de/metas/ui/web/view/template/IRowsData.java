@@ -10,6 +10,8 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -69,7 +71,7 @@ public interface IRowsData<T extends IViewRow>
 	/** @return top level or include row */
 	default T getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		final T row = getDocumentId2AllRows().get(rowId);
+		final T row = getByIdOrNull(rowId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("Row not found")
@@ -78,4 +80,11 @@ public interface IRowsData<T extends IViewRow>
 		}
 		return row;
 	}
+
+	@Nullable
+	default T getByIdOrNull(final DocumentId rowId)
+	{
+		return getDocumentId2AllRows().get(rowId);
+	}
+
 }

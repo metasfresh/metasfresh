@@ -41,6 +41,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -105,7 +106,7 @@ class CommentsServiceTest
 			{
 				@Nullable
 				@Override
-				public DocumentFilterDescriptorsProvider createFiltersProvider(final AdTabId adTabId, final String tableName, final @NonNull Collection<DocumentFieldDescriptor> fields)
+				public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context, final @NonNull Collection<DocumentFieldDescriptor> fields)
 				{
 					return null;
 				}

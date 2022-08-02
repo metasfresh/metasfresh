@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
+import de.metas.resource.ResourceGroupId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -114,6 +115,9 @@ public interface IProductDAO extends ISingletonService
 			@NonNull GroupCategoryId groupCategoryId,
 			@NonNull OrgId targetOrgId);
 
+	@Nullable
+	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+
 	@Value
 	class ProductQuery
 	{
@@ -184,6 +188,10 @@ public interface IProductDAO extends ISingletonService
 	void updateProductsByResourceIds(Set<ResourceId> resourceIds, BiConsumer<ResourceId, I_M_Product> productUpdater);
 
 	void deleteProductByResourceId(ResourceId resourceId);
+
+	void updateProductByResourceGroupId(@NonNull ResourceGroupId resourceGroupId, @NonNull Consumer<I_M_Product> productUpdater);
+
+	void deleteProductByResourceGroupId(@NonNull ResourceGroupId resourceGroupId);
 
 	I_M_Product createProduct(CreateProductRequest request);
 

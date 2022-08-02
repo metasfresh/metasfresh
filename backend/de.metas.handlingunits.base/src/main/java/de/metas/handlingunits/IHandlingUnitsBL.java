@@ -41,6 +41,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -243,6 +244,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	I_M_HU getTopLevelParent(I_M_HU hu);
 
+	I_M_HU getTopLevelParent(HuId huId);
+
 	ImmutableSet<HuId> getTopLevelHUs(@NonNull Collection<HuId> huIds);
 
 	/**
@@ -262,6 +265,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull I_M_HU hu);
 
 	ImmutableAttributeSet getImmutableAttributeSet(@NonNull I_M_HU hu);
+
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull HuPackingInstructionsId packingInstructionsId,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId);
+
+	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
 
 	@Builder
 	@Value
@@ -371,6 +381,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	String getHU_UnitType(I_M_HU_PI pi);
 
+	@NonNull
+	String getHU_UnitType(@NonNull HuPackingInstructionsId piId);
+
 	/**
 	 * Returns the {@link I_M_HU_PI_Version#COLUMNNAME_HU_UnitType} value of the given <code>hu</code>'s.
 	 *
@@ -414,13 +427,29 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	QtyTU getTUsCount(final I_M_HU tuOrAggregatedTU);
 
+	HuPackingInstructionsId getPackingInstructionsId(@NonNull I_M_HU hu);
+
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
+
+	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Version piVersion);
+
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsId id);
+
+	String getPIName(@NonNull HuPackingInstructionsId id);
+
+	I_M_HU_PI getPI(@NonNull HUPIItemProductId huPIItemProductId);
 
 	I_M_HU_PI_Version getPIVersion(I_M_HU hu);
 
 	@Nullable
 	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsItemId piItemId);
+
+	HuPackingInstructionsId getPackingInstructionsId(@NonNull HuPackingInstructionsItemId piItemId);
+
+	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
@@ -544,7 +573,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	}
 
 	@Nullable
-	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(final I_M_HU hu)
+	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(@NonNull final I_M_HU hu)
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null
@@ -557,4 +586,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
 	boolean isEmptyStorage(I_M_HU hu);
+
+	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
+
+	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
+
+	boolean isHUHierarchyCleared(@NonNull final HuId huId);
 }

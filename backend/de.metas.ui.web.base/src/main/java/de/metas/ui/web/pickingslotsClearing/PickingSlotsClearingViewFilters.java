@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingslotsClearing;
 
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import org.compiere.util.DisplayType;
 
 import de.metas.bpartner.BPartnerId;
@@ -71,9 +72,9 @@ public class PickingSlotsClearingViewFilters
 
 	}
 
-	public static String getPickingSlotBarcode(final DocumentFilterList filters)
+	public static PickingSlotQRCode getPickingSlotQRCode(final DocumentFilterList filters)
 	{
-		return PickingSlotViewFilters.getPickingSlotBarcode(filters);
+		return PickingSlotViewFilters.getPickingSlotQRCode(filters);
 	}
 
 	public static BPartnerId getBPartnerId(final DocumentFilterList filters)

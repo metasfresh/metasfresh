@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -135,8 +134,6 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 
 	void releasePickingSlotIfPossible(PickingSlotId pickingSlotId);
 
-	void releasePickingSlotIfPossible(PickingSlotId pickingSlotId, PickingJobId pickingJobId);
-
 	void releasePickingSlotsIfPossible(Collection<PickingSlotId> pickingSlotIds);
 
 	/**
@@ -157,7 +154,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 *
 	 * @return matching HUs
 	 */
-	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery query);
+	List<I_M_HU> retrieveAvailableHUsToPick(@NonNull PickingHUsQuery query);
 
 	ImmutableList<HuId> retrieveAvailableHUIdsToPick(PickingHUsQuery query);
 
@@ -194,5 +191,11 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 */
 		@Default
 		boolean onlyTopLevelHUs = true;
+
+		/**
+		 * If {@code true}, then even exclude HUs that are reserved to the given {@code shipmentSchedule}'s order line itself.
+		 */
+		@Default
+		boolean excludeAllReserved = false;
 	}
 }

@@ -86,25 +86,30 @@ Map build(
                         .withWorkDir('metasfresh-webui-api/target/docker');
                 final String publishedWebuiApiImageName = dockerBuildAndPush(webuiApiDockerConf)
 
-                // postgres DB init container
-                final DockerConf dbInitDockerConf = reportDockerConf
-                        .withArtifactName('metasfresh-db-init-pg-9-5')
-                        .withWorkDir('metasfresh-dist/dist/target/docker/db-init')
-                publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
+final DockerConf appDockerConf = reportDockerConf
+                        .withArtifactName('metasfresh-app')
+                        .withWorkDir('metasfresh-dist/dist/target/docker/app');
+                final String publishedAppImageName = dockerBuildAndPush(appDockerConf)//                // // postgres DB init container
+//                final DockerConf dbInitDockerConf = reportDockerConf
+//                        .withArtifactName('metasfresh-db-init-pg-14-2')
+//                        .withWorkDir('metasfresh-dist/dist/target/docker/db-init')
+//                publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
                 dockerImages['report'] = publishedReportDockerImageName
                 dockerImages['msv3Server'] = publishedMsv3ServerImageName
                 dockerImages['webuiApi'] = publishedWebuiApiImageName
-                dockerImages['dbInit'] = publishedDBInitDockerImageName
+                dockerImages['app'] = publishedAppImageName
+//                dockerImages['dbInit'] = publishedDBInitDockerImageName
 
                 currentBuild.description = """${currentBuild.description}<br/>
 				This build created the following deployable docker images 
-				<ul>
-				<li><code>${publishedMsv3ServerImageName}</code></li>
-				<li><code>${publishedWebuiApiImageName}</code></li>
-				<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
-				<li><code>${publishedDBInitDockerImageName}</code></li>
-				</ul>
+			    <ul>
+                <li><code>${publishedMsv3ServerImageName}</code></li>
+                <li><code>${publishedWebuiApiImageName}</code></li>
+                <li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
+                <li><code>${publishedAppImageName}</code></li>
+                <!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
+                </ul>
 				"""
 
                 dir('de.metas.cucumber') {
@@ -112,53 +117,53 @@ Map build(
                     cucumberBuildFile.build(mvnConf, scmVars)
                 }
 
-                final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
-                testSQLMigrationScripts(
-                        params.MF_SQL_SEED_DUMP_URL,
-                        metasfreshDistSQLOnlyURL,
-                        publishedDBInitDockerImageName,
-                        scmVars,
-                        forceBuild)
+//                final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
+//                testSQLMigrationScripts(
+//                        params.MF_SQL_SEED_DUMP_URL,
+//                        metasfreshDistSQLOnlyURL,
+//                        publishedDBInitDockerImageName,
+//                        scmVars,
+//                        forceBuild)
 
             } // stage build Backend
 
     return dockerImages
 }
 
-void testSQLMigrationScripts(
-        final String sqlSeedDumpURL,
-        final String metasfreshDistSQLOnlyURL,
-        final String dbInitDockerImageName,
-        final Map scmVars,
-        final boolean forceBuild) {
-    stage('Test SQL-Migrationscripts')
-            {
-
-                def anyFileChanged
-                try {
-                    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
-                    echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
-                    anyFileChanged = vgitout.contains(".sql") // see if any .sql file changed in this folder
-                    // see if anything at all changed in this folder
-                    echo "Any *.sql* file changed compared to last build: ${anyFileChanged}"
-                } catch (ignored) {
-                    echo "git diff error => assume something must have changed"
-                    anyFileChanged = true
-                }
-
-                if (scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild) {
-                    echo "no *.sql changes happened; skip applying SQL migration scripts";
-                    return;
-                }
-
-                if (sqlSeedDumpURL) {
-                    // run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
-                    sh "docker run --rm -e \"URL_SEED_DUMP=${sqlSeedDumpURL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${metasfreshDistSQLOnlyURL}\" ${dbInitDockerImageName}"
-                    sh "docker rmi ${dbInitDockerImageName}"
-                } else {
-                    echo "We skip applying the migration scripts because params.MF_SQL_SEED_DUMP_URL was not set"
-                }
-            }
-}
+//void testSQLMigrationScripts(
+//        final String sqlSeedDumpURL,
+//        final String metasfreshDistSQLOnlyURL,
+//        final String dbInitDockerImageName,
+//        final Map scmVars,
+//        final boolean forceBuild) {
+//    stage('Test SQL-Migrationscripts')
+//            {
+//
+//                def anyFileChanged
+//                try {
+//                    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
+//                    echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
+//                    anyFileChanged = vgitout.contains(".sql") // see if any .sql file changed in this folder
+//                    // see if anything at all changed in this folder
+//                    echo "Any *.sql* file changed compared to last build: ${anyFileChanged}"
+//                } catch (ignored) {
+//                    echo "git diff error => assume something must have changed"
+//                    anyFileChanged = true
+//                }
+//
+//                if (scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild) {
+//                    echo "no *.sql changes happened; skip applying SQL migration scripts";
+//                    return;
+//                }
+//
+//                if (sqlSeedDumpURL) {
+//                    // run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
+//                    sh "docker run --rm -e \"URL_SEED_DUMP=${sqlSeedDumpURL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${metasfreshDistSQLOnlyURL}\" ${dbInitDockerImageName}"
+//                    sh "docker rmi ${dbInitDockerImageName}"
+//                } else {
+//                    echo "We skip applying the migration scripts because params.MF_SQL_SEED_DUMP_URL was not set"
+//                }
+//            }
+//}
 
 return this;

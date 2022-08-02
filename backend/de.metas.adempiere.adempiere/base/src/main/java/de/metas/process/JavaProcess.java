@@ -1,20 +1,26 @@
 package de.metas.process;
 
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.error.LoggableWithThrowableUtil;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
+import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -30,6 +36,7 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.api.RangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
@@ -42,27 +49,18 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.organization.OrgId;
-import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
-import de.metas.security.permissions.Access;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Java Process base class.
@@ -87,7 +85,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 {
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());
-	private static final transient Logger slogger = LogManager.getLogger(JavaProcess.class);
+	private static final Logger slogger = LogManager.getLogger(JavaProcess.class);
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -1007,8 +1005,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
-		getResult().addLog(id, date, number, msg);
-	}	// addLog
+		addLog(id, date, number,  msg, null);
+	}
+
+	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable List<String> warningMessages)
+	{
+
+		getResult().addLog(id, date, number, msg, warningMessages);
+	}
 
 	/**
 	 * Add Log, if the given <code>msg<code> is not <code>null</code>
@@ -1018,12 +1022,42 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	@Override
 	public final ILoggable addLog(final String msg, final Object... msgParameters)
 	{
-		if (msg != null)
+		return addLog(null, msg, msgParameters);
+	}
+
+	public final ILoggable addLog(final List<String> warningMessages, final String msg, final Object... msgParameters)
+	{
+		final String actualMsg;
+
+		if (msg == null && msgParameters != null && msgParameters.length == 1 && msgParameters[0] instanceof Throwable)
 		{
-			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
+			actualMsg = "No message provided";
 		}
+		else if (msg == null)
+		{
+			actualMsg = null;
+		}
+		else
+		{
+			actualMsg = msg;
+		}
+
+		final LoggableWithThrowableUtil.FormattedMsgWithAdIssueId msgAndIssue = LoggableWithThrowableUtil.extractMsgAndAdIssue(actualMsg, msgParameters);
+
+		ProcessInfoLogRequest request = ProcessInfoLogRequest
+				.builder()
+				.log_ID(0)
+				.pDate(SystemTime.asTimestamp())
+				.p_Number(null)
+				.p_Msg(msgAndIssue.getFormattedMessage())
+				.ad_Issue_ID(msgAndIssue.getAdIsueId().orElse(null))
+				.warningMessages(warningMessages)
+				.build();
+
+		getResult().addLog(new ProcessInfoLog(request));
+
 		return this;
-	}	// addLog
+	}    // addLog
 
 	/**
 	 * Return the main transaction of the current process.
@@ -1129,5 +1163,21 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected final UserId getLoggedUserId()
 	{
 		return Env.getLoggedUserId();
+	}
+
+	@Override
+	public ILoggable addTableRecordReferenceLog(@NonNull final ITableRecordReference recordRef, @NonNull final String type, @Nullable final String trxName)
+	{
+		final ProcessInfoLog processInfoLog = ProcessInfoLog.ofMessageAndTableReference(getMessageForRecordReferenceLog(type, trxName), recordRef, trxName);
+
+		getResult().addLog(processInfoLog);
+
+		return this;
+	}
+
+	@NonNull
+	private static String getMessageForRecordReferenceLog(@NonNull final String type, @Nullable final String trxName)
+	{
+		return "Type=" + type + ";" + "trxName=" + trxName;
 	}
 }

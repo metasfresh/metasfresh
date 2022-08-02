@@ -128,7 +128,7 @@ public class ImportAsset extends JavaProcess
 			+ " I_ErrorMsg = NULL,"
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
-		no = DB.executeUpdate(sql.toString(),null);		
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
 
 
 		//	Set Currency
@@ -441,7 +441,7 @@ public class ImportAsset extends JavaProcess
 							+ "SET I_IsImported='E', I_ErrorMsg=").append(DB.TO_STRING("Insert Asset: " + ex.toString()))
 							.append(" WHERE I_Asset_ID=").append(I_Asset_ID);
 						
-						DB.executeUpdate(sql.toString(),null);
+						DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
 						continue;
 					}
 				}
@@ -499,7 +499,7 @@ public class ImportAsset extends JavaProcess
 			+ "SET I_IsImported='N' " 
 			//+ "Updated= TO_DATE('"+m_DateValue+"','YYYY-MM-DD HH24:MI:SS.FFF') "
 			+ "WHERE I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(),null);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
 		addLog (0, null, new BigDecimal (no), "@Errors@");
 		addLog (0, null, new BigDecimal (noInsert), "@A_Asset_ID@: @Inserted@");
 		addLog (0, null, new BigDecimal (noUpdate), "@A_Asset_ID@: @Updated@");

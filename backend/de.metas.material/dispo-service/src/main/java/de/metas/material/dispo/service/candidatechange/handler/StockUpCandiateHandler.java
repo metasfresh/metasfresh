@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
@@ -109,7 +108,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		{
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty, null);
-			materialEventService.postEventNow(supplyRequiredEvent);
+			materialEventService.enqueueEventNow(supplyRequiredEvent);
 		}
 
 		return candidateWithQtyDeltaAndId;
@@ -120,7 +119,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+		candidateRepositoryWriteService.deleteCandidateById(candidate.getId());
 	}
 
 	private void assertCorrectCandidateType(@NonNull final Candidate candidate)

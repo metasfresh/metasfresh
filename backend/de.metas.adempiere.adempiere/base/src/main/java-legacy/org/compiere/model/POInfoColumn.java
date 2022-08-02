@@ -203,7 +203,7 @@ public final class POInfoColumn implements Serializable
 	/**
 	 * Updateable
 	 */
-	boolean IsUpdateable;
+	final boolean IsUpdateable;
 	/**
 	 * PK
 	 */

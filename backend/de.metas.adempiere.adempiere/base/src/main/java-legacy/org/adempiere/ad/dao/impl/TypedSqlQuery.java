@@ -21,21 +21,25 @@
  */
 package org.adempiere.ad.dao.impl;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.dao.selection.pagination.PaginationService;
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.sql.SqlParamsInliner;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -55,28 +59,22 @@ import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.util.DB;
+import org.compiere.util.DB.ResultSetRowLoader;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.common.util.CoalesceUtil;
-import de.metas.dao.selection.pagination.PaginationService;
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Low Heng Sin
@@ -625,13 +623,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				Aggregate.SUM,
 				ImmutableList.of(currencyIdColumnName),
 				rs -> {
-					final BigDecimal value = CoalesceUtil.coalesce(rs.getBigDecimal(1), BigDecimal.ZERO);
+					final BigDecimal value = CoalesceUtil.coalesceNotNull(rs.getBigDecimal(1), BigDecimal.ZERO);
 					final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(currencyIdColumnName));
 					return Money.of(value, currencyId);
 				});
 	}
 
-	public <AT> List<AT> aggregateList(
+	public <AT> ImmutableList<AT> aggregateList(
 			@NonNull String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@NonNull final Class<AT> returnType)
@@ -642,17 +640,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				rs -> DB.retrieveValueOrDefault(rs, 1, returnType));
 	}
 
-	@FunctionalInterface
-	private interface ValueFetcher<T>
-	{
-		T retrieveValue(ResultSet rs) throws SQLException;
-	}
-
-	public <AT> List<AT> aggregateList(
+	public <AT> ImmutableList<AT> aggregateList(
 			@NonNull String sqlExpression,
 			@NonNull final Aggregate aggregateType,
 			@Nullable final List<String> groupBys,
-			@NonNull final ValueFetcher<AT> valueFetcher)
+			@NonNull final ResultSetRowLoader<AT> valueFetcher)
 	{
 		// NOTE: it's OK to have the sqlFunction null. Methods like first(columnName, valueClass) are relying on this.
 		// if (Check.isEmpty(aggregateType.sqlFunction, true)) throw new DBException("No Aggregate Function defined");
@@ -682,8 +674,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 		}
 
-		final List<AT> result = new ArrayList<>();
-
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
 		if (Check.isEmpty(aggregateType.getSqlFunction(), true))
 		{
@@ -701,10 +691,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String groupBysClause;
 		if (groupBys != null && !groupBys.isEmpty())
 		{
-			groupBysClause = groupBys != null && !groupBys.isEmpty()
-					? Joiner.on(", ").join(groupBys)
-					: null;
-
+			groupBysClause = Joiner.on(", ").join(groupBys);
 			sqlSelect.append("\n, ").append(groupBysClause);
 		}
 		else
@@ -720,15 +707,19 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			pstmt = DB.prepareStatement(sql, this.trxName);
 			rs = createResultSet(pstmt);
+
+			final ImmutableList.Builder<AT> result = ImmutableList.builder();
 			while (rs.next())
 			{
-				final AT value = valueFetcher.retrieveValue(rs);
+				final AT value = valueFetcher.retrieveRowOrNull(rs);
 				if (value == null)
 				{
 					continue; // Skip null values
 				}
 				result.add(value);
 			}
+
+			return result.build();
 		}
 		catch (final SQLException e)
 		{
@@ -737,15 +728,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
-		//
-		return result;
 	}
 
 	@Override
-	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
+	public final <AT> ImmutableList<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
 		return aggregateList(columnName, Aggregate.DISTINCT, valueType);
 	}
@@ -1221,6 +1208,8 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// Build and add UNION SQL queries
 		if (unions != null)
 		{
+			final boolean useOrderByClauseInUnions = Check.isBlank(getOrderBy());
+
 			for (final SqlQueryUnion<T> union : unions)
 			{
 				final TypedSqlQuery<T> unionQuery = TypedSqlQuery.cast(union.getQuery());
@@ -1231,7 +1220,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 						selectClause,
 						null/* don't assume the union-query's from-clause is identical! */,
 						null/* groupByClause */,
-						false/* useOrderByClause */);
+						useOrderByClauseInUnions);
 				sqlBuffer.append("\nUNION ").append(unionDistinct ? "DISTINCT" : "ALL");
 				sqlBuffer.append("\n(\n").append(unionSql).append("\n)\n");
 			}
@@ -1598,7 +1587,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql = buildSQL(selectClause, fromClause, groupByClause, false);
 		final Object[] params = getParametersEffective().toArray();
 
-		final int no = DB.executeUpdateEx(sql, params, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 		return no;
 	}
 
@@ -1621,33 +1610,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int deleteDirectly()
 	{
-		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE ");
-		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getTableName());
+		// NOTE: avoid leading/trailing "spaces" in sqlDeleteFrom and fromClause,
+		// in order to be matched by our migration scripts "dontLog" matcher.
+		// In case of fromClause we need a trailing space.
+		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE");
+		final StringBuilder fromClause = new StringBuilder("FROM ").append(getTableName()).append(" ");
 		final String groupByClause = null;
 		final String sql = buildSQL(sqlDeleteFrom, fromClause, groupByClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
-		final int no = DB.executeUpdateEx(sql, params, trxName);
-		return no;
-	}
-
-	@Override
-	public int delete(final boolean failIfProcessed)
-	{
-		final List<T> records = list(modelClass);
-		if (records.isEmpty())
-		{
-			return 0;
-		}
-
-		int countDeleted = 0;
-		for (final Object record : records)
-		{
-			InterfaceWrapperHelper.delete(record, failIfProcessed);
-			countDeleted++;
-		}
-
-		return countDeleted;
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
 
 	/**
@@ -1731,7 +1703,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlWhereClauseParams = getParametersEffective();
 		sqlParams.addAll(sqlWhereClauseParams);
 
-		return DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), getTrxName());
 	}
 
 	/**
@@ -1790,7 +1762,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Execute
-		return DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), getTrxName());
+		return DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), sqlParams.toArray(), getTrxName());
 	}
 
 	@Override
@@ -1884,7 +1856,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Execute the INSERT and return how many records were inserted
-		final int countInsert = DB.executeUpdateEx(sql, sqlParams.toArray(), getTrxName());
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), getTrxName());
 		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
 	}
 }

@@ -7,6 +7,7 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
@@ -17,10 +18,12 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.test.ErrorMessage;
@@ -152,9 +155,12 @@ public abstract class AbstractHUTest
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
-		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService, NullCustomizedWindowInfoMapRepository.instance));
 
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
 		initialize();
 	}

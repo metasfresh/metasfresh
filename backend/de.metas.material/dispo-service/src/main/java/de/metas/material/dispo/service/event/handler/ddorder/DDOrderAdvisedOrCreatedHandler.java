@@ -157,6 +157,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		// these two will also be added to the demand candidate
 		final DemandDetail demanddetail = //
 				DemandDetail.forSupplyRequiredDescriptorOrNull(ddOrderEvent.getSupplyRequiredDescriptor());
+
 		final DistributionDetail distributionDetail = createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine);
 
 		// create or update the supply candidate
@@ -167,7 +168,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.materialDescriptor(supplyMaterialDescriptor)
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
+				.simulated(ddOrder.isSimulated())
 				.build();
+
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 
 		// create  or update the demand candidate
@@ -188,8 +191,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.materialDescriptor(demandMaterialDescriptor)
 				.minMaxDescriptor(ddOrderLine.getFromWarehouseMinMaxDescriptor())
 				.businessCaseDetail(distributionDetail)
-				.additionalDemandDetail(demanddetail)
+				.additionalDemandDetail(demanddetail.withTraceId(ddOrderEvent.getEventDescriptor().getTraceId()))
 				.seqNo(expectedSeqNoForDemandCandidate)
+				.simulated(ddOrder.isSimulated())
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event
@@ -301,6 +305,11 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 
 	private void handleMainDataUpdates(@NonNull final DDOrderCreatedEvent ddOrderCreatedEvent, @NonNull final DDOrderLine ddOrderLine)
 	{
+		if (ddOrderCreatedEvent.getDdOrder().isSimulated())
+		{
+			return;
+		}
+
 		final OrgId orgId = ddOrderCreatedEvent.getEventDescriptor().getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 

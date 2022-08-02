@@ -1,10 +1,13 @@
 package de.metas.handlingunits.pporder.api;
 
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPCostCollectorId;
 
@@ -28,9 +31,13 @@ public interface IPPOrderReceiptHUProducer
 	 * Creates planning HUs to be received.
 	 * It also creates draft manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 */
-	void createDraftReceiptCandidatesAndPlanningHUs();
+	List<I_M_HU> createDraftReceiptCandidatesAndPlanningHUs();
 
 	I_M_HU receiveVHU(Quantity qtyToReceive);
+
+	List<I_M_HU> receiveTUs(@NonNull Quantity qtyToReceive, @NonNull HUPIItemProductId tuPIItemProductId);
+
+	I_M_HU receiveSingleTU(@NonNull Quantity qtyToReceive, @NonNull final HuPackingInstructionsId tuPackingInstructionsId);
 
 	/**
 	 * NOTE: by default current system time is considered.

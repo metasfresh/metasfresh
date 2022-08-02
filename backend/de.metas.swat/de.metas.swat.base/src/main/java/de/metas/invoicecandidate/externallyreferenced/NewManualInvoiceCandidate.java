@@ -8,6 +8,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.lang.ExternalId;
@@ -43,7 +44,9 @@ import java.util.List;
  * #L%
  */
 
-/** A "manual" IC does not reference another record (e.g. order line or contract). */
+/**
+ * A "manual" IC does not reference another record (e.g. order line or contract).
+ */
 @Value
 @Builder
 public class NewManualInvoiceCandidate
@@ -73,7 +76,9 @@ public class NewManualInvoiceCandidate
 
 	UomId invoicingUomId;
 
-	/** If given, then productId and currencyId have to match! */
+	/**
+	 * If given, then productId and currencyId have to match!
+	 */
 	ProductPrice priceEnteredOverride;
 
 	Percent discountOverride;
@@ -81,6 +86,8 @@ public class NewManualInvoiceCandidate
 	DocTypeId invoiceDocTypeId;
 
 	String lineDescription;
+
+	ProjectId projectId;
 
 	List<InvoiceDetailItem> invoiceDetailItems;
 
@@ -104,6 +111,7 @@ public class NewManualInvoiceCandidate
 			@Nullable final Percent discountOverride,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
+			@Nullable final ProjectId projectId,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -125,6 +133,7 @@ public class NewManualInvoiceCandidate
 		this.discountOverride = discountOverride;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.projectId = projectId;
 		this.invoiceDetailItems = invoiceDetailItems;
 
 		if (priceEnteredOverride != null)

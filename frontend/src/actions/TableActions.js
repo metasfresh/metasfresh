@@ -1,18 +1,18 @@
-import { reduce, cloneDeep, get, find, uniqBy } from 'lodash';
+import { cloneDeep, find, get, reduce, uniqBy } from 'lodash';
 
 import { flattenRows } from '../utils/documentListHelper';
 import * as types from '../constants/ActionTypes';
 
-import { fetchQuickActions } from '../actions/Actions';
-import { showIncludedView } from '../actions/ViewActions';
+import { fetchQuickActions } from './Actions';
+import { showIncludedView } from './ViewActions';
 import {
+  deleteViewAttributes,
   fetchViewAttributes,
   fetchViewAttributesLayout,
-  deleteViewAttributes,
-} from '../actions/IndependentWidgetsActions';
+} from './IndependentWidgetsActions';
 
 import { getView } from '../reducers/viewHandler';
-import { getTable, getSupportAttribute } from '../reducers/tables';
+import { getSupportAttribute, getTable } from '../reducers/tables';
 
 /**
  * @method createTable
@@ -136,6 +136,22 @@ export function clearTableData(id) {
 }
 
 /**
+ * @method setTableNavigation
+ * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
+ *
+ * @param {string} id - table id
+ */
+export function setTableNavigation(id, active) {
+  return {
+    type: types.SET_TABLE_NAVIGATION,
+    payload: {
+      id,
+      active,
+    },
+  };
+}
+
+/**
  * @method createTableData
  * @summary Helper function to grab raw data and format/name it accordingly to
  * the values in the store.
@@ -147,6 +163,7 @@ export function createTableData(rawData) {
     docId: rawData.id,
     tabId: rawData.tabId,
     keyProperty: rawData.keyProperty,
+    pending: rawData.pending,
     emptyText: rawData.emptyResultText,
     emptyHint: rawData.emptyResultHint,
     size: rawData.size,
@@ -253,6 +270,7 @@ export function createGridTable(tableId, tableResponse) {
     const tableData = createTableData({
       ...tableResponse,
       ...tableLayout,
+      ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
     });
 
     dispatch(createTable(tableId, tableData));
@@ -283,6 +301,7 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
+        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -310,6 +329,7 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
+        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -341,11 +361,35 @@ export function updateGridTable(tableId, tableResponse) {
   };
 }
 
+const extractEmptyResultTextAndHint = ({ tableResponse, tableLayout }) => {
+  if (tableResponse?.emptyResultText) {
+    return {
+      emptyResultText: tableResponse.emptyResultText,
+      emptyResultHint: tableResponse?.emptyResultHint || '',
+    };
+  } else if (tableLayout?.emptyResultText) {
+    return {
+      emptyResultText: tableLayout.emptyResultText,
+      emptyResultHint: tableLayout?.emptyResultHint || '',
+    };
+  } else {
+    return {
+      emptyResultText: '',
+      emptyResultHint: '',
+    };
+  }
+};
+
 /*
  * @method updateGridTableData
  * @summary Update grid table's rows and rebuild collapsed rows if necessary
  */
-export function updateGridTableData(tableId, rows) {
+export function updateGridTableData({
+  tableId,
+  rows,
+  preserveCollapsedStateToRowIds,
+  customLayoutFlags,
+}) {
   return (dispatch, getState) => {
     const state = getState();
 
@@ -367,6 +411,8 @@ export function updateGridTableData(tableId, rows) {
           updateCollapsedRows({
             tableId,
             rows,
+            preserveCollapsedStateToRowIds,
+            customLayoutFlags,
           })
         );
       }
@@ -399,15 +445,16 @@ export function createTabTable(tableId, tableResponse) {
  * @method updateTabTable
  * @summary Update table entry for the details view with layout and data rows
  */
-export function updateTabTable(tableId, tableResponse) {
+export function updateTabTable({ tableId, tableResponse, pending }) {
   return (dispatch, getState) => {
     const state = getState();
 
     if (state.tables) {
       const tableExists = state.tables[tableId];
       const tableData = createTableData({
-        ...tableResponse,
+        ...(tableResponse ? tableResponse : {}),
         keyProperty: 'rowId',
+        pending,
       });
 
       if (tableData.rows && tableData.rows.length) {
@@ -499,8 +546,21 @@ function createCollapsedRows({
  *
  * @param {string} tableId
  * @param {array} rows
+ * @param {array} preserveCollapsedStateToRowIds - array with ids of the rows to be changed that are sent with a websocket message
+ *                                                (if it's not empty it will preserve the previous state of the tree)
+ *                                                (if it's empty it will not preserve the state causing the tree to be uncollapsed )
+ * @param {object} custom flags that come from the layout. i.e `uncollapseRowsOnChange`
+ *        Note: this `uncollapseRowsOnChange` does not come yet from the backend response but if it was to be set to `true`
+ *              it will force the rows to be uncollapsed. (`Create Purchase Order action` for a `Sales order line`)
  */
-function updateCollapsedRows({ tableId, rows }) {
+function updateCollapsedRows({
+  tableId,
+  rows,
+  preserveCollapsedStateToRowIds,
+  customLayoutFlags,
+}) {
+  const { uncollapseRowsOnChange } = customLayoutFlags;
+
   return (dispatch, getState) => {
     const state = getState();
     const table = state.tables[tableId];
@@ -511,10 +571,21 @@ function updateCollapsedRows({ tableId, rows }) {
       collapsedRows,
       collapsedParentRows,
     } = table;
-    let newCollapsedParentRows = [];
-    let newCollapsedRows = [];
+
+    const hasPreservedStateToRowIds =
+      preserveCollapsedStateToRowIds &&
+      preserveCollapsedStateToRowIds.length > 0;
 
     if (collapsible) {
+      let newCollapsedParentRows =
+        hasPreservedStateToRowIds || !uncollapseRowsOnChange
+          ? [...collapsedParentRows]
+          : [];
+      let newCollapsedRows =
+        hasPreservedStateToRowIds || !uncollapseRowsOnChange
+          ? [...collapsedRows]
+          : [];
+
       if (rows.length) {
         rows.forEach((row) => {
           if (
@@ -522,14 +593,18 @@ function updateCollapsedRows({ tableId, rows }) {
             row.includedDocuments &&
             !collapsedParentRows.indexOf(row.id)
           ) {
-            newCollapsedParentRows = newCollapsedParentRows.concat(
+            newCollapsedParentRows = !newCollapsedParentRows.includes(
               row[keyProperty]
-            );
+            )
+              ? newCollapsedParentRows.concat(row[keyProperty])
+              : newCollapsedParentRows;
           } else if (
             row.indent.length > expandedDepth &&
             !collapsedRows.indexOf(row.id)
           ) {
-            newCollapsedRows = newCollapsedRows.concat(row[keyProperty]);
+            newCollapsedRows = !newCollapsedRows.includes(row[keyProperty])
+              ? newCollapsedRows.concat(row[keyProperty])
+              : newCollapsedRows;
           }
         });
       }
@@ -539,6 +614,7 @@ function updateCollapsedRows({ tableId, rows }) {
           tableId,
           collapsedParentRows: newCollapsedParentRows,
           collapsedRows: newCollapsedRows,
+          preserveCollapsedStateToRowIds,
         })
       );
     }
@@ -704,51 +780,63 @@ function handleToggleIncludedView({
 }) {
   return (dispatch, getState) => {
     const state = getState();
-    const includedView = state.viewHandler.includedView;
-    const view = getView(state, windowId, isModal);
-    const layout = view.layout;
-    const { selected, keyProperty, rows } = getTable(state, tableId);
-    let forceClose = false;
-    let showIncluded = true;
-    let openIncludedViewOnSelect = true;
-    let includedWindowId = null;
-    let includedViewId = null;
-    let item = {};
+    const viewLayout = getView(state, windowId, isModal).layout;
+    const openIncludedViewOnSelect = !!viewLayout.includedView?.openOnSelect;
 
-    // selection is empty, so we're closing the included view
-    if (selected.length === 0 && includedView.parentId === windowId) {
-      showIncluded = false;
-      forceClose = true;
-      includedWindowId = includedView.windowId;
-      includedViewId = includedView.viewId;
-    } else {
-      const itemId = selection[selection.length - 1];
-      item = find(rows, (row) => row[keyProperty] === itemId);
+    //
+    // Update included view status
+    {
+      const closeIncludedViewOnDeselected =
+        viewLayout.includedView?.closeOnDeselect ?? true;
+      const includedView = state.viewHandler.includedView;
+      const { selected, keyProperty, rows } = getTable(state, tableId);
 
-      showIncluded = get(item, ['supportIncludedViews'], false);
-      includedWindowId = showIncluded
-        ? get(item, ['includedView', 'windowId'], null)
-        : null;
-      includedViewId = showIncluded
-        ? get(item, ['includedView', 'viewId'], null)
-        : null;
-      openIncludedViewOnSelect = get(
-        layout,
-        ['includedView', 'openOnSelect'],
-        false
-      );
+      let isShowIncludedView;
+      let forceClose = false;
+      let includedWindowId;
+      let includedViewId;
+      let includedViewStateChanged;
+
+      // selection is empty, so we're closing the included view
+      if (selected.length === 0 && includedView.parentId === windowId) {
+        if (closeIncludedViewOnDeselected) {
+          isShowIncludedView = false;
+          forceClose = true;
+          includedWindowId = includedView.windowId;
+          includedViewId = includedView.viewId;
+          includedViewStateChanged = true;
+        } else {
+          includedViewStateChanged = false;
+        }
+      } else {
+        const itemId = selection[selection.length - 1];
+        const item = find(rows, (row) => row[keyProperty] === itemId);
+
+        isShowIncludedView = get(item, ['supportIncludedViews'], false);
+        includedWindowId = isShowIncludedView
+          ? get(item, ['includedView', 'windowId'], null)
+          : null;
+        includedViewId = isShowIncludedView
+          ? get(item, ['includedView', 'viewId'], null)
+          : null;
+
+        includedViewStateChanged = true;
+      }
+
+      if (includedViewStateChanged) {
+        dispatch(
+          showIncludedView({
+            id: windowId,
+            showIncludedView: isShowIncludedView,
+            forceClose,
+            windowId: includedWindowId,
+            viewId: includedViewId,
+            isModal,
+          })
+        );
+      }
     }
 
-    dispatch(
-      showIncludedView({
-        id: windowId,
-        showIncludedView: showIncluded,
-        forceClose,
-        windowId: includedWindowId,
-        viewId: includedViewId,
-        isModal,
-      })
-    );
     dispatch(fetchQuickActions({ windowId, viewId, isModal }));
 
     return Promise.resolve(openIncludedViewOnSelect);

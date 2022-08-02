@@ -79,4 +79,9 @@ public class BPartnerProduct
 	@Nullable
 	Boolean usedForVendor;
 
+	@Nullable
+	Boolean isExcludedFromPurchase;
+
+	@Nullable
+	String exclusionFromPurchaseReason;
 }

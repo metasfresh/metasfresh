@@ -1,0 +1,72 @@
+de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenConfigIds_whenStreamByConfigIds_thenReturnMatchingInstances=[
+  [
+    {
+      "id" : 100004,
+      "service" : {
+        "id" : 100003,
+        "externalSystemType" : "GRSSignum",
+        "serviceValue" : "grs_service_value",
+        "name" : "Name",
+        "description" : "Description",
+        "enableCommand" : "EnableCommand",
+        "disableCommand" : "DisableCommand"
+      },
+      "configId" : 100001,
+      "expectedStatus" : "INACTIVE"
+    }
+  ]
+]
+
+
+de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenInstanceRequest_whenCreate_thenCreateAndReturnInstance=[
+  {
+    "id" : 100003,
+    "service" : {
+      "id" : 100002,
+      "externalSystemType" : "GRSSignum",
+      "serviceValue" : "grs_service_value",
+      "name" : "Name",
+      "description" : "Description",
+      "enableCommand" : "EnableCommand",
+      "disableCommand" : "DisableCommand"
+    },
+    "configId" : 100001,
+    "expectedStatus" : "INACTIVE"
+  }
+]
+
+
+de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenInstance_whenUpdate_thenUpdateAndReturnInstance=[
+  {
+    "id" : 100003,
+    "service" : {
+      "id" : 100002,
+      "externalSystemType" : "GRSSignum",
+      "serviceValue" : "grs_service_value",
+      "name" : "Name",
+      "description" : "Description",
+      "enableCommand" : "EnableCommand",
+      "disableCommand" : "DisableCommand"
+    },
+    "configId" : 100001,
+    "expectedStatus" : "ACTIVE"
+  }
+]
+
+
+de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenValidIds_whenGetByConfigAndServiceId_thenReturnInstance=[
+  {
+    "id" : 100003,
+    "service" : {
+      "id" : 100002,
+      "externalSystemType" : "GRSSignum",
+      "serviceValue" : "grs_service_value",
+      "name" : "Name",
+      "description" : "Description",
+      "enableCommand" : "EnableCommand",
+      "disableCommand" : "DisableCommand"
+    },
+    "configId" : 100001,
+    "expectedStatus" : "INACTIVE"
+  }
+]

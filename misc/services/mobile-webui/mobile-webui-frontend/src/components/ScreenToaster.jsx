@@ -20,6 +20,7 @@ const ScreenToaster = () => {
   return (
     <Toaster
       position="bottom-center"
+      containerClassName="app-toaster"
       toastOptions={{
         success: {
           style: {

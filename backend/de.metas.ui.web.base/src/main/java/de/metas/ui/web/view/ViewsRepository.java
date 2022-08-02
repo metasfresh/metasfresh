@@ -74,6 +74,8 @@ public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
 
+	private static final String SYSCONFIG_ViewExpirationTimeoutInMinutes = "de.metas.ui.web.view.ViewExpirationTimeoutInMinutes";
+
 	private final ImmutableMap<ViewFactoryKey, IViewFactory> factories;
 	private final SqlViewFactory defaultFactory;
 	private final MenuTreeRepository menuTreeRepo;
@@ -105,7 +107,8 @@ public class ViewsRepository implements IViewsRepository
 		this.menuTreeRepo = menuTreeRepo;
 		this.websocketActiveSubscriptionsIndex = websocketActiveSubscriptionsIndex;
 
-		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.view.ViewExpirationTimeoutInMinutes", 60));
+		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ViewExpirationTimeoutInMinutes, 60));
+		logger.info("viewExpirationTimeout: {} (see `{}` sysconfig)", viewExpirationTimeout, SYSCONFIG_ViewExpirationTimeoutInMinutes);
 		defaultViewsIndexStorage = new DefaultViewsRepositoryStorage(viewExpirationTimeout);
 
 		async = createAsyncExecutor();
@@ -138,7 +141,7 @@ public class ViewsRepository implements IViewsRepository
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
-			final int no = DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
+			final int no = DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
 			logger.info("Deleted {} records(all) from table {} (Took: {})", no, tableName, stopwatch);
 		}
 		catch (final Exception ex)

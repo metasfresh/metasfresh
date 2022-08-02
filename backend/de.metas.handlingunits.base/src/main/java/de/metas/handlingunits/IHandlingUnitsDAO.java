@@ -170,7 +170,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	// Handling Unit PI Retrieval
 
-	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnitPI, final BPartnerId bpartnerId);
+	List<I_M_HU_PI_Item> retrievePIItems(@NonNull I_M_HU_PI handlingUnitPI, @Nullable BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
@@ -193,6 +193,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final I_M_HU_PI pi);
 
 	HuPackingInstructionsVersionId retrievePICurrentVersionId(final HuPackingInstructionsId piId);
+
+	I_M_HU_PI_Version retrievePICurrentVersion(HuPackingInstructionsId piId);
 
 	/**
 	 * @return current PI Version or null
@@ -221,6 +223,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
 
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull HuPackingInstructionsId packingInstructionsId,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId);
+
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
 	 */
@@ -246,6 +253,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, BPartnerId bpartnerId);
+
+	I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(@NonNull HuPackingInstructionsVersionId versionId, @Nullable BPartnerId bpartnerId);
 
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
 
