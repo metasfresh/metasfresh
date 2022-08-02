@@ -1,10 +1,13 @@
 package de.metas.invoice.process;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -36,9 +39,9 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import static de.metas.invoice.process.XmlToPdfConverter.stringToPdfTransformer;
 
 /*
  * #%L
@@ -105,7 +108,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 				.tagSetToTrue(AttachmentTags.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF)
 				.build();
 
-		final List<AttachmentEntry> attachments = replaceXmlPdfAttachment(attachmentEntryService.getByQuery(attachmentQuery), invoiceId);
+		final List<AttachmentEntry> attachments = replaceXmlWithPdfAttachment(attachmentEntryService.getByQuery(attachmentQuery), invoiceId);
 
 		final ImmutableList<PdfDataProvider> additionalPdfData = attachments.stream()
 				.map(AttachmentEntry::getId)
@@ -119,12 +122,12 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		return ExecuteReportResult.of(outputType, result);
 	}
 
-	private List<AttachmentEntry> replaceXmlPdfAttachment(final List<AttachmentEntry> attachments, final InvoiceId invoiceId)
+	private List<AttachmentEntry> replaceXmlWithPdfAttachment(final List<AttachmentEntry> sourceAttachments, final InvoiceId invoiceId)
 	{
 
-		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
+		final ImmutableList.Builder<AttachmentEntry> resultAttachments = ImmutableList.builder();
 
-		for (final AttachmentEntry attachment : attachments)
+		for (final AttachmentEntry attachment : sourceAttachments)
 		{
 			if (MimeType.TYPE_XML.equals(attachment.getMimeType()))
 			{
@@ -134,21 +137,37 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 					final String xml = new String(data, StandardCharsets.UTF_8);
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 					final AdTableId invoiceTable_ID = adTableDAO.retrieveAdTableId(I_C_Invoice.Table_Name);
-					final TableRecordReference tableRecordReference =TableRecordReference.of(invoiceTable_ID.getRepoId(), invoiceId.getRepoId());
-					result.add(attachmentEntryService.createNewAttachment(tableRecordReference, attachment.getName() + ".pdf", stringToPdfTransformer(xml)));
+					final TableRecordReference tableRecordReference = TableRecordReference.of(invoiceTable_ID.getRepoId(), invoiceId.getRepoId());
+					resultAttachments.add(attachmentEntryService.createNewAttachment(tableRecordReference, attachment.getName() + ".pdf", stringToPdfTransformer(xml)));
 				}
 				catch (ParserConfigurationException | IOException | DocumentException e)
 				{
 					throw new RuntimeException(e);
 				}
 			}
-			else
+			else if (MimeType.TYPE_PDF.equals(attachment.getMimeType()))
 			{
-				result.add(attachment);
+				resultAttachments.add(attachment);
 			}
-
 		}
-		return result.build();
+		return resultAttachments.build();
+	}
+
+	public static byte[] stringToPdfTransformer(final String string) throws ParserConfigurationException, IOException, DocumentException
+	{
+		final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+		final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+		final com.lowagie.text.Document pdfDocument = new com.lowagie.text.Document();
+		PdfWriter.getInstance(pdfDocument, byteArrayOutputStream);
+
+		pdfDocument.open();
+		pdfDocument.add(new Paragraph(string));
+		pdfDocument.close();
+
+		return byteArrayOutputStream.toByteArray();
 	}
 
 }
