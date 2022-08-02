@@ -243,9 +243,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: prepare
         run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
-      - name: run-junit-tests
-        env:
-          mysecret: ${{ secrets.TESTMO_TOKEN }}
+      - name: run-junit-tests-j8
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.junit \
@@ -255,9 +253,20 @@ jobs:
           --secret id=mysecret \
           -t metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           .
+      - name: run-junit-tests-j14
+        run: |
+          docker buildx build \
+          -f docker-builds/Dockerfile.camel.junit \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --secret id=mysecret \
+          -t metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          .
       - name: push-result-image
         run: |
           docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
+          docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
           docker logout
       - uses: testspace-com/setup-testspace@v1
         with:
@@ -267,6 +276,7 @@ jobs:
           runurl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           docker run --rm -v "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
+          docker run --rm -v "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;
 
   cucumber:

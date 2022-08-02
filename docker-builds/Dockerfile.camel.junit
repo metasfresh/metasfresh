@@ -1,0 +1,22 @@
+ARG REFNAME=local
+FROM metasfresh/metas-mvn-camel:$REFNAME as camel
+
+FROM maven:3.6.3-adoptopenjdk-14 as junit
+
+RUN apt-get update && apt-get install -y perl locales mmv && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
+ENV TZ=Europe/Berlin
+
+WORKDIR /java
+
+COPY --from=camel /root/.m2 /root/.m2/
+COPY --from=camel /camel camel
+
+RUN set -o pipefail && find -type f -name 'pom.xml' | xargs perl -i -p0e 's/<plugin>.*?maven-surefire-plugin.*?<\/plugin>//s'
+
+RUN cd /java/camel && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
+
+VOLUME /reports
+
+SHELL ["/bin/bash", "-c"]
+CMD set -o pipefail && cp /java/junit.log /reports/ && shopt -s globstar && find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p && mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml'
