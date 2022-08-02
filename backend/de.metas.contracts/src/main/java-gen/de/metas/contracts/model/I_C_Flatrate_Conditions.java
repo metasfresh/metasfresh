@@ -144,6 +144,31 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
+	 * Set Interim Invoice Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Interim_Invoice_Settings_ID (int C_Interim_Invoice_Settings_ID);
+
+	/**
+	 * Get Interim Invoice Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Interim_Invoice_Settings_ID();
+
+	@Nullable org.compiere.model.I_C_Interim_Invoice_Settings getC_Interim_Invoice_Settings();
+
+	void setC_Interim_Invoice_Settings(@Nullable org.compiere.model.I_C_Interim_Invoice_Settings C_Interim_Invoice_Settings);
+
+	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Interim_Invoice_Settings> COLUMN_C_Interim_Invoice_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Interim_Invoice_Settings_ID", org.compiere.model.I_C_Interim_Invoice_Settings.class);
+	String COLUMNNAME_C_Interim_Invoice_Settings_ID = "C_Interim_Invoice_Settings_ID";
+
+	/**
 	 * Set Basis für Verrechnungs-Zahlbetrag.
 	 * Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird.
 	 *
@@ -207,31 +232,6 @@ public interface I_C_Flatrate_Conditions
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_MediatedCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_MediatedCommissionSettings_ID", null);
 	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
-
-	/**
-	 * Set Prefinancing Settings.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Prefinancing_Settings_ID (int C_Prefinancing_Settings_ID);
-
-	/**
-	 * Get Prefinancing Settings.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Prefinancing_Settings_ID();
-
-	@Nullable org.compiere.model.I_C_Prefinancing_Settings getC_Prefinancing_Settings();
-
-	void setC_Prefinancing_Settings(@Nullable org.compiere.model.I_C_Prefinancing_Settings C_Prefinancing_Settings);
-
-	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Prefinancing_Settings> COLUMN_C_Prefinancing_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Prefinancing_Settings_ID", org.compiere.model.I_C_Prefinancing_Settings.class);
-	String COLUMNNAME_C_Prefinancing_Settings_ID = "C_Prefinancing_Settings_ID";
 
 	/**
 	 * Get Created.

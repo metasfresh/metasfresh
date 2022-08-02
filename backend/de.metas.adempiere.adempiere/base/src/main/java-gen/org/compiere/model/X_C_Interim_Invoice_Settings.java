@@ -5,23 +5,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for C_Prefinancing_Settings
+/** Generated Model for C_Interim_Invoice_Settings
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_Prefinancing_Settings extends org.compiere.model.PO implements I_C_Prefinancing_Settings, org.compiere.model.I_Persistent 
+public class X_C_Interim_Invoice_Settings extends org.compiere.model.PO implements I_C_Interim_Invoice_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -139548739L;
+	private static final long serialVersionUID = -468973685L;
 
     /** Standard Constructor */
-    public X_C_Prefinancing_Settings (final Properties ctx, final int C_Prefinancing_Settings_ID, @Nullable final String trxName)
+    public X_C_Interim_Invoice_Settings (final Properties ctx, final int C_Interim_Invoice_Settings_ID, @Nullable final String trxName)
     {
-      super (ctx, C_Prefinancing_Settings_ID, trxName);
+      super (ctx, C_Interim_Invoice_Settings_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_Prefinancing_Settings (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_Interim_Invoice_Settings (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -62,18 +62,18 @@ public class X_C_Prefinancing_Settings extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_Prefinancing_Settings_ID (final int C_Prefinancing_Settings_ID)
+	public void setC_Interim_Invoice_Settings_ID (final int C_Interim_Invoice_Settings_ID)
 	{
-		if (C_Prefinancing_Settings_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Prefinancing_Settings_ID, null);
+		if (C_Interim_Invoice_Settings_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Interim_Invoice_Settings_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Prefinancing_Settings_ID, C_Prefinancing_Settings_ID);
+			set_ValueNoCheck (COLUMNNAME_C_Interim_Invoice_Settings_ID, C_Interim_Invoice_Settings_ID);
 	}
 
 	@Override
-	public int getC_Prefinancing_Settings_ID() 
+	public int getC_Interim_Invoice_Settings_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Prefinancing_Settings_ID);
+		return get_ValueAsInt(COLUMNNAME_C_Interim_Invoice_Settings_ID);
 	}
 
 	@Override
