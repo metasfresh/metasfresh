@@ -35,7 +35,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_PartialPayment_Overview_Line;
+import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -48,11 +48,11 @@ public class InterimInvoiceOverviewLineDAO implements IInterimInvoiceOverviewLin
 	@Nullable
 	public InterimInvoiceOverviewLine getById(@NonNull final InterimInvoiceOverviewLineId id)
 	{
-		return queryBL.createQueryBuilder(I_C_PartialPayment_Overview_Line.class)
+		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm_Line.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PartialPayment_Overview_Line.COLUMNNAME_C_PartialPayment_Overview_Line_ID, id)
+				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_C_InterimInvoice_FlatrateTerm_Line_ID, id)
 				.create()
-				.firstOptional(I_C_PartialPayment_Overview_Line.class)
+				.firstOptional(I_C_InterimInvoice_FlatrateTerm_Line.class)
 				.map(this::fromDbObject)
 				.orElse(null);
 	}
@@ -62,21 +62,21 @@ public class InterimInvoiceOverviewLineDAO implements IInterimInvoiceOverviewLin
 		InterfaceWrapperHelper.save(toDbObject(interimInvoiceOverviewLine));
 	}
 
-	private InterimInvoiceOverviewLine fromDbObject(@NonNull final I_C_PartialPayment_Overview_Line dbObject)
+	private InterimInvoiceOverviewLine fromDbObject(@NonNull final I_C_InterimInvoice_FlatrateTerm_Line dbObject)
 	{
 		return InterimInvoiceOverviewLine.builder()
-				.id(InterimInvoiceOverviewLineId.ofRepoId(dbObject.getC_PartialPayment_Overview_ID()))
+				.id(InterimInvoiceOverviewLineId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_Line_ID()))
+				.interimInvoiceOverviewId(InterimInvoiceOverviewId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_ID()))
 				.inOutAndLineId(InOutAndLineId.ofRepoId(dbObject.getM_InOut_ID(), dbObject.getM_InOutLine_ID()))
-				.interimInvoiceOverviewId(InterimInvoiceOverviewId.ofRepoId(dbObject.getC_PartialPayment_Overview_ID()))
 				.invoiceLineId(InvoiceLineId.ofRepoId(dbObject.getC_Invoice_ID(), dbObject.getC_InvoiceLine_ID()))
 				.build();
 	}
 
-	private I_C_PartialPayment_Overview_Line toDbObject(@NonNull final InterimInvoiceOverviewLine object)
+	private I_C_InterimInvoice_FlatrateTerm_Line toDbObject(@NonNull final InterimInvoiceOverviewLine object)
 	{
-		final I_C_PartialPayment_Overview_Line dbObject = InterfaceWrapperHelper.loadOrNew(object.getId(), I_C_PartialPayment_Overview_Line.class);
+		final I_C_InterimInvoice_FlatrateTerm_Line dbObject = InterfaceWrapperHelper.loadOrNew(object.getId(), I_C_InterimInvoice_FlatrateTerm_Line.class);
 
-		dbObject.setC_PartialPayment_Overview_ID(object.getInterimInvoiceOverviewId().getRepoId());
+		dbObject.setC_InterimInvoice_FlatrateTerm_ID(object.getInterimInvoiceOverviewId().getRepoId());
 
 		final InvoiceLineId invoiceLineId = object.getInvoiceLineId();
 		if (invoiceLineId != null)

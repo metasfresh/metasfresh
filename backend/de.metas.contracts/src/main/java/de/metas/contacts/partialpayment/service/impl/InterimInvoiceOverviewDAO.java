@@ -22,12 +22,11 @@
 
 package de.metas.contacts.partialpayment.service.impl;
 
-import de.metas.calendar.CalendarId;
 import de.metas.contacts.partialpayment.InterimInvoiceOverview;
 import de.metas.contacts.partialpayment.InterimInvoiceOverviewId;
 import de.metas.contacts.partialpayment.service.IInterimInvoiceOverviewDAO;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.model.I_C_PartialPayment_Overview;
+import de.metas.contracts.model.I_C_InterimInvoice_FlatrateTerm;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -48,11 +47,11 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 	@Nullable
 	public InterimInvoiceOverview getById(@NonNull final InterimInvoiceOverviewId id)
 	{
-		return queryBL.createQueryBuilder(I_C_PartialPayment_Overview.class)
+		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PartialPayment_Overview.COLUMNNAME_C_PartialPayment_Overview_ID, id)
+				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Interim_Invoice_Candidate_ID, id)
 				.create()
-				.firstOptional(I_C_PartialPayment_Overview.class)
+				.firstOptional(I_C_InterimInvoice_FlatrateTerm.class)
 				.map(this::fromDbObject)
 				.orElse(null);
 	}
@@ -62,39 +61,35 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 		InterfaceWrapperHelper.save(toDbObject(interimInvoiceOverview));
 	}
 
-	private InterimInvoiceOverview fromDbObject(@NonNull final I_C_PartialPayment_Overview dbObject)
+	private InterimInvoiceOverview fromDbObject(@NonNull final I_C_InterimInvoice_FlatrateTerm dbObject)
 	{
 		return InterimInvoiceOverview.builder()
-				.id(InterimInvoiceOverviewId.ofRepoId(dbObject.getC_PartialPayment_Overview_ID()))
+				.id(InterimInvoiceOverviewId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_ID()))
 				.flatrateTermId(FlatrateTermId.ofRepoId(dbObject.getC_FlatrateTerm_ID()))
 				.orderLineId(OrderLineId.ofRepoId(dbObject.getC_OrderLine_ID()))
 				.withholdingInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_Invoice_Candidate_Withholding_ID()))
-				.partialPaymentInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_PartialPayment_Overview_ID()))
+				.partialPaymentInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_Interim_Invoice_Candidate_ID()))
 				.uomId(UomId.ofRepoIdOrNull(dbObject.getC_UOM_ID()))
 				.currencyId(CurrencyId.ofRepoIdOrNull(dbObject.getC_Currency_ID()))
-				.calendarId(CalendarId.ofRepoIdOrNull(dbObject.getC_Calendar_ID()))
 				.qtyOrdered(dbObject.getQtyOrdered())
 				.qtyDelivered(dbObject.getQtyDeliveredInUOM())
 				.qtyInvoiced(dbObject.getQtyInvoiced())
 				.build();
 	}
 
-	private I_C_PartialPayment_Overview toDbObject(@NonNull final InterimInvoiceOverview object)
+	private I_C_InterimInvoice_FlatrateTerm toDbObject(@NonNull final InterimInvoiceOverview object)
 	{
-		final I_C_PartialPayment_Overview dbObject = InterfaceWrapperHelper.loadOrNew(object.getId(), I_C_PartialPayment_Overview.class);
+		final I_C_InterimInvoice_FlatrateTerm dbObject = InterfaceWrapperHelper.loadOrNew(object.getId(), I_C_InterimInvoice_FlatrateTerm.class);
 		dbObject.setC_FlatrateTerm_ID(object.getFlatrateTermId().getRepoId());
 		dbObject.setC_OrderLine_ID(object.getOrderLineId().getRepoId());
 		dbObject.setC_Invoice_Candidate_Withholding_ID(InvoiceCandidateId.toRepoId(object.getWithholdingInvoiceCandidateId()));
-		dbObject.setC_PartialPayment_Overview_ID(InvoiceCandidateId.toRepoId(object.getPartialPaymentInvoiceCandidateId()));
+		dbObject.setC_Interim_Invoice_Candidate_ID(InvoiceCandidateId.toRepoId(object.getPartialPaymentInvoiceCandidateId()));
 		dbObject.setC_UOM_ID(UomId.toRepoId(object.getUomId()));
 		dbObject.setC_Currency_ID(CurrencyId.toRepoId(object.getCurrencyId()));
-		dbObject.setC_Calendar_ID(CalendarId.toRepoId(object.getCalendarId()));
 		dbObject.setQtyOrdered(object.getQtyOrdered());
 		dbObject.setQtyDeliveredInUOM(object.getQtyDelivered());
 		dbObject.setQtyInvoiced(object.getQtyInvoiced());
 		return dbObject;
 	}
-
-
 
 }
