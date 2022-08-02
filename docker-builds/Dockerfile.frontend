@@ -1,4 +1,4 @@
-FROM node:17 as build
+FROM node:17.9.1 as build
 
 RUN npm install -g webpack webpack-cli
 
@@ -13,7 +13,7 @@ RUN yarn install
 
 COPY frontend/ .
 RUN yarn lint
-RUN yarn test --ci
+RUN yarn test --ci --runInBand --verbose
 RUN webpack --config webpack.docker.js
 
 
