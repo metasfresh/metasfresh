@@ -85,6 +85,8 @@ jobs:
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.mobile \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
           -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
           -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -100,8 +102,6 @@ jobs:
           docker buildx build \
           -f docker-builds/Dockerfile.frontend \
           --target testresults \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           -t metas-frontend:testresults \
           .
           docker cp "$(docker create --name temp metas-frontend:testresults):/results" . && docker rm temp
