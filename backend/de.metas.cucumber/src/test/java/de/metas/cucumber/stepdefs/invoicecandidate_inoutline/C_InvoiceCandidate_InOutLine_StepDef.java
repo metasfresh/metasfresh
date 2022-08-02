@@ -87,20 +87,24 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, shipmentLine.getM_InOutLine_ID());
 		}
 
-		final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine = queryBuilder.create()
-				.firstNotNull(I_C_InvoiceCandidate_InOutLine.class);
-
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered);
 		if (qtyDelivered != null)
 		{
-			if (invoiceCandidateInOutLine.getQtyDelivered().equals(qtyDelivered))
-			{
-				final String invoiceCandidateInOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_InvoiceCandidate_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-				invoiceCandInOuLineTable.putOrReplace(invoiceCandidateInOutLineIdentifier, invoiceCandidateInOutLine);
-
-				return true;
-			}
+			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered, qtyDelivered);
 		}
-		return false;
+
+
+		final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine = queryBuilder.create()
+				.firstOnly(I_C_InvoiceCandidate_InOutLine.class);
+
+		if (invoiceCandidateInOutLine == null)
+		{
+			return false;
+		}
+
+		final String invoiceCandidateInOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_InvoiceCandidate_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceCandInOuLineTable.putOrReplace(invoiceCandidateInOutLineIdentifier, invoiceCandidateInOutLine);
+
+		return true;
 	}
 }
