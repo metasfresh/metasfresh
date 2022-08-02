@@ -155,7 +155,7 @@ public class OrderBOMLineQuantities
 			if (!request.isUsageVariance())
 			{
 				final Quantity qtyIssuedOrReceivedActualNew = getQtyIssuedOrReceivedActual().add(request.getQtyIssuedOrReceivedToAdd());
-				assertQtyToIssueToleranceIsRespected(qtyIssuedOrReceivedActualNew, false);
+				assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActualNew);
 
 				builder.qtyIssuedOrReceivedActual(qtyIssuedOrReceivedActualNew);
 			}
@@ -197,25 +197,29 @@ public class OrderBOMLineQuantities
 
 	public void assertQtyToIssueToleranceIsRespected()
 	{
-		assertQtyToIssueToleranceIsRespected(qtyIssuedOrReceivedActual, true);
+		assertQtyToIssueToleranceIsRespected_LowerBound(qtyIssuedOrReceivedActual);
+		assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActual);
 	}
 
-	private void assertQtyToIssueToleranceIsRespected(
-			final Quantity qtyIssuedOrReceivedActual,
-			final boolean checkLowerBound)
+	private void assertQtyToIssueToleranceIsRespected_LowerBound(final Quantity qtyIssuedOrReceivedActual)
 	{
 		if (qtyToIssueTolerance == null)
 		{
 			return;
 		}
 
-		if (checkLowerBound)
+		final Quantity qtyIssuedOrReceivedActualMin = qtyRequired.subtract(qtyToIssueTolerance);
+		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMin) < 0)
 		{
-			final Quantity qtyIssuedOrReceivedActualMin = qtyRequired.subtract(qtyToIssueTolerance);
-			if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMin) < 0)
-			{
-				throw new AdempiereException("Cannot issue less than " + qtyIssuedOrReceivedActualMin + " (" + qtyRequired + " - " + qtyToIssueTolerance + ")");
-			}
+			throw new AdempiereException("Cannot issue less than " + qtyIssuedOrReceivedActualMin + " (" + qtyRequired + " - " + qtyToIssueTolerance + ")");
+		}
+	}
+
+	private void assertQtyToIssueToleranceIsRespected_UpperBound(final Quantity qtyIssuedOrReceivedActual)
+	{
+		if (qtyToIssueTolerance == null)
+		{
+			return;
 		}
 
 		final Quantity qtyIssuedOrReceivedActualMax = qtyRequired.add(qtyToIssueTolerance);
@@ -224,4 +228,5 @@ public class OrderBOMLineQuantities
 			throw new AdempiereException("Cannot issue more than " + qtyIssuedOrReceivedActualMax + " (" + qtyRequired + " + " + qtyToIssueTolerance + ")");
 		}
 	}
+
 }
