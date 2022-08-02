@@ -110,7 +110,7 @@ jobs:
           domain: metasfresh
       - name: push-results
         run: |
-          testspace [jest/frontend]/results/junit.xml \;
+          testspace "[jest/frontend]/results/junit.xml"
   backend:
     runs-on: ubuntu-latest
     needs: [init, java]
