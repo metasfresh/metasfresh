@@ -439,6 +439,29 @@ public interface I_C_BP_BankAccount
 	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
+	 * Set Bank.
+	 * Bank
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Bank_ID (int C_Bank_ID);
+
+	/**
+	 * Get Bank.
+	 * Bank
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Bank_ID();
+
+    /** Column name C_Bank_ID */
+    public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
+
+	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *

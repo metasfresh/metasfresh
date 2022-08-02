@@ -36,8 +36,10 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
+import de.metas.banking.payment.IPaymentString;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -47,6 +49,7 @@ import de.metas.util.Services;
 public class PaymentRequestBL implements IPaymentRequestBL
 {
 	private static final String DYNATTR_UpdatedFromPaymentRequest = PaymentRequestBL.class.getName() + "#UpdatedFromPaymentRequest";
+
 
 	@Override
 	public I_C_Payment_Request createNewFromTemplate(final I_C_Payment_Request request)
@@ -127,9 +130,10 @@ public class PaymentRequestBL implements IPaymentRequestBL
 	}
 
 	@Override
-	public I_C_Payment_Request createPaymentRequest(final I_C_Invoice invoice, final I_C_Payment_Request paymentRequestTemplate)
+	public I_C_Payment_Request createPaymentRequest(final I_C_Invoice invoice, final I_C_Payment_Request paymentRequestTemplate, final IPaymentString paymentString)
 	{
 		final I_C_Payment_Request requestForInvoice;
+
 		if (paymentRequestTemplate != null)
 		{
 			requestForInvoice = createNewFromTemplate(paymentRequestTemplate);
@@ -156,7 +160,27 @@ public class PaymentRequestBL implements IPaymentRequestBL
 
 		requestForInvoice.setC_Invoice(invoice);
 		InterfaceWrapperHelper.save(requestForInvoice);
+		
+		updateInvoiceForPaymentRequest(invoice, requestForInvoice, paymentString);
+
 		return requestForInvoice;
+	}
+
+	public void updateInvoiceForPaymentRequest(final I_C_Invoice invoice, final I_C_Payment_Request paymentRequest, final IPaymentString paymentString) 
+	{	
+		if (paymentString == null) {
+			return;
+		}
+		
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		
+		// UnstructuredMessage from PayementString -> invoice description 
+		if (paymentString.getUnstructuredMessage() != null && paymentString.getUnstructuredMessage() != "")
+		{
+			invoice.setDescription(paymentString.getUnstructuredMessage());
+		}
+		
+		invoiceDAO.save(invoice);			
 	}
 
 }

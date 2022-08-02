@@ -48,8 +48,9 @@ public interface IPaymentRequestBL extends ISingletonService
 	 *
 	 * @param invoice
 	 * @param paymentRequestTemplate payment request template (optional)
+	 * @param paymentString (optional)
 	 * @return newly created payment request (saved); never returns <code>null</code>
 	 */
-	I_C_Payment_Request createPaymentRequest(I_C_Invoice invoice, I_C_Payment_Request paymentRequestTemplate);
+	I_C_Payment_Request createPaymentRequest(I_C_Invoice invoice, I_C_Payment_Request paymentRequestTemplate, IPaymentString paymentString);
 
 }
