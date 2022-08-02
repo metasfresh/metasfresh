@@ -694,12 +694,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 					if(isInvalidQRReference(QRReference))
 					{
-						final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-						final ITranslatableString message = msgBL
-								.getTranslatableMsgText(ERR_SEPA_Export_InvalidReference,createInfo(line));
-
-						throw new AdempiereException(message);
+						throw new AdempiereException(ERR_SEPA_Export_InvalidReference,createInfo(line));
 					}
 
 					final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
