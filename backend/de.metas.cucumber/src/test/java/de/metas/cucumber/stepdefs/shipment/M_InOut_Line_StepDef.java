@@ -94,6 +94,12 @@ public class M_InOut_Line_StepDef
 				lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
 			}
 
+			final BigDecimal qualityDiscountPercent = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent);
+			if (qualityDiscountPercent != null)
+			{
+				lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent);
+			}
+
 			final I_M_InOutLine shipmentLineRecord = lineQueryBuilder
 					.create()
 					.firstOnlyNotNull(I_M_InOutLine.class);
