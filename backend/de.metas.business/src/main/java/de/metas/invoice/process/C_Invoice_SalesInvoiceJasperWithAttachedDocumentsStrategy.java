@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.lowagie.text.DocumentException;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -132,9 +133,8 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 					final byte[] data = attachmentEntryService.retrieveData(attachment.getId());
 					final String xml = new String(data, StandardCharsets.UTF_8);
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-					//final AdTableId invoiceTable_ID = adTableDAO.retrieveAdTableId(I_C_Invoice.Table_Name);
-					//final TableRecordReference tableRecordReference =TableRecordReference.of(invoiceTable_ID.getRepoId(), invoiceId.getRepoId());
-					final TableRecordReference tableRecordReference = TableRecordReference.of(318, 1000085);
+					final AdTableId invoiceTable_ID = adTableDAO.retrieveAdTableId(I_C_Invoice.Table_Name);
+					final TableRecordReference tableRecordReference =TableRecordReference.of(invoiceTable_ID.getRepoId(), invoiceId.getRepoId());
 					result.add(attachmentEntryService.createNewAttachment(tableRecordReference, attachment.getName() + ".pdf", stringToPdfTransformer(xml)));
 				}
 				catch (ParserConfigurationException | IOException | DocumentException e)
