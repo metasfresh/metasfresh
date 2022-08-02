@@ -203,7 +203,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		try
 		{
 			final I_C_Payment payment = createPayment(line);
-			line.setC_Payment(payment);
+			line.setC_Payment_ID(payment.getC_Payment_ID());
 			paySelectionDAO.save(line);
 
 		}
