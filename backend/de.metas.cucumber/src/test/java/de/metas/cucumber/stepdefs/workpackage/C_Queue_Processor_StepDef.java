@@ -68,10 +68,12 @@ public class C_Queue_Processor_StepDef
 
 			final Set<Integer> queueProcessorIds = queryBL.createQueryBuilder(I_C_Queue_Processor_Assign.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Queue_Processor_Assign.COLUMN_C_Queue_PackageProcessor_ID, packageProcessor.getC_Queue_PackageProcessor_ID())
+					.addEqualsFilter(I_C_Queue_Processor_Assign.COLUMNNAME_C_Queue_PackageProcessor_ID, packageProcessor.getC_Queue_PackageProcessor_ID())
+					.andCollect(I_C_Queue_Processor.COLUMNNAME_C_Queue_Processor_ID, I_C_Queue_Processor.class)
+					.addOnlyActiveRecordsFilter()
 					.create()
 					.stream()
-					.map(I_C_Queue_Processor_Assign::getC_Queue_Processor_ID)
+					.map(I_C_Queue_Processor::getC_Queue_Processor_ID)
 					.collect(ImmutableSet.toImmutableSet());
 
 			assertThat(queueProcessorIds.size()).isEqualTo(1);
