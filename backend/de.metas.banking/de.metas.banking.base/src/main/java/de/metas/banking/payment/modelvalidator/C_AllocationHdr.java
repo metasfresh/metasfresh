@@ -57,7 +57,7 @@ import de.metas.util.Services;
 @Interceptor(I_C_AllocationHdr.class)
 public class C_AllocationHdr
 {
-	public static final transient C_AllocationHdr instance = new C_AllocationHdr();
+	public static final C_AllocationHdr instance = new C_AllocationHdr();
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private C_AllocationHdr()
@@ -68,9 +68,8 @@ public class C_AllocationHdr
 	/**
 	 * After {@link I_C_AllocationHdr} was completed/reversed/voided/reactivated,
 	 * update all {@link I_C_PaySelectionLine}s which were not already processed and which are about the invoices from this allocation.
-	 *
-	 * @param allocationHdr
-	 * @task 08972
+	 * <p>
+	 * Task 08972
 	 */
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
@@ -137,7 +136,7 @@ public class C_AllocationHdr
 
 		//
 		// Retrieve all C_PaySelectionLines which are about invoices from our allocation and which are not already processed.
-		// The C_PaySelectionLines will be groupped by C_PaySelection_ID.
+		// The C_PaySelectionLines will be grouped by C_PaySelection_ID.
 		//@formatter:off
 		final Collection<List<I_C_PaySelectionLine>> paySelectionLinesGroups =
 				Services.get(IPaySelectionDAO.class)
@@ -157,11 +156,8 @@ public class C_AllocationHdr
 	 * Update all given pay selection lines.
 	 * <p>
 	 * NOTE: pay selection lines shall ALL be part of the same {@link I_C_PaySelection}.
-	 *
-	 * @param context
-	 * @param paySelectionLines
 	 */
-	private final void updatePaySelectionLines(final Collection<I_C_PaySelectionLine> paySelectionLines)
+	private void updatePaySelectionLines(final Collection<I_C_PaySelectionLine> paySelectionLines)
 	{
 		// shall not happen
 		if (paySelectionLines.isEmpty())
