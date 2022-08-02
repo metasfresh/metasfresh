@@ -246,15 +246,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			@NonNull final I_SEPA_Export sepaDocument,
 			@NonNull final OutputStream out)
 	{
-		try
-		{
-			final Document xmlDocument = createDocument(sepaDocument);
-			marshal(xmlDocument, out);
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException("Error while marshaling " + sepaDocument, e);
-		}
+
+		final Document xmlDocument = createDocument(sepaDocument);
+		marshal(xmlDocument, out);
+
 	}
 
 	@VisibleForTesting
