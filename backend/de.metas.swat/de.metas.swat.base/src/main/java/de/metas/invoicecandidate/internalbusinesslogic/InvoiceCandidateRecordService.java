@@ -9,7 +9,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.impl.InvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -69,7 +69,7 @@ public class InvoiceCandidateRecordService
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-	private final InvoiceCandDAO invoiceCandDAO = Services.get(InvoiceCandDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{

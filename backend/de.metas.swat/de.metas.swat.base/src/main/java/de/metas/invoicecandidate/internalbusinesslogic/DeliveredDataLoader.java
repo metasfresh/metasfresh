@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.impl.InvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.internalbusinesslogic.DeliveredData.DeliveredDataBuilder;
 import de.metas.invoicecandidate.internalbusinesslogic.DeliveredQtyItem.DeliveredQtyItemBuilder;
 import de.metas.invoicecandidate.internalbusinesslogic.ShipmentData.ShipmentDataBuilder;
@@ -72,7 +72,7 @@ public class DeliveredDataLoader
 	Optional<Percent> deliveryQualityDiscount;
 
 	@NonNull
-	InvoiceCandDAO invoiceCandDAO;
+	IInvoiceCandDAO invoiceCandDAO;
 
 	/**
 	 * This can be set from the {@code C_Invoice_Candidate}'s current qtyDelivered and
@@ -94,7 +94,7 @@ public class DeliveredDataLoader
 			@NonNull final SOTrx soTrx,
 			@NonNull final Boolean negateQtys,
 			@NonNull final Optional<Percent> deliveryQualityDiscount,
-			@NonNull final InvoiceCandDAO invoiceCandDAO,
+			@NonNull final IInvoiceCandDAO invoiceCandDAO,
 			@Nullable final StockQtyAndUOMQty defaultQtyDelivered)
 	{
 		this.stockUomId = stockUomId;

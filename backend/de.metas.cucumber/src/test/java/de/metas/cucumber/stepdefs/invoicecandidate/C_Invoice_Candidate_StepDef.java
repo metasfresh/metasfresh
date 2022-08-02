@@ -378,7 +378,7 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(30, 500, () -> isInvoiceCandidateUpdated(row));
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(30, 1000, () -> isInvoiceCandidateUpdated(row));
 
 			final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 			assertThat(invoiceCandidate.getQtyToInvoice()).isEqualTo(qtyToInvoice);
@@ -880,8 +880,6 @@ public class C_Invoice_Candidate_StepDef
 	{
 		final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
-
-		InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
 
 		if (invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
