@@ -8,4 +8,5 @@ COPY --from=common /root/.m2 /root/.m2/
 WORKDIR /camel
 COPY misc/services/camel .
 
-RUN mvn clean install -Dmaven.gitcommitid.skip=true -Djib.skip=true -DskipTests
+RUN mvn de.qaware.maven:go-offline-maven-plugin:1.2.8:resolve-dependencies
+RUN mvn clean install -o -Dmaven.gitcommitid.skip=true -Djib.skip=true -DskipTests

@@ -1,24 +1,28 @@
-FROM node:17 as build
+FROM node:17.9.1 as build
 
 RUN npm install -g webpack webpack-cli
 
-WORKDIR /app 
-COPY frontend/package.json .
-# COPY yarn.lock .
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
+ENV TZ=Europe/Berlin
 
+WORKDIR /app 
+
+COPY frontend/package.json frontend/yarn.lock .
 RUN yarn install
 
 COPY frontend/ .
-
 RUN yarn lint
-# RUN yarn test --ci
+RUN yarn test --ci --runInBand
 RUN webpack --config webpack.docker.js
 
 
+FROM alpine as testresults
+WORKDIR /results
+COPY --from=build /app/junit.xml .
+
+
 FROM nginx:1.21.6 as runtime
-
-COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
-
 WORKDIR /usr/share/nginx/html
-
+COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 COPY --from=build /app/dist/ .

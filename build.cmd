@@ -21,6 +21,7 @@ docker build -f docker-builds/Dockerfile.backend -t %mfregistry%/metas-mvn-backe
 docker build -f docker-builds/Dockerfile.camel -t %mfregistry%/metas-mvn-camel:%mfversion% . || @goto error
 
 docker build -f docker-builds/Dockerfile.junit -t %mfregistry%/metas-junit:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.junit -t %mfregistry%/metas-camel-junit:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.cucumber -t %mfregistry%/metas-cucumber:%mfversion% . || @goto error
 
 
