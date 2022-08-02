@@ -439,29 +439,6 @@ public interface I_C_BP_BankAccount
 	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
-	 * Set Bank.
-	 * Bank
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Bank_ID (int C_Bank_ID);
-
-	/**
-	 * Get Bank.
-	 * Bank
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Bank_ID();
-
-    /** Column name C_Bank_ID */
-    public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
-
-	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *
@@ -932,29 +909,6 @@ public interface I_C_BP_BankAccount
 
 	ModelColumn<I_C_BP_BankAccount, Object> COLUMN_RoutingNo = new ModelColumn<>(I_C_BP_BankAccount.class, "RoutingNo", null);
 	String COLUMNNAME_RoutingNo = "RoutingNo";
-
-	/**
-	 * Set Swift code.
-	 * Swift Code or BIC
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSwiftCode (@Nullable java.lang.String SwiftCode);
-
-	/**
-	 * Get Swift code.
-	 * Swift Code or BIC
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSwiftCode();
-
-	ModelColumn<I_C_BP_BankAccount, Object> COLUMN_SwiftCode = new ModelColumn<>(I_C_BP_BankAccount.class, "SwiftCode", null);
-	String COLUMNNAME_SwiftCode = "SwiftCode";
 
 	/**
 	 * Set SEPA Creditor Identifier.
