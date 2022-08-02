@@ -136,7 +136,11 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 					final AdTableId invoiceTable_ID = adTableDAO.retrieveAdTableId(I_C_Invoice.Table_Name);
 					final TableRecordReference tableRecordReference = TableRecordReference.of(invoiceTable_ID.getRepoId(), invoiceId.getRepoId());
-					if (attachmentEntryService.getByFilenameOrNull(tableRecordReference, attachment.getName() + ".pdf") == null)
+					if (attachmentEntryService.getByFilenameOrNull(tableRecordReference, attachment.getName() + ".pdf") != null)
+					{
+						resultAttachments.add(attachmentEntryService.getByFilenameOrNull(tableRecordReference, attachment.getName() + ".pdf"));
+					}
+					else
 					{
 						final byte[] data = attachmentEntryService.retrieveData(attachment.getId());
 						final String xml = new String(data, StandardCharsets.UTF_8);
