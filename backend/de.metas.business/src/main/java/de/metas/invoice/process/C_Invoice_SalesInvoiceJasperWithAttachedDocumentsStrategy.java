@@ -133,14 +133,17 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 			{
 				try
 				{
-					final byte[] data = attachmentEntryService.retrieveData(attachment.getId());
-					final String xml = new String(data, StandardCharsets.UTF_8);
 					final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 					final AdTableId invoiceTable_ID = adTableDAO.retrieveAdTableId(I_C_Invoice.Table_Name);
 					final TableRecordReference tableRecordReference = TableRecordReference.of(invoiceTable_ID.getRepoId(), invoiceId.getRepoId());
-					resultAttachments.add(attachmentEntryService.createNewAttachment(tableRecordReference, attachment.getName() + ".pdf", stringToPdfTransformer(xml)));
+					if (attachmentEntryService.getByFilenameOrNull(tableRecordReference, attachment.getName() + ".pdf") == null)
+					{
+						final byte[] data = attachmentEntryService.retrieveData(attachment.getId());
+						final String xml = new String(data, StandardCharsets.UTF_8);
+						resultAttachments.add(attachmentEntryService.createNewAttachment(tableRecordReference, attachment.getName() + ".pdf", stringToPdfTransformer(xml)));
+					}
 				}
-				catch (ParserConfigurationException | IOException | DocumentException e)
+				catch (final ParserConfigurationException | IOException | DocumentException e)
 				{
 					throw new RuntimeException(e);
 				}
