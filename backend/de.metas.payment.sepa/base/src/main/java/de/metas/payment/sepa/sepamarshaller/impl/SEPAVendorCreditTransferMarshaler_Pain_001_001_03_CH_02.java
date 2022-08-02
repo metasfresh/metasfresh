@@ -697,8 +697,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 						final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 						final ITranslatableString message = msgBL
-								.getTranslatableMsgText(ERR_SEPA_Export_InvalidReference,
-														createInfo(line));
+								.getTranslatableMsgText(ERR_SEPA_Export_InvalidReference,createInfo(line));
 
 						throw new AdempiereException(message);
 					}
