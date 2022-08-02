@@ -85,8 +85,6 @@ jobs:
         run: |
           docker buildx build \
           -f docker-builds/Dockerfile.mobile \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
           -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
           -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
