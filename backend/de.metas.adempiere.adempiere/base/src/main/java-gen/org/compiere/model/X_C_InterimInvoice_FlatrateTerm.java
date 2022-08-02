@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_InterimInvoice_FlatrateTerm extends org.compiere.model.PO implements I_C_InterimInvoice_FlatrateTerm, org.compiere.model.I_Persistent 
+public class X_C_InterimInvoice_FlatrateTerm extends org.compiere.model.PO implements I_C_InterimInvoice_FlatrateTerm, org.compiere.model.I_Persistent
 {
 
 	private static final long serialVersionUID = -162909973L;
@@ -53,14 +53,14 @@ public class X_C_InterimInvoice_FlatrateTerm extends org.compiere.model.PO imple
 	@Override
 	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
 	{
-		if (C_Flatrate_Term_ID < 1) 
+		if (C_Flatrate_Term_ID < 1)
 			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
 	}
 
 	@Override
-	public int getC_Flatrate_Term_ID() 
+	public int getC_Flatrate_Term_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
@@ -68,14 +68,14 @@ public class X_C_InterimInvoice_FlatrateTerm extends org.compiere.model.PO imple
 	@Override
 	public void setC_Interim_Invoice_Candidate_ID (final int C_Interim_Invoice_Candidate_ID)
 	{
-		if (C_Interim_Invoice_Candidate_ID < 1) 
+		if (C_Interim_Invoice_Candidate_ID < 1)
 			set_Value (COLUMNNAME_C_Interim_Invoice_Candidate_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Interim_Invoice_Candidate_ID, C_Interim_Invoice_Candidate_ID);
 	}
 
 	@Override
-	public int getC_Interim_Invoice_Candidate_ID() 
+	public int getC_Interim_Invoice_Candidate_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Interim_Invoice_Candidate_ID);
 	}
@@ -83,14 +83,14 @@ public class X_C_InterimInvoice_FlatrateTerm extends org.compiere.model.PO imple
 	@Override
 	public void setC_InterimInvoice_FlatrateTerm_ID (final int C_InterimInvoice_FlatrateTerm_ID)
 	{
-		if (C_InterimInvoice_FlatrateTerm_ID < 1) 
+		if (C_InterimInvoice_FlatrateTerm_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, null);
 		else 
 			set_ValueNoCheck (COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, C_InterimInvoice_FlatrateTerm_ID);
 	}
 
 	@Override
-	public int getC_InterimInvoice_FlatrateTerm_ID() 
+	public int getC_InterimInvoice_FlatrateTerm_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID);
 	}
@@ -214,7 +214,7 @@ public class X_C_InterimInvoice_FlatrateTerm extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public BigDecimal getQtyDeliveredInUOM() 
+	public BigDecimal getQtyDeliveredInUOM()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
