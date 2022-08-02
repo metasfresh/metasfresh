@@ -27,9 +27,12 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -47,6 +50,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -73,6 +77,9 @@ public class C_OrderLine_StepDef
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final M_Warehouse_StepDefData warehouseTable;
+	private final IdentifierIds_StepDefData identifierIdsTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -80,7 +87,10 @@ public class C_OrderLine_StepDef
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
-			@NonNull final C_Flatrate_Term_StepDefData contractTable)
+			@NonNull final C_Flatrate_Term_StepDefData contractTable,
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final IdentifierIds_StepDefData identifierIdsTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
@@ -88,6 +98,9 @@ public class C_OrderLine_StepDef
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.flatrateConditionsTable = flatrateConditionsTable;
 		this.contractTable = contractTable;
+		this.huPiItemProductTable = huPiItemProductTable;
+		this.warehouseTable = warehouseTable;
+		this.identifierIdsTable = identifierIdsTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -96,7 +109,7 @@ public class C_OrderLine_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+			final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
 			orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + ".Identifier");
@@ -122,6 +135,34 @@ public class C_OrderLine_StepDef
 			{
 				final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
 				orderLine.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
+			}
+
+			final String itemProductIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (Check.isNotBlank(itemProductIdentifier))
+			{
+				final String itemProductIdentifierValue = DataTableUtil.nullToken2Null(itemProductIdentifier);
+				if (itemProductIdentifierValue == null)
+				{
+					orderLine.setM_HU_PI_Item_Product_ID(-1);
+				}
+				else
+				{
+					final Integer huPiItemProductRecordID = huPiItemProductTable.getOptional(itemProductIdentifier)
+							.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+							.orElseGet(() -> Integer.parseInt(itemProductIdentifier));
+
+					orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductRecordID);
+				}
+			}
+
+			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(warehouseIdentifier))
+			{
+				final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+				assertThat(warehouse).isNotNull();
+
+				orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 			}
 
 			saveRecord(orderLine);
@@ -257,6 +298,16 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	@And("^delete C_OrderLine identified by (.*), but keep its id into identifierIds table$")
+	public void delete_orderLine(@NonNull final String orderLineIdentifier)
+	{
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+		assertThat(orderLine).isNotNull();
+
+		identifierIdsTable.put(orderLineIdentifier, orderLine.getC_OrderLine_ID());
+		InterfaceWrapperHelper.delete(orderLine);
+	}
+
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "C_Order_ID.Identifier");
@@ -294,14 +345,14 @@ public class C_OrderLine_StepDef
 		}
 
 		final String x12de355StockCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		if(Check.isNotBlank(x12de355StockCode))
+		if (Check.isNotBlank(x12de355StockCode))
 		{
 			final UomId stockUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355StockCode));
 			assertThat(orderLine.getC_UOM_ID()).isEqualTo(stockUomId.getRepoId());
 		}
 
 		final String x12de355PriceCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_Price_UOM_ID + "." + X12DE355.class.getSimpleName());
-		if(Check.isNotBlank(x12de355PriceCode))
+		if (Check.isNotBlank(x12de355PriceCode))
 		{
 			final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355PriceCode));
 			assertThat(orderLine.getPrice_UOM_ID()).isEqualTo(productPriceUomId.getRepoId());

@@ -27,6 +27,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.discount.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
@@ -45,6 +46,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.util.Env;
 
@@ -70,6 +72,7 @@ public class C_BPartner_StepDef
 
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final M_PricingSystem_StepDefData pricingSystemTable;
+	private final M_DiscountSchema_StepDefData discountSchemaTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -78,10 +81,12 @@ public class C_BPartner_StepDef
 
 	public C_BPartner_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
+			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.pricingSystemTable = pricingSystemTable;
+		this.discountSchemaTable = discountSchemaTable;
 	}
 
 	@Given("metasfresh contains C_BPartners:")
@@ -171,6 +176,15 @@ public class C_BPartner_StepDef
 
 			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		}
+
+		final String discountSchemaIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(discountSchemaIdentifier))
+		{
+			final I_M_DiscountSchema discountSchema = discountSchemaTable.get(discountSchemaIdentifier);
+			assertThat(discountSchema).isNotNull();
+
+			bPartnerRecord.setPO_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
 		}
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord);
