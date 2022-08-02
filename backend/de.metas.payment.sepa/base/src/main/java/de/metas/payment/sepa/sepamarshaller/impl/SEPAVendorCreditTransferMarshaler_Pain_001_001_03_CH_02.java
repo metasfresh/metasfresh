@@ -48,6 +48,8 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.DocumentType3Code;
@@ -144,6 +146,8 @@ import lombok.NonNull;
  */
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
+	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
+
 	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 
 	/**
@@ -695,7 +699,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 					if(isInvalidQRReference(QRReference))
 					{
-						throw new SepaMarshallerException("SEPA_ExportLine " + createInfo(line) + " has no valid QR Reference");
+						final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+						final ITranslatableString message = msgBL
+								.getTranslatableMsgText(ERR_SEPA_Export_InvalidReference,
+														createInfo(line));
+
+						throw new AdempiereException(message);
 					}
 
 					final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
