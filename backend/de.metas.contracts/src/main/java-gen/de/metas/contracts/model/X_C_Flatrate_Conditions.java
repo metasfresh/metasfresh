@@ -104,6 +104,33 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Interim_Invoice_Settings getC_Interim_Invoice_Settings()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Interim_Invoice_Settings_ID, org.compiere.model.I_C_Interim_Invoice_Settings.class);
+	}
+
+	@Override
+	public void setC_Interim_Invoice_Settings(final org.compiere.model.I_C_Interim_Invoice_Settings C_Interim_Invoice_Settings)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Interim_Invoice_Settings_ID, org.compiere.model.I_C_Interim_Invoice_Settings.class, C_Interim_Invoice_Settings);
+	}
+
+	@Override
+	public void setC_Interim_Invoice_Settings_ID (final int C_Interim_Invoice_Settings_ID)
+	{
+		if (C_Interim_Invoice_Settings_ID < 1)
+			set_Value (COLUMNNAME_C_Interim_Invoice_Settings_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Interim_Invoice_Settings_ID, C_Interim_Invoice_Settings_ID);
+	}
+
+	@Override
+	public int getC_Interim_Invoice_Settings_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Interim_Invoice_Settings_ID);
+	}
+
+	@Override
 	public void setC_HierarchyCommissionSettings_ID (final int C_HierarchyCommissionSettings_ID)
 	{
 		if (C_HierarchyCommissionSettings_ID < 1)
@@ -664,14 +691,16 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_Refund = "Refund";
 	/** Commission = Commission */
 	public static final String TYPE_CONDITIONS_Commission = "Commission";
-	/** Mediated commission = MediatedCommission */
-	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
 	/** MarginCommission = MarginCommission */
 	public static final String TYPE_CONDITIONS_MarginCommission = "MarginCommission";
+	/** Mediated commission = MediatedCommission */
+	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
 	/** LicenseFee = LicenseFee */
 	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
 	/** CallOrder = CallOrder */
 	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
+	/** InterimInvoice = InterimInvoice */
+	public static final String TYPE_CONDITIONS_InterimInvoice = "InterimInvoice";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{

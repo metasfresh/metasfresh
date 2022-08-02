@@ -35,6 +35,7 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.TabCallout;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Component;
@@ -52,6 +53,7 @@ public class M_CostRevaluation implements ITabCallout
 	public void postConstruct()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_M_CostRevaluation.Table_Name, getClass());
 	}
 
 	@Override

@@ -144,6 +144,31 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
+	 * Set Interim Invoice Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Interim_Invoice_Settings_ID (int C_Interim_Invoice_Settings_ID);
+
+	/**
+	 * Get Interim Invoice Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Interim_Invoice_Settings_ID();
+
+	@Nullable org.compiere.model.I_C_Interim_Invoice_Settings getC_Interim_Invoice_Settings();
+
+	void setC_Interim_Invoice_Settings(@Nullable org.compiere.model.I_C_Interim_Invoice_Settings C_Interim_Invoice_Settings);
+
+	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Interim_Invoice_Settings> COLUMN_C_Interim_Invoice_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Interim_Invoice_Settings_ID", org.compiere.model.I_C_Interim_Invoice_Settings.class);
+	String COLUMNNAME_C_Interim_Invoice_Settings_ID = "C_Interim_Invoice_Settings_ID";
+
+	/**
 	 * Set Hierarchy commission settings.
 	 *
 	 * <br>Type: TableDir
