@@ -13,7 +13,7 @@ RUN yarn install
 
 COPY frontend/ .
 RUN yarn lint
-RUN yarn test --ci --runInBand --verbose
+RUN yarn test --ci --runInBand --testPathIgnorePatterns=src/__tests__/actions/Actions.test.js
 RUN webpack --config webpack.docker.js
 
 
