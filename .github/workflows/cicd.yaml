@@ -102,6 +102,7 @@ jobs:
           docker buildx build \
           -f docker-builds/Dockerfile.frontend \
           --target testresults \
+          --cache-to type=inline \
           --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           -t metas-frontend:testresults \
           .
