@@ -12,11 +12,12 @@ WORKDIR /java
 COPY --from=camel /root/.m2 /root/.m2/
 COPY --from=camel /camel camel
 
+SHELL ["/bin/bash", "-c"]
+
 RUN set -o pipefail && find -type f -name 'pom.xml' | xargs perl -i -p0e 's/<plugin>.*?maven-surefire-plugin.*?<\/plugin>//s'
 
 RUN cd /java/camel && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
 
 VOLUME /reports
 
-SHELL ["/bin/bash", "-c"]
 CMD set -o pipefail && cp /java/junit.log /reports/ && shopt -s globstar && find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p && mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml'
