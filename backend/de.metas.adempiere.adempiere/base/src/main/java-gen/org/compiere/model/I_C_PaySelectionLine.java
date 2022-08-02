@@ -566,27 +566,6 @@ public interface I_C_PaySelectionLine
 	String COLUMNNAME_OpenAmt = "OpenAmt";
 
 	/**
-	 * Set Open Payment Allocation.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOpenPaymentAllocationForm (@Nullable java.lang.String OpenPaymentAllocationForm);
-
-	/**
-	 * Get Open Payment Allocation.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getOpenPaymentAllocationForm();
-
-	ModelColumn<I_C_PaySelectionLine, Object> COLUMN_OpenPaymentAllocationForm = new ModelColumn<>(I_C_PaySelectionLine.class, "OpenPaymentAllocationForm", null);
-	String COLUMNNAME_OpenPaymentAllocationForm = "OpenPaymentAllocationForm";
-
-	/**
 	 * Set Zahlungsbetrag.
 	 * Amount being paid
 	 *

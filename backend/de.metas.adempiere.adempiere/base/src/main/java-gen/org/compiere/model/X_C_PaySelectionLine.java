@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_PaySelectionLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1527060722L;
+	private static final long serialVersionUID = -207168288L;
 
     /** Standard Constructor */
     public X_C_PaySelectionLine (final Properties ctx, final int C_PaySelectionLine_ID, @Nullable final String trxName)
@@ -323,18 +323,6 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OpenAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setOpenPaymentAllocationForm (final @Nullable java.lang.String OpenPaymentAllocationForm)
-	{
-		set_Value (COLUMNNAME_OpenPaymentAllocationForm, OpenPaymentAllocationForm);
-	}
-
-	@Override
-	public java.lang.String getOpenPaymentAllocationForm() 
-	{
-		return get_ValueAsString(COLUMNNAME_OpenPaymentAllocationForm);
 	}
 
 	@Override
