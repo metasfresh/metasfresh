@@ -244,15 +244,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		return get_ValueAsString(COLUMNNAME_BPBankAcctUse);
 	}
 
-	/** 
-	 * BankAccountType AD_Reference_ID=216
-	 * Reference name: C_Bank Account Type
-	 */
-	public static final int BANKACCOUNTTYPE_AD_Reference_ID=216;
-	/** Girokonto = C */
-	public static final String BANKACCOUNTTYPE_Girokonto = "C";
-	/** Sparkonto = S */
-	public static final String BANKACCOUNTTYPE_Sparkonto = "S";
 	@Override
 	public void setC_Bank_ID (final int C_Bank_ID)
 	{
@@ -263,9 +254,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public java.lang.String getBankAccountType() 
+	public int getC_Bank_ID() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BankAccountType);
+		return get_ValueAsInt(COLUMNNAME_C_Bank_ID);
 	}
 
 	@Override
@@ -438,18 +429,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public java.lang.String getIBAN() 
 	{
 		return get_ValueAsString(COLUMNNAME_IBAN);
-	}
-
-	@Override
-	public void setSwiftCode (final @Nullable java.lang.String SwiftCode)
-	{
-		set_Value (COLUMNNAME_SwiftCode, SwiftCode);
-	}
-
-	@Override
-	public java.lang.String getSwiftCode()
-	{
-		return get_ValueAsString(COLUMNNAME_SwiftCode);
 	}
 
 	@Override
