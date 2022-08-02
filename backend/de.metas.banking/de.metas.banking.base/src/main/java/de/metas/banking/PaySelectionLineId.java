@@ -1,18 +1,8 @@
-package de.metas.banking.payment.paymentallocation.service;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.metas.allocation.api.PaymentAllocationId;
-import de.metas.util.OptionalDeferredException;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,16 +20,27 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class PaymentAllocationResult
-{
-	@NonNull ImmutableList<AllocationLineCandidate> candidates;
-	@NonNull OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck;
-	@NonNull ImmutableMap<PaymentAllocationId, AllocationLineCandidate> paymentAllocationIds;
+package de.metas.banking;
 
-	public boolean isOK()
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+public class PaySelectionLineId implements RepoIdAware
+{
+	PaySelectionId paySelectionId;
+	int repoId;
+
+	private PaySelectionLineId(@NonNull final PaySelectionId paySelectionId, final int repoId)
 	{
-		return fullyAllocatedCheck.isNoError();
+		this.paySelectionId = paySelectionId;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_PaySelectionLine_ID");
+	}
+
+	public static PaySelectionLineId ofRepoId(@NonNull final PaySelectionId paySelectionId, int paySelectionLineRepoId)
+	{
+		return new PaySelectionLineId(paySelectionId, paySelectionLineRepoId);
 	}
 }

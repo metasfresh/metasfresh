@@ -1,13 +1,5 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.time.LocalDate;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.money.CurrencyId;
@@ -16,15 +8,20 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Immutable allocation candidate.
  *
  * @author tsa
- *
  */
 @Value
-public final class AllocationLineCandidate
+public class AllocationLineCandidate
 {
 	public enum AllocationLineCandidateType
 	{
@@ -36,23 +33,23 @@ public final class AllocationLineCandidate
 		InboundPaymentToOutboundPayment, //
 	}
 
-	private final AllocationLineCandidateType type;
-	private final OrgId orgId;
-	private final BPartnerId bpartnerId;
+	AllocationLineCandidateType type;
+	OrgId orgId;
+	BPartnerId bpartnerId;
 
-	private final TableRecordReference payableDocumentRef;
-	private final TableRecordReference paymentDocumentRef;
+	TableRecordReference payableDocumentRef;
+	TableRecordReference paymentDocumentRef;
 
-	private final LocalDate dateTrx;
-	private final LocalDate dateAcct;
+	LocalDate dateTrx;
+	LocalDate dateAcct;
 
 	//
 	// Amounts
-	private final CurrencyId currencyId;
-	private final AllocationAmounts amounts;
-	private final Money payableOverUnderAmt;
-	private final Money paymentOverUnderAmt;
-	private final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+	CurrencyId currencyId;
+	AllocationAmounts amounts;
+	Money payableOverUnderAmt;
+	Money paymentOverUnderAmt;
+	InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
 	@Builder(toBuilder = true)
 	private AllocationLineCandidate(
