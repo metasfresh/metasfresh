@@ -152,7 +152,6 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 				attachments.remove(attachment);
 				attachments.add(newEntry);
 			}
-		}
-	}
+		}	}
 
 }
