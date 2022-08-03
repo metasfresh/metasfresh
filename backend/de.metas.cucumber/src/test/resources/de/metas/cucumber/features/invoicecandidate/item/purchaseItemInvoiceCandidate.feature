@@ -1,5 +1,4 @@
 @from:cucumber
-@itemsInvoiceCands
 Feature: Items invoice candidates
 
   Background:
