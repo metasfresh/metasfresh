@@ -19,11 +19,9 @@ Feature: Products invoice candidates
     And metasfresh contains C_BPartners:
       | Identifier    | Name        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | Endcustomer | N            | Y              | ps_1                          |
-      | endvendor_1   | Endvendor   | Y            | N              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
-      | l_2        | 0123456789011 | endvendor_1              | Y                   | Y                   |
 
   @Id:100
   @from:cucumber
