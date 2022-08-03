@@ -22,29 +22,39 @@ package de.metas.costrevaluation.process;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import de.metas.costrevaluation.impl.CostRevaluationId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_CostRevaluation;
 
 import java.util.Iterator;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
- * Process to create M_CostRevaluationLine records for products stocked based on accounting schmea and cost element of M_CostRevaluation
+ * Process to create M_CostRevaluationLine records for products stocked based on accounting schema and cost element of M_CostRevaluation
  */
 public class M_CostRevaluation_CreateLines_Process extends JavaProcess implements IProcessPrecondition
 {
-	private final  IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final CostRevaluationRepository costRevaluationRepo = SpringContextHolder.instance.getBean(CostRevaluationRepository.class);
-
+	private final ICurrentCostsRepository currentCostsRepo = SpringContextHolder.instance.getBean(ICurrentCostsRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -74,19 +84,18 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 	protected String doIt() throws Exception
 	{
 
-		final Iterator<I_M_Product> iterator = createProductIterator();
+		final ImmutableSet<ProductId>  products = fetchProducts();
 
-		if (!iterator.hasNext())
-		{
-			addLog("@NoSelection@");
-		}
+		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
+		final I_M_CostRevaluation costRevaluation = loadOutOfTrx(costRevaluationId, I_M_CostRevaluation.class);
+
+		if (products.isEmpty()) return "NoSelection@";
 
 		int counterProcessed = 0;
 
-		while (iterator.hasNext())
+		for (ProductId productId : products)
 		{
-			final I_M_Product product = iterator.next();
-			final boolean processed = true; // create revaluation line
+			final boolean processed = createCostRevaluationLineForProduct(costRevaluation, productId);
 			if (processed)
 			{
 				counterProcessed++;
@@ -96,19 +105,34 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 		return msgBL.getMsg(getCtx(), "msg", new Object[] { counterProcessed });
 	}
 
-
-	private Iterator<I_M_Product> createProductIterator()
+	private boolean createCostRevaluationLineForProduct(final @NonNull I_M_CostRevaluation costRevaluation , final @NonNull ProductId productId)
 	{
-		final IQueryBuilder<I_M_Product> queryBuilder = queryBL
+		final List<I_M_Cost> costs = fetchCostForProduct(costRevaluation, productId);
+
+		// for ()
+
+		return true;
+	}
+
+	private ImmutableSet<ProductId> fetchProducts()
+	{
+		return queryBL
 				.createQueryBuilder(I_M_Product.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true);
-
-		return queryBuilder
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
 				.orderBy().addColumn(I_M_Product.COLUMNNAME_Value)
 				.endOrderBy()
 				.create()
-				.iterate(I_M_Product.class);
+				.listIds(ProductId::ofRepoId);
+	}
+
+	private List<I_M_Cost> fetchCostForProduct(final @NonNull I_M_CostRevaluation costRevaluation, final @NonNull ProductId productId)
+	{
+		return currentCostsRepo.queryCostRecordsByProduct(productId)
+				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID.getColumnName(), costRevaluation.getC_AcctSchema_ID())
+				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID.getColumnName(), costRevaluation.getM_CostElement_ID())
+				.create()
+				.list()	;
 	}
 }

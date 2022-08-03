@@ -1,10 +1,14 @@
 package de.metas.costing;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import de.metas.product.ProductId;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
 
@@ -58,4 +62,6 @@ public interface ICurrentCostsRepository
 	List<CurrentCost> getByCostSegmentAndCostElements(CostSegment costSegment, Set<CostElementId> costElementIds);
 
 	void updateCostRecord(CostSegmentAndElement costSegmentAndElement, Consumer<I_M_Cost> updater);
+
+	IQueryBuilder<I_M_Cost> queryCostRecordsByProduct(final ProductId productId);
 }

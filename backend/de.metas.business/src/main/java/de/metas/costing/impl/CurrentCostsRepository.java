@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -423,4 +424,12 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		saveRecord(costRecord);
 	}
 
+	@Override
+	public IQueryBuilder<I_M_Cost> queryCostRecordsByProduct(final @NonNull ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_Cost.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Cost.COLUMN_M_Product_ID, productId);
+	}
 }
