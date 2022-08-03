@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1853595142L;
+	private static final long serialVersionUID = -639408032L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -1344,18 +1344,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsInterimInvoice (final boolean IsInterimInvoice)
-	{
-		set_Value (COLUMNNAME_IsInterimInvoice, IsInterimInvoice);
-	}
-
-	@Override
-	public boolean isInterimInvoice() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsInterimInvoice);
-	}
-
-	@Override
 	public void setIsInvoicingError (final boolean IsInvoicingError)
 	{
 		set_Value (COLUMNNAME_IsInvoicingError, IsInvoicingError);
@@ -1400,6 +1388,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isPackagingMaterial() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPackagingMaterial);
+	}
+
+	@Override
+	public void setIsPartialPayment (final boolean IsPartialPayment)
+	{
+		set_Value (COLUMNNAME_IsPartialPayment, IsPartialPayment);
+	}
+
+	@Override
+	public boolean isPartialPayment() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPartialPayment);
 	}
 
 	@Override
