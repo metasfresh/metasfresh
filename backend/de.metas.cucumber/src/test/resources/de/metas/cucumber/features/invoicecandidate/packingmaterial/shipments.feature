@@ -7,11 +7,13 @@ Feature: Packing material invoice candidates: shipments
     And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]
     And deactivate all M_ShipmentSchedule records
     And load C_Queue_PackageProcessor by classname:
-      | Classname                                                                        | C_Queue_PackageProcessor_ID.Identifier |
-      | de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor | updateInvalidShipmentSchedule          |
+      | Classname                                                                                   | C_Queue_PackageProcessor_ID.Identifier |
+      | de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor            | updateInvalidShipmentSchedule          |
+      | de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor | updateInvalidInvoiceCandidate          |
     And load C_Queue_Processor by C_Queue_PackageProcessor:
       | C_Queue_PackageProcessor_ID.Identifier | C_Queue_Processor_ID.Identifier    |
       | updateInvalidShipmentSchedule          | updateInvalidShipmentScheduleQueue |
+      | updateInvalidInvoiceCandidate          | updateInvalidInvoiceCandidateQueue |
 
     And metasfresh contains M_Products:
       | Identifier     | Name                    |
@@ -1130,6 +1132,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
