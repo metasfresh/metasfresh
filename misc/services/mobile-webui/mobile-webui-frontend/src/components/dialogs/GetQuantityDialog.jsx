@@ -47,7 +47,7 @@ const GetQuantityDialog = ({
 
   const wsClientRef = useRef(null);
   useEffect(() => {
-    if (useScaleDevice) {
+    if (scaleDevice && useScaleDevice) {
       if (!wsClientRef.current) {
         wsClientRef.current = ws.connectAndSubscribe({
           topic: scaleDevice.websocketEndpoint,
@@ -68,7 +68,7 @@ const GetQuantityDialog = ({
         wsClientRef.current = null;
       }
     };
-  }, [useScaleDevice]);
+  }, [scaleDevice, useScaleDevice]);
 
   return (
     <div>
