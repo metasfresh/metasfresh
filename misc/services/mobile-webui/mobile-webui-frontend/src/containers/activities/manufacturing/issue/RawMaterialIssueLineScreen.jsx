@@ -48,7 +48,6 @@ const RawMaterialIssueLineScreen = () => {
     <div className="section pt-2">
       {steps.length > 0 &&
         steps.map((stepItem) => {
-          console.log('stepItem', stepItem);
           return (
             <ButtonWithIndicator
               key={stepItem.id}

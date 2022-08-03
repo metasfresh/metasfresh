@@ -366,7 +366,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		//
 		// Qtys
 		final Quantity qtyRequired = computeQtyRequiredByQtyOfFinishedGoods(orderBOMLine, qtyFinishedGoods);
-		setQuantities(orderBOMLine, OrderBOMLineQuantities.ofQtyRequired(qtyRequired));
+		updateRecord(orderBOMLine, OrderBOMLineQuantities.ofQtyRequired(qtyRequired));
 
 		//
 		orderBOMsRepo.save(orderBOMLine);
@@ -400,7 +400,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	{
 		final OrderBOMLineQuantities qtys = getQuantities(record);
 		final OrderBOMLineQuantities changedQtys = updater.apply(qtys);
-		setQuantities(record, changedQtys);
+		updateRecord(record, changedQtys);
 	}
 
 	@Override
@@ -412,6 +412,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.qtyRequiredBeforeClose(Quantity.of(orderBOMLine.getQtyBeforeClose(), uom))
 				.qtyIssuedOrReceived(Quantity.of(orderBOMLine.getQtyDelivered(), uom))
 				.qtyIssuedOrReceivedActual(Quantity.of(orderBOMLine.getQtyDeliveredActual(), uom))
+				.qtyToIssueTolerance(extractQtyToIssueTolerance(orderBOMLine))
 				.qtyReject(Quantity.of(orderBOMLine.getQtyReject(), uom))
 				.qtyScrap(Quantity.of(orderBOMLine.getQtyScrap(), uom))
 				.qtyUsageVariance(Quantity.of(orderBOMLine.getQtyUsageVariance(), uom))
@@ -420,7 +421,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.build();
 	}
 
-	static void setQuantities(
+	@Nullable
+	public static Percent extractQtyToIssueTolerance(@NonNull final I_PP_Order_BOMLine record)
+	{
+		return record.isEnforceTolerance() ? Percent.of(record.getTolerance_Perc()) : null;
+	}
+
+	static void updateRecord(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final OrderBOMLineQuantities from)
 	{
@@ -537,6 +544,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 			orderBOMsRepo.save(line);
 		}
+	}
+
+	@Override
+	public void validateBeforeClose(final I_PP_Order_BOMLine line)
+	{
+		getQuantities(line).assertQtyToIssueToleranceIsRespected();
 	}
 
 	@Override

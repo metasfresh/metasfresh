@@ -25,6 +25,7 @@ package de.metas.material.planning.pporder;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,6 +41,7 @@ public class OrderBOMLineQuantities
 	@NonNull Quantity qtyRequiredBeforeClose;
 	@NonNull Quantity qtyIssuedOrReceived;
 	@NonNull Quantity qtyIssuedOrReceivedActual;
+	@Nullable Percent qtyToIssueTolerance;
 	@NonNull Quantity qtyReject;
 	@NonNull Quantity qtyScrap;
 
@@ -55,6 +57,7 @@ public class OrderBOMLineQuantities
 			@Nullable final Quantity qtyRequiredBeforeClose,
 			@Nullable final Quantity qtyIssuedOrReceived,
 			@Nullable final Quantity qtyIssuedOrReceivedActual,
+			@Nullable final Percent qtyToIssueTolerance,
 			@Nullable final Quantity qtyReject,
 			@Nullable final Quantity qtyScrap,
 			@Nullable final Quantity qtyUsageVariance,
@@ -62,14 +65,15 @@ public class OrderBOMLineQuantities
 			@Nullable final Quantity qtyReserved)
 	{
 		this.qtyRequired = qtyRequired;
-		this.qtyRequiredBeforeClose = CoalesceUtil.coalesce(qtyRequiredBeforeClose, qtyRequired::toZero);
-		this.qtyIssuedOrReceived = CoalesceUtil.coalesce(qtyIssuedOrReceived, qtyRequired::toZero);
-		this.qtyIssuedOrReceivedActual = CoalesceUtil.coalesce(qtyIssuedOrReceivedActual, qtyRequired::toZero);
-		this.qtyReject = CoalesceUtil.coalesce(qtyReject, qtyRequired::toZero);
-		this.qtyScrap = CoalesceUtil.coalesce(qtyScrap, qtyRequired::toZero);
-		this.qtyUsageVariance = CoalesceUtil.coalesce(qtyUsageVariance, qtyRequired::toZero);
-		this.qtyPost = CoalesceUtil.coalesce(qtyPost, qtyRequired::toZero);
-		this.qtyReserved = CoalesceUtil.coalesce(qtyReserved, qtyRequired::toZero);
+		this.qtyRequiredBeforeClose = CoalesceUtil.coalesceNotNull(qtyRequiredBeforeClose, qtyRequired::toZero);
+		this.qtyIssuedOrReceived = CoalesceUtil.coalesceNotNull(qtyIssuedOrReceived, qtyRequired::toZero);
+		this.qtyIssuedOrReceivedActual = CoalesceUtil.coalesceNotNull(qtyIssuedOrReceivedActual, qtyRequired::toZero);
+		this.qtyToIssueTolerance = qtyToIssueTolerance;
+		this.qtyReject = CoalesceUtil.coalesceNotNull(qtyReject, qtyRequired::toZero);
+		this.qtyScrap = CoalesceUtil.coalesceNotNull(qtyScrap, qtyRequired::toZero);
+		this.qtyUsageVariance = CoalesceUtil.coalesceNotNull(qtyUsageVariance, qtyRequired::toZero);
+		this.qtyPost = CoalesceUtil.coalesceNotNull(qtyPost, qtyRequired::toZero);
+		this.qtyReserved = CoalesceUtil.coalesceNotNull(qtyReserved, qtyRequired::toZero);
 
 		this.uomId = Quantity.getCommonUomIdOfAll(
 				this.qtyRequired,
@@ -140,32 +144,6 @@ public class OrderBOMLineQuantities
 				|| qtyReject.signum() != 0;
 	}
 
-	public OrderBOMLineQuantities withAdditionalQtyIssuedOrReceived(@NonNull final Quantity qtyToAdd)
-	{
-		if (qtyToAdd.signum() == 0)
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.qtyIssuedOrReceived(getQtyIssuedOrReceived().add(qtyToAdd))
-				.qtyIssuedOrReceivedActual(getQtyIssuedOrReceivedActual().add(qtyToAdd))
-				.build();
-	}
-
-	public OrderBOMLineQuantities withAdditionalQtyUsageVariance(@NonNull final Quantity qtyToAdd)
-	{
-		if (qtyToAdd.signum() == 0)
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.qtyIssuedOrReceived(getQtyIssuedOrReceived().add(qtyToAdd))
-				.qtyUsageVariance(getQtyUsageVariance().add(qtyToAdd))
-				.build();
-	}
-
 	public OrderBOMLineQuantities reduce(@NonNull final OrderBOMLineQtyChangeRequest request)
 	{
 		final OrderBOMLineQuantitiesBuilder builder = toBuilder();
@@ -176,7 +154,10 @@ public class OrderBOMLineQuantities
 
 			if (!request.isUsageVariance())
 			{
-				builder.qtyIssuedOrReceivedActual(getQtyIssuedOrReceivedActual().add(request.getQtyIssuedOrReceivedToAdd()));
+				final Quantity qtyIssuedOrReceivedActualNew = getQtyIssuedOrReceivedActual().add(request.getQtyIssuedOrReceivedToAdd());
+				assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActualNew);
+
+				builder.qtyIssuedOrReceivedActual(qtyIssuedOrReceivedActualNew);
 			}
 		}
 
@@ -212,6 +193,40 @@ public class OrderBOMLineQuantities
 	public Quantity getQtyIssuedOrReceived_NegateBecauseIsCOProduct()
 	{
 		return adjustCoProductQty(getQtyIssuedOrReceived());
+	}
+
+	public void assertQtyToIssueToleranceIsRespected()
+	{
+		assertQtyToIssueToleranceIsRespected_LowerBound(qtyIssuedOrReceivedActual);
+		assertQtyToIssueToleranceIsRespected_UpperBound(qtyIssuedOrReceivedActual);
+	}
+
+	private void assertQtyToIssueToleranceIsRespected_LowerBound(final Quantity qtyIssuedOrReceivedActual)
+	{
+		if (qtyToIssueTolerance == null)
+		{
+			return;
+		}
+
+		final Quantity qtyIssuedOrReceivedActualMin = qtyRequired.subtract(qtyToIssueTolerance);
+		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMin) < 0)
+		{
+			throw new AdempiereException("Cannot issue less than " + qtyIssuedOrReceivedActualMin + " (" + qtyRequired + " - " + qtyToIssueTolerance + ")");
+		}
+	}
+
+	private void assertQtyToIssueToleranceIsRespected_UpperBound(final Quantity qtyIssuedOrReceivedActual)
+	{
+		if (qtyToIssueTolerance == null)
+		{
+			return;
+		}
+
+		final Quantity qtyIssuedOrReceivedActualMax = qtyRequired.add(qtyToIssueTolerance);
+		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMax) > 0)
+		{
+			throw new AdempiereException("Cannot issue more than " + qtyIssuedOrReceivedActualMax + " (" + qtyRequired + " + " + qtyToIssueTolerance + ")");
+		}
 	}
 
 }
