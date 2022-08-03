@@ -17,12 +17,10 @@ Feature: Products invoice candidates
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | Endcustomer | N            | Y              | ps_1                          |
-      | endvendor_1   | Endvendor   | Y            | N              | ps_1                          |
+      | Identifier  | Name      | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endvendor_1 | Endvendor | Y            | N              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
       | l_2        | 0123456789011 | endvendor_1              | Y                   | Y                   |
 
   @Id:200
@@ -506,9 +504,15 @@ Feature: Products invoice candidates
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value          | Name           | IsIssueWarehouse | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
+      | issueWarehouse            | issueWarehouse | issueWarehouse | true             | endvendor_1              | l_2                               |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value        | M_Warehouse_ID.Identifier |
+      | issueLocator            | issueLocator | issueWarehouse            |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | endvendor_1              | po_ref_mock     | POO             | 2021-04-17  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered | OPT.M_Warehouse_ID.Identifier |
+      | o_1        | false   | endvendor_1              | po_ref_mock     | POO             | 2021-04-17  | issueWarehouse                |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 330        |
@@ -517,7 +521,7 @@ Feature: Products invoice candidates
 
     Then after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule_PO              | o_1                   | ol_1                      | endvendor_1              | l_2                               | p_1                     | 330        | warehouseStd              |
+      | receiptSchedule_PO              | o_1                   | ol_1                      | endvendor_1              | l_2                               | p_1                     | 330        | issueWarehouse            |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 42    | huItemPurchaseProduct              | huPackingLU                  |

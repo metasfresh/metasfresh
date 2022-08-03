@@ -91,6 +91,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -140,6 +141,7 @@ Feature: Packing material invoice candidates: shipments
       | shipmentLine_2            | shipment_1            | packingProduct          | 10          | false     | 10             |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     And there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: shipmentLine_2
     And update M_InOutLine:
@@ -149,6 +151,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -191,6 +194,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -207,6 +211,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     And after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -249,6 +254,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -262,6 +268,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -278,6 +285,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -320,6 +328,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -336,6 +345,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -352,6 +362,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -394,6 +405,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -410,6 +422,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -426,6 +439,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -468,6 +482,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -481,6 +496,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -497,6 +513,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -513,6 +530,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -555,6 +573,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -571,6 +590,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -587,6 +607,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -603,6 +624,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -645,6 +667,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -661,6 +684,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -677,6 +701,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -693,6 +718,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -735,6 +761,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -751,6 +778,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -767,6 +795,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -791,6 +820,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -833,6 +863,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -846,6 +877,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -862,6 +894,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -881,6 +914,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -923,6 +957,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -936,6 +971,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -952,6 +988,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -971,6 +1008,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1013,6 +1051,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1026,6 +1065,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1041,6 +1081,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1057,6 +1098,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is voided
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1084,6 +1126,7 @@ Feature: Packing material invoice candidates: shipments
     When the order identified by o_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -1101,6 +1144,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1117,6 +1161,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1149,6 +1194,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is voided
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1191,6 +1237,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1207,6 +1254,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1223,6 +1271,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reactivated
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1239,6 +1288,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is voided
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1281,6 +1331,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1294,6 +1345,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1310,6 +1362,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reversed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1352,6 +1405,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1368,6 +1422,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1384,6 +1439,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reversed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1426,6 +1482,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1442,6 +1499,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1458,6 +1516,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is reversed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1500,6 +1559,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1513,6 +1573,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1529,6 +1590,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is closed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1571,6 +1633,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1587,6 +1650,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1603,6 +1667,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is closed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
@@ -1645,6 +1710,7 @@ Feature: Packing material invoice candidates: shipments
       | s_s_1                            | D            | false               | false       |
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
@@ -1661,6 +1727,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is completed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
@@ -1677,6 +1744,7 @@ Feature: Packing material invoice candidates: shipments
     When the shipment identified by shipment_1 is closed
 
     And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidShipmentScheduleQueue
+    And after not more than 30s, there are no C_Queue_WorkPackage pending or running in queue updateInvalidInvoiceCandidateQueue
 
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
