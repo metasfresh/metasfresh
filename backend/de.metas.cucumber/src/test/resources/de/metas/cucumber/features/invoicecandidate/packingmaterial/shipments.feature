@@ -36,14 +36,14 @@ Feature: Packing material invoice candidates: shipments
       | Identifier | Name                 | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | bpartner_1 | BPartnerName_S0160_4 | Y              | ps_1                          | D               |
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name        |
-      | huPackingTU           | huPackingTU |
+      | M_HU_PI_ID.Identifier | Name              |
+      | huPackingTU           | huPackingTU_S0160 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
-      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                   | HU_UnitType | IsCurrent |
+      | packingVersionTU              | huPackingTU           | packingVersionTU_S0160 | TU          | Y         |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID.Identifier | Name              | OPT.M_Product_ID.Identifier |
-      | huPackingMaterial                  | HUPackingMaterial | packingProduct              |
+      | M_HU_PackingMaterial_ID.Identifier | Name                    | OPT.M_Product_ID.Identifier |
+      | huPackingMaterial                  | HUPackingMaterial_S0160 | packingProduct              |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.M_HU_PackingMaterial_ID.Identifier |
       | huPiItemTU                 | packingVersionTU              | 0   | PM       | huPackingMaterial                      |
