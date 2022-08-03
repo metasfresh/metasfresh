@@ -885,7 +885,11 @@ public class C_Invoice_Candidate_StepDef
 
 		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 
-		if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) == 0)
+		if (qtyToInvoice != null  && invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) == 0)
+		{
+			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
+		}
+		else if (qtyToInvoice == null && !invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
 			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
 		}
