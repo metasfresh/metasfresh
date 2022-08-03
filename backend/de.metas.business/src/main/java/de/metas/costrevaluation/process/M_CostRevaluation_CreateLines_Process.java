@@ -22,7 +22,6 @@ package de.metas.costrevaluation.process;
  * #L%
  */
 
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import de.metas.costrevaluation.impl.CostRevaluationId;
@@ -86,8 +85,8 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 
 		while (iterator.hasNext())
 		{
-			final I_C_Invoice invoice = iterator.next();
-			final boolean processed = invoiceDiscount(invoice);
+			final I_M_Product product = iterator.next();
+			final boolean processed = true; // create revaluation line
 			if (processed)
 			{
 				counterProcessed++;
