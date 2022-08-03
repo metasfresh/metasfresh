@@ -111,6 +111,8 @@ public class C_OLCand_StepDef
 			assertThat(request).isNotNull();
 
 			logOLCandidateRecords(message, request);
+
+			throw e;
 		}
 	}
 
