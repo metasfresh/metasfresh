@@ -83,10 +83,7 @@ public class HUPricing extends AttributePricing
 		}
 
 		final ProductId productId = pricingCtx.getProductId();
-		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> findMatchingProductPriceOrNull(priceListVersion, productId, attributeSetInstance, packingMaterialId),
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
+		final I_M_ProductPrice productPrice = findMatchingProductPriceOrNull(ctxPriceListVersion, productId, attributeSetInstance, packingMaterialId);
 
 		if (productPrice == null)
 		{
@@ -178,14 +175,11 @@ public class HUPricing extends AttributePricing
 
 		//
 		// Get the default product price attribute, if any
-		final I_M_ProductPrice defaultPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> ProductPrices.newQuery(priceListVersion)
+		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersion)
 						.setProductId(pricingCtx.getProductId())
 						.onlyAttributePricing()
 						.onlyValidPrices(true)
-						.retrieveDefault(I_M_ProductPrice.class),
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), de.metas.common.util.time.SystemTime.zoneId()));
+						.retrieveDefault(I_M_ProductPrice.class);
 		if (defaultPrice == null)
 		{
 			return null;
