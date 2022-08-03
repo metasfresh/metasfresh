@@ -32,8 +32,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
@@ -103,16 +101,10 @@ public class M_Warehouse_StepDef
 
 			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnName(row, I_M_Warehouse.COLUMNNAME_IsIssueWarehouse);
 
-			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
-
-			final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bPartnerLocationIdentifier);
-
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);
-			warehouseRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-			warehouseRecord.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			warehouseRecord.setC_BPartner_ID(2155894);
+			warehouseRecord.setC_BPartner_Location_ID(2202690);
 			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
 
 			InterfaceWrapperHelper.saveRecord(warehouseRecord);
