@@ -26,11 +26,7 @@ const GetQuantityDialog = ({
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
-
-  const onReasonSelected = (reason) => {
-    console.log('onReasonSelected', reason);
-    setRejectedReason(reason);
-  };
+  const onReasonSelected = (reason) => setRejectedReason(reason);
 
   const requiredQtyRejectedReason = Array.isArray(qtyRejectedReasons) && qtyRejectedReasons.length > 0;
   const qtyRejected =
@@ -50,31 +46,29 @@ const GetQuantityDialog = ({
   };
 
   const wsClientRef = useRef(null);
-  if (scaleDevice) {
-    useEffect(() => {
-      if (useScaleDevice) {
-        if (!wsClientRef.current) {
-          wsClientRef.current = ws.connectAndSubscribe({
-            topic: scaleDevice.websocketEndpoint,
-            debug: false,
-            onWebsocketMessage: (message) => {
-              if (useScaleDevice) {
-                const { value } = JSON.parse(message.body);
-                setQtyInfo(qtyInfos.invalidOfNumber(value));
-              }
-            },
-          });
-        }
+  useEffect(() => {
+    if (useScaleDevice) {
+      if (!wsClientRef.current) {
+        wsClientRef.current = ws.connectAndSubscribe({
+          topic: scaleDevice.websocketEndpoint,
+          debug: false,
+          onWebsocketMessage: (message) => {
+            if (useScaleDevice) {
+              const { value } = JSON.parse(message.body);
+              setQtyInfo(qtyInfos.invalidOfNumber(value));
+            }
+          },
+        });
       }
+    }
 
-      return () => {
-        if (wsClientRef.current) {
-          ws.disconnectClient(wsClientRef.current);
-          wsClientRef.current = null;
-        }
-      };
-    }, [useScaleDevice]);
-  }
+    return () => {
+      if (wsClientRef.current) {
+        ws.disconnectClient(wsClientRef.current);
+        wsClientRef.current = null;
+      }
+    };
+  }, [useScaleDevice]);
 
   return (
     <div>
