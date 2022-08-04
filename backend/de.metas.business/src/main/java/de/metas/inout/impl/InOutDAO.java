@@ -7,7 +7,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOut;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLine;
@@ -462,14 +461,14 @@ public class InOutDAO implements IInOutDAO
 
 	public Stream<InOutLine> retrieveInOutStreamBy(@NonNull final InOutQuery inOutQuery)
 	{
-		final IQueryBuilder<I_M_InOut> query = queryBL.createQueryBuilder(I_M_InOut.class)
-				.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_M_InOut> query = queryBL.createQueryBuilder(I_M_InOut.class).addOnlyActiveRecordsFilter();
 		if (inOutQuery.getContext() != null)
 		{
 			query.addOnlyContextClient(inOutQuery.getContext());
 		}
 
-		return query.create()
+		return query.andCollect(I_M_InOut.COLUMN_M_InOut_ID, I_M_InOutLine.class)
+				.create()
 				.stream()
 				.map(this::fromDbObject);
 	}
