@@ -84,13 +84,14 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 	{
 
 		final ImmutableSet<ProductId>  products = fetchProducts();
+		if (products.isEmpty()) return "NoSelection@";
 
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
 		final I_M_CostRevaluation costRevaluation = loadOutOfTrx(costRevaluationId, I_M_CostRevaluation.class);
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRevaluation.getC_AcctSchema_ID());
 		final CostElementId costElementId = CostElementId.ofRepoId(costRevaluation.getM_CostElement_ID());
 
-		if (products.isEmpty()) return "NoSelection@";
+
 
 		for (ProductId productId : products)
 		{

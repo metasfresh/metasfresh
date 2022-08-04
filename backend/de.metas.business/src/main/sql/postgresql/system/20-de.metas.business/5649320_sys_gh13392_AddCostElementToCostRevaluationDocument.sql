@@ -263,3 +263,9 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Erstellen Sie Neubewertungspos
 UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-08-04 13:31:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585085
 ;
 
+
+-- 2022-08-04T14:16:46.578Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585085,542190,541134,TO_TIMESTAMP('2022-08-04 17:16:46','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2022-08-04 17:16:46','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+;
+

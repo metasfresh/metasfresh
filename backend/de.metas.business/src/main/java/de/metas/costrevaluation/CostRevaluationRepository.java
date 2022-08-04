@@ -73,6 +73,9 @@ public class CostRevaluationRepository
 		line.setC_UOM_ID(costPrice.getUomId().getRepoId());
 
 		line.setCurrentQty(from.getCurrentQty().toBigDecimal());
-		line.setNewCostPrice(from.getNewCostPrice().getOwnCostPrice().getValue());
+		 if (from.getNewCostPrice() != null)
+		 {
+			 line.setNewCostPrice(from.getNewCostPrice().getOwnCostPrice().getValue());
+		 }
 	}
 }
