@@ -22,12 +22,10 @@
 
 package de.metas.project.workorder.data;
 
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.budget.BudgetProjectResourceId;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectStepId;
+import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.lang.ExternalId;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -36,72 +34,59 @@ import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
 
 @Value
 @Builder
-public class WOProjectResource
+public class WOProjectObjectUnderTest
 {
 	@Nullable
-	@Getter
-	WOProjectResourceId woProjectResourceId;
-
-	@With
-	@Nullable
-	WOProjectStepId woProjectStepId;
+	WOProjectObjectUnderTestId id;
 
 	@NonNull
-	Instant assignDateFrom;
-
-	@NonNull
-	Instant assignDateTo;
-
-	@Nullable
-	Boolean isActive;
-
-	@Nullable
-	ResourceId resourceId;
-
-	@Nullable
-	Boolean isAllDay;
-
-	@Nullable
-	BigDecimal duration;
-
-	@Nullable
-	DurationUnit durationUnit;
-
-	@Nullable
-	ProjectId budgetProjectId;
-
-	@Nullable
-	BudgetProjectResourceId projectResourceBudgetId;
+	Integer numberOfObjectsUnderTest;
 
 	@Nullable
 	ExternalId externalId;
 
+	@With
 	@Nullable
-	String testFacilityGroupName;
+	@Getter(AccessLevel.NONE)
+	ProjectId projectId;
+
+	@Nullable
+	String woDeliveryNote;
+
+	@Nullable
+	String woManufacturer;
+
+	@Nullable
+	String woObjectType;
+
+	@Nullable
+	String woObjectName;
+
+	@Nullable
+	String woObjectWhereabouts;
 
 	@NonNull
-	public WOProjectResourceId getWOProjectResourceIdNotNull()
+	public WOProjectObjectUnderTestId getIdNonNull()
 	{
-		if (woProjectResourceId == null)
+		if (this.id == null)
 		{
-			throw new AdempiereException("WOProjectResourceId cannot be null at this stage!");
+			throw new AdempiereException("WOProjectObjectUnderTestId cannot be null at this stage!");
 		}
-		return woProjectResourceId;
+
+		return this.id;
 	}
 
 	@NonNull
-	public ResourceId getResourceIdNonNull()
+	public ProjectId getProjectIdNonNull()
 	{
-		if (this.resourceId == null)
+		if (this.projectId == null)
 		{
-			throw new AdempiereException("ResourceId cannot be null at this stage!");
+			throw new AdempiereException("ProjectId cannot be null at this stage!");
 		}
 
-		return this.resourceId;
+		return this.projectId;
 	}
 }

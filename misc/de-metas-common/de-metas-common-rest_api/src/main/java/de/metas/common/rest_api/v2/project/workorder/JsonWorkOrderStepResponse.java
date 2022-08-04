@@ -23,14 +23,15 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 
 @Value
@@ -57,28 +58,86 @@ public class JsonWorkOrderStepResponse
 	Integer seqNo;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dateStart")
-	String dateStart;
+	LocalDate dateStart;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dateEnd")
-	String dateEnd;
+	LocalDate dateEnd;
+
+	@Nullable
+	@JsonProperty("externalId")
+	JsonMetasfreshId externalId;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonProperty("woPartialReportDate")
+	LocalDate woPartialReportDate;
+
+	@Nullable
+	@JsonProperty("woPlannedResourceDurationHours")
+	Integer woPlannedResourceDurationHours;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonProperty("deliveryDate")
+	LocalDate deliveryDate;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonProperty("woTargetStartDate")
+	LocalDate woTargetStartDate;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonProperty("woTargetEndDate")
+	LocalDate woTargetEndDate;
+
+	@Nullable
+	@JsonProperty("woPlannedPersonDurationHours")
+	Integer woPlannedPersonDurationHours;
+
+	@Nullable
+	@JsonProperty("woStepStatus")
+	JsonWOStepStatus woStepStatus;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonProperty("woFindingsReleasedDate")
+	LocalDate woFindingsReleasedDate;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonProperty("woFindingsCreatedDate")
+	LocalDate woFindingsCreatedDate;
 
 	@Nullable
 	@JsonProperty("resources")
 	List<JsonWorkOrderResourceResponse> resources;
-	
+
 	@JsonCreator
 	@Builder
 	public JsonWorkOrderStepResponse(
 			@NonNull @JsonProperty("stepId") final JsonMetasfreshId stepId,
 			@NonNull @JsonProperty("name") final String name,
 			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@Nullable @JsonProperty("description") final String description,
 			@NonNull @JsonProperty("seqNo") final Integer seqNo,
-			@Nullable @JsonProperty("dateStart") final String dateStart,
-			@Nullable @JsonProperty("dateEnd") final String dateEnd,
-			@Singular @JsonProperty("resources") final List<JsonWorkOrderResourceResponse> resources
+			@Nullable @JsonProperty("description") final String description,
+			@Nullable @JsonProperty("dateStart") final LocalDate dateStart,
+			@Nullable @JsonProperty("dateEnd") final LocalDate dateEnd,
+			@Nullable @JsonProperty("externalId") final JsonMetasfreshId externalId,
+			@Nullable @JsonProperty("woPartialReportDate") final LocalDate woPartialReportDate,
+			@Nullable @JsonProperty("woPlannedResourceDurationHours") final Integer woPlannedResourceDurationHours,
+			@Nullable @JsonProperty("deliveryDate") final LocalDate deliveryDate,
+			@Nullable @JsonProperty("woTargetStartDate") final LocalDate woTargetStartDate,
+			@Nullable @JsonProperty("woTargetEndDate") final LocalDate woTargetEndDate,
+			@Nullable @JsonProperty("woPlannedPersonDurationHours") final Integer woPlannedPersonDurationHours,
+			@Nullable @JsonProperty("woStepStatus") final JsonWOStepStatus woStepStatus,
+			@Nullable @JsonProperty("woFindingsReleasedDate") final LocalDate woFindingsReleasedDate,
+			@Nullable @JsonProperty("woFindingsCreatedDate") final LocalDate woFindingsCreatedDate,
+			@Nullable @JsonProperty("resources") final List<JsonWorkOrderResourceResponse> resources
 	)
 	{
 		this.stepId = stepId;
@@ -88,6 +147,16 @@ public class JsonWorkOrderStepResponse
 		this.seqNo = seqNo;
 		this.dateStart = dateStart;
 		this.dateEnd = dateEnd;
+		this.externalId = externalId;
+		this.woPartialReportDate = woPartialReportDate;
+		this.woPlannedResourceDurationHours = woPlannedResourceDurationHours;
+		this.deliveryDate = deliveryDate;
+		this.woTargetStartDate = woTargetStartDate;
+		this.woTargetEndDate = woTargetEndDate;
+		this.woPlannedPersonDurationHours = woPlannedPersonDurationHours;
+		this.woStepStatus = woStepStatus;
+		this.woFindingsReleasedDate = woFindingsReleasedDate;
+		this.woFindingsCreatedDate = woFindingsCreatedDate;
 		this.resources = resources;
 	}
 }

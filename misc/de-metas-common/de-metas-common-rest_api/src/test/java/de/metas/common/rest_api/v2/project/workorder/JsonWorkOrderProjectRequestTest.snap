@@ -1,79 +1,138 @@
 de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequestTest.serializeDeserialize=[
   {
+    "identifier" : "ext-252525",
     "value" : "Test WO Project",
     "valueSet" : true,
     "name" : "Test WO Project",
     "nameSet" : true,
-    "projectTypeId" : 123456,
-    "priceListVersionId" : 123456,
+    "projectTypeId" : 3,
+    "priceListVersionId" : 5,
     "priceListVersionIdSet" : true,
-    "currencyId" : 123456,
+    "currencyId" : 4,
     "currencyIdSet" : true,
-    "salesRepId" : 123456,
-    "salesRepIdSet" : false,
+    "salesRepId" : 6,
+    "salesRepIdSet" : true,
     "description" : "Test WO Project Description",
     "descriptionSet" : true,
     "dateContract" : {
       "year" : 2022,
       "month" : 7,
-      "day" : 15,
+      "day" : 1,
       "leapYear" : false
     },
     "dateContractSet" : true,
     "dateFinish" : {
       "year" : 2022,
       "month" : 7,
-      "day" : 15,
+      "day" : 20,
       "leapYear" : false
     },
     "dateFinishSet" : true,
-    "businessPartnerId" : 123456,
+    "businessPartnerId" : 1,
     "businessPartnerIdSet" : true,
     "projectReferenceExt" : "WOProjectTestRefExt",
     "projectReferenceExtSet" : true,
-    "projectParentId" : 123456,
+    "projectParentId" : 2,
     "projectParentIdSet" : true,
     "orgCode" : "ORG",
+    "orgCodeSet" : true,
     "isActive" : true,
     "activeSet" : true,
     "syncAdvise" : {
       "ifNotExists" : "CREATE",
       "ifExists" : "UPDATE_MERGE"
     },
+    "syncAdviseSet" : true,
+    "bpartnerDepartmentSet" : false,
+    "woOwner" : "woOwner",
+    "woOwnerSet" : true,
+    "poReferenceSet" : false,
+    "bpartnerTargetDateSet" : false,
+    "woProjectCreatedDateSet" : false,
+    "specialistConsultantId" : "specialistConsultantId",
+    "specialistConsultantIdSet" : true,
+    "dateOfProvisionByBPartner" : {
+      "year" : 2022,
+      "month" : 7,
+      "day" : 22,
+      "leapYear" : false
+    },
+    "dateOfProvisionByBPartnerSet" : true,
     "steps" : [
       {
+        "identifier" : "ext-1111",
         "name" : "Test WO Project Step",
         "description" : "Test WO Project Step Description",
         "descriptionSet" : true,
-        "seqNo" : 123456,
+        "seqNo" : 10,
         "seqNoSet" : true,
         "dateStart" : {
           "year" : 2022,
           "month" : 7,
-          "day" : 15,
+          "day" : 3,
           "leapYear" : false
         },
         "dateStartSet" : true,
         "dateEnd" : {
           "year" : 2022,
           "month" : 7,
-          "day" : 15,
+          "day" : 22,
           "leapYear" : false
         },
         "dateEndSet" : true,
-        "woPartialReportDateSet" : false,
-        "woPlannedResourceDurationHoursSet" : false,
-        "deliveryDateSet" : false,
-        "woTargetStartDateSet" : false,
-        "woTargetEndDateSet" : false,
-        "woPlannedPersonDurationHoursSet" : false,
-        "woStepStatusSet" : false,
-        "woFindingsReleasedDateSet" : false,
-        "woFindingsCreatedDateSet" : false,
-        "resourceRequests" : [
+        "woPartialReportDate" : {
+          "year" : 2022,
+          "month" : 7,
+          "day" : 10,
+          "leapYear" : false
+        },
+        "woPartialReportDateSet" : true,
+        "woPlannedResourceDurationHours" : 3,
+        "woPlannedResourceDurationHoursSet" : true,
+        "deliveryDate" : {
+          "year" : 2022,
+          "month" : 8,
+          "day" : 5,
+          "leapYear" : false
+        },
+        "deliveryDateSet" : true,
+        "woTargetStartDate" : {
+          "year" : 2022,
+          "month" : 7,
+          "day" : 5,
+          "leapYear" : false
+        },
+        "woTargetStartDateSet" : true,
+        "woTargetEndDate" : {
+          "year" : 2022,
+          "month" : 7,
+          "day" : 31,
+          "leapYear" : false
+        },
+        "woTargetEndDateSet" : true,
+        "woPlannedPersonDurationHours" : 20,
+        "woPlannedPersonDurationHoursSet" : true,
+        "woStepStatus" : "CANCELED",
+        "woStepStatusSet" : true,
+        "woFindingsReleasedDate" : {
+          "year" : 2022,
+          "month" : 8,
+          "day" : 3,
+          "leapYear" : false
+        },
+        "woFindingsReleasedDateSet" : true,
+        "woFindingsCreatedDate" : {
+          "year" : 2022,
+          "month" : 8,
+          "day" : 1,
+          "leapYear" : false
+        },
+        "woFindingsCreatedDateSet" : true,
+        "externalId" : "1111",
+        "externalIdSet" : true,
+        "resources" : [
           {
             "resourceIdentifier" : "int-resourceIdentifier",
-            "resourceIdentifierSet" : false,
             "assignDateFrom" : {
               "year" : 2022,
               "month" : 7,
@@ -86,20 +145,39 @@ de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequestTest.se
               "day" : 16,
               "leapYear" : false
             },
-            "activeSet" : false,
-            "allDaySet" : false,
-            "durationSet" : false,
-            "durationUnitSet" : false,
-            "testFacilityGroupNameSet" : false
+            "isActive" : true,
+            "activeSet" : true,
+            "isAllDay" : false,
+            "allDaySet" : true,
+            "duration" : 10,
+            "durationSet" : true,
+            "durationUnit" : "Month",
+            "durationUnitSet" : true,
+            "testFacilityGroupName" : "testFacilityGroupName",
+            "testFacilityGroupNameSet" : true,
+            "externalId" : "1111",
+            "externalIdSet" : true
           }
         ]
       }
     ],
-    "stepsSet" : true,
-    "bpartnerDepartmentSet" : false,
-    "woOwnerSet" : false,
-    "poReferenceSet" : false,
-    "bpartnerTargetDateSet" : false,
-    "woProjectCreatedDateSet" : false
+    "objectsUnderTest" : [
+      {
+        "identifier" : "ext-3333",
+        "numberOfObjectsUnderTest" : 10,
+        "woDeliveryNote" : "woDeliveryNote",
+        "woDeliveryNoteSet" : true,
+        "woManufacturer" : "woManufacturer",
+        "woManufacturerSet" : true,
+        "woObjectType" : "woObjectType",
+        "woObjectTypeSet" : true,
+        "woObjectName" : "woObjectName",
+        "woObjectNameSet" : true,
+        "woObjectWhereabouts" : "woObjectWhereabouts",
+        "woObjectWhereaboutsSet" : true,
+        "externalId" : "3333",
+        "externalIdSet" : true
+      }
+    ]
   }
 ]

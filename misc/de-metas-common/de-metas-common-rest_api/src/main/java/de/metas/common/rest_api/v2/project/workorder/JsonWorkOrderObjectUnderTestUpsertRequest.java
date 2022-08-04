@@ -23,97 +23,87 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.OBJECT_UNDER_TEST_IDENTIFIER_DOC;
 
 @Getter
 @ToString
 @EqualsAndHashCode
-public class JsonWorkOrderResourceUpsertRequest
+public class JsonWorkOrderObjectUnderTestUpsertRequest
 {
 	@ApiModelProperty(position = 10,
 			required = true,
-			value = RESOURCE_IDENTIFIER_DOC + "\n"
-					+ "Note that `C_Project_WO_Resource.S_Resource_ID` is needed for the calendar view!") //
+			value = OBJECT_UNDER_TEST_IDENTIFIER_DOC) //
 	@Setter
-	String resourceIdentifier;
+	String identifier;
 
 	@ApiModelProperty(required = true)
 	@Setter
-	LocalDate assignDateFrom;
+	Integer numberOfObjectsUnderTest;
 
-	@ApiModelProperty(required = true)
-	@Setter
-	LocalDate assignDateTo;
-
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new resource is created), then `true` is assumed")
-	Boolean isActive;
+	String woDeliveryNote;
 
 	@ApiModelProperty(hidden = true)
-	boolean activeSet;
+	boolean woDeliveryNoteSet;
 
-	Boolean isAllDay;
-
-	@ApiModelProperty(hidden = true)
-	boolean allDaySet;
-
-	BigDecimal duration;
+	String woManufacturer;
 
 	@ApiModelProperty(hidden = true)
-	boolean durationSet;
+	boolean woManufacturerSet;
 
-	JsonDurationUnit durationUnit;
-
-	@ApiModelProperty(hidden = true)
-	boolean durationUnitSet;
-
-	String testFacilityGroupName;
+	String woObjectType;
 
 	@ApiModelProperty(hidden = true)
-	boolean testFacilityGroupNameSet;
+	boolean woObjectTypeSet;
+
+	String woObjectName;
+
+	@ApiModelProperty(hidden = true)
+	boolean woObjectNameSet;
+
+	String woObjectWhereabouts;
+
+	@ApiModelProperty(hidden = true)
+	boolean woObjectWhereaboutsSet;
 
 	JsonExternalId externalId;
 
 	@ApiModelProperty(hidden = true)
 	boolean externalIdSet;
 
-	public void setActive(final Boolean active)
+	public void setWoDeliveryNote(final String woDeliveryNote)
 	{
-		isActive = active;
-		this.activeSet = true;
+		this.woDeliveryNote = woDeliveryNote;
+		this.woDeliveryNoteSet = true;
 	}
 
-	public void setAllDay(final Boolean allDay)
+	public void setWoManufacturer(final String woManufacturer)
 	{
-		this.isAllDay = allDay;
-		this.allDaySet = true;
+		this.woManufacturer = woManufacturer;
+		this.woManufacturerSet = true;
 	}
 
-	public void setDuration(final BigDecimal duration)
+	public void setWoObjectType(final String woObjectType)
 	{
-		this.duration = duration;
-		this.durationSet = true;
+		this.woObjectType = woObjectType;
+		this.woObjectTypeSet = true;
 	}
 
-	public void setDurationUnit(final JsonDurationUnit durationUnit)
+	public void setWoObjectName(final String woObjectName)
 	{
-		this.durationUnit = durationUnit;
-		this.durationUnitSet = true;
+		this.woObjectName = woObjectName;
+		this.woObjectNameSet = true;
 	}
 
-	public void setTestFacilityGroupName(final String testFacilityGroupName)
+	public void setWoObjectWhereabouts(final String woObjectWhereabouts)
 	{
-		this.testFacilityGroupName = testFacilityGroupName;
-		this.testFacilityGroupNameSet = true;
+		this.woObjectWhereabouts = woObjectWhereabouts;
+		this.woObjectWhereaboutsSet = true;
 	}
 
 	public void setExternalId(final JsonExternalId externalId)

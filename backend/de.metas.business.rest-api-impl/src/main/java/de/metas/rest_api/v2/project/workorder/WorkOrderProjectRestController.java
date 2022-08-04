@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,11 +47,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile(Profiles.PROFILE_App)
 public class WorkOrderProjectRestController
 {
-	final WorkOrderProjectRestService projectRestService;
+	private final WorkOrderProjectRestService workOrderProjectRestService;
 
-	public WorkOrderProjectRestController(final WorkOrderProjectRestService projectRestService)
+	public WorkOrderProjectRestController(@NonNull final WorkOrderProjectRestService workOrderProjectRestService)
 	{
-		this.projectRestService = projectRestService;
+		this.workOrderProjectRestService = workOrderProjectRestService;
 	}
 
 	@ApiOperation("Create or update work order projects with their associated steps.")
@@ -61,12 +61,12 @@ public class WorkOrderProjectRestController
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
-	@PostMapping
+	@PutMapping
 	public ResponseEntity<JsonWorkOrderProjectUpsertResponse> upsertWOProject(
 			@RequestBody @NonNull final JsonWorkOrderProjectUpsertRequest request
 	)
 	{
-		final JsonWorkOrderProjectUpsertResponse response = projectRestService.upsertWOProject(request);
+		final JsonWorkOrderProjectUpsertResponse response = workOrderProjectRestService.upsertWOProject(request);
 
 		return ResponseEntity.ok().body(response);
 	}
@@ -74,7 +74,7 @@ public class WorkOrderProjectRestController
 	@GetMapping("/{projectId}")
 	public ResponseEntity<JsonWorkOrderProjectResponse> getWorkOrderProjectDataById(@PathVariable("projectId") @NonNull final Integer projectId)
 	{
-		final JsonWorkOrderProjectResponse response = projectRestService.getWorkOrderProjectDataById(ProjectId.ofRepoId(projectId));
+		final JsonWorkOrderProjectResponse response = workOrderProjectRestService.getWorkOrderProjectDataById(ProjectId.ofRepoId(projectId));
 
 		return ResponseEntity.ok(response);
 	}
