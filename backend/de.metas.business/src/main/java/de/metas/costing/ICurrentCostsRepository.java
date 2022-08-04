@@ -6,10 +6,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -63,5 +66,5 @@ public interface ICurrentCostsRepository
 
 	void updateCostRecord(CostSegmentAndElement costSegmentAndElement, Consumer<I_M_Cost> updater);
 
-	IQueryBuilder<I_M_Cost> queryCostRecordsByProduct(final ProductId productId);
+	List<CurrentCost> getByCostElementAndProduct(@NonNull final AcctSchemaId acctSchemaId, @NonNull final CostElementId costElementId, @NonNull ProductId productId);
 }

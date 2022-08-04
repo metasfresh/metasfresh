@@ -1,11 +1,16 @@
 package de.metas.costrevaluation;
 
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegment;
+import de.metas.costing.CurrentCost;
 import de.metas.costrevaluation.impl.CostRevaluationId;
+import de.metas.costrevaluation.impl.CostRevaluationLine;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.model.I_M_Product;
@@ -38,5 +43,36 @@ public class CostRevaluationRepository
 	{
 		final I_M_CostRevaluation costRevaluation = getById(costRevaluationId);
 		return costRevaluation.getDocStatus().equals(X_M_CostRevaluation.DOCSTATUS_Drafted);
+	}
+
+	public void save(@NonNull final CostRevaluationLine costRevaluationLine)
+	{
+		final I_M_CostRevaluationLine line;
+		if (costRevaluationLine.getId() != null)
+		{
+			line = InterfaceWrapperHelper.load(costRevaluationLine.getId(), I_M_CostRevaluationLine.class);
+		}
+		else
+		{
+			line = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
+		}
+
+		updateCostRevaluationLineRecord(line, costRevaluationLine);
+		InterfaceWrapperHelper.save(line);
+	}
+
+	private void updateCostRevaluationLineRecord(@NonNull final I_M_CostRevaluationLine line, @NonNull final CostRevaluationLine from)
+	{
+		final CostPrice costPrice = from.getCurrentCostPrice();
+
+		line.setM_CostRevaluation_ID(from.getCostRevaluationId().getRepoId());
+		line.setM_Product_ID(from.getProductId().getRepoId());
+
+		line.setCurrentCostPrice(costPrice.getOwnCostPrice().getValue());
+		line.setC_Currency_ID(costPrice.getCurrencyId().getRepoId());
+		line.setC_UOM_ID(costPrice.getUomId().getRepoId());
+
+		line.setCurrentQty(from.getCurrentQty().toBigDecimal());
+		line.setNewCostPrice(from.getNewCostPrice().getOwnCostPrice().getValue());
 	}
 }

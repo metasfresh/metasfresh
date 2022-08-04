@@ -23,11 +23,14 @@ package de.metas.costrevaluation.process;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CurrentCost;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import de.metas.costrevaluation.impl.CostRevaluationId;
+import de.metas.costrevaluation.impl.CostRevaluationLine;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -36,13 +39,9 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostRevaluation;
 
-import java.util.Iterator;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -88,30 +87,36 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
 		final I_M_CostRevaluation costRevaluation = loadOutOfTrx(costRevaluationId, I_M_CostRevaluation.class);
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRevaluation.getC_AcctSchema_ID());
+		final CostElementId costElementId = CostElementId.ofRepoId(costRevaluation.getM_CostElement_ID());
 
 		if (products.isEmpty()) return "NoSelection@";
 
-		int counterProcessed = 0;
-
 		for (ProductId productId : products)
 		{
-			final boolean processed = createCostRevaluationLineForProduct(costRevaluation, productId);
-			if (processed)
-			{
-				counterProcessed++;
-			}
+			createCostRevaluationLineForProduct(acctSchemaId, costElementId, productId);
 		}
 
-		return msgBL.getMsg(getCtx(), "msg", new Object[] { counterProcessed });
+		return "@OK@";
 	}
 
-	private boolean createCostRevaluationLineForProduct(final @NonNull I_M_CostRevaluation costRevaluation , final @NonNull ProductId productId)
+	private void createCostRevaluationLineForProduct(@NonNull final AcctSchemaId acctSchemaId,
+														@NonNull final CostElementId costElementId,
+														@NonNull final  ProductId productId)
 	{
-		final List<I_M_Cost> costs = fetchCostForProduct(costRevaluation, productId);
+		final List<CurrentCost> costs = currentCostsRepo.getByCostElementAndProduct(acctSchemaId, costElementId,productId);
 
-		// for ()
-
-		return true;
+		for (final CurrentCost cost : costs)
+		{
+			final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
+			final CostRevaluationLine line = CostRevaluationLine.builder()
+					.costRevaluationId(costRevaluationId)
+					.productId(productId)
+					.currentCostPrice(cost.getCostPrice())
+					.currentQty(cost.getCurrentQty())
+					.build();
+			costRevaluationRepo.save(line);
+		}
 	}
 
 	private ImmutableSet<ProductId> fetchProducts()
@@ -127,12 +132,4 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 				.listIds(ProductId::ofRepoId);
 	}
 
-	private List<I_M_Cost> fetchCostForProduct(final @NonNull I_M_CostRevaluation costRevaluation, final @NonNull ProductId productId)
-	{
-		return currentCostsRepo.queryCostRecordsByProduct(productId)
-				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID.getColumnName(), costRevaluation.getC_AcctSchema_ID())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID.getColumnName(), costRevaluation.getM_CostElement_ID())
-				.create()
-				.list()	;
-	}
 }

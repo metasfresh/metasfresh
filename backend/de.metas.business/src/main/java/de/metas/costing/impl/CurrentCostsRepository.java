@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -425,11 +424,19 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public IQueryBuilder<I_M_Cost> queryCostRecordsByProduct(final @NonNull ProductId productId)
+	public List<CurrentCost> getByCostElementAndProduct(@NonNull final AcctSchemaId acctSchemaId,
+														@NonNull final CostElementId costElementId,
+														@NonNull final ProductId productId)
 	{
 		return queryBL.createQueryBuilder(I_M_Cost.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Cost.COLUMN_M_Product_ID, productId);
+				.addEqualsFilter(I_M_Cost.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID.getColumnName(), acctSchemaId)
+				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID.getColumnName(), costElementId)
+				.create()
+				.stream()
+				.map(this::toCurrentCost)
+				.collect(ImmutableList.toImmutableList());
 	}
 }
