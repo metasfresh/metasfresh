@@ -12,6 +12,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.location.ILocationDAO;
 import de.metas.money.CurrencyId;
@@ -32,6 +33,8 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ClearingSystemMember
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ContactDetails2CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditTransferTransactionInformation10CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceInformation2;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CustomerCreditTransferInitiationV03CH;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.FinancialInstitutionIdentification7CH;
@@ -117,6 +120,8 @@ import static java.math.BigDecimal.ZERO;
  */
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
+	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
+
 	public static final String NOTPROVIDED_VALUE = "NOTPROVIDED";
 
 	/**
@@ -234,15 +239,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			@NonNull final I_SEPA_Export sepaDocument,
 			@NonNull final OutputStream out)
 	{
-		try
-		{
-			final Document xmlDocument = createDocument(sepaDocument);
-			marshal(xmlDocument, out);
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException("Error while marshaling " + sepaDocument, e);
-		}
+
+		final Document xmlDocument = createDocument(sepaDocument);
+		marshal(xmlDocument, out);
+
 	}
 
 	@VisibleForTesting
@@ -653,13 +653,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			}
 		}
 
-		// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
-		// because it's much less complicated
-		final String reference = Check.isBlank(line.getStructuredRemittanceInfo())
-				? line.getDescription()
-				: line.getStructuredRemittanceInfo();
 		// Remittance Info
 		{
+			// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
+			// because it's much less complicated
+			final String reference = StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription);
+
 			final RemittanceInformation5CH rmtInf = objectFactory.createRemittanceInformation5CH();
 			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true)
 					|| Objects.equals(paymentType, PAYMENT_TYPE_3)
@@ -668,16 +667,39 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				Check.errorIf(Objects.equals(paymentType, PAYMENT_TYPE_1), SepaMarshallerException.class,
 						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
-				// provide the line-description (if set) as unstructured remittance info
-				if (Check.isEmpty(reference, true))
+				if (!Check.isBlank(bankAccount.getQR_IBAN()))
 				{
-					// at least add a "." to make sure the node exists.
-					rmtInf.setUstrd(".");
+
+					if(isInvalidQRReference(reference))
+					{
+						throw new AdempiereException(ERR_SEPA_Export_InvalidReference,createInfo(line));
+					}
+
+					final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
+					rmtInf.setStrd(strd);
+					final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
+					strd.setCdtrRefInf(cdtrRefInf);
+					final CreditorReferenceType2 tp = objectFactory.createCreditorReferenceType2();
+					cdtrRefInf.setTp(tp);
+					final CreditorReferenceType1Choice cdOrPrtry = objectFactory.createCreditorReferenceType1Choice();
+					tp.setCdOrPrtry(cdOrPrtry);
+					cdOrPrtry.setPrtry("QRR");
+
+					cdtrRefInf.setRef(reference);
 				}
 				else
 				{
-					final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
-					rmtInf.setUstrd(validReference);
+					// provide the line-description (if set) as unstructured remittance info
+					if (Check.isBlank(reference))
+					{
+						// at least add a "." to make sure the node exists.
+						rmtInf.setUstrd(".");
+					}
+					else
+					{
+						final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
+						rmtInf.setUstrd(validReference);
+					}
 				}
 			}
 			else
@@ -698,6 +720,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		// Depending on process parameter generated by the system for each payment.
 		//
 		{
+			final String reference = StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription);
+
 			final String endToEndId;
 			if (exportContext.isReferenceAsEndToEndId())
 			{
@@ -991,5 +1015,25 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	{
 		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
 		return bpartnerService.getBPartnerName(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
+	}
+
+	@VisibleForTesting
+	static boolean isInvalidQRReference(final String reference)
+	{
+		if(reference == null || reference.length() != 27)
+		{
+			return true;
+		}
+
+		final int[] checkSequence = {0,9,4,6,8,2,7,1,3,5};
+		int carryOver = 0;
+
+		for (int i = 1; i <= reference.length() - 1; i++)
+		{
+			final int idx = ((carryOver + Integer.parseInt(reference.substring(i - 1, i))) % 10);
+			carryOver = checkSequence[idx];
+		}
+
+		return !(Integer.parseInt(reference.substring(26)) == (10 - carryOver) % 10);
 	}
 }
