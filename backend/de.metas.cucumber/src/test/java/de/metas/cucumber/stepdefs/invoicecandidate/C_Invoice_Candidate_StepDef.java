@@ -291,7 +291,7 @@ public class C_Invoice_Candidate_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(30, 500, () -> isInvoiceCandidateUpdated(row));
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(60, 500, () -> isInvoiceCandidateUpdated(row));
 
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
 
@@ -378,7 +378,7 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(30, 1000, () -> isInvoiceCandidateUpdated(row));
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(60, 1000, () -> isInvoiceCandidateUpdated(row));
 
 			final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 			assertThat(invoiceCandidate.getQtyToInvoice()).isEqualTo(qtyToInvoice);
