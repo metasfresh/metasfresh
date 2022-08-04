@@ -7,14 +7,18 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOut;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLine;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -122,7 +126,8 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
 	{
-		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
+		@SuppressWarnings("UnnecessaryLocalVariable")
+		final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 		return inoutLine;
 	}
 
@@ -453,5 +458,28 @@ public class InOutDAO implements IInOutDAO
 				.list(modelClass)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(inOut -> InOutId.ofRepoId(inOut.getM_InOut_ID()), Function.identity()));
+	}
+
+	public Stream<InOutLine> retrieveInOutStreamBy(@NonNull final InOutQuery inOutQuery)
+	{
+		final IQueryBuilder<I_M_InOut> query = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter();
+		if (inOutQuery.getContext() != null)
+		{
+			query.addOnlyContextClient(inOutQuery.getContext());
+		}
+
+		return query.create()
+				.stream()
+				.map(this::fromDbObject);
+	}
+
+	private InOutLine fromDbObject(final I_M_InOutLine m_inOutLine)
+	{
+		return InOutLine.builder()
+				.id(InOutId.ofRepoId(m_inOutLine.getM_InOut_ID()))
+				.productId(ProductId.ofRepoId(m_inOutLine.getM_Product_ID()))
+				.qty(Quantity.of(m_inOutLine.getQtyDeliveredCatch(), m_inOutLine.getC_UOM_ID()))
+				.build();
 	}
 }
