@@ -41,7 +41,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -389,8 +388,6 @@ public class ADWindowDAO implements IADWindowDAO
 		targetWindow.setOverrides_Window_ID(request.isCustomizationWindow() ? sourceWindowId.getRepoId() : -1);
 
 		save(targetWindow);
-
-		copyWindowTrl(targetWindowId, sourceWindowId);
 
 		copyTabs(targetWindow, sourceWindow);
 	}
