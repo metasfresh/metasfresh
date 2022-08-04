@@ -37,24 +37,29 @@ import java.util.List;
 public class JsonWorkOrderStepUpsertResponse
 {
 	@NonNull
-	JsonMetasfreshId projectStepId;
+	JsonMetasfreshId metasfreshId;
 
-	@Nullable
-	List<JsonWorkOrderResourceUpsertResponse> resourceIds;
+	@NonNull
+	String identifier;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
+	@Nullable
+	List<JsonWorkOrderResourceUpsertResponse> resources;
+
 	@Builder
 	@JsonCreator
 	public JsonWorkOrderStepUpsertResponse(
-			@NonNull @JsonProperty("projectStepId") final JsonMetasfreshId projectStepId,
-			@Nullable @JsonProperty("resourceIds") final List<JsonWorkOrderResourceUpsertResponse> resourceIds,
-			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
+			@NonNull @JsonProperty("metasfreshId") final JsonMetasfreshId metasfreshId,
+			@NonNull @JsonProperty("identifier") final String identifier,
+			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome,
+			@Nullable @JsonProperty("resources") final List<JsonWorkOrderResourceUpsertResponse> resources
 	)
 	{
-		this.projectStepId = projectStepId;
-		this.resourceIds = resourceIds;
+		this.metasfreshId = metasfreshId;
+		this.identifier = identifier;
 		this.syncOutcome = syncOutcome;
+		this.resources = resources;
 	}
 }

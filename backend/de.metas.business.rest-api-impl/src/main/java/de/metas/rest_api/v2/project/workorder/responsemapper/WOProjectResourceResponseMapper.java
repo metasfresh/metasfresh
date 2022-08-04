@@ -24,22 +24,58 @@ package de.metas.rest_api.v2.project.workorder.responsemapper;
 
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
-import de.metas.util.lang.ExternalId;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertResponse;
+import de.metas.organization.OrgId;
+import de.metas.project.workorder.data.WOProjectResource;
+import de.metas.resource.ResourceService;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.project.workorder.WorkOrderMapperUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
 
 @Value
 @Builder
 public class WOProjectResourceResponseMapper
 {
 	@NonNull
-	ExternalId resourceExternalId;
+	String identifier;
+
+	@NonFinal
+	JsonMetasfreshId metasfreshId;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
-	@NonFinal
-	JsonMetasfreshId resourceMetasfreshId;
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	ResourceService resourceService;
+
+	@NonNull
+	public JsonWorkOrderResourceUpsertResponse map(@NonNull final List<WOProjectResource> resources)
+	{
+		final IdentifierString identifierString = IdentifierString.of(identifier);
+
+		return WorkOrderMapperUtil.resolveWOResourceForExternalIdentifier(orgId, identifierString, resources, resourceService)
+				.map(this::toResponse)
+				.orElseThrow(() -> new AdempiereException("No WOProjectResource found for identifier.")
+						.appendParametersToMessage()
+						.setParameter("IdentifierString", identifierString));
+	}
+
+	@NonNull
+	private JsonWorkOrderResourceUpsertResponse toResponse(@NonNull final WOProjectResource woProjectResource)
+	{
+		return JsonWorkOrderResourceUpsertResponse.builder()
+				.identifier(this.identifier)
+				.metasfreshId(JsonMetasfreshId.of(woProjectResource.getWOProjectResourceIdNotNull().getRepoId()))
+				.syncOutcome(this.syncOutcome)
+				.build();
+	}
 }

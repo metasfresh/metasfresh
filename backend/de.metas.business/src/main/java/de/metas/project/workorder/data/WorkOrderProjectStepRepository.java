@@ -24,6 +24,7 @@ package de.metas.project.workorder.data;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectStepId;
@@ -39,10 +40,9 @@ import org.compiere.model.I_C_Project_WO_Step;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -50,7 +50,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @VisibleForTesting
 public class WorkOrderProjectStepRepository
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final WOProjectStepRepository woProjectStepRepository;
 	private final WorkOrderProjectResourceRepository workOrderProjectResourceRepository;
@@ -61,19 +62,6 @@ public class WorkOrderProjectStepRepository
 	{
 		this.woProjectStepRepository = woProjectStepRepository;
 		this.workOrderProjectResourceRepository = workOrderProjectResourceRepository;
-	}
-
-	@NonNull
-	public Optional<WOProjectStep> getOptionalById(@NonNull final WOProjectStepId id)
-	{
-		return Optional.ofNullable(getRecordById(id))
-				.map(this::ofRecord);
-	}
-
-	@Nullable
-	public I_C_Project_WO_Step getRecordById(@NonNull final WOProjectStepId id)
-	{
-		return InterfaceWrapperHelper.load(id, I_C_Project_WO_Step.class);
 	}
 
 	@NonNull
@@ -88,7 +76,7 @@ public class WorkOrderProjectStepRepository
 	}
 
 	@NonNull
-	WOProjectStep save(@NonNull final WOProjectStep stepData)
+	public WOProjectStep save(@NonNull final WOProjectStep stepData)
 	{
 		final WOProjectStepId existingWoProjectStepId;
 		if (stepData.getWoProjectStepId() != null)
@@ -108,6 +96,7 @@ public class WorkOrderProjectStepRepository
 		{
 			existingWoProjectStepId = null;
 		}
+
 		final I_C_Project_WO_Step stepRecord = InterfaceWrapperHelper.loadOrNew(existingWoProjectStepId, I_C_Project_WO_Step.class);
 
 		if (Check.isNotBlank(stepData.getName()))
@@ -168,19 +157,27 @@ public class WorkOrderProjectStepRepository
 				projectId,
 				stepRecord.getC_Project_WO_Step_ID());
 
-		final WOProjectStep.WOProjectStepBuilder woProjectStepBuilder = WOProjectStep.builder()
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		return WOProjectStep.builder()
 				.woProjectStepId(woProjectStepId)
 				.name(stepRecord.getName())
 				.description(stepRecord.getDescription())
 				.seqNo(stepRecord.getSeqNo())
-				.dateStart(TimeUtil.asInstant(stepRecord.getDateStart(), orgId))
-				.dateEnd(TimeUtil.asInstant(stepRecord.getDateEnd(), orgId))
+				.dateStart(TimeUtil.asInstant(stepRecord.getDateStart(), timeZone))
+				.dateEnd(TimeUtil.asInstant(stepRecord.getDateEnd(), timeZone))
 				.projectId(projectId)
-				.externalId(ExternalId.ofOrNull(stepRecord.getExternalId()));
-
-		final List<WOProjectResource> resources = workOrderProjectResourceRepository.getByStepId(woProjectStepId);
-		woProjectStepBuilder.projectResources(resources);
-
-		return woProjectStepBuilder.build();
+				.externalId(ExternalId.ofOrNull(stepRecord.getExternalId()))
+				.woPartialReportDate(TimeUtil.asInstant(stepRecord.getWOPartialReportDate(), timeZone))
+				.woPlannedResourceDurationHours(stepRecord.getWOPlannedResourceDurationHours())
+				.deliveryDate(TimeUtil.asInstant(stepRecord.getWODeliveryDate(), timeZone))
+				.woTargetStartDate(TimeUtil.asInstant(stepRecord.getWOTargetStartDate(), timeZone))
+				.woTargetEndDate(TimeUtil.asInstant(stepRecord.getWOTargetEndDate(), timeZone))
+				.woPlannedPersonDurationHours(stepRecord.getWOPlannedPersonDurationHours())
+				.woStepStatus(WOStepStatus.ofNullableCode(stepRecord.getWOStepStatus()))
+				.woFindingsReleasedDate(TimeUtil.asInstant(stepRecord.getWOFindingsReleasedDate(), timeZone))
+				.woFindingsCreatedDate(TimeUtil.asInstant(stepRecord.getWOFindingsCreatedDate(), timeZone))
+				.projectResources(workOrderProjectResourceRepository.getByStepId(woProjectStepId))
+				.build();
 	}
 }

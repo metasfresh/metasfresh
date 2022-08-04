@@ -39,8 +39,9 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Value
 public class WOProject
@@ -86,16 +87,31 @@ public class WOProject
 	UserId salesRepId;
 
 	@Nullable
-	LocalDate dateContract;
+	Instant dateContract;
 
 	@Nullable
-	LocalDate dateFinish;
+	Instant dateFinish;
 
 	@Nullable
 	String specialistConsultantId;
 
 	@Nullable
 	Instant dateOfProvisionByBPartner;
+
+	@Nullable
+	String bpartnerDepartment;
+
+	@Nullable
+	String woOwner;
+
+	@Nullable
+	String poReference;
+
+	@Nullable
+	Instant bpartnerTargetDate;
+
+	@Nullable
+	Instant woProjectCreatedDate;
 
 	@NonNull
 	List<WOProjectStep> projectSteps;
@@ -118,10 +134,15 @@ public class WOProject
 			@Nullable final String projectReferenceExt,
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final UserId salesRepId,
-			@Nullable final LocalDate dateContract,
-			@Nullable final LocalDate dateFinish,
+			@Nullable final Instant dateContract,
+			@Nullable final Instant dateFinish,
 			@Nullable final String specialistConsultantId,
 			@Nullable final Instant dateOfProvisionByBPartner,
+			@Nullable final String bpartnerDepartment,
+			@Nullable final String woOwner,
+			@Nullable final String poReference,
+			@Nullable final Instant bpartnerTargetDate,
+			@Nullable final Instant woProjectCreatedDate,
 			@Nullable final List<WOProjectStep> projectSteps,
 			@Nullable final List<WOProjectObjectUnderTest> projectObjectsUnderTest)
 	{
@@ -142,6 +163,11 @@ public class WOProject
 		this.dateFinish = dateFinish;
 		this.specialistConsultantId = specialistConsultantId;
 		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
+		this.bpartnerDepartment = bpartnerDepartment;
+		this.woOwner = woOwner;
+		this.poReference = poReference;
+		this.bpartnerTargetDate = bpartnerTargetDate;
+		this.woProjectCreatedDate = woProjectCreatedDate;
 		this.projectSteps = CoalesceUtil.coalesce(projectSteps, ImmutableList.of());
 		this.projectObjectsUnderTest = CoalesceUtil.coalesce(projectObjectsUnderTest, ImmutableList.of());
 	}
@@ -174,5 +200,17 @@ public class WOProject
 			throw new AdempiereException("WOProject Value property cannot be null at this stage!");
 		}
 		return value;
+	}
+
+	@NonNull
+	public Optional<WOProjectStep> getStepForLookupFunction(@NonNull final Function<List<WOProjectStep>, Optional<WOProjectStep>> lookupFunction)
+	{
+		return lookupFunction.apply(this.projectSteps);
+	}
+
+	@NonNull
+	public Optional<WOProjectObjectUnderTest> getObjectUnderTestForLookupFunction(@NonNull final Function<List<WOProjectObjectUnderTest>, Optional<WOProjectObjectUnderTest>> lookupFunction)
+	{
+		return lookupFunction.apply(this.projectObjectsUnderTest);
 	}
 }

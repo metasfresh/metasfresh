@@ -24,7 +24,9 @@ package de.metas.common.rest_api.v2.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,6 +34,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
@@ -46,12 +49,14 @@ public class JsonWorkOrderResourceResponse
 	JsonMetasfreshId stepId;
 
 	@NonNull
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("assignDateFrom")
-	String assignDateFrom;
+	LocalDate assignDateFrom;
 
 	@NonNull
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("assignDateTo")
-	String assignDateTo;
+	LocalDate assignDateTo;
 
 	@Nullable
 	@JsonProperty("isActive")
@@ -71,7 +76,7 @@ public class JsonWorkOrderResourceResponse
 
 	@Nullable
 	@JsonProperty("durationUnit")
-	String durationUnit;
+	JsonDurationUnit durationUnit;
 
 	@Nullable
 	@JsonProperty("budgetProjectId")
@@ -81,21 +86,30 @@ public class JsonWorkOrderResourceResponse
 	@JsonProperty("projectResourceBudgetId")
 	JsonMetasfreshId projectResourceBudgetId;
 
+	@Nullable
+	@JsonProperty("testFacilityGroupName")
+	String testFacilityGroupName;
+
+	@Nullable
+	@JsonProperty("externalId")
+	JsonExternalId externalId;
+
 	@JsonCreator
 	@Builder
 	public JsonWorkOrderResourceResponse(
 			@JsonProperty("woResourceId") @NonNull final JsonMetasfreshId woResourceId,
 			@JsonProperty("stepId") @NonNull final JsonMetasfreshId stepId,
-			@JsonProperty("assignDateFrom") @NonNull final String assignDateFrom,
-			@JsonProperty("assignDateTo") @NonNull final String assignDateTo,
+			@JsonProperty("assignDateFrom") @NonNull final LocalDate assignDateFrom,
+			@JsonProperty("assignDateTo") @NonNull final LocalDate assignDateTo,
 			@JsonProperty("isActive") @Nullable final Boolean isActive,
 			@JsonProperty("resourceId") @Nullable final JsonMetasfreshId resourceId,
 			@JsonProperty("isAllDay") @Nullable final Boolean isAllDay,
 			@JsonProperty("duration") final @Nullable BigDecimal duration,
-			@JsonProperty("durationUnit") final @Nullable String durationUnit,
+			@JsonProperty("durationUnit") final @Nullable JsonDurationUnit durationUnit,
 			@JsonProperty("budgetProjectId") final @Nullable JsonMetasfreshId budgetProjectId,
-			@JsonProperty("projectResourceBudgetId") final @Nullable JsonMetasfreshId projectResourceBudgetId
-	)
+			@JsonProperty("projectResourceBudgetId") final @Nullable JsonMetasfreshId projectResourceBudgetId,
+			@JsonProperty("testFacilityGroupName") @Nullable final String testFacilityGroupName,
+			@JsonProperty ("externalId") @Nullable final JsonExternalId externalId)
 	{
 		this.woResourceId = woResourceId;
 		this.stepId = stepId;
@@ -108,5 +122,7 @@ public class JsonWorkOrderResourceResponse
 		this.durationUnit = durationUnit;
 		this.budgetProjectId = budgetProjectId;
 		this.projectResourceBudgetId = projectResourceBudgetId;
+		this.testFacilityGroupName = testFacilityGroupName;
+		this.externalId = externalId;
 	}
 }

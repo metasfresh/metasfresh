@@ -25,36 +25,51 @@ package de.metas.rest_api.v2.project.workorder.responsemapper;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertResponse;
-import de.metas.util.lang.ExternalId;
+import de.metas.project.workorder.WOProjectObjectUnderTestId;
+import de.metas.project.workorder.data.WOProjectObjectUnderTest;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.project.workorder.WorkOrderMapperUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.List;
+
 @Value
 @Builder
 public class WOProjectObjectUnderTestResponseMapper
 {
 	@NonNull
-	ExternalId objectUnderTestExternalId;
+	String identifier;
+
+	@NonFinal
+	JsonMetasfreshId metasfreshId;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
-	@NonFinal
-	JsonMetasfreshId objectUnderTestMetasfreshId;
+	@NonNull
+	public JsonWorkOrderObjectUnderTestUpsertResponse map(@NonNull final List<WOProjectObjectUnderTest> objectsUnderTest)
+	{
+		final IdentifierString identifierString = IdentifierString.of(identifier);
+
+		return WorkOrderMapperUtil.resolveObjectUnderTestForExternalIdentifier(identifierString, objectsUnderTest)
+				.map(this::toResponse)
+				.orElseThrow(() -> new AdempiereException("No WOProjectObjectUnderTest found for identifier.")
+						.appendParametersToMessage()
+						.setParameter("IdentifierString", identifierString));
+	}
 
 	@NonNull
-	public JsonWorkOrderObjectUnderTestUpsertResponse toJsonResponse(@NonNull final ExternalId externalId)
+	private JsonWorkOrderObjectUnderTestUpsertResponse toResponse(@NonNull final WOProjectObjectUnderTest woObjectUnderTest)
 	{
-		if (!externalId.equals(this.objectUnderTestExternalId))
-		{
-			throw new AdempiereException("externalId is not equal with objectUnderTestExternalId.");
-		}
+		final WOProjectObjectUnderTestId woProjectObjectUnderTestId = woObjectUnderTest.getIdNonNull();
 
 		return JsonWorkOrderObjectUnderTestUpsertResponse.builder()
-				.objectUnderTestId(this.objectUnderTestMetasfreshId)
+				.metasfreshId(JsonMetasfreshId.of(woProjectObjectUnderTestId.getRepoId()))
+				.identifier(this.identifier)
 				.syncOutcome(this.syncOutcome)
 				.build();
 	}

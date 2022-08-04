@@ -24,6 +24,7 @@ package de.metas.common.rest_api.v2.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
@@ -71,10 +72,12 @@ public class JsonWorkOrderProjectResponse
 	String description;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dateContract")
 	LocalDate dateContract;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dateFinish")
 	LocalDate dateFinish;
 
@@ -103,8 +106,31 @@ public class JsonWorkOrderProjectResponse
 	String specialistConsultantId;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dateOfProvisionByBPartner")
 	LocalDate dateOfProvisionByBPartner;
+
+	@Nullable
+	@JsonProperty("woOwner")
+	String woOwner;
+
+	@Nullable
+	@JsonProperty("poReference")
+	String poReference;
+
+	@Nullable
+	@JsonProperty("bpartnerDepartment")
+	String bpartnerDepartment;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonProperty("bpartnerTargetDate")
+	LocalDate bpartnerTargetDate;
+
+	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@JsonProperty("woProjectCreatedDate")
+	LocalDate woProjectCreatedDate;
 
 	@Nullable
 	@JsonProperty("steps")
@@ -134,6 +160,11 @@ public class JsonWorkOrderProjectResponse
 			@Nullable @JsonProperty("isActive") final Boolean isActive,
 			@Nullable @JsonProperty("specialistConsultantId") final String specialistConsultantId,
 			@Nullable @JsonProperty("dateOfProvisionByBPartner") final LocalDate dateOfProvisionByBPartner,
+			@Nullable @JsonProperty("woOwner") final String woOwner,
+			@Nullable @JsonProperty("poReference") final String poReference,
+			@Nullable @JsonProperty("bpartnerDepartment") final String bpartnerDepartment,
+			@Nullable @JsonProperty("bpartnerTargetDate") final LocalDate bpartnerTargetDate,
+			@Nullable @JsonProperty("woProjectCreatedDate") final LocalDate woProjectCreatedDate,
 			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepResponse> steps,
 			@Nullable @JsonProperty("objectsUnderTest") List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest)
 	{
@@ -154,6 +185,11 @@ public class JsonWorkOrderProjectResponse
 		this.isActive = isActive;
 		this.specialistConsultantId = specialistConsultantId;
 		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
+		this.woOwner = woOwner;
+		this.poReference = poReference;
+		this.bpartnerDepartment = bpartnerDepartment;
+		this.bpartnerTargetDate = bpartnerTargetDate;
+		this.woProjectCreatedDate = woProjectCreatedDate;
 		this.steps = steps;
 		this.objectsUnderTest = objectsUnderTest;
 	}

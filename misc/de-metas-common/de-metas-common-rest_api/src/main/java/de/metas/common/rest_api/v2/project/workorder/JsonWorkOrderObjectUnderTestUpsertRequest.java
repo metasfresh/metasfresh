@@ -26,18 +26,25 @@ import de.metas.common.rest_api.common.JsonExternalId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.OBJECT_UNDER_TEST_IDENTIFIER_DOC;
 
 @Getter
 @ToString
 @EqualsAndHashCode
 public class JsonWorkOrderObjectUnderTestUpsertRequest
 {
-	@ApiModelProperty(required = true)
-	Integer numberOfObjectsUnderTest;
+	@ApiModelProperty(position = 10,
+			required = true,
+			value = OBJECT_UNDER_TEST_IDENTIFIER_DOC) //
+	@Setter
+	String identifier;
 
-	@ApiModelProperty(hidden = true)
-	boolean numberOfObjectsUnderTestSet;
+	@ApiModelProperty(required = true)
+	@Setter
+	Integer numberOfObjectsUnderTest;
 
 	String woDeliveryNote;
 
@@ -64,17 +71,10 @@ public class JsonWorkOrderObjectUnderTestUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean woObjectWhereaboutsSet;
 
-	@ApiModelProperty(required = true)
 	JsonExternalId externalId;
 
 	@ApiModelProperty(hidden = true)
 	boolean externalIdSet;
-
-	public void setNumberOfObjectsUnderTest(final int numberOfObjectsUnderTest)
-	{
-		this.numberOfObjectsUnderTest = numberOfObjectsUnderTest;
-		this.numberOfObjectsUnderTestSet = true;
-	}
 
 	public void setWoDeliveryNote(final String woDeliveryNote)
 	{

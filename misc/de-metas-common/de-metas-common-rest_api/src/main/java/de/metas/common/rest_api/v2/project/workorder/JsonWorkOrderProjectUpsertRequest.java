@@ -46,13 +46,15 @@ public class JsonWorkOrderProjectUpsertRequest
 			required = true,
 			value = PROJECT_IDENTIFIER_DOC) //
 	@Setter
-	String projectIdentifier;
+	String identifier;
 
 	String value;
+
 	@ApiModelProperty(hidden = true)
 	boolean valueSet;
 
 	String name;
+
 	@ApiModelProperty(hidden = true)
 	boolean nameSet;
 
@@ -107,7 +109,10 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(required = true)
 	String orgCode;
 
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
+	@ApiModelProperty(hidden = true)
+	boolean orgCodeSet;
+
+	@ApiModelProperty(value = "If not specified but required (e.g. because a new project is created), then `true` is assumed")
 	Boolean isActive;
 
 	@ApiModelProperty(hidden = true)
@@ -125,18 +130,22 @@ public class JsonWorkOrderProjectUpsertRequest
 	boolean bpartnerDepartmentSet;
 
 	private String woOwner;
+
 	@ApiModelProperty(hidden = true)
 	private boolean woOwnerSet;
 
 	private String poReference;
+
 	@ApiModelProperty(hidden = true)
 	private boolean poReferenceSet;
 
 	private LocalDate bpartnerTargetDate;
+
 	@ApiModelProperty(hidden = true)
 	private boolean bpartnerTargetDateSet;
 
 	private LocalDate woProjectCreatedDate;
+
 	@ApiModelProperty(hidden = true)
 	private boolean woProjectCreatedDateSet;
 
@@ -152,13 +161,7 @@ public class JsonWorkOrderProjectUpsertRequest
 
 	private List<JsonWorkOrderStepUpsertRequest> steps;
 
-	@ApiModelProperty(hidden = true)
-	boolean stepsSet;
-
 	private List<JsonWorkOrderObjectUnderTestUpsertRequest> objectsUnderTest;
-
-	@ApiModelProperty(hidden = true)
-	boolean objectsUnderTestSet;
 
 	public void setValue(final String value)
 	{
@@ -192,6 +195,7 @@ public class JsonWorkOrderProjectUpsertRequest
 	public void setSalesRepId(final JsonMetasfreshId salesRepId)
 	{
 		this.salesRepId = salesRepId;
+		this.salesRepIdSet = true;
 	}
 
 	public void setDescription(final String description)
@@ -212,7 +216,7 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.dateFinishSet = true;
 	}
 
-	public void setbPartnerId(final JsonMetasfreshId businessPartnerId)
+	public void setBusinessPartnerId(final JsonMetasfreshId businessPartnerId)
 	{
 		this.businessPartnerId = businessPartnerId;
 		this.businessPartnerIdSet = true;
@@ -233,6 +237,7 @@ public class JsonWorkOrderProjectUpsertRequest
 	public void setOrgCode(final String orgCode)
 	{
 		this.orgCode = orgCode;
+		this.orgCodeSet = true;
 	}
 
 	public void setIsActive(final Boolean active)
@@ -250,7 +255,6 @@ public class JsonWorkOrderProjectUpsertRequest
 	public void setSteps(final List<JsonWorkOrderStepUpsertRequest> steps)
 	{
 		this.steps = CoalesceUtil.coalesce(steps, ImmutableList.of());
-		this.stepsSet = true;
 	}
 
 	public void setBpartnerDepartment(final String bpartnerDepartment)
@@ -298,6 +302,5 @@ public class JsonWorkOrderProjectUpsertRequest
 	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertRequest> objectsUnderTest)
 	{
 		this.objectsUnderTest = CoalesceUtil.coalesce(objectsUnderTest, ImmutableList.of());
-		this.objectsUnderTestSet = true;
 	}
 }

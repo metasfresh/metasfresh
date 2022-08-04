@@ -89,15 +89,4 @@ public class WOProjectObjectUnderTest
 
 		return this.projectId;
 	}
-
-	@NonNull
-	public ExternalId getExternalIdNonNull()
-	{
-		if (this.externalId == null)
-		{
-			throw new AdempiereException("ExternalId cannot be null at this stage!");
-		}
-
-		return this.externalId;
-	}
 }

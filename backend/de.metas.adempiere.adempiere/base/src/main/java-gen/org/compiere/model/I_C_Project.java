@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project
  *  @author metasfresh (generated) 
@@ -1187,4 +1186,27 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_WOOwner = new ModelColumn<>(I_C_Project.class, "WOOwner", null);
 	String COLUMNNAME_WOOwner = "WOOwner";
+
+	/**
+	 * Set Project created.
+	 * Date on which the test project was created.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOProjectCreatedDate (@Nullable java.sql.Timestamp WOProjectCreatedDate);
+
+	/**
+	 * Get Project created.
+	 * Date on which the test project was created.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWOProjectCreatedDate();
+
+	ModelColumn<I_C_Project, Object> COLUMN_WOProjectCreatedDate = new ModelColumn<>(I_C_Project.class, "WOProjectCreatedDate", null);
+	String COLUMNNAME_WOProjectCreatedDate = "WOProjectCreatedDate";
 }

@@ -38,6 +38,8 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Value
 @Builder
@@ -181,5 +183,11 @@ public class WOProjectStep
 		}
 
 		return this.externalId;
+	}
+
+	@NonNull
+	public Optional<WOProjectResource> getResourceForLookupFunction(@NonNull final Function<List<WOProjectResource>, Optional<WOProjectResource>> lookupFunction)
+	{
+		return lookupFunction.apply(this.projectResources);
 	}
 }

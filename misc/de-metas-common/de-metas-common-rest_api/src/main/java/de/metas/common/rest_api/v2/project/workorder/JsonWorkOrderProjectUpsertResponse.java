@@ -28,38 +28,43 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
 public class JsonWorkOrderProjectUpsertResponse
 {
 	@NonNull
-	JsonMetasfreshId projectId;
+	JsonMetasfreshId metasfreshId;
 
 	@NonNull
-	List<JsonWorkOrderStepUpsertResponse> projectStepIds;
-
-	@NonNull
-	List<JsonWorkOrderObjectUnderTestUpsertResponse> objectUnderTestIds;
+	String identifier;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
+	@Nullable
+	List<JsonWorkOrderStepUpsertResponse> steps;
+
+	@Nullable
+	List<JsonWorkOrderObjectUnderTestUpsertResponse> objectsUnderTest;
+
 	@Builder
 	@JsonCreator
 	public JsonWorkOrderProjectUpsertResponse(
-			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@Singular @JsonProperty("projectStepIds") final List<JsonWorkOrderStepUpsertResponse> projectStepIds,
-			@NonNull  @JsonProperty("objectUnderTestIds") final List<JsonWorkOrderObjectUnderTestUpsertResponse> objectUnderTestIds,
-			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
+			@NonNull @JsonProperty("metasfreshId") final JsonMetasfreshId metasfreshId,
+			@NonNull @JsonProperty("identifier") final String identifier,
+			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome,
+			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepUpsertResponse> steps,
+			@Nullable @JsonProperty("objectsUnderTest") final List<JsonWorkOrderObjectUnderTestUpsertResponse> objectsUnderTest
 	)
 	{
-		this.projectId = projectId;
-		this.projectStepIds = projectStepIds;
-		this.objectUnderTestIds = objectUnderTestIds;
+		this.metasfreshId = metasfreshId;
+		this.identifier = identifier;
 		this.syncOutcome = syncOutcome;
+		this.steps = steps;
+		this.objectsUnderTest = objectsUnderTest;
 	}
 }

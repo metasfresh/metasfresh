@@ -22,7 +22,9 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,15 +32,23 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.STEP_IDENTIFIER_DOC;
 
 @Getter
 @ToString
 @EqualsAndHashCode
 public class JsonWorkOrderStepUpsertRequest
 {
+	@ApiModelProperty(position = 10,
+			required = true,
+			value = STEP_IDENTIFIER_DOC) //
+	@Setter
+	String identifier;
+
 	@ApiModelProperty(required = true)
+	@Setter
 	String name;
 
 	String description;
@@ -64,49 +74,58 @@ public class JsonWorkOrderStepUpsertRequest
 	boolean dateEndSet;
 
 	LocalDate woPartialReportDate;
+
 	@ApiModelProperty(hidden = true)
 	boolean woPartialReportDateSet;
 
 	private Integer woPlannedResourceDurationHours;
+
 	@ApiModelProperty(hidden = true)
 	boolean woPlannedResourceDurationHoursSet;
 
 	LocalDate deliveryDate;
+
 	@ApiModelProperty(hidden = true)
 	boolean deliveryDateSet;
 
 	LocalDate woTargetStartDate;
+
 	@ApiModelProperty(hidden = true)
 	boolean woTargetStartDateSet;
 
 	LocalDate woTargetEndDate;
+
 	@ApiModelProperty(hidden = true)
 	boolean woTargetEndDateSet;
 
 	Integer woPlannedPersonDurationHours;
+
 	@ApiModelProperty(hidden = true)
 	boolean woPlannedPersonDurationHoursSet;
 
 	JsonWOStepStatus woStepStatus;
+
 	@ApiModelProperty(hidden = true)
 	boolean woStepStatusSet;
 
 	LocalDate woFindingsReleasedDate;
+
 	@ApiModelProperty(hidden = true)
 	boolean woFindingsReleasedDateSet;
 
 	LocalDate woFindingsCreatedDate;
+
 	@ApiModelProperty(hidden = true)
 	boolean woFindingsCreatedDateSet;
-	
-	@Setter
-	@ApiModelProperty(required = true)
+
 	JsonExternalId externalId;
-	
-	@Setter
+
+	@ApiModelProperty(hidden = true)
+	boolean externalIdSet;
+
 	@ApiModelProperty("Optional resource allocations that reference to this step")
-	List<JsonWorkOrderResourceUpsertRequest> resourceRequests = new ArrayList<>();
-	
+	List<JsonWorkOrderResourceUpsertRequest> resources;
+
 	public void setName(final String name)
 	{
 		this.name = name;
@@ -188,5 +207,16 @@ public class JsonWorkOrderStepUpsertRequest
 	{
 		this.woFindingsCreatedDate = woFindingsCreatedDate;
 		this.woFindingsCreatedDateSet = true;
+	}
+
+	public void setExternalId(final JsonExternalId externalId)
+	{
+		this.externalId = externalId;
+		this.externalIdSet = true;
+	}
+
+	public void setResources(final List<JsonWorkOrderResourceUpsertRequest> resources)
+	{
+		this.resources = CoalesceUtil.coalesce(resources, ImmutableList.of());
 	}
 }

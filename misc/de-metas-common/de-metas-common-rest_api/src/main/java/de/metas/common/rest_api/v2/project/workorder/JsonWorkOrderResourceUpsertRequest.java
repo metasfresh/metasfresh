@@ -23,6 +23,7 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -40,13 +41,11 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIE
 public class JsonWorkOrderResourceUpsertRequest
 {
 	@ApiModelProperty(position = 10,
+			required = true,
 			value = RESOURCE_IDENTIFIER_DOC + "\n"
-					+ "Note that `C_Project_WO_Resource.S_Reource_ID` is needed for the calendar view!") //
+					+ "Note that `C_Project_WO_Resource.S_Resource_ID` is needed for the calendar view!") //
 	@Setter
 	String resourceIdentifier;
-
-	@ApiModelProperty(hidden = true)
-	boolean resourceIdentifierSet;
 
 	@ApiModelProperty(required = true)
 	@Setter
@@ -56,31 +55,36 @@ public class JsonWorkOrderResourceUpsertRequest
 	@Setter
 	LocalDate assignDateTo;
 
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
+	@ApiModelProperty(value = "If not specified but required (e.g. because a new resource is created), then `true` is assumed")
 	Boolean isActive;
 
 	@ApiModelProperty(hidden = true)
 	boolean activeSet;
 
 	Boolean isAllDay;
+
 	@ApiModelProperty(hidden = true)
 	boolean allDaySet;
 
 	BigDecimal duration;
+
 	@ApiModelProperty(hidden = true)
 	boolean durationSet;
 
 	JsonDurationUnit durationUnit;
+
 	@ApiModelProperty(hidden = true)
 	boolean durationUnitSet;
 
 	String testFacilityGroupName;
+
 	@ApiModelProperty(hidden = true)
 	boolean testFacilityGroupNameSet;
 
-	@Setter
-	@ApiModelProperty(required = true)
 	JsonExternalId externalId;
+
+	@ApiModelProperty(hidden = true)
+	boolean externalIdSet;
 
 	public void setActive(final Boolean active)
 	{
@@ -110,5 +114,11 @@ public class JsonWorkOrderResourceUpsertRequest
 	{
 		this.testFacilityGroupName = testFacilityGroupName;
 		this.testFacilityGroupNameSet = true;
+	}
+
+	public void setExternalId(final JsonExternalId externalId)
+	{
+		this.externalId = externalId;
+		this.externalIdSet = true;
 	}
 }

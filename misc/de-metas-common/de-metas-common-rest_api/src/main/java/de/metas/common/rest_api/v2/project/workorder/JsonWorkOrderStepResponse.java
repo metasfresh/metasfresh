@@ -23,6 +23,7 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
@@ -57,10 +58,12 @@ public class JsonWorkOrderStepResponse
 	Integer seqNo;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dateStart")
 	LocalDate dateStart;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dateEnd")
 	LocalDate dateEnd;
 
@@ -69,6 +72,7 @@ public class JsonWorkOrderStepResponse
 	JsonMetasfreshId externalId;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("woPartialReportDate")
 	LocalDate woPartialReportDate;
 
@@ -77,14 +81,17 @@ public class JsonWorkOrderStepResponse
 	Integer woPlannedResourceDurationHours;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("deliveryDate")
 	LocalDate deliveryDate;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("woTargetStartDate")
 	LocalDate woTargetStartDate;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("woTargetEndDate")
 	LocalDate woTargetEndDate;
 
@@ -97,10 +104,12 @@ public class JsonWorkOrderStepResponse
 	JsonWOStepStatus woStepStatus;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("woFindingsReleasedDate")
 	LocalDate woFindingsReleasedDate;
 
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("woFindingsCreatedDate")
 	LocalDate woFindingsCreatedDate;
 
@@ -114,8 +123,8 @@ public class JsonWorkOrderStepResponse
 			@NonNull @JsonProperty("stepId") final JsonMetasfreshId stepId,
 			@NonNull @JsonProperty("name") final String name,
 			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@Nullable @JsonProperty("description") final String description,
 			@NonNull @JsonProperty("seqNo") final Integer seqNo,
+			@Nullable @JsonProperty("description") final String description,
 			@Nullable @JsonProperty("dateStart") final LocalDate dateStart,
 			@Nullable @JsonProperty("dateEnd") final LocalDate dateEnd,
 			@Nullable @JsonProperty("externalId") final JsonMetasfreshId externalId,

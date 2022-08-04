@@ -22,44 +22,78 @@
 
 package de.metas.rest_api.v2.project.workorder.responsemapper;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResponse;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.lang.ExternalId;
+import de.metas.project.workorder.data.WOProjectResource;
+import de.metas.project.workorder.data.WOProjectStep;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.project.workorder.WorkOrderMapperUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.experimental.NonFinal;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 
 @Value
 public class WOProjectStepResponseMapper
 {
 	@NonNull
-	ExternalId stepExternalId;
+	String identifier;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
-	@NonFinal
-	JsonMetasfreshId stepMetasfreshId;
-
 	@NonNull
-	Map<ExternalId, WOProjectResourceResponseMapper> resourceToExternalIdMap;
+	Map<String, WOProjectResourceResponseMapper> resourceIdentifier2ResourceMapper;
 
 	@Builder
 	public WOProjectStepResponseMapper(
-			@NonNull final ExternalId stepExternalId,
+			@NonNull final String identifier,
 			@NonNull final JsonResponseUpsertItem.SyncOutcome syncOutcome,
-			@NonFinal final JsonMetasfreshId stepMetasfreshId,
-			@Nullable final Map<ExternalId, WOProjectResourceResponseMapper> resourceToExternalIdMap)
+			@Nullable final Map<String, WOProjectResourceResponseMapper> resourceIdentifier2ResourceMapper)
 	{
-		this.stepExternalId = stepExternalId;
+		this.identifier = identifier;
 		this.syncOutcome = syncOutcome;
-		this.stepMetasfreshId = stepMetasfreshId;
-		this.resourceToExternalIdMap = CoalesceUtil.coalesce(resourceToExternalIdMap, ImmutableMap.of());
+		this.resourceIdentifier2ResourceMapper = CoalesceUtil.coalesce(resourceIdentifier2ResourceMapper, ImmutableMap.of());
+	}
+
+	@NonNull
+	public JsonWorkOrderStepUpsertResponse map(@NonNull final List<WOProjectStep> steps)
+	{
+		final IdentifierString identifierString = IdentifierString.of(this.identifier);
+
+		return WorkOrderMapperUtil.resolveStepForExternalIdentifier(identifierString, steps)
+				.map(this::toResponse)
+				.orElseThrow(() -> new AdempiereException("No WOProjectStep found for identifier.")
+						.appendParametersToMessage()
+						.setParameter("IdentifierString", identifierString));
+	}
+
+	@NonNull
+	private JsonWorkOrderStepUpsertResponse toResponse(@NonNull final WOProjectStep step)
+	{
+		return JsonWorkOrderStepUpsertResponse.builder()
+				.identifier(this.identifier)
+				.metasfreshId(JsonMetasfreshId.of(step.getWOProjectStepIdNonNull().getRepoId()))
+				.syncOutcome(this.syncOutcome)
+				.resources(mapResources(step.getProjectResources()))
+				.build();
+	}
+
+	@NonNull
+	private List<JsonWorkOrderResourceUpsertResponse> mapResources(@NonNull final List<WOProjectResource> resources)
+	{
+		return resourceIdentifier2ResourceMapper.values()
+				.stream()
+				.map(entry -> entry.map(resources))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

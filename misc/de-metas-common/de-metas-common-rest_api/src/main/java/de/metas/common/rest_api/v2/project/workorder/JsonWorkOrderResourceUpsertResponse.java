@@ -34,7 +34,10 @@ import lombok.Value;
 public class JsonWorkOrderResourceUpsertResponse
 {
 	@NonNull
-	JsonMetasfreshId resourceId;
+	JsonMetasfreshId metasfreshId;
+
+	@NonNull
+	String identifier;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
@@ -42,11 +45,13 @@ public class JsonWorkOrderResourceUpsertResponse
 	@Builder
 	@JsonCreator
 	public JsonWorkOrderResourceUpsertResponse(
-			@NonNull @JsonProperty("resourceId") final JsonMetasfreshId resourceId,
+			@NonNull @JsonProperty("metasfreshId") final JsonMetasfreshId metasfreshId,
+			@NonNull @JsonProperty("identifier") final  String identifier,
 			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
 	)
 	{
-		this.resourceId = resourceId;
+		this.metasfreshId = metasfreshId;
+		this.identifier = identifier;
 		this.syncOutcome = syncOutcome;
 	}
 }

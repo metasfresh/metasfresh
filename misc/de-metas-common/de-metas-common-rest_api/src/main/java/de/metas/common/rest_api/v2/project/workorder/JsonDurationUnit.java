@@ -22,7 +22,42 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.Arrays;
+
+//dev-note: to be kept in sync with AD_Reference_ID=299
 public enum JsonDurationUnit
 {
-	h
+	Year("Y"),
+	Month("M"),
+	Day("D"),
+	Hour("h"),
+	Minute("m"),
+	Second("s");
+
+	@Getter
+	private final String code;
+
+	JsonDurationUnit(@NonNull final String code)
+	{
+		this.code = code;
+	}
+
+	@NonNull
+	public static JsonDurationUnit ofCode(@NonNull final String code)
+	{
+		final JsonDurationUnit targetFieldType = typesByCode.get(code);
+
+		if (targetFieldType == null)
+		{
+			throw new IllegalArgumentException("JsonDurationUnit does not support code: " + code);
+		}
+		return targetFieldType;
+	}
+
+	private static final ImmutableMap<String, JsonDurationUnit> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), JsonDurationUnit::getCode);
 }

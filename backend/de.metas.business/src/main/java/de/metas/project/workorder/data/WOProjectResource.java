@@ -70,7 +70,7 @@ public class WOProjectResource
 	BigDecimal duration;
 
 	@Nullable
-	String durationUnit;
+	DurationUnit durationUnit;
 
 	@Nullable
 	ProjectId budgetProjectId;
@@ -80,7 +80,10 @@ public class WOProjectResource
 
 	@Nullable
 	ExternalId externalId;
-	
+
+	@Nullable
+	String testFacilityGroupName;
+
 	@NonNull
 	public WOProjectResourceId getWOProjectResourceIdNotNull()
 	{
@@ -92,12 +95,13 @@ public class WOProjectResource
 	}
 
 	@NonNull
-	public ExternalId getExternalIdNotNull()
+	public ResourceId getResourceIdNonNull()
 	{
-		if (this.externalId == null)
+		if (this.resourceId == null)
 		{
-			throw new AdempiereException("ExternalId cannot be null at this stage!");
+			throw new AdempiereException("ResourceId cannot be null at this stage!");
 		}
-		return this.externalId;
+
+		return this.resourceId;
 	}
 }
