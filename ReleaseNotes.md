@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [*13384](https://github.com/metasfresh/metasfresh/issues/13384) Tests and Error Message for SEPA Export with QR IBAN
   * [#13368](https://github.com/metasfresh/metasfresh/issues/13368) Partial Payment Invoicing S4: Invoice candidate 
   * [#13364](https://github.com/metasfresh/metasfresh/issues/13364) Available for sale - trigger recomputation when shipment schedule is closed/reopened + shopware sync when config changes
   * [#13323](https://github.com/metasfresh/metasfresh/issues/13323) Partial Payment Invoicing: flatrate conditions
