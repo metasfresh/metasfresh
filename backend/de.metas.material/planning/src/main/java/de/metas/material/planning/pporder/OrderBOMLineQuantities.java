@@ -23,6 +23,9 @@
 package de.metas.material.planning.pporder;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
@@ -50,6 +53,9 @@ public class OrderBOMLineQuantities
 	@NonNull Quantity qtyReserved;
 
 	@NonNull UomId uomId;
+
+	private static final AdMessageKey MSG_CannotIssueLessThan = AdMessageKey.of("OrderBOMLineQuantities.CannotIssueLessThan");
+	private static final AdMessageKey MSG_CannotIssueMoreThan = AdMessageKey.of("OrderBOMLineQuantities.CannotIssueMoreThan");
 
 	@Builder(toBuilder = true)
 	private OrderBOMLineQuantities(
@@ -211,7 +217,16 @@ public class OrderBOMLineQuantities
 		final Quantity qtyIssuedOrReceivedActualMin = qtyRequired.subtract(qtyToIssueTolerance);
 		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMin) < 0)
 		{
-			throw new AdempiereException("Cannot issue less than " + qtyIssuedOrReceivedActualMin + " (" + qtyRequired + " - " + qtyToIssueTolerance + ")");
+			final ITranslatableString qtyStr = TranslatableStrings.builder()
+					.appendQty(qtyIssuedOrReceivedActualMin.toBigDecimal(), qtyIssuedOrReceivedActualMin.getUOMSymbol())
+					.append(" (")
+					.appendQty(qtyRequired.toBigDecimal(), qtyRequired.getUOMSymbol())
+					.append(" - ")
+					.appendPercent(qtyToIssueTolerance)
+					.append(")")
+					.build();
+			throw new AdempiereException(MSG_CannotIssueLessThan, qtyStr)
+					.markAsUserValidationError();
 		}
 	}
 
@@ -225,7 +240,16 @@ public class OrderBOMLineQuantities
 		final Quantity qtyIssuedOrReceivedActualMax = qtyRequired.add(qtyToIssueTolerance);
 		if (qtyIssuedOrReceivedActual.compareTo(qtyIssuedOrReceivedActualMax) > 0)
 		{
-			throw new AdempiereException("Cannot issue more than " + qtyIssuedOrReceivedActualMax + " (" + qtyRequired + " + " + qtyToIssueTolerance + ")");
+			final ITranslatableString qtyStr = TranslatableStrings.builder()
+					.appendQty(qtyIssuedOrReceivedActualMax.toBigDecimal(), qtyIssuedOrReceivedActualMax.getUOMSymbol())
+					.append(" (")
+					.appendQty(qtyRequired.toBigDecimal(), qtyRequired.getUOMSymbol())
+					.append(" + ")
+					.appendPercent(qtyToIssueTolerance)
+					.append(")")
+					.build();
+			throw new AdempiereException(MSG_CannotIssueMoreThan, qtyStr)
+					.markAsUserValidationError();
 		}
 	}
 
