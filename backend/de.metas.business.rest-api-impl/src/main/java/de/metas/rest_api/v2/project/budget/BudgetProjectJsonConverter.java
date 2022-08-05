@@ -37,6 +37,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
@@ -61,6 +62,7 @@ import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -77,6 +79,7 @@ import static de.metas.project.budget.BudgetProjectResourceRepository.IsAllDay_T
 public class BudgetProjectJsonConverter
 {
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final ResourceRestService resourceRestService;
 	private final ProjectSharedService projectSharedService;
@@ -425,38 +428,18 @@ public class BudgetProjectJsonConverter
 		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoId(JsonMetasfreshId.toValueInt(request.getProjectTypeId()));
 		final String projectValue = getProjectValue(request, projectTypeId, existingBudgetProjectData);
 		final String projectName = getName(request, existingBudgetProjectData, projectValue);
+		final CurrencyId currencyId = getCurrencyId(request, existingBudgetProjectData);
+		final PriceListVersionId priceListVersionId = getPriceListVersionId(request, existingBudgetProjectData);
+
+		assertCurrencyIdsMatch(currencyId, priceListVersionId);
 
 		final BudgetProjectData.BudgetProjectDataBuilder budgetProjectDataBuilder = BudgetProjectData.builder()
 				.projectTypeId(projectTypeId)
 				.value(projectValue)
 				.name(projectName)
-				.orgId(orgId);
-
-		if (request.isPriceListVersionIdSet() || existingBudgetProjectData == null)
-		{
-
-			//todo dm: after determining the current priceListVersion => validate it matches the current currencyId
-			budgetProjectDataBuilder.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getPriceListVersionId())));
-		}
-		else
-		{
-			budgetProjectDataBuilder.priceListVersionId(existingBudgetProjectData.getPriceListVersionId());
-		}
-
-		if (request.isCurrencyIdSet() || existingBudgetProjectData == null)
-		{
-			if (!request.isCurrencyIdSet())
-			{
-				// currencyId missing on "create" scenario
-				throw new MissingPropertyException("currencyId", request);
-			}
-
-			budgetProjectDataBuilder.currencyId(CurrencyId.ofRepoId(JsonMetasfreshId.toValueInt(request.getCurrencyId())));
-		}
-		else
-		{
-			budgetProjectDataBuilder.currencyId(existingBudgetProjectData.getCurrencyId());
-		}
+				.orgId(orgId)
+				.currencyId(currencyId)
+				.priceListVersionId(priceListVersionId);
 
 		if (request.isSalesRepIdSet() || existingBudgetProjectData == null)
 		{
@@ -580,5 +563,68 @@ public class BudgetProjectJsonConverter
 		}
 
 		return projectValue;
+	}
+
+	@NonNull
+	private CurrencyId getCurrencyId(
+			@NonNull final JsonBudgetProjectUpsertRequest request,
+			@Nullable final BudgetProjectData existingBudgetProjectData)
+	{
+		if (request.isCurrencyIdSet() || existingBudgetProjectData == null)
+		{
+			if (!request.isCurrencyIdSet())
+			{
+				// currencyId missing on "create" scenario
+				throw new MissingPropertyException("currencyId", request);
+			}
+
+			return CurrencyId.ofRepoId(JsonMetasfreshId.toValueInt(request.getCurrencyId()));
+		}
+		else
+		{
+			return existingBudgetProjectData.getCurrencyId();
+		}
+	}
+
+	@Nullable
+	private PriceListVersionId getPriceListVersionId(
+			@NonNull final JsonBudgetProjectUpsertRequest request,
+			@Nullable final BudgetProjectData existingBudgetProjectData)
+	{
+		if (request.isPriceListVersionIdSet() || existingBudgetProjectData == null)
+		{
+			return PriceListVersionId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getPriceListVersionId()));
+		}
+		else
+		{
+			return existingBudgetProjectData.getPriceListVersionId();
+		}
+	}
+
+	private void assertCurrencyIdsMatch(
+			@NonNull final CurrencyId currencyId,
+			@Nullable final PriceListVersionId priceListVersionId)
+	{
+		if (priceListVersionId == null)
+		{
+			return;
+		}
+
+		final I_M_PriceList priceListRecord = priceListDAO.getPriceListByPriceListVersionId(priceListVersionId);
+
+		if (priceListRecord == null)
+		{
+			return;
+		}
+
+		final CurrencyId priceListCurrencyId = CurrencyId.ofRepoId(priceListRecord.getC_Currency_ID());
+
+		if (currencyId.getRepoId() != priceListCurrencyId.getRepoId())
+		{
+			throw new AdempiereException("Currency of the budget project does not match the currency of the price list!")
+					.appendParametersToMessage()
+					.setParameter("Project.CurrencyId", currencyId)
+					.setParameter("PriceList.CurrencyId", priceListCurrencyId);
+		}
 	}
 }

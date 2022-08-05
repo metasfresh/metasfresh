@@ -7,6 +7,15 @@ Feature: Budget Project API Test
 
   @from:cucumber
   Scenario: Persist Budget Project with associated resource using API
+    1st we insert a budget project setting all available fields in API
+    _Then we retrieve the inserted project to validate all fields
+
+    2nd we update the created project setting all available fields in API
+    _Then we retrieve the updated project to validate all fields
+
+    3rd we update only one random field
+    _Then we retrieve the updated project once again to validate that only that field has been changed
+
     Given load M_Product_Category:
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
@@ -130,10 +139,10 @@ Feature: Budget Project API Test
     "orgCode" : "001",
     "value" : "testValue_2",
     "name" : "testName_2",
-    "priceListVersionId" : 540005,
+    "priceListVersionId" : 2002139,
     "salesRepId" : 2188223,
     "projectTypeId" : 540005,
-    "currencyId" : 100,
+    "currencyId" : 318,
     "description" : "testDescription_2",
     "dateContract" : "2021-05-15",
     "dateFinish" : "2021-05-16",
@@ -152,12 +161,12 @@ Feature: Budget Project API Test
             "resourceGroupId" : 3000000,
             "plannedAmt" : {
                 "amount" : 300,
-                "currencyCode" : "USD"
+                "currencyCode" : "CHF"
             },
             "plannedDuration" : 2,
             "pricePerTimeUOM" : {
                 "amount" : 400,
-                "currencyCode" : "USD"
+                "currencyCode" : "CHF"
             },
             "active" : true
         }
@@ -178,11 +187,11 @@ Feature: Budget Project API Test
     "endpointResponse": {
         "projectId": 1000000,
         "orgCode": "001",
-        "currencyId": 102,
+        "currencyId": 318,
         "name": "testName_2",
         "value": "testValue_2",
         "isActive": true,
-        "priceListVersionId": 540005,
+        "priceListVersionId": 2002139,
         "description": "testDescription_2",
         "projectParentId": 3000000,
         "projectTypeId": 540005,
@@ -200,7 +209,7 @@ Feature: Budget Project API Test
                 "dateFinishPlan": "2021-05-18",
                 "description": "resourceTestDescription_2",
                 "plannedAmt": 300,
-                "currencyId": 100,
+                "currencyId": 318,
                 "plannedDuration": 2,
                 "pricePerTimeUOM": 400,
                 "resourceGroupId": 3000000,
@@ -219,7 +228,7 @@ Feature: Budget Project API Test
 {
     "projectIdentifier" : "ext-testReferenceExt",
     "orgCode" : "001",
-    "priceListVersionId" : 2002141,
+    "bpartnerId" : 2156423,
     "projectTypeId" : 540005,
     "syncAdvise":{
       "ifNotExists":"CREATE",
@@ -237,16 +246,16 @@ Feature: Budget Project API Test
     "endpointResponse": {
         "projectId": 1000000,
         "orgCode": "001",
-        "currencyId": 102,
+        "currencyId": 318,
         "name": "testName_2",
         "value": "testValue_2",
         "isActive": true,
-        "priceListVersionId": 2002141,
+        "priceListVersionId": 2002139,
         "description": "testDescription_2",
         "projectParentId": 3000000,
         "projectTypeId": 540005,
         "projectReferenceExt": "testReferenceExt",
-        "bpartnerId": 2156425,
+        "bpartnerId": 2156423,
         "salesRepId": 100,
         "dateContract": "2021-05-15",
         "dateFinish": "2021-05-16",
@@ -259,7 +268,7 @@ Feature: Budget Project API Test
                 "dateFinishPlan": "2021-05-18",
                 "description": "resourceTestDescription_2",
                 "plannedAmt": 300,
-                "currencyId": 100,
+                "currencyId": 318,
                 "plannedDuration": 2,
                 "pricePerTimeUOM": 400,
                 "resourceGroupId": 3000000,
