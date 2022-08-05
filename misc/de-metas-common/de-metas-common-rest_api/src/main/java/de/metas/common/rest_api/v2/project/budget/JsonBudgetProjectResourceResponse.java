@@ -83,10 +83,10 @@ public class JsonBudgetProjectResourceResponse
 	@JsonProperty("plannedAmt")
 	BigDecimal plannedAmt;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.C_Currency_ID`.")
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.C_Currency_ID.Iso_Code`.")
 	@NonNull
-	@JsonProperty("currencyId")
-	JsonMetasfreshId currencyId;
+	@JsonProperty("currencyCode")
+	String currencyCode;
 
 	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.PlannedDuration`.")
 	@NonNull
@@ -132,7 +132,7 @@ public class JsonBudgetProjectResourceResponse
 			@JsonProperty("dateFinishPlan") @NonNull final LocalDate dateFinishPlan,
 			@JsonProperty("description") @Nullable final String description,
 			@JsonProperty("plannedAmt") @NonNull final BigDecimal plannedAmt,
-			@JsonProperty("currencyId") @NonNull final JsonMetasfreshId currencyId,
+			@JsonProperty("currencyId") @NonNull final String currencyCode,
 			@JsonProperty("plannedDuration") @NonNull final BigDecimal plannedDuration,
 			@JsonProperty("pricePerTimeUOM") @NonNull final BigDecimal pricePerTimeUOM,
 			@JsonProperty("resourceGroupId") @Nullable final JsonMetasfreshId resourceGroupId,
@@ -147,7 +147,7 @@ public class JsonBudgetProjectResourceResponse
 		this.dateFinishPlan = dateFinishPlan;
 		this.description = description;
 		this.plannedAmt = plannedAmt;
-		this.currencyId = currencyId;
+		this.currencyCode = currencyCode;
 		this.plannedDuration = plannedDuration;
 		this.pricePerTimeUOM = pricePerTimeUOM;
 		this.resourceGroupId = resourceGroupId;

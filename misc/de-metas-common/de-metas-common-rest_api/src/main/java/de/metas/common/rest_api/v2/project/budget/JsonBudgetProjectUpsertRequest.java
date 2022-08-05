@@ -72,11 +72,11 @@ public class JsonBudgetProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	private boolean priceListVersionIdSet;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to `C_Project.C_Currency_ID`")
-	private JsonMetasfreshId currencyId;
+	@ApiModelProperty(position = 70, value = "Corresponding to `C_Project.C_Currency_ID.Iso_Code`")
+	private String currencyCode;
 
 	@ApiModelProperty(hidden = true)
-	private boolean currencyIdSet;
+	private boolean currencyCodeSet;
 
 	@ApiModelProperty(position = 80, value = "Corresponding to `C_Project.SalesRep_ID`")
 	private JsonMetasfreshId salesRepId;
@@ -150,10 +150,10 @@ public class JsonBudgetProjectUpsertRequest
 		this.priceListVersionIdSet = true;
 	}
 
-	public void setCurrencyId(final JsonMetasfreshId currencyId)
+	public void setCurrencyCode(final String currencyCode)
 	{
-		this.currencyId = currencyId;
-		this.currencyIdSet = true;
+		this.currencyCode = currencyCode;
+		this.currencyCodeSet = true;
 	}
 
 	public void setDescription(final String description)

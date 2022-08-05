@@ -55,10 +55,10 @@ public class JsonBudgetProjectResponse
 	@JsonProperty("orgCode")
 	String orgCode;
 
-	@ApiModelProperty(required = true, value = "This translates to `C_Project.C_Currency_Id`.")
-	@Nullable
-	@JsonProperty("currencyId")
-	JsonMetasfreshId currencyId;
+	@ApiModelProperty(required = true, value = "This translates to `C_Project.C_Currency_ID.Iso_Code`.")
+	@NonNull
+	@JsonProperty("currencyCode")
+	String currencyCode;
 
 	@ApiModelProperty(required = true, value = "This translates to `C_Project.Name`.")
 	@NonNull
@@ -139,7 +139,7 @@ public class JsonBudgetProjectResponse
 	public JsonBudgetProjectResponse(
 			@JsonProperty("projectId") @NonNull final JsonMetasfreshId projectId,
 			@JsonProperty("orgCode") @NonNull final String orgCode,
-			@JsonProperty("currencyId") @Nullable final JsonMetasfreshId currencyId,
+			@JsonProperty("currencyCode") @NonNull final String currencyCode,
 			@JsonProperty("name") @NonNull final String name,
 			@JsonProperty("value") @NonNull final String value,
 			@JsonProperty("isActive") @Nullable final Boolean isActive,
@@ -156,7 +156,7 @@ public class JsonBudgetProjectResponse
 	{
 		this.projectId = projectId;
 		this.orgCode = orgCode;
-		this.currencyId = currencyId;
+		this.currencyCode = currencyCode;
 		this.name = name;
 		this.value = value;
 		this.isActive = isActive;

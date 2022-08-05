@@ -31,6 +31,7 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.money.JsonMoney;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetResourceUpsertRequest;
+import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
@@ -570,15 +571,17 @@ public class BudgetProjectJsonConverter
 			@NonNull final JsonBudgetProjectUpsertRequest request,
 			@Nullable final BudgetProjectData existingBudgetProjectData)
 	{
-		if (request.isCurrencyIdSet() || existingBudgetProjectData == null)
+		if (request.isCurrencyCodeSet() || existingBudgetProjectData == null)
 		{
-			if (!request.isCurrencyIdSet())
+			if (!request.isCurrencyCodeSet())
 			{
 				// currencyId missing on "create" scenario
-				throw new MissingPropertyException("currencyId", request);
+				throw new MissingPropertyException("currencyCode", request);
 			}
 
-			return CurrencyId.ofRepoId(JsonMetasfreshId.toValueInt(request.getCurrencyId()));
+			final Currency currency = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getCurrencyCode()));
+
+			return currency.getId();
 		}
 		else
 		{

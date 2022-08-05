@@ -32,7 +32,8 @@ import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResourceRespo
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResponse;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectUpsertResponse;
-import de.metas.money.CurrencyId;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
@@ -73,8 +74,8 @@ import java.util.Optional;
 public class BudgetProjectRestService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final BudgetProjectRepository budgetProjectRepository;
 	private final ProjectTypeRepository projectTypeRepository;
@@ -182,10 +183,12 @@ public class BudgetProjectRestService
 
 			final ZoneId timeZoneId = orgDAO.getTimeZone(budgetProject.getBudgetProjectData().getOrgId());
 
+			final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(budgetProjectResourceData.getCurrencyId());
+
 			final JsonBudgetProjectResourceResponse resourceResponse = JsonBudgetProjectResourceResponse.builder()
 					.budgetProjectResourceId(JsonMetasfreshId.of(projectResource.getId().getRepoId()))
 					.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(projectResource.getProjectId())))
-					.currencyId(JsonMetasfreshId.of(budgetProjectResourceData.getPlannedAmount().getCurrencyId().getRepoId()))
+					.currencyCode(currencyCode.toThreeLetterCode())
 					.resourceId(JsonMetasfreshId.ofOrNull(ResourceId.toRepoId(budgetProjectResourceData.getResourceId())))
 					.resourceGroupId(JsonMetasfreshId.ofOrNull(ResourceGroupId.toRepoId(budgetProjectResourceData.getResourceGroupId())))
 					.uomTimeId(JsonMetasfreshId.of(UomId.toRepoId(budgetProjectResourceData.getDurationUomId())))
@@ -204,10 +207,12 @@ public class BudgetProjectRestService
 
 		final BudgetProjectData budgetProjectData = budgetProject.getBudgetProjectData();
 
+		final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(budgetProjectData.getCurrencyId());
+
 		return JsonBudgetProjectResponse.builder()
 				.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(budgetProject.getProjectId())))
 				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(budgetProjectData.getBPartnerId())))
-				.currencyId(JsonMetasfreshId.ofOrNull(CurrencyId.toRepoId(budgetProjectData.getCurrencyId())))
+				.currencyCode(currencyCode.toThreeLetterCode())
 				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(budgetProjectData.getProjectParentId())))
 				.projectTypeId(JsonMetasfreshId.of(ProjectTypeId.toRepoId(budgetProjectData.getProjectTypeId())))
 				.priceListVersionId(JsonMetasfreshId.ofOrNull(PriceListVersionId.toRepoId(budgetProjectData.getPriceListVersionId())))
