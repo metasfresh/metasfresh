@@ -22,6 +22,7 @@
 
 package de.metas.contacts.partialpayment.command;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.ConditionsId;
@@ -29,7 +30,10 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.process.FlatrateTermCreator;
-import de.metas.inout.model.validator.M_InOut;
+import de.metas.inout.InOutDocStatus;
+import de.metas.inout.InOutLine;
+import de.metas.inout.InOutLineQuery;
+import de.metas.inout.impl.InOutDAO;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -40,13 +44,12 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 @Value
 @Builder
@@ -74,6 +77,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	IProductDAO productDAO = Services.get(IProductDAO.class);
+	InOutDAO inOutDAO = Services.get(InOutDAO.class);
 
 	public void execute()
 	{
@@ -84,7 +88,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	{
 		final I_C_Flatrate_Term flatrateTerm = createFlatrateTerm();
 
-		final Collection<I_M_InOut> matchingInOuts = findMatchingInOuts(flatrateTerm);
+		final Stream<InOutLine> matchingInOuts = streamMatchingInOuts();
 
 	}
 
@@ -104,11 +108,18 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.createTermsForBPartners()
 				.stream()
 				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No flatrate term created")); //TODO replace with ad_message
+				.orElseThrow(() -> new AdempiereException("No flatrate term created")); //TODO i18n
 	}
 
-	private Collection<I_M_InOut> findMatchingInOuts(final I_C_Flatrate_Term flatrateTerm)
+	private Stream<InOutLine> streamMatchingInOuts()
 	{
-		inOut
+		return inOutDAO.retrieveInOutStreamBy(InOutLineQuery.builder()
+				.bPartnerId(bpartnerId)
+				.productId(productId)
+				.dateFrom(dateFrom)
+				.dateTo(dateTo)
+				.clientandOrgId(ctx)
+				.docStatuses(ImmutableList.of(InOutDocStatus.Closed, InOutDocStatus.Completed, InOutDocStatus.Reversed))
+				.build());
 	}
 }

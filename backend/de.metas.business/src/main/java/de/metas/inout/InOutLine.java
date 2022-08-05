@@ -22,7 +22,6 @@
 
 package de.metas.inout;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -34,7 +33,5 @@ public class InOutLine
 {
 	InOutId id;
 	ProductId productId;
-	BPartnerId billPartnerId;
 	Quantity qty;
-
 }

@@ -8,17 +8,20 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutDocStatus;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLine;
 import de.metas.inout.InOutLineId;
-import de.metas.inout.InOutQuery;
+import de.metas.inout.InOutLineQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -38,6 +41,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -77,6 +81,7 @@ public class InOutDAO implements IInOutDAO
 {
 	private static final Logger logger = LogManager.getLogger(InOutDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -459,12 +464,39 @@ public class InOutDAO implements IInOutDAO
 				.collect(ImmutableMap.toImmutableMap(inOut -> InOutId.ofRepoId(inOut.getM_InOut_ID()), Function.identity()));
 	}
 
-	public Stream<InOutLine> retrieveInOutStreamBy(@NonNull final InOutQuery inOutQuery)
+	public Stream<InOutLine> retrieveInOutStreamBy(@NonNull final InOutLineQuery inOutLineQuery)
 	{
-		final IQueryBuilder<I_M_InOut> query = queryBL.createQueryBuilder(I_M_InOut.class).addOnlyActiveRecordsFilter();
-		if (inOutQuery.getContext() != null)
+		final IQueryBuilder<I_M_InOut> query = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter();
+
+		final ClientAndOrgId clientandOrgId = inOutLineQuery.getClientandOrgId();
+		if (clientandOrgId != null)
 		{
-			query.addOnlyContextClient(inOutQuery.getContext());
+			query.addEqualsFilter(I_M_InOut.COLUMNNAME_AD_Org_ID, clientandOrgId.getOrgId());
+			query.addEqualsFilter(I_M_InOut.COLUMNNAME_AD_Client_ID, clientandOrgId.getClientId());
+		}
+
+		final BPartnerId bPartnerId = inOutLineQuery.getBPartnerId();
+		if (bPartnerId != null)
+		{
+			query.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bPartnerId);
+		}
+
+		final Timestamp dateFrom = inOutLineQuery.getDateFrom();
+		if (bPartnerId != null)
+		{
+			query.addCompareFilter(I_M_InOut.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL,dateFrom);
+		}
+		final Timestamp dateTo = inOutLineQuery.getDateTo();
+		if (bPartnerId != null)
+		{
+			query.addCompareFilter(I_M_InOut.COLUMNNAME_Created, Operator.LESS_OR_EQUAL,dateTo);
+		}
+
+		final Collection<InOutDocStatus> docStatuses = inOutLineQuery.getDocStatuses();
+		if (!Check.isEmpty(docStatuses))
+		{
+			query.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, docStatuses);
 		}
 
 		return query.andCollect(I_M_InOut.COLUMN_M_InOut_ID, I_M_InOutLine.class)
@@ -475,10 +507,11 @@ public class InOutDAO implements IInOutDAO
 
 	private InOutLine fromDbObject(final I_M_InOutLine m_inOutLine)
 	{
+
 		return InOutLine.builder()
 				.id(InOutId.ofRepoId(m_inOutLine.getM_InOut_ID()))
 				.productId(ProductId.ofRepoId(m_inOutLine.getM_Product_ID()))
-				.qty(Quantity.of(m_inOutLine.getQtyDeliveredCatch(), m_inOutLine.getC_UOM_ID()))
+				.qty(Quantity.of(m_inOutLine.getQtyDeliveredCatch(), uomDao.getById(m_inOutLine.getC_UOM_ID())))
 				.build();
 	}
 }

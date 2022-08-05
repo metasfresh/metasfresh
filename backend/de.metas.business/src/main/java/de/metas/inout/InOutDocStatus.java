@@ -22,20 +22,27 @@
 
 package de.metas.inout;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import lombok.Value;
+import org.compiere.model.X_M_InOut;
 
-import java.sql.Timestamp;
-import java.util.Properties;
-
-@Value
-public class InOutQuery
+public enum InOutDocStatus
 {
-	Properties context;
-	BPartnerId billPartnerId;
-	ProductId productId;
-	Timestamp dateFrom;
-	Timestamp dateTo;
+	Drafted(X_M_InOut.DOCSTATUS_Drafted),
+	Completed(X_M_InOut.DOCSTATUS_Completed),
+	Approved(X_M_InOut.DOCSTATUS_Approved),
+	NotApproved(X_M_InOut.DOCSTATUS_NotApproved),
+	Voided(X_M_InOut.DOCSTATUS_Voided),
+	Invalid(X_M_InOut.DOCSTATUS_Invalid),
+	Reversed(X_M_InOut.DOCSTATUS_Reversed),
+	Closed(X_M_InOut.DOCSTATUS_Closed),
+	Unknown(X_M_InOut.DOCSTATUS_Unknown),
+	InProgress(X_M_InOut.DOCSTATUS_InProgress),
+	WaitingPayment(X_M_InOut.DOCSTATUS_WaitingPayment),
+	WaitingConfirmation(X_M_InOut.DOCSTATUS_WaitingConfirmation);
 
+	private final String value;
+
+	private InOutDocStatus(String value)
+	{
+		this.value = value;
+	}
 }
