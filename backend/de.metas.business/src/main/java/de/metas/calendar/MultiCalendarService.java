@@ -112,10 +112,10 @@ public class MultiCalendarService
 		continuousQueriesDispatcher.onEntryDeleted(entryId, null);
 	}
 
-	public CalendarEntryConflicts getConflicts(@Nullable SimulationPlanId simulationId)
+	public CalendarEntryConflicts getConflicts(@NonNull final CalendarConflictsQuery query)
 	{
 		return calendarConflictsServices.stream()
-				.map(conflictsService -> conflictsService.query(simulationId))
+				.map(conflictsService -> conflictsService.query(query))
 				.reduce(CalendarEntryConflicts::mergeFrom)
 				.orElse(CalendarEntryConflicts.EMPTY);
 	}

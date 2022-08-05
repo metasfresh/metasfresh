@@ -61,7 +61,7 @@ import lombok.NonNull;
  * <ul>
  * <li>NULL case is covered (i.e. if one of your values is NULL, the built SQL will contain an "ColumnName IS NULL" check
  * <li>maximum values list length is not checked and we rely on database. However in PostgreSQL there is no limit (see
- * http://stackoverflow.com/questions/1009706/postgresql-max-number-of-parameters-in-in-clause)
+ * <a href="http://stackoverflow.com/questions/1009706/postgresql-max-number-of-parameters-in-in-clause">...</a>)
  * </ul>
  *
  * @author tsa
@@ -71,8 +71,8 @@ import lombok.NonNull;
 @EqualsAndHashCode(exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
 public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
-	protected static final String SQL_TRUE = "1=1";
-	protected static final String SQL_FALSE = "1=0";
+	static final String SQL_TRUE = "1=1";
+	static final String SQL_FALSE = "1=0";
 
 	private final String columnName;
 	private final List<Object> values;
@@ -85,9 +85,6 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
-	 *
-	 * @param columnName
-	 * @param values
 	 */
 	public InArrayQueryFilter(@NonNull final String columnName, final Object... values)
 	{
@@ -97,10 +94,9 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
 	 *
-	 * @param columnName
 	 * @param values may also be {@link RepoIdAware}s
 	 */
-	public InArrayQueryFilter(@NonNull final String columnName, final Collection<? extends Object> values)
+	public InArrayQueryFilter(@NonNull final String columnName, final Collection<?> values)
 	{
 		this.columnName = columnName;
 
@@ -112,7 +108,7 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		{
 			this.values = values
 					.stream()
-					.map(value -> normalizeValue(value))
+					.map(CompareQueryFilter::normalizeValue)
 					.collect(Collectors.toCollection(ArrayList::new)); // note that guava's immutableList doesn't allow null values
 		}
 	}
@@ -134,9 +130,6 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 
 	/**
 	 * Sets default value to be returned when the "values" list is empty.
-	 *
-	 * @param defaultReturnWhenEmpty
-	 * @return
 	 */
 	public InArrayQueryFilter<T> setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
 	{

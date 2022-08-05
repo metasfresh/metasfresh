@@ -21,6 +21,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.Optional;
 
 @Component
 @Interceptor(I_C_Project_WO_Resource.class)
@@ -49,7 +50,7 @@ public class C_Project_WO_Resource
 
 		notifyEntryChanged(record, changeType);
 		updateStepDatesAfterCommit(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
-		checkConflictsAfterCommitIfUserChange(record);
+		checkConflictsAfterCommitIfUserChange(record, changeType);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
@@ -57,7 +58,7 @@ public class C_Project_WO_Resource
 	{
 		notifyEntryChanged(record, changeType);
 		updateStepDatesAfterCommit(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));
-		checkConflictsAfterCommitIfUserChange(record);
+		checkConflictsAfterCommitIfUserChange(record, changeType);
 	}
 
 	private void updateStepDatesAfterCommit(@NonNull final WOProjectStepId stepId)
@@ -92,25 +93,30 @@ public class C_Project_WO_Resource
 		return BudgetAndWOCalendarEntryIdConverters.from(WOProjectResourceRepository.extractWOProjectResourceId(record));
 	}
 
-	private void checkConflictsAfterCommitIfUserChange(@NonNull final I_C_Project_WO_Resource record)
+	private void checkConflictsAfterCommitIfUserChange(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
 		if (!InterfaceWrapperHelper.isUIAction(record))
 		{
 			return;
 		}
 
-		trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.Fail)
-				.getPropertyAndProcessAfterCommit(
-						"C_Project_WO_Resource.checkConflicts",
-						HashSet::new,
-						woProjectConflictService::checkAllConflicts
-				)
-				.add(getResourceId(record));
+		final HashSet<ResourceId> resourceIdsToCheck = new HashSet<>();
+		extractResourceId(record).ifPresent(resourceIdsToCheck::add);
 
+		if (changeType.isChange())
+		{
+			final I_C_Project_WO_Resource recordOld = InterfaceWrapperHelper.createOld(record, I_C_Project_WO_Resource.class);
+			extractResourceId(recordOld).ifPresent(resourceIdsToCheck::add);
+		}
+
+		trxManager.accumulateAndProcessAfterCommit(
+				"C_Project_WO_Resource.checkConflicts",
+				resourceIdsToCheck,
+				woProjectConflictService::checkAllConflicts);
 	}
 
-	private static ResourceId getResourceId(final I_C_Project_WO_Resource record)
+	private static Optional<ResourceId> extractResourceId(final I_C_Project_WO_Resource record)
 	{
-		return WOProjectResourceRepository.fromRecord(record).getResourceId();
+		return ResourceId.optionalOfRepoId(record.getS_Resource_ID());
 	}
 }

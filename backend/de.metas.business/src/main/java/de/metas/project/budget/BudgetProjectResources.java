@@ -36,6 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Value
 public class BudgetProjectResources
@@ -98,9 +99,14 @@ public class BudgetProjectResources
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public Stream<BudgetProjectResource> stream()
+	{
+		return budgets.stream();
+	}
+
 	public BudgetProjectResource getBudgetById(@NonNull final BudgetProjectResourceId id)
 	{
-		return budgets.stream()
+		return stream()
 				.filter(budget -> BudgetProjectResourceId.equals(budget.getId(), id))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No budget found for " + id));

@@ -28,10 +28,10 @@ public class CalendarWebSocketProducerFactory implements WebSocketProducerFactor
 	}
 
 	@Override
-	public String getTopicNamePrefix()
-	{
-		return NAMING_STRATEGY.getPrefix();
-	}
+	public String getTopicNamePrefix() {return NAMING_STRATEGY.getTopicNameWithoutParams();}
+
+	@Override
+	public boolean isDestroyIfNoActiveSubscriptions() {return true;}
 
 	@Override
 	public CalendarWebSocketProducer createProducer(final WebsocketTopicName topicName)
@@ -41,11 +41,7 @@ public class CalendarWebSocketProducerFactory implements WebSocketProducerFactor
 				.multiCalendarService(multiCalendarService)
 				.calendarConflictEventsDispatcher(calendarConflictEventsDispatcher)
 				.simulationPlanService(simulationPlanService)
-				//
-				.topicName(topicName)
-				.simulationId(calendarTopicName.getSimulationId())
-				.adLanguage(calendarTopicName.getAdLanguage())
-				//
+				.calendarTopicName(calendarTopicName)
 				.build();
 	}
 }

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
-import { RawList } from './RawList';
+import RawList from './RawList';
 
 /**
  * Simple decoupled list implementation to be used in custom frontend components.

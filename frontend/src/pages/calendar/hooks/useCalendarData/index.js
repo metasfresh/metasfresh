@@ -3,19 +3,22 @@ import { mergeCalendarEntriesArrayToArray } from './utils/mergeCalendarEntriesAr
 import { mergeWSEntryEvents } from './utils/mergeWSEntryEvents';
 import { updateEntriesFromConflicts } from './utils/updateEntriesFromConflicts';
 import { mergeWSConflictChangesEvents } from './utils/mergeWSConflictChangesEvents';
-import { extractResourcesFromCalendarsArray } from './utils/extractResourcesFromCalendarsArray';
-import { updateResourcesFromConflicts } from './utils/updateResourcesFromConflicts';
 import { extractCalendarIdsFromArray } from './utils/extractCalendarIdsFromArray';
 import { isEqualEntryQueries, newEntryQuery } from './utils/entryQuery';
+import { computeResources } from './utils/computeResources';
 
 export const useCalendarData = ({
-  simulationId: initialSimulationId,
+  simulationId,
+  onlyResourceIds,
+  onlyProjectId,
+  onlyCustomerId,
+  onlyResponsibleId,
+  fetchAvailableCalendarsFromAPI,
   fetchAvailableSimulationsFromAPI,
   fetchEntriesFromAPI,
   fetchConflictsFromAPI,
 }) => {
   const [availableSimulations, setAvailableSimulations] = useState([]);
-  const [simulationId, setSimulationId] = useState(initialSimulationId);
 
   const [calendars, setCalendars] = useState([]);
   const [resources, setResources] = useState([]);
@@ -23,21 +26,23 @@ export const useCalendarData = ({
   const [entries, setEntries] = useState({
     loading: false,
     query: null,
+    queryResolved: {},
     array: [],
   });
 
   const [conflicts, setConflicts] = useState([]);
 
+  useEffect(() => {
+    console.log('Loading calendars...');
+    fetchAvailableCalendarsFromAPI().then(setCalendars);
+  }, []);
+
   useEffect(() => loadSimulationsFromAPI(), []);
-  useEffect(() => loadConflictsFromAPI(), [simulationId]);
+  useEffect(() => loadConflictsFromAPI(), [simulationId, onlyResourceIds]);
 
   useEffect(() => {
     setResources(
-      updateResourcesFromConflicts({
-        resources: extractResourcesFromCalendarsArray(calendars),
-        entries: entries.array,
-        conflicts,
-      })
+      computeResources({ calendars, entries: entries.array, conflicts })
     );
   }, [calendars, entries.array, conflicts]);
 
@@ -47,12 +52,10 @@ export const useCalendarData = ({
   //
   //
 
-  const conflictsCount = useMemo(() => {
-    return (
-      conflicts?.filter((conflict) => conflict.status === 'CONFLICT')?.length ??
-      0
-    );
-  }, [conflicts]);
+  const conflictsCount = useMemo(
+    () => resources.reduce((sum, resource) => sum + resource.conflictsCount, 0),
+    [resources]
+  );
 
   //
   //
@@ -71,13 +74,11 @@ export const useCalendarData = ({
     });
   };
 
-  const addSimulationAndSelect = (newSimulation) => {
+  const addSimulation = (newSimulation) => {
     setAvailableSimulations((prevAvailableSimulations) => [
       ...prevAvailableSimulations,
       newSimulation,
     ]);
-
-    setSimulationId(newSimulation.simulationId);
   };
 
   const updateEntries = (entriesMapper) => {
@@ -89,11 +90,17 @@ export const useCalendarData = ({
   };
 
   const setEntriesLoadingStart = ({ query }) => {
-    //console.log('setEntriesLoadingStart', { query });
+    //console.log('setEntriesLoadingStart', { query, prevQuery: entries.query });
     setEntries((prevState) => ({ ...prevState, loading: true, query }));
   };
 
-  const setEntriesLoadingDone = ({ error, query, array, onFetchSuccess }) => {
+  const setEntriesLoadingDone = ({
+    error,
+    query,
+    queryResolved,
+    array,
+    onFetchSuccess,
+  }) => {
     setEntries((prevEntries) => {
       // Discard result if the query is not matching
       if (
@@ -103,6 +110,7 @@ export const useCalendarData = ({
         console.log('Discarded entriesArray because query was not matching', {
           error,
           query,
+          queryResolved,
           array,
           prevEntries,
         });
@@ -112,8 +120,21 @@ export const useCalendarData = ({
       // IMPORTANT: don't copy it because we don't want to trigger a "react change"
       onFetchSuccess && onFetchSuccess(array);
 
-      console.log('setEntriesLoadingDone', { error, query, array });
-      return { ...prevEntries, loading: false, error, query, array };
+      console.log('setEntriesLoadingDone', {
+        error,
+        query,
+        queryResolved,
+        array,
+      });
+
+      return {
+        ...prevEntries,
+        loading: false,
+        error,
+        query,
+        queryResolved,
+        array,
+      };
     });
   };
 
@@ -140,11 +161,7 @@ export const useCalendarData = ({
     });
   };
 
-  const loadEntriesWithConflicts = ({
-    startDate,
-    endDate,
-    onFetchSuccess = null,
-  }) => {
+  const loadEntries = ({ startDate, endDate, onFetchSuccess = null }) => {
     loadEntriesFromAPI({
       startDate,
       endDate,
@@ -169,6 +186,10 @@ export const useCalendarData = ({
     const query = newEntryQuery({
       calendarIds: extractCalendarIdsFromArray(calendars),
       simulationId,
+      onlyResourceIds,
+      onlyProjectId,
+      onlyCustomerId,
+      onlyResponsibleId,
       startDate,
       endDate,
     });
@@ -193,11 +214,12 @@ export const useCalendarData = ({
     setEntriesLoadingStart({ query });
     setEntries((prevState) => ({ ...prevState, loading: true, query }));
     fetchEntriesFromAPI(query)
-      .then((entriesFromAPI) => {
+      .then((result) => {
         setEntriesLoadingDone({
           error: false,
           query,
-          array: entriesFromAPI,
+          queryResolved: result.query,
+          array: result.entries,
         });
       })
       .catch((error) => {
@@ -211,8 +233,9 @@ export const useCalendarData = ({
   };
 
   const loadConflictsFromAPI = () => {
-    console.log('Loading conflicts...', { simulationId });
-    fetchConflictsFromAPI({ simulationId }).then(setConflicts);
+    console.log('Loading conflicts...', { simulationId, onlyResourceIds });
+
+    fetchConflictsFromAPI({ simulationId, onlyResourceIds }).then(setConflicts);
   };
 
   const applyWSEvents = (wsEvents) => {
@@ -241,18 +264,15 @@ export const useCalendarData = ({
   };
 
   return {
-    setCalendars,
     getResourcesArray: () => resources, // IMPORTANT: don't copy it because we don't want to trigger a "react change"
     //
     loadSimulationsFromAPI,
     getSimulationsArray: () => availableSimulations, // IMPORTANT: don't copy it because we don't want to trigger a "react change"
-    getSimulationId: () => simulationId,
-    setSimulationId,
-    addSimulationAndSelect,
+    addSimulation,
     //
     addEntriesArray,
-    loadEntriesFromAPI,
-    loadEntriesWithConflicts,
+    loadEntries,
+    getResolvedQuery: () => entries.queryResolved,
     //
     getConflictsCount: () => conflictsCount,
     //

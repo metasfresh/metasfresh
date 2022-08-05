@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import FullCalendar from '@fullcalendar/react';
@@ -20,38 +20,59 @@ import { getCurrentActiveLanguage } from '../../utils/locale';
 import { useCalendarData } from './hooks/useCalendarData';
 import { useCalendarWebsocketEvents } from './hooks/useCalendarWebsocketEvents';
 
-import './calendar.scss';
+import './Calendar.scss';
 import ConflictsSummary from './components/ConflictsSummary';
 import CalendarResourceLabel from './components/CalendarResourceLabel';
+import CalendarFilters from './components/CalendarFilters';
+import {
+  getEventClassNames,
+  renderEventContent,
+} from './components/CalendarEvent';
 
 const Calendar = ({
-  simulationId: initialSelectedSimulationId,
+  view,
+  simulationId,
+  onlyResourceIds,
+  onlyProjectId,
+  onlyCustomerId,
+  onlyResponsibleId,
   onParamsChanged,
 }) => {
+  const notifyParamsChanged = (changedParams) => {
+    const params = {
+      view,
+      simulationId,
+      onlyResourceIds,
+      onlyProjectId,
+      onlyCustomerId,
+      onlyResponsibleId,
+      ...changedParams,
+    };
+    console.log('notifyParamsChanged', { changedParams, params });
+    onParamsChanged && onParamsChanged(params);
+  };
+
   const calendarData = useCalendarData({
-    simulationId: initialSelectedSimulationId,
+    simulationId,
+    onlyResourceIds,
+    onlyProjectId,
+    onlyCustomerId,
+    onlyResponsibleId,
+    fetchAvailableCalendarsFromAPI: api.fetchAvailableCalendars,
     fetchAvailableSimulationsFromAPI: api.fetchAvailableSimulations,
     fetchEntriesFromAPI: api.fetchCalendarEntries,
     fetchConflictsFromAPI: api.fetchConflicts,
   });
-  const simulationId = calendarData.getSimulationId();
-
-  useEffect(() => {
-    onParamsChanged && onParamsChanged({ simulationId });
-  }, [simulationId]);
-
-  useEffect(() => {
-    console.log('Loading calendars...');
-    api.fetchAvailableCalendars().then(calendarData.setCalendars);
-  }, []);
 
   useCalendarWebsocketEvents({
     simulationId,
+    onlyResourceIds,
+    onlyProjectId,
     onWSEvents: calendarData.applyWSEvents,
   });
 
   const fetchCalendarEntries = (fetchInfo, successCallback) => {
-    calendarData.loadEntriesWithConflicts({
+    calendarData.loadEntries({
       startDate: normalizeDateTime(fetchInfo.startStr),
       endDate: normalizeDateTime(fetchInfo.endStr),
       onFetchSuccess: successCallback,
@@ -90,123 +111,140 @@ const Calendar = ({
       });
   };
 
+  // Calendar Key:
+  // * view - it's important to be part of the key, else the Calendar component when we do browser back/forward between different view types
+  // noinspection UnnecessaryLocalVariableJS
+  const calendarKey = view;
+
   return (
-    <div className="calendar-container">
+    <div className="calendar">
       <div className="calendar-top">
         <div className="calendar-top-left">
           <ConflictsSummary conflictsCount={calendarData.getConflictsCount()} />
         </div>
-        <div className="calendar-top-center" />
+        <div className="calendar-top-center">
+          <CalendarFilters resolvedQuery={calendarData.getResolvedQuery()} />
+        </div>
         <div className="calendar-top-right">
           <SimulationsDropDown
             simulations={calendarData.getSimulationsArray()}
             selectedSimulationId={simulationId}
             onOpenDropdown={() => calendarData.loadSimulationsFromAPI()}
             onSelect={(simulation) => {
-              calendarData.setSimulationId(simulation?.simulationId);
+              notifyParamsChanged({ simulationId: simulation?.simulationId });
             }}
             onNew={() => {
               api
                 .createSimulation({ copyFromSimulationId: simulationId })
-                .then(calendarData.addSimulationAndSelect);
+                .then((simulation) => {
+                  calendarData.addSimulation(simulation);
+                  notifyParamsChanged({
+                    simulationId: simulation.simulationId,
+                  });
+                });
             }}
           />
         </div>
       </div>
-      <FullCalendar
-        schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
-        locales={[deLocale]}
-        locale={getCurrentActiveLanguage()}
-        views={{
-          resourceTimelineYear: {
-            slotDuration: { months: 1 },
-            slotLabelInterval: { months: 1 },
-            slotLabelFormat: [{ month: 'long' }],
-          },
-        }}
-        initialView="resourceTimelineYear"
-        plugins={[
-          dayGridPlugin,
-          timeGridPlugin,
-          interactionPlugin,
-          resourceTimelinePlugin,
-        ]}
-        weekends="true"
-        editable="true"
-        headerToolbar={{
-          left: 'prev,today,next',
-          center: 'title',
-          right:
-            'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear',
-        }}
-        resourceAreaHeaderContent="Resources"
-        resources={calendarData.getResourcesArray()}
-        resourceLabelContent={(params) => {
-          //console.log('resourceLabelContent', { params });
-          return (
+      <div className="calendar-content">
+        <FullCalendar
+          schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
+          key={calendarKey}
+          height="100%"
+          locales={[deLocale]}
+          locale={getCurrentActiveLanguage()}
+          views={{
+            resourceTimelineYear: {
+              slotDuration: { months: 1 },
+              slotLabelInterval: { months: 1 },
+              slotLabelFormat: [{ month: 'long' }],
+            },
+          }}
+          initialView={view}
+          plugins={[
+            dayGridPlugin,
+            timeGridPlugin,
+            interactionPlugin,
+            resourceTimelinePlugin,
+          ]}
+          weekends="true"
+          editable="true"
+          headerToolbar={{
+            left: 'prev,today,next',
+            center: 'title',
+            right:
+              'dayGridMonth resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,resourceTimelineYear',
+          }}
+          resourceAreaHeaderContent="Resources"
+          resources={calendarData.getResourcesArray()}
+          resourceLabelContent={(params) => (
             <CalendarResourceLabel
               title={params.resource.title}
               conflictsCount={params.resource.extendedProps.conflictsCount}
             />
-          );
-        }}
-        eventSources={[{ events: fetchCalendarEntries }]}
-        //dateClick={handleDateClick}
-        eventClick={handleEventClick}
-        eventClassNames={(params) => {
-          if (params.event.extendedProps.conflict) {
-            return ['has-conflict'];
-          }
-        }}
-        eventContent={(params) => {
-          //console.log('eventContent', { params });
-          return <div>{params.event.title}</div>;
-        }}
-        eventDragStart={(event) => {
-          console.log('eventDragStart', { event });
-        }}
-        eventDragStop={(event) => {
-          console.log('eventDragStop', { event });
-        }}
-        eventDrop={(params) => {
-          console.log('eventDrop', { params });
+          )}
+          eventSources={[{ events: fetchCalendarEntries }]}
+          datesSet={(params) => {
+            const newView = params.view.type;
+            if (view !== newView) {
+              notifyParamsChanged({ view: newView });
+            }
+          }}
+          //dateClick={handleDateClick}
+          eventClick={handleEventClick}
+          eventClassNames={getEventClassNames}
+          eventContent={renderEventContent}
+          eventDragStart={(event) => {
+            console.log('eventDragStart', { event });
+          }}
+          eventDragStop={(event) => {
+            console.log('eventDragStop', { event });
+          }}
+          eventDrop={(params) => {
+            console.log('eventDrop', { params });
 
-          if (params.oldResource?.id !== params.newResource?.id) {
-            console.log('moving event to another resource is not allowed');
-            params.revert();
-            return;
-          }
+            if (params.oldResource?.id !== params.newResource?.id) {
+              console.log('moving event to another resource is not allowed');
+              params.revert();
+              return;
+            }
 
-          handleEventDragOrResize(params);
-        }}
-        drop={(event) => {
-          console.log('drop', { event });
-        }}
-        eventResizeStart={(event) => {
-          console.log('eventResizeStart', { event });
-        }}
-        eventResizeStop={(event) => {
-          console.log('eventResizeStop', { event });
-        }}
-        eventResize={(params) => {
-          console.log('eventResize', { params });
-          handleEventDragOrResize(params);
-        }}
-        eventReceive={(event) => {
-          console.log('eventReceive', { event });
-          event.revert();
-        }}
-        eventLeave={(event) => {
-          console.log('eventLeave', { event });
-          event.revert();
-        }}
-      />
+            handleEventDragOrResize(params);
+          }}
+          drop={(event) => {
+            console.log('drop', { event });
+          }}
+          eventResizeStart={(event) => {
+            console.log('eventResizeStart', { event });
+          }}
+          eventResizeStop={(event) => {
+            console.log('eventResizeStop', { event });
+          }}
+          eventResize={(params) => {
+            console.log('eventResize', { params });
+            handleEventDragOrResize(params);
+          }}
+          eventReceive={(event) => {
+            console.log('eventReceive', { event });
+            event.revert();
+          }}
+          eventLeave={(event) => {
+            console.log('eventLeave', { event });
+            event.revert();
+          }}
+        />
+      </div>
     </div>
   );
 };
 
 Calendar.propTypes = {
+  view: PropTypes.string.isRequired,
   simulationId: PropTypes.string,
+  onlyResourceIds: PropTypes.array,
+  onlyProjectId: PropTypes.string,
+  onlyCustomerId: PropTypes.string,
+  onlyResponsibleId: PropTypes.string,
   onParamsChanged: PropTypes.func,
 };
 

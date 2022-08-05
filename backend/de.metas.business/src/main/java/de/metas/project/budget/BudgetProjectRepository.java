@@ -30,6 +30,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
+import de.metas.util.InSetPredicate;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.user.UserId;
@@ -66,12 +67,18 @@ public class BudgetProjectRepository
 		return fromRecord(record);
 	}
 
-	public List<BudgetProject> getAllActive()
+	public List<BudgetProject> queryAllActiveProjects(@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
+		if (projectIds.isNone())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL
 				.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget)
+				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectIds)
 				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
 				.stream()
 				.map(record -> fromRecord(record).orElse(null))

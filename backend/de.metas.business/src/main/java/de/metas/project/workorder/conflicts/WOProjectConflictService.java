@@ -5,15 +5,20 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRepository;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.WOProjectQuery;
 import de.metas.project.workorder.WOProjectRepository;
+import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceRepository;
+import de.metas.project.workorder.calendar.WOProjectResourceQuery;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationRepository;
+import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Set;
 
 @Service
@@ -43,18 +48,35 @@ public class WOProjectConflictService
 		this.eventsDispatcher = eventsDispatcher;
 	}
 
-	public ResourceAllocationConflicts getActualAndSimulation(@Nullable final SimulationPlanId simulationId)
+	public ResourceAllocationConflicts getActualAndSimulation(
+			@Nullable final SimulationPlanId simulationId,
+			@NonNull final InSetPredicate<ResourceId> resourceIds)
 	{
-		final Set<ProjectId> activeProjectIds = woProjectRepository.getAllActiveProjectIds();
-		if (activeProjectIds.isEmpty())
+		if (resourceIds.isNone())
 		{
 			return ResourceAllocationConflicts.empty(simulationId);
 		}
 
-		return conflictRepository.getActualAndSimulation(simulationId, activeProjectIds);
+		final InSetPredicate<ProjectId> activeProjectIds = InSetPredicate.only(woProjectRepository.getActiveProjectIds(WOProjectQuery.ANY));
+		if (activeProjectIds.isNone())
+		{
+			return ResourceAllocationConflicts.empty(simulationId);
+		}
+
+		final InSetPredicate<WOProjectResourceId> projectResourceIds = woProjectResourceRepository.getProjectResourceIdsPredicate(
+				WOProjectResourceQuery.builder()
+						.resourceIds(resourceIds)
+						.projectIds(activeProjectIds)
+						.build());
+		if (projectResourceIds.isNone())
+		{
+			return ResourceAllocationConflicts.empty(simulationId);
+		}
+
+		return conflictRepository.getActualAndSimulation(simulationId, activeProjectIds, projectResourceIds);
 	}
 
-	public void checkAllConflicts(@NonNull Set<ResourceId> resourceIds)
+	public void checkAllConflicts(@NonNull Collection<ResourceId> resourceIds)
 	{
 		newConflictsChecker()
 				.resourceIds(resourceIds)
@@ -70,7 +92,6 @@ public class WOProjectConflictService
 				.build()
 				.execute();
 	}
-
 
 	public void checkSimulationConflicts(
 			@NonNull final WOProjectSimulationPlan onlySimulation,

@@ -3,7 +3,9 @@ import * as StompJs from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
 import converters from '../api/converters';
+import { getQueryString } from '../../../utils';
 
+const WS_TOPIC_NAME_PREFIX = '/v2/calendar';
 const WS_DEBUG = true;
 
 export const WSEventType_entryAddOrChange = 'addOrChange';
@@ -11,14 +13,46 @@ export const WSEventType_entryRemove = 'remove';
 const WSEventType_conflictsChanged = 'conflictsChanged';
 const WSEventType_simulationPlanChanged = 'simulationPlanChanged';
 
-export const useCalendarWebsocketEvents = ({ simulationId, onWSEvents }) => {
+export const useCalendarWebsocketEvents = ({
+  simulationId,
+  onlyResourceIds,
+  onlyProjectId,
+  onWSEvents,
+}) => {
   useEffect(() => {
-    return connectToWS({ simulationId, onWSEvents });
-  }, [simulationId]);
+    return connectToWS({
+      simulationId,
+      onlyResourceIds,
+      onlyProjectId,
+      onWSEvents,
+    });
+  }, [simulationId, onlyResourceIds, onlyProjectId]);
 };
 
-const connectToWS = ({ simulationId, onWSEvents }) => {
-  const wsTopicName = `/v2/calendar/${simulationId || 'actual'}`;
+const toWSTopicName = ({ simulationId, onlyResourceIds, onlyProjectId }) => {
+  const queryParams = getQueryString({
+    simulationId,
+    onlyResourceIds:
+      onlyResourceIds && onlyResourceIds.length > 0 ? onlyResourceIds : null,
+    onlyProjectId,
+  });
+
+  return queryParams
+    ? `${WS_TOPIC_NAME_PREFIX}?${queryParams}`
+    : WS_TOPIC_NAME_PREFIX;
+};
+
+const connectToWS = ({
+  simulationId,
+  onlyResourceIds,
+  onlyProjectId,
+  onWSEvents,
+}) => {
+  const wsTopicName = toWSTopicName({
+    simulationId,
+    onlyResourceIds,
+    onlyProjectId,
+  });
 
   const stompJsConfig = {
     reconnectDelay: 5000,

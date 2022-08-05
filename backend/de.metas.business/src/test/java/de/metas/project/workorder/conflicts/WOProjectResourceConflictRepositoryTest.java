@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectResourceId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.OptionalBoolean;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -63,9 +64,9 @@ class WOProjectResourceConflictRepositoryTest
 				conflict(P1R2, P1R3, ResourceAllocationConflictStatus.CONFLICT, null)
 		);
 		repo.save(actualConflicts, PRs1_to_4);
-		assertThat(repo.getActualAndSimulation(null, ImmutableSet.of(P1))).isEqualTo(actualConflicts);
+		assertThat(repo.getActualAndSimulation(null, InSetPredicate.only(P1), InSetPredicate.any())).isEqualTo(actualConflicts);
 		assertThat(repo.getActualConflicts(PRs1_to_4)).isEqualTo(actualConflicts);
-		assertThat(repo.getActualAndSimulation(SIMULATION1, ImmutableSet.of(P1))).isEqualTo(
+		assertThat(repo.getActualAndSimulation(SIMULATION1, InSetPredicate.only(P1), InSetPredicate.any())).isEqualTo(
 				conflicts(SIMULATION1,
 						conflict(P1R1, P1R2, ResourceAllocationConflictStatus.CONFLICT, null),
 						conflict(P1R2, P1R3, ResourceAllocationConflictStatus.CONFLICT, null)
@@ -76,7 +77,7 @@ class WOProjectResourceConflictRepositoryTest
 				conflict(P1R1, P1R4, ResourceAllocationConflictStatus.CONFLICT, SIMULATION1)
 		);
 		repo.save(simulationOnlyConflicts, PRs1_to_4);
-		assertThat(repo.getActualAndSimulation(SIMULATION1, ImmutableSet.of(P1))).isEqualTo(
+		assertThat(repo.getActualAndSimulation(SIMULATION1, InSetPredicate.only(P1), InSetPredicate.any())).isEqualTo(
 				conflicts(SIMULATION1,
 						conflict(P1R1, P1R2, ResourceAllocationConflictStatus.RESOLVED, SIMULATION1),
 						conflict(P1R2, P1R3, ResourceAllocationConflictStatus.CONFLICT, null),
@@ -96,7 +97,7 @@ class WOProjectResourceConflictRepositoryTest
 		repo.save(actualAndSimulationConflicts, PRs1_to_4);
 		// NOTE: expect some warnings logged and only simulation conflicts saved
 
-		assertThat(repo.getActualAndSimulation(SIMULATION1, ImmutableSet.of(P1)))
+		assertThat(repo.getActualAndSimulation(SIMULATION1, InSetPredicate.only(P1), InSetPredicate.any()))
 				.isEqualTo(
 						conflicts(SIMULATION1,
 								// conflict(P1R1, P1R2, ResourceAllocationConflictStatus.CONFLICT, null), // this one shall NOT be saved
@@ -148,7 +149,7 @@ class WOProjectResourceConflictRepositoryTest
 			);
 			repo.save(actualConflicts, PRs1_to_4);
 			assertThat(repo.getActualConflicts(PRs1_to_4)).isEqualTo(actualConflicts);
-			assertThat(repo.getActualAndSimulation(SIMULATION1, ImmutableSet.of(P1))).isEqualTo(
+			assertThat(repo.getActualAndSimulation(SIMULATION1, InSetPredicate.only(P1), InSetPredicate.any())).isEqualTo(
 					conflicts(SIMULATION1,
 							conflict(P1R1, P1R2, ResourceAllocationConflictStatus.CONFLICT, null),
 							conflict(P1R2, P1R3, ResourceAllocationConflictStatus.CONFLICT, null)
@@ -161,7 +162,7 @@ class WOProjectResourceConflictRepositoryTest
 					conflict(P1R3, P1R4, ResourceAllocationConflictStatus.CONFLICT, SIMULATION1)
 			);
 			repo.save(simOnlyConflicts, PRs1_to_4);
-			assertThat(repo.getActualAndSimulation(SIMULATION1, ImmutableSet.of(P1))).isEqualTo(
+			assertThat(repo.getActualAndSimulation(SIMULATION1, InSetPredicate.only(P1), InSetPredicate.any())).isEqualTo(
 					conflicts(SIMULATION1,
 							conflict(P1R1, P1R2, ResourceAllocationConflictStatus.RESOLVED, SIMULATION1),
 							conflict(P1R2, P1R3, ResourceAllocationConflictStatus.CONFLICT, null),
@@ -175,7 +176,7 @@ class WOProjectResourceConflictRepositoryTest
 					conflict(P1R3, P1R4, ResourceAllocationConflictStatus.CONFLICT, SIMULATION1)
 			);
 			repo.save(simOnlyConflicts, PRs1_to_4);
-			assertThat(repo.getActualAndSimulation(SIMULATION1, ImmutableSet.of(P1))).isEqualTo(
+			assertThat(repo.getActualAndSimulation(SIMULATION1, InSetPredicate.only(P1), InSetPredicate.any())).isEqualTo(
 					conflicts(SIMULATION1,
 							conflict(P1R1, P1R2, ResourceAllocationConflictStatus.CONFLICT, null),
 							conflict(P1R2, P1R3, ResourceAllocationConflictStatus.CONFLICT, null),
@@ -186,7 +187,7 @@ class WOProjectResourceConflictRepositoryTest
 		{
 			ResourceAllocationConflicts simOnlyConflicts = conflicts(SIMULATION1);
 			repo.save(simOnlyConflicts, PRs1_to_4);
-			assertThat(repo.getActualAndSimulation(SIMULATION1, ImmutableSet.of(P1))).isEqualTo(
+			assertThat(repo.getActualAndSimulation(SIMULATION1, InSetPredicate.only(P1), InSetPredicate.any())).isEqualTo(
 					conflicts(SIMULATION1,
 							conflict(P1R1, P1R2, ResourceAllocationConflictStatus.CONFLICT, null),
 							conflict(P1R2, P1R3, ResourceAllocationConflictStatus.CONFLICT, null)

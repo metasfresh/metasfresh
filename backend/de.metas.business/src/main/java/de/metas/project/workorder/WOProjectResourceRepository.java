@@ -28,6 +28,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.calendar.WOProjectResourceQuery;
+import de.metas.util.InSetPredicate;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.time.DurationUtils;
@@ -36,12 +39,14 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.temporal.TemporalUnit;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -52,6 +57,21 @@ import java.util.stream.Stream;
 public class WOProjectResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public ImmutableList<WOProjectResource> getByIds(@NonNull final InSetPredicate<WOProjectResourceId> ids)
+	{
+		if (ids.isNone())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, ids)
+				.stream()
+				.map(WOProjectResourceRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	public WOProjectResourcesCollection getByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
@@ -88,6 +108,60 @@ public class WOProjectResourceRepository
 				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, Integer.class);
 
 		return ResourceId.ofRepoIds(resourceRepoIds);
+	}
+
+	public InSetPredicate<WOProjectResourceId> getProjectResourceIdsPredicate(@NonNull final WOProjectResourceQuery query)
+	{
+		if (query.isAny())
+		{
+			return InSetPredicate.any();
+		}
+
+		final IQuery<I_C_Project_WO_Resource> sqlQuery = toSqlQuery(query);
+		if (sqlQuery == null)
+		{
+			return InSetPredicate.none();
+		}
+
+		final ImmutableSet<WOProjectResourceId> projectResourceIds = sqlQuery
+				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID)
+				.stream()
+				.map(WOProjectResourceRepository::toWOProjectResourceId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return InSetPredicate.only(projectResourceIds);
+	}
+
+	@Nullable
+	private IQuery<I_C_Project_WO_Resource> toSqlQuery(@NonNull final WOProjectResourceQuery query)
+	{
+		final InSetPredicate<ResourceId> resourceIds = query.getResourceIds();
+		final InSetPredicate<ProjectId> projectIds = query.getProjectIds();
+
+		if (resourceIds.isNone() || projectIds.isNone())
+		{
+			return null;
+		}
+
+		final IQueryBuilder<I_C_Project_WO_Resource> sqlQuery = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds);
+
+		if (query.getStartDate() != null || query.getEndDate() != null)
+		{
+			sqlQuery.addIntervalIntersection(
+					I_C_Project_WO_Resource.COLUMNNAME_AssignDateFrom, I_C_Project_WO_Resource.COLUMNNAME_AssignDateTo,
+					query.getStartDate(), query.getEndDate());
+		}
+
+		return sqlQuery.create();
+	}
+
+	private static WOProjectResourceId toWOProjectResourceId(final Map<String, Object> row)
+	{
+		return WOProjectResourceId.ofRepoId(
+				NumberUtils.asInt(row.get(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID)),
+				NumberUtils.asInt(row.get(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID)));
 	}
 
 	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)

@@ -1,6 +1,6 @@
 export const extractResourcesFromCalendarsArray = (calendarsArray) => {
   if (!calendarsArray) {
-    console.log('returning empty!');
+    console.log('extractResourcesFromCalendarsArray: returning empty!');
     return [];
   }
 
