@@ -129,16 +129,6 @@ public class CostRevaluationRepository
 		@NonNull ClientAndOrgId clientAndOrgId;
 	}
 
-	private static CostRevaluationLine fromCurrentCost(@NonNull final CurrentCost cost, @NonNull final CostRevaluationId costRevaluationId)
-	{
-		return CostRevaluationLine.builder()
-				.costRevaluationId(costRevaluationId)
-				.productId(cost.getCostSegment().getProductId())
-				.currentCostPrice(cost.getCostPrice())
-				.currentQty(cost.getCurrentQty())
-				.build();
-	}
-
 	public I_M_CostRevaluationLine toCostRevaluationLine(@NonNull final CostRevaluationLine costRevaluationLine)
 	{
 		final I_M_CostRevaluationLine line = InterfaceWrapperHelper.loadOrNew(costRevaluationLine.getId(), I_M_CostRevaluationLine.class);
@@ -149,7 +139,6 @@ public class CostRevaluationRepository
 	private static void updateRecordFrom(@NonNull final I_M_CostRevaluationLine record, @NonNull final CurrentCost from)
 	{
 		final CostPrice costPrice = from.getCostPrice();
-		//record.setM_CostRevaluation_ID();
 		record.setM_Product_ID(from.getCostSegment().getProductId().getRepoId());
 
 		record.setCurrentCostPrice(costPrice.getOwnCostPrice().getValue());
