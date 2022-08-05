@@ -14,7 +14,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.model.X_M_CostRevaluation;
@@ -27,7 +26,13 @@ import java.util.stream.Collectors;
 public class CostRevaluationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ICurrentCostsRepository currentCostsRepo = SpringContextHolder.instance.getBean(ICurrentCostsRepository.class);
+	private final ICurrentCostsRepository currentCostsRepo;
+
+	public CostRevaluationRepository(
+			@NonNull final ICurrentCostsRepository currentCostsRepo)
+	{
+		this.currentCostsRepo = currentCostsRepo;
+	}
 
 	public List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
 	{
@@ -39,27 +44,27 @@ public class CostRevaluationRepository
 				.list();
 	}
 
-	public I_M_CostRevaluation getById(@NonNull final CostRevaluationId costRevaluationId)
-	{
-		return InterfaceWrapperHelper.load(costRevaluationId, I_M_CostRevaluation.class);
-	}
-
 	@NonNull
-	public CostRevaluation retrieveById(@NonNull final CostRevaluationId costRevaluationId)
+	public CostRevaluation getById(@NonNull final CostRevaluationId costRevaluationId)
 	{
-		final I_M_CostRevaluation costRevaluationPO = getById(costRevaluationId);
+		final I_M_CostRevaluation record = getRecordById(costRevaluationId);
 
 		return CostRevaluation.builder()
 				.costRevaluationId(costRevaluationId)
-				.costElementId(CostElementId.ofRepoId(costRevaluationPO.getM_CostElement_ID()))
-				.acctSchemaId(AcctSchemaId.ofRepoId(costRevaluationPO.getM_CostElement_ID()))
+				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getM_CostElement_ID()))
 				.build();
 	}
 
 	public boolean isDraftedDocument(@NonNull final CostRevaluationId costRevaluationId)
 	{
-		final I_M_CostRevaluation costRevaluation = getById(costRevaluationId);
+		final I_M_CostRevaluation costRevaluation = getRecordById(costRevaluationId);
 		return costRevaluation.getDocStatus().equals(X_M_CostRevaluation.DOCSTATUS_Drafted);
+	}
+
+	private I_M_CostRevaluation getRecordById(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return InterfaceWrapperHelper.load(costRevaluationId, I_M_CostRevaluation.class);
 	}
 
 	public void createCostRevaluationLinesForProductIds(@NonNull final CostRevaluation costRevaluation,
@@ -78,15 +83,14 @@ public class CostRevaluationRepository
 		InterfaceWrapperHelper.saveAll(revaluationLines);
 	}
 
-	private CostRevaluationLine fromCurrentCost(@NonNull final CurrentCost cost, @NonNull final CostRevaluationId costRevaluationId)
+	private static CostRevaluationLine fromCurrentCost(@NonNull final CurrentCost cost, @NonNull final CostRevaluationId costRevaluationId)
 	{
-		final CostRevaluationLine line = CostRevaluationLine.builder()
+		return CostRevaluationLine.builder()
 				.costRevaluationId(costRevaluationId)
 				.productId(cost.getCostSegment().getProductId())
 				.currentCostPrice(cost.getCostPrice())
 				.currentQty(cost.getCurrentQty())
 				.build();
-		return line;
 	}
 
 	public I_M_CostRevaluationLine toCostRevaluationLine(@NonNull final CostRevaluationLine costRevaluationLine)

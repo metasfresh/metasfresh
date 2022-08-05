@@ -76,7 +76,7 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 			return "@NoSelection@";
 
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
-		final CostRevaluation costRevaluation = costRevaluationRepo.retrieveById(costRevaluationId);
+		final CostRevaluation costRevaluation = costRevaluationRepo.getById(costRevaluationId);
 
 		costRevaluationRepo.createCostRevaluationLinesForProductIds(costRevaluation, productIds);
 
