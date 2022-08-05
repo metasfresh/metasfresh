@@ -4,10 +4,10 @@ import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import { toInteger } from 'lodash';
 
-import { getItemsByProperty, nullToEmptyStrings, deepUnfreeze } from './index';
-import { viewState, getView } from '../reducers/viewHandler';
-import { getTable, getTableId, getSelection } from '../reducers/tables';
-import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
+import { deepUnfreeze, getItemsByProperty, nullToEmptyStrings } from './index';
+import { getView, viewState } from '../reducers/viewHandler';
+import { getSelection, getTable, getTableId } from '../reducers/tables';
+import { getCachedFilter, getEntityRelatedId } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -134,6 +134,7 @@ const DLmapStateToProps = (state, props) => {
     viewData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
+    mapConfig: master.mapConfig,
     referenceId: queryReferenceId,
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
