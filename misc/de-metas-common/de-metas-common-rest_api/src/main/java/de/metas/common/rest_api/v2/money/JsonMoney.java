@@ -22,37 +22,32 @@
 
 package de.metas.common.rest_api.v2.money;
 
-import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import java.math.BigDecimal;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@Value
 public class JsonMoney
 {
+	@NonNull
 	BigDecimal amount;
 
-	@ApiModelProperty(hidden = true)
-	boolean amountSet;
-
+	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(hidden = true)
-	boolean currencyCodeSet;
-
-	public void setAmount(final BigDecimal amount)
+	@Builder
+	@JsonCreator
+	public JsonMoney(
+			@JsonProperty("amount") @NonNull final BigDecimal amount,
+			@JsonProperty("currencyCode") @NonNull final String currencyCode)
 	{
 		this.amount = amount;
-		this.amountSet = true;
-	}
-
-	public void setCurrencyCode(final String currencyCode)
-	{
 		this.currencyCode = currencyCode;
-		this.currencyCodeSet = true;
 	}
 }

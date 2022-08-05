@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.project;
+package de.metas.cucumber.stepdefs.project.budget;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_ProjectType;
+import de.metas.project.budget.BudgetProjectResources;
 
-public class C_ProjectType_StepDefData extends StepDefData<I_C_ProjectType>
+public class BudgetProjectResources_StepDefData extends StepDefData<BudgetProjectResources>
 {
-	public C_ProjectType_StepDefData()
+	public BudgetProjectResources_StepDefData()
 	{
-		super(I_C_ProjectType.class);
+		super(BudgetProjectResources.class);
 	}
 }

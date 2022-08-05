@@ -24,10 +24,10 @@ package de.metas.common.rest_api.v2.project.budget;
 
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
@@ -39,86 +39,98 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER
 @Getter
 @ToString
 @EqualsAndHashCode
+@ApiModel(description = "Contains the project and its resources to be upserted.")
 public class JsonBudgetProjectUpsertRequest
 {
-	@ApiModelProperty(position = 10,
-			required = true,
-			value = PROJECT_IDENTIFIER_DOC) //
-	@Setter
-	String projectIdentifier;
+	@ApiModelProperty(position = 10, value = PROJECT_IDENTIFIER_DOC, required = true)
+	private String projectIdentifier;
 
-	String value;
-	@ApiModelProperty(hidden = true)
-	boolean valueSet;
+	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project.C_ProjectType_ID`", required = true)
+	private JsonMetasfreshId projectTypeId;
 
-	String name;
-	@ApiModelProperty(hidden = true)
-	boolean nameSet;
-
-	@ApiModelProperty(required = true)
-	JsonMetasfreshId projectTypeId;
-
-	JsonMetasfreshId priceListVersionId;
+	@ApiModelProperty(position = 30, value = "Corresponding to `C_Project.AD_Org_ID`")
+	private String orgCode;
 
 	@ApiModelProperty(hidden = true)
-	boolean priceListVersionIdSet;
+	private boolean orgCodeSet;
 
-	JsonMetasfreshId currencyId;
-
-	@ApiModelProperty(hidden = true)
-	boolean currencyIdSet;
-
-	JsonMetasfreshId salesRepId;
+	@ApiModelProperty(position = 40, value = "Corresponding to `C_Project.Value`")
+	private String value;
 
 	@ApiModelProperty(hidden = true)
-	boolean salesRepIdSet;
+	private boolean valueSet;
 
-	String description;
-
-	@ApiModelProperty(hidden = true)
-	boolean descriptionSet;
-
-	LocalDate dateContract;
+	@ApiModelProperty(position = 50, value = "Corresponding to `C_Project.Name`")
+	private String name;
 
 	@ApiModelProperty(hidden = true)
-	boolean dateContractSet;
+	private boolean nameSet;
 
-	LocalDate dateFinish;
-
-	@ApiModelProperty(hidden = true)
-	boolean dateFinishSet;
-
-	JsonMetasfreshId businessPartnerId;
+	@ApiModelProperty(position = 60, value = "Corresponding to `C_Project.M_PriceList_Version_ID`")
+	private JsonMetasfreshId priceListVersionId;
 
 	@ApiModelProperty(hidden = true)
-	boolean businessPartnerIdSet;
+	private boolean priceListVersionIdSet;
 
-	String projectReferenceExt;
-
-	@ApiModelProperty(hidden = true)
-	boolean projectReferenceExtSet;
-
-	JsonMetasfreshId projectParentId;
+	@ApiModelProperty(position = 70, value = "Corresponding to `C_Project.C_Currency_ID`")
+	private JsonMetasfreshId currencyId;
 
 	@ApiModelProperty(hidden = true)
-	boolean projectParentIdSet;
+	private boolean currencyIdSet;
 
-	@ApiModelProperty(required = true)
-	String orgCode;
-
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
-	Boolean isActive;
+	@ApiModelProperty(position = 80, value = "Corresponding to `C_Project.SalesRep_ID`")
+	private JsonMetasfreshId salesRepId;
 
 	@ApiModelProperty(hidden = true)
-	boolean activeSet;
+	private boolean salesRepIdSet;
 
-	@ApiModelProperty(required = true)
-	SyncAdvise syncAdvise;
-
-	List<JsonBudgetResourceUpsertRequest> resources = new ArrayList<>();
+	@ApiModelProperty(position = 90, value = "Corresponding to `C_Project.Description`")
+	private String description;
 
 	@ApiModelProperty(hidden = true)
-	boolean resourcesSet;
+	private boolean descriptionSet;
+
+	@ApiModelProperty(position = 100, value = "Corresponding to `C_Project.DateContract`")
+	private LocalDate dateContract;
+
+	@ApiModelProperty(hidden = true)
+	private boolean dateContractSet;
+
+	@ApiModelProperty(position = 110, value = "Corresponding to `C_Project.DateFinish`")
+	private LocalDate dateFinish;
+
+	@ApiModelProperty(hidden = true)
+	private boolean dateFinishSet;
+
+	@ApiModelProperty(position = 120, value = "Corresponding to `C_Project.C_BPartner_ID`")
+	private JsonMetasfreshId bpartnerId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean bpartnerIdSet;
+
+	@ApiModelProperty(position = 130, value = "Corresponding to `C_Project.C_Project_Reference_Ext`")
+	private String projectReferenceExt;
+
+	@ApiModelProperty(hidden = true)
+	private boolean projectReferenceExtSet;
+
+	@ApiModelProperty(position = 140, value = "Corresponding to `C_Project.C_Project_Parent_ID`")
+	private JsonMetasfreshId projectParentId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean projectParentIdSet;
+
+	@ApiModelProperty(position = 150, value = "Corresponding to `C_Project.IsActive`")
+	private Boolean active;
+
+	@ApiModelProperty(hidden = true)
+	private boolean activeSet;
+
+	@ApiModelProperty(position = 160, required = true)
+	private SyncAdvise syncAdvise;
+
+	@ApiModelProperty(position = 170, value = "Corresponding to `C_Project_Resource_Budget`")
+	private List<JsonBudgetResourceUpsertRequest> resources = new ArrayList<>();
 
 	public void setValue(final String value)
 	{
@@ -132,11 +144,6 @@ public class JsonBudgetProjectUpsertRequest
 		this.nameSet = true;
 	}
 
-	public void setProjectTypeId(final JsonMetasfreshId projectTypeId)
-	{
-		this.projectTypeId = projectTypeId;
-	}
-
 	public void setPriceListVersionId(final JsonMetasfreshId priceListVersionId)
 	{
 		this.priceListVersionId = priceListVersionId;
@@ -147,11 +154,6 @@ public class JsonBudgetProjectUpsertRequest
 	{
 		this.currencyId = currencyId;
 		this.currencyIdSet = true;
-	}
-
-	public void setSalesRepId(final JsonMetasfreshId salesRepId)
-	{
-		this.salesRepId = salesRepId;
 	}
 
 	public void setDescription(final String description)
@@ -172,10 +174,10 @@ public class JsonBudgetProjectUpsertRequest
 		this.dateFinishSet = true;
 	}
 
-	public void setbPartnerId(final JsonMetasfreshId businessPartnerId)
+	public void setBpartnerId(final JsonMetasfreshId businessPartnerId)
 	{
-		this.businessPartnerId = businessPartnerId;
-		this.businessPartnerIdSet = true;
+		this.bpartnerId = businessPartnerId;
+		this.bpartnerIdSet = true;
 	}
 
 	public void setProjectReferenceExt(final String projectReferenceExt)
@@ -190,25 +192,20 @@ public class JsonBudgetProjectUpsertRequest
 		this.projectParentIdSet = true;
 	}
 
-	public void setOrgCode(final String orgCode)
-	{
-		this.orgCode = orgCode;
-	}
-
 	public void setIsActive(final Boolean active)
 	{
-		isActive = active;
+		this.active = active;
 		this.activeSet = true;
 	}
 
 	public void setResources(final List<JsonBudgetResourceUpsertRequest> resources)
 	{
 		this.resources = resources;
-		this.resourcesSet = true;
 	}
 
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
+	public void setOrgCode(final String orgCode)
 	{
-		this.syncAdvise = syncAdvise;
+		this.orgCode = orgCode;
+		this.orgCodeSet = true;
 	}
 }

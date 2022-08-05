@@ -24,73 +24,102 @@ package de.metas.common.rest_api.v2.project.budget;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 public class JsonBudgetProjectResourceResponse
 {
+	@ApiModelProperty( //
+			required = true, //
+			value = RESOURCE_IDENTIFIER_DOC)
 	@NonNull
 	@JsonProperty("budgetProjectResourceId")
 	JsonMetasfreshId budgetProjectResourceId;
 
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.C_Project_ID`.")
 	@NonNull
 	@JsonProperty("projectId")
 	JsonMetasfreshId projectId;
 
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.C_UOM_Time_ID`.")
 	@NonNull
 	@JsonProperty("uomTimeId")
 	JsonMetasfreshId uomTimeId;
 
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.DateStartPlan`.")
 	@NonNull
 	@JsonProperty("dateStartPlan")
-	String dateStartPlan;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateStartPlan;
 
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.DateFinishPlan`.")
 	@NonNull
 	@JsonProperty("dateFinishPlan")
-	String dateFinishPlan;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateFinishPlan;
 
+	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.Description`.")
 	@Nullable
 	@JsonProperty("description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String description;
 
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.PlannedAmt`.")
 	@NonNull
 	@JsonProperty("plannedAmt")
 	BigDecimal plannedAmt;
 
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.C_Currency_ID`.")
 	@NonNull
 	@JsonProperty("currencyId")
 	JsonMetasfreshId currencyId;
 
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.PlannedDuration`.")
 	@NonNull
 	@JsonProperty("plannedDuration")
 	BigDecimal plannedDuration;
 
+	@ApiModelProperty(required = true, value = "This translates to `C_Project_Resource_Budget.PricePerTimeUOM`.")
 	@NonNull
 	@JsonProperty("pricePerTimeUOM")
 	BigDecimal pricePerTimeUOM;
 
+	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.S_Resource_Group_ID`.")
 	@Nullable
 	@JsonProperty("resourceGroupId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId resourceGroupId;
 
+	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.S_Resource_ID`.")
 	@Nullable
 	@JsonProperty("resourceId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId resourceId;
 
+	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.ExternalId`.")
 	@Nullable
 	@JsonProperty("externalId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String externalId;
 
+	@ApiModelProperty(value = "This translates to `C_Project_Resource_Budget.IsActive`.")
 	@Nullable
 	@JsonProperty("isActive")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isActive;
 
 	@JsonCreator
@@ -99,8 +128,8 @@ public class JsonBudgetProjectResourceResponse
 			@JsonProperty("budgetProjectResourceId") @NonNull final JsonMetasfreshId budgetProjectResourceId,
 			@JsonProperty("projectId") @NonNull final JsonMetasfreshId projectId,
 			@JsonProperty("uomTimeId") @NonNull final JsonMetasfreshId uomTimeId,
-			@JsonProperty("dateStartPlan") @NonNull final String dateStartPlan,
-			@JsonProperty("dateFinishPlan") @NonNull final String dateFinishPlan,
+			@JsonProperty("dateStartPlan") @NonNull final LocalDate dateStartPlan,
+			@JsonProperty("dateFinishPlan") @NonNull final LocalDate dateFinishPlan,
 			@JsonProperty("description") @Nullable final String description,
 			@JsonProperty("plannedAmt") @NonNull final BigDecimal plannedAmt,
 			@JsonProperty("currencyId") @NonNull final JsonMetasfreshId currencyId,

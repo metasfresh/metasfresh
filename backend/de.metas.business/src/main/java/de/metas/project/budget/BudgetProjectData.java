@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.project.budget.data;
+package de.metas.project.budget;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
@@ -30,38 +30,33 @@ import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.List;
+import java.time.LocalDate;
 
 @Value
 @Builder
-public class BudgetProject
+public class BudgetProjectData
 {
-	@Nullable
-	@Getter
-	ProjectId projectId;
+	@NonNull
+	String name;
 
 	@NonNull
 	OrgId orgId;
 
-	@Nullable
+	@NonNull
 	CurrencyId currencyId;
 
-	@Nullable
-	String name;
+	@NonNull
+	ProjectTypeId projectTypeId;
 
-	@Nullable
+	@NonNull
 	String value;
 
-	@Nullable
-	Boolean isActive;
+	@Builder.Default
+	boolean isActive = true;
 
 	@Nullable
 	PriceListVersionId priceListVersionId;
@@ -73,9 +68,6 @@ public class BudgetProject
 	ProjectId projectParentId;
 
 	@Nullable
-	ProjectTypeId projectTypeId;
-
-	@Nullable
 	String projectReferenceExt;
 
 	@Nullable
@@ -85,41 +77,8 @@ public class BudgetProject
 	UserId salesRepId;
 
 	@Nullable
-	Instant dateContract;
+	LocalDate dateContract;
 
 	@Nullable
-	Instant dateFinish;
-
-	@Singular
-	List<BudgetProjectResource> projectResources;
-
-	@NonNull
-	public ProjectId getProjectIdNonNull()
-	{
-		if (projectId == null)
-		{
-			throw new AdempiereException("ProjectId cannot be null at this stage!");
-		}
-		return projectId;
-	}
-
-	@NonNull
-	public String getNameNonNull()
-	{
-		if (name == null)
-		{
-			throw new AdempiereException("WOProject Name property cannot be null at this stage!");
-		}
-		return name;
-	}
-
-	@NonNull
-	public String getValueNonNull()
-	{
-		if (value == null)
-		{
-			throw new AdempiereException("WOProject Value property cannot be null at this stage!");
-		}
-		return value;
-	}
+	LocalDate dateFinish;
 }

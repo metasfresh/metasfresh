@@ -49,7 +49,7 @@ public class BudgetProjectRestController
 {
 	final BudgetProjectRestService projectRestService;
 
-	public BudgetProjectRestController(final BudgetProjectRestService projectRestService)
+	public BudgetProjectRestController(@NonNull final BudgetProjectRestService projectRestService)
 	{
 		this.projectRestService = projectRestService;
 	}
@@ -63,8 +63,7 @@ public class BudgetProjectRestController
 	})
 	@PostMapping
 	public ResponseEntity<JsonBudgetProjectUpsertResponse> upsertBudgetProject(
-			@RequestBody @NonNull final JsonBudgetProjectUpsertRequest request
-	)
+			@RequestBody @NonNull final JsonBudgetProjectUpsertRequest request)
 	{
 		final JsonBudgetProjectUpsertResponse response = projectRestService.upsertBudgetProject(request);
 
@@ -74,7 +73,7 @@ public class BudgetProjectRestController
 	@GetMapping("/{projectId}")
 	public ResponseEntity<JsonBudgetProjectResponse> getWorkOrderProjectDataById(@PathVariable("projectId") @NonNull final Integer projectId)
 	{
-		final JsonBudgetProjectResponse response = projectRestService.getWorkOrderProjectDataById(ProjectId.ofRepoId(projectId));
+		final JsonBudgetProjectResponse response = projectRestService.getBudgetProjectDataById(ProjectId.ofRepoId(projectId));
 
 		return ResponseEntity.ok(response);
 	}

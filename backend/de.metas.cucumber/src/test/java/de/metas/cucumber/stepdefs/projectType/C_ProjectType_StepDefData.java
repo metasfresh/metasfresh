@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.uom;
+package de.metas.cucumber.stepdefs.projectType;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_ProjectType;
 
-public class C_UOM_StepDefData extends StepDefData<I_C_UOM>
+public class C_ProjectType_StepDefData extends StepDefData<I_C_ProjectType>
 {
-	public C_UOM_StepDefData()
+	public C_ProjectType_StepDefData()
 	{
-		super(I_C_UOM.class);
+		super(I_C_ProjectType.class);
 	}
 }

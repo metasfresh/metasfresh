@@ -22,23 +22,19 @@
 
 package de.metas.project.budget;
 
-import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
+@Builder
 @Value
-@Builder(toBuilder = true)
-public class BudgetProjectResource
+public class UpsertBudgetProjectResourceRequest
 {
-	@NonNull
+	@Nullable
 	BudgetProjectResourceId id;
 
 	@NonNull
 	BudgetProjectResourceData budgetProjectResourceData;
-
-	public ProjectId getProjectId()
-	{
-		return id.getProjectId();
-	}
 }

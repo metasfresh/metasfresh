@@ -40,7 +40,7 @@ public class JsonBudgetProjectUpsertResponse
 	JsonMetasfreshId projectId;
 
 	@NonNull
-	List<JsonMetasfreshId> createdResourceIds;
+	List<JsonMetasfreshId> budgetResourceIds;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
@@ -49,12 +49,12 @@ public class JsonBudgetProjectUpsertResponse
 	@JsonCreator
 	public JsonBudgetProjectUpsertResponse(
 			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@Singular @JsonProperty("createdResourceIds") final List<JsonMetasfreshId> createdResourceIds,
+			@Singular @JsonProperty("budgetResourceIds") final List<JsonMetasfreshId> budgetResourceIds,
 			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome
 	)
 	{
 		this.projectId = projectId;
-		this.createdResourceIds = createdResourceIds;
+		this.budgetResourceIds = budgetResourceIds;
 		this.syncOutcome = syncOutcome;
 	}
 }

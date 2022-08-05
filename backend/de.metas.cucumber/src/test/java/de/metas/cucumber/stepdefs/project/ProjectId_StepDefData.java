@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,25 +20,15 @@
  * #L%
  */
 
-package de.metas.project.budget;
+package de.metas.cucumber.stepdefs.project;
 
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.project.ProjectId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
-@Value
-@Builder(toBuilder = true)
-public class BudgetProjectResource
+public class ProjectId_StepDefData extends StepDefData<ProjectId>
 {
-	@NonNull
-	BudgetProjectResourceId id;
-
-	@NonNull
-	BudgetProjectResourceData budgetProjectResourceData;
-
-	public ProjectId getProjectId()
+	public ProjectId_StepDefData()
 	{
-		return id.getProjectId();
+		super(ProjectId.class);
 	}
 }

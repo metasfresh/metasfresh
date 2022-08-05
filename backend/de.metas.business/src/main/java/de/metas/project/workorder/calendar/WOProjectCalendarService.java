@@ -46,7 +46,9 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectData;
 import de.metas.project.budget.BudgetProjectResource;
+import de.metas.project.budget.BudgetProjectResourceData;
 import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.budget.BudgetProjectResourceSimulation;
 import de.metas.project.budget.BudgetProjectResources;
@@ -249,17 +251,20 @@ public class WOProjectCalendarService implements CalendarService
 			@Nullable final SimulationPlanRef simulationHeaderRef,
 			@NonNull final WOProjectFrontendURLsProvider frontendURLs)
 	{
+		final BudgetProjectResourceData budgetProjectResourceData = budget.getBudgetProjectResourceData();
+		final BudgetProjectData budgetProjectData = project.getBudgetProjectData();
+
 		return CalendarEntry.builder()
 				.entryId(BudgetAndWOCalendarEntryIdConverters.from(budget.getId()))
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
-				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(), budget.getResourceGroupId())))
+				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budgetProjectResourceData.getResourceId(), budgetProjectResourceData.getResourceGroupId())))
 				.title(TranslatableStrings.builder()
-						.append(project.getName())
-						.append(" - ")
-						.appendQty(budget.getPlannedDuration().toBigDecimal(), budget.getPlannedDuration().getUOMSymbol())
-						.build())
-				.description(TranslatableStrings.anyLanguage(budget.getDescription()))
-				.dateRange(budget.getDateRange())
+							   .append(budgetProjectData.getName())
+							   .append(" - ")
+							   .appendQty(budgetProjectResourceData.getPlannedDuration().toBigDecimal(), budgetProjectResourceData.getPlannedDuration().getUOMSymbol())
+							   .build())
+				.description(TranslatableStrings.anyLanguage(budgetProjectResourceData.getDescription()))
+				.dateRange(budgetProjectResourceData.getDateRange())
 				.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
 				.color("#89D72D") // metasfresh green
 				.url(frontendURLs.getFrontendURL(budget.getProjectId()).orElse(null))
@@ -281,12 +286,12 @@ public class WOProjectCalendarService implements CalendarService
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
 				.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
 				.title(TranslatableStrings.builder()
-						.append(project.getName())
-						.append(" - ")
-						.append(step.getSeqNo() + "_" + step.getName())
-						.append(" - ")
-						.appendQty(durationInt, durationUomSymbol)
-						.build()
+							   .append(project.getName())
+							   .append(" - ")
+							   .append(step.getSeqNo() + "_" + step.getName())
+							   .append(" - ")
+							   .appendQty(durationInt, durationUomSymbol)
+							   .build()
 				)
 				.description(TranslatableStrings.anyLanguage(resource.getDescription()))
 				.dateRange(resource.getDateRange())
@@ -343,6 +348,7 @@ public class WOProjectCalendarService implements CalendarService
 				.orElseThrow(() -> new AdempiereException("No Budget Project found for " + projectResourceId.getProjectId()));
 
 		final BudgetProjectResource actualBudget = budgetProjectService.getBudgetsById(projectResourceId);
+		final BudgetProjectResourceData actualBudgetData = actualBudget.getBudgetProjectResourceData();
 
 		final WOProjectFrontendURLsProvider frontendURLs = new WOProjectFrontendURLsProvider();
 
@@ -351,7 +357,7 @@ public class WOProjectCalendarService implements CalendarService
 						BudgetProjectResourceSimulation.UpdateRequest.builder()
 								.simulationId(simulationId)
 								.projectResourceId(projectResourceId)
-								.dateRange(CoalesceUtil.coalesceNotNull(request.getDateRange(), actualBudget.getDateRange()))
+								.dateRange(CoalesceUtil.coalesceNotNull(request.getDateRange(), actualBudgetData.getDateRange()))
 								.build())
 				.map(simulation -> simulation != null ? simulation.applyOn(actualBudget) : actualBudget)
 				.map(budget -> toCalendarEntry(

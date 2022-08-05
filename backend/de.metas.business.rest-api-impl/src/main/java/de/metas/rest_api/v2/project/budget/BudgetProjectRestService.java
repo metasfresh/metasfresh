@@ -32,25 +32,28 @@ import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResourceRespo
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectResponse;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectUpsertResponse;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
-import de.metas.project.budget.BudgetProjectResourceId;
-import de.metas.project.budget.data.BudgetProject;
-import de.metas.project.budget.data.BudgetProjectRepository;
-import de.metas.project.budget.data.BudgetProjectResource;
+import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectData;
+import de.metas.project.budget.BudgetProjectRepository;
+import de.metas.project.budget.BudgetProjectResource;
+import de.metas.project.budget.BudgetProjectResourceData;
+import de.metas.project.budget.UpsertBudgetProjectRequest;
 import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.resource.ResourceGroupId;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
@@ -58,45 +61,45 @@ import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.slf4j.Logger;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
 public class BudgetProjectRestService
 {
-	private static final Logger logger = LogManager.getLogger(BudgetProjectRestService.class);
-
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final BudgetProjectRepository projectRepository;
+	private final BudgetProjectRepository budgetProjectRepository;
 	private final ProjectTypeRepository projectTypeRepository;
-	private final BudgetProjectJsonToInternalConverter budgetProjectJsonToInternalConverter;
+	private final BudgetProjectJsonConverter budgetProjectJsonConverter;
 
 	public BudgetProjectRestService(
-			@NonNull final BudgetProjectRepository projectRepository,
+			@NonNull final BudgetProjectRepository budgetProjectRepository,
 			@NonNull final ProjectTypeRepository projectTypeRepository,
-			@NonNull final BudgetProjectJsonToInternalConverter budgetProjectJsonToInternalConverter)
+			@NonNull final BudgetProjectJsonConverter budgetProjectJsonConverter)
 	{
-		this.projectRepository = projectRepository;
+		this.budgetProjectRepository = budgetProjectRepository;
 		this.projectTypeRepository = projectTypeRepository;
-		this.budgetProjectJsonToInternalConverter = budgetProjectJsonToInternalConverter;
+		this.budgetProjectJsonConverter = budgetProjectJsonConverter;
 	}
 
-	public JsonBudgetProjectResponse getWorkOrderProjectDataById(@NonNull final ProjectId projectId)
+	@NonNull
+	public JsonBudgetProjectResponse getBudgetProjectDataById(@NonNull final ProjectId projectId)
 	{
-		final BudgetProject projectData = projectRepository.getOptionalById(projectId)
+		final BudgetProject projectData = budgetProjectRepository.getOptionalById(projectId)
 				.orElseThrow(() -> MissingResourceException.builder()
-						.resourceName("Work Order Project")
+						.resourceName("Budget Project")
 						.resourceIdentifier(String.valueOf(projectId.getRepoId()))
 						.build());
 
-		return toJsonWorkOrderProjectResponse(projectData);
+		return toJsonBudgetProjectResponse(projectData);
 	}
 
 	@NonNull
@@ -114,173 +117,180 @@ public class BudgetProjectRestService
 			throw new MissingPropertyException("syncAdvise", request);
 		}
 
+		validateJsonBudgetProjectUpsertRequest(request);
+
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
-		final Optional<BudgetProject> existingBudgetProjectOpt = getExistingBudgetProject(
-				orgId,
-				IdentifierString.ofOrNull(request.getProjectIdentifier()),
-				request);
 
-		if (existingBudgetProjectOpt.isPresent())
+		final Optional<BudgetProject> existingBudgetProjectOpt = getExistingBudgetProject(request, orgId);
+
+		if (existingBudgetProjectOpt.isPresent() && !budgetProjectSyncAdvise.getIfExists().isUpdate())
 		{
-			final BudgetProject existingBudgetProject = existingBudgetProjectOpt.get();
+			final JsonMetasfreshId projectId = JsonMetasfreshId.of(existingBudgetProjectOpt.get().getProjectId().getRepoId());
 
-			final ProjectId existingBudgetProjectId = existingBudgetProject.getProjectIdNonNull();
-			logger.debug("Found Budget Project with id={}", existingBudgetProjectId);
-
-			final JsonBudgetProjectUpsertResponse.JsonBudgetProjectUpsertResponseBuilder projectResponseBuilder =
-					JsonBudgetProjectUpsertResponse.builder()
-							.projectId(JsonMetasfreshId.of(existingBudgetProjectId.getRepoId()));
-
-			final BudgetProject jsonUpdatedBudgetProject = budgetProjectJsonToInternalConverter.updateWOProjectFromJson(request, existingBudgetProject);
-			updateExistingWOProject(projectResponseBuilder, jsonUpdatedBudgetProject, budgetProjectSyncAdvise);
-
-			return projectResponseBuilder.build();
+			return JsonBudgetProjectUpsertResponse.builder()
+					.projectId(projectId)
+					.syncOutcome(JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE)
+					.build();
 		}
-		else if (budgetProjectSyncAdvise.isFailIfNotExists())
+		else if (existingBudgetProjectOpt.isPresent() || !budgetProjectSyncAdvise.isFailIfNotExists())
+		{
+			final BudgetProject existingBudgetProject = existingBudgetProjectOpt.orElse(null);
+
+			return upsertBudgetProject(request, existingBudgetProject, budgetProjectSyncAdvise, orgId);
+		}
+		else
 		{
 			throw MissingResourceException.builder()
-					.resourceName("Work Order Project")
+					.resourceName("Budget Project")
 					.parentResource(request)
 					.build()
 					.setParameter("budgetProjectSyncAdvise", budgetProjectSyncAdvise);
 		}
-		else
-		{
-			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getCurrencyId()));
-			if (currencyId == null)
-			{
-				throw new MissingPropertyException("currencyId", request);
-			}
-			final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectTypeId()));
-			if (projectTypeId == null)
-			{
-				throw new MissingPropertyException("projectTypeId", request);
-			}
-			if (projectTypeRepository.getByIdOrNull(projectTypeId) == null)
-			{
-				throw MissingResourceException.builder()
-						.resourceName("projectTypeId")
-						.resourceIdentifier(Integer.toString(projectTypeId.getRepoId()))
-						.parentResource(request)
-						.build();
-			}
-
-			final ImmutableList.Builder<BudgetProjectResourceId> resourceIdsListBuilder = ImmutableList.builder();
-
-			final BudgetProject projectData = budgetProjectJsonToInternalConverter.updateWOProjectFromJson(request, null);
-			final ProjectId createdProjectId = projectRepository.save(projectData, resourceIdsListBuilder).getProjectIdNonNull();
-
-			return JsonBudgetProjectUpsertResponse.builder()
-					.projectId(JsonMetasfreshId.of(createdProjectId.getRepoId()))
-					.syncOutcome(JsonResponseUpsertItem.SyncOutcome.CREATED)
-					.createdResourceIds(resourceIdsListBuilder.build().stream()
-												.map(BudgetProjectResourceId::getRepoId)
-												.map(JsonMetasfreshId::of)
-												.collect(ImmutableList.toImmutableList()))
-					.build();
-		}
-	}
-
-	private void updateExistingWOProject(
-			@NonNull final JsonBudgetProjectUpsertResponse.JsonBudgetProjectUpsertResponseBuilder responseBuilder,
-			@NonNull final BudgetProject existingBudgetProject,
-			@NonNull final SyncAdvise syncAdvise)
-	{
-		final ImmutableList.Builder<BudgetProjectResourceId> resourceIdsListBuilder = ImmutableList.builder();
-
-		if (syncAdvise.getIfExists().isUpdate())
-		{
-			projectRepository.save(existingBudgetProject, resourceIdsListBuilder);
-
-			responseBuilder.syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED);
-		}
-		else
-		{
-			responseBuilder.syncOutcome(JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE);
-		}
-
-		responseBuilder.createdResourceIds(resourceIdsListBuilder.build().stream()
-												   .map(BudgetProjectResourceId::getRepoId)
-												   .map(JsonMetasfreshId::of)
-												   .collect(ImmutableList.toImmutableList()));
 	}
 
 	@NonNull
-	private Optional<BudgetProject> getExistingBudgetProject(
-			@NonNull final OrgId orgId,
-			@Nullable final IdentifierString identifier,
-			@Nullable final Object objectWithIdentifier)
+	private JsonBudgetProjectUpsertResponse upsertBudgetProject(
+			@NonNull final JsonBudgetProjectUpsertRequest request,
+			@Nullable final BudgetProject existingBudgetProject,
+			@NonNull final SyncAdvise syncAdvise,
+			@NonNull final OrgId orgId)
 	{
-		if (identifier == null)
-		{
-			return Optional.empty();
-		}
-		if (identifier.getType().equals(IdentifierString.Type.METASFRESH_ID))
-		{
-			final MetasfreshId metasfreshId = identifier.asMetasfreshId();
-			return projectRepository.getOptionalById(ProjectId.ofRepoId(metasfreshId.getValue()));
-		}
+		final UpsertBudgetProjectRequest upsertBudgetProjectRequest = budgetProjectJsonConverter
+				.buildUpsertBudgetProjectRequest(request, existingBudgetProject, orgId, syncAdvise);
 
-		final ProjectQuery.ProjectQueryBuilder projectQueryBuilder = ProjectQuery.builder().orgId(orgId);
-		switch (identifier.getType())
-		{
-			case VALUE:
-				projectQueryBuilder.value(identifier.asValue());
-				break;
-			case EXTERNAL_ID:
-				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
-				break;
-			default:
-				throw new InvalidIdentifierException(identifier.getRawIdentifierString(), objectWithIdentifier);
-		}
+		final BudgetProject budgetProject = budgetProjectRepository.save(upsertBudgetProjectRequest);
 
-		return projectRepository.getOptionalBy(projectQueryBuilder.build());
+		final JsonResponseUpsertItem.SyncOutcome syncOutcome = existingBudgetProject == null
+				? JsonResponseUpsertItem.SyncOutcome.CREATED
+				: JsonResponseUpsertItem.SyncOutcome.UPDATED;
+
+		return JsonBudgetProjectUpsertResponse.builder()
+				.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(budgetProject.getProjectId())))
+				.syncOutcome(syncOutcome)
+				.budgetResourceIds(budgetProject.mapResourceIds((id) -> JsonMetasfreshId.of(id.getRepoId())))
+				.build();
 	}
 
 	@NonNull
-	private JsonBudgetProjectResponse toJsonWorkOrderProjectResponse(@NonNull final BudgetProject projectData)
+	private JsonBudgetProjectResponse toJsonBudgetProjectResponse(@NonNull final BudgetProject budgetProject)
 	{
 		final ImmutableList.Builder<JsonBudgetProjectResourceResponse> resourcesResponseBuilder = ImmutableList.builder();
 
-		for (final BudgetProjectResource projectResource : projectData.getProjectResources())
+		for (final BudgetProjectResource projectResource : budgetProject.getProjectResources().getBudgets())
 		{
+			final BudgetProjectResourceData budgetProjectResourceData = projectResource.getBudgetProjectResourceData();
+
+			final ZoneId timeZoneId = orgDAO.getTimeZone(budgetProject.getBudgetProjectData().getOrgId());
+
 			final JsonBudgetProjectResourceResponse resourceResponse = JsonBudgetProjectResourceResponse.builder()
-					.budgetProjectResourceId(JsonMetasfreshId.of(projectResource.getBudgetProjectResourceIdNonNull().getRepoId()))
-					.currencyId(JsonMetasfreshId.of(projectResource.getCurrencyId().getRepoId()))
-					.resourceId(JsonMetasfreshId.of(ResourceId.toRepoId(projectResource.getResourceId())))
-					.resourceGroupId(JsonMetasfreshId.of(ResourceGroupId.toRepoId(projectResource.getResourceGroupId())))
-					.uomTimeId(JsonMetasfreshId.of(UomId.toRepoId(projectResource.getUomTimeId())))
+					.budgetProjectResourceId(JsonMetasfreshId.of(projectResource.getId().getRepoId()))
 					.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(projectResource.getProjectId())))
-					.pricePerTimeUOM(projectResource.getPricePerTimeUOM().toBigDecimal())
-					.plannedDuration(projectResource.getPlannedDuration())
-					.plannedAmt(projectResource.getPlannedAmt().getAsBigDecimal())
-					.externalId(ExternalId.toValue(projectResource.getExternalId()))
-					.dateFinishPlan(projectResource.getDateFinishPlan().toString())
-					.dateStartPlan(projectResource.getDateStartPlan().toString())
-					.description(projectResource.getDescription())
-					.isActive(projectResource.getIsActive())
+					.currencyId(JsonMetasfreshId.of(budgetProjectResourceData.getPlannedAmount().getCurrencyId().getRepoId()))
+					.resourceId(JsonMetasfreshId.ofOrNull(ResourceId.toRepoId(budgetProjectResourceData.getResourceId())))
+					.resourceGroupId(JsonMetasfreshId.ofOrNull(ResourceGroupId.toRepoId(budgetProjectResourceData.getResourceGroupId())))
+					.uomTimeId(JsonMetasfreshId.of(UomId.toRepoId(budgetProjectResourceData.getDurationUomId())))
+					.pricePerTimeUOM(budgetProjectResourceData.getPricePerDurationUnit().toBigDecimal())
+					.plannedDuration(budgetProjectResourceData.getPlannedDuration().getSourceQty())
+					.plannedAmt(budgetProjectResourceData.getPlannedAmount().toBigDecimal())
+					.externalId(ExternalId.toValue(budgetProjectResourceData.getExternalId()))
+					.dateFinishPlan(LocalDateTime.ofInstant(budgetProjectResourceData.getDateRange().getEndDate(), timeZoneId).toLocalDate())
+					.dateStartPlan(LocalDateTime.ofInstant(budgetProjectResourceData.getDateRange().getStartDate(), timeZoneId).toLocalDate())
+					.description(budgetProjectResourceData.getDescription())
+					.isActive(budgetProjectResourceData.getIsActive())
 					.build();
 
 			resourcesResponseBuilder.add(resourceResponse);
 		}
 
+		final BudgetProjectData budgetProjectData = budgetProject.getBudgetProjectData();
+
 		return JsonBudgetProjectResponse.builder()
-				.bPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(projectData.getBPartnerId())))
-				.currencyId(JsonMetasfreshId.ofOrNull(CurrencyId.toRepoId(projectData.getCurrencyId())))
-				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(projectData.getProjectParentId())))
-				.projectTypeId(JsonMetasfreshId.of(ProjectTypeId.toRepoId(projectData.getProjectTypeId())))
-				.priceListVersionId(JsonMetasfreshId.ofOrNull(PriceListVersionId.toRepoId(projectData.getPriceListVersionId())))
-				.orgCode(orgDAO.retrieveOrgValue(projectData.getOrgId()))
-				.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(projectData.getProjectIdNonNull())))
-				.dateContract(Optional.ofNullable(projectData.getDateContract()).map(Instant::toString).orElse(""))
-				.dateFinish(Optional.ofNullable(projectData.getDateFinish()).map(Instant::toString).orElse(""))
-				.description(projectData.getDescription())
-				.projectReferenceExt(projectData.getProjectReferenceExt())
-				.name(projectData.getNameNonNull())
-				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(projectData.getSalesRepId())))
-				.isActive(projectData.getIsActive())
-				.value(projectData.getValueNonNull())
+				.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(budgetProject.getProjectId())))
+				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(budgetProjectData.getBPartnerId())))
+				.currencyId(JsonMetasfreshId.ofOrNull(CurrencyId.toRepoId(budgetProjectData.getCurrencyId())))
+				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(budgetProjectData.getProjectParentId())))
+				.projectTypeId(JsonMetasfreshId.of(ProjectTypeId.toRepoId(budgetProjectData.getProjectTypeId())))
+				.priceListVersionId(JsonMetasfreshId.ofOrNull(PriceListVersionId.toRepoId(budgetProjectData.getPriceListVersionId())))
+				.orgCode(orgDAO.retrieveOrgValue(budgetProjectData.getOrgId()))
+				.dateContract(budgetProjectData.getDateContract())
+				.dateFinish(budgetProjectData.getDateFinish())
+				.description(budgetProjectData.getDescription())
+				.projectReferenceExt(budgetProjectData.getProjectReferenceExt())
+				.name(budgetProjectData.getName())
+				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(budgetProjectData.getSalesRepId())))
+				.isActive(budgetProjectData.isActive())
+				.value(budgetProjectData.getValue())
 				.projectResources(resourcesResponseBuilder.build())
 				.build();
+	}
+
+	@NonNull
+	private Optional<BudgetProject> getExistingBudgetProject(
+			@NonNull final JsonBudgetProjectUpsertRequest request,
+			@NonNull final OrgId orgId)
+	{
+		final IdentifierString projectIdentifier = IdentifierString.of(request.getProjectIdentifier());
+
+		if (IdentifierString.Type.METASFRESH_ID.equals(projectIdentifier.getType()))
+		{
+			final ProjectId existingProjectId = ProjectId.ofRepoId(MetasfreshId.toValue(projectIdentifier.asMetasfreshId()));
+			return budgetProjectRepository.getOptionalById(existingProjectId);
+		}
+
+		final ProjectQuery.ProjectQueryBuilder projectQueryBuilder = ProjectQuery.builder()
+				.orgId(orgId);
+
+		switch (projectIdentifier.getType())
+		{
+			case VALUE:
+				projectQueryBuilder.value(projectIdentifier.asValue());
+				break;
+			case EXTERNAL_ID:
+				projectQueryBuilder.externalProjectReference(projectIdentifier.asExternalId());
+				break;
+			default:
+				throw new InvalidIdentifierException(projectIdentifier.getRawIdentifierString(), request);
+		}
+
+		return budgetProjectRepository.getOptionalBy(projectQueryBuilder.build());
+	}
+
+	private void validateJsonBudgetProjectUpsertRequest(@NonNull final JsonBudgetProjectUpsertRequest request)
+	{
+		if (Check.isBlank(request.getProjectIdentifier()))
+		{
+			throw new MissingPropertyException("projectIdentifier", request);
+		}
+
+		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectTypeId()));
+		if (projectTypeId == null)
+		{
+			throw new MissingPropertyException("projectTypeId", request);
+		}
+
+		final ProjectType projectType = projectTypeRepository.getByIdOrNull(projectTypeId);
+
+		if (projectType == null)
+		{
+			throw MissingResourceException.builder()
+					.resourceName("ProjectType")
+					.resourceIdentifier(Integer.toString(projectTypeId.getRepoId()))
+					.parentResource(request)
+					.build();
+		}
+
+		if (!projectType.getProjectCategory().isBudget())
+		{
+			throw new AdempiereException("ProjectType.ProjectCategory is not meant for budget!")
+					.appendParametersToMessage()
+					.setParameter("ProjectTypeId", projectType.getId().getRepoId());
+		}
+
+		request.getResources().forEach(resourceRequest -> {
+			if (Check.isBlank(resourceRequest.getResourceIdentifier()))
+			{
+				throw new MissingPropertyException("resourceIdentifier", resourceRequest);
+			}
+		});
 	}
 }

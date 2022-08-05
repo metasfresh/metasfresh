@@ -24,93 +24,93 @@ package de.metas.common.rest_api.v2.project.budget;
 
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.money.JsonMoney;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
 
 @Getter
 @ToString
 @EqualsAndHashCode
 public class JsonBudgetResourceUpsertRequest
 {
-	@ApiModelProperty(position = 10,
-			required = true,
-			value = RESOURCE_IDENTIFIER_DOC) //
-	@Setter
-	String resourceIdentifier;
+	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_Resource_Budget.S_Resource_ID`", required = true)
+	private String resourceIdentifier;
 
-	JsonMetasfreshId uomTimeId;
+	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project_Resource_Budget.ExternalId`")
+	private JsonExternalId externalId;
 
 	@ApiModelProperty(hidden = true)
-	boolean uomTimeIdSet;
+	private boolean externalIdSet;
 
-	LocalDate dateFinishPlan;
-
-	@ApiModelProperty(hidden = true)
-	boolean dateFinishPlanSet;
-
-	LocalDate dateStartPlan;
+	@ApiModelProperty(position = 30, value = "Corresponding to `C_Project_Resource_Budget.C_UOM_Time_ID`")
+	private JsonMetasfreshId uomTimeId;
 
 	@ApiModelProperty(hidden = true)
-	boolean dateStartPlanSet;
+	private boolean uomTimeIdSet;
 
-	JsonMoney plannedAmt;
-
-	@ApiModelProperty(hidden = true)
-	boolean plannedAmtSet;
-
-	BigDecimal plannedDuration;
+	@ApiModelProperty(position = 40, value = "Corresponding to `C_Project_Resource_Budget.DateFinishPlan`")
+	private LocalDate dateFinishPlan;
 
 	@ApiModelProperty(hidden = true)
-	boolean plannedDurationSet;
+	private boolean dateFinishPlanSet;
 
-	BigDecimal pricePerTimeUOM;
-
-	@ApiModelProperty(hidden = true)
-	boolean pricePerTimeUOMSet;
-
-	String description;
+	@ApiModelProperty(position = 50, value = "Corresponding to `C_Project_Resource_Budget.DateStartPlan`")
+	private LocalDate dateStartPlan;
 
 	@ApiModelProperty(hidden = true)
-	boolean descriptionSet;
+	private boolean dateStartPlanSet;
 
-	JsonMetasfreshId resourceGroupId;
-
-	@ApiModelProperty(hidden = true)
-	boolean resourceGroupIdSet;
-
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
-	Boolean isActive;
+	@ApiModelProperty(position = 60, value = "Corresponding to `C_Project_Resource_Budget.PlannedAmt`")
+	private JsonMoney plannedAmt;
 
 	@ApiModelProperty(hidden = true)
-	boolean activeSet;
+	private boolean plannedAmtSet;
 
-	@Setter
-	@ApiModelProperty(required = true)
-	JsonExternalId externalId;
+	@ApiModelProperty(position = 70, value = "Corresponding to `C_Project_Resource_Budget.PlannedDuration`")
+	private BigDecimal plannedDuration;
 
-	@ApiModelProperty(required = true)
-	SyncAdvise syncAdvise;
+	@ApiModelProperty(hidden = true)
+	private boolean plannedDurationSet;
+
+	@ApiModelProperty(position = 80, value = "Corresponding to `C_Project_Resource_Budget.PricePerTimeUOM`")
+	private JsonMoney pricePerTimeUOM;
+
+	@ApiModelProperty(hidden = true)
+	private boolean pricePerTimeUOMSet;
+
+	@ApiModelProperty(position = 90, value = "Corresponding to `C_Project_Resource_Budget.Description`")
+	private String description;
+
+	@ApiModelProperty(hidden = true)
+	private boolean descriptionSet;
+
+	@ApiModelProperty(position = 100, value = "Corresponding to `C_Project_Resource_Budget.S_Resource_Group_ID`")
+	private JsonMetasfreshId resourceGroupId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean resourceGroupIdSet;
+
+	@ApiModelProperty(position = 110, value = "Corresponding to `C_Project_Resource_Budget.IsActive`")
+	private Boolean active;
+
+	@ApiModelProperty(hidden = true)
+	private boolean activeSet;
 
 	public void setUomTimeId(final JsonMetasfreshId uomTimeId)
 	{
 		this.uomTimeId = uomTimeId;
-		uomTimeIdSet = true;
+		this.uomTimeIdSet = true;
 	}
 
 	public void setDateFinishPlan(final LocalDate dateFinishPlan)
 	{
 		this.dateFinishPlan = dateFinishPlan;
-		dateFinishPlanSet = true;
+		this.dateFinishPlanSet = true;
 	}
 
 	public void setDateStartPlan(final LocalDate dateStartPlan)
@@ -131,7 +131,7 @@ public class JsonBudgetResourceUpsertRequest
 		this.plannedDurationSet = true;
 	}
 
-	public void setPricePerTimeUOM(final BigDecimal pricePerTimeUOM)
+	public void setPricePerTimeUOM(final JsonMoney pricePerTimeUOM)
 	{
 		this.pricePerTimeUOM = pricePerTimeUOM;
 		this.pricePerTimeUOMSet = true;
@@ -151,12 +151,13 @@ public class JsonBudgetResourceUpsertRequest
 
 	public void setActive(final Boolean active)
 	{
-		isActive = active;
+		this.active = active;
 		this.activeSet = true;
 	}
 
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
+	public void setExternalId(final JsonExternalId externalId)
 	{
-		this.syncAdvise = syncAdvise;
+		this.externalId = externalId;
+		this.externalIdSet = true;
 	}
 }

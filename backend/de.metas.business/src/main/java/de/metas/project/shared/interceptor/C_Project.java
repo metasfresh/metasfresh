@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,60 +20,45 @@
  * #L%
  */
 
-package de.metas.project.callout;
+package de.metas.project.shared.interceptor;
 
+import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.shared.ProjectSharedService;
-import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
-@Callout(I_C_Project.class)
+@Interceptor(I_C_Project.class)
 public class C_Project
 {
-	@NonNull
 	private final ProjectSharedService projectSharedService;
 
 	public C_Project(@NonNull final ProjectSharedService projectSharedService)
 	{
 		this.projectSharedService = projectSharedService;
-
-		// register ourselves
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		programaticCalloutProvider.registerAnnotatedCallout(this);
-		CopyRecordFactory.enableForTableName(I_C_Project.Table_Name);
 	}
 
-	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
-	public void onC_ProjectType_ID(@NonNull final I_C_Project projectRecord)
-	{
-		updateFromProjectType(projectRecord);
-	}
-
-	private void updateFromProjectType(@NonNull final I_C_Project projectRecord)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_C_Project.COLUMNNAME_C_ProjectType_ID)
+	public void setProjectCategoryFromProjectType(@NonNull final I_C_Project projectRecord)
 	{
 		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
+
 		if (projectTypeId == null)
 		{
 			return;
 		}
 
-		final String projectValue = projectSharedService.getValueForProjectType(projectTypeId);
-		if (projectValue != null)
-		{
-			projectRecord.setValue(projectValue);
-		}
+		final String projectCategoryCode = Optional.ofNullable(projectSharedService.getProjectCategoryFromProjectType(projectTypeId))
+				.map(ProjectCategory::getCode)
+				.orElse(null);
 
-		if (Check.isEmpty(projectRecord.getName()))
-		{
-			projectRecord.setName(projectValue != null ? projectValue : ".");
-		}
+		projectRecord.setProjectCategory(projectCategoryCode);
 	}
 }
