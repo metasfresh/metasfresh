@@ -62,8 +62,8 @@ public class CostRevaluationRepository
 		return costRevaluation.getDocStatus().equals(X_M_CostRevaluation.DOCSTATUS_Drafted);
 	}
 
-	public void createCostRevaluationLineForProduct(@NonNull final CostRevaluation costRevaluation,
-													@NonNull final ImmutableSet<ProductId> productIds)
+	public void createCostRevaluationLinesForProductIds(@NonNull final CostRevaluation costRevaluation,
+														@NonNull final ImmutableSet<ProductId> productIds)
 	{
 		final AcctSchemaId acctSchemaId = costRevaluation.getAcctSchemaId();
 		final CostElementId costElementId = costRevaluation.getCostElementId();

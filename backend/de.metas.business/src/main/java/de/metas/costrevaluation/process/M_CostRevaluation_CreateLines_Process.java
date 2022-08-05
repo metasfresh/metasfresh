@@ -78,7 +78,7 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
 		final CostRevaluation costRevaluation = costRevaluationRepo.retrieveById(costRevaluationId);
 
-		costRevaluationRepo.createCostRevaluationLineForProduct(costRevaluation, productIds);
+		costRevaluationRepo.createCostRevaluationLinesForProductIds(costRevaluation, productIds);
 
 		return "@OK@";
 	}
