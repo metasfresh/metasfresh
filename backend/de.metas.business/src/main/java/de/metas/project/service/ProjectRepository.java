@@ -37,8 +37,6 @@ import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.RStatusId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Node;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;

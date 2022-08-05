@@ -44,7 +44,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
-import de.metas.project.budget.BudgetProjectData;
 import de.metas.project.budget.BudgetProjectResource;
 import de.metas.project.budget.BudgetProjectResourceData;
 import de.metas.project.budget.BudgetProjectResourceId;
