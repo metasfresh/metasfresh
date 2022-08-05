@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project
  *  @author metasfresh (generated) 
@@ -351,7 +350,7 @@ public interface I_C_Project
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -361,13 +360,12 @@ public interface I_C_Project
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_Project_ID();
 
-	ModelColumn<I_C_Project, Object> COLUMN_C_Project_ID = new ModelColumn<>(I_C_Project.class, "C_Project_ID", null);
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
@@ -1186,4 +1184,27 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_WOOwner = new ModelColumn<>(I_C_Project.class, "WOOwner", null);
 	String COLUMNNAME_WOOwner = "WOOwner";
+
+	/**
+	 * Set Project created.
+	 * Date on which the test project was created.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOProjectCreatedDate (@Nullable java.sql.Timestamp WOProjectCreatedDate);
+
+	/**
+	 * Get Project created.
+	 * Date on which the test project was created.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWOProjectCreatedDate();
+
+	ModelColumn<I_C_Project, Object> COLUMN_WOProjectCreatedDate = new ModelColumn<>(I_C_Project.class, "WOProjectCreatedDate", null);
+	String COLUMNNAME_WOProjectCreatedDate = "WOProjectCreatedDate";
 }
