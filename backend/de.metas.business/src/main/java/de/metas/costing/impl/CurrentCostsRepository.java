@@ -429,6 +429,11 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 														@NonNull final CostElementId costElementId,
 														@NonNull final ImmutableSet<ProductId> productIds)
 	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL.createQueryBuilder(I_M_Cost.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()

@@ -34,14 +34,12 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public final class CostRevaluationLine
+public class CostRevaluationLine
 {
-	@NonNull private final CostRevaluationId costRevaluationId;
-	@NonNull private final ProductId productId;
-	@NonNull private final CostPrice currentCostPrice;
-	@NonNull private final Quantity currentQty;
-	@Setter
-	private CostRevaluationLineId id;
-	@Setter
-	@Nullable private CostPrice newCostPrice;
+	@NonNull CostRevaluationId costRevaluationId;
+	@NonNull ProductId productId;
+	@NonNull CostPrice currentCostPrice;
+	@NonNull Quantity currentQty;
+	@NonNull CostRevaluationLineId id;
+	@NonNull CostPrice newCostPrice;
 }
