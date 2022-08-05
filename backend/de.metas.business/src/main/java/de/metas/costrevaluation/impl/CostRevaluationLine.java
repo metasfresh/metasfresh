@@ -38,8 +38,8 @@ public final class CostRevaluationLine
 {
 	@NonNull private final CostRevaluationId costRevaluationId;
 	@NonNull private final ProductId productId;
-	@NonNull private CostPrice currentCostPrice;
-	@NonNull private Quantity currentQty;
+	@NonNull private final CostPrice currentCostPrice;
+	@NonNull private final Quantity currentQty;
 	@Setter
 	private CostRevaluationLineId id;
 	@Setter
