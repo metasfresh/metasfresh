@@ -41,7 +41,7 @@ public class JsonWorkOrderProjectResponse
 	@JsonProperty("projectId")
 	JsonMetasfreshId projectId;
 
-	@NonNull
+	@Nullable
 	@JsonProperty("value")
 	String value;
 
@@ -105,7 +105,7 @@ public class JsonWorkOrderProjectResponse
 	@Builder
 	public JsonWorkOrderProjectResponse(
 			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@NonNull @JsonProperty("value") final String value,
+			@Nullable @JsonProperty("value") final String value,
 			@NonNull @JsonProperty("name") final String name,
 			@NonNull @JsonProperty("projectTypeId") final JsonMetasfreshId projectTypeId,
 			@Nullable @JsonProperty("priceListVersionId") final JsonMetasfreshId priceListVersionId,

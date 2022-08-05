@@ -65,19 +65,24 @@ public class JsonWorkOrderStepResponse
 	String dateEnd;
 
 	@Nullable
+	@JsonProperty("externalId")
+	String externalId;
+
+	@Nullable
 	@JsonProperty("resources")
 	List<JsonWorkOrderResourceResponse> resources;
 	
 	@JsonCreator
 	@Builder
 	public JsonWorkOrderStepResponse(
-			@NonNull @JsonProperty("stepId") final JsonMetasfreshId stepId,
+			@Nullable @JsonProperty("stepId") final JsonMetasfreshId stepId,
 			@NonNull @JsonProperty("name") final String name,
-			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
+			@Nullable @JsonProperty("projectId") final JsonMetasfreshId projectId,
 			@Nullable @JsonProperty("description") final String description,
 			@NonNull @JsonProperty("seqNo") final Integer seqNo,
 			@Nullable @JsonProperty("dateStart") final String dateStart,
 			@Nullable @JsonProperty("dateEnd") final String dateEnd,
+			@Nullable @JsonProperty("externalId") final String externalId,
 			@Singular @JsonProperty("resources") final List<JsonWorkOrderResourceResponse> resources
 	)
 	{
@@ -88,6 +93,7 @@ public class JsonWorkOrderStepResponse
 		this.seqNo = seqNo;
 		this.dateStart = dateStart;
 		this.dateEnd = dateEnd;
+		this.externalId = externalId;
 		this.resources = resources;
 	}
 }

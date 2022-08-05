@@ -81,6 +81,10 @@ public class JsonWorkOrderResourceResponse
 	@JsonProperty("projectResourceBudgetId")
 	JsonMetasfreshId projectResourceBudgetId;
 
+	@Nullable
+	@JsonProperty("externalId")
+	String externalId;
+
 	@JsonCreator
 	@Builder
 	public JsonWorkOrderResourceResponse(
@@ -94,7 +98,8 @@ public class JsonWorkOrderResourceResponse
 			@JsonProperty("duration") final @Nullable BigDecimal duration,
 			@JsonProperty("durationUnit") final @Nullable String durationUnit,
 			@JsonProperty("budgetProjectId") final @Nullable JsonMetasfreshId budgetProjectId,
-			@JsonProperty("projectResourceBudgetId") final @Nullable JsonMetasfreshId projectResourceBudgetId
+			@JsonProperty("projectResourceBudgetId") final @Nullable JsonMetasfreshId projectResourceBudgetId,
+			@JsonProperty("externalId") final @Nullable String externalId
 	)
 	{
 		this.woResourceId = woResourceId;
@@ -108,5 +113,6 @@ public class JsonWorkOrderResourceResponse
 		this.durationUnit = durationUnit;
 		this.budgetProjectId = budgetProjectId;
 		this.projectResourceBudgetId = projectResourceBudgetId;
+		this.externalId = externalId;
 	}
 }

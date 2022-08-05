@@ -23,6 +23,7 @@
 package de.metas.project.budget;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.resource.ResourceGroupAndResourceId;
@@ -34,6 +35,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Value
@@ -67,9 +69,11 @@ public class BudgetProjectResources
 		BudgetProjectResource matchedByResourceGroup = null;
 		for (final BudgetProjectResource budget : budgets)
 		{
-			if (budget.getResourceId() != null)
+			final BudgetProjectResourceData budgetProjectResourceData = budget.getBudgetProjectResourceData();
+
+			if (budgetProjectResourceData.getResourceId() != null)
 			{
-				if (ResourceId.equals(budget.getResourceId(), groupAndResourceId.getResourceId()))
+				if (ResourceId.equals(budgetProjectResourceData.getResourceId(), groupAndResourceId.getResourceId()))
 				{
 					return Optional.of(budget);
 				}
@@ -77,7 +81,7 @@ public class BudgetProjectResources
 			else
 			{
 				if (matchedByResourceGroup == null
-						&& ResourceGroupId.equals(budget.getResourceGroupId(), groupAndResourceId.getResourceGroupId()))
+						&& ResourceGroupId.equals(budgetProjectResourceData.getResourceGroupId(), groupAndResourceId.getResourceGroupId()))
 				{
 					matchedByResourceGroup = budget;
 				}
@@ -85,6 +89,14 @@ public class BudgetProjectResources
 		}
 
 		return Optional.ofNullable(matchedByResourceGroup);
+	}
+
+	public Set<ResourceGroupId> getResourceGroupIds()
+	{
+		return budgets.stream()
+				.map(BudgetProjectResource::getBudgetProjectResourceData)
+				.map(BudgetProjectResourceData::getResourceGroupId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public Stream<BudgetProjectResource> stream()
@@ -100,4 +112,12 @@ public class BudgetProjectResources
 				.orElseThrow(() -> new AdempiereException("No budget found for " + id));
 	}
 
+	@NonNull
+	public Optional<BudgetProjectResource> findBudget(@NonNull final ResourceId resourceId)
+	{
+		return budgets.stream()
+				.filter(budgetProjectResource -> budgetProjectResource.getBudgetProjectResourceData().getResourceId() != null)
+				.filter(budgetProjectResource -> budgetProjectResource.getBudgetProjectResourceData().getResourceId().equals(resourceId))
+				.findFirst();
+	}
 }

@@ -22,23 +22,43 @@
 
 package de.metas.project.budget;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
+import com.google.common.collect.ImmutableList;
+import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Value
 @Builder
 public class BudgetProject
 {
-	@NonNull ProjectId projectId;
-	@NonNull String name;
-	@NonNull OrgId orgId;
-	@NonNull CurrencyId currencyId;
+	@NonNull
+	ProjectId projectId;
+
+	@NonNull
+	BudgetProjectData budgetProjectData;
+
+	@NonNull
+	BudgetProjectResources projectResources;
+
+	@NonNull
+	public Optional<BudgetProjectResource> findBudgetResource(@NonNull final ResourceId resourceId)
+	{
+		return projectResources.findBudget(resourceId);
+	}
+
+	@NonNull
+	public <T> List<T> mapResourceIds(@NonNull final Function<BudgetProjectResourceId, T> mappingFunction)
+	{
+		return projectResources.getBudgets()
+				.stream()
+				.map(BudgetProjectResource::getId)
+				.map(mappingFunction)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

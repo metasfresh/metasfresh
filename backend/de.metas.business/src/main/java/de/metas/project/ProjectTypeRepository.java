@@ -78,6 +78,7 @@ public class ProjectTypeRepository
 				.build();
 	}
 
+	@NonNull
 	public ProjectTypeId getFirstIdByProjectCategoryAndOrg(
 			@NonNull final ProjectCategory projectCategory,
 			@NonNull final OrgId orgId)
