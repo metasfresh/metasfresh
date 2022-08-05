@@ -4,10 +4,9 @@ import de.metas.costing.CostPrice;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.ToString;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
@@ -33,41 +32,16 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Getter
-@ToString
+@Value
+@Builder
 public final class CostRevaluationLine
 {
-	private final CostRevaluationId costRevaluationId;
-	private final ProductId productId;
+	@NonNull private final CostRevaluationId costRevaluationId;
+	@NonNull private final ProductId productId;
+	@NonNull private CostPrice currentCostPrice;
+	@NonNull private Quantity currentQty;
 	@Setter
 	private CostRevaluationLineId id;
-	private CostPrice currentCostPrice;
+	@Setter
 	@Nullable private CostPrice newCostPrice;
-	private Quantity currentQty;
-
-	@Builder
-	private CostRevaluationLine(
-			final CostRevaluationLineId id,
-			@NonNull final CostRevaluationId costRevaluationId,
-			@NonNull final ProductId productId,
-			@NonNull final CostPrice currentCostPrice,
-			@NonNull final Quantity currentQty,
-			final CostPrice newCostPrice
-	)
-	{
-		this.id = id;
-
-		this.costRevaluationId = costRevaluationId;
-		this.productId = productId;
-
-		this.currentCostPrice = currentCostPrice;
-		this.currentQty = currentQty;
-		this.newCostPrice = newCostPrice;
-	}
-
-	public void setNewCostPrice(@NonNull final CostPrice costPrice)
-	{
-		this.newCostPrice = costPrice;
-	}
-
 }

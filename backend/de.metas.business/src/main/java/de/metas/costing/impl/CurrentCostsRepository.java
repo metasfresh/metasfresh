@@ -174,7 +174,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		}
 
 		final ImmutableMap<CostElement, CostPrice> costPrices = queryCostRecords(costSegment)
-				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
+				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementIds)
 				.create()
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
@@ -213,7 +213,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	{
 		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
 		return queryCostRecords(costSegment)
-				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
+				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementIds)
 				.create()
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
@@ -431,9 +431,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		return queryBL.createQueryBuilder(I_M_Cost.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Cost.COLUMN_M_Product_ID, productId)
-				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID.getColumnName(), acctSchemaId)
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID.getColumnName(), costElementId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementId)
 				.create()
 				.stream()
 				.map(this::toCurrentCost)

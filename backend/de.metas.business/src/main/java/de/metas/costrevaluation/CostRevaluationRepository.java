@@ -47,15 +47,7 @@ public class CostRevaluationRepository
 
 	public void save(@NonNull final CostRevaluationLine costRevaluationLine)
 	{
-		final I_M_CostRevaluationLine line;
-		if (costRevaluationLine.getId() != null)
-		{
-			line = InterfaceWrapperHelper.load(costRevaluationLine.getId(), I_M_CostRevaluationLine.class);
-		}
-		else
-		{
-			line = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
-		}
+		final I_M_CostRevaluationLine line = InterfaceWrapperHelper.loadOrNew(costRevaluationLine.getId(), I_M_CostRevaluationLine.class);
 
 		updateCostRevaluationLineRecord(line, costRevaluationLine);
 		InterfaceWrapperHelper.save(line);
@@ -76,6 +68,10 @@ public class CostRevaluationRepository
 		 if (from.getNewCostPrice() != null)
 		 {
 			 line.setNewCostPrice(from.getNewCostPrice().getOwnCostPrice().getValue());
+		 }
+		 else
+		 {
+			 line.setNewCostPrice(null);
 		 }
 	}
 }
