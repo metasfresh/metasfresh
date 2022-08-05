@@ -2,6 +2,7 @@ package de.metas.costing.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -174,7 +175,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		}
 
 		final ImmutableMap<CostElement, CostPrice> costPrices = queryCostRecords(costSegment)
-				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
+				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementIds)
 				.create()
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
@@ -213,7 +214,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	{
 		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
 		return queryCostRecords(costSegment)
-				.addInArrayFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementIds)
+				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementIds)
 				.create()
 				.stream(I_M_Cost.class)
 				.map(this::toCurrentCost)
@@ -423,4 +424,24 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		saveRecord(costRecord);
 	}
 
+	@Override
+	public List<CurrentCost> getByCostElementAndProduct(@NonNull final AcctSchemaId acctSchemaId,
+														@NonNull final CostElementId costElementId,
+														@NonNull final ImmutableSet<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_Cost.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementId)
+				.addInArrayFilter(I_M_Cost.COLUMN_M_Product_ID, productIds)
+				.create()
+				.stream()
+				.map(this::toCurrentCost)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

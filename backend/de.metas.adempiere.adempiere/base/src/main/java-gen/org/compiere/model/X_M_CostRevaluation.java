@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_CostRevaluation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1414631981L;
+	private static final long serialVersionUID = -671618591L;
 
     /** Standard Constructor */
     public X_M_CostRevaluation (final Properties ctx, final int M_CostRevaluation_ID, @Nullable final String trxName)
@@ -198,6 +198,33 @@ public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_Co
 	public java.sql.Timestamp getEvaluationStartDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_EvaluationStartDate);
+	}
+
+	@Override
+	public org.compiere.model.I_M_CostElement getM_CostElement()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
+
+	@Override
+	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	@Override
+	public void setM_CostElement_ID (final int M_CostElement_ID)
+	{
+		if (M_CostElement_ID < 1) 
+			set_Value (COLUMNNAME_M_CostElement_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
+	}
+
+	@Override
+	public int getM_CostElement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
 	}
 
 	@Override
