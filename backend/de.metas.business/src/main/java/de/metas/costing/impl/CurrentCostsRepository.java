@@ -2,6 +2,7 @@ package de.metas.costing.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -426,14 +427,14 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public List<CurrentCost> getByCostElementAndProduct(@NonNull final AcctSchemaId acctSchemaId,
 														@NonNull final CostElementId costElementId,
-														@NonNull final ProductId productId)
+														@NonNull final ImmutableSet<ProductId> productIds)
 	{
 		return queryBL.createQueryBuilder(I_M_Cost.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementId)
+				.addInArrayFilter(I_M_Cost.COLUMN_M_Product_ID, productIds)
 				.create()
 				.stream()
 				.map(this::toCurrentCost)
