@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.ZonedDateTime;
-
 /*
  * #%L
  * de.metas.business
