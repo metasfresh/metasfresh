@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_CostRevaluationLine extends org.compiere.model.PO implements I_M_CostRevaluationLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1374114030L;
+	private static final long serialVersionUID = 1869329450L;
 
     /** Standard Constructor */
     public X_M_CostRevaluationLine (final Properties ctx, final int M_CostRevaluationLine_ID, @Nullable final String trxName)
@@ -33,6 +33,36 @@ public class X_M_CostRevaluationLine extends org.compiere.model.PO implements I_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override

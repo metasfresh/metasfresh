@@ -642,4 +642,17 @@ public class ProductDAO implements IProductDAO
 				.map(I_M_Product_SupplierApproval_Norm::getSupplierApproval_Norm)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	@Override
+	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.adempiere.model.I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
+				.orderBy(I_M_Product.COLUMNNAME_Value)
+				.create()
+				.listIds(ProductId::ofRepoId);
+	}
 }
