@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.currency.Amount;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
 
@@ -40,6 +41,7 @@ import java.util.List;
  * #L%
  */
 
+@SuppressWarnings("UnusedReturnValue")
 public final class TranslatableStringBuilder
 {
 	static TranslatableStringBuilder newInstance()
@@ -187,6 +189,11 @@ public final class TranslatableStringBuilder
 	public TranslatableStringBuilder appendQty(final long qty, @NonNull final String uom)
 	{
 		return append(NumberTranslatableString.of(qty)).append(" ").append(uom);
+	}
+
+	public TranslatableStringBuilder appendPercent(@NonNull final Percent percent)
+	{
+		return append(NumberTranslatableString.of(percent.toBigDecimal(), DisplayType.Number)).append("%");
 	}
 
 	public TranslatableStringBuilder append(@NonNull final Amount amount)
