@@ -82,15 +82,13 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 	protected String doIt() throws Exception
 	{
 
-		final ImmutableSet<ProductId>  productIds = productDAO.retrieveStockedProducts();
+		final ImmutableSet<ProductId>  productIds = productDAO.retrieveStockedProductIds(getClientID());
 		if (productIds.isEmpty()) return "@NoSelection@";
 
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
 		final I_M_CostRevaluation costRevaluation = costRevaluationRepo.getById(costRevaluationId);
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRevaluation.getC_AcctSchema_ID());
 		final CostElementId costElementId = CostElementId.ofRepoId(costRevaluation.getM_CostElement_ID());
-
-
 
 		for (ProductId productId : productIds)
 		{

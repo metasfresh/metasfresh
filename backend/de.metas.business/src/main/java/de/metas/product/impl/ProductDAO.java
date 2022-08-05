@@ -644,15 +644,14 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public ImmutableSet<ProductId> retrieveStockedProducts()
+	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
 	{
 		return queryBL
-				.createQueryBuilder(de.metas.adempiere.model.I_M_Product.class, this)
+				.createQueryBuilder(de.metas.adempiere.model.I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(de.metas.adempiere.model.I_M_Product.COLUMNNAME_IsStocked, true)
-				.orderBy().addColumn(de.metas.adempiere.model.I_M_Product.COLUMNNAME_Value)
-				.endOrderBy()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
+				.orderBy(I_M_Product.COLUMNNAME_Value)
 				.create()
 				.listIds(ProductId::ofRepoId);
 	}
