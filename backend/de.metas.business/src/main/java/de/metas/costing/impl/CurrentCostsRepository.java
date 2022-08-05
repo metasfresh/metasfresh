@@ -436,7 +436,6 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		return queryBL.createQueryBuilder(I_M_Cost.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementId)
 				.addInArrayFilter(I_M_Cost.COLUMN_M_Product_ID, productIds)
