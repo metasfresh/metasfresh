@@ -240,50 +240,14 @@ public final class JSONViewLayout
 		return description;
 	}
 
-	public String getEmptyResultText()
-	{
-		return emptyResultText;
-	}
-
-	public String getEmptyResultHint()
-	{
-		return emptyResultHint;
-	}
-
 	public List<JSONDocumentLayoutElement> getElements()
 	{
 		return elements;
 	}
 
-	public boolean hasElements()
-	{
-		return !elements.isEmpty();
-	}
-
 	public List<JSONDocumentFilterDescriptor> getFilters()
 	{
 		return filters;
-	}
-
-	public boolean isSupportAttributes()
-	{
-		return supportAttributes;
-	}
-
-	public void setSupportAttributes(final boolean supportAttributes)
-	{
-		this.supportAttributes = supportAttributes;
-	}
-
-	public boolean isSupportTree()
-	{
-		return supportTree;
-	}
-
-	public void enableNewRecord(final String newRecordCaption)
-	{
-		supportNewRecord = true;
-		this.newRecordCaption = newRecordCaption;
 	}
 
 	public void setViewId(final String viewId)
@@ -294,7 +258,7 @@ public final class JSONViewLayout
 	@Value
 	@Builder
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-	public static final class JSONIncludedViewSupport
+	public static class JSONIncludedViewSupport
 	{
 		public static JSONIncludedViewSupport fromNullable(final IncludedViewLayout includedViewLayout)
 		{
@@ -309,7 +273,7 @@ public final class JSONViewLayout
 					.build();
 		}
 
-		private final boolean openOnSelect;
-		private final boolean blurWhenOpen;
+		boolean openOnSelect;
+		boolean blurWhenOpen;
 	}
 }
