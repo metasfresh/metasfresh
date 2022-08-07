@@ -33,12 +33,14 @@ import lombok.ToString;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
+
 @Getter
 @ToString
 @EqualsAndHashCode
 public class JsonBudgetResourceUpsertRequest
 {
-	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_Resource_Budget.S_Resource_ID`", required = true)
+	@ApiModelProperty(position = 10, value = RESOURCE_IDENTIFIER_DOC, required = true)
 	private String resourceIdentifier;
 
 	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project_Resource_Budget.ExternalId`")

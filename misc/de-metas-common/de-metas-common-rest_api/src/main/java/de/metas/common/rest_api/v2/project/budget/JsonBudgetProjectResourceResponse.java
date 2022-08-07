@@ -37,15 +37,13 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
-
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 public class JsonBudgetProjectResourceResponse
 {
 	@ApiModelProperty( //
 			required = true, //
-			value = RESOURCE_IDENTIFIER_DOC)
+			value = "This translates to C_Project_Resource_Budget.C_Project_Resource_Budget_ID")
 	@NonNull
 	@JsonProperty("budgetProjectResourceId")
 	JsonMetasfreshId budgetProjectResourceId;
@@ -132,7 +130,7 @@ public class JsonBudgetProjectResourceResponse
 			@JsonProperty("dateFinishPlan") @NonNull final LocalDate dateFinishPlan,
 			@JsonProperty("description") @Nullable final String description,
 			@JsonProperty("plannedAmt") @NonNull final BigDecimal plannedAmt,
-			@JsonProperty("currencyId") @NonNull final String currencyCode,
+			@JsonProperty("currencyCode") @NonNull final String currencyCode,
 			@JsonProperty("plannedDuration") @NonNull final BigDecimal plannedDuration,
 			@JsonProperty("pricePerTimeUOM") @NonNull final BigDecimal pricePerTimeUOM,
 			@JsonProperty("resourceGroupId") @Nullable final JsonMetasfreshId resourceGroupId,
