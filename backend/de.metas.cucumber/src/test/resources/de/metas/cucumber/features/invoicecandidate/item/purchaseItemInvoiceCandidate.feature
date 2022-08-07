@@ -11,8 +11,8 @@ Feature: Items invoice candidates
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And metasfresh contains M_Products:
-      | Identifier | Name            |
-      | p_1        | salesProduct_12 |
+      | Identifier | Name                 |
+      | p_1        | product_03082022-PIC |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |

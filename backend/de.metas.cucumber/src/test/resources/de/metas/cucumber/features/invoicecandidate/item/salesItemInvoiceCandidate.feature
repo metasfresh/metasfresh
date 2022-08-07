@@ -11,8 +11,8 @@ Feature: Products invoice candidates
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And metasfresh contains M_Products:
-      | Identifier | Name            |
-      | p_1        | salesProduct_12 |
+      | Identifier | Name                 |
+      | p_1        | product_03082022-SIC |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
@@ -22,10 +22,6 @@ Feature: Products invoice candidates
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
-
-  @Id:100
-  @from:cucumber
-  Scenario: Ship 100, complete shipment
     When metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
@@ -35,6 +31,10 @@ Feature: Products invoice candidates
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
+  @Id:03082022-SIC.100
+  @from:cucumber
+  Scenario: Ship 100, complete shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -83,18 +83,9 @@ Feature: Products invoice candidates
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | iciol_1                                    | ic_1                                  | shipmentLine_1                | 100              |
 
-  @Id:110
+  @Id:03082022-SIC.110
   @from:cucumber
   Scenario: Ship 100, complete shipment then reactivate it
-    When metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -149,18 +140,10 @@ Feature: Products invoice candidates
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | iciol_1                                    | ic_1                                  | shipmentLine_1                | 0                |
 
-  @Id:120
+  @Id:03082022-SIC.120
   @from:cucumber
   Scenario: Ship 100, complete shipment, reactivate it, complete it again
-    When metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -217,18 +200,9 @@ Feature: Products invoice candidates
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | iciol_1                                    | ic_1                                  | shipmentLine_1                | 100              |
 
-  @Id:121
+  @Id:03082022-SIC.121
   @from:cucumber
   Scenario: Ship 100, complete shipment, reactivate it, increase qty, complete it again
-    When metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -289,18 +263,9 @@ Feature: Products invoice candidates
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | iciol_1                                    | ic_1                                  | shipmentLine_1                | 200              |
 
-  @Id:122
+  @Id:03082022-SIC.122
   @from:cucumber
   Scenario: Ship 100, complete shipment, reactivate it, decrease qty, complete it again
-    When metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -361,18 +326,9 @@ Feature: Products invoice candidates
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | iciol_1                                    | ic_1                                  | shipmentLine_1                | 50               |
 
-  @Id:130
+  @Id:03082022-SIC.130
   @from:cucumber
   Scenario: Ship 100, complete shipment then void it
-    When metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -429,18 +385,9 @@ Feature: Products invoice candidates
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | iciol_1                                    | ic_1                                  | shipmentLine_1                | 0                |
 
-  @Id:140
+  @Id:03082022-SIC.140
   @from:cucumber
   Scenario: Ship 100, complete shipment then revert it
-    When metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -495,18 +442,9 @@ Feature: Products invoice candidates
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | iciol_1                                    | ic_1                                  | shipmentLine_1                | 0                |
 
-  @Id:150
+  @Id:03082022-SIC.150
   @from:cucumber
   Scenario: Ship 100, complete shipment then close it
-    When metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
