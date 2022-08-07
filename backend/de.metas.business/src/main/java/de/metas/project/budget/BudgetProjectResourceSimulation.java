@@ -47,7 +47,10 @@ public class BudgetProjectResourceSimulation
 		Check.assumeEquals(resource.getId(), projectResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
 
 		return resource.toBuilder()
-				.dateRange(dateRange)
+				.budgetProjectResourceData(resource.getBudgetProjectResourceData()
+												   .toBuilder()
+												   .dateRange(dateRange)
+												   .build())
 				.build();
 	}
 

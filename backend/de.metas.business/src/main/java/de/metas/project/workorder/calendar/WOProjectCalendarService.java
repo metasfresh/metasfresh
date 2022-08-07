@@ -45,6 +45,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
+import de.metas.project.budget.BudgetProjectResourceData;
 import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.budget.BudgetProjectResourceSimulation;
 import de.metas.project.budget.BudgetProjectService;
@@ -290,6 +291,7 @@ public class WOProjectCalendarService implements CalendarService
 				.orElseThrow(() -> new AdempiereException("No Budget Project found for " + projectResourceId.getProjectId()));
 
 		final BudgetProjectResource actualBudget = budgetProjectService.getBudgetsById(projectResourceId);
+		final BudgetProjectResourceData actualBudgetData = actualBudget.getBudgetProjectResourceData();
 
 		final ToCalendarEntryConverter toCalendarEntry = new ToCalendarEntryConverter();
 
@@ -298,7 +300,7 @@ public class WOProjectCalendarService implements CalendarService
 						BudgetProjectResourceSimulation.UpdateRequest.builder()
 								.simulationId(simulationId)
 								.projectResourceId(projectResourceId)
-								.dateRange(CoalesceUtil.coalesceNotNull(request.getDateRange(), actualBudget.getDateRange()))
+								.dateRange(CoalesceUtil.coalesceNotNull(request.getDateRange(), actualBudgetData.getDateRange()))
 								.build())
 				.map(simulation -> simulation != null ? simulation.applyOn(actualBudget) : actualBudget)
 				.map(budget -> toCalendarEntry.from(

@@ -32,7 +32,9 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.shared.ProjectSharedService;
 import de.metas.quantity.Quantity;
 import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -63,14 +65,15 @@ public class ProjectServiceTest
 
 		final ProjectTypeRepository projectTypeRepository = new ProjectTypeRepository();
 
-		final ProjectRepository projectRepository = Mockito.spy(new ProjectRepository(Mockito.mock(DocumentNoBuilderFactory.class), projectTypeRepository));
-		Mockito.doReturn(MOCKED_DocNo).when(projectRepository).computeNextProjectValue(any(I_C_Project.class));
+		final ProjectSharedService projectSharedService = Mockito.spy(new ProjectSharedService(Mockito.mock(DocumentNoBuilderFactory.class), projectTypeRepository));
+		Mockito.doReturn(MOCKED_DocNo).when(projectSharedService).getValueForProjectType(any(ProjectTypeId.class));
 
 		this.projectService = new ProjectService(
-				projectTypeRepository, 
-				projectRepository, 
-				new ProjectLineRepository(), 
-				Optional.of(ImmutableList.of()));
+				projectTypeRepository,
+				new ProjectRepository(),
+				new ProjectLineRepository(),
+				Optional.of(ImmutableList.of()),
+				projectSharedService);
 	}
 
 	@Test

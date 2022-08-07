@@ -22,60 +22,23 @@
 
 package de.metas.project.budget;
 
-import de.metas.calendar.util.CalendarDateRange;
-import de.metas.money.Money;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.quantity.Quantity;
-import de.metas.resource.ResourceGroupId;
-import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
+@Builder(toBuilder = true)
 public class BudgetProjectResource
 {
-	@NonNull BudgetProjectResourceId id;
+	@NonNull
+	BudgetProjectResourceId id;
 
-	@NonNull ResourceGroupId resourceGroupId;
-	@Nullable ResourceId resourceId;
+	@NonNull
+	BudgetProjectResourceData budgetProjectResourceData;
 
-	@NonNull UomId durationUomId;
-	@NonNull Money plannedAmount;
-	@NonNull Quantity plannedDuration;
-	@NonNull Money pricePerDurationUnit;
-
-	@NonNull CalendarDateRange dateRange;
-
-	@Nullable String description;
-
-	@Builder(toBuilder = true)
-	private BudgetProjectResource(
-			@NonNull final BudgetProjectResourceId id,
-			@NonNull final ResourceGroupId resourceGroupId,
-			@Nullable final ResourceId resourceId,
-			@NonNull final UomId durationUomId,
-			@NonNull final Money plannedAmount,
-			@NonNull final Quantity plannedDuration,
-			@NonNull final Money pricePerDurationUnit,
-			@NonNull final CalendarDateRange dateRange,
-			@Nullable final String description)
+	public ProjectId getProjectId()
 	{
-		Money.getCommonCurrencyIdOfAll(plannedAmount, pricePerDurationUnit); // make sure they are in the same currency
-
-		this.id = id;
-		this.resourceGroupId = resourceGroupId;
-		this.resourceId = resourceId;
-		this.durationUomId = durationUomId;
-		this.plannedAmount = plannedAmount;
-		this.plannedDuration = plannedDuration;
-		this.pricePerDurationUnit = pricePerDurationUnit;
-		this.dateRange = dateRange;
-		this.description = description;
+		return id.getProjectId();
 	}
-
-	public ProjectId getProjectId() {return id.getProjectId();}
 }

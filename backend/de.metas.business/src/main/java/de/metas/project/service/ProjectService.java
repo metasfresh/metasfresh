@@ -34,7 +34,9 @@ import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.service.listeners.CompositeProjectStatusListener;
 import de.metas.project.service.listeners.ProjectStatusListener;
+import de.metas.project.shared.ProjectSharedService;
 import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -54,16 +56,20 @@ public class ProjectService
 	private final ProjectLineRepository projectLineRepository;
 	private final CompositeProjectStatusListener projectStatusListeners;
 
+	private final ProjectSharedService projectSharedService;
+
 	public ProjectService(
 			@NonNull final ProjectTypeRepository projectTypeRepository,
 			@NonNull final ProjectRepository projectRepository,
 			@NonNull final ProjectLineRepository projectLineRepository,
-			@NonNull final Optional<List<ProjectStatusListener>> projectStatusListeners)
+			@NonNull final Optional<List<ProjectStatusListener>> projectStatusListeners,
+			@NonNull final ProjectSharedService projectSharedService)
 	{
 		this.projectTypeRepository = projectTypeRepository;
 		this.projectRepository = projectRepository;
 		this.projectLineRepository = projectLineRepository;
 		this.projectStatusListeners = CompositeProjectStatusListener.ofList(projectStatusListeners.orElseGet(ImmutableList::of));
+		this.projectSharedService = projectSharedService;
 		logger.info("projectClosedListeners: {}", projectStatusListeners);
 	}
 
@@ -105,6 +111,7 @@ public class ProjectService
 				request.getOrgId());
 
 		projectDataBuilder.projectTypeId(projectTypeId);
+		setFromProjectType(projectDataBuilder, projectTypeId);
 
 		final ProjectId projectId = projectRepository.create(projectDataBuilder.build()).getId();
 
@@ -186,4 +193,18 @@ public class ProjectService
 		projectStatusListeners.onAfterUnClose(projectRecord);
 	}
 
+	private void setFromProjectType(
+			@NonNull final ProjectData.ProjectDataBuilder projectDataBuilder,
+			@NonNull final ProjectTypeId projectTypeId)
+	{
+		final String projectValue = projectSharedService.getValueForProjectType(projectTypeId);
+
+		if (Check.isBlank(projectValue))
+		{
+			throw new AdempiereException("Could not compute C_Project.Value for projectTypeId: " + projectTypeId);
+		}
+
+		projectDataBuilder.value(projectValue);
+		projectDataBuilder.name(projectValue);
+	}
 }

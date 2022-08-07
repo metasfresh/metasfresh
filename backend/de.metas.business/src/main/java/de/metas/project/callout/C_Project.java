@@ -22,7 +22,9 @@
 
 package de.metas.project.callout;
 
-import de.metas.project.service.ProjectRepository;
+import de.metas.project.ProjectTypeId;
+import de.metas.project.shared.ProjectSharedService;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -36,12 +38,12 @@ import org.springframework.stereotype.Component;
 @Callout(I_C_Project.class)
 public class C_Project
 {
-	private final ProjectRepository projectRepository;
+	@NonNull
+	private final ProjectSharedService projectSharedService;
 
-	public C_Project(
-			@NonNull final ProjectRepository projectRepository)
+	public C_Project(@NonNull final ProjectSharedService projectSharedService)
 	{
-		this.projectRepository = projectRepository;
+		this.projectSharedService = projectSharedService;
 
 		// register ourselves
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -52,6 +54,26 @@ public class C_Project
 	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
 	public void onC_ProjectType_ID(@NonNull final I_C_Project projectRecord)
 	{
-		projectRepository.updateFromProjectType(projectRecord);
+		updateFromProjectType(projectRecord);
+	}
+
+	private void updateFromProjectType(@NonNull final I_C_Project projectRecord)
+	{
+		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
+		if (projectTypeId == null)
+		{
+			return;
+		}
+
+		final String projectValue = projectSharedService.getValueForProjectType(projectTypeId);
+		if (projectValue != null)
+		{
+			projectRecord.setValue(projectValue);
+		}
+
+		if (Check.isEmpty(projectRecord.getName()))
+		{
+			projectRecord.setName(projectValue != null ? projectValue : ".");
+		}
 	}
 }
