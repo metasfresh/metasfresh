@@ -193,7 +193,7 @@ public class BudgetProjectRestService
 					.resourceGroupId(JsonMetasfreshId.ofOrNull(ResourceGroupId.toRepoId(budgetProjectResourceData.getResourceGroupId())))
 					.uomTimeId(JsonMetasfreshId.of(UomId.toRepoId(budgetProjectResourceData.getDurationUomId())))
 					.pricePerTimeUOM(budgetProjectResourceData.getPricePerDurationUnit().toBigDecimal())
-					.plannedDuration(budgetProjectResourceData.getPlannedDuration().getSourceQty())
+					.plannedDuration(budgetProjectResourceData.getPlannedDuration().toBigDecimal())
 					.plannedAmt(budgetProjectResourceData.getPlannedAmount().toBigDecimal())
 					.externalId(ExternalId.toValue(budgetProjectResourceData.getExternalId()))
 					.dateFinishPlan(LocalDateTime.ofInstant(budgetProjectResourceData.getDateRange().getEndDate(), timeZoneId).toLocalDate())

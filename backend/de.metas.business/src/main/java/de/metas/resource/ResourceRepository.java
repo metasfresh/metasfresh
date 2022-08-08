@@ -41,7 +41,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -56,16 +55,6 @@ class ResourceRepository
 	public Resource getById(@NonNull final ResourceId id)
 	{
 		return getResourcesMap().getById(id);
-	}
-
-	@NonNull
-	public Optional<ResourceId> getOptionalIdByInternalName(@NonNull final String internalName)
-	{
-		return getResourcesMap().getAllActive()
-				.stream()
-				.filter(resource -> internalName.equals(resource.getInternalName()))
-				.map(Resource::getResourceId)
-				.findFirst();
 	}
 
 	public List<Resource> getByIds(@NonNull final Set<ResourceId> ids)

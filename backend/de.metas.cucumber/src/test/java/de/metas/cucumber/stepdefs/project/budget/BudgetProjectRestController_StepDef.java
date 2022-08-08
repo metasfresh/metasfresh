@@ -41,6 +41,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.compiere.model.I_C_Project;
 
 import java.util.List;
 import java.util.Map;
@@ -68,7 +69,7 @@ public class BudgetProjectRestController_StepDef
 		this.projectIdTable = projectIdTable;
 	}
 
-	@Then("validate budget project get response")
+	@Then("validate budget project 'GET' response")
 	public void process_budget_project_get_response(@NonNull final String response) throws JsonProcessingException
 	{
 		final JsonBudgetProjectResponse jsonBudgetProjectResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonBudgetProjectResponse.class);
@@ -89,7 +90,7 @@ public class BudgetProjectRestController_StepDef
 
 		final Map<String, String> row = table.asMaps().get(0);
 
-		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, ProjectId.class.getSimpleName() + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValue(budgetProjectUpsertResponse.getProjectId()));
 		assertThat(projectId).isNotNull();
@@ -97,11 +98,11 @@ public class BudgetProjectRestController_StepDef
 		projectIdTable.putOrReplace(projectIdentifier, projectId);
 	}
 
-	@And("build get budget project endpoint path with the following id:")
+	@And("build 'GET' budget project endpoint path with the following id:")
 	public void build_get_bugdget_project_endpoint_path(@NonNull final DataTable dataTable)
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
-		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, ProjectId.class.getSimpleName() + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String projectIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		final ProjectId projectId = projectIdTable.get(projectIdentifier);
 
@@ -113,7 +114,7 @@ public class BudgetProjectRestController_StepDef
 			@NonNull final JsonBudgetProjectResponse expectedJsonBudgetProjectResponse)
 	{
 		assertThat(jsonBudgetProjectResponse.getOrgCode()).isEqualTo(expectedJsonBudgetProjectResponse.getOrgCode());
-		assertThat(jsonBudgetProjectResponse.getCurrencyId()).isEqualTo(expectedJsonBudgetProjectResponse.getCurrencyId());
+		assertThat(jsonBudgetProjectResponse.getCurrencyCode()).isEqualTo(expectedJsonBudgetProjectResponse.getCurrencyCode());
 		assertThat(jsonBudgetProjectResponse.getName()).isEqualTo(expectedJsonBudgetProjectResponse.getName());
 		assertThat(jsonBudgetProjectResponse.getValue()).isEqualTo(expectedJsonBudgetProjectResponse.getValue());
 		assertThat(jsonBudgetProjectResponse.getIsActive()).isEqualTo(expectedJsonBudgetProjectResponse.getIsActive());
@@ -148,7 +149,7 @@ public class BudgetProjectRestController_StepDef
 		assertThat(jsonBudgetProjectResourceResponse.getDateFinishPlan()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getDateFinishPlan());
 		assertThat(jsonBudgetProjectResourceResponse.getDescription()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getDescription());
 		assertThat(jsonBudgetProjectResourceResponse.getPlannedAmt()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPlannedAmt());
-		assertThat(jsonBudgetProjectResourceResponse.getCurrencyId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getCurrencyId());
+		assertThat(jsonBudgetProjectResourceResponse.getCurrencyCode()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getCurrencyCode());
 		assertThat(jsonBudgetProjectResourceResponse.getPlannedDuration()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPlannedDuration());
 		assertThat(jsonBudgetProjectResourceResponse.getPricePerTimeUOM()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getPricePerTimeUOM());
 		assertThat(jsonBudgetProjectResourceResponse.getResourceGroupId()).isEqualTo(expectedJsonBudgetProjectResourceResponse.getResourceGroupId());

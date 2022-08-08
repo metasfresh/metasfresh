@@ -23,7 +23,6 @@
 package de.metas.project.budget;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.resource.ResourceGroupAndResourceId;
@@ -35,7 +34,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 @Value
@@ -89,14 +87,6 @@ public class BudgetProjectResources
 		}
 
 		return Optional.ofNullable(matchedByResourceGroup);
-	}
-
-	public Set<ResourceGroupId> getResourceGroupIds()
-	{
-		return budgets.stream()
-				.map(BudgetProjectResource::getBudgetProjectResourceData)
-				.map(BudgetProjectResourceData::getResourceGroupId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public Stream<BudgetProjectResource> stream()

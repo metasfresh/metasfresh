@@ -35,6 +35,7 @@ import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -148,13 +149,13 @@ public class BudgetProjectRepository
 			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, query.getExternalProjectReference().getValue());
 		}
 
-		final I_C_Project projectRecord = queryBuilder.create().first();
-		if (projectRecord == null)
+		final List<I_C_Project> projectRecords = queryBuilder.create().list();
+		if (projectRecords.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		return fromRecord(projectRecord);
+		return fromRecord(CollectionUtils.singleElement(projectRecords));
 	}
 
 	@NonNull

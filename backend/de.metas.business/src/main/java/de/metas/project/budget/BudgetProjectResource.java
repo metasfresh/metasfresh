@@ -37,6 +37,7 @@ public class BudgetProjectResource
 	@NonNull
 	BudgetProjectResourceData budgetProjectResourceData;
 
+	@NonNull
 	public ProjectId getProjectId()
 	{
 		return id.getProjectId();

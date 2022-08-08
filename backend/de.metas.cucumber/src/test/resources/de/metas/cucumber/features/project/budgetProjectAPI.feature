@@ -7,14 +7,14 @@ Feature: Budget Project API Test
 
   @from:cucumber
   Scenario: Persist Budget Project with associated resource using API
-    1st we insert a budget project setting all available fields in API
-    _Then we retrieve the inserted project to validate all fields
+  1st we insert a budget project setting all available fields in API
+  _Then we retrieve the inserted project to validate all fields
 
-    2nd we update the created project setting all available fields in API
-    _Then we retrieve the updated project to validate all fields
+  2nd we update the created project setting all available fields in API
+  _Then we retrieve the updated project to validate all fields
 
-    3rd we update only one random field
-    _Then we retrieve the updated project once again to validate that only that field has been changed
+  3rd we update only one random field
+  _Then we retrieve the updated project once again to validate that only that field has been changed
 
     Given load M_Product_Category:
       | M_Product_Category_ID.Identifier | Name     | Value    |
@@ -76,16 +76,16 @@ Feature: Budget Project API Test
 """
 
     And process budget project upsert response
-      | ProjectId.Identifier |
-      | bp_1                 |
+      | C_Project_ID.Identifier |
+      | bp_1                    |
 
-    And build get budget project endpoint path with the following id:
-      | ProjectId.Identifier |
-      | bp_1                 |
+    And build 'GET' budget project endpoint path with the following id:
+      | C_Project_ID.Identifier |
+      | bp_1                    |
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    And validate budget project get response
+    And validate budget project 'GET' response
   """
   {
     "requestId": 1000059,
@@ -180,7 +180,7 @@ Feature: Budget Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    And validate budget project get response
+    And validate budget project 'GET' response
   """
 {
     "requestId": 1,
@@ -239,7 +239,7 @@ Feature: Budget Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    And validate budget project get response
+    And validate budget project 'GET' response
   """
 {
     "requestId": 1,

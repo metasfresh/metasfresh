@@ -60,6 +60,7 @@ public class BudgetProjectResourceRepository
 
 	public static final boolean IsAllDay_TRUE = true;
 
+	@NonNull
 	public BudgetProjectResources getByProjectId(@NonNull final ProjectId projectId)
 	{
 		return BudgetProjectResources.builder()

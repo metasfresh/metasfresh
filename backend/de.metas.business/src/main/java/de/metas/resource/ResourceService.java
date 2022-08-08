@@ -115,12 +115,6 @@ public class ResourceService
 		return resourceAssignmentRepository.query(query);
 	}
 
-	@NonNull
-	public Optional<ResourceId> getOptionalIdByInternalName(@NonNull final String internalName)
-	{
-		return resourceRepository.getOptionalIdByInternalName(internalName);
-	}
-
 	public ResourceAssignment createResourceAssignment(final ResourceAssignmentCreateRequest request)
 	{
 		return resourceAssignmentRepository.create(request);
