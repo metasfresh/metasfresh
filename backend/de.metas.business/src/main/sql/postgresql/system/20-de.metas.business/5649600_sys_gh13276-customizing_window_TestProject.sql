@@ -698,4 +698,58 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=703838
 /* DDL */ select AD_Element_Link_Create_Missing_Field(703838)
 ;
 
+-- Field: Prüf Projekt -> Projekt -> Projektstatus
+-- Column: C_Project.R_Project_Status_ID
+-- 2022-08-08T09:32:54.503Z
+UPDATE AD_Field SET AD_Val_Rule_ID=540594,Updated=TO_TIMESTAMP('2022-08-08 11:32:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=703914
+;
+
+-- Name: R_StatusCategory
+-- 2022-08-08T09:36:00.630Z
+UPDATE AD_Val_Rule SET Code='R_StatusCategory_ID=@R_Project_Status_ID@',Updated=TO_TIMESTAMP('2022-08-08 11:36:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540594
+;
+
+-- 2022-08-08T10:16:40.987Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kunden Projektreferenz Nr.', PrintName='Kunden Projektreferenz Nr.',Updated=TO_TIMESTAMP('2022-08-08 12:16:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=952 AND AD_Language='de_DE'
+;
+
+-- 2022-08-08T10:16:41.025Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(952,'de_DE')
+;
+
+-- 2022-08-08T10:16:41.039Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(952,'de_DE')
+;
+
+-- 2022-08-08T10:16:41.041Z
+UPDATE AD_Column SET ColumnName='POReference', Name='Kunden Projektreferenz Nr.', Description='Referenz-Nummer des Kunden', Help='The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.' WHERE AD_Element_ID=952
+;
+
+-- 2022-08-08T10:16:41.043Z
+UPDATE AD_Process_Para SET ColumnName='POReference', Name='Kunden Projektreferenz Nr.', Description='Referenz-Nummer des Kunden', Help='The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.', AD_Element_ID=952 WHERE UPPER(ColumnName)='POREFERENCE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-08-08T10:16:41.045Z
+UPDATE AD_Process_Para SET ColumnName='POReference', Name='Kunden Projektreferenz Nr.', Description='Referenz-Nummer des Kunden', Help='The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.' WHERE AD_Element_ID=952 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-08-08T10:16:41.046Z
+UPDATE AD_Field SET Name='Kunden Projektreferenz Nr.', Description='Referenz-Nummer des Kunden', Help='The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=952) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 952)
+;
+
+-- 2022-08-08T10:16:41.062Z
+UPDATE AD_PrintFormatItem pi SET PrintName='Kunden Projektreferenz Nr.', Name='Kunden Projektreferenz Nr.' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=952)
+;
+
+-- 2022-08-08T10:16:41.065Z
+UPDATE AD_Tab SET Name='Kunden Projektreferenz Nr.', Description='Referenz-Nummer des Kunden', Help='The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.', CommitWarning = NULL WHERE AD_Element_ID = 952
+;
+
+-- 2022-08-08T10:16:41.066Z
+UPDATE AD_WINDOW SET Name='Kunden Projektreferenz Nr.', Description='Referenz-Nummer des Kunden', Help='The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.' WHERE AD_Element_ID = 952
+;
+
+-- 2022-08-08T10:16:41.067Z
+UPDATE AD_Menu SET   Name = 'Kunden Projektreferenz Nr.', Description = 'Referenz-Nummer des Kunden', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 952
+;
 
