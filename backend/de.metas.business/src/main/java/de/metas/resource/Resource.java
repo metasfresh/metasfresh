@@ -23,6 +23,7 @@
 package de.metas.resource;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -35,6 +36,7 @@ import javax.annotation.Nullable;
 @Builder
 public class Resource
 {
+	@NonNull OrgId orgId;
 	@NonNull ResourceId resourceId;
 	boolean isActive;
 	@NonNull String value;
@@ -44,4 +46,6 @@ public class Resource
 	@NonNull ResourceTypeId resourceTypeId;
 
 	@Nullable UserId responsibleId;
+	
+	@Nullable String internalName;
 }

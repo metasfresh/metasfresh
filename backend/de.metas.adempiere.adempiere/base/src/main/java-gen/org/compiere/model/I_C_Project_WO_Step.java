@@ -123,19 +123,19 @@ public interface I_C_Project_WO_Step
 	 * Set Date End.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateEnd (@Nullable java.sql.Timestamp DateEnd);
+	void setDateEnd (java.sql.Timestamp DateEnd);
 
 	/**
 	 * Get Date End.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateEnd();
+	java.sql.Timestamp getDateEnd();
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateEnd = new ModelColumn<>(I_C_Project_WO_Step.class, "DateEnd", null);
 	String COLUMNNAME_DateEnd = "DateEnd";
@@ -145,20 +145,20 @@ public interface I_C_Project_WO_Step
 	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateStart (@Nullable java.sql.Timestamp DateStart);
+	void setDateStart (java.sql.Timestamp DateStart);
 
 	/**
 	 * Get Start Date.
 	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateStart();
+	java.sql.Timestamp getDateStart();
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateStart = new ModelColumn<>(I_C_Project_WO_Step.class, "DateStart", null);
 	String COLUMNNAME_DateStart = "DateStart";
@@ -183,6 +183,27 @@ public interface I_C_Project_WO_Step
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_Description = new ModelColumn<>(I_C_Project_WO_Step.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_Project_WO_Step.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set Active.

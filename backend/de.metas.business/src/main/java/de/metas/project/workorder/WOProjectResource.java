@@ -22,24 +22,25 @@
 
 package de.metas.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
+import java.util.List;
 
 @Value
-@Builder
 public class WOProjectResource
 {
 	@NonNull WOProjectResourceId id;
 
-	@NonNull ProjectId projectId;
 	@NonNull WOProjectStepId stepId;
 
 	@NonNull ResourceId resourceId;
@@ -49,4 +50,45 @@ public class WOProjectResource
 	@NonNull Duration duration;
 
 	@Nullable String description;
+
+	@Builder(toBuilder = true)
+	private WOProjectResource(
+			@NonNull final WOProjectResourceId id,
+			@NonNull final WOProjectStepId stepId,
+			@NonNull final ResourceId resourceId,
+			@NonNull final CalendarDateRange dateRange,
+			@NonNull final TemporalUnit durationUnit,
+			@NonNull final Duration duration,
+			@Nullable final String description)
+	{
+		if (!ProjectId.equals(id.getProjectId(), stepId.getProjectId()))
+		{
+			throw new AdempiereException("Project step and resource ID shall share the same projectId: " + stepId + ", " + id);
+		}
+
+		this.id = id;
+		this.stepId = stepId;
+		this.resourceId = resourceId;
+		this.dateRange = dateRange;
+		this.durationUnit = durationUnit;
+		this.duration = duration;
+		this.description = description;
+	}
+
+	public static CalendarDateRange computeDateRangeToEncloseAll(@NonNull List<WOProjectResource> projectResources)
+	{
+		if (projectResources.isEmpty())
+		{
+			throw new AdempiereException("No project resources provided");
+		}
+
+		final ImmutableList<CalendarDateRange> dateRanges = projectResources.stream()
+				.map(WOProjectResource::getDateRange)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		return CalendarDateRange.span(dateRanges);
+	}
+
+	public ProjectId getProjectId() {return id.getProjectId();}
 }

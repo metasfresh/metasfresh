@@ -213,6 +213,18 @@ public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
 	public void setIsAllDay (final boolean IsAllDay)
 	{
 		set_Value (COLUMNNAME_IsAllDay, IsAllDay);

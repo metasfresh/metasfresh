@@ -9,6 +9,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.CloseViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenCalendarAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
@@ -22,6 +23,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -115,7 +117,7 @@ public final class JSONProcessInstanceResult
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
 			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson(), openDocumentAction.getTargetTab());
 		}
-		else if(resultAction instanceof CloseViewAction)
+		else if (resultAction instanceof CloseViewAction)
 		{
 			return JSONCloseView.instance;
 		}
@@ -128,6 +130,10 @@ public final class JSONProcessInstanceResult
 		{
 			final DisplayQRCodeAction displayQRCodeAction = (DisplayQRCodeAction)resultAction;
 			return new JSONDisplayQRCodeAction(displayQRCodeAction.getCode());
+		}
+		else if (resultAction instanceof OpenCalendarAction)
+		{
+			return new JSONOpenCalendarAction((OpenCalendarAction)resultAction);
 		}
 		else
 		{
@@ -268,4 +274,31 @@ public final class JSONProcessInstanceResult
 			this.code = code;
 		}
 	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Getter
+	public static class JSONOpenCalendarAction extends JSONResultAction
+	{
+		@Nullable String simulationId;
+		@Nullable String resourceId;
+		@Nullable String projectId;
+		@Nullable String customerId;
+		@Nullable String responsibleId;
+
+		private JSONOpenCalendarAction(@NonNull final OpenCalendarAction from)
+		{
+			super("openCalendar");
+			this.simulationId = from.getSimulationId();
+			this.resourceId = from.getCalendarResourceId();
+			this.projectId = from.getProjectId();
+			this.customerId = toString(from.getCustomerId());
+			this.responsibleId = toString(from.getResponsibleId());
+		}
+
+		private static String toString(@Nullable RepoIdAware id)
+		{
+			return id != null ? String.valueOf(id.getRepoId()) : null;
+		}
+	}
+
 }

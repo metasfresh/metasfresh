@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1559762341L;
+	private static final long serialVersionUID = -1167694284L;
 
     /** Standard Constructor */
     public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)

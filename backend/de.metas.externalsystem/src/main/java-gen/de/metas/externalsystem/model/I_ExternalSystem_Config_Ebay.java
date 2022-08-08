@@ -1,7 +1,8 @@
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config_Ebay
  *  @author metasfresh (generated) 
@@ -288,7 +289,7 @@ public interface I_ExternalSystem_Config_Ebay
 	 * Get Refresh Token.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getRefreshToken();

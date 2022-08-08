@@ -22,13 +22,19 @@
 
 package de.metas.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_WO_Step;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
@@ -50,6 +56,22 @@ public class WOProjectStepRepository
 		return lastSeqNo > 0
 				? lastSeqNo / 10 * 10 + 10
 				: 10;
+	}
+
+	public ImmutableList<WOProjectStep> getByIds(final Set<WOProjectStepId> stepIds)
+	{
+		if (stepIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Project_WO_Step.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, stepIds)
+				.stream()
+				.map(WOProjectStepRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Map<ProjectId, WOProjectSteps> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
@@ -75,13 +97,68 @@ public class WOProjectStepRepository
 				.collect(ImmutableMap.toImmutableMap(WOProjectSteps::getProjectId, steps -> steps));
 	}
 
-	private static WOProjectStep fromRecord(@NonNull final I_C_Project_WO_Step record)
+	public WOProjectSteps getByProjectId(@NonNull final ProjectId projectId)
 	{
-		return WOProjectStep.builder()
-				.id(WOProjectStepId.ofRepoId(record.getC_Project_WO_Step_ID()))
-				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
-				.seqNo(record.getSeqNo())
-				.name(record.getName())
-				.build();
+		return getByProjectIds(ImmutableSet.of(projectId)).get(projectId);
+	}
+
+	public static WOProjectStep fromRecord(@NonNull final I_C_Project_WO_Step record)
+	{
+		try
+		{
+			return WOProjectStep.builder()
+					.id(extractWOProjectStepId(record))
+					.seqNo(record.getSeqNo())
+					.name(record.getName())
+					.dateRange(CalendarDateRange.builder()
+							.startDate(record.getDateStart().toInstant())
+							.endDate(record.getDateEnd().toInstant())
+							.build())
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed loading WOProjectStep from " + record, ex);
+		}
+	}
+
+	public void updateStepDateRanges(@NonNull final Map<WOProjectStepId, CalendarDateRange> stepDateRanges)
+	{
+		final Set<WOProjectStepId> stepIds = stepDateRanges.keySet();
+		if (stepIds.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableMap<WOProjectStepId, I_C_Project_WO_Step> recordsById = queryBL
+				.createQueryBuilder(I_C_Project_WO_Step.class)
+				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, stepIds)
+				.create()
+				.map(WOProjectStepRepository::extractWOProjectStepId);
+
+		for (final WOProjectStepId stepId : stepIds)
+		{
+			final I_C_Project_WO_Step record = recordsById.get(stepId);
+			if (record == null)
+			{
+				throw new AdempiereException("No project resource not found for " + stepId);
+			}
+
+			final CalendarDateRange dateRange = stepDateRanges.get(stepId);
+
+			updateRecordFromDateRange(record, dateRange);
+			InterfaceWrapperHelper.save(record);
+		}
+	}
+
+	public static WOProjectStepId extractWOProjectStepId(final I_C_Project_WO_Step record)
+	{
+		return WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID());
+	}
+
+	private static void updateRecordFromDateRange(@NonNull final I_C_Project_WO_Step record, @NonNull final CalendarDateRange from)
+	{
+		record.setDateStart(TimeUtil.asTimestamp(from.getStartDate()));
+		record.setDateEnd(TimeUtil.asTimestamp(from.getEndDate()));
 	}
 }

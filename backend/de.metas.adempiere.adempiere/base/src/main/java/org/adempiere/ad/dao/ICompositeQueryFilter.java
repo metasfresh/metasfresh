@@ -22,6 +22,7 @@
 
 package org.adempiere.ad.dao;
 
+import de.metas.util.InSetPredicate;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
@@ -34,12 +35,14 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+@SuppressWarnings("UnusedReturnValue")
 public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 {
 	/**
@@ -51,8 +54,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Set default behavior in case this composite is empty.
-	 *
-	 * @param defaultAccept
 	 */
 	ICompositeQueryFilter<T> setDefaultAccept(boolean defaultAccept);
 
@@ -88,9 +89,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Add a {@link InSubQueryFilter}
 	 *
-	 * @param columnName
-	 * @param subQueryColumnName
-	 * @param subQuery
 	 * @return this
 	 */
 	<ST> ICompositeQueryFilter<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
@@ -98,10 +96,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Add a NOT-{@link InSubQueryFilter}.
 	 *
-	 * @param columnName
-	 * @param subQueryColumnName
-	 * @param subQuery
-	 * @return
 	 */
 	<ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
 
@@ -112,10 +106,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Add a {@link InSubQueryFilter}
 	 *
-	 * @param columnName
-	 * @param modifier
-	 * @param subQueryColumnName
-	 * @param subQuery
 	 * @return this
 	 */
 	<ST> ICompositeQueryFilter<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
@@ -131,6 +121,8 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * If no values were provided the record is rejected.
 	 */
 	<V> ICompositeQueryFilter<T> addInArrayFilter(String columnName, Collection<V> values);
+
+	<V extends RepoIdAware> ICompositeQueryFilter<T> addInArrayFilter(String columnName, InSetPredicate<V> values);
 
 	/**
 	 * Filters those rows for whom the columnName's value is in given collection.
@@ -149,8 +141,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
 	 *
-	 * @param column
-	 * @param values
 	 * @return this
 	 */
 	<V> ICompositeQueryFilter<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
@@ -158,8 +148,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
 	 *
-	 * @param columnName
-	 * @param values
 	 * @return this
 	 * @deprecated  dev note: if the target column (i.e. column identified by @param columnName) has value null the query won't match
 	 */
@@ -171,6 +159,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * If no values were provided the record is accepted.
 	 */
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(String columnName, V... values);
 
 	/**
@@ -204,7 +193,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Accept only those records which have AD_Client_ID same as the "#AD_Client_ID" from given context.
 	 *
-	 * @param ctx
 	 * @return this
 	 */
 	ICompositeQueryFilter<T> addOnlyContextClient(Properties ctx);
@@ -212,7 +200,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Accept only those records which have AD_Client_ID same as the "#AD_Client_ID" from given context or System client.
 	 *
-	 * @param ctx
 	 * @return this
 	 */
 	ICompositeQueryFilter<T> addOnlyContextClientOrSystem(Properties ctx);
@@ -261,8 +248,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	ICompositeQueryFilter<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
-	ICompositeQueryFilter<T> addStringNotLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
-
 	ICompositeQueryFilter<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 
 	/**
@@ -280,14 +265,12 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by OR.
 	 *
-	 * @return
 	 */
 	ICompositeQueryFilter<T> setJoinOr();
 
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by AND.
 	 *
-	 * @return
 	 */
 	ICompositeQueryFilter<T> setJoinAnd();
 
@@ -306,7 +289,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Add a single filter
 	 *
-	 * @param filter
 	 * @return this
 	 */
 	ICompositeQueryFilter<T> addFilter(IQueryFilter<T> filter);
@@ -314,7 +296,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Remove filter
 	 *
-	 * @param filter
 	 * @return this
 	 */
 	ICompositeQueryFilter<T> removeFilter(IQueryFilter<T> filter);
@@ -354,13 +335,12 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Gets SQL where clause parameters from {@link #getSqlFilters()}
 	 *
-	 * @param ctx
 	 * @return sql parameters
 	 */
 	List<Object> getSqlFiltersParams(Properties ctx);
 
 	/**
-	 * Gets an query filter which behaves like {@link #getNonSqlFilters()} list.
+	 * Gets a query filter which behaves like {@link #getNonSqlFilters()} list.
 	 * <p>
 	 * If there are no nonSQL filters, this method will return null.
 	 *
@@ -371,7 +351,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Gets an query filter which behaves like {@link #getSqlFilters()} list.
 	 *
-	 * @return
 	 */
 	ISqlQueryFilter asPartialSqlQueryFilter();
 
@@ -380,7 +359,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * <p>
 	 * If this is not a pure SQL filter, an exception will be thrown.
 	 *
-	 * @return
 	 * @throws IllegalStateException if it's not a Pure SQL
 	 */
 	ISqlQueryFilter asSqlQueryFilter() throws IllegalStateException;
@@ -411,4 +389,10 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 			@NonNull String upperBoundColumnName,
 			@Nullable ZonedDateTime lowerBoundValue,
 			@Nullable ZonedDateTime upperBoundValue);
+
+	ICompositeQueryFilter<T> addIntervalIntersection(
+			@NonNull String lowerBoundColumnName,
+			@NonNull String upperBoundColumnName,
+			@Nullable Instant lowerBoundValue,
+			@Nullable Instant upperBoundValue);
 }

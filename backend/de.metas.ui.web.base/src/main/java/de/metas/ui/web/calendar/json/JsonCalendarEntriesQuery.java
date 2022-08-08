@@ -22,7 +22,12 @@
 
 package de.metas.ui.web.calendar.json;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.CalendarGlobalId;
+import de.metas.calendar.CalendarResourceId;
+import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.project.ProjectId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -36,7 +41,13 @@ import java.util.Set;
 @Jacksonized
 public class JsonCalendarEntriesQuery
 {
+	@Nullable SimulationPlanId simulationId;
 	@Nullable @Singular Set<CalendarGlobalId> calendarIds;
+	@Nullable Set<CalendarResourceId> onlyResourceIds;
+	@Nullable ProjectId onlyProjectId;
+	@Nullable BPartnerId onlyCustomerId;
+	@Nullable UserId onlyResponsibleId;
+
 	@Nullable JsonDateTime startDate;
 	@Nullable JsonDateTime endDate;
 }

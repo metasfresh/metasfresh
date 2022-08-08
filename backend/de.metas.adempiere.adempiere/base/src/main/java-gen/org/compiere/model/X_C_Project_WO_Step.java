@@ -65,7 +65,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public void setDateEnd (final @Nullable java.sql.Timestamp DateEnd)
+	public void setDateEnd (final java.sql.Timestamp DateEnd)
 	{
 		set_Value (COLUMNNAME_DateEnd, DateEnd);
 	}
@@ -77,7 +77,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public void setDateStart (final @Nullable java.sql.Timestamp DateStart)
+	public void setDateStart (final java.sql.Timestamp DateStart)
 	{
 		set_Value (COLUMNNAME_DateStart, DateStart);
 	}
@@ -98,6 +98,18 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override

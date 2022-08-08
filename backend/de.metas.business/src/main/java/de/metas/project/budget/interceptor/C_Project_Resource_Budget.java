@@ -22,9 +22,15 @@
 
 package de.metas.project.budget.interceptor;
 
+import de.metas.calendar.CalendarEntryId;
+import de.metas.calendar.MultiCalendarService;
 import de.metas.project.budget.BudgetProjectResourceRepository;
+import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_Resource_Budget;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -33,10 +39,57 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_C_Project_Resource_Budget.class)
 public class C_Project_Resource_Budget
 {
+	private final MultiCalendarService multiCalendarService;
+
+	public C_Project_Resource_Budget(
+			final MultiCalendarService multiCalendarService)
+	{
+		this.multiCalendarService = multiCalendarService;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_Project_Resource_Budget record)
 	{
 		// make sure it's valid
 		BudgetProjectResourceRepository.fromRecord(record);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void afterSave(final I_C_Project_Resource_Budget record, final ModelChangeType changeType)
+	{
+		notifyIfUserChange(record, changeType);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void afterDelete(final I_C_Project_Resource_Budget record, final ModelChangeType changeType)
+	{
+		notifyIfUserChange(record, changeType);
+	}
+
+	private void notifyIfUserChange(
+			@NonNull final I_C_Project_Resource_Budget record,
+			@NonNull final ModelChangeType changeType)
+	{
+		if (!InterfaceWrapperHelper.isUIAction(record))
+		{
+			return;
+		}
+
+		final CalendarEntryId entryId = extractCalendarEntryId(record);
+		if (changeType.isNewOrChange() && record.isActive())
+		{
+			multiCalendarService.notifyEntryUpdated(entryId);
+		}
+		else
+		{
+			multiCalendarService.notifyEntryDeleted(entryId);
+		}
+	}
+
+	@NonNull
+	private static CalendarEntryId extractCalendarEntryId(final I_C_Project_Resource_Budget record)
+	{
+		return BudgetAndWOCalendarEntryIdConverters.from(BudgetProjectResourceRepository.extractBudgetProjectResourceId(record));
+	}
+
 }

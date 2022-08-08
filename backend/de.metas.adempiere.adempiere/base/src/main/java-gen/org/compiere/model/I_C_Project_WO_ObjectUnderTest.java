@@ -4,6 +4,7 @@ import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
 
+
 /** Generated Interface for C_Project_WO_ObjectUnderTest
  *  @author metasfresh (generated) 
  */

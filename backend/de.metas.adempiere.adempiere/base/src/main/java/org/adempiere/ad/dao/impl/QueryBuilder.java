@@ -25,7 +25,9 @@ package org.adempiere.ad.dao.impl;
 import com.google.common.collect.ImmutableMap;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
@@ -42,6 +44,7 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
@@ -71,7 +74,7 @@ import java.util.Properties;
 	 */
 	private ContextClientQueryFilter<T> contextClientQueryFilter;
 
-	public static final QueryBuilder<Object> createForTableName(final String modelTableName)
+	public static QueryBuilder<Object> createForTableName(final String modelTableName)
 	{
 		Check.assumeNotEmpty(modelTableName, "modelTableName is not empty");
 		return new QueryBuilder<>(Object.class, modelTableName);
@@ -81,7 +84,6 @@ import java.util.Properties;
 	 * Note: we don't provide two constructors (one without <code>tableName</code> param), because instances of this class are generally created by {@link IQueryBuilder} and that's how a user should obtain them.
 	 * Exceptions might be some test cases, but there is think that a developer can carry the border of explicitly giving a <code>null</code> parameter. On the upside, we don't have multiple different constructors to choose from.
 	 *
-	 * @param modelClass
 	 * @param tableName may be <code>null</code>. If <code>null</code>, then the table's name will be deducted from the given modelClass when it is required.
 	 */
 	public QueryBuilder(final Class<T> modelClass, final String tableName)
@@ -106,6 +108,7 @@ import java.util.Properties;
 		this.orderByBuilder = from.orderByBuilder == null ? null : from.orderByBuilder.copy();
 		this.onlySelectionId = from.onlySelectionId;
 		this.limit = from.limit;
+		this.contextClientQueryFilter = from.contextClientQueryFilter != null ? from.contextClientQueryFilter.copy() : null;
 
 		this.options = from.options == null ? null : new HashMap<>(from.options);
 	}
@@ -113,8 +116,7 @@ import java.util.Properties;
 	@Override
 	public IQueryBuilder<T> copy()
 	{
-		final QueryBuilder<T> copy = new QueryBuilder<>(this);
-		return copy;
+		return new QueryBuilder<>(this);
 	}
 
 	/**
@@ -194,7 +196,7 @@ import java.util.Properties;
 			return this;
 		}
 
-		return filter(new ContextClientQueryFilter<T>(ctx));
+		return filter(new ContextClientQueryFilter<>(ctx));
 	}
 
 	@Override
@@ -237,7 +239,7 @@ import java.util.Properties;
 		return modelTableName;
 	}
 
-	private final String getKeyColumnName()
+	private String getKeyColumnName()
 	{
 		if (modelKeyColumnName == null)
 		{
@@ -397,6 +399,13 @@ import java.util.Properties;
 	public <V> IQueryBuilder<T> addInArrayFilter(final ModelColumn<T, ?> column, final Collection<V> values)
 	{
 		filters.addInArrayFilter(column, values);
+		return this;
+	}
+
+	@Override
+	public <V extends RepoIdAware> IQueryBuilder<T> addInArrayFilter(@NonNull final String columnName, @NonNull final InSetPredicate<V> values)
+	{
+		filters.addInArrayFilter(columnName, values);
 		return this;
 	}
 
@@ -701,6 +710,17 @@ import java.util.Properties;
 			@NonNull final String upperBoundColumnName,
 			@Nullable final ZonedDateTime lowerBoundValue,
 			@Nullable final ZonedDateTime upperBoundValue)
+	{
+		filters.addIntervalIntersection(lowerBoundColumnName, upperBoundColumnName, lowerBoundValue, upperBoundValue);
+		return this;
+	}
+
+	@Override
+	public IQueryBuilder<T> addIntervalIntersection(
+			@NonNull final String lowerBoundColumnName,
+			@NonNull final String upperBoundColumnName,
+			@Nullable final Instant lowerBoundValue,
+			@Nullable final Instant upperBoundValue)
 	{
 		filters.addIntervalIntersection(lowerBoundColumnName, upperBoundColumnName, lowerBoundValue, upperBoundValue);
 		return this;

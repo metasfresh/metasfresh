@@ -22,17 +22,22 @@
 
 package de.metas.project.workorder;
 
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class WOProjectStep
 {
 	@NonNull WOProjectStepId id;
-	@NonNull ProjectId projectId;
+
 	int seqNo;
 	@NonNull String name;
+
+	@NonNull CalendarDateRange dateRange;
+
+	public ProjectId getProjectId() {return id.getProjectId();}
 }

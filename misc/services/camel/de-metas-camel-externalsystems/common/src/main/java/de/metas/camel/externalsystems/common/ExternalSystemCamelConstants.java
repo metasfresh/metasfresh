@@ -130,4 +130,7 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_UPSERT_RPROJECT_V2_ROUTE_ID = "To-MF_Projects-Route";	
 	public static final String MF_UPSERT_PROJECT_V2_CAMEL_URI = "metasfresh.upsert-project-v2.camel.uri";
+
+	public static final String MF_UPSERT_WORK_ORDER_PROJECT_V2_ROUTE_ID = "To-MF_WorkOrderProjects-Route";
+	public static final String MF_UPSERT_WORK_ORDER_PROJECT_V2_CAMEL_URI = "metasfresh.upsert-workorder-project-v2.camel.uri";
 }
