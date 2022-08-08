@@ -13,13 +13,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
   In:
   C_Order.IsSoTrx = Y
   C_Order.QtyOrdered = 100 PCE / 25 kg
-  C_Invoice_Candidate.QtyDelivered = 100 PCE / 26,3547 kg
+  C_Invoice_Candidate.QtyDelivered = 100 PCE / 26.3547 kg
   CatchWeightPrice = Y
   C_Invoice_Candidate.QtyToInvoiceOverride = /
 
   Expectation:
   C_Invoice_Candidate.QtyOrdered = 100 PCE
-  C_Invoice_Candidate.QtyToInvoice = 100 PCE / 26,3547 kg
+  C_Invoice_Candidate.QtyToInvoice = 100 PCE / 26.3547 kg
 
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -100,14 +100,14 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
   Scenario:
   In:
   C_Order.IsSoTrx = Y
-  C_Order.QtyOrdered = 150 PCE / 37,5 kg
-  C_Invoice_Candidate.QtyDelivered = 150 PCE / 36,985 kg
+  C_Order.QtyOrdered = 150 PCE / 37.5 kg
+  C_Invoice_Candidate.QtyDelivered = 150 PCE / 36.985 kg
   CatchWeightPrice = Y
   C_Invoice_Candidate.QtyToInvoiceOverride = /
 
   Expectation:
   C_Invoice_Candidate.QtyOrdered = 150 PCE
-  C_Invoice_Candidate.QtyToInvoice = 150 PCE / 36,985 kg
+  C_Invoice_Candidate.QtyToInvoice = 150 PCE / 36.985 kg
 
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -189,13 +189,13 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
   In:
   C_Order.IsSoTrx = Y
   C_Order.QtyOrdered = 100 PCE / 25 kg
-  C_Invoice_Candidate.QtyDelivered = 102 PCE / 27,0156 kg
+  C_Invoice_Candidate.QtyDelivered = 102 PCE / 27.0156 kg
   CatchWeightPrice = Y
   C_Invoice_Candidate.QtyToInvoiceOverride = /
 
   Expectation:
   C_Invoice_Candidate.QtyOrdered = 100 PCE
-  C_Invoice_Candidate.QtyToInvoice = 102 PCE / 27,0156 kg
+  C_Invoice_Candidate.QtyToInvoice = 102 PCE / 27.0156 kg
 
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -276,14 +276,14 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
   Scenario:
   In:
   C_Order.IsSoTrx = Y
-  C_Order.QtyOrdered = 150 PCE / 37,5 kg
-  C_Invoice_Candidate.QtyDelivered = 148 PCE / 35,684 kg
+  C_Order.QtyOrdered = 150 PCE / 37.5 kg
+  C_Invoice_Candidate.QtyDelivered = 148 PCE / 35.684 kg
   CatchWeightPrice = Y
   C_Invoice_Candidate.QtyToInvoiceOverride = /
 
   Expectation:
   C_Invoice_Candidate.QtyOrdered = 150 PCE
-  C_Invoice_Candidate.QtyToInvoice = 148 PCE / 35,684 kg
+  C_Invoice_Candidate.QtyToInvoice = 148 PCE / 35.684 kg
 
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -541,6 +541,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
+    And load C_BPartner:
+      | C_BPartner_ID.Identifier | C_BPartner_ID |
+      | endvendor_1              | 2156423       |
     And update C_UOM_Conversion:
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
@@ -549,14 +552,14 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 540024                       | 1.00     | KGM               | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
-      | o_1        | N       | 2156423                  | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 100        |
     When the order identified by o_1 is completed
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule_21072022_3      | o_1                   | ol_1                      | 2156423                  | 2205173                           | 2005577                 | 100        | warehouseStd              |
+      | receiptSchedule_21072022_3      | o_1                   | ol_1                      | endvendor_1              | 2205173                           | 2005577                 | 100        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | processedTopHU     | receiptSchedule_21072022_3      | N               | 1     | N               | 1     | N               | 100   | 101                                | 1000006                      |
@@ -594,7 +597,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 100            | 25.000         | 0                              | 100              | 26.000                | 100             | 26.000               | 0                   | true          |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | 2156423                  | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
+      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | 2005577                 | 100         | true      | 1                | 1               | 26.00          | 0            |
@@ -624,6 +627,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
+    And load C_BPartner:
+      | C_BPartner_ID.Identifier | C_BPartner_ID |
+      | endvendor_1              | 2156423       |
     And update C_UOM_Conversion:
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
@@ -632,14 +638,14 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 540024                       | 1.00     | KGM               | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
-      | o_1        | N       | 2156423                  | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 150        |
     When the order identified by o_1 is completed
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule_21072022_5      | o_1                   | ol_1                      | 2156423                  | 2205173                           | 2005577                 | 150        | warehouseStd              |
+      | receiptSchedule_21072022_5      | o_1                   | ol_1                      | endvendor_1              | 2205173                           | 2005577                 | 150        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | processedTopHU     | receiptSchedule_21072022_5      | N               | 1     | N               | 1     | N               | 150   | 101                                | 1000006                      |
@@ -677,7 +683,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 150            | 37.500         | 0                              | 150              | 35.000                | 150             | 35.000               | 0                   | true          |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | 2156423                  | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
+      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | 2005577                 | 150         | true      | 1                | 1               | 35.00          | 0            |
@@ -706,6 +712,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
+    And load C_BPartner:
+      | C_BPartner_ID.Identifier | C_BPartner_ID |
+      | endvendor_1              | 2156423       |
     And update C_UOM_Conversion:
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
@@ -714,14 +723,14 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 540024                       | 1.00     | KGM               | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
-      | o_1        | N       | 2156423                  | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 100        |
     When the order identified by o_1 is completed
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule_21072022_8      | o_1                   | ol_1                      | 2156423                  | 2205173                           | 2005577                 | 100        | warehouseStd              |
+      | receiptSchedule_21072022_8      | o_1                   | ol_1                      | endvendor_1              | 2205173                           | 2005577                 | 100        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | processedTopHU     | receiptSchedule_21072022_8      | N               | 1     | N               | 1     | N               | 102   | 101                                | 1000006                      |
@@ -759,7 +768,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 100            | 25.000         | 0                              | 102              | 26.000                | 102             | 26.000               | 0                   | true          |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | 2156423                  | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
+      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | 2005577                 | 102         | true      | 1                | 1               | 26.00          | 0            |
@@ -789,6 +798,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
+    And load C_BPartner:
+      | C_BPartner_ID.Identifier | C_BPartner_ID |
+      | endvendor_1              | 2156423       |
     And update C_UOM_Conversion:
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
@@ -797,14 +809,14 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 540024                       | 1.00     | KGM               | CatchWeight              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType | OPT.C_PaymentTerm_ID |
-      | o_1        | N       | 2156423                  | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
+      | o_1        | N       | endvendor_1              | 2021-04-16  | po_ref_mock     | POO             | 1000012              |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | 2005577                 | 150        |
     When the order identified by o_1 is completed
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptSchedule_21072022_9      | o_1                   | ol_1                      | 2156423                  | 2205173                           | 2005577                 | 150        | warehouseStd              |
+      | receiptSchedule_21072022_9      | o_1                   | ol_1                      | endvendor_1              | 2205173                           | 2005577                 | 150        | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | processedTopHU     | receiptSchedule_21072022_9      | N               | 1     | N               | 1     | N               | 147   | 101                                | 1000006                      |
@@ -843,7 +855,7 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoice_candidate_1               | o_1                       | ol_1                          | 0            | 0.000                      | 147            | 37.500         | 0                              | 147              | 35.000                | 147             | 35.000               | 0                   | true          |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm   | processed | docStatus |
-      | invoice_1               | 2156423                  | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
+      | invoice_1               | endvendor_1              | 2205173                           | po_ref_mock | 30 Tage netto | true      | CO        |
     And validate invoice lines for invoice_1:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.Discount |
       | invoiceLine1_1              | 2005577                 | 147         | true      | 1                | 1               | 35.00          | 0            |
