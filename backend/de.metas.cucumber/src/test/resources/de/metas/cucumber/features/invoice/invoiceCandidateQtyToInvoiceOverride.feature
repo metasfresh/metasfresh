@@ -542,8 +542,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | endvendor_1              | 2156423       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | endvendor_1              | 2156423           |
     And update C_UOM_Conversion:
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
@@ -628,8 +628,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | endvendor_1              | 2156423       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | endvendor_1              | 2156423           |
     And update C_UOM_Conversion:
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
@@ -713,8 +713,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | endvendor_1              | 2156423       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | endvendor_1              | 2156423           |
     And update C_UOM_Conversion:
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
@@ -799,8 +799,8 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | endvendor_1              | 2156423       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | endvendor_1              | 2156423           |
     And update C_UOM_Conversion:
       | C_UOM_Conversion_ID.Identifier | OPT.IsCatchUOMForProduct |
       | 2002195                        | Y                        |
