@@ -23,8 +23,7 @@ package de.metas.costrevaluation.process;
  */
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.costrevaluation.CostRevaluationRepository;
-import de.metas.costrevaluation.impl.CostRevaluation;
+import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.costrevaluation.impl.CostRevaluationId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -42,7 +41,7 @@ import org.compiere.SpringContextHolder;
 public class M_CostRevaluation_CreateLines_Process extends JavaProcess implements IProcessPrecondition
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final CostRevaluationRepository costRevaluationRepo = SpringContextHolder.instance.getBean(CostRevaluationRepository.class);
+	private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -65,22 +64,22 @@ public class M_CostRevaluation_CreateLines_Process extends JavaProcess implement
 	private boolean isDraftDocument(final @NonNull IProcessPreconditionsContext context)
 	{
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(context.getSingleSelectedRecordId());
-		return costRevaluationRepo.isDraftedDocument(costRevaluationId);
+		return costRevaluationService.isDraftedDocument(costRevaluationId);
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(getClientID());
 		if (productIds.isEmpty())
+		{
 			return "@NoSelection@";
+		}
 
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
-		final CostRevaluation costRevaluation = costRevaluationRepo.getById(costRevaluationId);
+		costRevaluationService.createCostRevaluationLinesForProductIds(costRevaluationId, productIds);
 
-		costRevaluationRepo.createCostRevaluationLinesForProductIds(costRevaluation, productIds);
-
-		return "@OK@";
+		return MSG_OK;
 	}
 
 }

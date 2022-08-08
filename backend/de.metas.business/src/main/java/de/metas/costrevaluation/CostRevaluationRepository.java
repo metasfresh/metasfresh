@@ -1,15 +1,12 @@
 package de.metas.costrevaluation;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costrevaluation.impl.CostRevaluation;
 import de.metas.costrevaluation.impl.CostRevaluationId;
-import de.metas.costrevaluation.impl.CostRevaluationLine;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
@@ -21,24 +18,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
-import org.compiere.model.X_M_CostRevaluation;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class CostRevaluationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ICurrentCostsRepository currentCostsRepo;
-
-	public CostRevaluationRepository(
-			@NonNull final ICurrentCostsRepository currentCostsRepo)
-	{
-		this.currentCostsRepo = currentCostsRepo;
-	}
 
 	public List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
 	{
@@ -62,30 +50,20 @@ public class CostRevaluationRepository
 				.build();
 	}
 
-	public boolean isDraftedDocument(@NonNull final CostRevaluationId costRevaluationId)
-	{
-		final I_M_CostRevaluation costRevaluation = getRecordById(costRevaluationId);
-		return costRevaluation.getDocStatus().equals(X_M_CostRevaluation.DOCSTATUS_Drafted);
-	}
-
-	private I_M_CostRevaluation getRecordById(@NonNull final CostRevaluationId costRevaluationId)
+	I_M_CostRevaluation getRecordById(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		return InterfaceWrapperHelper.load(costRevaluationId, I_M_CostRevaluation.class);
 	}
 
-	public void createCostRevaluationLinesForProductIds(
-			@NonNull final CostRevaluation costRevaluation,
-			@NonNull final ImmutableSet<ProductId> productIds)
+	public void createCostRevaluationLinesForCurrentCosts(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final List<CurrentCost> currentCosts)
 	{
-		final AcctSchemaId acctSchemaId = costRevaluation.getAcctSchemaId();
-		final CostElementId costElementId = costRevaluation.getCostElementId();
-		final CostRevaluationId costRevaluationId = costRevaluation.getCostRevaluationId();
-
 		final HashMap<CostRevaluationLineKey, I_M_CostRevaluationLine> existingRecords = retrieveLinesByCostRevaluationId(costRevaluationId)
 				.stream()
 				.collect(GuavaCollectors.toHashMapByKey(CostRevaluationRepository::extractCostRevaluationLineKey));
 
-		for (final CurrentCost currentCost : currentCostsRepo.getByCostElementAndProduct(acctSchemaId, costElementId, productIds))
+		for (final CurrentCost currentCost : currentCosts)
 		{
 			final CostRevaluationLineKey key = extractCostRevaluationLineKey(currentCost);
 			I_M_CostRevaluationLine existingRecord = existingRecords.remove(key);
@@ -103,7 +81,7 @@ public class CostRevaluationRepository
 		InterfaceWrapperHelper.deleteAll(existingRecords.values());
 	}
 
-	private static CostRevaluationLineKey extractCostRevaluationLineKey(CurrentCost currentCost)
+	private static CostRevaluationLineKey extractCostRevaluationLineKey(@NonNull final CurrentCost currentCost)
 	{
 		final CostSegment costSegment = currentCost.getCostSegment();
 
@@ -129,13 +107,6 @@ public class CostRevaluationRepository
 		@NonNull ClientAndOrgId clientAndOrgId;
 	}
 
-	public I_M_CostRevaluationLine toCostRevaluationLine(@NonNull final CostRevaluationLine costRevaluationLine)
-	{
-		final I_M_CostRevaluationLine line = InterfaceWrapperHelper.loadOrNew(costRevaluationLine.getId(), I_M_CostRevaluationLine.class);
-		updateCostRevaluationLineRecord(line, costRevaluationLine);
-		return line;
-	}
-
 	private static void updateRecordFrom(@NonNull final I_M_CostRevaluationLine record, @NonNull final CurrentCost from)
 	{
 		final CostPrice costPrice = from.getCostPrice();
@@ -146,33 +117,5 @@ public class CostRevaluationRepository
 		record.setC_UOM_ID(costPrice.getUomId().getRepoId());
 
 		record.setCurrentQty(from.getCurrentQty().toBigDecimal());
-	}
-
-	private static void updateCostRevaluationLineRecord(@NonNull final I_M_CostRevaluationLine line, @NonNull final CostRevaluationLine from)
-	{
-		final CostPrice costPrice = from.getCurrentCostPrice();
-
-		line.setM_CostRevaluation_ID(from.getCostRevaluationId().getRepoId());
-		line.setM_Product_ID(from.getProductId().getRepoId());
-
-		line.setCurrentCostPrice(costPrice.getOwnCostPrice().getValue());
-		line.setC_Currency_ID(costPrice.getCurrencyId().getRepoId());
-		line.setC_UOM_ID(costPrice.getUomId().getRepoId());
-
-		line.setCurrentQty(from.getCurrentQty().toBigDecimal());
-		if (from.getNewCostPrice() != null)
-		{
-			line.setNewCostPrice(from.getNewCostPrice().getOwnCostPrice().getValue());
-		}
-		else
-		{
-			line.setNewCostPrice(null);
-		}
-	}
-
-	public void save(@NonNull final CostRevaluationLine costRevaluationLine)
-	{
-		final I_M_CostRevaluationLine line = toCostRevaluationLine(costRevaluationLine);
-		InterfaceWrapperHelper.save(line);
 	}
 }

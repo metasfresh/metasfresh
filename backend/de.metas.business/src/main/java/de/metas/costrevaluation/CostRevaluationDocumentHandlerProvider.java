@@ -37,7 +37,7 @@ public class CostRevaluationDocumentHandlerProvider implements DocumentHandlerPr
 	}
 
 	@Override
-	public DocumentHandler provideForDocument(final Object model)
+	public DocumentHandler provideForDocument(final Object model_ignored)
 	{
 		return new CostRevaluationDocumentHandler();
 	}

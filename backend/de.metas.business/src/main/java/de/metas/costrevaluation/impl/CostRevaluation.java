@@ -30,9 +30,9 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class CostRevaluation
+public class CostRevaluation
 {
-	@NonNull final CostRevaluationId costRevaluationId;
-	@NonNull final AcctSchemaId acctSchemaId;
-	@NonNull final CostElementId costElementId;
+	@NonNull CostRevaluationId costRevaluationId;
+	@NonNull AcctSchemaId acctSchemaId;
+	@NonNull CostElementId costElementId;
 }

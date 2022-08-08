@@ -5,10 +5,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
