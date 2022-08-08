@@ -47,14 +47,6 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541586
 /* DDL */ select AD_Element_Link_Create_Missing_Window(541586)
 ;
 
---works till here
-
-
-
-
-
-
-
 -- Tab: Prüf Projekt -> Projekt
 -- Table: C_Project
 -- 2022-08-05T09:47:45.460Z
