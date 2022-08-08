@@ -19,8 +19,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_10052022_1 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -108,8 +108,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_08072022_1 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -205,8 +205,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | 5010005                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2020-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -294,8 +294,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_08072022_3 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -371,8 +371,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_07072022_1 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -463,8 +463,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_07072022_2 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -521,8 +521,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_07072022_3 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
