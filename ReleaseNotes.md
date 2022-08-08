@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13392](https://github.com/metasfresh/metasfresh/issues/13316) Extend invoice-candidate test-coverage to IC QtyToInoviceOverride
   * [#13392](https://github.com/metasfresh/metasfresh/issues/13392) Final Product Costprice S2: lines creation process 
   * [#13384](https://github.com/metasfresh/metasfresh/issues/13384) Tests and Error Message for SEPA Export with QR IBAN
   * [#13368](https://github.com/metasfresh/metasfresh/issues/13368) Partial Payment Invoicing S4: Invoice candidate 
