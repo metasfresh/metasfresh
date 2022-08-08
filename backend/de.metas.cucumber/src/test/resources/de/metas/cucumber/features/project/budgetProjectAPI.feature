@@ -3,7 +3,7 @@ Feature: Budget Project API Test
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2022-01-02T08:00:00+02:00[Europe/Athens]
+    And metasfresh has date and time 2022-01-02T08:00:00+01:00[Europe/Berlin]
 
   @from:cucumber
   Scenario: Persist Budget Project with associated resource using API
