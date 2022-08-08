@@ -541,3 +541,161 @@ UPDATE AD_TreeNodeMM SET Parent_ID=541329, SeqNo=5, Updated=now(), UpdatedBy=100
 -- 2022-08-05T14:45:15.163Z
 /* DDL */ SELECT public.db_alter_table('C_Project','ALTER TABLE public.C_Project ADD COLUMN WOProjectCreatedDate TIMESTAMP WITHOUT TIME ZONE')
 ;
+
+-- UI Element: Prüf Projekt -> Projekt.Externe Projektreferenz
+-- Column: C_Project.C_Project_Reference_Ext
+-- 2022-08-08T08:58:31.409Z
+UPDATE AD_UI_Element SET AD_Field_ID=703868, Description=NULL, Help=NULL, Name='Externe Projektreferenz',Updated=TO_TIMESTAMP('2022-08-08 10:58:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611323
+;
+
+-- 2022-08-08T08:58:58.543Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-08-08 10:58:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580859 AND AD_Language='en_US'
+;
+
+-- 2022-08-08T08:58:58.578Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580859,'en_US')
+;
+
+-- 2022-08-08T08:59:01.195Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-08-08 10:59:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580859 AND AD_Language='de_DE'
+;
+
+-- 2022-08-08T08:59:01.197Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580859,'de_DE')
+;
+
+-- 2022-08-08T08:59:01.205Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580859,'de_DE')
+;
+
+-- 2022-08-08T09:01:34.652Z
+UPDATE AD_Element_Trl SET Name='VA Nummer', PrintName='VA Nummer',Updated=TO_TIMESTAMP('2022-08-08 11:01:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580859 AND AD_Language='de_DE'
+;
+
+-- 2022-08-08T09:01:34.655Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580859,'de_DE')
+;
+
+-- 2022-08-08T09:01:34.666Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580859,'de_DE')
+;
+
+-- 2022-08-08T09:01:34.670Z
+UPDATE AD_Column SET ColumnName='C_Project_Reference_Ext', Name='VA Nummer', Description=NULL, Help=NULL WHERE AD_Element_ID=580859
+;
+
+-- 2022-08-08T09:01:34.672Z
+UPDATE AD_Process_Para SET ColumnName='C_Project_Reference_Ext', Name='VA Nummer', Description=NULL, Help=NULL, AD_Element_ID=580859 WHERE UPPER(ColumnName)='C_PROJECT_REFERENCE_EXT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-08-08T09:01:34.674Z
+UPDATE AD_Process_Para SET ColumnName='C_Project_Reference_Ext', Name='VA Nummer', Description=NULL, Help=NULL WHERE AD_Element_ID=580859 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-08-08T09:01:34.675Z
+UPDATE AD_Field SET Name='VA Nummer', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580859) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580859)
+;
+
+-- 2022-08-08T09:01:34.696Z
+UPDATE AD_PrintFormatItem pi SET PrintName='VA Nummer', Name='VA Nummer' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=580859)
+;
+
+-- 2022-08-08T09:01:34.698Z
+UPDATE AD_Tab SET Name='VA Nummer', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580859
+;
+
+-- 2022-08-08T09:01:34.701Z
+UPDATE AD_WINDOW SET Name='VA Nummer', Description=NULL, Help=NULL WHERE AD_Element_ID = 580859
+;
+
+-- 2022-08-08T09:01:34.702Z
+UPDATE AD_Menu SET   Name = 'VA Nummer', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580859
+;
+
+-- 2022-08-08T09:02:06.686Z
+UPDATE AD_Element_Trl SET Description='Externe Projektreferenz Nummer',Updated=TO_TIMESTAMP('2022-08-08 11:02:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=580859 AND AD_Language='de_DE'
+;
+
+-- 2022-08-08T09:02:06.688Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580859,'de_DE')
+;
+
+-- 2022-08-08T09:02:06.697Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(580859,'de_DE')
+;
+
+-- 2022-08-08T09:02:06.698Z
+UPDATE AD_Column SET ColumnName='C_Project_Reference_Ext', Name='VA Nummer', Description='Externe Projektreferenz Nummer', Help=NULL WHERE AD_Element_ID=580859
+;
+
+-- 2022-08-08T09:02:06.700Z
+UPDATE AD_Process_Para SET ColumnName='C_Project_Reference_Ext', Name='VA Nummer', Description='Externe Projektreferenz Nummer', Help=NULL, AD_Element_ID=580859 WHERE UPPER(ColumnName)='C_PROJECT_REFERENCE_EXT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-08-08T09:02:06.701Z
+UPDATE AD_Process_Para SET ColumnName='C_Project_Reference_Ext', Name='VA Nummer', Description='Externe Projektreferenz Nummer', Help=NULL WHERE AD_Element_ID=580859 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-08-08T09:02:06.702Z
+UPDATE AD_Field SET Name='VA Nummer', Description='Externe Projektreferenz Nummer', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=580859) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 580859)
+;
+
+-- 2022-08-08T09:02:06.713Z
+UPDATE AD_Tab SET Name='VA Nummer', Description='Externe Projektreferenz Nummer', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 580859
+;
+
+-- 2022-08-08T09:02:06.714Z
+UPDATE AD_WINDOW SET Name='VA Nummer', Description='Externe Projektreferenz Nummer', Help=NULL WHERE AD_Element_ID = 580859
+;
+
+-- 2022-08-08T09:02:06.715Z
+UPDATE AD_Menu SET   Name = 'VA Nummer', Description = 'Externe Projektreferenz Nummer', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 580859
+;
+
+-- 2022-08-08T09:06:18.905Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581237,0,TO_TIMESTAMP('2022-08-08 11:06:18','YYYY-MM-DD HH24:MI:SS'),100,'Name der Prüfung','U','Y','Name der Prüfung','Name der Prüfung',TO_TIMESTAMP('2022-08-08 11:06:18','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-08-08T09:06:18.907Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581237 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2022-08-08T09:06:25.254Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-08-08 11:06:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581237 AND AD_Language='de_DE'
+;
+
+-- 2022-08-08T09:06:25.255Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581237,'de_DE')
+;
+
+-- 2022-08-08T09:06:25.262Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581237,'de_DE')
+;
+
+-- 2022-08-08T09:07:57.701Z
+UPDATE AD_Element_Trl SET Description='Name of testproject', IsTranslated='Y', Name='Test project name', PrintName='Test project name',Updated=TO_TIMESTAMP('2022-08-08 11:07:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581237 AND AD_Language='en_US'
+;
+
+-- 2022-08-08T09:07:57.703Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581237,'en_US')
+;
+
+-- Field: Prüf Projekt -> Projekt -> Name der Prüfung
+-- Column: C_Project.Name
+-- 2022-08-08T09:08:13.038Z
+UPDATE AD_Field SET AD_Name_ID=581237, Description='Name der Prüfung', Help=NULL, Name='Name der Prüfung',Updated=TO_TIMESTAMP('2022-08-08 11:08:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=703838
+;
+
+-- 2022-08-08T09:08:13.041Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581237)
+;
+
+-- 2022-08-08T09:08:13.052Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=703838
+;
+
+-- 2022-08-08T09:08:13.055Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(703838)
+;
+
+
