@@ -147,12 +147,15 @@ public class C_InvoiceLine_StepDef
 		{
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
+			final Integer productID = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+			assertThat(productID).isNotNull();
 
 			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 
 			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
-																				   .filter(line -> line.getM_Product_ID() == product.getM_Product_ID())
+																				   .filter(line -> line.getM_Product_ID() == productID)
 																				   .filter(line -> line.getQtyInvoiced().equals(qtyinvoiced))
 																				   .collect(ImmutableList.toImmutableList()));
 

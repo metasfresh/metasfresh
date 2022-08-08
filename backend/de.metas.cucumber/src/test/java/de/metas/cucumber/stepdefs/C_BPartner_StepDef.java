@@ -420,13 +420,18 @@ public class C_BPartner_StepDef
 		bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
 	}
 
-	private void load_bpartner(@NonNull final Map<String, String> tableRow)
+	private void load_bpartner(@NonNull final Map<String, String> row)
 	{
-		final int bpartnerId = DataTableUtil.extractIntForColumnName(tableRow, COLUMNNAME_C_BPartner_ID);
-		final I_C_BPartner bPartner = bpartnerDAO.getById(bpartnerId);
-		assertThat(bPartner).isNotNull();
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		bPartnerTable.put(bpartnerIdentifier, bPartner);
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID);
+
+		if (id != null)
+		{
+			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(id);
+			assertThat(bPartnerRecord).isNotNull();
+
+			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+		}
 	}
 }

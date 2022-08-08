@@ -37,6 +37,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
@@ -47,15 +48,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+
 public class C_UOM_Conversion_StepDef
 {
 	private final M_Product_StepDefData productTable;
+	private final C_UOM_Conversion_StepDefData conversionTable;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 
-	public C_UOM_Conversion_StepDef(@NonNull final M_Product_StepDefData productTable)
+	public C_UOM_Conversion_StepDef(
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_UOM_Conversion_StepDefData conversionTable)
 	{
 		this.productTable = productTable;
+		this.conversionTable = conversionTable;
 	}
 
 	@And("metasfresh contains C_UOM_Conversions")
@@ -66,6 +74,33 @@ public class C_UOM_Conversion_StepDef
 		{
 			create_C_UOM_Conversions(tableRow);
 		}
+	}
+
+	@And("update C_UOM_Conversion:")
+	public void update_C_UOM_Conversions(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			update_C_UOM_Conversions(tableRow);
+		}
+	}
+
+	private void update_C_UOM_Conversions(@NonNull final Map<String, String> tableRow)
+	{
+		final String conversionIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM_Conversion.COLUMNNAME_C_UOM_Conversion_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final Integer conversionID = conversionTable.getOptional(conversionIdentifier)
+				.map(I_C_UOM_Conversion::getC_UOM_Conversion_ID)
+				.orElseGet(() -> Integer.parseInt(conversionIdentifier));
+
+		assertThat(conversionID).isNotNull();
+
+		final I_C_UOM_Conversion conversionRecord = InterfaceWrapperHelper.load(conversionID, I_C_UOM_Conversion.class);
+
+		final boolean isCatchUomForProduct = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_UOM_Conversion.COLUMNNAME_IsCatchUOMForProduct, false);
+		conversionRecord.setIsCatchUOMForProduct(isCatchUomForProduct);
+
+		saveRecord(conversionRecord);
 	}
 
 	private void create_C_UOM_Conversions(@NonNull final Map<String, String> tableRow)
