@@ -61,7 +61,7 @@ public class ProductCostingBL implements IProductCostingBL
 			.build();
 
 	@Override
-	public CostingLevel getCostingLevel(@NonNull final I_M_Product product, @NonNull final AcctSchema acctSchema)
+	public @NonNull CostingLevel getCostingLevel(@NonNull final I_M_Product product, @NonNull final AcctSchema acctSchema)
 	{
 		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(product.getM_Product_Category_ID());
 		final AcctSchemaId acctSchemaId = acctSchema.getId();
@@ -75,7 +75,7 @@ public class ProductCostingBL implements IProductCostingBL
 	}
 
 	@Override
-	public CostingLevel getCostingLevel(final ProductId productId, final AcctSchemaId acctSchemaId)
+	public @NonNull CostingLevel getCostingLevel(final ProductId productId, final AcctSchemaId acctSchemaId)
 	{
 		final I_M_Product product = productDAO.getById(productId);
 		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
@@ -83,14 +83,14 @@ public class ProductCostingBL implements IProductCostingBL
 	}
 
 	@Override
-	public CostingLevel getCostingLevel(final ProductId productId, final AcctSchema acctSchema)
+	public @NonNull CostingLevel getCostingLevel(final ProductId productId, final AcctSchema acctSchema)
 	{
 		final I_M_Product product = productDAO.getById(productId);
 		return getCostingLevel(product, acctSchema);
 	}
 
 	@Override
-	public CostingMethod getCostingMethod(final I_M_Product product, final AcctSchema acctSchema)
+	public @NonNull CostingMethod getCostingMethod(final I_M_Product product, final AcctSchema acctSchema)
 	{
 		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(product.getM_Product_Category_ID());
 		final ProductCategoryAcct pca = getProductCategoryAcct(productCategoryId, acctSchema.getId());
@@ -103,7 +103,7 @@ public class ProductCostingBL implements IProductCostingBL
 	}
 
 	@Override
-	public CostingMethod getCostingMethod(final ProductId productId, final AcctSchemaId acctSchemaId)
+	public @NonNull CostingMethod getCostingMethod(final ProductId productId, final AcctSchemaId acctSchemaId)
 	{
 		final I_M_Product product = productDAO.getById(productId);
 		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
@@ -111,7 +111,7 @@ public class ProductCostingBL implements IProductCostingBL
 	}
 
 	@Override
-	public CostingMethod getCostingMethod(final ProductId productId, final AcctSchema acctSchema)
+	public @NonNull CostingMethod getCostingMethod(final ProductId productId, final AcctSchema acctSchema)
 	{
 		final I_M_Product product = productDAO.getById(productId);
 		return getCostingMethod(product, acctSchema);
@@ -123,7 +123,7 @@ public class ProductCostingBL implements IProductCostingBL
 		return productCategoryAcctCache.getOrLoad(key, this::retrieveOrCreateAcct);
 	}
 
-	private final ProductCategoryAcct retrieveOrCreateAcct(@NonNull final ProductCategoryAcctKey key)
+	private ProductCategoryAcct retrieveOrCreateAcct(@NonNull final ProductCategoryAcctKey key)
 	{
 		// NOTE: because we currently have some bugs with "ctx" on server side, we are not filtering the query by AD_Client_ID
 		// but we just rely on M_Product_Category_ID/C_AcctSchema_ID.
@@ -138,14 +138,14 @@ public class ProductCostingBL implements IProductCostingBL
 
 		//
 		// If no product category accounting record was not found and we are asked to create one on fly
-		// We are asing the MProductCategory to create all that are missing
+		// We are passing the MProductCategory to create all that are missing
 		if (productCategoryAcct == null)
 		{
 			final I_M_Product_Category pc = productDAO.getProductCategoryById(key.getProductCategoryId());
 			InterfaceWrapperHelper.getPO(pc).insert_Accounting(
 					I_M_Product_Category_Acct.Table_Name,
 					I_C_AcctSchema_Default.Table_Name,
-					(String)null // whereClause
+					null // whereClause
 			);
 
 			// Run the query again => we expect our product category acct record to be created
@@ -161,30 +161,24 @@ public class ProductCostingBL implements IProductCostingBL
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				.costingMethod(CostingMethod.ofNullableCode(record.getCostingMethod()))
-				.costingLevel(CostingLevel.forNullableCode(record.getCostingLevel()))
+				.costingLevel(CostingLevel.ofNullableCode(record.getCostingLevel()))
 				.build();
 	}
 
 	@Value(staticConstructor = "of")
 	private static class ProductCategoryAcctKey
 	{
-		@NonNull
-		ProductCategoryId productCategoryId;
-		@NonNull
-		AcctSchemaId acctSchemaId;
+		@NonNull ProductCategoryId productCategoryId;
+		@NonNull AcctSchemaId acctSchemaId;
 	}
 
 	@Value
 	@Builder
 	private static class ProductCategoryAcct
 	{
-		@NonNull
-		ProductCategoryId productCategoryId;
-		@NonNull
-		AcctSchemaId acctSchemaId;
-		@Nullable
-		CostingMethod costingMethod;
-		@Nullable
-		CostingLevel costingLevel;
+		@NonNull ProductCategoryId productCategoryId;
+		@NonNull AcctSchemaId acctSchemaId;
+		@Nullable CostingMethod costingMethod;
+		@Nullable CostingLevel costingLevel;
 	}
 }

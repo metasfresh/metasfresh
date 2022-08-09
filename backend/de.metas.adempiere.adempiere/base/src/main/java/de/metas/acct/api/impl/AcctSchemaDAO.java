@@ -87,7 +87,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
-	public final AcctSchema getByClientAndOrg(final ClientId clientId, final OrgId orgId)
+	public final @NonNull AcctSchema getByClientAndOrg(final ClientId clientId, final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrg(clientId, orgId);
 		return getById(acctSchemaId);
@@ -105,7 +105,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 	
 	@Override
-	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	public @NonNull AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
 		if (acctSchemaId == null)
@@ -220,7 +220,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return AcctSchemaCosting.builder()
 				.costingPrecision(costingPrecision)
 				.costTypeId(CostTypeId.ofRepoId(acctSchemaRecord.getM_CostType_ID()))
-				.costingLevel(CostingLevel.forCode(acctSchemaRecord.getCostingLevel()))
+				.costingLevel(CostingLevel.ofCode(acctSchemaRecord.getCostingLevel()))
 				.costingMethod(CostingMethod.ofCode(acctSchemaRecord.getCostingMethod()))
 				.postOnlyCostElementIds(postOnlyCostElementIds)
 				.build();
