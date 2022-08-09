@@ -16,6 +16,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
 import org.springframework.stereotype.Repository;
@@ -47,6 +48,7 @@ public class CostRevaluationRepository
 				.costRevaluationId(costRevaluationId)
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getM_CostElement_ID()))
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.build();
 	}
 

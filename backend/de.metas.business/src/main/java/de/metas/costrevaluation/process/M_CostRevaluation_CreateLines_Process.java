@@ -22,16 +22,12 @@ package de.metas.costrevaluation.process;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.costrevaluation.impl.CostRevaluationId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
@@ -40,44 +36,29 @@ import org.compiere.SpringContextHolder;
  */
 public class M_CostRevaluation_CreateLines_Process extends JavaProcess implements IProcessPrecondition
 {
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
-		}
-		else if (context.isMoreThanOneSelected())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
-		}
-		else if (!isDraftDocument(context))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Already in progress/finished.");
-		}
-		return ProcessPreconditionsResolution.accept();
+		return context.acceptIfSingleSelection()
+				.and(() -> acceptIfDraft(context))
+				.toInternal();
 	}
 
-	private boolean isDraftDocument(final @NonNull IProcessPreconditionsContext context)
+	private ProcessPreconditionsResolution acceptIfDraft(final @NonNull IProcessPreconditionsContext context)
 	{
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(context.getSingleSelectedRecordId());
-		return costRevaluationService.isDraftedDocument(costRevaluationId);
+		return costRevaluationService.isDraftedDocument(costRevaluationId)
+				? ProcessPreconditionsResolution.accept()
+				: ProcessPreconditionsResolution.rejectWithInternalReason("Already in progress/finished.");
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(getClientID());
-		if (productIds.isEmpty())
-		{
-			return "@NoSelection@";
-		}
-
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(getRecord_ID());
-		costRevaluationService.createCostRevaluationLinesForProductIds(costRevaluationId, productIds);
+		costRevaluationService.createLines(costRevaluationId);
 
 		return MSG_OK;
 	}

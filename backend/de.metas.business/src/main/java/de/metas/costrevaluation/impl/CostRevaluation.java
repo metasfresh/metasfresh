@@ -5,6 +5,7 @@ import de.metas.costing.CostElementId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 /*
  * #%L
@@ -35,4 +36,5 @@ public class CostRevaluation
 	@NonNull CostRevaluationId costRevaluationId;
 	@NonNull AcctSchemaId acctSchemaId;
 	@NonNull CostElementId costElementId;
+	@NonNull ClientId clientId;
 }
