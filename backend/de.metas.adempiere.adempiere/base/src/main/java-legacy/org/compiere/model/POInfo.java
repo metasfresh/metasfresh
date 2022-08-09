@@ -46,7 +46,7 @@ import java.util.Set;
  * @author Jorg Janke
  * @author Victor Perez, e-Evolution SC
  * <li>[ 2195894 ] Improve performance in PO engine
- * <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335
+ * <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335">...</a>
  */
 public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 {
@@ -81,9 +81,20 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	}
 
 	@Nullable
-	public static POInfo getPOInfo(final String tableName)
+	public static POInfo getPOInfo(@NonNull final String tableName)
 	{
 		return getPOInfoMap().getByTableNameOrNull(tableName);
+	}
+
+	@NonNull
+	public static POInfo getPOInfoNotNull(@NonNull final String tableName)
+	{
+		final POInfo poInfo = getPOInfoMap().getByTableNameOrNull(tableName);
+		if(poInfo == null)
+		{
+			throw new AdempiereException("No POInfo found for "+tableName);
+		}
+		return poInfo;
 	}
 
 	public static Optional<POInfo> getPOInfoIfPresent(@NonNull final String tableName)
