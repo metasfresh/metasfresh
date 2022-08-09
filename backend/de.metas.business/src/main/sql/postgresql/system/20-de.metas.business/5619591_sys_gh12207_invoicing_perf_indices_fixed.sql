@@ -1,4 +1,8 @@
 
+/*
+Note that 5619590_sys_gh12207_invoicing_perf_indices.sql is also fixed meanwhile; 
+but where the incorrect version  was already applied and just works incidentally, we need to have this SQL  
+*/
 DROP INDEX IF EXISTS public.c_doc_responsible_tablerecord;
 CREATE UNIQUE INDEX IF NOT EXISTS c_doc_responsible_record_id_ad_table_id
     ON public.c_doc_responsible (record_id, ad_table_id)
