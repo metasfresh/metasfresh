@@ -117,7 +117,7 @@ public class M_InOut_StepDef
 		this.orderLineTable = orderLineTable;
 	}
 
-	@And("validate the created shipments")
+	@And("^validate the created (shipments|material receipt)$")
 	public void validate_created_shipments(@NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();

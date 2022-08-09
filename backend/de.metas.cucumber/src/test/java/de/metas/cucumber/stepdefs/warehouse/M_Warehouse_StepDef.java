@@ -103,7 +103,7 @@ public class M_Warehouse_StepDef
 
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);
-			warehouseRecord.setC_BPartner_ID(2155894);
+			warehouseRecord.setC_BPartner_ID(2155894); //dev-note: org BPartner
 			warehouseRecord.setC_BPartner_Location_ID(2202690);
 			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
 

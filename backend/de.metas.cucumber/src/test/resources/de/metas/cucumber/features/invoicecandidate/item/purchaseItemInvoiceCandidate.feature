@@ -164,7 +164,7 @@ Feature: Items invoice candidates
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
     And validate the created material receipt lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | shipmentLine_1            | material_receipt_1    | p_1                     | 100         | true      |
+      | receiptLine1              | material_receipt_1    | p_1                     | 100         | true      |
     And after not more than 30s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | ic_1                              | ol_1                      |
@@ -177,24 +177,24 @@ Feature: Items invoice candidates
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 0                |
-    And validate the created shipments
+    And validate the created material receipt
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | false     | IP        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
-      | iciol_1                                    | ic_1                                  | shipmentLine_1                | 0                |
+      | iciol_1                                    | ic_1                                  | receiptLine1                  | 0                |
 
     When the material receipt identified by material_receipt_1 is completed
 
     And validate invoice candidate
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyDelivered |
       | ic_1                              | 100              |
-    And validate the created shipments
+    And validate the created material receipt
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | processed | docStatus |
       | material_receipt_1    | endvendor_1              | l_2                               | 2021-04-17  | true      | CO        |
     And validate created C_InvoiceCandidate_InOutLine
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
-      | iciol_1                                    | ic_1                                  | shipmentLine_1                | 100              |
+      | iciol_1                                    | ic_1                                  | receiptLine1                  | 100              |
 
   @Id:03082022-PIC.230
   @from:cucumber

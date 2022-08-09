@@ -63,15 +63,15 @@ public class M_HU_Attribute_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
-			final String mHUIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_HU hu = huTable.get(mHUIdentifier);
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_HU hu = huTable.get(huIdentifier);
 
-			final String mAttributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_Attribute mAttribute = attributeTable.get(mAttributeIdentifier);
+			final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Attribute attribute = attributeTable.get(attributeIdentifier);
 
 			final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(row, "OPT." + I_M_HU_Attribute.COLUMNNAME_ValueNumber);
 
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeCode.ofString(mAttribute.getValue()), valueNumber, null);
+			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeCode.ofString(attribute.getValue()), valueNumber, null);
 		}
 	}
 

@@ -39,6 +39,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
@@ -63,9 +64,18 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 	@And("validate created C_InvoiceCandidate_InOutLine")
 	public void validate_C_InvoiceCandidate_InOutLine(@NonNull final DataTable dataTable) throws InterruptedException
 	{
+		Runnable logContext = () -> {};
+
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			StepDefUtil.tryAndWait(30, 500, () -> isValid_C_InvoiceCandidate_InOutLine(row));
+			final String invoiceCandidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(invoiceCandidateIdentifier))
+			{
+				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandidateIdentifier);
+				logContext = () -> logCurrentContext(invoiceCandidate.getC_Invoice_Candidate_ID());
+			}
+
+			StepDefUtil.tryAndWait(120, 500, () -> isValid_C_InvoiceCandidate_InOutLine(row), logContext);
 		}
 	}
 
@@ -106,5 +116,18 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 		invoiceCandInOuLineTable.putOrReplace(invoiceCandidateInOutLineIdentifier, invoiceCandidateInOutLine);
 
 		return true;
+	}
+
+	private String logCurrentContext(@NonNull final Integer invoiceCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.create()
+				.stream()
+				.map(inoutLineAllocation -> "[C_InvoiceCandidate_InOutLine_ID - " + inoutLineAllocation.getC_InvoiceCandidate_InOutLine_ID()
+						+ ": C_Invoice_Candidate_ID: " + inoutLineAllocation.getC_Invoice_Candidate_ID()
+						+ " , M_InOut_Line_ID: " + inoutLineAllocation.getM_InOutLine_ID()
+						+ " , QtyDelivered: " + inoutLineAllocation.getQtyDelivered() + "]")
+				.collect(Collectors.joining(","));
 	}
 }
