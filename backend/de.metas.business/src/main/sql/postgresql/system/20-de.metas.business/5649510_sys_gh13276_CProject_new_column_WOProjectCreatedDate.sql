@@ -10,3 +10,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 2022-08-05T06:27:38.511Z
 /* DDL */  select update_Column_Translation_From_AD_Element(581100)
 ;
+
+-- 2022-08-05T14:45:15.163Z
+/* DDL */ SELECT public.db_alter_table('C_Project','ALTER TABLE public.C_Project ADD COLUMN WOProjectCreatedDate TIMESTAMP WITHOUT TIME ZONE')
+;
