@@ -287,7 +287,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@Then("validate invoice candidate")
-	public void validate_invoice_candidate(@NonNull final DataTable dataTable) throws InterruptedException
+	public void validate_invoice_candidate(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
@@ -297,7 +297,7 @@ public class C_Invoice_Candidate_StepDef
 
 			try
 			{
-				final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(90, 500, () -> isInvoiceCandidateUpdated(row));
+				final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(120, 500, () -> isInvoiceCandidateUpdated(row));
 
 				InterfaceWrapperHelper.refresh(invoiceCandidate);
 
@@ -394,10 +394,13 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(90, 1000, () -> isInvoiceCandidateUpdated(row));
+			final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
 
 			try
 			{
+				final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(120, 1000, () -> isInvoiceCandidateUpdated(row));
+
 				final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 				assertThat(invoiceCandidate.getQtyToInvoice()).isEqualTo(qtyToInvoice);
 
@@ -457,9 +460,9 @@ public class C_Invoice_Candidate_StepDef
 			}
 			catch (Exception e)
 			{
-				final List<String> invCandidateDetails = DB.retrieveRows("select * from c_invoice_candidate where c_invoice_candidate_id = " + invoiceCandidate.getC_Invoice_Candidate_ID(),
+				final List<String> invCandidateDetails = DB.retrieveRows("select * from c_invoice_candidate where c_invoice_candidate_id = " + invoiceCandidateRecord.getC_Invoice_Candidate_ID(),
 																		 new ArrayList<>(),
-																		 (resultSet) -> "[c_invoice_candidate_id:" + invoiceCandidate.getC_Invoice_Candidate_ID() + ":" + "QtyToInvoice" + resultSet.getBigDecimal("QtyToInvoice") + "]");
+																		 (resultSet) -> "[c_invoice_candidate_id:" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + ":" + "QtyToInvoice" + resultSet.getBigDecimal("QtyToInvoice") + "]");
 				throw AdempiereException.wrapIfNeeded(e)
 						.appendParametersToMessage()
 						.setParameter("InvoiceCandidateDetails", String.join(",", invCandidateDetails));
