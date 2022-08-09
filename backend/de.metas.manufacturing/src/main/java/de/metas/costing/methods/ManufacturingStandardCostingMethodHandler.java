@@ -11,7 +11,6 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -21,8 +20,6 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.material.planning.IResourceProductService;
-import org.eevolution.api.PPOrderBOMLineId;
-import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -37,6 +34,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -156,14 +154,6 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Optional<CostAmount> calculateSeedCosts(
-			final CostSegment costSegment,
-			final OrderLineId orderLineId)
-	{
-		return Optional.empty();
 	}
 
 	private CurrentCost getCurrentCost(final CostDetailCreateRequest request)

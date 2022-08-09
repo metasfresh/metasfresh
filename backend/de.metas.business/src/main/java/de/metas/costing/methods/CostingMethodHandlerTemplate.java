@@ -1,20 +1,15 @@
 package de.metas.costing.methods;
 
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.order.OrderLineId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -63,12 +58,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
-	{
-		return Optional.empty();
-	}
-
-	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
@@ -82,7 +71,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 	}
 
-	private final CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
 	{
 		//
 		// Create new cost detail
@@ -158,7 +147,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected CostDetailCreateResult createCostForProjectIssue(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForProjectIssue(@SuppressWarnings("unused") final CostDetailCreateRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}

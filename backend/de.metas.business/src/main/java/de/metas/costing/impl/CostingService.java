@@ -38,7 +38,6 @@ import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -358,23 +357,7 @@ public class CostingService implements ICostingService
 			final CostingDocumentRef documentRef)
 	{
 		final Set<String> handledTableNames = handler.getHandledTableNames();
-		return handledTableNames.contains(CostingMethodHandler.ANY)
-				|| handledTableNames.contains(documentRef.getTableName());
-	}
-
-	@Override
-	public Optional<CostAmount> calculateSeedCosts(
-			final CostSegment costSegment,
-			final CostingMethod costingMethod,
-			final OrderLineId orderLineId)
-	{
-		return getCostingMethodHandlers(costingMethod)
-				.stream()
-				.map(handler -> handler.calculateSeedCosts(costSegment, orderLineId))
-				.filter(Objects::nonNull)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.reduce(CostAmount::add);
+		return handledTableNames.contains(documentRef.getTableName());
 	}
 
 	@Override
@@ -390,7 +373,7 @@ public class CostingService implements ICostingService
 				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId())
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						costDetail -> costDetail.getCostElementId(),
+						CostDetail::getCostElementId,
 						costDetail -> costDetail));
 
 		final ArrayList<CostDetailCreateResult> costDetailCreateResults = new ArrayList<>();

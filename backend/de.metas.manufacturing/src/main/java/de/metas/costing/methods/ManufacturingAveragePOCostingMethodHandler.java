@@ -9,7 +9,6 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -18,9 +17,6 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IResourceProductService;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -31,7 +27,9 @@ import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -242,8 +240,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	private CostDetailCreateResult createActivityControl(
-			final CostDetailCreateRequest request,
-			final Duration totalDuration)
+			final CostDetailCreateRequest ignoredRequest,
+			final Duration ignoredTotalDuration)
 	{
 		// TODO Auto-generated method stub
 		throw new AdempiereException("Computing activity costs is not yet supported");
@@ -254,14 +252,6 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	{
 		// TODO
 		throw new AdempiereException("Voiding costs is not yet supported");
-	}
-
-	@Override
-	public Optional<CostAmount> calculateSeedCosts(
-			final CostSegment costSegment,
-			final OrderLineId orderLineId)
-	{
-		return Optional.empty();
 	}
 
 	@Override
