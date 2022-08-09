@@ -1,4 +1,5 @@
-DROP VIEW IF EXISTS Fact_Acct_Transactions_View;
+DROP VIEW Fact_Acct_Transactions_View
+;
 
 CREATE VIEW Fact_Acct_Transactions_View
             (fact_acct_id,
