@@ -32,20 +32,16 @@ import javax.annotation.Nullable;
 @Value
 public class CostRevaluationLineId implements RepoIdAware
 {
-
 	int repoId;
 
-	@NonNull
-	CostRevaluationId costRevaluationId;
+	@NonNull CostRevaluationId costRevaluationId;
 
-	public static CostRevaluationLineId ofRepoId(@NonNull final CostRevaluationId costRevaluationId
-			, final int costRevaluationLineId)
+	public static CostRevaluationLineId ofRepoId(@NonNull final CostRevaluationId costRevaluationId, final int costRevaluationLineId)
 	{
 		return new CostRevaluationLineId(costRevaluationId, costRevaluationLineId);
 	}
 
-	public static CostRevaluationLineId ofRepoId(final int costRevaluationId
-			, final int costRevaluationLineId)
+	public static CostRevaluationLineId ofRepoId(final int costRevaluationId, final int costRevaluationLineId)
 	{
 		return new CostRevaluationLineId(CostRevaluationId.ofRepoId(costRevaluationId), costRevaluationLineId);
 	}
@@ -59,7 +55,7 @@ public class CostRevaluationLineId implements RepoIdAware
 
 	private CostRevaluationLineId(@NonNull final CostRevaluationId costRevaluationId, final int costRevaluationLineId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(costRevaluationLineId, "costRevaluationLineId");
+		this.repoId = Check.assumeGreaterThanZero(costRevaluationLineId, "M_CostRevaluationLine_ID");
 		this.costRevaluationId = costRevaluationId;
 	}
 

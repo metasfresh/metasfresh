@@ -2,10 +2,13 @@ package de.metas.costrevaluation.impl;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostElementId;
+import de.metas.document.engine.DocStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -37,4 +40,7 @@ public class CostRevaluation
 	@NonNull AcctSchemaId acctSchemaId;
 	@NonNull CostElementId costElementId;
 	@NonNull ClientId clientId;
+	@NonNull Instant evaluationStartDate;
+
+	@NonNull DocStatus docStatus;
 }

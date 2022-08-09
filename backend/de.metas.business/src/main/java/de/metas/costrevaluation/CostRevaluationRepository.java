@@ -1,20 +1,29 @@
 package de.metas.costrevaluation;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CurrentCost;
 import de.metas.costrevaluation.impl.CostRevaluation;
 import de.metas.costrevaluation.impl.CostRevaluationId;
+import de.metas.costrevaluation.impl.CostRevaluationLine;
+import de.metas.costrevaluation.impl.CostRevaluationLineId;
+import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostRevaluation;
@@ -23,46 +32,37 @@ import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Repository
 public class CostRevaluationRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public List<I_M_CostRevaluationLine> retrieveLinesByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
-	{
-		return queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_CostRevaluationLine.COLUMN_M_CostRevaluation_ID, costRevaluationId)
-				.orderBy(I_M_CostRevaluationLine.COLUMN_M_CostRevaluationLine_ID)
-				.create()
-				.list();
-	}
-
 	@NonNull
 	public CostRevaluation getById(@NonNull final CostRevaluationId costRevaluationId)
 	{
-		final I_M_CostRevaluation record = getRecordById(costRevaluationId);
+		final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId, I_M_CostRevaluation.class);
+		if (record == null)
+		{
+			throw new AdempiereException("No record found for " + costRevaluationId);
+		}
 
 		return CostRevaluation.builder()
 				.costRevaluationId(costRevaluationId)
-				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getM_CostElement_ID()))
+				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
+				.evaluationStartDate(record.getEvaluationStartDate().toInstant())
+				.docStatus(DocStatus.ofCode(record.getDocStatus()))
 				.build();
 	}
 
-	I_M_CostRevaluation getRecordById(@NonNull final CostRevaluationId costRevaluationId)
-	{
-		return InterfaceWrapperHelper.load(costRevaluationId, I_M_CostRevaluation.class);
-	}
-
-	public void createCostRevaluationLinesForCurrentCosts(
+	public void createLinesForCurrentCosts(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final List<CurrentCost> currentCosts)
 	{
-		final HashMap<CostRevaluationLineKey, I_M_CostRevaluationLine> existingRecords = retrieveLinesByCostRevaluationId(costRevaluationId)
-				.stream()
+		final HashMap<CostRevaluationLineKey, I_M_CostRevaluationLine> existingRecords = streamLineRecordsByCostRevaluationId(costRevaluationId)
 				.collect(GuavaCollectors.toHashMapByKey(CostRevaluationRepository::extractCostRevaluationLineKey));
 
 		for (final CurrentCost currentCost : currentCosts)
@@ -120,4 +120,35 @@ public class CostRevaluationRepository
 
 		record.setCurrentQty(from.getCurrentQty().toBigDecimal());
 	}
+
+	private Stream<I_M_CostRevaluationLine> streamLineRecordsByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMN_M_CostRevaluation_ID, costRevaluationId)
+				.orderBy(I_M_CostRevaluationLine.COLUMN_M_CostRevaluationLine_ID)
+				.create()
+				.stream();
+	}
+
+	public List<CostRevaluationLine> getLinesByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		return streamLineRecordsByCostRevaluationId(costRevaluationId)
+				.map(CostRevaluationRepository::toCostRevaluationLine)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static CostRevaluationLine toCostRevaluationLine(@NonNull final I_M_CostRevaluationLine record)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+
+		return CostRevaluationLine.builder()
+				.id(CostRevaluationLineId.ofRepoId(record.getM_CostRevaluation_ID(), record.getM_CostRevaluationLine_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.currentQty(Quantitys.create(record.getCurrentQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.currentCostPrice(CostAmount.of(record.getCurrentCostPrice(), currencyId))
+				.newCostPrice(CostAmount.of(record.getNewCostPrice(), currencyId))
+				.build();
+	}
+
 }

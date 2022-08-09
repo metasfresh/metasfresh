@@ -30,13 +30,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
-import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 public class CostRevaluationDocumentHandler implements DocumentHandler
 {
@@ -78,8 +76,7 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
 
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(costRevaluation.getM_CostRevaluation_ID());
-		final List<I_M_CostRevaluationLine> lines = costRevaluationRepo.retrieveLinesByCostRevaluationId(costRevaluationId);
-		if (lines.isEmpty())
+		if (costRevaluationRepo.getLinesByCostRevaluationId(costRevaluationId).isEmpty())
 		{
 			throw new AdempiereException("@NoLines@");
 		}

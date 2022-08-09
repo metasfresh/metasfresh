@@ -1,6 +1,6 @@
 package de.metas.costrevaluation.impl;
 
-import de.metas.costing.CostPrice;
+import de.metas.costing.CostAmount;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -33,10 +33,10 @@ import lombok.Value;
 @Builder
 public class CostRevaluationLine
 {
-	@NonNull CostRevaluationId costRevaluationId;
-	@NonNull ProductId productId;
-	@NonNull CostPrice currentCostPrice;
-	@NonNull Quantity currentQty;
 	@NonNull CostRevaluationLineId id;
-	@NonNull CostPrice newCostPrice;
+
+	@NonNull ProductId productId;
+	@NonNull Quantity currentQty;
+	@NonNull CostAmount currentCostPrice;
+	@NonNull CostAmount newCostPrice;
 }
