@@ -32,7 +32,6 @@ import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.leichmehl.ReplacementSource;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
@@ -58,9 +57,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.model.I_AD_UserGroup;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.I_AD_UserGroup;
 import org.json.JSONException;
 import org.json.JSONObject;
 

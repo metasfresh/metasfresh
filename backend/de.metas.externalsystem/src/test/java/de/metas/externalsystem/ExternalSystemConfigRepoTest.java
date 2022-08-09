@@ -23,8 +23,6 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
