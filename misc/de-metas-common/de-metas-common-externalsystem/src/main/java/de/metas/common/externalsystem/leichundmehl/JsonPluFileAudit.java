@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de-metas-common-externalsystem
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,35 +20,45 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
+package de.metas.common.externalsystem.leichundmehl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
-import java.time.Instant;
 import java.util.List;
 
-@Builder
 @Value
-@JsonDeserialize(builder = JsonPriceListVersion.JsonPriceListVersionBuilder.class)
-public class JsonPriceListVersion
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(builder = JsonPluFileAudit.JsonPluFileAuditBuilder.class)
+public class JsonPluFileAudit
 {
 	@NonNull
-	@JsonProperty("metasfreshId")
-	Integer id;
+	@JsonProperty("fileName")
+	String fileName;
 
 	@NonNull
-	@JsonProperty("name")
-	String name;
+	@JsonProperty("missingKeys")
+	List<String> missingKeys;
 
 	@NonNull
-	@JsonProperty("validFrom")
-	Instant validFrom;
+	@JsonProperty("processedKeys")
+	List<JsonProcessedKeys> processedKeys;
 
-	@NonNull
-	@JsonProperty("prices")
-	List<JsonPrice> prices;
+	@Builder
+	@JsonCreator
+	public JsonPluFileAudit(
+			@JsonProperty("fileName") @NonNull final String fileName,
+			@JsonProperty("missingKeys") @NonNull @Singular final List<String> missingKeys,
+			@JsonProperty("processedKeys") @NonNull @Singular final List<JsonProcessedKeys> processedKeys)
+	{
+		this.fileName = fileName;
+		this.missingKeys = missingKeys;
+		this.processedKeys = processedKeys;
+	}
 }
