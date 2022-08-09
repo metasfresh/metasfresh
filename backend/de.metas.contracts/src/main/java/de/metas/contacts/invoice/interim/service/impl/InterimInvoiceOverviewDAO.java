@@ -20,16 +20,17 @@
  * #L%
  */
 
-package de.metas.contacts.partialpayment.service.impl;
+package de.metas.contacts.invoice.interim.service.impl;
 
-import de.metas.contacts.partialpayment.InterimInvoiceOverview;
-import de.metas.contacts.partialpayment.InterimInvoiceOverviewId;
-import de.metas.contacts.partialpayment.service.IInterimInvoiceOverviewDAO;
+import de.metas.contacts.invoice.interim.InterimInvoiceOverview;
+import de.metas.contacts.invoice.interim.InterimInvoiceOverviewId;
+import de.metas.contacts.invoice.interim.service.IInterimInvoiceOverviewDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_InterimInvoice_FlatrateTerm;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -56,9 +57,13 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 				.orElse(null);
 	}
 
-	public void save(@NonNull final InterimInvoiceOverview interimInvoiceOverview)
+	public InterimInvoiceOverview save(@NonNull final InterimInvoiceOverview interimInvoiceOverview)
 	{
-		InterfaceWrapperHelper.save(toDbObject(interimInvoiceOverview));
+		final I_C_InterimInvoice_FlatrateTerm model = toDbObject(interimInvoiceOverview);
+		InterfaceWrapperHelper.save(model);
+		return interimInvoiceOverview.toBuilder()
+				.id(InterimInvoiceOverviewId.ofRepoId(model.getC_InterimInvoice_FlatrateTerm_ID()))
+				.build();
 	}
 
 	private InterimInvoiceOverview fromDbObject(@NonNull final I_C_InterimInvoice_FlatrateTerm dbObject)
@@ -69,6 +74,7 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 				.orderLineId(OrderLineId.ofRepoId(dbObject.getC_OrderLine_ID()))
 				.withholdingInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_Invoice_Candidate_Withholding_ID()))
 				.partialPaymentInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_Interim_Invoice_Candidate_ID()))
+				.productId(ProductId.ofRepoId(dbObject.getM_Product_ID()))
 				.uomId(UomId.ofRepoIdOrNull(dbObject.getC_UOM_ID()))
 				.currencyId(CurrencyId.ofRepoIdOrNull(dbObject.getC_Currency_ID()))
 				.qtyOrdered(dbObject.getQtyOrdered())
@@ -84,6 +90,7 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 		dbObject.setC_OrderLine_ID(object.getOrderLineId().getRepoId());
 		dbObject.setC_Invoice_Candidate_Withholding_ID(InvoiceCandidateId.toRepoId(object.getWithholdingInvoiceCandidateId()));
 		dbObject.setC_Interim_Invoice_Candidate_ID(InvoiceCandidateId.toRepoId(object.getPartialPaymentInvoiceCandidateId()));
+		dbObject.setM_Product_ID(ProductId.toRepoId(object.getProductId()));
 		dbObject.setC_UOM_ID(UomId.toRepoId(object.getUomId()));
 		dbObject.setC_Currency_ID(CurrencyId.toRepoId(object.getCurrencyId()));
 		dbObject.setQtyOrdered(object.getQtyOrdered());

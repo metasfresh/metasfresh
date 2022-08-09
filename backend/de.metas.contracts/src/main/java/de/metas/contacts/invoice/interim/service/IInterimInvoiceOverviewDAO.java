@@ -20,25 +20,16 @@
  * #L%
  */
 
-package de.metas.contacts.partialpayment;
+package de.metas.contacts.invoice.interim.service;
 
-import de.metas.inout.InOutAndLineId;
-import de.metas.invoice.InvoiceLineId;
-import lombok.Builder;
+import de.metas.contacts.invoice.interim.InterimInvoiceOverview;
+import de.metas.contacts.invoice.interim.InterimInvoiceOverviewId;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class InterimInvoiceOverviewLine
+public interface IInterimInvoiceOverviewDAO extends ISingletonService
 {
-	@Nullable
-	InterimInvoiceOverviewLineId id;
-	@NonNull InterimInvoiceOverviewId interimInvoiceOverviewId;
-	@Nullable
-	InOutAndLineId inOutAndLineId;
-	@Nullable
-	InvoiceLineId invoiceLineId;
+	InterimInvoiceOverview getById(@NonNull final InterimInvoiceOverviewId id);
+
+	InterimInvoiceOverview save(@NonNull final InterimInvoiceOverview interimInvoiceOverview);
 }

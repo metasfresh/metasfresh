@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contacts.partialpayment;
+package de.metas.contacts.invoice.interim;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -64,7 +64,7 @@ public class InterimInvoiceOverviewId implements RepoIdAware
 
 	private InterimInvoiceOverviewId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_PartialPayment_Overview_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_InterimInvoice_Overview_ID");
 	}
 
 	@Override

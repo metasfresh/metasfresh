@@ -20,16 +20,18 @@
  * #L%
  */
 
-package de.metas.contacts.partialpayment.service;
+package de.metas.contacts.invoice.interim;
 
-import de.metas.contacts.partialpayment.InterimInvoiceOverview;
-import de.metas.contacts.partialpayment.InterimInvoiceOverviewId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import de.metas.calendar.CalendarId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Value;
 
-public interface IInterimInvoiceOverviewDAO extends ISingletonService
+@Value
+@Builder
+public class InterimInvoiceSettings
 {
-	InterimInvoiceOverview getById(@NonNull final InterimInvoiceOverviewId id);
-
-	void save(@NonNull final InterimInvoiceOverview interimInvoiceOverview);
+	InterimInvoiceSettingsId id;
+	CalendarId harvestingCalendarId;
+	ProductId withholdingProductId;
 }

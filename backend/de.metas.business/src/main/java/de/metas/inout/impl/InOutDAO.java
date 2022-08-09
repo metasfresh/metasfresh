@@ -464,7 +464,7 @@ public class InOutDAO implements IInOutDAO
 				.collect(ImmutableMap.toImmutableMap(inOut -> InOutId.ofRepoId(inOut.getM_InOut_ID()), Function.identity()));
 	}
 
-	public Stream<InOutLine> retrieveInOutStreamBy(@NonNull final InOutLineQuery inOutLineQuery)
+	public Collection<InOutLine> retrieveInOutLinesBy(@NonNull final InOutLineQuery inOutLineQuery)
 	{
 		final IQueryBuilder<I_M_InOut> query = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addOnlyActiveRecordsFilter();
@@ -485,12 +485,12 @@ public class InOutDAO implements IInOutDAO
 		final Timestamp dateFrom = inOutLineQuery.getDateFrom();
 		if (bPartnerId != null)
 		{
-			query.addCompareFilter(I_M_InOut.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL,dateFrom);
+			query.addCompareFilter(I_M_InOut.COLUMNNAME_Created, Operator.GREATER_OR_EQUAL, dateFrom);
 		}
 		final Timestamp dateTo = inOutLineQuery.getDateTo();
 		if (bPartnerId != null)
 		{
-			query.addCompareFilter(I_M_InOut.COLUMNNAME_Created, Operator.LESS_OR_EQUAL,dateTo);
+			query.addCompareFilter(I_M_InOut.COLUMNNAME_Created, Operator.LESS_OR_EQUAL, dateTo);
 		}
 
 		final Collection<InOutDocStatus> docStatuses = inOutLineQuery.getDocStatuses();
@@ -502,7 +502,8 @@ public class InOutDAO implements IInOutDAO
 		return query.andCollect(I_M_InOut.COLUMN_M_InOut_ID, I_M_InOutLine.class)
 				.create()
 				.stream()
-				.map(this::fromDbObject);
+				.map(this::fromDbObject)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private InOutLine fromDbObject(final I_M_InOutLine m_inOutLine)

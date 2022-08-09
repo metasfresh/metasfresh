@@ -20,13 +20,14 @@
  * #L%
  */
 
-package de.metas.contacts.partialpayment;
+package de.metas.contacts.invoice.interim;
 
 import de.metas.calendar.CalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,10 +37,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class InterimInvoiceOverview
 {
-	@Nullable InterimInvoiceOverviewId id;
+	@Nullable
+	InterimInvoiceOverviewId id;
 	@NonNull FlatrateTermId flatrateTermId;
 	@NonNull OrderLineId orderLineId;
 	@Nullable
@@ -48,6 +50,8 @@ public class InterimInvoiceOverview
 	InvoiceCandidateId partialPaymentInvoiceCandidateId;
 	@Nullable
 	UomId uomId;
+	@NonNull
+	ProductId productId;
 	@Nullable
 	CurrencyId currencyId;
 	@Nullable

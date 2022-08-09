@@ -20,12 +20,12 @@
  * #L%
  */
 
-package de.metas.contacts.partialpayment.service.impl;
+package de.metas.contacts.invoice.interim.service.impl;
 
-import de.metas.contacts.partialpayment.InterimInvoiceOverviewId;
-import de.metas.contacts.partialpayment.InterimInvoiceOverviewLine;
-import de.metas.contacts.partialpayment.InterimInvoiceOverviewLineId;
-import de.metas.contacts.partialpayment.service.IInterimInvoiceOverviewLineDAO;
+import de.metas.contacts.invoice.interim.service.IInterimInvoiceOverviewLineDAO;
+import de.metas.contacts.invoice.interim.InterimInvoiceOverviewId;
+import de.metas.contacts.invoice.interim.InterimInvoiceOverviewLine;
+import de.metas.contacts.invoice.interim.InterimInvoiceOverviewLineId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;

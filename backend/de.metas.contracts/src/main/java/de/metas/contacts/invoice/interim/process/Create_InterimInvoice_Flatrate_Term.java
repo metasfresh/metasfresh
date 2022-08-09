@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.contacts.partialpayment.process;
+package de.metas.contacts.invoice.interim.process;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contacts.partialpayment.command.InterimInvoiceFlatrateTermCreateCommand;
+import de.metas.contacts.invoice.interim.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contracts.ConditionsId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
