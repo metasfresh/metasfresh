@@ -29,14 +29,8 @@ import lombok.NonNull;
 @Builder
 public class CostDetailAdjustment
 {
-	@NonNull
-	CostDetailId costDetailId;
-
-	@NonNull
-	CostAmount amt;
-	@NonNull
-	Quantity qty;
-
-	@NonNull
-	CostDetailPreviousAmounts previousAmounts;
+	@NonNull CostDetailId costDetailId;
+	@NonNull CostAmount amt;
+	@NonNull Quantity qty;
+	@NonNull CostDetailPreviousAmounts previousAmounts;
 }
