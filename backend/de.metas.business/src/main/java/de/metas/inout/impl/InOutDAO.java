@@ -16,6 +16,7 @@ import de.metas.inout.InOutLineQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -506,13 +507,15 @@ public class InOutDAO implements IInOutDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private InOutLine fromDbObject(final I_M_InOutLine m_inOutLine)
+	private InOutLine fromDbObject(final I_M_InOutLine inOutLine)
 	{
 
 		return InOutLine.builder()
-				.id(InOutId.ofRepoId(m_inOutLine.getM_InOut_ID()))
-				.productId(ProductId.ofRepoId(m_inOutLine.getM_Product_ID()))
-				.qty(Quantity.of(m_inOutLine.getQtyDeliveredCatch(), uomDao.getById(m_inOutLine.getC_UOM_ID())))
+				.id(InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID()))
+				.inOutId(InOutId.ofRepoId(inOutLine.getM_InOut_ID()))
+				.productId(ProductId.ofRepoId(inOutLine.getM_Product_ID()))
+				.qty(Quantity.of(inOutLine.getQtyDeliveredCatch(), uomDao.getById(inOutLine.getC_UOM_ID())))
+				.orderLineId(OrderLineId.ofRepoId(inOutLine.getC_OrderLine_ID()))
 				.build();
 	}
 }

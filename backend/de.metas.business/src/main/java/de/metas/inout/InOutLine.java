@@ -22,6 +22,7 @@
 
 package de.metas.inout;
 
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -31,7 +32,9 @@ import lombok.Value;
 @Builder
 public class InOutLine
 {
-	InOutId id;
+	InOutLineId id;
+	InOutId inOutId;
 	ProductId productId;
+	OrderLineId orderLineId;
 	Quantity qty;
 }

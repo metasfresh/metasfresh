@@ -61,6 +61,7 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 	{
 		final I_C_InterimInvoice_FlatrateTerm model = toDbObject(interimInvoiceOverview);
 		InterfaceWrapperHelper.save(model);
+		//pick up ID after save
 		return interimInvoiceOverview.toBuilder()
 				.id(InterimInvoiceOverviewId.ofRepoId(model.getC_InterimInvoice_FlatrateTerm_ID()))
 				.build();
