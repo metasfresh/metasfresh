@@ -36,6 +36,10 @@ const convertResolvedQueryToItemData = (resolvedQuery) => {
     result.push(resolvedQuery.onlyCustomer);
   }
 
+  if (resolvedQuery.onlyResponsible) {
+    result.push(resolvedQuery.onlyResponsible);
+  }
+
   return result;
 };
 
