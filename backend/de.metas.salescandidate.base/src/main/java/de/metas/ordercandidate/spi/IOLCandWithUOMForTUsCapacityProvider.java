@@ -3,6 +3,7 @@ package de.metas.ordercandidate.spi;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,16 +36,17 @@ import de.metas.quantity.Quantity;
 public interface IOLCandWithUOMForTUsCapacityProvider
 {
 	/**
-	 * @param olCand may not be {@code null} and shall not be changed by this method.
+	 * @param olCand shall not be changed by this method.
 	 * @return {@code true} iff the given {@code olCand} (because of it's UOM) requires this provider to compute the CU-per-TU capacity.
 	 */
-	boolean isProviderNeededForOLCand(I_C_OLCand olCand);
+	boolean isProviderNeededForOLCand(@NonNull I_C_OLCand olCand);
 
 	/**
-	 * Assumes that {@link #isProviderNeededForOLCand(I_C_OLCand)} was called and returned {@code true} before.
+	 * Assume that {@link #isProviderNeededForOLCand(I_C_OLCand)} was called and returned {@code true} before.
 	 *
-	 * @param olCand may not be {@code null} and shall not be changed by this method.
-	 * @return the number of CUs that fit into the {@code olCand}'s TU, in the respective product's stock-UOM. Throw a user-friendly exception if the capacity can't be found.
+	 * @param olCand shall not be changed by this method.
+	 * @return the number of CUs that fit into the {@code olCand}'s TU, in the respective product's stock-UOM. Might also be {@link Quantity#isInfinite()}. Throw a user-friendly exception if the capacity can't be found.
 	 */
-	Quantity computeQtyItemCapacity(I_C_OLCand olCand);
+	@NonNull
+	Quantity computeQtyItemCapacity(@NonNull I_C_OLCand olCand);
 }

@@ -1,13 +1,9 @@
 package de.metas.ui.web.picking;
 
-import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterConverter;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.springframework.stereotype.Component;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.picking.model.X_M_Picking_Config;
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterConverter;
 import de.metas.ui.web.view.SqlViewCustomizer;
 import de.metas.ui.web.view.ViewProfile;
 import de.metas.ui.web.view.ViewProfileId;
@@ -24,6 +20,9 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Services;
+import org.adempiere.ad.column.ColumnSql;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L

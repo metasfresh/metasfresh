@@ -1,12 +1,16 @@
 package de.metas.acct.aggregation.impl;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.UUID;
-
+import ch.qos.logback.classic.Level;
+import de.metas.acct.aggregation.IFactAcctLogDAO;
+import de.metas.acct.aggregation.IFactAcctLogIterable;
+import de.metas.acct.aggregation.IFactAcctSummaryKey;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.model.I_Fact_Acct_EndingBalance;
+import de.metas.acct.model.I_Fact_Acct_Log;
+import de.metas.acct.model.I_Fact_Acct_Summary;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -21,17 +25,12 @@ import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import ch.qos.logback.classic.Level;
-import de.metas.acct.aggregation.IFactAcctLogDAO;
-import de.metas.acct.aggregation.IFactAcctLogIterable;
-import de.metas.acct.aggregation.IFactAcctSummaryKey;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.model.I_Fact_Acct_EndingBalance;
-import de.metas.acct.model.I_Fact_Acct_Log;
-import de.metas.acct.model.I_Fact_Acct_Summary;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.UUID;
 
 /*
  * #%L

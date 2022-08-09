@@ -22,6 +22,8 @@
 
 package org.eevolution.productioncandidate.process;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -45,6 +47,8 @@ import java.util.Iterator;
 
 public class PP_Order_Candidate_ReOpenSelection extends JavaProcess implements IProcessPrecondition
 {
+	private static final AdMessageKey MSG_SELECTED_CLOSED_CANDIDATE = AdMessageKey.of("org.eevolution.productioncandidate.process.ClosedManufacturingCandidateSelection");
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
 
@@ -80,7 +84,8 @@ public class PP_Order_Candidate_ReOpenSelection extends JavaProcess implements I
 	{
 		if (createSelection() <= 0)
 		{
-			throw new AdempiereException("@NoSelection@");
+			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_SELECTED_CLOSED_CANDIDATE);
+			throw new AdempiereException(message);
 		}
 	}
 

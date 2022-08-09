@@ -27,4 +27,8 @@ import org.adempiere.model.I_M_ProductScalePrice;
 
 public class M_ProductScalePrice_StepDefData extends StepDefData<I_M_ProductScalePrice>
 {
+	public M_ProductScalePrice_StepDefData()
+	{
+		super(I_M_ProductScalePrice.class);
+	}
 }

@@ -65,10 +65,8 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 			return;
 		}
 
-		final ZoneId timeZone = orgDAO.getTimeZone(pricingCtx.getOrgId());
 		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(),
-				ctxPriceListVersion,
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), timeZone));
+				ctxPriceListVersion);
 
 		if (productPrice == null)
 		{
@@ -97,7 +95,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setProductId(productId);
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
-		result.setDiscountEditable(productPrice.isDiscountEditable());
+		result.setDiscountEditable(result.isDiscountEditable() && productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(priceList.isTaxIncluded());
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
@@ -131,13 +129,9 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 
 	@Nullable
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
-			final I_M_PriceList_Version ctxPriceListVersion,
-			final ZonedDateTime promisedDate)
+			final I_M_PriceList_Version ctxPriceListVersion)
 	{
-		return ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId),
-				promisedDate);
+		return ProductPrices.retrieveMainProductPriceOrNull(ctxPriceListVersion, productId);
 	}
 
 	private I_M_PriceList_Version getOrLoadPriceListVersion(

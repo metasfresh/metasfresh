@@ -8,7 +8,7 @@ Method | HTTP request | Description
 
 <a name="getUser"></a>
 # **getUser**
-> Users getUser(albertaApiKey, tenant, _id)
+> Users getUser(albertaApiKey, _id)
 
 Daten eines einzelnen Benutzers abrufen
 
@@ -23,10 +23,9 @@ Szenario - das WaWi fragt bei Alberta nach, wie die Daten eines Benutzers mit de
 
 UserApi apiInstance = new UserApi();
 String albertaApiKey = "albertaApiKey_example"; // String | 
-String tenant = "tenant_example"; // String | 
 String _id = "_id_example"; // String | eindeutige id des Benutzers
 try {
-    Users result = apiInstance.getUser(albertaApiKey, tenant, _id);
+    Users result = apiInstance.getUser(albertaApiKey, _id);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling UserApi#getUser");
@@ -39,7 +38,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albertaApiKey** | **String**|  |
- **tenant** | **String**|  |
  **_id** | **String**| eindeutige id des Benutzers |
 
 ### Return type

@@ -16,16 +16,20 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.impl.AcctSchemaPeriodControl;
+import de.metas.cache.CCache;
+import de.metas.calendar.CalendarId;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.IPeriodBL;
+import de.metas.calendar.IPeriodDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,19 +43,14 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.api.impl.AcctSchemaPeriodControl;
-import de.metas.cache.CCache;
-import de.metas.calendar.CalendarId;
-import de.metas.calendar.ICalendarBL;
-import de.metas.calendar.IPeriodBL;
-import de.metas.calendar.IPeriodDAO;
-import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.util.Services;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *  Calendar Period Model
@@ -169,7 +168,7 @@ public class MPeriod extends X_C_Period
 			+ "FROM C_Period "
 			+ "WHERE C_Year_ID IN "
 				+ "(SELECT C_Year_ID FROM C_Year WHERE C_Calendar_ID= ?)"
-			+ " AND ? BETWEEN TRUNC(StartDate) AND TRUNC(EndDate)"
+			+ " AND TRUNC(?::timestamp) BETWEEN TRUNC(StartDate) AND TRUNC(EndDate)"
 			+ " AND IsActive=? AND PeriodType=?";
         
 		PreparedStatement pstmt = null;

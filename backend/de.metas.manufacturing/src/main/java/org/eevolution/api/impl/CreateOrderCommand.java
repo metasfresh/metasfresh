@@ -264,7 +264,7 @@ final class CreateOrderCommand
 	}
 
 	@Nullable
-	private BPartnerId getCustomerIdOrNull(final PPOrderCreateRequest request)
+	private BPartnerId getCustomerIdOrNull(@NonNull final PPOrderCreateRequest request)
 	{
 		if (request.getCustomerId() != null)
 		{

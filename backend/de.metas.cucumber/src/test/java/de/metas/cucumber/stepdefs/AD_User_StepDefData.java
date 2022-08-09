@@ -24,6 +24,13 @@ package de.metas.cucumber.stepdefs;
 
 import org.compiere.model.I_AD_User;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class AD_User_StepDefData extends StepDefData<I_AD_User>
 {
+	public AD_User_StepDefData()
+	{
+		super(I_AD_User.class);
+	}
 }

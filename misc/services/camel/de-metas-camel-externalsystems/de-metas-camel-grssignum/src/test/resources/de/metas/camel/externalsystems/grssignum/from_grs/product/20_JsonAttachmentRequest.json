@@ -1,0 +1,37 @@
+{
+  "orgCode": "orgCode",
+  "targets": [
+    {
+      "externalReferenceType": "BPartner",
+      "externalReferenceIdentifier": "1"
+    },
+    {
+      "externalReferenceType": "Product",
+      "externalReferenceIdentifier": "ext-GRSSignum-productId"
+    }
+  ],
+  "attachment": {
+    "fileName": "Attachment.pdf",
+    "data": "file:///directory/Attachment.pdf",
+    "type": "LocalFileURL",
+    "mimeType": null,
+    "tags": [
+      {
+        "name": "id",
+        "value": "Test"
+      },
+      {
+        "name": "validto",
+        "value": "2022-03-01T00:00:00"
+      },
+      {
+        "name": "documenttype",
+        "value": "DocumentType"
+      },
+      {
+        "name": "documentgroup",
+        "value": "DocumentGroup"
+      }
+    ]
+  }
+}

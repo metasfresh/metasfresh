@@ -73,9 +73,9 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setPricingSystemId(PricingSystemId pricingSystemId);
 
-	IEditablePricingContext setPriceListId(PriceListId priceListId);
+	IEditablePricingContext setPriceListId(@Nullable PriceListId priceListId);
 
-	IEditablePricingContext setPriceListVersionId(PriceListVersionId priceListVersionId);
+	IEditablePricingContext setPriceListVersionId(@Nullable PriceListVersionId priceListVersionId);
 
 	IEditablePricingContext setProductId(ProductId productId);
 

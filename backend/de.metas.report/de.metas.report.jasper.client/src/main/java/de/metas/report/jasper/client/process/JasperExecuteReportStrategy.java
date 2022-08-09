@@ -1,13 +1,15 @@
 package de.metas.report.jasper.client.process;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +44,10 @@ import javax.annotation.Nullable;
 @Component
 public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 {
+	private static final String SYS_CONFIG_MOCK_REPORT_SERVICE = "de.metas.report.jasper.IsMockReportService";
+	private static final String MOCK_CUCUMBER_REPORT_FILENAME = "test_filename.pdf";
+	private static final String MOCK_CUCUMBER_REPORT_DATA = "dGVzdA==";
+
 	@Override
 	public ExecuteReportResult executeReport(
 			@NonNull final ProcessInfo processInfo,
@@ -54,8 +60,7 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 				"From the given parameters, either outputType or processInfo.getJRDesiredOutputType() need to be non-null; processInfo={}",
 				processInfo);
 
-		final ReportsClient reportsClient = ReportsClient.get();
-		final ReportResult reportResult = reportsClient.report(processInfo, outputTypeEffective);
+		final ReportResult reportResult = getReportResult(processInfo, outputTypeEffective);
 		final byte[] reportData = reportResult.getReportContent();
 		final String reportFilename = reportResult.getReportFilename();
 
@@ -67,5 +72,25 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 		{
 			return ExecuteReportResult.of(reportFilename, outputTypeEffective, new ByteArrayResource(reportData));
 		}
+	}
+
+	private ReportResult getReportResult(
+			@NonNull final ProcessInfo processInfo,
+			@NonNull final OutputType outputType)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		//dev-note: workaround to mock jasper reports during cucumber tests
+		if (sysConfigBL.getBooleanValue(SYS_CONFIG_MOCK_REPORT_SERVICE, false))
+		{
+			return ReportResult.builder()
+					.outputType(outputType)
+					.reportFilename(MOCK_CUCUMBER_REPORT_FILENAME)
+					.reportContentBase64(MOCK_CUCUMBER_REPORT_DATA)
+					.build();
+		}
+
+		final ReportsClient reportsClient = ReportsClient.get();
+		return reportsClient.report(processInfo, outputType);
 	}
 }

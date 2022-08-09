@@ -449,6 +449,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
+	@Nullable
 	public HUPIItemProductId getEffectivePackingMaterialId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule huShipmentSchedule = create(shipmentSchedule, I_M_ShipmentSchedule.class);
@@ -466,6 +467,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		return extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
 	}
 
+	@Nullable
 	private HUPIItemProductId extractOrderLinePackingMaterialIdOrNull(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());

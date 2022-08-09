@@ -1,10 +1,10 @@
 package de.metas.ui.web.document.filter.sql;
 
 import de.metas.ui.web.view.descriptor.SqlAndParams;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import org.adempiere.ad.column.ColumnSql;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -66,6 +66,24 @@ public class SqlDefaultDocumentFilterConverterTest
 			final SqlSelectValue columnSql = SqlSelectValue.builder()
 					.columnNameAlias("columnAlias")
 					.virtualColumnSql(ColumnSql.ofSql("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla", "MasterTableName"))
+					.build();
+
+			final SqlOptions sqlOpts = SqlOptions.usingTableName("should_be_MasterTableName_but_DoesNotMatter");
+
+			assertThat(converter.replaceTableNameWithTableAliasIfNeeded(columnSql, sqlOpts).toSqlString())
+					.isEqualTo("(SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla)");
+		}
+
+		@Test
+		public void usingFullTableName_with_JoinTableNameOrAliasIncludingDot_in_subquery()
+		{
+			final SqlEntityBinding entityBinding = Mockito.mock(SqlEntityBinding.class);
+			Mockito.doReturn("MasterTableName").when(entityBinding).getTableName();
+
+			final SqlDefaultDocumentFilterConverter converter = SqlDefaultDocumentFilterConverter.newInstance(entityBinding);
+			final SqlSelectValue columnSql = SqlSelectValue.builder()
+					.columnNameAlias("columnAlias")
+					.virtualColumnSql(ColumnSql.ofSql("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=@JoinTableNameOrAliasIncludingDot@bla", "MasterTableName"))
 					.build();
 
 			final SqlOptions sqlOpts = SqlOptions.usingTableName("should_be_MasterTableName_but_DoesNotMatter");

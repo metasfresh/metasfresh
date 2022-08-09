@@ -25,7 +25,7 @@ public final class ApiAuditConfigsMap
 	private final ImmutableList<ApiAuditConfig> configs;
 	private final ImmutableMap<ApiAuditConfigId, ApiAuditConfig> byId;
 
-	private ApiAuditConfigsMap(final List<ApiAuditConfig> list)
+	private ApiAuditConfigsMap(@NonNull final List<ApiAuditConfig> list)
 	{
 		configs = ImmutableList.copyOf(list);
 		byId = Maps.uniqueIndex(list, ApiAuditConfig::getApiAuditConfigId);

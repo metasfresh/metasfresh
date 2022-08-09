@@ -63,13 +63,13 @@ public class AD_AttachmentEntry_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
-	private final AD_AttachmentEntry_StepDefData attachmentEntryTable;
-	private final StepDefData_File fileTable;
+	private final AD_Attachment_Entry_StepDefData attachmentEntryTable;
+	private final File_StepDefData fileTable;
 
 	public AD_AttachmentEntry_StepDef(
 			@NonNull final TestContext testContext,
-			@NonNull final AD_AttachmentEntry_StepDefData attachmentEntryTable,
-			@NonNull final StepDefData_File fileTable)
+			@NonNull final AD_Attachment_Entry_StepDefData attachmentEntryTable,
+			@NonNull final File_StepDefData fileTable)
 	{
 		this.testContext = testContext;
 		this.attachmentEntryTable = attachmentEntryTable;

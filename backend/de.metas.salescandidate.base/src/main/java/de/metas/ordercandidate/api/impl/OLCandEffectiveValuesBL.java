@@ -15,6 +15,8 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -27,6 +29,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -144,6 +147,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@NonNull
 	public UomId getRecordOrStockUOMId(@NonNull final I_C_OLCand olCandRecord)
 	{
 		if (olCandRecord.getC_UOM_ID() > 0)
@@ -159,6 +163,17 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 
 		// only if we have nothing else to work with, we go with our internal stock-UOM
 		return productBL.getStockUOMId(ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+	}
+
+	@NonNull
+	@Override
+	public Quantity getQtyItemCapacity_Effective(@NonNull final I_C_OLCand olCandRecord)
+	{
+		final BigDecimal result = olCandRecord.isManualQtyItemCapacity()
+				? olCandRecord.getQtyItemCapacity()
+				: olCandRecord.getQtyItemCapacityInternal();
+		
+		return Quantitys.create(result, ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
 	}
 
 	@Override

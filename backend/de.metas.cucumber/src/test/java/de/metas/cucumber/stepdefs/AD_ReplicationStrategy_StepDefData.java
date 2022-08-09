@@ -29,4 +29,8 @@ import org.compiere.model.I_AD_ReplicationStrategy;
  */
 public class AD_ReplicationStrategy_StepDefData extends StepDefData<I_AD_ReplicationStrategy>
 {
+	public AD_ReplicationStrategy_StepDefData()
+	{
+		super(I_AD_ReplicationStrategy.class);
+	}
 }

@@ -113,8 +113,9 @@ public class EcosioOrdersRoute
 
 					rewriteDatePromised(olCandXML.getDatePromised());
 
-					final EDIImpADInputDataSourceLookupINType dataDestinationLookup = Util.resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
-							Constants.LOOKUP_TEMPLATE_InternalName.createMandatoryValueLookup(dataDestinationInternalName));
+					final EDIImpADInputDataSourceLookupINType dataDestinationLookup =
+							Util.resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
+													  Constants.LOOKUP_TEMPLATE_InternalName.createMandatoryValueLookup(dataDestinationInternalName));
 					olCandXML.setADDataDestinationID(dataDestinationLookup);
 				})
 				.marshal(dataFormat)

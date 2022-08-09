@@ -14,6 +14,8 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -158,6 +160,7 @@ public class CacheInvalidateRequest
 		}
 	}
 
+	@Nullable
 	public TableRecordReference getRootRecordOrNull()
 	{
 		if (rootTableName != null && rootRecordId >= 0)
@@ -170,6 +173,7 @@ public class CacheInvalidateRequest
 		}
 	}
 
+	@Nullable
 	public TableRecordReference getChildRecordOrNull()
 	{
 		if (childTableName != null && childRecordId >= 0)

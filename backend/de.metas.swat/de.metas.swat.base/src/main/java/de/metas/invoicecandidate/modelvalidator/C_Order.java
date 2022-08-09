@@ -58,12 +58,12 @@ import lombok.NonNull;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_CLOSE })
-	public void invalidateInvoiceCandidates(final I_C_Order order)
-	{
-		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-		invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
-	}
+	// @DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_CLOSE })
+	// public void invalidateInvoiceCandidates(final I_C_Order order)
+	// {
+	// 	final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	// 	invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
+	// }
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void checkCreditLimit(@NonNull final I_C_Order order)

@@ -137,6 +137,8 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_AD_WF_ProcessData")
 			.add("org.compiere.model.I_AD_WF_Responsible")
 			//
+			.add("org.compiere.model.I_C_Element")
+			//
 			.build();
 
 	private final TableAndColumnInfoRepository repository;

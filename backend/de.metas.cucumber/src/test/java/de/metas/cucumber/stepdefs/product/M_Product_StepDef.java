@@ -33,6 +33,8 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -46,6 +48,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -63,7 +66,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 
 public class M_Product_StepDef
 {
@@ -72,6 +75,8 @@ public class M_Product_StepDef
 	private final M_Product_Category_StepDefData productCategoryTable;
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ProductRestService productRestService = SpringContextHolder.instance.getBean(ProductRestService.class);
 
@@ -190,6 +195,18 @@ public class M_Product_StepDef
 		}
 	}
 
+	@And("taxCategory {string} is updated to work with all productTypes")
+	public void update_tax_category(@NonNull final String taxCategoryInternalName)
+	{
+		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
+		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
+
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.loadOutOfTrx(taxCategoryId.get(), I_C_TaxCategory.class);
+		taxCategory.setProductType(null);
+
+		InterfaceWrapperHelper.saveRecord(taxCategory);
+	}
+
 	@Given("update M_Product:")
 	public void update_M_Product(@NonNull final DataTable dataTable)
 	{
@@ -206,6 +223,8 @@ public class M_Product_StepDef
 		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
 
+		final String productType = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_Product.COLUMNNAME_ProductType);
+
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(
 				() -> productDAO.retrieveProductByValue(productValue),
 				() -> newInstanceOutOfTrx(I_M_Product.class));
@@ -213,8 +232,24 @@ public class M_Product_StepDef
 		productRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		productRecord.setValue(productValue);
 		productRecord.setName(productName);
-		productRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
-		productRecord.setProductType(ProductType.Item.getCode());
+
+		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_X12DE355);
+		if (Check.isNotBlank(uomX12DE355))
+		{
+			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)
+					.addEqualsFilter(I_C_UOM.COLUMNNAME_X12DE355, uomX12DE355)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstIdOnly(UomId::ofRepoIdOrNull);
+			assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
+			productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
+		}
+		else
+		{
+			productRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
+		}
+
+		productRecord.setProductType(CoalesceUtil.coalesceNotNull(productType, ProductType.Item.getCode()));
 		productRecord.setIsStocked(isStocked);
 
 		final String productCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -228,6 +263,18 @@ public class M_Product_StepDef
 		{
 			productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_STANDARD_ID.getRepoId());
 		}
+
+		final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_Description);
+		if (Check.isNotBlank(description))
+		{
+			productRecord.setDescription(description);
+		}
+
+		final boolean isSold = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_Product.COLUMNNAME_IsSold, true);
+		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_Product.COLUMNNAME_IsPurchased, true);
+
+		productRecord.setIsSold(isSold);
+		productRecord.setIsPurchased(isPurchased);
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 

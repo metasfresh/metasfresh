@@ -96,11 +96,11 @@ public class Fresh_QtyOnHand
 
 			if (createDeletedEvent)
 			{
-				event = buildDeletedEvent(line, materialDescriptor);
+				event = Fresh_QtyOnHand_Line.buildDeletedEvent(line, materialDescriptor);
 			}
 			else
 			{
-				event = buildCreatedEvent(line, materialDescriptor);
+				event = Fresh_QtyOnHand_Line.buildCreatedEvent(line, materialDescriptor);
 			}
 			events.add(event);
 		}
@@ -108,39 +108,4 @@ public class Fresh_QtyOnHand
 		events.forEach(materialEventService::postEventAfterNextCommit);
 	}
 
-	@NonNull
-	private AbstractStockEstimateEvent buildCreatedEvent(
-			@NonNull final I_Fresh_QtyOnHand_Line line,
-			@NonNull final MaterialDescriptor materialDescriptor)
-	{
-		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
-
-		return StockEstimateCreatedEvent.builder()
-				.date(TimeUtil.asInstantNonNull(qtyOnHandRecord.getDateDoc()))
-				.eventDate(Instant.now())
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
-				.materialDescriptor(materialDescriptor)
-				.plantId(line.getPP_Plant_ID())
-				.freshQtyOnHandId(line.getFresh_QtyOnHand_ID())
-				.freshQtyOnHandLineId(line.getFresh_QtyOnHand_Line_ID())
-				.build();
-	}
-
-	@NonNull
-	private AbstractStockEstimateEvent buildDeletedEvent(
-			@NonNull final I_Fresh_QtyOnHand_Line line,
-			@NonNull final MaterialDescriptor materialDescriptor)
-	{
-		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
-
-		return StockEstimateDeletedEvent.builder()
-				.date(TimeUtil.asInstantNonNull(qtyOnHandRecord.getDateDoc()))
-				.eventDate(Instant.now())
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
-				.materialDescriptor(materialDescriptor)
-				.plantId(line.getPP_Plant_ID())
-				.freshQtyOnHandId(line.getFresh_QtyOnHand_ID())
-				.freshQtyOnHandLineId(line.getFresh_QtyOnHand_Line_ID())
-				.build();
-	}
 }

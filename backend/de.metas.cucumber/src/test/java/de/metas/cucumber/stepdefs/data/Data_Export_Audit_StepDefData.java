@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.data;
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_Data_Export_Audit;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class Data_Export_Audit_StepDefData extends StepDefData<I_Data_Export_Audit>
 {
+	public Data_Export_Audit_StepDefData()
+	{
+		super(I_Data_Export_Audit.class);
+	}
 }

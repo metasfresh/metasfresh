@@ -10,12 +10,12 @@ package de.metas.product.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,7 +25,6 @@ package de.metas.product.modelvalidator;
 import de.metas.product.IProductPA;
 import de.metas.util.Services;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -36,9 +35,16 @@ import org.compiere.model.X_M_ProductPrice;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 public class MProductPriceValidator implements ModelValidator
 {
 	private int ad_Client_ID = -1;
+
+	private final IProductPA productPA = Services.get(IProductPA.class);
 
 	@Override
 	public String docValidate(PO po, int timing)
@@ -79,7 +85,12 @@ public class MProductPriceValidator implements ModelValidator
 			return null;
 		}
 
-		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.create(po, I_M_ProductPrice.class);
+		if (!po.is_ManualUserAction())
+		{
+			return null;
+		}
+
+		final I_M_ProductPrice productPrice = create(po, I_M_ProductPrice.class);
 		final String useScalePrice = productPrice.getUseScalePrice();
 		if (Objects.equals(useScalePrice, X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
 		{
@@ -96,7 +107,7 @@ public class MProductPriceValidator implements ModelValidator
 
 			if (!Objects.equals(useScalePrice, X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
 			{
-				final String trxName = InterfaceWrapperHelper.getTrxName(productPrice);
+				final String trxName = getTrxName(productPrice);
 				final I_M_ProductScalePrice productScalePrice = productPA.retrieveOrCreateScalePrices(
 						productPrice.getM_ProductPrice_ID(),
 						BigDecimal.ONE, // Qty
@@ -109,23 +120,21 @@ public class MProductPriceValidator implements ModelValidator
 				productScalePrice.setPriceList(productPrice.getPriceList());
 				productScalePrice.setPriceStd(productPrice.getPriceStd());
 
-				InterfaceWrapperHelper.save(productScalePrice);
+				save(productScalePrice);
 			}
 		}
-		
+
 		return null;
 	}
 
 	private void productPriceDelete(final I_M_ProductPrice productPrice)
 	{
-		final IProductPA productPA = Services.get(IProductPA.class);
-
 		if (productPrice.getM_ProductPrice_ID() <= 0)
 		{
 			return;
 		}
 
-		final String trxName = InterfaceWrapperHelper.getTrxName(productPrice);
+		final String trxName = getTrxName(productPrice);
 		for (final I_M_ProductScalePrice psp : productPA.retrieveScalePrices(productPrice.getM_ProductPrice_ID(), trxName))
 		{
 
@@ -135,9 +144,8 @@ public class MProductPriceValidator implements ModelValidator
 				// NOTE: i think this problem does not apply anymore, so we can safely delete this check
 				continue;
 			}
-			
-			
-			InterfaceWrapperHelper.delete(psp);
+
+			delete(psp);
 		}
 
 	}

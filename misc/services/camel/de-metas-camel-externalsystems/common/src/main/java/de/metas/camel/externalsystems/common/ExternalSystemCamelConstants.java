@@ -54,6 +54,8 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_UPSERT_PRODUCT_V2_CAMEL_URI = "metasfresh.upsert-product-v2.camel.uri";
 
+	public static final String MF_UPSERT_BPRELATION_V2_CAMEL_URI = "metasfresh.upsert-bprelation-v2.camel.uri";
+
 	public static final String MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI = "metasfresh.upsert-product-price-v2.camel.uri";
 	public static final String MF_PRICE_LIST_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI = "metasfresh.price-list-upsert-product-price-v2.camel.uri";
 
@@ -67,12 +69,10 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.lookup-externalreference.camel.uri";
 
-	public static final String MF_EXTERNAL_SYSTEM_URI = "metasfresh.externalsystem.api.uri";
-
 	public static final String MF_EXTERNAL_SYSTEM_V2_URI = "metasfresh.externalsystem.v2.api.uri";
 
 	public static final String MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.upsert-externalreference.camel.uri";
-	
+
 	public static final String MF_ERROR_ROUTE_ID = "Error-Route";
 
 	public static final String ERROR_WRITE_TO_ADISSUE = "Error-Route-writeToAdIssue";
@@ -84,8 +84,6 @@ public class ExternalSystemCamelConstants
 	public static final String MF_PUSH_OL_CANDIDATES_ROUTE_ID = "To-MF_PushOLCandidates-Route";
 
 	public static final String MF_GET_BPARTNER_PRODUCTS_ROUTE_ID = "To-MF_GetBPartnerProducts-Route";
-
-	public static final String MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID = "To-MF_LookupExternalReference-Route";
 
 	public static final String MF_CLEAR_OL_CANDIDATES_ROUTE_ID = "To-MF_ClearOLCandidates-Route";
 
@@ -99,6 +97,8 @@ public class ExternalSystemCamelConstants
 	public static final String MF_ATTACHMENT_ROUTE_ID = "To-MF_PushAttachment-Route";
 
 	public static final String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
+
+	public static final String MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI = "To-MF_Lookup-ExternalReference_V2";
 
 	public static final String REST_WOOCOMMERCE_PATH = "/woocommerce";
 

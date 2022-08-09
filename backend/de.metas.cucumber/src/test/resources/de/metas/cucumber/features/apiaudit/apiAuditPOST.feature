@@ -42,8 +42,8 @@ Feature: API Audit POST http method
     # We call the test endpoint and instruct it to wait for 1 seconds before returning, and we have IsForceProcessedAsync=Y
     # So when we check right after the call, we can expect an audit record to be created and the request to be "received", but not yet "processed"
     Then there are added records in API_Request_Audit
-      | Method | Path                                                                                           | AD_User.Name | Status    |
-      | POST   | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen OR Verarbeitet |
+      | Method | Path                                                                                           | AD_User.Name | Status                   |
+      | POST   | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Empfangen |
 
     And there are no records in API_Request_Audit_Log for the API_Request_Audit from context
 
@@ -98,8 +98,8 @@ Feature: API Audit POST http method
     # We call the test endpoint and instruct it to wait for 1 seconds before returning, and we have IsForceProcessedAsync=Y
     # So when we check right after the call, we can expect an audit record to be created and the request to be "received", but not yet "processed"
     Then there are added records in API_Request_Audit
-      | Method | Path                                                                                           | AD_User.Name | Status    |
-      | POST   | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Empfangen OR Verarbeitet |
+      | Method | Path                                                                                           | AD_User.Name | Status                   |
+      | POST   | /api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Empfangen |
 
     And there are no records in API_Request_Audit_Log for the API_Request_Audit from context
 

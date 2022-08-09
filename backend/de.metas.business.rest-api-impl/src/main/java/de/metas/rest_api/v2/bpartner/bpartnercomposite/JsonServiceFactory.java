@@ -31,6 +31,7 @@ import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
+import de.metas.title.TitleRepository;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
@@ -44,6 +45,7 @@ public class JsonServiceFactory
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPGroupRepository bpGroupRepository;
 	private final GreetingRepository greetingRepository;
+	private final TitleRepository titleRepository;
 	private final CurrencyRepository currencyRepository;
 	private final JobRepository jobRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
@@ -55,6 +57,7 @@ public class JsonServiceFactory
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
+			@NonNull final TitleRepository titleRepository,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final JobRepository jobRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
@@ -62,6 +65,7 @@ public class JsonServiceFactory
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 		this.bpartnerQueryService = bpartnerQueryService;
 		this.greetingRepository = greetingRepository;
+		this.titleRepository = titleRepository;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
@@ -98,6 +102,7 @@ public class JsonServiceFactory
 				bpartnerCompositeRepository,
 				bpGroupRepository,
 				greetingRepository,
+				titleRepository,
 				jobRepository,
 				externalReferenceService,
 				identifier);

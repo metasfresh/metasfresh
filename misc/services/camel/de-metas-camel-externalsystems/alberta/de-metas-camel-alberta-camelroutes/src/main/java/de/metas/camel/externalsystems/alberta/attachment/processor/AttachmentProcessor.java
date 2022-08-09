@@ -83,10 +83,11 @@ public class AttachmentProcessor implements Processor
 				.attachment(jsonAttachment)
 				.build();
 
-
-		if (attachment.getMetadata().getCreatedAt() != null)
+		// we do *not* use attachment=>metadata=>createdAt, because the "createdAfter" API-param corresponds to uploadDate
+		final String nextCreatedAtDate = attachment.getUploadDate();
+		if (nextCreatedAtDate != null)
 		{
-			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstant(attachment.getMetadata().getCreatedAt()));
+			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstantNotNull(nextCreatedAtDate));
 		}
 
 		exchange.getIn().setBody(jsonRequest);

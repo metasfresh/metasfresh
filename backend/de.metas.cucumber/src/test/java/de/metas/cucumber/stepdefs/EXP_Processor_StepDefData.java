@@ -29,4 +29,8 @@ import org.compiere.model.I_EXP_Processor;
  */
 public class EXP_Processor_StepDefData extends StepDefData<I_EXP_Processor>
 {
+	public EXP_Processor_StepDefData()
+	{
+		super(I_EXP_Processor.class);
+	}
 }

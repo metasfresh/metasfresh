@@ -34,6 +34,7 @@ import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -359,6 +360,7 @@ public abstract class AbstractFlatrateTermTest
 				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
 				.isCreateNoInvoice(false)
 				.extensionType(extensionType)
+				.uomId(UomId.ofRepoId(productAndPricingSystem.getProduct().getC_UOM_ID()))
 				.build();
 	}
 

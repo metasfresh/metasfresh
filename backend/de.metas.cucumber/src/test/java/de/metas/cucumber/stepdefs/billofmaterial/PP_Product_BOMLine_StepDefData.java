@@ -27,4 +27,8 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 
 public class PP_Product_BOMLine_StepDefData extends StepDefData<I_PP_Product_BOMLine>
 {
+	public PP_Product_BOMLine_StepDefData()
+	{
+		super(I_PP_Product_BOMLine.class);
+	}
 }

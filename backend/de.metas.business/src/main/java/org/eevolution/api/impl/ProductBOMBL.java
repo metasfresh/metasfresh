@@ -274,7 +274,7 @@ public class ProductBOMBL implements IProductBOMBL
 			final ProductId finishedGoodProductId = ProductId.ofRepoId(finishGood.getM_Product_ID());
 
 			bomDAO.getDefaultBOM(finishedGoodProductId, bomType)
-					.ifPresent(bom -> boms.put(ProductBOMId.ofRepoId(bom.getM_Product_ID()), bom));
+					.ifPresent(bom -> boms.put(ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID()), bom));
 		}
 
 		if (boms.isEmpty())
