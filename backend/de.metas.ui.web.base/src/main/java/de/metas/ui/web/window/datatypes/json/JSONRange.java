@@ -1,16 +1,17 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.time.LocalDate;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.ui.web.window.datatypes.DateRangeValue;
 import lombok.Builder;
 import lombok.Value;
+
+import java.time.LocalDate;
+import java.util.Map;
+
+import static org.compiere.util.converters.DateTimeConverters.fromObjectToLocalDate;
 
 /*
  * #%L
@@ -52,10 +53,10 @@ public class JSONRange
 	public static DateRangeValue dateRangeFromJSONMap(final Map<String, String> map)
 	{
 		final String jsonFrom = map.get("value");
-		final LocalDate from = DateTimeConverters.fromObjectToLocalDate(jsonFrom);
+		final LocalDate from = fromObjectToLocalDate(jsonFrom);
 
 		final String jsonTo = map.get("valueTo");
-		final LocalDate to = DateTimeConverters.fromObjectToLocalDate(jsonTo);
+		final LocalDate to = fromObjectToLocalDate(jsonTo);
 
 		return DateRangeValue.of(from, to);
 	}

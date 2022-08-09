@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -27,6 +28,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
 import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
@@ -81,6 +83,7 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
+import org.compiere.util.converters.SqlValueConverters;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -113,6 +116,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -157,6 +161,8 @@ public abstract class PO
 	private static final String USE_TIMEOUT_FOR_UPDATE = "org.adempiere.po.useTimeoutForUpdate";
 
 	private static final int QUERY_TIME_OUT = 10;
+
+	private static final AdMessageKey MSG_CUSTOM_REST_API_COLUMN = AdMessageKey.of("CUSTOM_REST_API_COLUMN");
 
 	/** User Maintained Entity Type */
 	static protected final String ENTITYTYPE_UserMaintained = "U";
@@ -5473,6 +5479,55 @@ public abstract class PO
 		return m_loadCount;
 	}
 
+	public final void setCustomColumns(final Map<String, Object> valuesByColumnName)
+	{
+		final POInfo poInfo = getPOInfo();
+
+		valuesByColumnName.keySet()
+				.forEach(columnName -> setActualColumnValue(poInfo, columnName, valuesByColumnName.get(columnName)));
+	}
+
+	@NonNull
+	public ImmutableMap<String, Object> retrieveCustomColumns()
+	{
+		final POInfo poInfo = getPOInfo();
+
+		final ImmutableMap.Builder<String, Object> customColumnsCollector = ImmutableMap.builder();
+
+		poInfo.streamColumns(POInfoColumn::isRestAPICustomColumn)
+				.forEach(customColumn -> getActualColumnValue(customColumn)
+						.ifPresent(value -> customColumnsCollector.put(customColumn.getColumnName(), value)));
+
+		return customColumnsCollector.build();
+	}
+
+	private void setActualColumnValue(@NonNull final POInfo poInfo, @NonNull final String columnName, @Nullable final Object valueToSet)
+	{
+		if (!poInfo.isRestAPICustomColumn(columnName))
+		{
+			throw new AdempiereException(MSG_CUSTOM_REST_API_COLUMN, columnName)
+					.markAsUserValidationError();
+		}
+
+		final Class<?> columnTargetClass = poInfo.getColumnClass(columnName);
+		if (columnTargetClass == null)
+		{
+			throw new RuntimeException("Cannot get the actual PO value if targetClass is missing!");
+		}
+
+		final int displayType = poInfo.getColumnDisplayType(columnName);
+		final Object convertedValue = SqlValueConverters.convertToPOValue(valueToSet, columnTargetClass, displayType);
+
+		set_Value(columnName, convertedValue);
+	}
+
+	@NonNull
+	private Optional<Object> getActualColumnValue(@NonNull final POInfoColumn column)
+	{
+		final String columnName = column.getColumnName();
+
+		return Optional.ofNullable(SqlValueConverters.convertFromPOValue(get_Value(columnName), column.getDisplayType()));
+	}
 	// metas: end
 
 	private class POReturningAfterInsertLoader implements ISqlUpdateReturnProcessor

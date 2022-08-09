@@ -22,7 +22,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
-import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
@@ -47,6 +46,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.converters.DateTimeConverters;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

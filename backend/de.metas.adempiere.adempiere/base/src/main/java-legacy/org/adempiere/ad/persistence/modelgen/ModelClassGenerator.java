@@ -164,6 +164,11 @@ public class ModelClassGenerator
 				continue;
 			}
 
+			if (columnInfo.isRestAPICustomColumn())
+			{
+				continue;
+			}
+
 			// Create record info KeyNamePair
 			if (columnInfo.getSeqNo() == 1 && columnInfo.isIdentifier())
 			{

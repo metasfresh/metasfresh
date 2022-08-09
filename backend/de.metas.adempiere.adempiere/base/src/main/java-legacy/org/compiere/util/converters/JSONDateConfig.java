@@ -1,12 +1,11 @@
-package de.metas.ui.web.window.datatypes.json;
-
-import java.time.format.DateTimeFormatter;
-
-import org.compiere.util.Env;
+package org.compiere.util.converters;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.util.Env;
+
+import java.time.format.DateTimeFormatter;
 
 /*
  * #%L

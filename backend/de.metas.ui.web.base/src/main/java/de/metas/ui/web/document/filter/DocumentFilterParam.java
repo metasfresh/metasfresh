@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -13,6 +12,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.converters.DateTimeConverters;
 
 import javax.annotation.Nullable;
 import java.time.Instant;

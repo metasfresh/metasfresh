@@ -25,6 +25,7 @@ package de.metas.ui.web.window.datatypes.json;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import org.assertj.core.api.AbstractCharSequenceAssert;
+import org.compiere.util.converters.JSONDateConfig;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class DateTimeConvertersTest
 {
