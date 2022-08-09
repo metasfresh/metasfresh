@@ -63,6 +63,7 @@ import de.metas.util.InSetPredicate;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_Resource_Group;
@@ -95,6 +96,7 @@ public class CalendarRestController
 	private final LookupDataSource resourceLookup;
 	private final LookupDataSource resourceGroupLookup;
 	private final LookupDataSource projectLookup;
+	private final LookupDataSource projectResponsibleLookup;
 
 	public CalendarRestController(
 			@NonNull final UserSession userSession,
@@ -109,6 +111,7 @@ public class CalendarRestController
 		this.resourceLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_S_Resource.Table_Name);
 		this.resourceGroupLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_S_Resource_Group.Table_Name);
 		this.projectLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+		this.projectResponsibleLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_AD_User.Table_Name);
 	}
 
 	@GetMapping("/available")
@@ -174,6 +177,7 @@ public class CalendarRestController
 			result.onlyProjectId(query.getOnlyProjectId());
 
 			result.onlyCustomerId(query.getOnlyCustomerId());
+			result.onlyProjectResponsibleId(query.getOnlyResponsibleId());
 		}
 
 		return result.build();
@@ -186,6 +190,7 @@ public class CalendarRestController
 				.onlyResources(toJSONLookupValueFromResourceIds(query.getResourceIds(), adLanguage))
 				.onlyProject(JSONLookupValue.ofNullableLookupValue(projectLookup.findById(query.getOnlyProjectId()), adLanguage))
 				.onlyCustomer(JSONLookupValue.ofNullableLookupValue(bpartnerLookup.findById(query.getOnlyCustomerId()), adLanguage))
+				.onlyResponsible(JSONLookupValue.ofNullableLookupValue(projectResponsibleLookup.findById(query.getOnlyProjectResponsibleId()), adLanguage))
 				.build();
 	}
 

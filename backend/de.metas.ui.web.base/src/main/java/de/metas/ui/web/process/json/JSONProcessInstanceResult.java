@@ -23,6 +23,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -282,6 +283,7 @@ public final class JSONProcessInstanceResult
 		@Nullable String resourceId;
 		@Nullable String projectId;
 		@Nullable String customerId;
+		@Nullable String responsibleId;
 
 		private JSONOpenCalendarAction(@NonNull final OpenCalendarAction from)
 		{
@@ -289,7 +291,13 @@ public final class JSONProcessInstanceResult
 			this.simulationId = from.getSimulationId();
 			this.resourceId = from.getCalendarResourceId();
 			this.projectId = from.getProjectId();
-			this.customerId = from.getCustomerId() != null ? String.valueOf(from.getCustomerId().getRepoId()) : null;
+			this.customerId = toString(from.getCustomerId());
+			this.responsibleId = toString(from.getResponsibleId());
+		}
+
+		private static String toString(@Nullable RepoIdAware id)
+		{
+			return id != null ? String.valueOf(id.getRepoId()) : null;
 		}
 	}
 
