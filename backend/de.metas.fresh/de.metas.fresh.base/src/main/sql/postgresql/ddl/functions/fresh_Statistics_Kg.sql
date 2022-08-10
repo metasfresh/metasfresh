@@ -1,3 +1,5 @@
+
+
 DROP FUNCTION IF EXISTS report.fresh_statistics_kg(
     IN p_C_Period_ID               numeric,
     IN p_issotrx                   character varying,
@@ -148,7 +150,7 @@ BEGIN
                (SELECT COALESCE(pt.name, p.name)
                 FROM M_Product p
                          LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language AND pt.isActive = 'Y'
-                WHERE p.M_Product_ID = p_M_AttributeSetInstance_ID
+                WHERE p.M_Product_ID = p_M_Product_ID
                )                                                                                                                                                AS param_product,
                (SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = p_M_Product_Category_ID AND isActive = 'Y')                                   AS param_Product_Category,
                (SELECT STRING_AGG(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID) AS Param_Attributes,
@@ -229,7 +231,7 @@ BEGIN
                                           fa.totalamt,
                                           uomconvert(fa.M_Product_ID, fa.C_UOM_ID, fa.kg_uom_id, QtySum) AS kgQty
 
-                                   FROM fresh_statistics_kg_MV_1 AS fa
+                                   FROM fresh_statistics_kg_MV AS fa
                                    WHERE TRUE
                                      AND v_Periods.p1_C_Period_ID = p_C_Period_ID
 
