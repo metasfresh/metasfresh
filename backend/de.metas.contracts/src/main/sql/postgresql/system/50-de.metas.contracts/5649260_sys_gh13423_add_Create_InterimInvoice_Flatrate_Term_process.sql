@@ -103,3 +103,12 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 UPDATE AD_Table_Process SET AD_Tab_ID=293, AD_Window_ID=181,Updated=TO_TIMESTAMP('2022-08-10 17:06:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=541136
 ;
 
+-- 2022-08-10T18:28:05.482Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=540280,Updated=TO_TIMESTAMP('2022-08-10 21:28:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542280
+;
+
+-- 2022-08-10T18:29:49.186Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2022-08-10 21:29:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542281
+;

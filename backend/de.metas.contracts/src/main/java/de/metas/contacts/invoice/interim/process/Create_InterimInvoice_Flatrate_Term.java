@@ -38,7 +38,7 @@ import java.sql.Timestamp;
 
 public class Create_InterimInvoice_Flatrate_Term extends JavaProcess implements IProcessPrecondition
 {
-	@Param(mandatory = true, parameterName = "C_Bpartner_ID")
+	@Param(mandatory = true, parameterName = "C_BPartner_ID")
 	private int p_C_Bpartner_ID;
 	@Param(mandatory = true, parameterName = "C_Flatrate_Conditions_ID")
 	private int p_C_Flatrate_Conditions_ID;
