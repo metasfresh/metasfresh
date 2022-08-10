@@ -18,7 +18,6 @@ BEGIN
                fa.iso_code,
                fa.C_UOM_ID,
                fa.C_Activity_ID,
-               kg_uom_id,
                il_M_AttributeSetInstance_ID,
                il_AD_Client_ID,
                il_AD_Org_ID,
