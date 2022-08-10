@@ -1,9 +1,14 @@
-DO
-$$
+CREATE OR REPLACE FUNCTION report.update_fresh_statistics_kg
+	)
+    RETURNS boolean
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE 
+AS $BODY$
 
-    BEGIN
-
-
+DECLARE v_Periods RECORD;
+BEGIN
+ 
         DROP TABLE IF EXISTS fresh_statistics_kg_MV;
         DROP INDEX IF EXISTS fresh_statistics_kg_period_Index;
         DROP INDEX IF EXISTS fresh_statistics_kg_product_id;
@@ -43,19 +48,17 @@ $$
                         p.M_Product_Category_ID                                                           AS M_Product_Category_ID
                  FROM (SELECT C_UOM_ID AS kg_uom_id FROM C_UOM WHERE x12de355 = 'KGM' AND IsActive = 'Y') AS uomkg,
                       Fact_Acct fa
-                          JOIN C_Invoice i
-                               ON fa.Record_ID = i.C_Invoice_ID AND i.isActive = 'Y'
-                          INNER JOIN C_InvoiceLine il ON fa.Line_ID = il.C_InvoiceLine_ID AND il.isActive = 'Y'
+                          INNER JOIN C_Invoice i
+                               ON fa.Record_ID = i.C_Invoice_ID
+                          INNER JOIN C_InvoiceLine il ON fa.Line_ID = il.C_InvoiceLine_ID
                           /* Please note: This is an important implicit filter. Inner Joining the Product
                             * filters Fact Acct records for e.g. Taxes
                             */
                           INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID
-                          INNER JOIN AD_Org o ON fa.ad_org_id = o.ad_org_id
-                          INNER JOIN AD_ClientInfo ci ON o.AD_Client_ID = ci.ad_client_id
-                          LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
-                          LEFT OUTER JOIN C_Currency C ON acs.C_Currency_ID = C.C_Currency_ID
+                          INNER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = fa.C_AcctSchema_ID
+                          INNERJOIN C_Currency C ON acs.C_Currency_ID = C.C_Currency_ID
                  WHERE AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))
-                   AND fa.isActive = 'Y'
+                   
                    -- Akontozahlung invoices are not included. See FRESH_609
                    AND i.C_DocType_ID NOT IN (SELECT C_DocType_ID
                                               FROM C_DocType
@@ -81,10 +84,16 @@ $$
 
         CREATE INDEX fresh_statistics_kg_product_id ON fresh_statistics_kg_MV (M_Product_ID);
 
-    END;
-$$
-LANGUAGE plpgsql
-;
+ return true;
+END;
+$BODY$;
+
+
+COMMENT ON FUNCTION report.update_fresh_statistics_kg_week()
+    IS 'This function drops the table fresh_statistics_kg_week_MV, recreates the view fresh_statistics_kg_week_view and recreates the table based on that view.
+	It will be called once every night via a scheduler.';
+	
+	-- Select report.update_fresh_statistics_kg_week();
 
 DROP FUNCTION IF EXISTS report.fresh_statistics_kg(
     IN p_C_Period_ID               numeric,
@@ -381,3 +390,6 @@ END;
 $$
     LANGUAGE plpgsql
 ;
+
+
+select report.update_fresh_statistics_kg();
