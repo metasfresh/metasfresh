@@ -1,5 +1,3 @@
-
-
 DROP FUNCTION IF EXISTS report.fresh_statistics_kg(
     IN p_C_Period_ID               numeric,
     IN p_issotrx                   character varying,
@@ -295,3 +293,5 @@ END;
 $$
     LANGUAGE plpgsql
 ;
+
+select report.update_fresh_statistics_kg();
