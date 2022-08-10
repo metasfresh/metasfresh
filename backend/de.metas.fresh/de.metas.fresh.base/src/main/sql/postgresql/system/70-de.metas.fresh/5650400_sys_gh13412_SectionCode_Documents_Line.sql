@@ -10,7 +10,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2022-08-10T18:02:39.347Z
 -- URL zum Konzept
-/* DDL */  select update_Column_Translation_From_AD_Element(581238) 
+/* DDL */  select update_Column_Translation_From_AD_Element(581238)
 ;
 
 -- 2022-08-10T18:03:49.182Z
@@ -28,15 +28,7 @@ UPDATE AD_Column SET DefaultValue='',Updated=TO_TIMESTAMP('2022-08-10 19:03:48',
 ALTER TABLE C_OrderLine ADD CONSTRAINT MSectionCode_COrderLine FOREIGN KEY (M_SectionCode_ID) REFERENCES public.M_SectionCode DEFERRABLE INITIALLY DEFERRED
 ;
 
--- 2022-08-10T18:04:31.425Z
--- URL zum Konzept
-UPDATE AD_Table SET AD_Window_ID=541590,Updated=TO_TIMESTAMP('2022-08-10 19:04:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=260
-;
 
--- 2022-08-10T18:06:24.528Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584013,704255,0,546548,TO_TIMESTAMP('2022-08-10 19:06:23','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Section Code',TO_TIMESTAMP('2022-08-10 19:06:23','YYYY-MM-DD HH24:MI:SS'),100)
-;
 
 -- 2022-08-10T18:06:24.630Z
 -- URL zum Konzept
@@ -45,7 +37,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-08-10T18:06:24.732Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
 ;
 
 -- 2022-08-10T18:06:24.839Z
@@ -68,11 +60,6 @@ UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2022-08-10 19:06:4
 UPDATE AD_Column SET DefaultValue='@M_SectionCode_ID@',Updated=TO_TIMESTAMP('2022-08-10 19:07:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584013
 ;
 
--- 2022-08-10T18:10:20.780Z
--- URL zum Konzept
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,704255,0,546548,549723,611506,'F',TO_TIMESTAMP('2022-08-10 19:10:19','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Section Code',205,0,0,TO_TIMESTAMP('2022-08-10 19:10:19','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 -- 2022-08-10T18:12:59.917Z
 -- URL zum Konzept
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584013,704256,0,293,TO_TIMESTAMP('2022-08-10 19:12:58','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Section Code',TO_TIMESTAMP('2022-08-10 19:12:58','YYYY-MM-DD HH24:MI:SS'),100)
@@ -85,7 +72,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-08-10T18:13:00.122Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
 ;
 
 -- 2022-08-10T18:13:00.224Z
@@ -115,7 +102,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2022-08-10T18:16:43.136Z
 -- URL zum Konzept
-/* DDL */  select update_Column_Translation_From_AD_Element(581238) 
+/* DDL */  select update_Column_Translation_From_AD_Element(581238)
 ;
 
 -- 2022-08-10T18:17:06.265Z
@@ -140,7 +127,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-08-10T18:26:49.367Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
 ;
 
 -- 2022-08-10T18:26:49.470Z
@@ -170,7 +157,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-08-10T18:31:31.811Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
 ;
 
 -- 2022-08-10T18:31:31.914Z
@@ -218,11 +205,6 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=210,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=220,Updated=TO_TIMESTAMP('2022-08-10 19:35:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548928
 ;
 
--- 2022-08-10T18:37:22.348Z
--- URL zum Konzept
-UPDATE AD_Table SET AD_Window_ID=541590,Updated=TO_TIMESTAMP('2022-08-10 19:37:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=259
-;
-
 -- 2022-08-10T18:38:17.538Z
 -- URL zum Konzept
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=330,Updated=TO_TIMESTAMP('2022-08-10 19:38:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611506
@@ -245,7 +227,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2022-08-10T18:51:56.191Z
 -- URL zum Konzept
-/* DDL */  select update_Column_Translation_From_AD_Element(581238) 
+/* DDL */  select update_Column_Translation_From_AD_Element(581238)
 ;
 
 -- 2022-08-10T18:52:17.583Z
@@ -270,7 +252,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-08-10T18:54:19.849Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
 ;
 
 -- 2022-08-10T18:54:19.953Z
@@ -305,7 +287,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-08-10T18:58:47.094Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
 ;
 
 -- 2022-08-10T18:58:47.193Z
@@ -350,7 +332,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2022-08-10T19:06:25.886Z
 -- URL zum Konzept
-/* DDL */  select update_Column_Translation_From_AD_Element(581238) 
+/* DDL */  select update_Column_Translation_From_AD_Element(581238)
 ;
 
 -- 2022-08-10T19:06:48.767Z
@@ -375,7 +357,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2022-08-10T19:07:32.098Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
 ;
 
 -- 2022-08-10T19:07:32.213Z
@@ -407,4 +389,3 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP
 -- URL zum Konzept
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2022-08-10 20:09:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=547486
 ;
-
