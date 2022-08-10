@@ -150,13 +150,13 @@ public class C_Order_StepDef
 			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 
-			final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+			final Integer bPartnerID = bpartnerTable.getOptional(bpartnerIdentifier)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			order.setC_BPartner_ID(bPartnerId);
+			order.setC_BPartner_ID(bPartnerID);
 			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
@@ -517,7 +517,6 @@ public class C_Order_StepDef
 		final Integer expectedBPartnerLocation = bpartnerLocationTable.getOptional(bpartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
-
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
 		final String docbasetype = DataTableUtil.extractStringForColumnName(row, "docbasetype");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");

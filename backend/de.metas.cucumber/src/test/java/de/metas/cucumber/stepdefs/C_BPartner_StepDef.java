@@ -357,7 +357,7 @@ public class C_BPartner_StepDef
 
 	private void changeBPartner(@NonNull final Map<String, String> row)
 	{
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + ".Identifier");
+		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 
 		final Integer bPartnerId = bPartnerTable.getOptional(bPartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)

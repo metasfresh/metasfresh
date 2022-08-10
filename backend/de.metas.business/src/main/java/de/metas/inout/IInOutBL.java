@@ -185,7 +185,7 @@ public interface IInOutBL extends ISingletonService
 
 	LocalDate retrieveMovementDate(I_M_InOut inOut);
 
-	String getLocationEmail(InOutId ofRepoId);
-
 	void updateDescriptionAndDescriptionBottomFromDocType(@NonNull I_M_InOut inOut);
+
+	String getLocationEmail(InOutId ofRepoId);
 }

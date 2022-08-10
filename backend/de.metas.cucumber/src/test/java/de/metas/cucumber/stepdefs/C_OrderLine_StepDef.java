@@ -540,7 +540,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		if (de.metas.util.Check.isNotBlank(attributeSetInstanceIdentifier))
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
 			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
 			assertThat(expectedASI).isNotNull();
@@ -557,7 +557,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (de.metas.util.Check.isNotBlank(huPiItemProductIdentifier))
+		if (Check.isNotBlank(huPiItemProductIdentifier))
 		{
 			final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
 			final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
@@ -565,7 +565,7 @@ public class C_OrderLine_StepDef
 		}
 
 		final String asiValues = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID + ":" + I_M_AttributeInstance.Table_Name + "." + I_M_AttributeInstance.COLUMNNAME_Value);
-		if (de.metas.util.Check.isNotBlank(asiValues))
+		if (Check.isNotBlank(asiValues))
 		{
 			StepDefUtil.splitIdentifiers(asiValues)
 					.forEach(value -> validateAttributeValue(orderLine, value));

@@ -32,6 +32,7 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
+import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Check;
@@ -49,8 +50,10 @@ import org.compiere.model.I_AD_Table;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -96,7 +99,7 @@ public class AD_AttachmentEntry_StepDef
 		final String dataString = DataTableUtil.extractStringOrNullForColumnName(row, I_AD_AttachmentEntry.COLUMNNAME_BinaryData);
 		final String contentType = DataTableUtil.extractStringOrNullForColumnName(row, I_AD_AttachmentEntry.COLUMNNAME_ContentType);
 		final String URL = DataTableUtil.extractStringOrNullForColumnName(row, I_AD_AttachmentEntry.COLUMNNAME_URL);
-		final String fileIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "File.Identifier");
+		final String fileIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.File.Identifier");
 
 		final I_AD_AttachmentEntry attachmentEntry = attachmentEntryTable.get(identifier);
 
@@ -172,35 +175,62 @@ public class AD_AttachmentEntry_StepDef
 		final Map<String, String> row = table.asMaps().get(0);
 		final String orgCode = DataTableUtil.extractStringForColumnName(row, "orgCode");
 		final String type = DataTableUtil.extractStringForColumnName(row, I_AD_AttachmentEntry.Table_Name + "." + I_AD_AttachmentEntry.COLUMNNAME_Type);
-		final String fileIdentifier = DataTableUtil.extractStringForColumnName(row, "File.Identifier");
+		final String fileIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.File.Identifier");
 
-		final String targets = DataTableUtil.extractStringForColumnName(row, "targets");
+		final JsonAttachment.JsonAttachmentBuilder jsonAttachmentBuilder = JsonAttachment.builder();
 
-		final List<JsonExternalReferenceTarget> targetList = JsonObjectMapperHolder.newJsonObjectMapper()
-				.readValue(targets, new TypeReference<List<JsonExternalReferenceTarget>>() {});
+		if (Check.isNotBlank(fileIdentifier))
+		{
+			final File file = fileTable.get(fileIdentifier);
+			assertThat(file).isNotNull();
 
-		final File file = fileTable.get(fileIdentifier);
-		assertThat(file).isNotNull();
+			jsonAttachmentBuilder.fileName(file.getName())
+					.data(file.toPath().toUri().toString());
+		}
+		else
+		{
+			final String fileName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_AttachmentEntry.COLUMNNAME_FileName);
+			Optional.ofNullable(fileName)
+					.ifPresent(jsonAttachmentBuilder::fileName);
 
-		final String fileName = file.getName();
-
-		final String filePath = file.toPath().toUri().toString();
+			final String data = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_AttachmentEntry.COLUMNNAME_BinaryData);
+			if (Check.isNotBlank(data))
+			{
+				final byte[] fileData = data.getBytes();
+				final String encodedData = Base64.getEncoder().encodeToString(fileData);
+				jsonAttachmentBuilder.data(encodedData);
+			}
+		}
 
 		final JsonAttachmentSourceType jsonAttachmentSourceType = JsonAttachmentSourceType.valueOf(type);
 
-		final JsonAttachment jsonAttachment = JsonAttachment.builder()
+		final JsonAttachment jsonAttachment = jsonAttachmentBuilder
 				.type(jsonAttachmentSourceType)
-				.fileName(fileName)
-				.data(filePath)
 				.build();
 
-		final JsonAttachmentRequest jsonAttachmentRequest = JsonAttachmentRequest.builder()
+		final JsonAttachmentRequest.JsonAttachmentRequestBuilder jsonAttachmentRequestBuilder = JsonAttachmentRequest.builder()
 				.attachment(jsonAttachment)
-				.orgCode(orgCode)
-				.targets(targetList)
-				.build();
+				.orgCode(orgCode);
 
-		final String payload = mapper.writeValueAsString(jsonAttachmentRequest);
+		final String targets = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.targets");
+		if (Check.isNotBlank(targets))
+		{
+			final List<JsonExternalReferenceTarget> targetList = JsonObjectMapperHolder.newJsonObjectMapper()
+					.readValue(targets, new TypeReference<List<JsonExternalReferenceTarget>>() {});
+
+			jsonAttachmentRequestBuilder.targets(targetList);
+		}
+
+		final String references = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.references");
+		if (Check.isNotBlank(references))
+		{
+			final List<JsonTableRecordReference> referenceList = JsonObjectMapperHolder.newJsonObjectMapper()
+					.readValue(references, new TypeReference<List<JsonTableRecordReference>>() {});
+
+			jsonAttachmentRequestBuilder.references(referenceList);
+		}
+
+		final String payload = mapper.writeValueAsString(jsonAttachmentRequestBuilder.build());
 
 		testContext.setRequestPayload(payload);
 	}

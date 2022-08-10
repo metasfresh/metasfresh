@@ -164,6 +164,11 @@
             <artifactId>de-metas-common-manufacturing</artifactId>
             <version>${metasfresh-common.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>2.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>

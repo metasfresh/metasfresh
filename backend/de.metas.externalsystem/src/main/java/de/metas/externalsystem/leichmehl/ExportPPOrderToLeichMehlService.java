@@ -24,13 +24,18 @@ package de.metas.externalsystem.leichmehl;
 
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.externalsystem.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfig;
+import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
+import de.metas.common.externalsystem.leichundmehl.JsonReplacementSource;
+import de.metas.common.externalsystem.leichundmehl.JsonTargetFieldType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
@@ -52,6 +57,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -91,7 +97,13 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 
 		if (productMappingConfig == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("No config to export found for IExternalSystemChildConfigId: {} and PPOrderId: {}! No action is performed!", leichMehlConfig.getId(), ppOrderId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No config to export found for ExternalSystem_Config_LeichMehl_ID: {} and PPOrderId: {}! No action is performed!", leichMehlConfig.getId().getRepoId(), ppOrderId);
+			return ImmutableMap.of();
+		}
+
+		if (leichMehlConfig.hasNoPluFileConfigs())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No pluFileConfig found for ExternalSystem_Config_LeichMehl_ID: {}! No action is performed!", leichMehlConfig.getId().getRepoId());
 			return ImmutableMap.of();
 		}
 
@@ -101,8 +113,10 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 		parameters.put(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME, leichMehlConfig.getProductBaseFolderName());
 		parameters.put(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER, String.valueOf(leichMehlConfig.getTcpPort()));
 		parameters.put(ExternalSystemConstants.PARAM_TCP_HOST, leichMehlConfig.getTcpHost());
+		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED, String.valueOf(leichMehlConfig.isPluFileExportAuditEnabled()));
 		parameters.put(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS, toJsonProductMapping(productMappingConfig.getPluFile(),
 																						   ProductId.ofRepoId(ppOrder.getM_Product_ID())));
+		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG, toJsonPluFileConfig(leichMehlConfig.getPluFileConfigs()));
 
 		return parameters;
 	}
@@ -152,6 +166,32 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 									.pluFile(pluFile)
 									.productId(jsonProductId)
 									.build());
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	@NonNull
+	private static String toJsonPluFileConfig(@NonNull final List<ExternalSystemLeichMehlPluFileConfig> configs)
+	{
+		final List<JsonExternalSystemLeichMehlPluFileConfig> jsonConfigs = configs.stream()
+				.map(config -> JsonExternalSystemLeichMehlPluFileConfig.builder()
+						.targetFieldName(config.getTargetFieldName())
+						.targetFieldType(JsonTargetFieldType.ofCode(config.getTargetFieldType().getCode()))
+						.replacePattern(config.getReplaceRegExp())
+						.replacement(config.getReplacement())
+						.replacementSource(JsonReplacementSource.ofCode(config.getReplacementSource().getCode()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		try
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.writeValueAsString(JsonExternalSystemLeichMehlPluFileConfigs.builder()
+												.pluFileConfigs(jsonConfigs)
+												.build());
 		}
 		catch (final JsonProcessingException e)
 		{

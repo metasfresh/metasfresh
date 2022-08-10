@@ -97,6 +97,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_PRODUCT_BASE_FOLDER_NAME = "Product_BaseFolderName";
 	public static final String PARAM_TCP_PORT_NUMBER = "TCP_PortNumber";
 	public static final String PARAM_TCP_HOST = "TCP_Host";
+	public static final String PARAM_PLU_FILE_CONFIG = "PluFileConfig";
+	public static final String PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED = "PluFileExportAuditEnabled";
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";

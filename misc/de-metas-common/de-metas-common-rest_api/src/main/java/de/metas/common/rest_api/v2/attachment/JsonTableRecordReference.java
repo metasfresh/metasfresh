@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,36 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
+package de.metas.common.rest_api.v2.attachment;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
-
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonPrice.JsonPriceBuilder.class)
-public class JsonPrice
+@JsonDeserialize(builder = JsonTableRecordReference.JsonTableRecordReferenceBuilder.class)
+public class JsonTableRecordReference
 {
 	@NonNull
-	@JsonProperty("productId")
-	Integer productId;
+	@JsonProperty("tableName")
+	String tableName;
 
 	@NonNull
-	@JsonProperty("productCode")
-	String productCode;
-
-	@NonNull
-	@JsonProperty("price")
-	BigDecimal price;
-
-	@NonNull
-	@JsonProperty("taxCategoryId")
-	Integer taxCategoryId;
+	@JsonProperty("recordId")
+	JsonMetasfreshId recordId;
 }
+

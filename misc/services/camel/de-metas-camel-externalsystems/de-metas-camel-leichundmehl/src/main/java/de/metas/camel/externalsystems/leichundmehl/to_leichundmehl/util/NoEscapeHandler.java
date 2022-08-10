@@ -36,7 +36,7 @@ public class NoEscapeHandler implements CharacterEscapeHandler
 
 	public static final NoEscapeHandler INSTANCE = new NoEscapeHandler();
 
-	public void escape(char[] buf, int start, int len, boolean isAttValue, Writer out) throws IOException
+	public void escape(final char[] buf, final int start, final int len, final boolean isAttValue, final Writer out) throws IOException
 	{
 		for (int i = start; i < start + len; i++)
 		{
