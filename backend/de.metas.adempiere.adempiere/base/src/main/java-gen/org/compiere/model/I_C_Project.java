@@ -350,7 +350,7 @@ public interface I_C_Project
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -360,13 +360,12 @@ public interface I_C_Project
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_Project_ID();
 
-	ModelColumn<I_C_Project, Object> COLUMN_C_Project_ID = new ModelColumn<>(I_C_Project.class, "C_Project_ID", null);
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
@@ -1096,27 +1095,6 @@ public interface I_C_Project
 	int getSalesRep_ID();
 
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
-
-	/**
-	 * Set Specialist Consultant.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSpecialist_Consultant (@Nullable java.lang.String Specialist_Consultant);
-
-	/**
-	 * Get Specialist Consultant.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSpecialist_Consultant();
-
-	ModelColumn<I_C_Project, Object> COLUMN_Specialist_Consultant = new ModelColumn<>(I_C_Project.class, "Specialist_Consultant", null);
-	String COLUMNNAME_Specialist_Consultant = "Specialist_Consultant";
 
 	/**
 	 * Set Specialist consultant.
