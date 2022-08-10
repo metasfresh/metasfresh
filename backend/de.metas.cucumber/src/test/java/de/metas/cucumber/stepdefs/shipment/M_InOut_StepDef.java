@@ -118,7 +118,7 @@ public class M_InOut_StepDef
 	}
 
 	@And("^validate the created (shipments|material receipt)$")
-	public void validate_created_shipments(@NonNull final DataTable table)
+	public void validate_created_shipments(@NonNull final String inoutType, @NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
