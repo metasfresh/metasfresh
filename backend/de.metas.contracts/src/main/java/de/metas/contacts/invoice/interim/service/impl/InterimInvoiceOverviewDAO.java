@@ -57,14 +57,11 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 				.orElse(null);
 	}
 
-	public InterimInvoiceOverview save(@NonNull final InterimInvoiceOverview interimInvoiceOverview)
+	public InterimInvoiceOverviewId save(@NonNull final InterimInvoiceOverview interimInvoiceOverview)
 	{
 		final I_C_InterimInvoice_FlatrateTerm model = toDbObject(interimInvoiceOverview);
 		InterfaceWrapperHelper.save(model);
-		//pick up ID after save
-		return interimInvoiceOverview.toBuilder()
-				.id(InterimInvoiceOverviewId.ofRepoId(model.getC_InterimInvoice_FlatrateTerm_ID()))
-				.build();
+		return InterimInvoiceOverviewId.ofRepoId(model.getC_InterimInvoice_FlatrateTerm_ID());
 	}
 
 	private InterimInvoiceOverview fromDbObject(@NonNull final I_C_InterimInvoice_FlatrateTerm dbObject)

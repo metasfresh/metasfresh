@@ -22,10 +22,10 @@
 
 package de.metas.contacts.invoice.interim.service.impl;
 
-import de.metas.contacts.invoice.interim.service.IInterimInvoiceOverviewLineDAO;
 import de.metas.contacts.invoice.interim.InterimInvoiceOverviewId;
 import de.metas.contacts.invoice.interim.InterimInvoiceOverviewLine;
 import de.metas.contacts.invoice.interim.InterimInvoiceOverviewLineId;
+import de.metas.contacts.invoice.interim.service.IInterimInvoiceOverviewLineDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -57,9 +57,11 @@ public class InterimInvoiceOverviewLineDAO implements IInterimInvoiceOverviewLin
 				.orElse(null);
 	}
 
-	public void save(@NonNull final InterimInvoiceOverviewLine interimInvoiceOverviewLine)
+	public InterimInvoiceOverviewLineId save(@NonNull final InterimInvoiceOverviewLine interimInvoiceOverviewLine)
 	{
-		InterfaceWrapperHelper.save(toDbObject(interimInvoiceOverviewLine));
+		final I_C_InterimInvoice_FlatrateTerm_Line dbObject = toDbObject(interimInvoiceOverviewLine);
+		InterfaceWrapperHelper.save(dbObject);
+		return InterimInvoiceOverviewLineId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_Line_ID());
 	}
 
 	private InterimInvoiceOverviewLine fromDbObject(@NonNull final I_C_InterimInvoice_FlatrateTerm_Line dbObject)

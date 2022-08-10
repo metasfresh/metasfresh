@@ -20,16 +20,26 @@
  * #L%
  */
 
-package de.metas.contacts.invoice.interim.service;
+package de.metas.contacts.invoice.interim;
 
-import de.metas.contacts.invoice.interim.InterimInvoiceOverviewLine;
-import de.metas.contacts.invoice.interim.InterimInvoiceOverviewLineId;
-import de.metas.util.ISingletonService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.ConditionsId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-public interface IInterimInvoiceOverviewLineDAO extends ISingletonService
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+
+@Value
+@Builder
+public class FlatrateTermInterimInvoiceQuery
 {
-	InterimInvoiceOverviewLine getById(@NonNull final InterimInvoiceOverviewLineId id);
-
-	InterimInvoiceOverviewLineId save(@NonNull final InterimInvoiceOverviewLine interimInvoiceOverview);
+	@NonNull BPartnerId bpartnerId;
+	@NonNull ProductId productId;
+	@Nullable ConditionsId conditionsId;
+	@Nullable Timestamp dateFrom;
+	@Nullable Timestamp dateTo;
 }

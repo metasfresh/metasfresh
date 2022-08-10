@@ -22,8 +22,10 @@
 
 package de.metas.contacts.invoice.interim.service;
 
+import de.metas.contacts.invoice.interim.FlatrateTermInterimInvoiceQuery;
 import de.metas.contacts.invoice.interim.InterimInvoiceOverview;
 import de.metas.contacts.invoice.interim.InterimInvoiceOverviewId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -31,5 +33,5 @@ public interface IInterimInvoiceOverviewDAO extends ISingletonService
 {
 	InterimInvoiceOverview getById(@NonNull final InterimInvoiceOverviewId id);
 
-	InterimInvoiceOverview save(@NonNull final InterimInvoiceOverview interimInvoiceOverview);
+	InterimInvoiceOverviewId save(@NonNull final InterimInvoiceOverview interimInvoiceOverview);
 }
