@@ -1,31 +1,18 @@
 package de.metas.bpartner.model.interceptor;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerPOCopyRecordSupport;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.interfaces.I_C_BPartner;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_AD_User_Record_Access;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BP_Withholding;
@@ -35,10 +22,19 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_BPartner_Product_Stats;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
 
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerPOCopyRecordSupport;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -106,9 +102,9 @@ public class C_BPartner
 		// make sure that the SO_CreditStatus is correct
 		Services.get(IBPartnerStatisticsUpdater.class)
 				.updateBPartnerStatistics(BPartnerStatisticsUpdateRequest.builder()
-												  .bpartnerId(bpartner.getC_BPartner_ID())
-												  .alsoResetCreditStatusFromBPGroup(true)
-												  .build());
+						.bpartnerId(bpartner.getC_BPartner_ID())
+						.alsoResetCreditStatusFromBPGroup(true)
+						.build());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_AD_Language)
@@ -208,27 +204,5 @@ public class C_BPartner
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(partner.getC_BPartner_SalesRep_ID());
 		bPartnerBL.validateSalesRep(bPartnerId, salesRepId);
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
-	public void onNewPartner(final I_C_BPartner partner)
-	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
-
-		Services.get(ITrxManager.class)
-				.runAfterCommit(this::User_Record_Access_UpdateFrom_BPartnerHierarchy);
-	}
-
-	private void User_Record_Access_UpdateFrom_BPartnerHierarchy()
-	{
-		DB.executeFunctionCallEx(
-				ITrx.TRXNAME_ThreadInherited,
-				"select ad_user_record_access_updatefrom_bpartnerhierarchy();",
-				new Object[] {});
-
-		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
-				ITrx.TRXNAME_ThreadInherited,
-				CacheInvalidateMultiRequest.allRecordsForTable(I_AD_User_Record_Access.Table_Name)
-		);
 	}
 }

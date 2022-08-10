@@ -51,7 +51,7 @@ BEGIN
                      FROM c_flatrate_term contract
                      WHERE TRUE
                        AND contract.bill_bpartner_id = bp.c_bpartner_id
-                       AND contract.c_flatrate_conditions_id IN (540047,1000013,1000026, 1000027)
+                       AND contract.c_flatrate_conditions_id IN (1000026, 1000027)
                        AND contract.docstatus = 'CO'
                        AND contract.startdate <= NOW()
                        AND (contract.enddate IS NULL OR contract.enddate >= NOW()))
