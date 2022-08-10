@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO implements I_ExternalSystem_Config_LeichMehl, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 401196808L;
+	private static final long serialVersionUID = -2067529988L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_LeichMehl (final Properties ctx, final int ExternalSystem_Config_LeichMehl_ID, @Nullable final String trxName)
@@ -86,6 +86,18 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	public java.lang.String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setIsPluFileExportAuditEnabled (final boolean IsPluFileExportAuditEnabled)
+	{
+		set_Value (COLUMNNAME_IsPluFileExportAuditEnabled, IsPluFileExportAuditEnabled);
+	}
+
+	@Override
+	public boolean isPluFileExportAuditEnabled() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPluFileExportAuditEnabled);
 	}
 
 	@Override

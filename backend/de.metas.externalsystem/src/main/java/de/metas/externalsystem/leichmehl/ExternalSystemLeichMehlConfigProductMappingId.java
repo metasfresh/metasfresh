@@ -24,17 +24,16 @@ package de.metas.externalsystem.leichmehl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-public class ExternalSystemLeichMehlConfigProductMappingId implements IExternalSystemChildConfigId
+public class ExternalSystemLeichMehlConfigProductMappingId implements RepoIdAware
 {
 	int repoId;
 
@@ -70,11 +69,5 @@ public class ExternalSystemLeichMehlConfigProductMappingId implements IExternalS
 	public int getRepoId()
 	{
 		return repoId;
-	}
-
-	@Override
-	public ExternalSystemType getType()
-	{
-		return ExternalSystemType.LeichUndMehl;
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-leichundmehl
+ * de-metas-common-externalsystem
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,51 +20,31 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
+package de.metas.common.externalsystem.leichundmehl;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.v2.JsonSOTrx;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-@Builder
 @Value
-@JsonDeserialize(builder = JsonPriceList.JsonPriceListBuilder.class)
-public class JsonPriceList
+@JsonDeserialize(builder = JsonExternalSystemLeichMehlPluFileConfigs.JsonExternalSystemLeichMehlPluFileConfigsBuilder.class)
+public class JsonExternalSystemLeichMehlPluFileConfigs
 {
 	@NonNull
-	@JsonProperty("metasfreshId")
-	Integer id;
+	@JsonProperty("pluFileConfigs")
+	List<JsonExternalSystemLeichMehlPluFileConfig> pluFileConfigs;
 
-	@NonNull
-	@JsonProperty("name")
-	String name;
-
-	@NonNull
-	@JsonProperty("pricePrecision")
-	Integer pricePrecision;
-
-	@NonNull
-	@JsonProperty("currencyCode")
-	String currencyCode;
-
-	@NonNull
-	@JsonProperty("isSOTrx")
-	JsonSOTrx isSOTrx;
-
-	@Nullable
-	@JsonProperty("countryCode")
-	String countryCode;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@JsonProperty("priceListVersions")
-	@Singular
-	List<JsonPriceListVersion> priceListVersions;
+	@Builder
+	@JsonCreator
+	public JsonExternalSystemLeichMehlPluFileConfigs(
+			@JsonProperty("pluFileConfigs") @NonNull @Singular final List<JsonExternalSystemLeichMehlPluFileConfig> pluFileConfigs)
+	{
+		this.pluFileConfigs = pluFileConfigs;
+	}
 }

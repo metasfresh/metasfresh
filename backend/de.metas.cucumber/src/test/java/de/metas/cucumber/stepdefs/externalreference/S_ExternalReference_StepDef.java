@@ -105,6 +105,7 @@ public class S_ExternalReference_StepDef
 	private final TestContext testContext;
 
 	public S_ExternalReference_StepDef(
+			@NonNull final ExternalSystems externalSystems,
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final S_ExternalReference_StepDefData externalRefTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
@@ -113,6 +114,7 @@ public class S_ExternalReference_StepDef
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
 			@NonNull final TestContext testContext)
 	{
+		this.externalSystems = externalSystems;
 		this.userTable = userTable;
 		this.externalRefTable = externalRefTable;
 		this.shipperTable = shipperTable;
@@ -121,7 +123,6 @@ public class S_ExternalReference_StepDef
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
-		this.externalSystems = SpringContextHolder.instance.getBean(ExternalSystems.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 	}
 

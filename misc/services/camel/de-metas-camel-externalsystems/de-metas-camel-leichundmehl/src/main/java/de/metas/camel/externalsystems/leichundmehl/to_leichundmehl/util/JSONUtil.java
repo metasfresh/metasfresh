@@ -20,31 +20,25 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.experimental.UtilityClass;
 
-import javax.annotation.Nullable;
-import java.util.List;
-
-@Value
-@Builder
-@JsonDeserialize(builder = JsonBPartner.JsonBPartnerBuilder.class)
-public class JsonBPartner
+@UtilityClass
+public class JSONUtil
 {
-	@NonNull
-	@JsonProperty("bpartnerId")
-	Integer bpartnerId;
-
-	@NonNull
-	@JsonProperty("name")
-	String name;
-
-	@Nullable
-	@JsonProperty("glnList")
-	List<String> glnList;
+	public static String writeValueAsString(@NonNull final Object obj)
+	{
+		try
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(obj);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 }

@@ -456,7 +456,7 @@ public class C_Invoice_StepDef
 			}
 		}
 	}
-
+	
 	public Boolean loadInvoice(@NonNull final Map<String, String> row)
 	{
 		final String invoiceIdentifierCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
