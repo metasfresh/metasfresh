@@ -376,3 +376,50 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,703944,0,546289,549712,611365,'F',TO_TIMESTAMP('2022-08-09 11:33:48','YYYY-MM-DD HH24:MI:SS'),100,'Datum, an dem das Prüfprojekt erzeugt wurde.','Y','N','N','Y','N','N','N',0,'Projekt erstellt',40,0,0,TO_TIMESTAMP('2022-08-09 11:33:48','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- Field: Work Order Project -> Projekt -> Fachberater
+-- Column: C_Project.Specialist_Consultant_ID
+-- 2022-08-10T11:37:40.119Z
+UPDATE AD_Field SET AD_Column_ID=583614, Description=NULL, Help=NULL, Name='Fachberater',Updated=TO_TIMESTAMP('2022-08-10 13:37:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=703939
+;
+
+-- 2022-08-10T11:37:40.123Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581263)
+;
+
+-- 2022-08-10T11:37:40.134Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=703939
+;
+
+-- 2022-08-10T11:37:40.136Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(703939)
+;
+
+-- Column: C_Project.Specialist_Consultant_ID
+-- 2022-08-10T11:38:14.104Z
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=540401,Updated=TO_TIMESTAMP('2022-08-10 13:38:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583614
+;
+
+-- 2022-08-10T11:40:10.675Z
+INSERT INTO t_alter_column values('c_project','Specialist_Consultant_ID','NUMERIC(10)',null,null)
+;
+
+-- Column: C_Project.Specialist_Consultant_ID
+-- 2022-08-10T11:40:43.141Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-08-10 13:40:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=583614
+;
+
+-- 2022-08-10T11:40:46.546Z
+INSERT INTO t_alter_column values('c_project','Specialist_Consultant_ID','NUMERIC(10)',null,null)
+;
+
+-- Column: C_Project.Specialist_Consultant
+-- 2022-08-10T12:00:30.534Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=584012
+;
+
+-- 2022-08-10T12:00:30.553Z
+DELETE FROM AD_Column WHERE AD_Column_ID=584012
+;
+
+ALTER TABLE C_Project DROP COLUMN Specialist_Consultant;
+
