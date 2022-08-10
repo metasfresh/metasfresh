@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1167694284L;
+	private static final long serialVersionUID = 1682799393L;
 
     /** Standard Constructor */
     public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)
@@ -720,6 +720,18 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public int getSalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
+	}
+
+	@Override
+	public void setSpecialist_Consultant (final @Nullable java.lang.String Specialist_Consultant)
+	{
+		set_Value (COLUMNNAME_Specialist_Consultant, Specialist_Consultant);
+	}
+
+	@Override
+	public java.lang.String getSpecialist_Consultant() 
+	{
+		return get_ValueAsString(COLUMNNAME_Specialist_Consultant);
 	}
 
 	@Override
