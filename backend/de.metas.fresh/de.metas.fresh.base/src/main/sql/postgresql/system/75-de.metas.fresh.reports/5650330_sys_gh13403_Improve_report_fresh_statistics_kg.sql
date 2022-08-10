@@ -1,5 +1,4 @@
-CREATE OR REPLACE FUNCTION report.update_fresh_statistics_kg
-	)
+CREATE OR REPLACE FUNCTION report.update_fresh_statistics_kg()
     RETURNS boolean
     LANGUAGE 'plpgsql'
     COST 100
@@ -46,7 +45,7 @@ BEGIN
                         il.AD_Client_ID                                                                   AS il_AD_Client_ID,
                         il.AD_Org_ID                                                                      AS il_AD_Org_ID,
                         p.M_Product_Category_ID                                                           AS M_Product_Category_ID
-                 FROM (SELECT C_UOM_ID AS kg_uom_id FROM C_UOM WHERE x12de355 = 'KGM' AND IsActive = 'Y') AS uomkg,
+                 FROM (SELECT C_UOM_ID AS kg_uom_id FROM C_UOM WHERE x12de355 = 'KGM') AS uomkg,
                       Fact_Acct fa
                           INNER JOIN C_Invoice i
                                ON fa.Record_ID = i.C_Invoice_ID
