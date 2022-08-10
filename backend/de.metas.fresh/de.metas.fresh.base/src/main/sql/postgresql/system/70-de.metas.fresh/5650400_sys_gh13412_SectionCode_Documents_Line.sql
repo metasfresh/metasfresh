@@ -389,3 +389,39 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP
 -- URL zum Konzept
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2022-08-10 20:09:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=547486
 ;
+
+-- 2022-08-10T21:26:42.709Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584013,704262,0,187,TO_TIMESTAMP('2022-08-10 22:26:41','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Section Code',TO_TIMESTAMP('2022-08-10 22:26:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-08-10T21:26:42.787Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=704262 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-08-10T21:26:42.879Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581238)
+;
+
+-- 2022-08-10T21:26:42.959Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=704262
+;
+
+-- 2022-08-10T21:26:43.027Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(704262)
+;
+
+-- 2022-08-10T21:28:24.349Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,704262,0,187,1000005,611513,'F',TO_TIMESTAMP('2022-08-10 22:28:23','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Section Code',205,0,0,TO_TIMESTAMP('2022-08-10 22:28:23','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-08-10T21:28:38.470Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=330,Updated=TO_TIMESTAMP('2022-08-10 22:28:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611513
+;
+
