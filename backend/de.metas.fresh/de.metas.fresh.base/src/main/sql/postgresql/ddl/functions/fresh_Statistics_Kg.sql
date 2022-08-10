@@ -1,5 +1,3 @@
-
-
 DROP FUNCTION IF EXISTS report.fresh_statistics_kg(
     IN p_C_Period_ID               numeric,
     IN p_issotrx                   character varying,
@@ -229,7 +227,7 @@ BEGIN
                                           fa.iso_code,
                                           fa.QtySum,
                                           fa.totalamt,
-                                          uomconvert(fa.M_Product_ID, fa.C_UOM_ID, fa.kg_uom_id, QtySum) AS kgQty
+                                          uomconvert(fa.M_Product_ID, fa.C_UOM_ID, (SELECT C_UOM_ID FROM C_UOM WHERE x12de355 = 'KGM'), QtySum) AS kgQty
 
                                    FROM fresh_statistics_kg_MV AS fa
                                    WHERE TRUE
