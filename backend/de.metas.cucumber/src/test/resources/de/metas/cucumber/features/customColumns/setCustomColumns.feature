@@ -63,6 +63,6 @@ Feature: Setting customColumns via SetCustomColumns method
       |                           | resourceType                     | {"ChargeableQty":10,"TimeSlotEnd":"15:00:00","TimeSlotStart":"12:25:00"}                                                           |
 
     And set custom columns for C_Order:
-      | C_Order_ID.Identifier | OPT.DeliveryInfo | OPT.ErrorMessage                                          |
-      | order                 | DeliveryInfo     | DeliveryInfo ist keine benutzerdefinierte REST API-Spalte |
+      | C_Order_ID.Identifier | OPT.DeliveryInfo | OPT.ErrorMessage                                                                                           |
+      | order                 | DeliveryInfo     | DeliveryInfo ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=N) |
 

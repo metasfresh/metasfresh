@@ -158,3 +158,88 @@ UPDATE AD_Element_Trl SET Description='If true, it allows users to update the co
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581256,'en_US') 
 ;
 
+-- 2022-08-10T08:59:43.972Z
+UPDATE AD_Message SET MsgText='{0} ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=''N'')',Updated=TO_TIMESTAMP('2022-08-10 11:59:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545145
+;
+
+-- 2022-08-10T09:00:02.510Z
+UPDATE AD_Message_Trl SET MsgText='{0} ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=''N'')',Updated=TO_TIMESTAMP('2022-08-10 12:00:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545145
+;
+
+-- 2022-08-10T09:00:06.887Z
+UPDATE AD_Message_Trl SET MsgText='{0} ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=''N'')',Updated=TO_TIMESTAMP('2022-08-10 12:00:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545145
+;
+
+-- 2022-08-10T09:00:14.877Z
+UPDATE AD_Message_Trl SET MsgText='{0} ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=''N'')',Updated=TO_TIMESTAMP('2022-08-10 12:00:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545145
+;
+
+-- 2022-08-10T09:00:21.044Z
+UPDATE AD_Message_Trl SET MsgText='{0} is not flagged as custom REST API column (AD_Column.IsRestAPICustomColumn=''N'')',Updated=TO_TIMESTAMP('2022-08-10 12:00:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545145
+;
+
+-- 2022-08-10T09:01:52.797Z
+UPDATE AD_Element_Trl SET Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)',Updated=TO_TIMESTAMP('2022-08-10 12:01:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581256 AND AD_Language='de_CH'
+;
+
+-- 2022-08-10T09:01:52.823Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581256,'de_CH')
+;
+
+-- 2022-08-10T09:02:00.878Z
+UPDATE AD_Element_Trl SET Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)',Updated=TO_TIMESTAMP('2022-08-10 12:02:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581256 AND AD_Language='de_DE'
+;
+
+-- 2022-08-10T09:02:00.879Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581256,'de_DE')
+;
+
+-- 2022-08-10T09:02:00.895Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581256,'de_DE')
+;
+
+-- 2022-08-10T09:02:00.896Z
+UPDATE AD_Column SET ColumnName='IsRestAPICustomColumn', Name='REST-API Benutzerdefinierte Spalte', Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)', Help=NULL WHERE AD_Element_ID=581256
+;
+
+-- 2022-08-10T09:02:00.897Z
+UPDATE AD_Process_Para SET ColumnName='IsRestAPICustomColumn', Name='REST-API Benutzerdefinierte Spalte', Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)', Help=NULL, AD_Element_ID=581256 WHERE UPPER(ColumnName)='ISRESTAPICUSTOMCOLUMN' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-08-10T09:02:00.897Z
+UPDATE AD_Process_Para SET ColumnName='IsRestAPICustomColumn', Name='REST-API Benutzerdefinierte Spalte', Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)', Help=NULL WHERE AD_Element_ID=581256 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-08-10T09:02:00.898Z
+UPDATE AD_Field SET Name='REST-API Benutzerdefinierte Spalte', Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581256) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581256)
+;
+
+-- 2022-08-10T09:02:00.913Z
+UPDATE AD_Tab SET Name='REST-API Benutzerdefinierte Spalte', Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 581256
+;
+
+-- 2022-08-10T09:02:00.914Z
+UPDATE AD_WINDOW SET Name='REST-API Benutzerdefinierte Spalte', Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)', Help=NULL WHERE AD_Element_ID = 581256
+;
+
+-- 2022-08-10T09:02:00.915Z
+UPDATE AD_Menu SET   Name = 'REST-API Benutzerdefinierte Spalte', Description = 'Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581256
+;
+
+-- 2022-08-10T09:02:03.100Z
+UPDATE AD_Element_Trl SET Description='Bei "true" können Benutzer den Wert der Spalte über das Feld "extendedProps" in den REST-API-Aufrufdaten des entsprechenden Modells aktualisieren. (sofern der jeweilige REST-API-Endpunkt diese Funktion unterstützt)',Updated=TO_TIMESTAMP('2022-08-10 12:02:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581256 AND AD_Language='nl_NL'
+;
+
+-- 2022-08-10T09:02:03.101Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581256,'nl_NL')
+;
+
+-- 2022-08-10T09:02:20.230Z
+UPDATE AD_Element_Trl SET Description='If true, it allows users to update the column''s value via "extendedProps" field in the corresponding model''s REST API payload. (only for REST API endpoints which support the feature)',Updated=TO_TIMESTAMP('2022-08-10 12:02:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581256 AND AD_Language='en_US'
+;
+
+-- 2022-08-10T09:02:20.231Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581256,'en_US')
+;
+
+
