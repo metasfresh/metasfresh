@@ -56,7 +56,7 @@ BEGIN
                             */
                           INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID
                           INNER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = fa.C_AcctSchema_ID
-                          INNERJOIN C_Currency C ON acs.C_Currency_ID = C.C_Currency_ID
+                          INNER JOIN C_Currency C ON acs.C_Currency_ID = C.C_Currency_ID
                  WHERE AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))
                    
                    -- Akontozahlung invoices are not included. See FRESH_609
