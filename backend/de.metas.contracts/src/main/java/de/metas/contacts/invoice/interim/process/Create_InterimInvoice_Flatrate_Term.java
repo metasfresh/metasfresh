@@ -25,6 +25,7 @@ package de.metas.contacts.invoice.interim.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contacts.invoice.interim.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -60,8 +61,15 @@ public class Create_InterimInvoice_Flatrate_Term extends JavaProcess implements 
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
+		final I_C_OrderLine salesOrder = context.getSelectedModel(I_C_OrderLine.class);
+		if (!salesOrder.isProcessed())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only processed order lines are allowed");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -76,7 +84,7 @@ public class Create_InterimInvoice_Flatrate_Term extends JavaProcess implements 
 				.build()
 				.execute();
 
-		return null;
+		return MSG_OK;
 	}
 
 }

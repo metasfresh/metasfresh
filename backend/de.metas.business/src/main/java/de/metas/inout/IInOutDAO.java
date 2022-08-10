@@ -129,4 +129,6 @@ public interface IInOutDAO extends ISingletonService
 	List<I_M_InOutLine> retrieveShipmentLinesForOrderId(Set<OrderId> orderIds);
 
 	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
+
+	Collection<InOutLine> retrieveInOutLinesBy(@NonNull final InOutLineQuery inOutLineQuery);
 }
