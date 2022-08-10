@@ -89,11 +89,52 @@ WHERE fa.AD_Table_ID = (SELECT Get_Table_ID('C_Invoice'))
 
 
   
-CREATE TABLE fresh_statistics_kg_MV
-AS
-SELECT *
-FROM fresh_statistics_kg_view;
-
+CREATE TABLE fresh_statistics_kg_mv
+(
+    m_product_id                 numeric(10),
+    p1_isactive                  char,
+    p1_enddate                   timestamp,
+    p1_startdate                 timestamp,
+    p2_startdate                 timestamp,
+    p3_startdate                 timestamp,
+    p4_startdate                 timestamp,
+    p5_startdate                 timestamp,
+    p6_startdate                 timestamp,
+    p7_startdate                 timestamp,
+    p8_startdate                 timestamp,
+    p9_startdate                 timestamp,
+    p10_startdate                timestamp,
+    p11_startdate                timestamp,
+    p12_startdate                timestamp,
+    fa_c_period_id               numeric(10),
+    p1_c_period_id               numeric(10),
+    p2_c_period_id               numeric(10),
+    p3_c_period_id               numeric(10),
+    p4_c_period_id               numeric(10),
+    p5_c_period_id               numeric(10),
+    p6_c_period_id               numeric(10),
+    p7_c_period_id               numeric(10),
+    p8_c_period_id               numeric(10),
+    p9_c_period_id               numeric(10),
+    p10_c_period_id              numeric(10),
+    p11_c_period_id              numeric(10),
+    p12_c_period_id              numeric(10),
+    org_id                       numeric(10),
+    iso_code                     char(3),
+    c_uom_id                     numeric(10),
+    c_activity_id                numeric(10),
+    uomkg                        numeric(10),
+    convqty                      numeric,
+    amtacct                      numeric,
+    qty                          numeric,
+    il_m_attributesetinstance_id numeric(10),
+    il_ad_client_id              numeric(10),
+    il_ad_org_id                 numeric(10),
+    p_m_product_id               numeric(10),
+    p_m_product_category_id      numeric(10),
+    i_issotrx                    char
+)
+;
 
 
 -- indices that shall improve filtering
