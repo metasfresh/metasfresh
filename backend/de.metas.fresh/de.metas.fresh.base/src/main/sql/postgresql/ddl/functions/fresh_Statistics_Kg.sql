@@ -223,7 +223,7 @@ BEGIN
                           FROM (
                                    SELECT fa.C_Period_ID,
                                           fa.c_uom_id,
-                                          fa.kg_uom_id,
+                                          (SELECT C_UOM_ID FROM C_UOM WHERE x12de355 = 'KGM') as kg_uom_id,
                                           fa.M_Product_ID,
                                           fa.org_id,
                                           fa.iso_code,

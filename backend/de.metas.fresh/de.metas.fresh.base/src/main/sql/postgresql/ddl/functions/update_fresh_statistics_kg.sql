@@ -9,8 +9,6 @@ DECLARE v_Periods RECORD;
 BEGIN
  
         DROP TABLE IF EXISTS fresh_statistics_kg_MV;
-        DROP INDEX IF EXISTS fresh_statistics_kg_period_Index;
-        DROP INDEX IF EXISTS fresh_statistics_kg_product_id;
 
         CREATE TABLE fresh_statistics_kg_MV
         AS
@@ -38,15 +36,13 @@ BEGIN
                         fa.C_Activity_ID,
                         fa.M_Product_ID,
                         CASE WHEN isSOTrx = 'Y' THEN AmtAcctCr - AmtAcctDr ELSE AmtAcctDr - AmtAcctCr END AS AmtAcct,
-                        kg_uom_id,
                         c.iso_code,
                         i.IsSOtrx                                                                         AS i_IsSOtrx,
                         il.M_AttributeSetInstance_ID                                                      AS il_M_AttributeSetInstance_ID,
                         il.AD_Client_ID                                                                   AS il_AD_Client_ID,
                         il.AD_Org_ID                                                                      AS il_AD_Org_ID,
                         p.M_Product_Category_ID                                                           AS M_Product_Category_ID
-                 FROM (SELECT C_UOM_ID AS kg_uom_id FROM C_UOM WHERE x12de355 = 'KGM') AS uomkg,
-                      Fact_Acct fa
+                 FROM   Fact_Acct fa
                           INNER JOIN C_Invoice i
                                ON fa.Record_ID = i.C_Invoice_ID 
                           INNER JOIN C_InvoiceLine il ON fa.Line_ID = il.C_InvoiceLine_ID
@@ -70,7 +66,6 @@ BEGIN
                  fa.iso_code,
                  fa.C_UOM_ID,
                  fa.C_Activity_ID,
-                 kg_uom_id,
                  il_M_AttributeSetInstance_ID,
                  il_AD_Client_ID,
                  il_AD_Org_ID,
