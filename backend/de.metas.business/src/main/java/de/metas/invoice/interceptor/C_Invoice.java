@@ -409,4 +409,15 @@ public class C_Invoice // 03771
 	{
 		invoiceBL.setInvoiceLineTaxes(invoice);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_SectionCode_ID })
+	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_M_SectionCode_ID)
+	public void updateSectionCode(@NonNull final I_C_Invoice invoice)
+	{
+		for (final I_C_InvoiceLine line : invoiceDAO.retrieveLines(invoice))
+		{
+			line.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
+		}
+	}
 }
