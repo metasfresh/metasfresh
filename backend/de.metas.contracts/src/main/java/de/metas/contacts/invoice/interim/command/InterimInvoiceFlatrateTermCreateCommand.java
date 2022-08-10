@@ -103,8 +103,6 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final Timestamp dateTo;
 	@NonNull
 	private final OrderLineId orderLineId;
-	@NonNull
-	private final Collection<InOutLine> inOutLines;
 
 	private final OrderLine orderLine;
 	private final I_C_Flatrate_Conditions conditions;
@@ -128,7 +126,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 
 	@Builder
 	public InterimInvoiceFlatrateTermCreateCommand(@NonNull final Properties ctx,
-			@NonNull final BPartnerId bpartnerId,
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ConditionsId conditionsId,
 			@Nullable final ProductId productId,
 			@NonNull final Timestamp dateFrom,
@@ -137,15 +135,15 @@ public class InterimInvoiceFlatrateTermCreateCommand
 			@Singular @Nullable final Collection<InOutLine> inOutLines)
 	{
 		this.ctx = ctx;
-		this.bpartnerId = bpartnerId;
 
 		this.dateFrom = dateFrom;
 		this.dateTo = dateTo;
 		this.orderLineId = orderLineId;
 		this.orderLine = orderLineRepository.getById(orderLineId);
+		this.bpartnerId = Objects.requireNonNull(CoalesceUtil.coalesceSuppliers(() -> bpartnerId,
+				() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getC_BPartner_ID())));
 		this.productId = Objects.requireNonNull(CoalesceUtil.coalesce(productId, orderLine.getProductId()));
 		this.conditions = flatrateDAO.getConditionsById(conditionsId);
-		this.inOutLines = Objects.requireNonNull(CoalesceUtil.coalesce(inOutLines, Collections.emptyList()));
 		this.interimInvoiceSettings = interimInvoiceSettingsDAO.getById(InterimInvoiceSettingsId.ofRepoId(conditions.getC_Interim_Invoice_Settings_ID()));
 		this.product = productDAO.getById(this.productId);
 		this.clientAndOrgId = Env.getClientAndOrgId(ctx);

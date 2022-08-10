@@ -112,3 +112,23 @@ UPDATE AD_Process_Para SET AD_Reference_Value_ID=540280,Updated=TO_TIMESTAMP('20
 -- URL zum Konzept
 UPDATE AD_Process_Para SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2022-08-10 21:29:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542281
 ;
+
+-- 2022-08-10T19:31:19.606Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542279
+;
+
+-- 2022-08-10T19:31:19.611Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542279
+;
+
+-- 2022-08-10T19:31:24.484Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542281
+;
+
+-- 2022-08-10T19:31:24.487Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542281
+;

@@ -39,12 +39,8 @@ import java.sql.Timestamp;
 
 public class Create_InterimInvoice_Flatrate_Term extends JavaProcess implements IProcessPrecondition
 {
-	@Param(mandatory = true, parameterName = "C_BPartner_ID")
-	private int p_C_Bpartner_ID;
 	@Param(mandatory = true, parameterName = "C_Flatrate_Conditions_ID")
 	private int p_C_Flatrate_Conditions_ID;
-	@Param(mandatory = true, parameterName = "M_Product_ID")
-	private int p_M_Product_ID;
 	@Param(mandatory = true, parameterName = "DateFrom")
 	private Timestamp p_DateFrom;
 	@Param(mandatory = true, parameterName = "DateTo")
@@ -75,9 +71,7 @@ public class Create_InterimInvoice_Flatrate_Term extends JavaProcess implements 
 	{
 		InterimInvoiceFlatrateTermCreateCommand.builder()
 				.ctx(getCtx())
-				.bpartnerId(BPartnerId.ofRepoId(p_C_Bpartner_ID))
 				.conditionsId(ConditionsId.ofRepoId(p_C_Flatrate_Conditions_ID))
-				.productId(ProductId.ofRepoId(p_M_Product_ID))
 				.orderLineId(OrderLineId.ofRepoId(getRecord_ID()))
 				.dateFrom(p_DateFrom)
 				.dateTo(p_DateTo)
