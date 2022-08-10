@@ -26,11 +26,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 
+@Value
 public class InterimInvoiceOverviewId implements RepoIdAware
 {
 	@JsonCreator

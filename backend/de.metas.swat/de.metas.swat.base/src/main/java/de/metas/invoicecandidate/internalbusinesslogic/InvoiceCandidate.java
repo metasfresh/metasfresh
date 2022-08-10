@@ -110,7 +110,7 @@ public class InvoiceCandidate
 			@JsonProperty("priceUomId") @Nullable final UomId priceUomId,
 			@JsonProperty("qualityDiscountOverride") @Nullable final Percent qualityDiscountOverride,
 			@JsonProperty("qtyToInvoiceOverrideInStockUom") @Nullable final BigDecimal qtyToInvoiceOverrideInStockUom,
-			@JsonProperty("isInterimIC") @Nullable final Boolean isInterimIC)
+			@JsonProperty("interimIC") @Nullable final Boolean isInterimIC)
 	{
 		this.id = id;
 		this.soTrx = soTrx;
