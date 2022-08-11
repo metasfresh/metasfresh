@@ -37,7 +37,7 @@ import lombok.Value;
 @Value
 public class CostSegmentAndElement
 {
-	public static final CostSegmentAndElement of(
+	public static CostSegmentAndElement of(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElementId costElementId)
 	{
