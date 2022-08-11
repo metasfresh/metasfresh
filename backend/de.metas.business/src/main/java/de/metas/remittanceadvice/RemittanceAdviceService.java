@@ -24,6 +24,7 @@ package de.metas.remittanceadvice;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
@@ -44,6 +45,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
@@ -51,7 +53,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -100,12 +102,12 @@ public class RemittanceAdviceService
 	@NonNull
 	private Amount getInvoiceAmountInRemAdvCurrency(@NonNull final CurrencyId remittanceCurrencyId, @NonNull final I_C_Invoice invoice)
 	{
-		final LocalDate conversionDate = LocalDate.now();
+		final Instant conversionDate = SystemTime.asInstant();
 		final CurrencyConversionContext currencyConversionContext =
 				currencyConversionBL.createCurrencyConversionContext(conversionDate,
-																	 ConversionTypeMethod.Spot,
-																	 Env.getClientId(),
-																	 OrgId.ofRepoId(invoice.getAD_Org_ID()));
+						ConversionTypeMethod.Spot,
+						ClientId.ofRepoId(invoice.getAD_Client_ID()),
+						OrgId.ofRepoId(invoice.getAD_Org_ID()));
 
 		final Money invoiceGrandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 
@@ -208,7 +210,7 @@ public class RemittanceAdviceService
 	public Optional<Amount> getServiceFeeInREMADVCurrency(@NonNull final RemittanceAdviceLine remittanceAdviceLine)
 	{
 		if (remittanceAdviceLine.getServiceFeeAmount() == null
-				|| remittanceAdviceLine.getServiceFeeAmount().isZero() )
+				|| remittanceAdviceLine.getServiceFeeAmount().isZero())
 		{
 			return Optional.empty();
 		}
@@ -220,12 +222,12 @@ public class RemittanceAdviceService
 			return Optional.of(serviceFeeAmount);
 		}
 
-		final LocalDate conversionDate = LocalDate.now();
+		final Instant conversionDate = SystemTime.asInstant();
 		final CurrencyConversionContext currencyConversionContext =
 				currencyConversionBL.createCurrencyConversionContext(conversionDate,
-																	 ConversionTypeMethod.Spot,
-																	 Env.getClientId(),
-																	 remittanceAdviceLine.getOrgId());
+						ConversionTypeMethod.Spot,
+						Env.getClientId(),
+						remittanceAdviceLine.getOrgId());
 
 		final Currency serviceFeeCurrency = currencyDAO.getByCurrencyCode(serviceFeeAmount.getCurrencyCode());
 		final Currency remittedCurrency = currencyDAO.getByCurrencyCode(remittanceAdviceLine.getRemittedAmount().getCurrencyCode());

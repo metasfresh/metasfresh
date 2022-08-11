@@ -16,14 +16,34 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import com.google.common.base.MoreObjects;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.acct.doc.PostingException;
+import de.metas.acct.tax.TaxAcctType;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
+import de.metas.location.LocationId;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxId;
+import de.metas.uom.UomId;
+import de.metas.util.NumberUtils;
+import de.metas.util.Optionals;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,37 +54,14 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.doc.AcctDocRequiredServicesFacade;
-import de.metas.acct.doc.PostingException;
-import de.metas.acct.tax.TaxAcctType;
-import de.metas.bpartner.BPartnerId;
-import de.metas.costing.CostingLevel;
-import de.metas.costing.CostingMethod;
-import de.metas.location.LocationId;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderLineId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.quantity.Quantity;
-import de.metas.tax.api.TaxId;
-import de.metas.uom.UomId;
-import de.metas.util.NumberUtils;
-import de.metas.util.Optionals;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Optional;
+import java.util.function.IntFunction;
 
 /**
  * Standard Document Line
@@ -125,8 +122,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private I_M_Product _product; // lazy
 	private Boolean _productIsItem = null; // lazy
 
-	private LocalDate m_DateAcct = null;
-	private LocalDate m_DateDoc = null;
+	private LocalDateAndOrgId m_DateAcct = null;
+	private LocalDateAndOrgId m_DateDoc = null;
 	private int m_C_SalesRegion_ID = -1;
 	private Optional<BPartnerId> _bpartnerId;
 	private final LocationId locationFromId = null;
@@ -160,13 +157,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return m_doc.getClientId();
 	}
 
-	private final PO getPO()
+	private PO getPO()
 	{
 		return p_po;
 	}
 
 	/**
-	 * @param modelType
 	 * @return underlying model
 	 */
 	protected final <T> T getModel(final Class<T> modelType)
@@ -392,23 +388,31 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 	}
 
-	public final LocalDate getDateAcct()
+	@NonNull
+	public final LocalDateAndOrgId getDateAcct()
 	{
 		if (m_DateAcct == null)
 		{
-			m_DateAcct = CoalesceUtil.coalesceSuppliers(
+			m_DateAcct = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> getValueAsLocalDateOrNull("DateAcct"),
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateAcct;
 	}
 
-	protected final void setDateDoc(final LocalDate dateDoc)
+	@NonNull
+	protected final Timestamp getDateAcctAsTimestamp()
+	{
+		return getDateAcct().toTimestamp(services::getTimeZone);
+	}
+
+	protected final void setDateDoc(@NonNull final LocalDateAndOrgId dateDoc)
 	{
 		m_DateDoc = dateDoc;
 	}   // setDateDoc
 
-	public final LocalDate getDateDoc()
+	@NonNull
+	public final LocalDateAndOrgId getDateDoc()
 	{
 		if (m_DateDoc == null)
 		{
@@ -418,6 +422,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateDoc;
+	}
+
+	@NonNull
+	protected final Timestamp getDateDocAsTimestamp()
+	{
+		return getDateDoc().toTimestamp(services::getTimeZone);
 	}
 
 	@NonNull
@@ -453,10 +463,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	/**
 	 * Account from Default Product Category
-	 * @param as       accounting schema
+	 *
+	 * @param as accounting schema
 	 * @return Requested Product Account
 	 */
-	private final MAccount getAccountDefault(final ProductAcctType acctType, final AcctSchema as)
+	private MAccount getAccountDefault(final ProductAcctType acctType, final AcctSchema as)
 	{
 		final AccountId accountId = services.getProductDefaultAcct(as.getId(), acctType).orElse(null);
 		if (accountId == null)
@@ -467,7 +478,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return services.getAccountById(accountId);
 	}
 
-	private final Optional<MAccount> getTaxAccount(@NonNull final TaxAcctType taxAcctType, final AcctSchemaId acctSchemaId)
+	private Optional<MAccount> getTaxAccount(@NonNull final TaxAcctType taxAcctType, final AcctSchemaId acctSchemaId)
 	{
 		final TaxId taxId = getTaxId().orElse(null);
 		return services.getTaxAccount(acctSchemaId, taxId, taxAcctType);
@@ -547,7 +558,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return _productIsItem;
 	}
 
-	private final boolean checkIsItem()
+	private boolean checkIsItem()
 	{
 		final I_M_Product product = getProduct();
 		if (product == null)
@@ -603,7 +614,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * @return product or null if no product
 	 */
-	private final I_M_Product getProduct()
+	private I_M_Product getProduct()
 	{
 		if (_product == null)
 		{
@@ -737,7 +748,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		_bpartnerId = Optional.ofNullable(bpartnerId);
 	}
 
-	private final int getC_BPartner_Location_ID()
+	private int getC_BPartner_Location_ID()
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> getValue("C_BPartner_Location_ID"),
@@ -812,7 +823,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValue("User2_ID");
 	}
 
-	private final <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
+	private <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -832,7 +843,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return id;
 	}
 
-	private final <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
+	private <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -878,7 +889,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return 0;
 	}
 
-	@Nullable final BigDecimal getValueAsBD(final String columnName, @Nullable final BigDecimal defaultValue)
+	@Nullable
+	final BigDecimal getValueAsBD(final String columnName, @Nullable final BigDecimal defaultValue)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -891,16 +903,29 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return defaultValue;
 	}
 
-	private final LocalDate getValueAsLocalDateOrNull(final String columnName)
+	@Nullable
+	private LocalDateAndOrgId getValueAsLocalDateOrNull(@NonNull final String columnName)
 	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
+		@NonNull final PO docLinePO = getPO();
+		final int index = docLinePO.get_ColumnIndex(columnName);
+		if (index < 0)
 		{
-			return TimeUtil.asLocalDate(po.get_Value(index));
+			return null;
 		}
 
-		return null;
+		final Timestamp ts = docLinePO.get_ValueAsTimestamp(index);
+		if (ts == null)
+		{
+			return null;
+		}
+
+		OrgId orgId = OrgId.ofRepoId(docLinePO.getAD_Org_ID());
+		if (orgId.isAny())
+		{
+			orgId = getDoc().getOrgId();
+		}
+
+		return LocalDateAndOrgId.ofTimestamp(ts, orgId, services::getTimeZone);
 	}
 
 	public final String getValueAsString(final String columnName)
@@ -920,7 +945,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * Set ReversalLine_ID
 	 * store original (voided/reversed) document line
 	 *
-	 * @param ReversalLine_ID
 	 */
 	public final void setReversalLine_ID(final int ReversalLine_ID)
 	{

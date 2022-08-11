@@ -31,6 +31,7 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.FixedConversionRate;
@@ -49,6 +50,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -85,7 +87,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -178,24 +179,23 @@ public class PaymentBL implements IPaymentBL
 
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
-		final LocalDate ConvDate = TimeUtil.asLocalDate(payment.getDateTrx());
+		final Instant ConvDate = payment.getDateTrx().toInstant();
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
 
 		// Get Currency Rate
-		BigDecimal CurrencyRate = BigDecimal.ONE;
 		if (currencyId != null
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			CurrencyRate = currencyBL.getCurrencyRate(
-					invoiceCurrencyId,
-					currencyId,
-					ConvDate,
-					conversionTypeId,
-					clientId,
-					orgId)
+			final BigDecimal CurrencyRate = currencyBL.getCurrencyRate(
+							invoiceCurrencyId,
+							currencyId,
+							ConvDate,
+							conversionTypeId,
+							clientId,
+							orgId)
 					.getConversionRate();
 
 			//
@@ -299,7 +299,7 @@ public class PaymentBL implements IPaymentBL
 		// Get Currency Info
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
-		final LocalDate convDate = TimeUtil.asLocalDate(payment.getDateTrx());
+		final Instant convDate = payment.getDateTrx() != null ? payment.getDateTrx().toInstant() : SystemTime.asInstant();
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
@@ -849,10 +849,9 @@ public class PaymentBL implements IPaymentBL
 	{
 		final PaymentCurrencyContext paymentCurrencyContext = PaymentCurrencyContext.ofPaymentRecord(payment);
 		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(payment.getDateAcct()),
+				InstantAndOrgId.ofTimestamp(payment.getDateAcct(), OrgId.ofRepoId(payment.getAD_Org_ID())),
 				paymentCurrencyContext.getCurrencyConversionTypeId(),
-				ClientId.ofRepoId(payment.getAD_Client_ID()),
-				OrgId.ofRepoId(payment.getAD_Org_ID()));
+				ClientId.ofRepoId(payment.getAD_Client_ID()));
 
 		final FixedConversionRate fixedConversionRate = paymentCurrencyContext.toFixedConversionRateOrNull();
 		if (fixedConversionRate != null)

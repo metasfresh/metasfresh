@@ -3,6 +3,7 @@ package de.metas.costing;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -16,7 +17,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.Objects;
 
 /*
@@ -60,7 +60,7 @@ public class CostDetailCreateRequest
 	CostAmount amt;
 	Quantity qty;
 	CurrencyConversionTypeId currencyConversionTypeId;
-	LocalDate date;
+	LocalDateAndOrgId date;
 	String description;
 
 	@Builder(toBuilder = true)
@@ -76,7 +76,7 @@ public class CostDetailCreateRequest
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
-			@NonNull final LocalDate date,
+			@NonNull final LocalDateAndOrgId date,
 			@Nullable final String description)
 	{
 		this.acctSchemaId = acctSchemaId;

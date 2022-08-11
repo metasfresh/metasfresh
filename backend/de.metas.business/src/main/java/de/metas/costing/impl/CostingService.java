@@ -205,8 +205,7 @@ public class CostingService implements ICostingService
 		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				request.getDate(),
 				request.getCurrencyConversionTypeId(),
-				request.getClientId(),
-				request.getOrgId())
+				request.getClientId())
 				.withPrecision(acctSchema.getCosting().getCostingPrecision());
 
 		final CurrencyConversionResult amtConversionResult = currencyConversionBL.convert(

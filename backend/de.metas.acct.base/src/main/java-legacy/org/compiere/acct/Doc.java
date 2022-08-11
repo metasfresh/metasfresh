@@ -26,6 +26,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -64,7 +65,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -127,12 +127,12 @@ import java.util.function.IntFunction;
  * 	C_ProjectIssue	623 - DocType fixed
  *
  * </pre>
- *
+ * <p>
  * Also see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- *         <li>FR [ 2520591 ] Support multiples calendar for Org
+ * <li>FR [ 2520591 ] Support multiples calendar for Org
  * @version $Id: Doc.java,v 1.6 2006/07/30 00:53:33 jjanke Exp $
  */
 public abstract class Doc<DocLineType extends DocLine<?>>
@@ -143,52 +143,92 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	@Getter(AccessLevel.PROTECTED)
 	protected final AcctDocRequiredServicesFacade services;
 
-	/** AR Invoices - ARI */
+	/**
+	 * AR Invoices - ARI
+	 */
 	public static final String DOCTYPE_ARInvoice = X_C_DocType.DOCBASETYPE_ARInvoice;
-	/** AR Credit Memo */
+	/**
+	 * AR Credit Memo
+	 */
 	public static final String DOCTYPE_ARCredit = "ARC";
-	/** AR Receipt */
+	/**
+	 * AR Receipt
+	 */
 	public static final String DOCTYPE_ARReceipt = "ARR";
-	/** AR ProForma */
+	/**
+	 * AR ProForma
+	 */
 	public static final String DOCTYPE_ARProForma = "ARF";
-	/** AP Invoices */
+	/**
+	 * AP Invoices
+	 */
 	public static final String DOCTYPE_APInvoice = "API";
-	/** AP Credit Memo */
+	/**
+	 * AP Credit Memo
+	 */
 	public static final String DOCTYPE_APCredit = "APC";
-	/** AP Payment */
+	/**
+	 * AP Payment
+	 */
 	public static final String DOCTYPE_APPayment = "APP";
-	/** CashManagement Bank Statement */
+	/**
+	 * CashManagement Bank Statement
+	 */
 	public static final String DOCTYPE_BankStatement = "CMB";
-	/** CashManagement Cash Journals */
+	/**
+	 * CashManagement Cash Journals
+	 */
 	public static final String DOCTYPE_CashJournal = "CMC";
-	/** CashManagement Allocations */
+	/**
+	 * CashManagement Allocations
+	 */
 	public static final String DOCTYPE_Allocation = "CMA";
-	/** Material Shipment */
+	/**
+	 * Material Shipment
+	 */
 	public static final String DOCTYPE_MatShipment = "MMS";
-	/** Material Receipt */
+	/**
+	 * Material Receipt
+	 */
 	public static final String DOCTYPE_MatReceipt = "MMR";
-	/** Material Inventory */
+	/**
+	 * Material Inventory
+	 */
 	public static final String DOCTYPE_MatInventory = "MMI";
-	/** Material Movement */
+	/**
+	 * Material Movement
+	 */
 	public static final String DOCTYPE_MatMovement = "MMM";
 	// /** Material Production */
 	// public static final String DOCTYPE_MatProduction = "MMP";
-	/** Match Invoice */
+	/**
+	 * Match Invoice
+	 */
 	public static final String DOCTYPE_MatMatchInv = "MXI";
-	/** Match PO */
+	/**
+	 * Match PO
+	 */
 	public static final String DOCTYPE_MatMatchPO = "MXP";
-	/** GL Journal */
+	/**
+	 * GL Journal
+	 */
 	public static final String DOCTYPE_GLJournal = "GLJ";
 	// /** Purchase Order */
 	// public static final String DOCTYPE_POrder = "POO";
 	// /** Sales Order */
 	// public static final String DOCTYPE_SOrder = "SOO";
-	/** Project Issue */
+	/**
+	 * Project Issue
+	 */
 	public static final String DOCTYPE_ProjectIssue = "PJI";
-	/** Purchase Requisition */
+	/**
+	 * Purchase Requisition
+	 */
 	public static final String DOCTYPE_PurchaseRequisition = "POR";
 
-	/** Log per Document */
+	/**
+	 * Log per Document
+	 */
 	private static final Logger log = LogManager.getLogger(Doc.class);
 
 	protected Doc(final AcctDocContext ctx)
@@ -197,7 +237,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	/**
-	 * @param ctx construction parameters
+	 * @param ctx                construction parameters
 	 * @param defaultDocBaseType suggested DocBaseType to be used
 	 */
 	protected Doc(@NonNull final AcctDocContext ctx, @Nullable final String defaultDocBaseType)
@@ -231,44 +271,72 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		setDocumentType(defaultDocBaseType);
 	}   // Doc
 
-	/** Accounting Schemas */
+	/**
+	 * Accounting Schemas
+	 */
 	private final ImmutableList<AcctSchema> acctSchemas;
-	/** The Document */
+	/**
+	 * The Document
+	 */
 	private final PO p_po;
-	/** Document Type */
+	/**
+	 * Document Type
+	 */
 	private String m_DocumentType = null;
-	/** Document Status */
+	/**
+	 * Document Status
+	 */
 	private final String m_DocStatus;
-	/** Document No */
+	/**
+	 * Document No
+	 */
 	private String m_DocumentNo = null;
-	/** Description */
+	/**
+	 * Description
+	 */
 	private String m_Description = null;
-	/** GL Category */
+	/**
+	 * GL Category
+	 */
 	private int m_GL_Category_ID = 0;
-	/** GL Period */
+	/**
+	 * GL Period
+	 */
 	private MPeriod m_period = null;
-	/** Period ID */
+	/**
+	 * Period ID
+	 */
 	private int m_C_Period_ID = 0;
 	@Nullable private final LocationId locationFromId = null;
 	@Nullable private final LocationId locationToId = null;
-	private LocalDate _dateAcct = null;
-	private LocalDate _dateDoc = null;
-	/** Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced) */
+	private LocalDateAndOrgId _dateAcct = null;
+	private LocalDateAndOrgId _dateDoc = null;
+	/**
+	 * Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced)
+	 */
 	private boolean m_MultiCurrency = false;
-	/** BP Sales Region */
+	/**
+	 * BP Sales Region
+	 */
 	private int m_BP_C_SalesRegion_ID = -1;
 	@Nullable private Optional<BPartnerId> _bpartnerId; // lazy
 
-	/** Bank Account */
+	/**
+	 * Bank Account
+	 */
 	@Nullable private Optional<BankAccountId> _bankAccountId = null; // lazy
 	@Nullable private BankAccount bankAccount = null;
-	/** Cach Book */
+	/**
+	 * Cach Book
+	 */
 	private int m_C_CashBook_ID = -1;
 
 	@Nullable private Optional<CurrencyId> _currencyId; // lazy
 	@Nullable private CurrencyPrecision _currencyPrecision; // lazy
 
-	/** Contained Doc Lines */
+	/**
+	 * Contained Doc Lines
+	 */
 	private List<DocLineType> docLines;
 
 	public final String get_TableName()
@@ -297,7 +365,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private PO getPO()
 	{
 		return p_po;
-	}	// getPO
+	}    // getPO
 
 	protected final <T> T getModel(final Class<T> modelClass)
 	{
@@ -327,9 +395,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *              - if error - create Note
 	 * </pre>
 	 *
-	 * @param force if true ignore that locked
+	 * @param force  if true ignore that locked
 	 * @param repost if true ignore that already posted
-	 * @return null if posted error otherwise
 	 */
 	public final void post(final boolean force, final boolean repost)
 	{
@@ -423,7 +490,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		// Delete existing Accounting
 		if (repost)
 		{
-			if (isPosted() && !isPeriodOpen())	// already posted - don't delete if period closed
+			if (isPosted() && !isPeriodOpen())    // already posted - don't delete if period closed
 			{
 				throw newPostingException()
 						.setPreserveDocumentPostedStatus()
@@ -637,9 +704,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Lock document
 	 *
-	 * @param force force posting
+	 * @param force  force posting
 	 * @param repost true if is document re-posting; i.e. it will assume the document was not already posted
-	 * @throws PostingException
 	 */
 	private void lock(final boolean force, final boolean repost)
 	{
@@ -866,14 +932,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		if (m_GL_Category_ID <= 0)
 		{
-			log.error("No default GL_Category - " + toString());
+			log.error("No default GL_Category - {}", this);
 		}
 
 		if (m_DocumentType == null)
 		{
 			throw new IllegalStateException("Document Type not found");
 		}
-	}	// setDocumentType
+	}    // setDocumentType
 
 	/**************************************************************************
 	 * Is the Source Document Balanced
@@ -898,7 +964,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			log.warn("NO - {}", this);
 		}
 		return retValue;
-	}	// isBalanced
+	}    // isBalanced
 
 	/**
 	 * Makes sure the document is convertible from it's currency to accounting currency.
@@ -957,8 +1023,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return services.createCurrencyConversionContext(
 				getDateAcct(),
 				getCurrencyConversionTypeId(),
-				getClientId(),
-				getOrgId());
+				getClientId());
 	}
 
 	/**
@@ -1001,7 +1066,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			setPeriod();
 		}
 		return m_C_Period_ID;
-	}	// getC_Period_ID
+	}    // getC_Period_ID
 
 	/**
 	 * Is Period Open
@@ -1014,23 +1079,31 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final boolean open = m_C_Period_ID > 0;
 		if (open)
 		{
-			log.debug("Yes - " + toString());
+			log.debug("Yes - {}", this);
 		}
 		else
 		{
-			log.warn("NO - " + toString());
+			log.warn("NO - {}", this);
 		}
 		return open;
-	}	// isPeriodOpen
+	}    // isPeriodOpen
 
-	/** Amount Type - Invoice - Gross */
+	/**
+	 * Amount Type - Invoice - Gross
+	 */
 	public static final int AMTTYPE_Gross = 0;
-	/** Amount Type - Invoice - Net */
+	/**
+	 * Amount Type - Invoice - Net
+	 */
 	public static final int AMTTYPE_Net = 1;
-	/** Amount Type - Invoice - Charge */
+	/**
+	 * Amount Type - Invoice - Charge
+	 */
 	public static final int AMTTYPE_Charge = 2;
 
-	/** Source Amounts (may not all be used) */
+	/**
+	 * Source Amounts (may not all be used)
+	 */
 	private final BigDecimal[] m_Amounts = new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO };
 
 	/**
@@ -1047,13 +1120,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return null;
 		}
 		return m_Amounts[AmtType];
-	}	// getAmount
+	}    // getAmount
 
 	/**
 	 * Set the Amount
 	 *
 	 * @param AmtType see AMTTYPE_*
-	 * @param amt Amount
+	 * @param amt     Amount
 	 */
 	protected final void setAmount(final int AmtType, final BigDecimal amt)
 	{
@@ -1069,7 +1142,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		{
 			m_Amounts[AmtType] = amt;
 		}
-	}	// setAmount
+	}    // setAmount
 
 	/**
 	 * Get Amount with index 0
@@ -1092,7 +1165,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final List<Object> sqlParams;
 
 		// Account Type - Invoice
-		if (acctType == AccountType.Charge)	// see getChargeAccount in DocLine
+		if (acctType == AccountType.Charge)    // see getChargeAccount in DocLine
 		{
 			final int cmp = getAmount(AMTTYPE_Charge).compareTo(BigDecimal.ZERO);
 			if (cmp == 0)
@@ -1297,7 +1370,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		{
 			DB.close(rs, pstmt);
 		}
-	}	// getAccount_ID
+	}    // getAccount_ID
 
 	private BankAccountAcct getBankAccountAcct(@NonNull final AcctSchemaId acctSchemaId)
 	{
@@ -1314,7 +1387,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Get the account for Accounting Schema
 	 *
-	 * @param acctType see AccountType.*
+	 * @param acctType   see AccountType.*
 	 * @param acctSchema accounting schema
 	 * @return Account or <code>null</code>
 	 */
@@ -1328,7 +1401,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		return services.getAccountById(accountId);
-	}	// getAccount
+	}    // getAccount
 
 	protected final MAccount getRealizedGainAcct(final AcctSchema as)
 	{
@@ -1452,9 +1525,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIntOrZero("GL_Budget_ID");
 	}
 
-	protected final LocalDate getDateAcct()
+	@NonNull
+	protected final LocalDateAndOrgId getDateAcct()
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> _dateAcct,
 				() -> getValueAsLocalDateOrNull("DateAcct"),
 				() -> {
@@ -1462,17 +1536,23 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				});
 	}
 
-	protected final void setDateAcct(final Timestamp dateAcct)
+	@NonNull
+	protected final Timestamp getDateAcctAsTimestamp()
 	{
-		setDateAcct(TimeUtil.asLocalDate(dateAcct));
+		return getDateAcct().toTimestamp(services::getTimeZone);
 	}
 
-	protected final void setDateAcct(final LocalDate dateAcct)
+	protected final void setDateAcct(@NonNull final Timestamp dateAcct)
+	{
+		setDateAcct(LocalDateAndOrgId.ofTimestamp(dateAcct, getOrgId(), getServices()::getTimeZone));
+	}
+
+	protected final void setDateAcct(@NonNull final LocalDateAndOrgId dateAcct)
 	{
 		_dateAcct = dateAcct;
 	}
 
-	protected final LocalDate getDateDoc()
+	protected final LocalDateAndOrgId getDateDoc()
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> _dateDoc,
@@ -1483,12 +1563,18 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				});
 	}
 
-	protected final void setDateDoc(final Timestamp dateDoc)
+	@NonNull
+	protected final Timestamp getDateDocAsTimestamp()
 	{
-		setDateDoc(TimeUtil.asLocalDate(dateDoc));
+		return getDateDoc().toTimestamp(services::getTimeZone);
 	}
 
-	protected final void setDateDoc(final LocalDate dateDoc)
+	protected final void setDateDoc(final Timestamp dateDoc)
+	{
+		setDateDoc(LocalDateAndOrgId.ofTimestamp(dateDoc, getOrgId(), getServices()::getTimeZone));
+	}
+
+	protected final void setDateDoc(final LocalDateAndOrgId dateDoc)
 	{
 		_dateDoc = dateDoc;
 	}
@@ -1735,13 +1821,18 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	@Nullable
-	private LocalDate getValueAsLocalDateOrNull(final String columnName)
+	private LocalDateAndOrgId getValueAsLocalDateOrNull(final String columnName)
 	{
-		final PO po = getPO();
+		@NonNull final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
 		if (index != -1)
 		{
-			return TimeUtil.asLocalDate(po.get_Value(index));
+			final Timestamp ts = po.get_ValueAsTimestamp(index);
+			if (ts != null)
+			{
+				final OrgId orgId = OrgId.ofRepoId(po.getAD_Org_ID());
+				return LocalDateAndOrgId.ofTimestamp(ts, orgId, getServices()::getTimeZone);
+			}
 		}
 
 		return null;
@@ -1855,7 +1946,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					getOrgId().getRepoId(),
 					ITrx.TRXNAME_None);
 			note.setRecord(po.get_Table_ID(), po.get_ID());
-			note.setReference(toString());	// Document
+			note.setReference(toString());    // Document
 
 			final StringBuilder text = new StringBuilder();
 			text.append(services.translate(AD_MessageValue).translate(adLanguage));
@@ -1894,7 +1985,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	/**
 	 * Post immediate given list of documents.
-	 *
+	 * <p>
 	 * IMPORTANT: This method won't fail if any of the documents's posting is failing, because we don't want to prevent the main document posting because of this.
 	 */
 	protected final <ID extends RepoIdAware> void postDependingDocuments(
