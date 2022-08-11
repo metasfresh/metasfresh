@@ -31,7 +31,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.temporal.Temporal;
 
 /**
  * Exception thrown when there was no currency rate found.
@@ -45,7 +45,7 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	public NoCurrencyRateFoundException(
 			@NonNull final CurrencyCode currencyFrom,
 			@NonNull final CurrencyCode currencyTo,
-			@Nullable final LocalDate conversionDate,
+			@Nullable final Temporal conversionDate,
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
 		super(buildMsg(currencyFrom, currencyTo, conversionDate, conversionTypeMethod));
@@ -54,13 +54,13 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	private static ITranslatableString buildMsg(
 			@NonNull final CurrencyCode currencyFrom,
 			@NonNull final CurrencyCode currencyTo,
-			@Nullable final LocalDate conversionDate,
+			@Nullable final Temporal conversionDate,
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
 		return TranslatableStrings.builder()
 				.appendADMessage(MSG).append(" ")
 				.appendObj(currencyFrom).appendObj("->").appendObj(currencyTo)
-				.append(", ").appendADElement("ConversionDate").append(": ").appendDate(conversionDate, "?")
+				.append(", ").appendADElement("ConversionDate").append(": ").appendTemporal(conversionDate, "?")
 				.append(", ").appendADElement("C_ConversionType_ID").append(": ").append(conversionTypeMethod != null ? conversionTypeMethod.name() : "?")
 				.build();
 	}
