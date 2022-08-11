@@ -101,6 +101,7 @@ public class C_Order
 		for (final I_C_OrderLine orderLine : ordersRepo.retrieveOrderLines(order))
 		{
 			orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
+			ordersRepo.save(orderLine);
 		}
 	}
 }
