@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -473,7 +474,7 @@ public class InOutDAO implements IInOutDAO
 		final ClientAndOrgId clientandOrgId = inOutLineQuery.getClientandOrgId();
 		if (clientandOrgId != null)
 		{
-			query.addEqualsFilter(I_M_InOut.COLUMNNAME_AD_Org_ID, clientandOrgId.getOrgId());
+			query.addInArrayFilter(I_M_InOut.COLUMNNAME_AD_Org_ID, clientandOrgId.getOrgId(), OrgId.ANY);
 			query.addEqualsFilter(I_M_InOut.COLUMNNAME_AD_Client_ID, clientandOrgId.getClientId());
 		}
 

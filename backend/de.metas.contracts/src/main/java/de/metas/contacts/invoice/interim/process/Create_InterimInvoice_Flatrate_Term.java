@@ -22,7 +22,6 @@
 
 package de.metas.contacts.invoice.interim.process;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.contacts.invoice.interim.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.order.model.I_C_OrderLine;
@@ -32,7 +31,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.ProductId;
 import lombok.NonNull;
 
 import java.sql.Timestamp;

@@ -132,3 +132,8 @@ DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542281
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542281
 ;
+
+-- 2022-08-11T16:43:18.064Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='C_Flatrate_Conditions.Type_Conditions = ''InterimInvoice'' AND EXISTS(SELECT 1 FROM c_order o WHERE o.m_pricingsystem_id = C_Flatrate_Conditions.m_pricingsystem_id AND o.c_order_id = @C_Order_ID/-1@)', Name='C_FlatrateConditions_InterimInvoice for Order pricesystem',Updated=TO_TIMESTAMP('2022-08-11 19:43:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540591
+;

@@ -33,38 +33,38 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Value
-public class InterimInvoiceOverviewId implements RepoIdAware
+public class InterimInvoiceFlatrateTermId implements RepoIdAware
 {
 	@JsonCreator
-	public static InterimInvoiceOverviewId ofRepoId(final int repoId)
+	public static InterimInvoiceFlatrateTermId ofRepoId(final int repoId)
 	{
-		return new InterimInvoiceOverviewId(repoId);
+		return new InterimInvoiceFlatrateTermId(repoId);
 	}
 
 	@Nullable
-	public static InterimInvoiceOverviewId ofRepoIdOrNull(final int repoId)
+	public static InterimInvoiceFlatrateTermId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new InterimInvoiceOverviewId(repoId) : null;
+		return repoId > 0 ? new InterimInvoiceFlatrateTermId(repoId) : null;
 	}
 
-	public static Optional<InterimInvoiceOverviewId> optionalOfRepoId(final int repoId)
+	public static Optional<InterimInvoiceFlatrateTermId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(@Nullable final InterimInvoiceOverviewId interimInvoiceOverviewId)
+	public static int toRepoId(@Nullable final InterimInvoiceFlatrateTermId interimInvoiceFlatrateTermId)
 	{
-		return interimInvoiceOverviewId != null ? interimInvoiceOverviewId.getRepoId() : -1;
+		return interimInvoiceFlatrateTermId != null ? interimInvoiceFlatrateTermId.getRepoId() : -1;
 	}
 
-	public static boolean equals(@Nullable final InterimInvoiceOverviewId o1, @Nullable final InterimInvoiceOverviewId o2)
+	public static boolean equals(@Nullable final InterimInvoiceFlatrateTermId o1, @Nullable final InterimInvoiceFlatrateTermId o2)
 	{
 		return Objects.equals(o1, o2);
 	}
 
 	int repoId;
 
-	private InterimInvoiceOverviewId(final int repoId)
+	private InterimInvoiceFlatrateTermId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_InterimInvoice_Overview_ID");
 	}

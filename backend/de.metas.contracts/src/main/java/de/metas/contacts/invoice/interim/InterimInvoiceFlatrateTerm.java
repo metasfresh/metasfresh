@@ -22,23 +22,46 @@
 
 package de.metas.contacts.invoice.interim;
 
-import de.metas.inout.InOutAndLineId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.calendar.CalendarId;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
-@Builder
-public class InterimInvoiceOverviewLine
+@Builder(toBuilder = true)
+public class InterimInvoiceFlatrateTerm
 {
 	@Nullable
-	InterimInvoiceOverviewLineId id;
-	@NonNull InterimInvoiceOverviewId interimInvoiceOverviewId;
+	InterimInvoiceFlatrateTermId id;
+	@NonNull FlatrateTermId flatrateTermId;
+	@NonNull OrderLineId orderLineId;
+	@NonNull
+	InvoiceCandidateId withholdingInvoiceCandidateId;
+	@NonNull
+	InvoiceCandidateId interimInvoiceCandidateId;
+	@NonNull
+	UomId uomId;
+	@NonNull
+	ProductId productId;
 	@Nullable
-	InOutAndLineId inOutAndLineId;
+	CurrencyId currencyId;
 	@Nullable
-	InvoiceLineId invoiceLineId;
+	CalendarId calendarId;
+	@Nullable
+	BigDecimal qtyOrdered;
+	@Nullable
+	BigDecimal qtyDelivered;
+	@Nullable
+	BigDecimal qtyInvoiced;
+	@Nullable
+	BigDecimal priceActual;
 }

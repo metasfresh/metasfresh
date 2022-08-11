@@ -22,10 +22,10 @@
 
 package de.metas.contacts.invoice.interim.service.impl;
 
-import de.metas.contacts.invoice.interim.InterimInvoiceOverviewId;
-import de.metas.contacts.invoice.interim.InterimInvoiceOverviewLine;
-import de.metas.contacts.invoice.interim.InterimInvoiceOverviewLineId;
-import de.metas.contacts.invoice.interim.service.IInterimInvoiceOverviewLineDAO;
+import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermId;
+import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLine;
+import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLineId;
+import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermLineDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -41,12 +41,12 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 
 @Repository
-public class InterimInvoiceOverviewLineDAO implements IInterimInvoiceOverviewLineDAO
+public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrateTermLineDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Nullable
-	public InterimInvoiceOverviewLine getById(@NonNull final InterimInvoiceOverviewLineId id)
+	public InterimInvoiceFlatrateTermLine getById(@NonNull final InterimInvoiceFlatrateTermLineId id)
 	{
 		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm_Line.class)
 				.addOnlyActiveRecordsFilter()
@@ -57,28 +57,28 @@ public class InterimInvoiceOverviewLineDAO implements IInterimInvoiceOverviewLin
 				.orElse(null);
 	}
 
-	public InterimInvoiceOverviewLineId save(@NonNull final InterimInvoiceOverviewLine interimInvoiceOverviewLine)
+	public InterimInvoiceFlatrateTermLineId save(@NonNull final InterimInvoiceFlatrateTermLine interimInvoiceFlatrateTermLine)
 	{
-		final I_C_InterimInvoice_FlatrateTerm_Line dbObject = toDbObject(interimInvoiceOverviewLine);
+		final I_C_InterimInvoice_FlatrateTerm_Line dbObject = toDbObject(interimInvoiceFlatrateTermLine);
 		InterfaceWrapperHelper.save(dbObject);
-		return InterimInvoiceOverviewLineId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_Line_ID());
+		return InterimInvoiceFlatrateTermLineId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_Line_ID());
 	}
 
-	private InterimInvoiceOverviewLine fromDbObject(@NonNull final I_C_InterimInvoice_FlatrateTerm_Line dbObject)
+	private InterimInvoiceFlatrateTermLine fromDbObject(@NonNull final I_C_InterimInvoice_FlatrateTerm_Line dbObject)
 	{
-		return InterimInvoiceOverviewLine.builder()
-				.id(InterimInvoiceOverviewLineId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_Line_ID()))
-				.interimInvoiceOverviewId(InterimInvoiceOverviewId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_ID()))
+		return InterimInvoiceFlatrateTermLine.builder()
+				.id(InterimInvoiceFlatrateTermLineId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_Line_ID()))
+				.interimInvoiceFlatrateTermId(InterimInvoiceFlatrateTermId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_ID()))
 				.inOutAndLineId(InOutAndLineId.ofRepoId(dbObject.getM_InOut_ID(), dbObject.getM_InOutLine_ID()))
 				.invoiceLineId(InvoiceLineId.ofRepoId(dbObject.getC_Invoice_ID(), dbObject.getC_InvoiceLine_ID()))
 				.build();
 	}
 
-	private I_C_InterimInvoice_FlatrateTerm_Line toDbObject(@NonNull final InterimInvoiceOverviewLine object)
+	private I_C_InterimInvoice_FlatrateTerm_Line toDbObject(@NonNull final InterimInvoiceFlatrateTermLine object)
 	{
 		final I_C_InterimInvoice_FlatrateTerm_Line dbObject = InterfaceWrapperHelper.loadOrNew(object.getId(), I_C_InterimInvoice_FlatrateTerm_Line.class);
 
-		dbObject.setC_InterimInvoice_FlatrateTerm_ID(object.getInterimInvoiceOverviewId().getRepoId());
+		dbObject.setC_InterimInvoice_FlatrateTerm_ID(object.getInterimInvoiceFlatrateTermId().getRepoId());
 
 		final InvoiceLineId invoiceLineId = object.getInvoiceLineId();
 		if (invoiceLineId != null)
@@ -92,7 +92,7 @@ public class InterimInvoiceOverviewLineDAO implements IInterimInvoiceOverviewLin
 		if (inOutAndLineId != null)
 		{
 			dbObject.setM_InOut_ID(InOutId.toRepoId(inOutAndLineId.getInOutId()));
-			dbObject.setC_InvoiceLine_ID(InOutLineId.toRepoId(inOutAndLineId.getInOutLineId()));
+			dbObject.setM_InOutLine_ID(InOutLineId.toRepoId(inOutAndLineId.getInOutLineId()));
 		}
 
 		return dbObject;

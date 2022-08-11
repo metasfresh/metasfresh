@@ -33,38 +33,38 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Value
-public class InterimInvoiceOverviewLineId implements RepoIdAware
+public class InterimInvoiceFlatrateTermLineId implements RepoIdAware
 {
 	@JsonCreator
-	public static InterimInvoiceOverviewLineId ofRepoId(final int repoId)
+	public static InterimInvoiceFlatrateTermLineId ofRepoId(final int repoId)
 	{
-		return new InterimInvoiceOverviewLineId(repoId);
+		return new InterimInvoiceFlatrateTermLineId(repoId);
 	}
 
 	@Nullable
-	public static InterimInvoiceOverviewLineId ofRepoIdOrNull(final int repoId)
+	public static InterimInvoiceFlatrateTermLineId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new InterimInvoiceOverviewLineId(repoId) : null;
+		return repoId > 0 ? new InterimInvoiceFlatrateTermLineId(repoId) : null;
 	}
 
-	public static Optional<InterimInvoiceOverviewLineId> optionalOfRepoId(final int repoId)
+	public static Optional<InterimInvoiceFlatrateTermLineId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(@Nullable final InterimInvoiceOverviewLineId partialPaymentOverviewId)
+	public static int toRepoId(@Nullable final InterimInvoiceFlatrateTermLineId partialPaymentOverviewId)
 	{
 		return partialPaymentOverviewId != null ? partialPaymentOverviewId.getRepoId() : -1;
 	}
 
-	public static boolean equals(@Nullable final InterimInvoiceOverviewLineId o1, @Nullable final InterimInvoiceOverviewLineId o2)
+	public static boolean equals(@Nullable final InterimInvoiceFlatrateTermLineId o1, @Nullable final InterimInvoiceFlatrateTermLineId o2)
 	{
 		return Objects.equals(o1, o2);
 	}
 
 	int repoId;
 
-	private InterimInvoiceOverviewLineId(final int repoId)
+	private InterimInvoiceFlatrateTermLineId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_InterimInvoice_Overview_Line_ID");
 	}
