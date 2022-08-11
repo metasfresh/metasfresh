@@ -124,6 +124,7 @@ public class M_InOut
 		for (final I_M_InOutLine inOutLine : inOutDAO.retrieveLines(inout))
 		{
 			inOutLine.setM_SectionCode_ID(inout.getM_SectionCode_ID());
+			inOutDAO.save(inOutLine);
 		}
 	}
 }

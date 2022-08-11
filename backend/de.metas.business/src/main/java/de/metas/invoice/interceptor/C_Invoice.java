@@ -418,6 +418,7 @@ public class C_Invoice // 03771
 		for (final I_C_InvoiceLine line : invoiceDAO.retrieveLines(invoice))
 		{
 			line.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
+			invoiceDAO.save(line);
 		}
 	}
 }
