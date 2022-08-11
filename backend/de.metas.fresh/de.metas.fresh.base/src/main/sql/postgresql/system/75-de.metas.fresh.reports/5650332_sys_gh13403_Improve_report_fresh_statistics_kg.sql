@@ -221,13 +221,13 @@ BEGIN
                           FROM (
                                    SELECT fa.C_Period_ID,
                                           fa.c_uom_id,
-                                          (SELECT C_UOM_ID FROM C_UOM WHERE x12de355 = 'KGM') as kg_uom_id,
+                                          (SELECT C_UOM_ID FROM C_UOM WHERE x12de355 = 'KGM' and isactive='Y') as kg_uom_id,
                                           fa.M_Product_ID,
                                           fa.org_id,
                                           fa.iso_code,
                                           fa.QtySum,
                                           fa.totalamt,
-                                          uomconvert(fa.M_Product_ID, fa.C_UOM_ID, (SELECT C_UOM_ID FROM C_UOM WHERE x12de355 = 'KGM'), QtySum) AS kgQty
+                                          uomconvert(fa.M_Product_ID, fa.C_UOM_ID, (SELECT C_UOM_ID FROM C_UOM WHERE x12de355 = 'KGM' and isactive='Y'), QtySum) AS kgQty
 
                                    FROM fresh_statistics_kg_MV AS fa
                                    WHERE TRUE
