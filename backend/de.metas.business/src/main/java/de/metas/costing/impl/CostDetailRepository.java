@@ -66,7 +66,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class CostDetailRepository implements ICostDetailRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Override
 	public CostDetail create(@NonNull final CostDetail.CostDetailBuilder costDetailBuilder)
@@ -262,7 +262,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
 
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
-		final I_C_UOM productUOM = uomsRepo.getById(record.getC_UOM_ID());
+		final I_C_UOM productUOM = uomDAO.getById(record.getC_UOM_ID());
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId);
