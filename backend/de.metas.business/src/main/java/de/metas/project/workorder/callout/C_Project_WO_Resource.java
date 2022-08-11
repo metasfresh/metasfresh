@@ -135,8 +135,7 @@ public class C_Project_WO_Resource
 			return BigDecimal.ZERO;
 		}
 
-		final OrgId orgId = OrgId.ofRepoId(woResource.getAD_Org_ID());
-		final Instant dateTo = TimeUtil.asInstant(woResource.getAssignDateTo(), orgId);
+		final Instant dateTo = TimeUtil.asInstant(woResource.getAssignDateTo());
 		if (dateTo == null)
 		{
 			return BigDecimal.ZERO;
