@@ -263,7 +263,7 @@ public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 		// Query PO
 		PO po = new Query(getCtx(), tablePO, whereClause.toString(), trxName)
 				.setParameters(params.values().toArray())
-				.firstOnly();
+				.firstOnly(PO.class);
 
 		//
 		// Create new PO
