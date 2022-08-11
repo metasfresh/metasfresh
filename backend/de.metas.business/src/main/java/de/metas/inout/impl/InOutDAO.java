@@ -495,9 +495,9 @@ public class InOutDAO implements IInOutDAO
 		}
 
 		final Collection<InOutDocStatus> docStatuses = inOutLineQuery.getDocStatuses();
-		if (!Check.isEmpty(docStatuses))
+		if (docStatuses!= null && !Check.isEmpty(docStatuses))
 		{
-			query.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, docStatuses);
+			query.addInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, docStatuses.stream().map(InOutDocStatus::getValue).collect(Collectors.toList()));
 		}
 
 		return query.andCollect(I_M_InOut.COLUMN_M_InOut_ID, I_M_InOutLine.class)

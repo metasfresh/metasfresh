@@ -26,7 +26,7 @@ import de.metas.contacts.invoice.interim.InterimInvoiceOverview;
 import de.metas.contacts.invoice.interim.InterimInvoiceOverviewId;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceOverviewDAO;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.model.I_C_InterimInvoice_FlatrateTerm;
+import org.compiere.model.I_C_InterimInvoice_FlatrateTerm;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -68,7 +68,7 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 	{
 		return InterimInvoiceOverview.builder()
 				.id(InterimInvoiceOverviewId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_ID()))
-				.flatrateTermId(FlatrateTermId.ofRepoId(dbObject.getC_FlatrateTerm_ID()))
+				.flatrateTermId(FlatrateTermId.ofRepoId(dbObject.getC_Flatrate_Term_ID()))
 				.orderLineId(OrderLineId.ofRepoId(dbObject.getC_OrderLine_ID()))
 				.withholdingInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_Invoice_Candidate_Withholding_ID()))
 				.partialPaymentInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_Interim_Invoice_Candidate_ID()))
@@ -84,7 +84,7 @@ public class InterimInvoiceOverviewDAO implements IInterimInvoiceOverviewDAO
 	private I_C_InterimInvoice_FlatrateTerm toDbObject(@NonNull final InterimInvoiceOverview object)
 	{
 		final I_C_InterimInvoice_FlatrateTerm dbObject = InterfaceWrapperHelper.loadOrNew(object.getId(), I_C_InterimInvoice_FlatrateTerm.class);
-		dbObject.setC_FlatrateTerm_ID(object.getFlatrateTermId().getRepoId());
+		dbObject.setC_Flatrate_Term_ID(object.getFlatrateTermId().getRepoId());
 		dbObject.setC_OrderLine_ID(object.getOrderLineId().getRepoId());
 		dbObject.setC_Invoice_Candidate_Withholding_ID(InvoiceCandidateId.toRepoId(object.getWithholdingInvoiceCandidateId()));
 		dbObject.setC_Interim_Invoice_Candidate_ID(InvoiceCandidateId.toRepoId(object.getPartialPaymentInvoiceCandidateId()));

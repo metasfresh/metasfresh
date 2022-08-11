@@ -45,4 +45,9 @@ public enum InOutDocStatus
 	{
 		this.value = value;
 	}
+
+	public String getValue()
+	{
+		return value;
+	}
 }
