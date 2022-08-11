@@ -758,9 +758,9 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private int getC_BPartner_Location_ID()
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.firstGreaterThanZeroSupplier(
 				() -> getValue("C_BPartner_Location_ID"),
-				() -> m_doc.getC_BPartner_Location_ID());
+				m_doc::getC_BPartner_Location_ID);
 	}
 
 	public final OrgId getOrgTrxId()
