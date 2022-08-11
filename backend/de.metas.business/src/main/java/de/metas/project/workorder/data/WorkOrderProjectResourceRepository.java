@@ -142,9 +142,8 @@ public class WorkOrderProjectResourceRepository
 	@NonNull
 	private static WOProjectResource ofRecord(@NonNull final I_C_Project_WO_Resource resourceRecord)
 	{
-		final OrgId orgId = OrgId.ofRepoId(resourceRecord.getAD_Org_ID());
-		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom(), orgId);
-		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo(), orgId);
+		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom());
+		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo());
 		if (assignDateTo == null || assignDateFrom == null)
 		{
 			throw new AdempiereException("I_C_Project_WO_Resource.assignDateFrom and I_C_Project_WO_Resource.assignDateTo should be set on the record at this point!");
