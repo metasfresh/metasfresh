@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.util.web
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,11 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.project;
+package de.metas.util.web.github;
 
-import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalSystem;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.util.web.request.EditableHttpServletRequest;
 
-@Value
-@Builder
-public class GetExternalProjectRequest
+public interface IAuthenticateGithubService
 {
-	@NonNull
-	ExternalSystem externalSystem;
-
-	@NonNull
-	String externalReference;
-
-	@NonNull
-	String externalProjectOwner;
-
-	@NonNull
-	OrgId orgId;
+	void authenticateAndLocateAuthorization(EditableHttpServletRequest requestWrapper);
 }

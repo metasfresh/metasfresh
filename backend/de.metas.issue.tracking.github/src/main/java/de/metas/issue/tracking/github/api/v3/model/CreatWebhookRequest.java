@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.github
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,46 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.project;
+package de.metas.issue.tracking.github.api.v3.model;
 
-import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalSystem;
+import com.google.common.collect.ImmutableList;
+import de.metas.issue.tracking.github.api.v3.GitHubApiConstants;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
+
+import java.util.List;
+import java.util.function.Function;
 
 @Value
 @Builder
-public class GetExternalProjectRequest
+@ToString(exclude = { "oAuthToken", "webhookSecret" })
+public class CreatWebhookRequest
 {
 	@NonNull
-	ExternalSystem externalSystem;
+	String repositoryName;
 
 	@NonNull
-	String externalReference;
+	String repositoryOwner;
 
 	@NonNull
-	String externalProjectOwner;
+	String webhookURL;
 
 	@NonNull
-	OrgId orgId;
+	String webhookSecret;
+
+	@NonNull
+	String oAuthToken;
+
+	@NonNull
+	List<GitHubApiConstants.Events> events;
+
+	@NonNull
+	public <T> List<T> mapEvents(@NonNull final Function<GitHubApiConstants.Events, T> mappingFunction)
+	{
+		return events.stream()
+				.map(mappingFunction)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

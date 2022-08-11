@@ -2,7 +2,7 @@
  * #%L
  * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,10 +28,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.ExternalId;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.ExternalReferenceQuery;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -42,6 +41,7 @@ import de.metas.issue.tracking.github.api.v3.service.GithubClient;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
+import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
@@ -386,6 +386,7 @@ public class GithubImporterService implements IssueImporter
 				.externalProjectOwner(parentIdSearchKey.getRepositoryOwner())
 				.externalReference(parentIdSearchKey.getRepository())
 				.externalSystem(ExternalSystem.GITHUB)
+				.orgId(initialRequest.getOrgId())
 				.build();
 
 		final Optional<ExternalProjectReference> externalProjectReference = externalProjectRepository.getByRequestOptional(getExternalProjectRequest);
