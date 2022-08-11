@@ -472,6 +472,27 @@ public interface I_AD_Process
 	String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
 
 	/**
+	 * Set Update Export Date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateExportDate (boolean IsUpdateExportDate);
+
+	/**
+	 * Get Update Export Date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateExportDate();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsUpdateExportDate = new ModelColumn<>(I_AD_Process.class, "IsUpdateExportDate", null);
+	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
+
+	/**
 	 * Set Format Excel File.
 	 * If set the resulting excel report will have the cells formatted (borders, colors, etc). For huge reports, this is not feasible because it seems like it takes a huge amount of time for Excel to open big reports with stylish cells.
 	 *
@@ -629,27 +650,6 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_IsTranslateExcelHeaders = new ModelColumn<>(I_AD_Process.class, "IsTranslateExcelHeaders", null);
 	String COLUMNNAME_IsTranslateExcelHeaders = "IsTranslateExcelHeaders";
-
-	/**
-	 * Set Update Export Date.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsUpdateExportDate (boolean IsUpdateExportDate);
-
-	/**
-	 * Get Update Export Date.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isUpdateExportDate();
-
-	ModelColumn<I_AD_Process, Object> COLUMN_IsUpdateExportDate = new ModelColumn<>(I_AD_Process.class, "IsUpdateExportDate", null);
-	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
 
 	/**
 	 * Set IsUseBPartnerLanguage.
@@ -1029,26 +1029,4 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_WorkflowValue = new ModelColumn<>(I_AD_Process.class, "WorkflowValue", null);
 	String COLUMNNAME_WorkflowValue = "WorkflowValue";
-
-	/**
-	 * Set Log Warning.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsLogWarning (boolean IsLogWarning);
-
-	/**
-	 * Get Log Warning.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isLogWarning();
-
-	ModelColumn<I_AD_Process, Object> COLUMN_IsLogWarning = new ModelColumn<>(I_AD_Process.class, "IsLogWarning", null);
-	String COLUMNNAME_IsLogWarning = "IsLogWarning";
-
 }

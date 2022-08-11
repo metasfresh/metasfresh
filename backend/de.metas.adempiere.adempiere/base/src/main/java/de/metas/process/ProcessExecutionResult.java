@@ -1029,6 +1029,11 @@ public class ProcessExecutionResult
 			this.profileId = profileId;
 			this.target = target;
 		}
+
+		public static WebuiViewToOpen modalOverlay(@NonNull final String viewId)
+		{
+			return builder().viewId(viewId).target(ViewOpenTarget.ModalOverlay).build();
+		}
 	}
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
