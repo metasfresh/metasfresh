@@ -5,6 +5,7 @@ import com.google.common.collect.Range;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -33,6 +34,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -1621,17 +1623,9 @@ public class TimeUtil
 	}
 
 	/**
-	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
+	 * @deprecated Consider using {@link InstantAndOrgId#toLocalDate(Function)}.
 	 */
 	@Deprecated
-	@Nullable
-	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
-	{
-		return ts != null
-				? ts.toLocalDateTime().toLocalDate()
-				: null;
-	}
-
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
 	{
@@ -1641,9 +1635,19 @@ public class TimeUtil
 		}
 
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+		return InstantAndOrgId.ofTimestamp(ts, orgId).toLocalDate(orgDAO::getTimeZone);
+	}
 
-		return asLocalDate(ts, zoneId);
+	/**
+	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
+	 */
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
+	{
+		return ts != null
+				? ts.toLocalDateTime().toLocalDate()
+				: null;
 	}
 
 	@Nullable
@@ -1785,6 +1789,10 @@ public class TimeUtil
 		return timestamp != null ? timestamp.toInstant().atZone(SystemTime.zoneId()) : null;
 	}
 
+	/**
+	 * @deprecated Consider using {@link InstantAndOrgId#toZonedDateTime(Function)}.
+	 */
+	@Deprecated
 	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
 	{
@@ -1794,11 +1802,9 @@ public class TimeUtil
 		}
 
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-
-		return asZonedDateTime(ts, zoneId);
+		return InstantAndOrgId.ofTimestamp(ts, orgId).toZonedDateTime(orgDAO::getTimeZone);
 	}
-	
+
 	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
 		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;
@@ -1885,27 +1891,40 @@ public class TimeUtil
 		return timestamp.toInstant();
 	}
 
+	/**
+	 * @deprecated Consider using {@link LocalDateAndOrgId#toEndOfDayInstant(Function)}.
+	 */
+	@Deprecated
 	@Nullable
 	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final OrgId orgId)
 	{
-		if(localDate == null)
+		if (localDate == null)
 		{
 			return null;
 		}
-		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
 
-		return asInstant(endOfDay, orgId);
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toEndOfDayInstant(orgDAO::getTimeZone);
 	}
-	
+
+	/**
+	 * @deprecated Consider using {@link LocalDateAndOrgId#toInstant(Function)}.
+	 */
+	@Deprecated
 	@Nullable
 	public static Instant asInstant(
-			@Nullable final Object obj,
+			@Nullable final LocalDate localDate,
 			@NonNull final OrgId orgId)
 	{
-		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(orgId);
-		return asInstant(obj,timeZone);
+		if (localDate == null)
+		{
+			return null;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toInstant(orgDAO::getTimeZone);
 	}
-	
+
 	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,
