@@ -1665,6 +1665,10 @@ public class TimeUtil
 		{
 			return LocalDate.parse(obj.toString());
 		}
+		else if(obj instanceof LocalDateAndOrgId)
+		{
+			return ((LocalDateAndOrgId)obj).toLocalDate();
+		}
 		else
 		{
 			return asLocalDateTime(obj).toLocalDate();
