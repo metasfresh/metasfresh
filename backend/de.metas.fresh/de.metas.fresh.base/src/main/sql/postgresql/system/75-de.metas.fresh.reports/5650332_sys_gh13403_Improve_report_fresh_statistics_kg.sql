@@ -10,6 +10,8 @@ DROP FUNCTION IF EXISTS report.fresh_statistics_kg(
     IN p_AD_Language               Character Varying(6))
 ;
 
+DROP TABLE IF EXISTS report.fresh_statistics_kg;
+
 CREATE OR REPLACE FUNCTION report.fresh_statistics_kg(
     IN p_C_Period_ID               numeric,
     IN p_issotrx                   character varying,
