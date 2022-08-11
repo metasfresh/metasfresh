@@ -136,6 +136,13 @@ public class M_ReceiptSchedule_StepDef
 			assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
 			assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
 
+			final BigDecimal qtyOrderedTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedTU);
+			if (qtyOrderedTU != null)
+			{
+				final de.metas.handlingunits.model.I_C_OrderLine orderLine1 = InterfaceWrapperHelper.load(receiptSchedule.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
+				assertThat(orderLine1.getQtyEnteredTU()).isEqualTo(qtyOrderedTU);
+			}
+
 			receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule);
 		}
 	}

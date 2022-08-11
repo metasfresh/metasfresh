@@ -111,6 +111,39 @@ public class M_InOut_Line_StepDef
 		}
 	}
 
+	@And("^validate the (shipment|material receipt) lines do not exist$")
+	public void validate_no_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, "M_InOut_ID.Identifier");
+
+			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Integer expectedProductId = productTable.get(productIdentifier).getM_Product_ID();
+
+			//dev-note: we assume the tests are not using the same product on different lines
+			final IQueryBuilder<I_M_InOutLine> lineQueryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
+					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentRecord.getM_InOut_ID())
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
+
+			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderLineIdentifier))
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+			}
+
+			final I_M_InOutLine shipmentLineRecord = lineQueryBuilder
+					.create()
+					.firstOnlyOrNull(I_M_InOutLine.class);
+
+			assertThat(shipmentLineRecord).isNull();
+		}
+	}
+
 	@And("update M_InOutLine:")
 	public void update_M_InOutLine(@NonNull final DataTable table)
 	{

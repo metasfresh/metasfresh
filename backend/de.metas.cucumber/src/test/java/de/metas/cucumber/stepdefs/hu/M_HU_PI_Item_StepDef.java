@@ -88,7 +88,6 @@ public class M_HU_PI_Item_StepDef
 
 			final IQueryBuilder<I_M_HU_PI_Item> piItemQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_Version_ID, huPiVersion.getM_HU_PI_Version_ID())
-					.addEqualsFilter(COLUMNNAME_Qty, qty)
 					.addEqualsFilter(COLUMNNAME_ItemType, itemType)
 					.addEqualsFilter(COLUMNNAME_IsActive, active);
 

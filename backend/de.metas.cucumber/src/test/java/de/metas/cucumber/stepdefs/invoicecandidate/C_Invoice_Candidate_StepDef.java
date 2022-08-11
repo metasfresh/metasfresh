@@ -196,7 +196,28 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> load_C_Invoice_Candidate(row));
+			StepDefUtil.tryAndWait(timeoutSec, 1000, () -> load_C_Invoice_Candidate(row));
+		}
+	}
+
+	@And("validate C_Invoice_Candidates do not exist")
+	public void validate_no_created_C_Invoice_Candidate(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_Order order = orderTable.get(orderIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final I_C_Invoice_Candidate invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+					.addEqualsFilter(COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.create()
+					.firstOnlyOrNull(I_C_Invoice_Candidate.class);
+
+			assertThat(invoiceCandidate).isNull();
 		}
 	}
 

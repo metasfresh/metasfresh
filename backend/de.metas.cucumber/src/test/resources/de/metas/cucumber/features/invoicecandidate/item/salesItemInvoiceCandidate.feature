@@ -1,5 +1,5 @@
 @from:cucumber
-Feature: Products invoice candidates
+Feature: Product items invoice candidates: shipments
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'

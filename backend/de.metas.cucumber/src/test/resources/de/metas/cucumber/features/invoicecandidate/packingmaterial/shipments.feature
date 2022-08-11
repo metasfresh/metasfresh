@@ -5,7 +5,8 @@ Feature: Packing material invoice candidates: shipments
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]
-    And deactivate all M_ShipmentSchedule records
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
     And metasfresh contains M_Products:
       | Identifier     | Name                          |
