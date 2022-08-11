@@ -58,6 +58,7 @@ public class ProjectTypeRepository
 		return ProjectType.builder()
 				.id(ProjectTypeId.ofRepoId(record.getC_ProjectType_ID()))
 				.projectCategory(ProjectCategory.ofCode(record.getProjectCategory()))
+				.requestStatusCategoryId(RequestStatusCategoryId.ofRepoId(record.getR_StatusCategory_ID()))
 				.docSequenceId(DocSequenceId.ofRepoIdOrNull(record.getAD_Sequence_ProjectValue_ID()))
 				.build();
 	}

@@ -168,6 +168,8 @@ public class ProjectService
 
 		final ProjectType projectType = getProjectTypeById(projectTypeId);
 		projectRecord.setProjectCategory(projectType.getProjectCategory().getCode());
+
+		projectRecord.setR_StatusCategory_ID(projectType.getRequestStatusCategoryId().getRepoId());
 	}
 
 	@Nullable

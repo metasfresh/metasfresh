@@ -185,6 +185,75 @@ public interface I_C_Project
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
+	 * Set Committed Amount.
+	 * The (legal) commitment amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCommittedAmt (BigDecimal CommittedAmt);
+
+	/**
+	 * Get Committed Amount.
+	 * The (legal) commitment amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCommittedAmt();
+
+	ModelColumn<I_C_Project, Object> COLUMN_CommittedAmt = new ModelColumn<>(I_C_Project.class, "CommittedAmt", null);
+	String COLUMNNAME_CommittedAmt = "CommittedAmt";
+
+	/**
+	 * Set Committed Quantity.
+	 * The (legal) commitment Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCommittedQty (BigDecimal CommittedQty);
+
+	/**
+	 * Get Committed Quantity.
+	 * The (legal) commitment Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCommittedQty();
+
+	ModelColumn<I_C_Project, Object> COLUMN_CommittedQty = new ModelColumn<>(I_C_Project.class, "CommittedQty", null);
+	String COLUMNNAME_CommittedQty = "CommittedQty";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
+
+	ModelColumn<I_C_Project, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Project.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
+
+	/**
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
@@ -274,11 +343,11 @@ public interface I_C_Project
 	 */
 	int getC_Project_Label_ID();
 
-	@Nullable org.compiere.model.I_C_Project_Label getC_Project_Label();
+	@Nullable I_C_Project_Label getC_Project_Label();
 
-	void setC_Project_Label(@Nullable org.compiere.model.I_C_Project_Label C_Project_Label);
+	void setC_Project_Label(@Nullable I_C_Project_Label C_Project_Label);
 
-	ModelColumn<I_C_Project, org.compiere.model.I_C_Project_Label> COLUMN_C_Project_Label_ID = new ModelColumn<>(I_C_Project.class, "C_Project_Label_ID", org.compiere.model.I_C_Project_Label.class);
+	ModelColumn<I_C_Project, I_C_Project_Label> COLUMN_C_Project_Label_ID = new ModelColumn<>(I_C_Project.class, "C_Project_Label_ID", I_C_Project_Label.class);
 	String COLUMNNAME_C_Project_Label_ID = "C_Project_Label_ID";
 
 	/**
@@ -307,75 +376,6 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, org.compiere.model.I_C_ProjectType> COLUMN_C_ProjectType_ID = new ModelColumn<>(I_C_Project.class, "C_ProjectType_ID", org.compiere.model.I_C_ProjectType.class);
 	String COLUMNNAME_C_ProjectType_ID = "C_ProjectType_ID";
-
-	/**
-	 * Set Committed Amount.
-	 * The (legal) commitment amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCommittedAmt (BigDecimal CommittedAmt);
-
-	/**
-	 * Get Committed Amount.
-	 * The (legal) commitment amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCommittedAmt();
-
-	ModelColumn<I_C_Project, Object> COLUMN_CommittedAmt = new ModelColumn<>(I_C_Project.class, "CommittedAmt", null);
-	String COLUMNNAME_CommittedAmt = "CommittedAmt";
-
-	/**
-	 * Set Committed Quantity.
-	 * The (legal) commitment Quantity
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCommittedQty (BigDecimal CommittedQty);
-
-	/**
-	 * Get Committed Quantity.
-	 * The (legal) commitment Quantity
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCommittedQty();
-
-	ModelColumn<I_C_Project, Object> COLUMN_CommittedQty = new ModelColumn<>(I_C_Project.class, "CommittedQty", null);
-	String COLUMNNAME_CommittedQty = "CommittedQty";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCopyFrom (@Nullable java.lang.String CopyFrom);
-
-	/**
-	 * Get Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCopyFrom();
-
-	ModelColumn<I_C_Project, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Project.class, "CopyFrom", null);
-	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Get Created.
@@ -629,7 +629,7 @@ public interface I_C_Project
 	String COLUMNNAME_IsCommitment = "IsCommitment";
 
 	/**
-	 * Set Zusammenfassungseintrag.
+	 * Set Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -639,7 +639,7 @@ public interface I_C_Project
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
+	 * Get Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -987,6 +987,33 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, org.compiere.model.I_R_Status> COLUMN_R_Project_Status_ID = new ModelColumn<>(I_C_Project.class, "R_Project_Status_ID", org.compiere.model.I_R_Status.class);
 	String COLUMNNAME_R_Project_Status_ID = "R_Project_Status_ID";
+
+	/**
+	 * Set Status Category.
+	 * Request Status Category
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setR_StatusCategory_ID (int R_StatusCategory_ID);
+
+	/**
+	 * Get Status Category.
+	 * Request Status Category
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getR_StatusCategory_ID();
+
+	@Nullable org.compiere.model.I_R_StatusCategory getR_StatusCategory();
+
+	void setR_StatusCategory(@Nullable org.compiere.model.I_R_StatusCategory R_StatusCategory);
+
+	ModelColumn<I_C_Project, org.compiere.model.I_R_StatusCategory> COLUMN_R_StatusCategory_ID = new ModelColumn<>(I_C_Project.class, "R_StatusCategory_ID", org.compiere.model.I_R_StatusCategory.class);
+	String COLUMNNAME_R_StatusCategory_ID = "R_StatusCategory_ID";
 
 	/**
 	 * Set Account manager.
