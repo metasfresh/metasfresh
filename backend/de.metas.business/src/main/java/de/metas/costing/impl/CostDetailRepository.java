@@ -31,6 +31,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -102,6 +103,8 @@ public class CostDetailRepository implements ICostDetailRepository
 		updateRecordFromDocumentRef(record, cd.getDocumentRef());
 
 		record.setDescription(cd.getDescription());
+
+		record.setDateAcct(Timestamp.from(cd.getDateAcct()));
 
 		record.setProcessed(true); // TODO: get rid of Processed flag, or always set it!
 		saveRecord(record);
@@ -214,7 +217,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		// Product
 		if (query.getProductId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_M_Product_ID, query.getProductId());
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_Product_ID, query.getProductId());
 			someFiltersApplied = true;
 		}
 
@@ -228,12 +231,12 @@ public class CostDetailRepository implements ICostDetailRepository
 		// Client/Org
 		if (query.getClientId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_AD_Client_ID, query.getClientId());
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_AD_Client_ID, query.getClientId());
 			someFiltersApplied = true;
 		}
 		if (query.getOrgId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_AD_Org_ID, query.getOrgId());
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_AD_Org_ID, query.getOrgId());
 			someFiltersApplied = true;
 		}
 
@@ -288,6 +291,7 @@ public class CostDetailRepository implements ICostDetailRepository
 						.build())
 				.documentRef(extractDocumentRef(record))
 				.description(record.getDescription())
+				.dateAcct(record.getDateAcct().toInstant())
 				.build();
 	}
 

@@ -32,6 +32,7 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.X_M_InOut;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 
 /*
  * #%L
@@ -181,13 +182,12 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return getModel(I_M_MatchPO.class).getM_InOutLine();
 	}
 
-	LocalDateAndOrgId getReceiptDateAcct()
+	Instant getReceiptDateAcct()
 	{
 		final I_M_InOutLine receiptLine = Check.assumeNotNull(getReceiptLine(), "Parameter receiptLine is not null");
 		final I_M_InOut receipt = receiptLine.getM_InOut();
 		final Timestamp receiptDateAcct = receipt.getDateAcct();
-		final OrgId orgId = OrgId.ofRepoId(receipt.getAD_Org_ID());
-		return LocalDateAndOrgId.ofTimestamp(receiptDateAcct, orgId, getDoc().getServices()::getTimeZone);
+		return receiptDateAcct.toInstant();
 	}
 
 	boolean isReturnTrx()

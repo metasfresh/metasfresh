@@ -60,6 +60,7 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
@@ -71,6 +72,7 @@ import java.util.function.IntFunction;
  * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * @version $Id: DocLine.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public class DocLine<DT extends Doc<? extends DocLine<?>>>
 {
 	// services
@@ -404,6 +406,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	protected final Timestamp getDateAcctAsTimestamp()
 	{
 		return getDateAcct().toTimestamp(services::getTimeZone);
+	}
+
+	@NonNull
+	protected final Instant getDateAcctAsInstant()
+	{
+		return getDateAcct().toInstant(services::getTimeZone);
 	}
 
 	protected final void setDateDoc(@NonNull final LocalDateAndOrgId dateDoc)

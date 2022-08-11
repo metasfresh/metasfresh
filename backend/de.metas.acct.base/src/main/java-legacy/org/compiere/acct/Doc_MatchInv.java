@@ -34,7 +34,6 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -515,7 +514,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.qty(matchQty)
 						.amt(CostAmount.of(matchAmt, currentId))
 						.currencyConversionTypeId(currencyConvCtx.getConversionTypeId())
-						.date(InstantAndOrgId.ofInstant(currencyConvCtx.getConversionDate(), currencyConvCtx.getOrgId()).toLocalDateAndOrgId(getServices()::getTimeZone))
+						.date(currencyConvCtx.getConversionDate())
 						.description(getDescription())
 						.build())
 				.getTotalAmountToPost(as);

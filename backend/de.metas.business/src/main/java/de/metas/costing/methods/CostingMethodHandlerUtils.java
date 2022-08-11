@@ -225,7 +225,8 @@ public class CostingMethodHandlerUtils
 		return currencyBL.createCurrencyConversionContext(
 				request.getDate(),
 				request.getCurrencyConversionTypeId(),
-				request.getClientId());
+				request.getClientId(),
+				request.getOrgId());
 	}
 
 	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)

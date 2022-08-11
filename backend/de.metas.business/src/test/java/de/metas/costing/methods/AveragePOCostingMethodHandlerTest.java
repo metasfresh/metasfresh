@@ -30,7 +30,6 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.model.I_M_Product_Category;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -57,7 +56,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -105,12 +106,14 @@ public class AveragePOCostingMethodHandlerTest
 	private AcctSchema acctSchema;
 	private ProductId productId;
 
+	private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
+
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		orgId1 = AdempiereTestHelper.createOrgWithTimeZone();
+		orgId1 = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
 
 		final Properties ctx = Env.getCtx();
 		Env.setClientId(ctx, ClientId.METASFRESH);
@@ -204,9 +207,9 @@ public class AveragePOCostingMethodHandlerTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	private static LocalDateAndOrgId localDateAndOrgId(final String localDate, final OrgId orgId)
+	private static Instant instant(final String localDate)
 	{
-		return LocalDateAndOrgId.ofLocalDate(LocalDate.parse(localDate), orgId);
+		return LocalDate.parse(localDate).atStartOfDay(ZONE_ID).toInstant();
 	}
 
 	private CostDetailCreateRequestBuilder costDetailCreateRequest()
@@ -218,7 +221,7 @@ public class AveragePOCostingMethodHandlerTest
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.costElement(costElement)
-				.date(localDateAndOrgId("2020-08-13", orgId1));
+				.date(instant("2020-08-13"));
 	}
 
 	@NonNull
@@ -611,7 +614,7 @@ public class AveragePOCostingMethodHandlerTest
 						.acctSchemaId(acctSchemaId)
 						.clientId(ClientId.METASFRESH)
 						.costElement(costElement)
-						.date(localDateAndOrgId("2020-08-14", orgId1))
+						.date(instant("2020-08-14"))
 						.productId(productId)
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 						.qtyToMove(Quantity.of(100, eachUOM))
@@ -645,7 +648,7 @@ public class AveragePOCostingMethodHandlerTest
 						.acctSchemaId(acctSchemaId)
 						.clientId(ClientId.METASFRESH)
 						.costElement(costElement)
-						.date(localDateAndOrgId("2020-08-14", orgId1))
+						.date(instant("2020-08-14"))
 						.productId(productId)
 						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 						.qtyToMove(Quantity.of(100, eachUOM))

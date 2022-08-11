@@ -1,7 +1,6 @@
 package de.metas.costing;
 
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -13,6 +12,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Objects;
 
 /*
@@ -50,7 +50,7 @@ public class MoveCostsRequest
 	CostElement costElement;
 
 	@NonNull
-	LocalDateAndOrgId date;
+	Instant date;
 
 	@NonNull
 	ProductId productId;
