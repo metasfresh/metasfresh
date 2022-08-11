@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import de.metas.banking.PaySelectionLineId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -437,6 +438,16 @@ public class PaySelectionBL implements IPaySelectionBL
 		return paySelectionDAO.retrievePaySelectionLines(paySelectionId)
 				.stream()
 				.map(line -> PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds)
+	{
+		return paySelectionDAO.retrievePaySelectionLinesByIds(paySelectionLineIds)
+				.stream()
+				.map(paySelectionLine -> BPartnerId.ofRepoIdOrNull(paySelectionLine.getC_BPartner_ID()))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
