@@ -1,21 +1,7 @@
 package de.metas.payment.esr.api.impl;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
@@ -26,6 +12,18 @@ import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+
+import java.util.List;
+import java.util.Properties;
 
 public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 {
@@ -70,12 +68,11 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.create()
 				.list();
 	}
-	
-	
+
 	/**
 	 * Explode the given {@code esrString} into a number of syntactically equivalent strings that can be matched against {@code C_BP_BankAccount.ESR_RenderedAccountNo}.
 	 * <p>
-	 * Formatting done according to https://www.gkb.ch/de/Documents/DC/Beratung-Produkte/Factsheets-Flyers/Handbuch-ESR/ESR-Handbuch-Postfinance-DE.pdf
+	 * Formatting done according to <a href="https://www.gkb.ch/de/Documents/DC/Beratung-Produkte/Factsheets-Flyers/Handbuch-ESR/ESR-Handbuch-Postfinance-DE.pdf">...</a>
 	 * <p>
 	 * 01-1067-4
 	 * 010010674
@@ -85,7 +82,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 	@VisibleForTesting
 	static ImmutableSet<String> createMatchingESRAccountNumbers(@NonNull final String esrString)
 	{
-		final ImmutableSet.Builder<String> builder = ImmutableSet.<String>builder();
+		final ImmutableSet.Builder<String> builder = ImmutableSet.builder();
 		builder.add(esrString);
 
 		final String[] split = esrString.split("-");
@@ -137,7 +134,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.list(I_ESR_PostFinanceUserNumber.class);
 	}
 
-	private static  AdMessageKey MSG_NOT_ESR_ACCOUNT_FOR_ORG =  AdMessageKey.of("NoESRAccountForOrganiazation");
+	private static final AdMessageKey MSG_NOT_ESR_ACCOUNT_FOR_ORG = AdMessageKey.of("NoESRAccountForOrganiazation");
 
 	@Override
 	public final List<I_C_BP_BankAccount> fetchOrgEsrAccounts(@NonNull final I_AD_Org org)
@@ -182,23 +179,20 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
 
 		final String msg = msgBL.getMsg(ctx, MSG_NOT_ESR_ACCOUNT_FOR_ORG,
-				new Object[] { msgBL.translate(ctx, org.getValue())
-				});
+										new Object[] { msgBL.translate(ctx, org.getValue())
+										});
 		throw new AdempiereException(msg);
 	}
-	
+
 	@Override
 	public final List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(@NonNull final String IBAN)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-
 		final IQueryFilter<I_C_BP_BankAccount> esrAccountmatichingIBANorQR_IBAN = queryBL.createCompositeQueryFilter(I_C_BP_BankAccount.class)
 				.setJoinOr()
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, IBAN)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, IBAN);
-			
-				
 
 		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()
@@ -210,5 +204,17 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.create()
 				.list();
 	}
-	
+
+	@Override
+	public boolean isESRBankAccount(final int bpBankAccountId)
+	{
+		if (bpBankAccountId <= 0)
+		{
+			return false;
+		}
+
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.load(bpBankAccountId, I_C_BP_BankAccount.class);
+		return bpBankAccount.isEsrAccount();
+	}
+
 }

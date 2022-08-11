@@ -94,7 +94,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		final I_C_Invoice sourceInvoice = line.getC_Invoice();
 		Check.assumeNotNull(line.getC_Invoice(), "Parameter line has a not-null C_Invoice; line={}", line);
 
-		final I_C_BP_BankAccount bpBankAccount = create(line.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.load(line.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
 
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class, line);
 

@@ -472,6 +472,50 @@ public interface I_AD_Process
 	String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
 
 	/**
+	 * Set Format Excel File.
+	 * If set the resulting excel report will have the cells formatted (borders, colors, etc). For huge reports, this is not feasible because it seems like it takes a huge amount of time for Excel to open big reports with stylish cells.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFormatExcelFile (boolean IsFormatExcelFile);
+
+	/**
+	 * Get Format Excel File.
+	 * If set the resulting excel report will have the cells formatted (borders, colors, etc). For huge reports, this is not feasible because it seems like it takes a huge amount of time for Excel to open big reports with stylish cells.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFormatExcelFile();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsFormatExcelFile = new ModelColumn<>(I_AD_Process.class, "IsFormatExcelFile", null);
+	String COLUMNNAME_IsFormatExcelFile = "IsFormatExcelFile";
+
+	/**
+	 * Set Log Warning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsLogWarning (boolean IsLogWarning);
+
+	/**
+	 * Get Log Warning.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLogWarning();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsLogWarning = new ModelColumn<>(I_AD_Process.class, "IsLogWarning", null);
+	String COLUMNNAME_IsLogWarning = "IsLogWarning";
+
+	/**
 	 * Set Notify user after execution.
 	 * Only for java processes. Ignored if the process is started via scheduler. The notification contains a link to the execution's process instance record.
 	 *
