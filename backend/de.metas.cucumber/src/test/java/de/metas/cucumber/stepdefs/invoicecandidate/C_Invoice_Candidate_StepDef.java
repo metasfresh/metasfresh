@@ -398,7 +398,7 @@ public class C_Invoice_Candidate_StepDef
 					assertThat(invoiceCandidate.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
 				}
 			}
-			catch (final Exception e)
+			catch (final Throwable e)
 			{
 				final List<String> invCandidateDetails = DB.retrieveRows("select * from c_invoice_candidate where c_invoice_candidate_id = " + invoiceCandidateRecord.getC_Invoice_Candidate_ID(),
 																		 new ArrayList<>(),
@@ -479,7 +479,7 @@ public class C_Invoice_Candidate_StepDef
 					assertThat(invoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 				}
 			}
-			catch (Exception e)
+			catch (final Throwable e)
 			{
 				final List<String> invCandidateDetails = DB.retrieveRows("select * from c_invoice_candidate where c_invoice_candidate_id = " + invoiceCandidateRecord.getC_Invoice_Candidate_ID(),
 																		 new ArrayList<>(),
