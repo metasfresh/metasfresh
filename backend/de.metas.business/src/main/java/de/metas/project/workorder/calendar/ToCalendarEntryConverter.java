@@ -8,9 +8,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectCategory;
 import de.metas.project.budget.BudgetProject;
-import de.metas.project.budget.BudgetProjectData;
 import de.metas.project.budget.BudgetProjectResource;
-import de.metas.project.budget.BudgetProjectResourceData;
 import de.metas.project.workorder.WOProject;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectStep;
@@ -91,22 +89,19 @@ class ToCalendarEntryConverter
 			@NonNull final BudgetProject project,
 			@Nullable final SimulationPlanRef simulationHeaderRef)
 	{
-		final BudgetProjectData budgetProjectData = project.getBudgetProjectData();
-		final BudgetProjectResourceData budgetProjectResourceData = budget.getBudgetProjectResourceData();
-
 		return CalendarEntry.builder()
 				.entryId(BudgetAndWOCalendarEntryIdConverters.from(budget.getId()))
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
-				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budgetProjectResourceData.getResourceId(),
-																					 budgetProjectResourceData.getResourceGroupId())))
+				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(),
+																					 budget.getResourceGroupId())))
 				.title(TranslatableStrings.builder()
-							   .append(budgetProjectData.getName())
+							   .append(project.getName())
 							   .append(" - ")
-							   .appendQty(budgetProjectResourceData.getPlannedDuration().toBigDecimal(),
-										  budgetProjectResourceData.getPlannedDuration().getUOMSymbol())
+							   .appendQty(budget.getPlannedDuration().toBigDecimal(),
+										  budget.getPlannedDuration().getUOMSymbol())
 							   .build())
-				.description(TranslatableStrings.anyLanguage(budgetProjectResourceData.getDescription()))
-				.dateRange(budgetProjectResourceData.getDateRange())
+				.description(TranslatableStrings.anyLanguage(budget.getDescription()))
+				.dateRange(budget.getDateRange())
 				.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
 				.color("#89D72D") // metasfresh green
 				.url(frontendURLs.getProjectUrl(ProjectCategory.Budget, budget.getProjectId()).orElse(null))

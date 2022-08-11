@@ -52,6 +52,9 @@ public class BudgetProjectResourceService
 		this.resourceService = resourceService;
 	}
 
+	/**
+	 * @return planned duration in budgetResource.getC_UOM_Time_ID()
+	 */
 	@NonNull
 	public Optional<BigDecimal> computePlannedDuration(@NonNull final I_C_Project_Resource_Budget budgetResource)
 	{

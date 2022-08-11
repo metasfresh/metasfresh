@@ -22,23 +22,20 @@
 
 package de.metas.common.rest_api.v2.project.budget;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 public class JsonBudgetProjectResponse
 {
@@ -47,112 +44,96 @@ public class JsonBudgetProjectResponse
 			dataType = "java.lang.Integer", //
 			value = "This translates to `C_Project.C_Project_ID`.")
 	@NonNull
-	@JsonProperty("projectId")
 	JsonMetasfreshId projectId;
 
 	@ApiModelProperty(required = true, value = "This translates to `C_Project.AD_Org_ID.Value`.")
 	@NonNull
-	@JsonProperty("orgCode")
 	String orgCode;
 
 	@ApiModelProperty(required = true, value = "This translates to `C_Project.C_Currency_ID.Iso_Code`.")
 	@NonNull
-	@JsonProperty("currencyCode")
 	String currencyCode;
 
 	@ApiModelProperty(required = true, value = "This translates to `C_Project.Name`.")
 	@NonNull
-	@JsonProperty("name")
 	String name;
 
 	@ApiModelProperty(required = true, value = "This translates to `C_Project.Value`.")
 	@NonNull
-	@JsonProperty("value")
 	String value;
 
 	@ApiModelProperty(value = "This translates to `C_BPartner.IsActive`.")
 	@Nullable
-	@JsonProperty("isActive")
 	Boolean isActive;
 
 	@ApiModelProperty(value = "This translates to `C_Project.M_PriceList_Version_ID`.")
 	@Nullable
-	@JsonProperty("priceListVersionId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId priceListVersionId;
 
 	@ApiModelProperty(value = "This translates to `C_Project.Description`.")
 	@Nullable
-	@JsonProperty("description")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String description;
 
 	@ApiModelProperty(value = "This translates to `C_Project.C_Project_Parent_ID`.")
 	@Nullable
-	@JsonProperty("projectParentId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId projectParentId;
 
 	@ApiModelProperty(required = true, value = "This translates to `C_Project.C_ProjectType_ID`.")
 	@NonNull
-	@JsonProperty("projectTypeId")
 	JsonMetasfreshId projectTypeId;
 
 	@ApiModelProperty(value = "This translates to `C_Project.C_Project_Reference_Ext`.")
 	@Nullable
-	@JsonProperty("projectReferenceExt")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String projectReferenceExt;
 
 	@ApiModelProperty(value = "This translates to `C_Project.C_BPartner_ID`.")
 	@Nullable
-	@JsonProperty("bpartnerId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId bpartnerId;
 
 	@ApiModelProperty(value = "This translates to `C_Project.SalesRep_ID`.")
 	@Nullable
-	@JsonProperty("salesRepId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId salesRepId;
 
 	@ApiModelProperty(value = "This translates to `C_Project.DateContract`.")
 	@Nullable
-	@JsonProperty("dateContract")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateContract;
 
 	@ApiModelProperty(value = "This translates to `C_Project.DateFinish`.")
 	@Nullable
-	@JsonProperty("dateFinish")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateFinish;
 
 	@NonNull
-	@JsonProperty("projectResources")
 	List<JsonBudgetProjectResourceResponse> projectResources;
 
-	@JsonCreator
 	@Builder
+	@Jacksonized
 	public JsonBudgetProjectResponse(
-			@JsonProperty("projectId") @NonNull final JsonMetasfreshId projectId,
-			@JsonProperty("orgCode") @NonNull final String orgCode,
-			@JsonProperty("currencyCode") @NonNull final String currencyCode,
-			@JsonProperty("name") @NonNull final String name,
-			@JsonProperty("value") @NonNull final String value,
-			@JsonProperty("isActive") @Nullable final Boolean isActive,
-			@JsonProperty("priceListVersionId") @Nullable final JsonMetasfreshId priceListVersionId,
-			@JsonProperty("description") @Nullable final String description,
-			@JsonProperty("projectParentId") @Nullable final JsonMetasfreshId projectParentId,
-			@JsonProperty("projectTypeId") @NonNull final JsonMetasfreshId projectTypeId,
-			@JsonProperty("projectReferenceExt") @Nullable final String projectReferenceExt,
-			@JsonProperty("bpartnerId") @Nullable final JsonMetasfreshId bpartnerId,
-			@JsonProperty("salesRepId") @Nullable final JsonMetasfreshId salesRepId,
-			@JsonProperty("dateContract") @Nullable final LocalDate dateContract,
-			@JsonProperty("dateFinish") @Nullable final LocalDate dateFinish,
-			@JsonProperty("projectResources") @Singular final List<JsonBudgetProjectResourceResponse> projectResources)
+			@NonNull final JsonMetasfreshId projectId,
+			@NonNull final String orgCode,
+			@NonNull final String currencyCode,
+			@NonNull final String name,
+			@NonNull final String value,
+			@Nullable final Boolean isActive,
+			@Nullable final JsonMetasfreshId priceListVersionId,
+			@Nullable final String description,
+			@Nullable final JsonMetasfreshId projectParentId,
+			@NonNull final JsonMetasfreshId projectTypeId,
+			@Nullable final String projectReferenceExt,
+			@Nullable final JsonMetasfreshId bpartnerId,
+			@Nullable final JsonMetasfreshId salesRepId,
+			@Nullable final LocalDate dateContract,
+			@Nullable final LocalDate dateFinish,
+			@NonNull @Singular final List<JsonBudgetProjectResourceResponse> projectResources)
 	{
 		this.projectId = projectId;
 		this.orgCode = orgCode;

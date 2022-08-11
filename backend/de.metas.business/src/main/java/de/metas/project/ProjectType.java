@@ -23,6 +23,7 @@
 package de.metas.project;
 
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.ClientAndOrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,6 +34,9 @@ import javax.annotation.Nullable;
 @Builder
 public class ProjectType
 {
+	@NonNull
+	ClientAndOrgId clientAndOrgId;
+
 	@NonNull
 	ProjectTypeId id;
 

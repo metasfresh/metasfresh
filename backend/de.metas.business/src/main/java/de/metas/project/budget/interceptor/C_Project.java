@@ -24,7 +24,6 @@ package de.metas.project.budget.interceptor;
 
 import de.metas.project.ProjectCategory;
 import de.metas.project.budget.BudgetProject;
-import de.metas.project.budget.BudgetProjectData;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceRepository;
 import lombok.NonNull;
@@ -41,14 +40,10 @@ import org.springframework.stereotype.Component;
 public class C_Project
 {
 	private final BudgetProjectResourceRepository budgetProjectResourceRepository;
-	private final BudgetProjectRepository budgetProjectRepository;
 
-	public C_Project(
-			@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository,
-			@NonNull final BudgetProjectRepository budgetProjectRepository)
+	public C_Project(@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository)
 	{
 		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
-		this.budgetProjectRepository = budgetProjectRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -61,11 +56,10 @@ public class C_Project
 
 		if (InterfaceWrapperHelper.isValueChanged(record, I_C_Project.COLUMNNAME_AD_Org_ID, I_C_Project.COLUMNNAME_C_Currency_ID))
 		{
-			final BudgetProject project = budgetProjectRepository.fromRecord(record)
+			final BudgetProject project = BudgetProjectRepository.fromRecord(record)
 					.orElseThrow(() -> new AdempiereException("Not a valid budget project"));
 
-			final BudgetProjectData budgetProjectData = project.getBudgetProjectData();
-			budgetProjectResourceRepository.updateAllByProjectId(project.getProjectId(), budgetProjectData.getOrgId(), budgetProjectData.getCurrencyId());
+			budgetProjectResourceRepository.updateAllByProjectId(project.getProjectId(), project.getOrgId(), project.getCurrencyId());
 		}
 	}
 

@@ -41,7 +41,7 @@ public class JsonWorkOrderProjectResponse
 	@JsonProperty("projectId")
 	JsonMetasfreshId projectId;
 
-	@Nullable
+	@NonNull
 	@JsonProperty("value")
 	String value;
 

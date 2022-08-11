@@ -38,7 +38,7 @@ import java.time.LocalDate;
 
 @Value
 @Builder
-public class BudgetProjectData
+public class CreateBudgetProjectRequest
 {
 	@NonNull
 	String name;

@@ -58,12 +58,12 @@ public class ResourceRestService
 				break;
 			case VALUE:
 				resourcePredicate = r -> // make sure that org and value match
-						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
+						(r.getOrgId().isAny() || orgId.isAny() || OrgId.equals(r.getOrgId(), orgId))
 								&& Objects.equals(r.getValue(), resourceIdentifier.asValue());
 				break;
 			case INTERNALNAME:
 				resourcePredicate = r -> // make sure that org and value match
-						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
+						(r.getOrgId().isAny() || orgId.isAny() || OrgId.equals(r.getOrgId(), orgId))
 								&& Objects.equals(r.getInternalName(), resourceIdentifier.asInternalName());
 				break;
 			default:

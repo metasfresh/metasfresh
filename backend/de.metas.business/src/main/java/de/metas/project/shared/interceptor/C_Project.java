@@ -24,7 +24,7 @@ package de.metas.project.shared.interceptor;
 
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectTypeId;
-import de.metas.project.shared.ProjectSharedService;
+import de.metas.project.service.ProjectService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -38,11 +38,11 @@ import java.util.Optional;
 @Interceptor(I_C_Project.class)
 public class C_Project
 {
-	private final ProjectSharedService projectSharedService;
+	private final ProjectService projectService;
 
-	public C_Project(@NonNull final ProjectSharedService projectSharedService)
+	public C_Project(@NonNull final ProjectService projectService)
 	{
-		this.projectSharedService = projectSharedService;
+		this.projectService = projectService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_C_Project.COLUMNNAME_C_ProjectType_ID)
@@ -55,7 +55,7 @@ public class C_Project
 			return;
 		}
 
-		final String projectCategoryCode = Optional.ofNullable(projectSharedService.getProjectCategoryFromProjectType(projectTypeId))
+		final String projectCategoryCode = Optional.ofNullable(projectService.getProjectCategoryFromProjectType(projectTypeId))
 				.map(ProjectCategory::getCode)
 				.orElse(null);
 

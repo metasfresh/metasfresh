@@ -23,7 +23,7 @@
 package de.metas.project.callout;
 
 import de.metas.project.ProjectTypeId;
-import de.metas.project.shared.ProjectSharedService;
+import de.metas.project.service.ProjectService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,11 +39,11 @@ import org.springframework.stereotype.Component;
 public class C_Project
 {
 	@NonNull
-	private final ProjectSharedService projectSharedService;
+	private final ProjectService projectService;
 
-	public C_Project(@NonNull final ProjectSharedService projectSharedService)
+	public C_Project(@NonNull final ProjectService projectService)
 	{
-		this.projectSharedService = projectSharedService;
+		this.projectService = projectService;
 
 		// register ourselves
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -65,7 +65,7 @@ public class C_Project
 			return;
 		}
 
-		final String projectValue = projectSharedService.getValueForProjectType(projectTypeId);
+		final String projectValue = projectService.getNextProjectValue(projectTypeId);
 		if (projectValue != null)
 		{
 			projectRecord.setValue(projectValue);

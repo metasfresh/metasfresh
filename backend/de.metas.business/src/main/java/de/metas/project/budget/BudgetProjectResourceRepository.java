@@ -24,7 +24,9 @@ package de.metas.project.budget;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.util.StringUtils;
 import de.metas.money.CurrencyId;
@@ -40,12 +42,16 @@ import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_Resource_Budget;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -67,6 +73,20 @@ public class BudgetProjectResourceRepository
 				.projectId(projectId)
 				.budgets(getResourcesAsListByProjectId(projectId))
 				.build();
+	}
+
+	@NonNull
+	public Map<ResourceId, BudgetProjectResource> getByProjectIdAndResourceIds(
+			@NonNull final ProjectId projectId,
+			@NonNull final Collection<ResourceId> resourceIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
+				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_ID, resourceIds)
+				.stream()
+				.map(BudgetProjectResourceRepository::fromRecord)
+				.collect(ImmutableMap.toImmutableMap(BudgetProjectResource::getResourceId, Function.identity()));
 	}
 
 	@NonNull
@@ -108,22 +128,21 @@ public class BudgetProjectResourceRepository
 
 		return BudgetProjectResource.builder()
 				.id(extractBudgetProjectResourceId(record))
-				.budgetProjectResourceData(BudgetProjectResourceData.builder()
-												   .resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
-												   .resourceId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
-												   .durationUomId(durationUomId)
-												   .plannedDuration(Quantitys.create(record.getPlannedDuration(), durationUomId))
-												   .plannedAmount(Money.of(record.getPlannedAmt(), currencyId))
-												   .pricePerDurationUnit(Money.of(record.getPricePerTimeUOM(), currencyId))
-												   .dateRange(CalendarDateRange.builder()
-																	  .startDate(record.getDateStartPlan().toInstant())
-																	  .endDate(record.getDateFinishPlan().toInstant())
-																	  .allDay(IsAllDay_TRUE)
-																	  .build())
-												   .description(StringUtils.trimBlankToNull(record.getDescription()))
-												   .externalId(ExternalId.ofOrNull(record.getExternalId()))
-												   .isActive(record.isActive())
-												   .build())
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
+				.resourceId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
+				.durationUomId(durationUomId)
+				.plannedDuration(Quantitys.create(record.getPlannedDuration(), durationUomId))
+				.plannedAmount(Money.of(record.getPlannedAmt(), currencyId))
+				.pricePerDurationUnit(Money.of(record.getPricePerTimeUOM(), currencyId))
+				.dateRange(CalendarDateRange.builder()
+								   .startDate(record.getDateStartPlan().toInstant())
+								   .endDate(record.getDateFinishPlan().toInstant())
+								   .allDay(IsAllDay_TRUE)
+								   .build())
+				.description(StringUtils.trimBlankToNull(record.getDescription()))
+				.externalId(ExternalId.ofOrNull(record.getExternalId()))
+				.isActive(record.isActive())
 				.build();
 	}
 
@@ -136,11 +155,9 @@ public class BudgetProjectResourceRepository
 			@NonNull final I_C_Project_Resource_Budget record,
 			@NonNull final BudgetProjectResource from)
 	{
-		final BudgetProjectResourceData fromBudgetProjectResourceData = from.getBudgetProjectResourceData();
-
-		record.setDateStartPlan(Timestamp.from(fromBudgetProjectResourceData.getDateRange().getStartDate()));
-		record.setDateFinishPlan(Timestamp.from(fromBudgetProjectResourceData.getDateRange().getEndDate()));
-		record.setDescription(fromBudgetProjectResourceData.getDescription());
+		record.setDateStartPlan(Timestamp.from(from.getDateRange().getStartDate()));
+		record.setDateFinishPlan(Timestamp.from(from.getDateRange().getEndDate()));
+		record.setDescription(from.getDescription());
 	}
 
 	public void updateAllByProjectId(
@@ -211,30 +228,79 @@ public class BudgetProjectResourceRepository
 	}
 
 	@NonNull
-	public BudgetProjectResource save(
-			@NonNull final UpsertBudgetProjectResourceRequest upsertBudgetProjectResourceRequest,
-			@NonNull final ProjectId projectId)
+	public List<BudgetProjectResource> updateAll(@NonNull final List<BudgetProjectResource> budgetProjectResourceList)
 	{
-		final I_C_Project_Resource_Budget resourceRecord = InterfaceWrapperHelper.loadOrNew(upsertBudgetProjectResourceRequest.getId(), I_C_Project_Resource_Budget.class);
+		final Set<Integer> projectResourceIds = budgetProjectResourceList.stream()
+				.map(BudgetProjectResource::getId)
+				.map(BudgetProjectResourceId::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		final BudgetProjectResourceData budgetProjectResourceData = upsertBudgetProjectResourceRequest.getBudgetProjectResourceData();
+		final List<I_C_Project_Resource_Budget> resourceRecordList = InterfaceWrapperHelper.loadByIds(projectResourceIds, I_C_Project_Resource_Budget.class);
 
-		resourceRecord.setIsActive(budgetProjectResourceData.getIsActive());
-		resourceRecord.setC_Project_ID(ProjectId.toRepoId(projectId));
-		resourceRecord.setS_Resource_ID(ResourceId.toRepoId(budgetProjectResourceData.getResourceId()));
-		resourceRecord.setS_Resource_Group_ID(ResourceGroupId.toRepoId(budgetProjectResourceData.getResourceGroupId()));
-		resourceRecord.setDateFinishPlan(TimeUtil.asTimestamp(budgetProjectResourceData.getDateRange().getEndDate()));
-		resourceRecord.setDateStartPlan(TimeUtil.asTimestamp(budgetProjectResourceData.getDateRange().getStartDate()));
-		resourceRecord.setC_Currency_ID(CurrencyId.toRepoId(budgetProjectResourceData.getCurrencyId()));
-		resourceRecord.setDescription(budgetProjectResourceData.getDescription());
-		resourceRecord.setPlannedAmt(budgetProjectResourceData.getPlannedAmount().toBigDecimal());
-		resourceRecord.setPlannedDuration(budgetProjectResourceData.getPlannedDuration().toBigDecimal());
-		resourceRecord.setPricePerTimeUOM(budgetProjectResourceData.getPricePerDurationUnit().toBigDecimal());
-		resourceRecord.setExternalId(ExternalId.toValue(budgetProjectResourceData.getExternalId()));
-		resourceRecord.setC_UOM_Time_ID(UomId.toRepoId(budgetProjectResourceData.getDurationUomId()));
+		final Map<Integer, I_C_Project_Resource_Budget> budgetResourceId2Resource = Maps.uniqueIndex(resourceRecordList,
+																									 I_C_Project_Resource_Budget::getC_Project_Resource_Budget_ID);
 
-		saveRecord(resourceRecord);
+		final ImmutableList.Builder<BudgetProjectResource> savedResources = ImmutableList.builder();
 
-		return fromRecord(resourceRecord);
+		for (final BudgetProjectResource budgetProjectResource : budgetProjectResourceList)
+		{
+			final I_C_Project_Resource_Budget resourceRecord = budgetResourceId2Resource.get(budgetProjectResource.getId().getRepoId());
+
+			if (resourceRecord == null)
+			{
+				throw new AdempiereException("Missing C_Project_Resource_Budget for repoId:" + budgetProjectResource.getId());
+			}
+
+			resourceRecord.setIsActive(budgetProjectResource.getIsActive());
+			resourceRecord.setC_Project_ID(ProjectId.toRepoId(budgetProjectResource.getProjectId()));
+			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(budgetProjectResource.getResourceId()));
+			resourceRecord.setS_Resource_Group_ID(ResourceGroupId.toRepoId(budgetProjectResource.getResourceGroupId()));
+			resourceRecord.setDateFinishPlan(TimeUtil.asTimestamp(budgetProjectResource.getDateRange().getEndDate()));
+			resourceRecord.setDateStartPlan(TimeUtil.asTimestamp(budgetProjectResource.getDateRange().getStartDate()));
+			resourceRecord.setC_Currency_ID(CurrencyId.toRepoId(budgetProjectResource.getCurrencyId()));
+			resourceRecord.setDescription(budgetProjectResource.getDescription());
+			resourceRecord.setPlannedAmt(budgetProjectResource.getPlannedAmount().toBigDecimal());
+			resourceRecord.setPlannedDuration(budgetProjectResource.getPlannedDuration().toBigDecimal());
+			resourceRecord.setPricePerTimeUOM(budgetProjectResource.getPricePerDurationUnit().toBigDecimal());
+			resourceRecord.setExternalId(ExternalId.toValue(budgetProjectResource.getExternalId()));
+			resourceRecord.setC_UOM_Time_ID(UomId.toRepoId(budgetProjectResource.getDurationUomId()));
+
+			saveRecord(resourceRecord);
+
+			savedResources.add(fromRecord(resourceRecord));
+		}
+
+		return savedResources.build();
+	}
+
+	@NonNull
+	public List<BudgetProjectResource> createAll(@NonNull final List<CreateBudgetProjectResourceRequest> createBudgetProjectResourceRequestList)
+	{
+		final ImmutableList.Builder<BudgetProjectResource> savedResources = ImmutableList.builder();
+
+		for (final CreateBudgetProjectResourceRequest createBudgetProjectResourceRequest : createBudgetProjectResourceRequestList)
+		{
+			final I_C_Project_Resource_Budget resourceRecord = InterfaceWrapperHelper.newInstance(I_C_Project_Resource_Budget.class);
+
+			resourceRecord.setIsActive(createBudgetProjectResourceRequest.getIsActive());
+			resourceRecord.setC_Project_ID(ProjectId.toRepoId(createBudgetProjectResourceRequest.getProjectId()));
+			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(createBudgetProjectResourceRequest.getResourceId()));
+			resourceRecord.setS_Resource_Group_ID(ResourceGroupId.toRepoId(createBudgetProjectResourceRequest.getResourceGroupId()));
+			resourceRecord.setDateFinishPlan(TimeUtil.asTimestamp(createBudgetProjectResourceRequest.getDateRange().getEndDate()));
+			resourceRecord.setDateStartPlan(TimeUtil.asTimestamp(createBudgetProjectResourceRequest.getDateRange().getStartDate()));
+			resourceRecord.setC_Currency_ID(CurrencyId.toRepoId(createBudgetProjectResourceRequest.getCurrencyId()));
+			resourceRecord.setDescription(createBudgetProjectResourceRequest.getDescription());
+			resourceRecord.setPlannedAmt(createBudgetProjectResourceRequest.getPlannedAmount().toBigDecimal());
+			resourceRecord.setPlannedDuration(createBudgetProjectResourceRequest.getPlannedDuration().toBigDecimal());
+			resourceRecord.setPricePerTimeUOM(createBudgetProjectResourceRequest.getPricePerDurationUnit().toBigDecimal());
+			resourceRecord.setExternalId(ExternalId.toValue(createBudgetProjectResourceRequest.getExternalId()));
+			resourceRecord.setC_UOM_Time_ID(UomId.toRepoId(createBudgetProjectResourceRequest.getDurationUomId()));
+
+			saveRecord(resourceRecord);
+
+			savedResources.add(fromRecord(resourceRecord));
+		}
+
+		return savedResources.build();
 	}
 }

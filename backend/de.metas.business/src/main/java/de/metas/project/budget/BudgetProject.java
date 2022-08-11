@@ -22,43 +22,66 @@
 
 package de.metas.project.budget;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.product.ResourceId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectTypeId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class BudgetProject
 {
 	@NonNull
 	ProjectId projectId;
 
 	@NonNull
-	BudgetProjectData budgetProjectData;
+	String name;
 
 	@NonNull
-	BudgetProjectResources projectResources;
+	OrgId orgId;
 
 	@NonNull
-	public Optional<BudgetProjectResource> findBudgetResource(@NonNull final ResourceId resourceId)
-	{
-		return projectResources.findBudget(resourceId);
-	}
+	CurrencyId currencyId;
 
 	@NonNull
-	public <T> List<T> mapResourceIds(@NonNull final Function<BudgetProjectResourceId, T> mappingFunction)
-	{
-		return projectResources.getBudgets()
-				.stream()
-				.map(BudgetProjectResource::getId)
-				.map(mappingFunction)
-				.collect(ImmutableList.toImmutableList());
-	}
+	ProjectTypeId projectTypeId;
+
+	@NonNull
+	String value;
+
+	@Builder.Default
+	boolean isActive = true;
+
+	@Nullable
+	PriceListVersionId priceListVersionId;
+
+	@Nullable
+	String description;
+
+	@Nullable
+	ProjectId projectParentId;
+
+	@Nullable
+	String projectReferenceExt;
+
+	@Nullable
+	BPartnerId bPartnerId;
+
+	@Nullable
+	UserId salesRepId;
+
+	@Nullable
+	LocalDate dateContract;
+
+	@Nullable
+	LocalDate dateFinish;
 }

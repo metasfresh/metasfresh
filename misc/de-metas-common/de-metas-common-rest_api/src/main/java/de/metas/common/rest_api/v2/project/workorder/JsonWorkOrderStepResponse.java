@@ -75,9 +75,9 @@ public class JsonWorkOrderStepResponse
 	@JsonCreator
 	@Builder
 	public JsonWorkOrderStepResponse(
-			@Nullable @JsonProperty("stepId") final JsonMetasfreshId stepId,
+			@NonNull @JsonProperty("stepId") final JsonMetasfreshId stepId,
 			@NonNull @JsonProperty("name") final String name,
-			@Nullable @JsonProperty("projectId") final JsonMetasfreshId projectId,
+			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
 			@Nullable @JsonProperty("description") final String description,
 			@NonNull @JsonProperty("seqNo") final Integer seqNo,
 			@Nullable @JsonProperty("dateStart") final String dateStart,

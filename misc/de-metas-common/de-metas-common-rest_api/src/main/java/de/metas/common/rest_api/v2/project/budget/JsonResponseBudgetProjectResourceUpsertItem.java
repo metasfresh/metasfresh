@@ -20,21 +20,23 @@
  * #L%
  */
 
-package de.metas.project.budget;
+package de.metas.common.rest_api.v2.project.budget;
 
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-
-@Builder
 @Value
-public class UpsertBudgetProjectResourceRequest
+@Builder
+@Jacksonized
+public class JsonResponseBudgetProjectResourceUpsertItem
 {
-	@Nullable
-	BudgetProjectResourceId id;
+	@NonNull
+	JsonMetasfreshId metasfreshId;
 
 	@NonNull
-	BudgetProjectResourceData budgetProjectResourceData;
+	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 }

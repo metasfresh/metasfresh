@@ -46,7 +46,7 @@ import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.RStatusId;
 import de.metas.project.service.ProjectRepository;
-import de.metas.project.shared.ProjectSharedService;
+import de.metas.project.service.ProjectService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -70,14 +70,14 @@ public class ProjectRestService
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
 	private final ProjectRepository projectRepository;
-	private final ProjectSharedService projectSharedService;
+	private final ProjectService projectService;
 
 	public ProjectRestService(
 			@NonNull final ProjectRepository projectRepository,
-			@NonNull final ProjectSharedService projectSharedService)
+			@NonNull final ProjectService projectService)
 	{
 		this.projectRepository = projectRepository;
-		this.projectSharedService = projectSharedService;
+		this.projectService = projectService;
 	}
 
 	@NonNull
@@ -190,7 +190,7 @@ public class ProjectRestService
 
 		final String projectValue = Check.isNotBlank(jsonRequestProjectUpsertItem.getValue())
 				? jsonRequestProjectUpsertItem.getValue()
-				: projectSharedService.getValueForProjectType(projectTypeId);
+				: Optional.ofNullable(projectTypeId).map(projectService::getNextProjectValue).orElse(null);
 
 		if (Check.isBlank(projectValue))
 		{

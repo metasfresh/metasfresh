@@ -67,11 +67,9 @@ public class BudgetProjectResources
 		BudgetProjectResource matchedByResourceGroup = null;
 		for (final BudgetProjectResource budget : budgets)
 		{
-			final BudgetProjectResourceData budgetProjectResourceData = budget.getBudgetProjectResourceData();
-
-			if (budgetProjectResourceData.getResourceId() != null)
+			if (budget.getResourceId() != null)
 			{
-				if (ResourceId.equals(budgetProjectResourceData.getResourceId(), groupAndResourceId.getResourceId()))
+				if (ResourceId.equals(budget.getResourceId(), groupAndResourceId.getResourceId()))
 				{
 					return Optional.of(budget);
 				}
@@ -79,7 +77,7 @@ public class BudgetProjectResources
 			else
 			{
 				if (matchedByResourceGroup == null
-						&& ResourceGroupId.equals(budgetProjectResourceData.getResourceGroupId(), groupAndResourceId.getResourceGroupId()))
+						&& ResourceGroupId.equals(budget.getResourceGroupId(), groupAndResourceId.getResourceGroupId()))
 				{
 					matchedByResourceGroup = budget;
 				}
@@ -106,8 +104,8 @@ public class BudgetProjectResources
 	public Optional<BudgetProjectResource> findBudget(@NonNull final ResourceId resourceId)
 	{
 		return budgets.stream()
-				.filter(budgetProjectResource -> budgetProjectResource.getBudgetProjectResourceData().getResourceId() != null)
-				.filter(budgetProjectResource -> budgetProjectResource.getBudgetProjectResourceData().getResourceId().equals(resourceId))
+				.filter(budgetProjectResource -> budgetProjectResource.getResourceId() != null)
+				.filter(budgetProjectResource -> budgetProjectResource.getResourceId().equals(resourceId))
 				.findFirst();
 	}
 }

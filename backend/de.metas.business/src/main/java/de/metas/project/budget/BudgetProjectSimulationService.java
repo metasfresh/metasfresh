@@ -61,7 +61,7 @@ public class BudgetProjectSimulationService
 					}
 
 					final BudgetProjectResource changedProjectResource = simulation.applyOn(projectResource);
-					final BudgetProjectResourceSimulation appliedSimulation = simulation.markingAsApplied(projectResource.getBudgetProjectResourceData().getDateRange());
+					final BudgetProjectResourceSimulation appliedSimulation = simulation.markingAsApplied(projectResource.getDateRange());
 					projectResourceSimulationsApplied.put(appliedSimulation.getProjectResourceId(), appliedSimulation);
 
 					return changedProjectResource;

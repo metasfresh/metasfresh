@@ -24,6 +24,7 @@ package de.metas.project;
 
 import de.metas.cache.CCache;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -75,6 +76,7 @@ public class ProjectTypeRepository
 				.id(ProjectTypeId.ofRepoId(record.getC_ProjectType_ID()))
 				.projectCategory(ProjectCategory.ofCode(record.getProjectCategory()))
 				.docSequenceId(DocSequenceId.ofRepoIdOrNull(record.getAD_Sequence_ProjectValue_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.build();
 	}
 

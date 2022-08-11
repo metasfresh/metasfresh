@@ -25,7 +25,6 @@ package de.metas.project.budget.callout;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
-import de.metas.project.budget.BudgetProjectData;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceService;
 import de.metas.resource.Resource;
@@ -85,9 +84,8 @@ public class C_Project_Resource_Budget implements ITabCallout
 		final BudgetProject budgetProject = budgetProjectRepository.getOptionalById(budgetProjectId)
 				.orElseThrow(() -> new AdempiereException("Not a valid budget project"));
 
-		final BudgetProjectData budgetProjectData = budgetProject.getBudgetProjectData();
-		budgetRecord.setAD_Org_ID(budgetProjectData.getOrgId().getRepoId());
-		budgetRecord.setC_Currency_ID(budgetProjectData.getCurrencyId().getRepoId());
+		budgetRecord.setAD_Org_ID(budgetProject.getOrgId().getRepoId());
+		budgetRecord.setC_Currency_ID(budgetProject.getCurrencyId().getRepoId());
 	}
 
 	@CalloutMethod(columnNames = I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_Group_ID)

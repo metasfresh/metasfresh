@@ -85,7 +85,7 @@ class BudgetProjectsCalendarQueryExecutor
 		final BudgetProjectSimulationPlan simulationPlan = simulationId != null ? budgetProjectSimulationService.getSimulationPlanById(simulationId) : null;
 
 		return budgets.streamBudgets()
-				.filter(budget -> resourceGroupIds.test(budget.getBudgetProjectResourceData().getResourceGroupId()))
+				.filter(budget -> resourceGroupIds.test(budget.getResourceGroupId()))
 				.map(budget -> toCalendarEntry.from(
 						simulationPlan != null ? simulationPlan.applyOn(budget) : budget,
 						budgetProjects.get(budget.getProjectId()),

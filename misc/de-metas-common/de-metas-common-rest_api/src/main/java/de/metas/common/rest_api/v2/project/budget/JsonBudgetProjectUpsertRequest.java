@@ -130,7 +130,7 @@ public class JsonBudgetProjectUpsertRequest
 	private SyncAdvise syncAdvise;
 
 	@ApiModelProperty(position = 170, value = "Corresponding to `C_Project_Resource_Budget`")
-	private List<JsonBudgetResourceUpsertRequest> resources = new ArrayList<>();
+	private List<JsonRequestBudgetProjectResourceUpsertItem> resources = new ArrayList<>();
 
 	public void setValue(final String value)
 	{
@@ -198,7 +198,7 @@ public class JsonBudgetProjectUpsertRequest
 		this.activeSet = true;
 	}
 
-	public void setResources(final List<JsonBudgetResourceUpsertRequest> resources)
+	public void setResources(final List<JsonRequestBudgetProjectResourceUpsertItem> resources)
 	{
 		this.resources = resources;
 	}

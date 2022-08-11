@@ -22,17 +22,16 @@
 
 package de.metas.common.rest_api.v2.money;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
+@Builder
+@Jacksonized
 public class JsonMoney
 {
 	@NonNull
@@ -40,14 +39,4 @@ public class JsonMoney
 
 	@NonNull
 	String currencyCode;
-
-	@Builder
-	@JsonCreator
-	public JsonMoney(
-			@JsonProperty("amount") @NonNull final BigDecimal amount,
-			@JsonProperty("currencyCode") @NonNull final String currencyCode)
-	{
-		this.amount = amount;
-		this.currencyCode = currencyCode;
-	}
 }

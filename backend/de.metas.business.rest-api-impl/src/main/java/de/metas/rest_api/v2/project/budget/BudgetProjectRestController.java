@@ -71,9 +71,9 @@ public class BudgetProjectRestController
 	}
 
 	@GetMapping("/{projectId}")
-	public ResponseEntity<JsonBudgetProjectResponse> getWorkOrderProjectDataById(@PathVariable("projectId") @NonNull final Integer projectId)
+	public ResponseEntity<JsonBudgetProjectResponse> retrieveBudgetProjectWithResources(@PathVariable("projectId") @NonNull final Integer projectId)
 	{
-		final JsonBudgetProjectResponse response = projectRestService.getBudgetProjectDataById(ProjectId.ofRepoId(projectId));
+		final JsonBudgetProjectResponse response = projectRestService.retrieveBudgetProjectWithResourcesById(ProjectId.ofRepoId(projectId));
 
 		return ResponseEntity.ok(response);
 	}

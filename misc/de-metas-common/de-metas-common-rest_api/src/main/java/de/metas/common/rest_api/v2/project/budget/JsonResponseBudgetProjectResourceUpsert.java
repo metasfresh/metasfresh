@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,27 +20,26 @@
  * #L%
  */
 
-package de.metas.project.budget;
+package de.metas.common.rest_api.v2.project.budget;
 
-import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-@Builder
-public class UpsertBudgetProjectRequest
+public class JsonResponseBudgetProjectResourceUpsert
 {
-	@Nullable
-	ProjectId projectId;
-
 	@NonNull
-	BudgetProjectData budgetProjectData;
+	List<JsonResponseBudgetProjectResourceUpsertItem> responseItems;
 
-	@Singular
-	List<UpsertBudgetProjectResourceRequest> projectResourceRequests;
+	@Builder
+	@Jacksonized
+	public JsonResponseBudgetProjectResourceUpsert(@NonNull @Singular final List<JsonResponseBudgetProjectResourceUpsertItem> responseItems)
+	{
+		this.responseItems = responseItems;
+	}
 }

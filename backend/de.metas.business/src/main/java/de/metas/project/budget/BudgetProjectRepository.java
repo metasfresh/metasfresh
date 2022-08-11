@@ -88,7 +88,7 @@ public class BudgetProjectRepository
 	}
 
 	@NonNull
-	public Optional<BudgetProject> fromRecord(final I_C_Project record)
+	public static Optional<BudgetProject> fromRecord(final I_C_Project record)
 	{
 		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory());
 		if (!projectCategory.isBudget())
@@ -109,26 +109,20 @@ public class BudgetProjectRepository
 		return Optional.of(
 				BudgetProject.builder()
 						.projectId(projectId)
-						.budgetProjectData(BudgetProjectData.builder()
-												   .name(record.getName())
-												   .orgId(projectOrgId)
-												   .currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
-												   .value(record.getValue())
-												   .isActive(record.isActive())
-												   .priceListVersionId(PriceListVersionId.ofRepoIdOrNull(record.getM_PriceList_Version_ID()))
-												   .description(record.getDescription())
-												   .projectParentId(ProjectId.ofRepoIdOrNull(record.getC_Project_Parent_ID()))
-												   .projectTypeId(projectTypeId)
-												   .projectReferenceExt(record.getC_Project_Reference_Ext())
-												   .bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
-												   .salesRepId(UserId.ofIntegerOrNull(record.getSalesRep_ID()))
-												   .dateContract(TimeUtil.asLocalDate(record.getDateContract(), projectOrgId))
-												   .dateFinish(TimeUtil.asLocalDate(record.getDateFinish(), projectOrgId))
-												   .build())
-						.projectResources(BudgetProjectResources.builder()
-												  .projectId(projectId)
-												  .budgets(budgetProjectResourceRepository.getResourcesAsListByProjectId(projectId))
-												  .build())
+						.name(record.getName())
+						.orgId(projectOrgId)
+						.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
+						.value(record.getValue())
+						.isActive(record.isActive())
+						.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(record.getM_PriceList_Version_ID()))
+						.description(record.getDescription())
+						.projectParentId(ProjectId.ofRepoIdOrNull(record.getC_Project_Parent_ID()))
+						.projectTypeId(projectTypeId)
+						.projectReferenceExt(record.getC_Project_Reference_Ext())
+						.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+						.salesRepId(UserId.ofIntegerOrNull(record.getSalesRep_ID()))
+						.dateContract(TimeUtil.asLocalDate(record.getDateContract(), projectOrgId))
+						.dateFinish(TimeUtil.asLocalDate(record.getDateFinish(), projectOrgId))
 						.build());
 	}
 
@@ -159,33 +153,57 @@ public class BudgetProjectRepository
 	}
 
 	@NonNull
-	public BudgetProject save(@NonNull final UpsertBudgetProjectRequest upsertBudgetProjectRequest)
+	public BudgetProject update(@NonNull final BudgetProject budgetProject)
 	{
-		final I_C_Project projectRecord = InterfaceWrapperHelper.loadOrNew(upsertBudgetProjectRequest.getProjectId(), I_C_Project.class);
+		final I_C_Project projectRecord = InterfaceWrapperHelper.load(budgetProject.getProjectId(), I_C_Project.class);
 
-		final BudgetProjectData budgetProjectData = upsertBudgetProjectRequest.getBudgetProjectData();
+		if (projectRecord == null)
+		{
+			throw new AdempiereException("No C_Project record found for id: " + budgetProject.getProjectId().getRepoId());
+		}
 
-		projectRecord.setName(budgetProjectData.getName());
-		projectRecord.setValue(budgetProjectData.getValue());
-		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(budgetProjectData.getProjectTypeId()));
-		projectRecord.setIsActive(budgetProjectData.isActive());
-		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(budgetProjectData.getCurrencyId()));
-		projectRecord.setAD_Org_ID(OrgId.toRepoId(budgetProjectData.getOrgId()));
-		projectRecord.setDescription(budgetProjectData.getDescription());
-		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(budgetProjectData.getProjectParentId()));
-		projectRecord.setC_BPartner_ID(BPartnerId.toRepoId(budgetProjectData.getBPartnerId()));
-		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(budgetProjectData.getPriceListVersionId()));
-		projectRecord.setSalesRep_ID(UserId.toRepoId(budgetProjectData.getSalesRepId()));
-		projectRecord.setDateContract(TimeUtil.asTimestamp(budgetProjectData.getDateContract()));
-		projectRecord.setDateFinish(TimeUtil.asTimestamp(budgetProjectData.getDateFinish()));
-		projectRecord.setC_Project_Reference_Ext(budgetProjectData.getProjectReferenceExt());
+		projectRecord.setName(budgetProject.getName());
+		projectRecord.setValue(budgetProject.getValue());
+		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(budgetProject.getProjectTypeId()));
+		projectRecord.setIsActive(budgetProject.isActive());
+		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(budgetProject.getCurrencyId()));
+		projectRecord.setAD_Org_ID(OrgId.toRepoId(budgetProject.getOrgId()));
+		projectRecord.setDescription(budgetProject.getDescription());
+		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(budgetProject.getProjectParentId()));
+		projectRecord.setC_BPartner_ID(BPartnerId.toRepoId(budgetProject.getBPartnerId()));
+		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(budgetProject.getPriceListVersionId()));
+		projectRecord.setSalesRep_ID(UserId.toRepoId(budgetProject.getSalesRepId()));
+		projectRecord.setDateContract(TimeUtil.asTimestamp(budgetProject.getDateContract()));
+		projectRecord.setDateFinish(TimeUtil.asTimestamp(budgetProject.getDateFinish()));
+		projectRecord.setC_Project_Reference_Ext(budgetProject.getProjectReferenceExt());
 
 		saveRecord(projectRecord);
 
-		final ProjectId projectId = ProjectId.ofRepoId(projectRecord.getC_Project_ID());
+		return fromRecord(projectRecord)
+				.orElseThrow(() -> new AdempiereException("BudgetProject has not been successfully saved!"));
+	}
 
-		upsertBudgetProjectRequest.getProjectResourceRequests()
-				.forEach(upsertBudgetProjectResourceRequest -> budgetProjectResourceRepository.save(upsertBudgetProjectResourceRequest, projectId));
+	@NonNull
+	public BudgetProject create(@NonNull final CreateBudgetProjectRequest request)
+	{
+		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
+
+		projectRecord.setName(request.getName());
+		projectRecord.setValue(request.getValue());
+		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(request.getProjectTypeId()));
+		projectRecord.setIsActive(request.isActive());
+		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(request.getCurrencyId()));
+		projectRecord.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
+		projectRecord.setDescription(request.getDescription());
+		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(request.getProjectParentId()));
+		projectRecord.setC_BPartner_ID(BPartnerId.toRepoId(request.getBPartnerId()));
+		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(request.getPriceListVersionId()));
+		projectRecord.setSalesRep_ID(UserId.toRepoId(request.getSalesRepId()));
+		projectRecord.setDateContract(TimeUtil.asTimestamp(request.getDateContract()));
+		projectRecord.setDateFinish(TimeUtil.asTimestamp(request.getDateFinish()));
+		projectRecord.setC_Project_Reference_Ext(request.getProjectReferenceExt());
+
+		saveRecord(projectRecord);
 
 		return fromRecord(projectRecord)
 				.orElseThrow(() -> new AdempiereException("BudgetProject has not been successfully saved!"));

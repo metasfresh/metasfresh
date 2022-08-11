@@ -25,7 +25,9 @@ package de.metas.project.budget;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.resource.ResourceGroupId;
 import de.metas.uom.UomId;
@@ -37,8 +39,14 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class BudgetProjectResourceData
+public class CreateBudgetProjectResourceRequest
 {
+	@NonNull
+	ProjectId projectId;
+
+	@NonNull
+	OrgId orgId;
+
 	@Nullable
 	ResourceGroupId resourceGroupId;
 
@@ -69,8 +77,10 @@ public class BudgetProjectResourceData
 	@Nullable
 	ExternalId externalId;
 
-	@Builder(toBuilder = true)
-	private BudgetProjectResourceData(
+	@Builder
+	public CreateBudgetProjectResourceRequest(
+			@NonNull final ProjectId projectId,
+			@NonNull final OrgId orgId,
 			@Nullable final ResourceGroupId resourceGroupId,
 			@Nullable final ResourceId resourceId,
 			@NonNull final UomId durationUomId,
@@ -84,6 +94,8 @@ public class BudgetProjectResourceData
 	{
 		Money.getCommonCurrencyIdOfAll(plannedAmount, pricePerDurationUnit);
 
+		this.projectId = projectId;
+		this.orgId = orgId;
 		this.resourceGroupId = resourceGroupId;
 		this.resourceId = resourceId;
 		this.durationUomId = durationUomId;

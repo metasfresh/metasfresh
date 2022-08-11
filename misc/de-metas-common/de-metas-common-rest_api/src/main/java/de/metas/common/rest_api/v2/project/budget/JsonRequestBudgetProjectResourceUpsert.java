@@ -22,37 +22,45 @@
 
 package de.metas.common.rest_api.v2.project.budget;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.common.rest_api.v2.SyncAdvise;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 @Value
-public class JsonBudgetProjectUpsertResponse
+@ApiModel
+public class JsonRequestBudgetProjectResourceUpsert
 {
-	@NonNull
+	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project.C_Project_ID`", required = true)
 	JsonMetasfreshId projectId;
 
-	@NonNull
-	List<JsonResponseBudgetProjectResourceUpsertItem> budgetResources;
+	@ApiModelProperty(position = 20, required = true)
+	List<JsonRequestBudgetProjectResourceUpsertItem> requestItems;
 
-	@NonNull
-	JsonResponseUpsertItem.SyncOutcome syncOutcome;
+	@ApiModelProperty(position = 30, value = "Default sync-advise\n" + READ_ONLY_SYNC_ADVISE_DOC)
+	SyncAdvise syncAdvise;
 
 	@Builder
 	@Jacksonized
-	public JsonBudgetProjectUpsertResponse(
+	public JsonRequestBudgetProjectResourceUpsert(
 			@NonNull final JsonMetasfreshId projectId,
-			@NonNull @Singular final List<JsonResponseBudgetProjectResourceUpsertItem> budgetResources,
-			@NonNull final JsonResponseUpsertItem.SyncOutcome syncOutcome)
+			@Nullable @Singular final List<JsonRequestBudgetProjectResourceUpsertItem> requestItems,
+			@Nullable final SyncAdvise syncAdvise)
 	{
 		this.projectId = projectId;
-		this.budgetResources = budgetResources;
-		this.syncOutcome = syncOutcome;
+		this.requestItems = coalesce(requestItems, ImmutableList.of());
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

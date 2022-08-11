@@ -120,7 +120,6 @@ Feature: Budget Project API Test
                 "resourceGroupId": 2000000,
                 "resourceId": 540006,
                 "externalId": "testExternalId",
-                "resourceGroupId" : 2000000,
                 "isActive": true
             }
         ]
