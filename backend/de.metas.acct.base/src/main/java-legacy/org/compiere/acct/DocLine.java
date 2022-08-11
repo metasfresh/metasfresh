@@ -424,7 +424,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		if (m_DateDoc == null)
 		{
-			m_DateDoc = CoalesceUtil.coalesceSuppliers(
+			m_DateDoc = CoalesceUtil.coalesceSuppliersNotNull(
 					() -> getValueAsLocalDateOrNull("DateDoc"),
 					() -> getValueAsLocalDateOrNull("DateTrx"),
 					() -> getDoc().getDateAcct());
@@ -794,11 +794,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				m_C_SalesRegion_ID = -2;        // don't try again
 			}
 		}
-		if (m_C_SalesRegion_ID < 0)
-		{
-			return 0;
-		}
-		return m_C_SalesRegion_ID;
+
+		return Math.max(m_C_SalesRegion_ID, 0);
 	}   // getC_SalesRegion_ID
 
 	public final int getC_Project_ID()
@@ -847,8 +844,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return null;
 		}
 
-		final T id = idOrNullMapper.apply(valueInt);
-		return id;
+		return idOrNullMapper.apply(valueInt);
 	}
 
 	private <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
@@ -891,24 +887,10 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			final Integer valueInt = (Integer)po.get_Value(index);
 			if (valueInt != null)
 			{
-				return valueInt.intValue();
+				return valueInt;
 			}
 		}
 		return 0;
-	}
-
-	@Nullable
-	final BigDecimal getValueAsBD(final String columnName, @Nullable final BigDecimal defaultValue)
-	{
-		final PO po = getPO();
-		final int index = po.get_ColumnIndex(columnName);
-		if (index != -1)
-		{
-			final Object valueObj = po.get_Value(index);
-			return NumberUtils.asBigDecimal(valueObj, defaultValue);
-		}
-
-		return defaultValue;
 	}
 
 	@Nullable
