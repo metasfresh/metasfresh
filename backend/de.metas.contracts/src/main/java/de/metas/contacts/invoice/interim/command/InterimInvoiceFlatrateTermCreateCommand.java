@@ -48,7 +48,10 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
@@ -122,6 +125,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	IInterimInvoiceFlatrateTermBL interimInvoiceOverviewBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
@@ -288,7 +292,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		final I_C_Invoice_Candidate copiedIC = InterfaceWrapperHelper.copy()
 				.setFrom(existingIC)
 				.copyToNew(I_C_Invoice_Candidate.class);
-
+		final I_C_ILCandHandler handlerRecord = invoiceCandidateHandlerDAO.retrieveForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class);
+		copiedIC.setC_ILCandHandler_ID(handlerRecord.getC_ILCandHandler_ID());
 		copiedIC.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
 		copiedIC.setRecord_ID(flatrateTerm.getC_Flatrate_Term_ID());
 		copiedIC.setAD_Table_ID(tableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name));
