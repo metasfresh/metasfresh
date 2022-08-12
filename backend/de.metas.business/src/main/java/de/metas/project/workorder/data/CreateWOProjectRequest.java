@@ -22,43 +22,84 @@
 
 package de.metas.project.workorder.data;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectObjectUnderTestId;
-import de.metas.util.lang.ExternalId;
+import de.metas.project.ProjectTypeId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Value
-@Builder(toBuilder = true)
-public class WOProjectObjectUnderTest
+@Builder
+public class CreateWOProjectRequest
 {
 	@NonNull
-	WOProjectObjectUnderTestId objectUnderTestId;
+	OrgId orgId;
 
 	@NonNull
-	Integer numberOfObjectsUnderTest;
+	CurrencyId currencyId;
 
 	@NonNull
-	ProjectId projectId;
+	String name;
+
+	@NonNull
+	String value;
+
+	@NonNull
+	ProjectTypeId projectTypeId;
+
+	@Builder.Default
+	boolean isActive = true;
 
 	@Nullable
-	ExternalId externalId;
+	PriceListVersionId priceListVersionId;
 
 	@Nullable
-	String woDeliveryNote;
+	String description;
 
 	@Nullable
-	String woManufacturer;
+	ProjectId projectParentId;
 
 	@Nullable
-	String woObjectType;
+	String projectReferenceExt;
 
 	@Nullable
-	String woObjectName;
+	BPartnerId bPartnerId;
 
 	@Nullable
-	String woObjectWhereabouts;
+	UserId salesRepId;
+
+	@Nullable
+	Instant dateContract;
+
+	@Nullable
+	Instant dateFinish;
+
+	@Nullable
+	String specialistConsultantId;
+
+	@Nullable
+	Instant dateOfProvisionByBPartner;
+
+	@Nullable
+	String bpartnerDepartment;
+
+	@Nullable
+	String woOwner;
+
+	@Nullable
+	String poReference;
+
+	@Nullable
+	Instant bpartnerTargetDate;
+
+	@Nullable
+	Instant woProjectCreatedDate;
 }

@@ -31,6 +31,7 @@ import de.metas.project.workorder.data.WOProjectStep;
 import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.project.resource.ResourceIdentifierUtil;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,14 +45,14 @@ public class WorkOrderMapperUtil
 	@NonNull
 	public Optional<WOProjectStep> resolveStepForExternalIdentifier(
 			@NonNull final IdentifierString externalIdentifier,
-			@NonNull final List<WOProjectStep> projectSteps)
+			@NonNull final List<WOProjectStep> projectSteps) //todo fp: reuse this after persisting everything; also move function to WorkOrderStepRestService
 	{
 		switch (externalIdentifier.getType())
 		{
 			case METASFRESH_ID:
 				return projectSteps.stream()
 						.filter(step -> {
-							final WOProjectStepId stepId = step.getWOProjectStepIdNonNull();
+							final WOProjectStepId stepId = step.getWoProjectStepId();
 							final MetasfreshId metasfreshStepId = MetasfreshId.of(stepId);
 
 							return metasfreshStepId.equals(externalIdentifier.asMetasfreshId());
@@ -60,7 +61,7 @@ public class WorkOrderMapperUtil
 
 			case EXTERNAL_ID:
 				return projectSteps.stream()
-						.filter(step -> step.getExternalIdNonNull().equals(externalIdentifier.asExternalId()))
+						.filter(step -> step.getExternalId().equals(externalIdentifier.asExternalId()))
 						.findFirst();
 			default:
 				throw new AdempiereException("Unhandled IdentifierString type=" + externalIdentifier);
@@ -68,7 +69,7 @@ public class WorkOrderMapperUtil
 	}
 
 	@NonNull
-	public Optional<WOProjectObjectUnderTest> resolveObjectUnderTestForExternalIdentifier(
+	public Optional<WOProjectObjectUnderTest> resolveObjectUnderTestForExternalIdentifier( //todo fp: same as above
 			@NonNull final IdentifierString identifier,
 			@NonNull final List<WOProjectObjectUnderTest> objectsUnderTest)
 	{
@@ -77,7 +78,7 @@ public class WorkOrderMapperUtil
 			case METASFRESH_ID:
 				return objectsUnderTest.stream()
 						.filter(objectUnderTest -> {
-							final int id = objectUnderTest.getIdNonNull().getRepoId();
+							final int id = objectUnderTest.getObjectUnderTestId().getRepoId();
 							return id == identifier.asMetasfreshId().getValue();
 						})
 						.findFirst();
@@ -98,10 +99,10 @@ public class WorkOrderMapperUtil
 			@NonNull final List<WOProjectResource> woProjectResources,
 			@NonNull final ResourceService resourceService)
 	{
-		final ResourceId resolvedResourceId = ResourceIdentifierUtil.resolveResourceForExternalIdentifier(orgId, identifier, resourceService);
+		final ResourceId resolvedResourceId = ResourceIdentifierUtil.resolveResourceIdentifier(orgId, identifier, resourceService);
 
 		return woProjectResources.stream()
-				.filter(woProjectResource -> woProjectResource.getResourceIdNonNull().equals(resolvedResourceId))
+				.filter(woProjectResource -> woProjectResource.getResourceId().equals(resolvedResourceId))
 				.findFirst();
 	}
 }

@@ -45,13 +45,12 @@ import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.CreateBudgetProjectRequest;
-import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.project.resource.ResourceIdentifierUtil;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
@@ -237,22 +236,7 @@ public class BudgetProjectRestService
 			return budgetProjectRepository.getOptionalById(existingProjectId);
 		}
 
-		final ProjectQuery.ProjectQueryBuilder projectQueryBuilder = ProjectQuery.builder()
-				.orgId(orgId);
-
-		switch (projectIdentifier.getType())
-		{
-			case VALUE:
-				projectQueryBuilder.value(projectIdentifier.asValue());
-				break;
-			case EXTERNAL_ID:
-				projectQueryBuilder.externalProjectReference(projectIdentifier.asExternalId());
-				break;
-			default:
-				throw new InvalidIdentifierException(projectIdentifier.getRawIdentifierString(), request);
-		}
-
-		return budgetProjectRepository.getOptionalBy(projectQueryBuilder.build());
+		return budgetProjectRepository.getOptionalBy(ResourceIdentifierUtil.getProjectQueryFromIdentifier(orgId, projectIdentifier));
 	}
 
 	private void validateJsonBudgetProjectUpsertRequest(@NonNull final JsonBudgetProjectUpsertRequest request)
@@ -279,7 +263,7 @@ public class BudgetProjectRestService
 					.build();
 		}
 
-		if (!projectType.getProjectCategory().isBudget())
+		if (!projectType.getProjectCategory().isBudget()) //todo fp: same for WOProject
 		{
 			throw new AdempiereException("ProjectType.ProjectCategory is not meant for budget!")
 					.appendParametersToMessage()

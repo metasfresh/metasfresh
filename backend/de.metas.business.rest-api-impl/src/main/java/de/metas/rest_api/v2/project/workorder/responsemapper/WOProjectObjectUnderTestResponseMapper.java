@@ -32,7 +32,6 @@ import de.metas.rest_api.v2.project.workorder.WorkOrderMapperUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.experimental.NonFinal;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
@@ -43,9 +42,6 @@ public class WOProjectObjectUnderTestResponseMapper
 {
 	@NonNull
 	String identifier;
-
-	@NonFinal
-	JsonMetasfreshId metasfreshId;
 
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
@@ -65,7 +61,7 @@ public class WOProjectObjectUnderTestResponseMapper
 	@NonNull
 	private JsonWorkOrderObjectUnderTestUpsertResponse toResponse(@NonNull final WOProjectObjectUnderTest woObjectUnderTest)
 	{
-		final WOProjectObjectUnderTestId woProjectObjectUnderTestId = woObjectUnderTest.getIdNonNull();
+		final WOProjectObjectUnderTestId woProjectObjectUnderTestId = woObjectUnderTest.getObjectUnderTestId();
 
 		return JsonWorkOrderObjectUnderTestUpsertResponse.builder()
 				.metasfreshId(JsonMetasfreshId.of(woProjectObjectUnderTestId.getRepoId()))

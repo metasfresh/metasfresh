@@ -24,17 +24,13 @@ package de.metas.project.workorder.data;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
-import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
-import de.metas.project.ProjectTypeRepository;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -56,23 +52,6 @@ public class WorkOrderProjectRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	private final ProjectTypeRepository projectTypeRepository;
-	private final WorkOrderProjectStepRepository workOrderProjectStepRepository;
-	private final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository;
-
-	public WorkOrderProjectRepository(
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final ProjectTypeRepository projectTypeRepository,
-			@NonNull final WorkOrderProjectStepRepository workOrderProjectStepRepository,
-			@NonNull final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository)
-	{
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-		this.projectTypeRepository = projectTypeRepository;
-		this.workOrderProjectStepRepository = workOrderProjectStepRepository;
-		this.workOrderProjectObjectUnderTestRepository = workOrderProjectObjectUnderTestRepository;
-	}
 
 	@NonNull
 	public Optional<WOProject> getOptionalById(@NonNull final ProjectId id)
@@ -113,100 +92,74 @@ public class WorkOrderProjectRepository
 	}
 
 	@NonNull
-	public WOProject save(@NonNull final WOProject woProject)
+	public WOProject update(@NonNull final WOProject woProject)
 	{
-		final I_C_Project projectRecord = InterfaceWrapperHelper.loadOrNew(woProject.getProjectId(), I_C_Project.class);
+		final I_C_Project projectRecord = InterfaceWrapperHelper.load(woProject.getProjectId(), I_C_Project.class);
 
-		if (Check.isNotBlank(woProject.getName()))
+		if (projectRecord == null)
 		{
-			projectRecord.setName(woProject.getName());
+			throw new AdempiereException("No C_Project record found for id: " + woProject.getProjectId().getRepoId());
 		}
 
-		if(woProject.getIsActive() != null)
-		{
-			projectRecord.setIsActive(woProject.getIsActive());
-		}
-
-		if (Check.isNotBlank(woProject.getValue()))
-		{
-			projectRecord.setValue(woProject.getValue());
-		}
-
-		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(woProject.getCurrencyId()));
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(woProject.getOrgId()));
-		projectRecord.setDescription(woProject.getDescription());
-		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(woProject.getProjectParentId()));
-		projectRecord.setC_BPartner_ID(BPartnerId.toRepoId(woProject.getBPartnerId()));
+		projectRecord.setIsActive(woProject.getIsActive());
+		projectRecord.setName(woProject.getName());
+		projectRecord.setValue(woProject.getValue());
 		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(woProject.getPriceListVersionId()));
 		projectRecord.setSalesRep_ID(UserId.toRepoId(woProject.getSalesRepId()));
 		projectRecord.setDateContract(TimeUtil.asTimestamp(woProject.getDateContract()));
+		projectRecord.setC_BPartner_ID(BPartnerId.toRepoId(woProject.getBPartnerId()));
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(woProject.getDateFinish()));
-		projectRecord.setC_Project_Reference_Ext(woProject.getProjectReferenceExt());
-		projectRecord.setSpecialist_Consultant_ID(woProject.getSpecialistConsultantId());
 		projectRecord.setDateOfProvisionByBPartner(TimeUtil.asTimestamp(woProject.getDateOfProvisionByBPartner()));
+		projectRecord.setC_Project_Reference_Ext(woProject.getProjectReferenceExt());
+		projectRecord.setDescription(woProject.getDescription());
+		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(woProject.getCurrencyId()));
+		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(woProject.getProjectParentId()));
 		projectRecord.setBPartnerDepartment(woProject.getBpartnerDepartment());
 		projectRecord.setWOOwner(woProject.getWoOwner());
 		projectRecord.setPOReference(woProject.getPoReference());
 		projectRecord.setBPartnerTargetDate(TimeUtil.asTimestamp(woProject.getBpartnerTargetDate()));
 		projectRecord.setWOProjectCreatedDate(TimeUtil.asTimestamp(woProject.getWoProjectCreatedDate()));
-
-		updateFromProjectType(projectRecord, woProject);
+		projectRecord.setSpecialist_Consultant_ID(woProject.getSpecialistConsultantId());
+		projectRecord.setC_ProjectType_ID(woProject.getProjectTypeId().getRepoId());
 
 		saveRecord(projectRecord);
-
-		for (final WOProjectStep woProjectStep : woProject.getProjectSteps())
-		{
-			final WOProjectStep stepDataToSave = woProjectStep.withProjectId(ProjectId.ofRepoId(projectRecord.getC_Project_ID()));
-			workOrderProjectStepRepository.save(stepDataToSave);
-		}
-
-		for (final WOProjectObjectUnderTest objectUnderTest : woProject.getProjectObjectsUnderTest())
-		{
-			final WOProjectObjectUnderTest objectUnderTestToSave = objectUnderTest.withProjectId(ProjectId.ofRepoId(projectRecord.getC_Project_ID()));
-			workOrderProjectObjectUnderTestRepository.save(objectUnderTestToSave);
-		}
 
 		return ofRecord(projectRecord);
 	}
 
-	private void updateFromProjectType(@NonNull final I_C_Project projectRecord, @NonNull final WOProject projectData)
+	@NonNull
+	public WOProject save(@NonNull final CreateWOProjectRequest createWOProjectRequest)
 	{
-		final ProjectTypeId projectTypeId = projectData.getProjectTypeId();
-		if (projectTypeId == null)
-		{
-			return;
-		}
+		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
-		projectRecord.setC_ProjectType_ID(projectTypeId.getRepoId());
+		projectRecord.setAD_Org_ID(OrgId.toRepoId(createWOProjectRequest.getOrgId()));
+		projectRecord.setIsActive(createWOProjectRequest.isActive());
+		projectRecord.setName(createWOProjectRequest.getName());
+		projectRecord.setValue(createWOProjectRequest.getValue());
+		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(createWOProjectRequest.getPriceListVersionId()));
+		projectRecord.setSalesRep_ID(UserId.toRepoId(createWOProjectRequest.getSalesRepId()));
+		projectRecord.setDateContract(TimeUtil.asTimestamp(createWOProjectRequest.getDateContract()));
+		projectRecord.setC_BPartner_ID(BPartnerId.toRepoId(createWOProjectRequest.getBPartnerId()));
+		projectRecord.setDateFinish(TimeUtil.asTimestamp(createWOProjectRequest.getDateFinish()));
+		projectRecord.setDateOfProvisionByBPartner(TimeUtil.asTimestamp(createWOProjectRequest.getDateOfProvisionByBPartner()));
+		projectRecord.setC_Project_Reference_Ext(createWOProjectRequest.getProjectReferenceExt());
+		projectRecord.setDescription(createWOProjectRequest.getDescription());
+		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(createWOProjectRequest.getCurrencyId()));
+		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(createWOProjectRequest.getProjectParentId()));
+		projectRecord.setBPartnerDepartment(createWOProjectRequest.getBpartnerDepartment());
+		projectRecord.setWOOwner(createWOProjectRequest.getWoOwner());
+		projectRecord.setPOReference(createWOProjectRequest.getPoReference());
+		projectRecord.setBPartnerTargetDate(TimeUtil.asTimestamp(createWOProjectRequest.getBpartnerTargetDate()));
+		projectRecord.setWOProjectCreatedDate(TimeUtil.asTimestamp(createWOProjectRequest.getWoProjectCreatedDate()));
+		projectRecord.setSpecialist_Consultant_ID(createWOProjectRequest.getSpecialistConsultantId());
+		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectTypeId().getRepoId());
+		projectRecord.setName(createWOProjectRequest.getName());
+		projectRecord.setValue(createWOProjectRequest.getValue());
 
-		final String projectValue = computeNextProjectValue(projectRecord);
-		if (projectValue != null)
-		{
-			projectRecord.setValue(projectValue);
-		}
-		if (Check.isEmpty(projectRecord.getName()))
-		{
-			projectRecord.setName(projectValue != null ? projectValue : ".");
-		}
+		saveRecord(projectRecord);
 
-		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
-		if (projectType.getProjectCategory().isWorkOrder())
-		{
-			projectRecord.setProjectCategory(projectType.getProjectCategory().getCode());
-		}
-		else
-		{
-			throw new AdempiereException("The project " + projectRecord.getName() + " has the following category : " + projectType.getProjectCategory().getCode() + " which is not fitting for a Work Order Project!");
-		}
-	}
-
-	@Nullable
-	private String computeNextProjectValue(final I_C_Project projectRecord)
-	{
-		return documentNoBuilderFactory
-				.createValueBuilderFor(projectRecord)
-				.setFailOnError(false)
-				.build();
+		return ofRecord(projectRecord);
 	}
 
 	@NonNull
@@ -241,8 +194,6 @@ public class WorkOrderProjectRepository
 				.poReference(projectRecord.getPOReference())
 				.bpartnerTargetDate(TimeUtil.asInstant(projectRecord.getBPartnerTargetDate(), timeZone))
 				.woProjectCreatedDate(TimeUtil.asInstant(projectRecord.getWOProjectCreatedDate(), timeZone))
-				.projectSteps(workOrderProjectStepRepository.getByProjectId(projectId))
-				.projectObjectsUnderTest(workOrderProjectObjectUnderTestRepository.getByProjectId(projectId))
 				.build();
 	}
 }

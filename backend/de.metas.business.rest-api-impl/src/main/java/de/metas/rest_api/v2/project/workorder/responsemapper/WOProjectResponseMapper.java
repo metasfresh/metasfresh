@@ -77,9 +77,9 @@ public class WOProjectResponseMapper
 	}
 
 	@NonNull
-	public JsonWorkOrderProjectUpsertResponse map(@NonNull final WOProject woProject)
+	public JsonWorkOrderProjectUpsertResponse map(@NonNull final WOProject woProject) //todo fp: drop
 	{
-		final JsonMetasfreshId projectMetasfreshId = JsonMetasfreshId.of(woProject.getProjectIdNonNull().getRepoId());
+		final JsonMetasfreshId projectMetasfreshId = JsonMetasfreshId.of(woProject.getProjectId().getRepoId());
 
 		if (!projectMetasfreshId.equals(this.metasfreshId))
 		{
@@ -92,26 +92,8 @@ public class WOProjectResponseMapper
 				.identifier(this.identifier)
 				.metasfreshId(this.metasfreshId)
 				.syncOutcome(this.syncOutcome)
-				.steps(mapSteps(woProject.getProjectSteps()))
-				.objectsUnderTest(mapObjectUnderTest(woProject.getProjectObjectsUnderTest()))
+				// .steps(mapSteps(woProject.getProjectSteps()))
+				// .objectsUnderTest(mapObjectUnderTest(woProject.getProjectObjectsUnderTest()))
 				.build();
-	}
-
-	@NonNull
-	private List<JsonWorkOrderStepUpsertResponse> mapSteps(@NonNull final List<WOProjectStep> steps)
-	{
-		return this.identifier2StepMapper.values()
-				.stream()
-				.map(stepMapper -> stepMapper.map(steps))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private List<JsonWorkOrderObjectUnderTestUpsertResponse> mapObjectUnderTest(@NonNull final List<WOProjectObjectUnderTest> objectsUnderTest)
-	{
-		return this.identifier2ObjectUnderTestMapper.values()
-				.stream()
-				.map(objectUnderTestMapper -> objectUnderTestMapper.map(objectsUnderTest))
-				.collect(ImmutableList.toImmutableList());
 	}
 }

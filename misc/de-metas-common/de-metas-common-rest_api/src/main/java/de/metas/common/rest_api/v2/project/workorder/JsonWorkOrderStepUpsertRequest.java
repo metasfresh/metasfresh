@@ -23,200 +23,44 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.time.LocalDate;
+import javax.annotation.Nullable;
 import java.util.List;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.STEP_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+@Value
+@ApiModel
 public class JsonWorkOrderStepUpsertRequest
 {
-	@ApiModelProperty(position = 10,
-			required = true,
-			value = STEP_IDENTIFIER_DOC) //
-	@Setter
-	String identifier;
+	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_WO_Step.C_Project_ID`", required = true)
+	JsonMetasfreshId projectId;
 
-	@ApiModelProperty(required = true)
-	@Setter
-	String name;
+	@ApiModelProperty(position = 20, required = true)
+	List<JsonWorkOrderStepUpsertItemRequest> requestItems;
 
-	String description;
+	@ApiModelProperty(position = 30, value = "Default sync-advise\n" + READ_ONLY_SYNC_ADVISE_DOC)
+	SyncAdvise syncAdvise;
 
-	@ApiModelProperty(hidden = true)
-	boolean descriptionSet;
-
-	Integer seqNo;
-
-	@ApiModelProperty(hidden = true)
-	boolean seqNoSet;
-
-	@ApiModelProperty(required = true)
-	LocalDate dateStart;
-
-	@ApiModelProperty(hidden = true)
-	boolean dateStartSet;
-
-	@ApiModelProperty(required = true)
-	LocalDate dateEnd;
-
-	@ApiModelProperty(hidden = true)
-	boolean dateEndSet;
-
-	LocalDate woPartialReportDate;
-
-	@ApiModelProperty(hidden = true)
-	boolean woPartialReportDateSet;
-
-	private Integer woPlannedResourceDurationHours;
-
-	@ApiModelProperty(hidden = true)
-	boolean woPlannedResourceDurationHoursSet;
-
-	LocalDate deliveryDate;
-
-	@ApiModelProperty(hidden = true)
-	boolean deliveryDateSet;
-
-	LocalDate woTargetStartDate;
-
-	@ApiModelProperty(hidden = true)
-	boolean woTargetStartDateSet;
-
-	LocalDate woTargetEndDate;
-
-	@ApiModelProperty(hidden = true)
-	boolean woTargetEndDateSet;
-
-	Integer woPlannedPersonDurationHours;
-
-	@ApiModelProperty(hidden = true)
-	boolean woPlannedPersonDurationHoursSet;
-
-	JsonWOStepStatus woStepStatus;
-
-	@ApiModelProperty(hidden = true)
-	boolean woStepStatusSet;
-
-	LocalDate woFindingsReleasedDate;
-
-	@ApiModelProperty(hidden = true)
-	boolean woFindingsReleasedDateSet;
-
-	LocalDate woFindingsCreatedDate;
-
-	@ApiModelProperty(hidden = true)
-	boolean woFindingsCreatedDateSet;
-
-	JsonExternalId externalId;
-
-	@ApiModelProperty(hidden = true)
-	boolean externalIdSet;
-
-	@ApiModelProperty("Optional resource allocations that reference to this step")
-	List<JsonWorkOrderResourceUpsertRequest> resources;
-
-	public void setName(final String name)
+	@Builder
+	@Jacksonized
+	public JsonWorkOrderStepUpsertRequest(
+			@NonNull final JsonMetasfreshId projectId,
+			@Nullable @Singular final List<JsonWorkOrderStepUpsertItemRequest> requestItems,
+			@Nullable final SyncAdvise syncAdvise)
 	{
-		this.name = name;
-	}
-
-	public void setDescription(final String description)
-	{
-		this.description = description;
-		this.descriptionSet = true;
-	}
-
-	public void setSeqNo(final Integer seqNo)
-	{
-		this.seqNo = seqNo;
-		this.seqNoSet = true;
-	}
-
-	public void setDateStart(final LocalDate dateStart)
-	{
-		this.dateStart = dateStart;
-		this.dateStartSet = true;
-	}
-
-	public void setDateEnd(final LocalDate dateEnd)
-	{
-		this.dateEnd = dateEnd;
-		this.dateEndSet = true;
-	}
-
-	public void setWoPartialReportDate(final LocalDate woPartialReportDate)
-	{
-		this.woPartialReportDate = woPartialReportDate;
-		this.woPartialReportDateSet = true;
-	}
-
-	public void setWoPlannedResourceDurationHours(final Integer woPlannedResourceDurationHours)
-	{
-		this.woPlannedResourceDurationHours = woPlannedResourceDurationHours;
-		this.woPlannedResourceDurationHoursSet = true;
-	}
-
-	public void setDeliveryDate(final LocalDate deliveryDate)
-	{
-		this.deliveryDate = deliveryDate;
-		this.deliveryDateSet = true;
-	}
-
-	public void setWOTargetStartDate(final LocalDate woTargetStartDate)
-	{
-		this.woTargetStartDate = woTargetStartDate;
-		this.woTargetStartDateSet = true;
-	}
-
-	public void setWOTargetEndDate(final LocalDate woTargetEndDate)
-	{
-		this.woTargetEndDate = woTargetEndDate;
-		this.woTargetEndDateSet = true;
-	}
-
-	public void setWOPlannedPersonDurationHours(final Integer woPlannedPersonDurationHours)
-	{
-		this.woPlannedPersonDurationHours = woPlannedPersonDurationHours;
-		this.woPlannedPersonDurationHoursSet = true;
-	}
-
-	public void setWOStepStatus(final JsonWOStepStatus woStepStatus)
-	{
-		this.woStepStatus = woStepStatus;
-		this.woStepStatusSet = true;
-	}
-
-	public void setWOFindingsReleasedDate(final LocalDate woFindingsReleasedDate)
-	{
-		this.woFindingsReleasedDate = woFindingsReleasedDate;
-		this.woFindingsReleasedDateSet = true;
-	}
-
-	public void setWOFindingsCreatedDate(final LocalDate woFindingsCreatedDate)
-	{
-		this.woFindingsCreatedDate = woFindingsCreatedDate;
-		this.woFindingsCreatedDateSet = true;
-	}
-
-	public void setExternalId(final JsonExternalId externalId)
-	{
-		this.externalId = externalId;
-		this.externalIdSet = true;
-	}
-
-	public void setResources(final List<JsonWorkOrderResourceUpsertRequest> resources)
-	{
-		this.resources = CoalesceUtil.coalesce(resources, ImmutableList.of());
+		this.projectId = projectId;
+		this.requestItems = coalesce(requestItems, ImmutableList.of());
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

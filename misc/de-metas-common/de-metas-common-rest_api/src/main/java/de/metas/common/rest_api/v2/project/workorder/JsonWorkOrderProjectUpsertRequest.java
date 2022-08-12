@@ -48,6 +48,14 @@ public class JsonWorkOrderProjectUpsertRequest
 	@Setter
 	String identifier;
 
+	@ApiModelProperty(required = true)
+	@Setter
+	JsonMetasfreshId projectTypeId;
+
+	@ApiModelProperty(required = true)
+	@Setter
+	SyncAdvise syncAdvise;
+
 	String value;
 
 	@ApiModelProperty(hidden = true)
@@ -57,9 +65,6 @@ public class JsonWorkOrderProjectUpsertRequest
 
 	@ApiModelProperty(hidden = true)
 	boolean nameSet;
-
-	@ApiModelProperty(required = true)
-	JsonMetasfreshId projectTypeId;
 
 	JsonMetasfreshId priceListVersionId;
 
@@ -118,12 +123,6 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean activeSet;
 
-	@ApiModelProperty(required = true)
-	SyncAdvise syncAdvise;
-
-	@ApiModelProperty(hidden = true)
-	private boolean syncAdviseSet;
-
 	String bpartnerDepartment;
 
 	@ApiModelProperty(hidden = true)
@@ -159,9 +158,9 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	private boolean dateOfProvisionByBPartnerSet;
 
-	private List<JsonWorkOrderStepUpsertRequest> steps;
+	private List<JsonWorkOrderStepUpsertItemRequest> steps;
 
-	private List<JsonWorkOrderObjectUnderTestUpsertRequest> objectsUnderTest;
+	private List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest;
 
 	public void setValue(final String value)
 	{
@@ -173,11 +172,6 @@ public class JsonWorkOrderProjectUpsertRequest
 	{
 		this.name = name;
 		this.nameSet = true;
-	}
-
-	public void setProjectTypeId(final JsonMetasfreshId projectTypeId)
-	{
-		this.projectTypeId = projectTypeId;
 	}
 
 	public void setPriceListVersionId(final JsonMetasfreshId priceListVersionId)
@@ -246,13 +240,7 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.activeSet = true;
 	}
 
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
-	{
-		this.syncAdvise = syncAdvise;
-		this.syncAdviseSet = true;
-	}
-
-	public void setSteps(final List<JsonWorkOrderStepUpsertRequest> steps)
+	public void setSteps(final List<JsonWorkOrderStepUpsertItemRequest> steps)
 	{
 		this.steps = CoalesceUtil.coalesce(steps, ImmutableList.of());
 	}
@@ -299,7 +287,7 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.dateOfProvisionByBPartnerSet = true;
 	}
 
-	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertRequest> objectsUnderTest)
+	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest)
 	{
 		this.objectsUnderTest = CoalesceUtil.coalesce(objectsUnderTest, ImmutableList.of());
 	}

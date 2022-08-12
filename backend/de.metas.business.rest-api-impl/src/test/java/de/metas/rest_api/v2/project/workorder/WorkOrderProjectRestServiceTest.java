@@ -30,21 +30,22 @@ import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.project.workorder.JsonDurationUnit;
 import de.metas.common.rest_api.v2.project.workorder.JsonWOStepStatus;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertItemRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectsUnderTestResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceResponse;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertItemRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepResponse;
-import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertRequest;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertItemRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResponse;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -53,6 +54,7 @@ import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.service.ProjectService;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.WOProjectStepRepository;
 import de.metas.project.workorder.data.WorkOrderProjectObjectUnderTestRepository;
@@ -92,7 +94,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 
 class WorkOrderProjectRestServiceTest
 {
@@ -105,6 +106,7 @@ class WorkOrderProjectRestServiceTest
 	private String orgValue;
 	private I_S_Resource resource;
 	private PriceListVersionId priceListVersionId;
+	private CurrencyId currencyId;
 
 	@BeforeEach
 	void beforeEach()
@@ -131,25 +133,40 @@ class WorkOrderProjectRestServiceTest
 		final I_M_PriceList_Version priceListVersion = createPriceListVersion(priceListId);
 		priceListVersionId = PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
 
-		final IDocumentNoBuilderFactory documentNoBuilderFactory = Mockito.mock(IDocumentNoBuilderFactory.class);
-		final IDocumentNoBuilder documentNoBuilder = Mockito.mock(IDocumentNoBuilder.class);
-		Mockito.when(documentNoBuilderFactory.createValueBuilderFor(any())).thenReturn(documentNoBuilder);
-		Mockito.when(documentNoBuilder.setFailOnError(anyBoolean())).thenReturn(documentNoBuilder);
-		Mockito.when(documentNoBuilder.build()).thenReturn(nextValue);
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
-		final WorkOrderProjectStepRepository workOrderProjectStepRepository = new WorkOrderProjectStepRepository(
-				new WOProjectStepRepository(),
-				new WorkOrderProjectResourceRepository());
+		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository();
 
-		final ProjectTypeRepository projectTypeRepository = new ProjectTypeRepository();
-		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository(documentNoBuilderFactory,
-																									 projectTypeRepository,
-																									 workOrderProjectStepRepository,
-																									 new WorkOrderProjectObjectUnderTestRepository());
+		final ProjectService mockProjectService = Mockito.mock(ProjectService.class);
+		Mockito.when(mockProjectService.getNextProjectValue(any())).thenReturn(nextValue);
 
+		final WorkOrderProjectStepRepository workOrderProjectStepRepository = new WorkOrderProjectStepRepository();
+		final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository = new WorkOrderProjectObjectUnderTestRepository();
+
+		final WorkOrderProjectObjectUnderTestRestService workOrderProjectObjectUnderTestRestService = new WorkOrderProjectObjectUnderTestRestService(workOrderProjectRepository, workOrderProjectObjectUnderTestRepository);
+		final WorkOrderProjectResourceRepository workOrderProjectResourceRepository = new WorkOrderProjectResourceRepository();
 		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
-		final WorkOrderMapper workOrderProjectJsonToInternalConverter = new WorkOrderMapper(resourceService);
-		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository, projectTypeRepository, workOrderProjectJsonToInternalConverter);
+
+		final WOProjectStepRepository woProjectStepRepository = new WOProjectStepRepository();
+
+		final WorkOrderProjectResourceRestService workOrderProjectResourceRestService = new WorkOrderProjectResourceRestService(
+				workOrderProjectStepRepository,
+				workOrderProjectResourceRepository,
+				resourceService);
+
+		final WorkOrderProjectStepRestService workOrderProjectStepRestService = new WorkOrderProjectStepRestService(
+				workOrderProjectRepository,
+				workOrderProjectStepRepository,
+				workOrderProjectResourceRestService,
+				woProjectStepRepository);
+
+		final WorkOrderMapper workOrderMapper = new WorkOrderMapper(mockProjectService);
+
+		workOrderProjectRestService = new WorkOrderProjectRestService(workOrderProjectRepository,
+																	  new ProjectTypeRepository(),
+																	  workOrderMapper,
+																	  workOrderProjectObjectUnderTestRestService,
+																	  workOrderProjectStepRestService);
 	}
 
 	@Test
@@ -214,7 +231,7 @@ class WorkOrderProjectRestServiceTest
 		final LocalDate woFindingsReleasedDate = LocalDate.parse("2022-08-03");
 		final LocalDate woFindingsCreatedDate = LocalDate.parse("2022-08-01");
 
-		final JsonWorkOrderStepUpsertRequest stepRequest = new JsonWorkOrderStepUpsertRequest();
+		final JsonWorkOrderStepUpsertItemRequest stepRequest = new JsonWorkOrderStepUpsertItemRequest();
 		stepRequest.setIdentifier("ext-" + stepIdentifier);
 		stepRequest.setName(stepName);
 		stepRequest.setDescription(stepDescription);
@@ -240,7 +257,7 @@ class WorkOrderProjectRestServiceTest
 		final LocalDate assignDateTo = LocalDate.parse("2022-08-08");
 		final String testFacilityGroupName = "testFacilityGroupName";
 
-		final JsonWorkOrderResourceUpsertRequest resourceRequest = new JsonWorkOrderResourceUpsertRequest();
+		final JsonWorkOrderResourceUpsertItemRequest resourceRequest = new JsonWorkOrderResourceUpsertItemRequest();
 		resourceRequest.setResourceIdentifier("int-" + resourceInternalName);
 		resourceRequest.setAssignDateFrom(assignDateFrom);
 		resourceRequest.setAssignDateTo(assignDateTo);
@@ -262,7 +279,7 @@ class WorkOrderProjectRestServiceTest
 		final String woObjectName = "woObjectName";
 		final String woObjectWhereabouts = "woObjectWhereabouts";
 
-		final JsonWorkOrderObjectUnderTestUpsertRequest objectUnderTestUpsertRequest = new JsonWorkOrderObjectUnderTestUpsertRequest();
+		final JsonWorkOrderObjectUnderTestUpsertItemRequest objectUnderTestUpsertRequest = new JsonWorkOrderObjectUnderTestUpsertItemRequest();
 		objectUnderTestUpsertRequest.setNumberOfObjectsUnderTest(numberOfObjectsUnderTest);
 		objectUnderTestUpsertRequest.setWoDeliveryNote(woDeliveryNote);
 		objectUnderTestUpsertRequest.setWoManufacturer(woManufacturer);
@@ -277,7 +294,7 @@ class WorkOrderProjectRestServiceTest
 		final JsonWorkOrderProjectUpsertResponse responseBody = workOrderProjectRestService.upsertWOProject(projectRequest);
 		assertThat(responseBody).isNotNull();
 
-		final JsonWorkOrderProjectResponse data = workOrderProjectRestService.getWorkOrderProjectDataById(ProjectId.ofRepoId(responseBody.getMetasfreshId().getValue()));
+		final JsonWorkOrderProjectResponse data = workOrderProjectRestService.getWorkOrderProjectById(ProjectId.ofRepoId(responseBody.getMetasfreshId().getValue()));
 		assertThat(data.getProjectId()).isNotNull();
 
 		assertThat(data.getProjectId()).isEqualTo(responseBody.getMetasfreshId());
@@ -407,14 +424,14 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 
-		final JsonWorkOrderStepUpsertRequest stepRequest = new JsonWorkOrderStepUpsertRequest();
+		final JsonWorkOrderStepUpsertItemRequest stepRequest = new JsonWorkOrderStepUpsertItemRequest();
 		stepRequest.setIdentifier("ext-" + projectWoStep.getExternalId());
 		stepRequest.setExternalId(JsonExternalId.of(projectWoStep.getExternalId()));
 		stepRequest.setName("newStepName");
 
 		projectRequest.setSteps(ImmutableList.of(stepRequest));
 
-		final JsonWorkOrderResourceUpsertRequest resourceRequest = new JsonWorkOrderResourceUpsertRequest();
+		final JsonWorkOrderResourceUpsertItemRequest resourceRequest = new JsonWorkOrderResourceUpsertItemRequest();
 		resourceRequest.setResourceIdentifier("int-" + resource.getInternalName());
 		resourceRequest.setExternalId(JsonExternalId.of(projectWoResource.getExternalId()));
 		resourceRequest.setActive(false);
@@ -427,7 +444,7 @@ class WorkOrderProjectRestServiceTest
 
 		stepRequest.setResources(ImmutableList.of(resourceRequest));
 
-		final JsonWorkOrderObjectUnderTestUpsertRequest objectUnderTestUpsertRequest = new JsonWorkOrderObjectUnderTestUpsertRequest();
+		final JsonWorkOrderObjectUnderTestUpsertItemRequest objectUnderTestUpsertRequest = new JsonWorkOrderObjectUnderTestUpsertItemRequest();
 		objectUnderTestUpsertRequest.setIdentifier("ext-" + objectUnderTest.getExternalId());
 		objectUnderTestUpsertRequest.setExternalId(JsonExternalId.of(objectUnderTest.getExternalId()));
 		objectUnderTestUpsertRequest.setNumberOfObjectsUnderTest(52);
@@ -535,17 +552,17 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
 		projectRequest.setSyncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS);
 
-		final JsonWorkOrderStepUpsertRequest stepRequest = new JsonWorkOrderStepUpsertRequest();
+		final JsonWorkOrderStepUpsertItemRequest stepRequest = new JsonWorkOrderStepUpsertItemRequest();
 		stepRequest.setIdentifier("ext-" + projectWoStep.getExternalId());
 		stepRequest.setExternalId(JsonExternalId.of(projectWoStep.getExternalId()));
 		stepRequest.setName("newStepName");
 
-		final JsonWorkOrderResourceUpsertRequest resourceRequest = new JsonWorkOrderResourceUpsertRequest();
+		final JsonWorkOrderResourceUpsertItemRequest resourceRequest = new JsonWorkOrderResourceUpsertItemRequest();
 		resourceRequest.setResourceIdentifier("int-" + resource.getInternalName());
 		resourceRequest.setExternalId(JsonExternalId.of(projectWoResource.getExternalId()));
 		resourceRequest.setActive(false);
 
-		final JsonWorkOrderObjectUnderTestUpsertRequest objectUnderTestUpsertRequest = new JsonWorkOrderObjectUnderTestUpsertRequest();
+		final JsonWorkOrderObjectUnderTestUpsertItemRequest objectUnderTestUpsertRequest = new JsonWorkOrderObjectUnderTestUpsertItemRequest();
 		objectUnderTestUpsertRequest.setIdentifier("ext-" + objectUnderTest.getExternalId());
 		objectUnderTestUpsertRequest.setExternalId(JsonExternalId.of(objectUnderTest.getExternalId()));
 		objectUnderTestUpsertRequest.setNumberOfObjectsUnderTest(52);
@@ -584,6 +601,8 @@ class WorkOrderProjectRestServiceTest
 		final I_C_Project project = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
 		project.setName(name);
+		project.setValue(name);
+		project.setC_Currency_ID(currencyId.getRepoId());
 		project.setC_ProjectType_ID(projectTypeId.getRepoId());
 
 		Optional.ofNullable(externalReference)

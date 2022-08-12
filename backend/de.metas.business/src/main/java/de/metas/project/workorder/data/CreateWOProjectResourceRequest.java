@@ -22,43 +22,56 @@
 
 package de.metas.project.workorder.data;
 
+import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectObjectUnderTestId;
+import de.metas.project.budget.BudgetProjectResourceId;
+import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 @Value
-@Builder(toBuilder = true)
-public class WOProjectObjectUnderTest
+@Builder
+public class CreateWOProjectResourceRequest
 {
 	@NonNull
-	WOProjectObjectUnderTestId objectUnderTestId;
+	WOProjectStepId woProjectStepId;
 
 	@NonNull
-	Integer numberOfObjectsUnderTest;
+	Instant assignDateFrom;
 
 	@NonNull
-	ProjectId projectId;
+	Instant assignDateTo;
+
+	@NonNull
+	ResourceId resourceId;
+
+	@Nullable
+	Boolean isActive;
+
+	@Nullable
+	Boolean isAllDay;
+
+	@Nullable
+	BigDecimal duration;
+
+	@Nullable
+	DurationUnit durationUnit;
+
+	@Nullable
+	ProjectId budgetProjectId;
+
+	@Nullable
+	BudgetProjectResourceId projectResourceBudgetId;
 
 	@Nullable
 	ExternalId externalId;
 
 	@Nullable
-	String woDeliveryNote;
-
-	@Nullable
-	String woManufacturer;
-
-	@Nullable
-	String woObjectType;
-
-	@Nullable
-	String woObjectName;
-
-	@Nullable
-	String woObjectWhereabouts;
+	String testFacilityGroupName;
 }

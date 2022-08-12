@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.data;
 
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProjectResourceId;
@@ -29,26 +30,21 @@ import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class WOProjectResource
 {
-	@Nullable
-	@Getter
+	@NonNull
 	WOProjectResourceId woProjectResourceId;
 
-	@With
-	@Nullable
+	@NonNull
 	WOProjectStepId woProjectStepId;
 
 	@NonNull
@@ -57,11 +53,11 @@ public class WOProjectResource
 	@NonNull
 	Instant assignDateTo;
 
-	@Nullable
-	Boolean isActive;
+	@NonNull
+	ResourceId resourceId;
 
 	@Nullable
-	ResourceId resourceId;
+	Boolean isActive;
 
 	@Nullable
 	Boolean isAllDay;
@@ -83,25 +79,4 @@ public class WOProjectResource
 
 	@Nullable
 	String testFacilityGroupName;
-
-	@NonNull
-	public WOProjectResourceId getWOProjectResourceIdNotNull()
-	{
-		if (woProjectResourceId == null)
-		{
-			throw new AdempiereException("WOProjectResourceId cannot be null at this stage!");
-		}
-		return woProjectResourceId;
-	}
-
-	@NonNull
-	public ResourceId getResourceIdNonNull()
-	{
-		if (this.resourceId == null)
-		{
-			throw new AdempiereException("ResourceId cannot be null at this stage!");
-		}
-
-		return this.resourceId;
-	}
 }

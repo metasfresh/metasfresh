@@ -23,7 +23,6 @@
 package de.metas.project.workorder.data;
 
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,20 +31,17 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Builder(toBuilder = true)
-public class WOProjectObjectUnderTest
+@Builder
+public class CreateWOProjectObjectUnderTestRequest
 {
-	@NonNull
-	WOProjectObjectUnderTestId objectUnderTestId;
-
 	@NonNull
 	Integer numberOfObjectsUnderTest;
 
 	@NonNull
-	ProjectId projectId;
-
-	@Nullable
 	ExternalId externalId;
+
+	@NonNull
+	ProjectId projectId;
 
 	@Nullable
 	String woDeliveryNote;

@@ -23,42 +23,63 @@
 package de.metas.project.workorder.data;
 
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Value
-@Builder(toBuilder = true)
-public class WOProjectObjectUnderTest
+@Builder
+public class CreateWOProjectStepRequest
 {
-	@NonNull
-	WOProjectObjectUnderTestId objectUnderTestId;
-
-	@NonNull
-	Integer numberOfObjectsUnderTest;
-
 	@NonNull
 	ProjectId projectId;
 
-	@Nullable
+	@NonNull
+	String name;
+
+	@NonNull
 	ExternalId externalId;
 
-	@Nullable
-	String woDeliveryNote;
+	@NonNull
+	Integer seqNo;
 
 	@Nullable
-	String woManufacturer;
+	String description;
 
 	@Nullable
-	String woObjectType;
+	Instant dateStart;
 
 	@Nullable
-	String woObjectName;
+	Instant dateEnd;
 
 	@Nullable
-	String woObjectWhereabouts;
+	Instant woPartialReportDate;
+
+	@Nullable
+	Integer woPlannedResourceDurationHours;
+
+	@Nullable
+	Instant deliveryDate;
+
+	@Nullable
+	Instant woTargetStartDate;
+
+	@Nullable
+	Instant woTargetEndDate;
+
+	@Nullable
+	Integer woPlannedPersonDurationHours;
+
+	@Nullable
+	WOStepStatus woStepStatus;
+
+	@Nullable
+	Instant woFindingsReleasedDate;
+
+	@Nullable
+	Instant woFindingsCreatedDate;
 }

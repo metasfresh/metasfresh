@@ -45,9 +45,6 @@ public class WOProjectResourceResponseMapper
 	@NonNull
 	String identifier;
 
-	@NonFinal
-	JsonMetasfreshId metasfreshId;
-
 	@NonNull
 	JsonResponseUpsertItem.SyncOutcome syncOutcome;
 
@@ -74,7 +71,7 @@ public class WOProjectResourceResponseMapper
 	{
 		return JsonWorkOrderResourceUpsertResponse.builder()
 				.identifier(this.identifier)
-				.metasfreshId(JsonMetasfreshId.of(woProjectResource.getWOProjectResourceIdNotNull().getRepoId()))
+				.metasfreshId(JsonMetasfreshId.of(woProjectResource.getWoProjectResourceId().getRepoId()))
 				.syncOutcome(this.syncOutcome)
 				.build();
 	}

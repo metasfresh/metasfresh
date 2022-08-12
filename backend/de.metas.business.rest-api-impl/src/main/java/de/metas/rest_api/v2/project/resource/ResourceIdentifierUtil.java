@@ -20,10 +20,11 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.project.workorder;
+package de.metas.rest_api.v2.project.resource;
 
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
+import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -39,7 +40,7 @@ import java.util.function.Predicate;
 public class ResourceIdentifierUtil
 {
 	@NonNull
-	public ResourceId resolveResourceForExternalIdentifier(
+	public ResourceId resolveResourceIdentifier(
 			@NonNull final OrgId orgId,
 			@NonNull final IdentifierString resourceIdentifier,
 			@NonNull final ResourceService resourceService
@@ -53,16 +54,16 @@ public class ResourceIdentifierUtil
 				break;
 			case VALUE:
 				resourcePredicate = r -> // make sure that org and value match
-						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
+						(r.getOrgId().isAny() || orgId.isAny() || OrgId.equals(r.getOrgId(), orgId))
 								&& Objects.equals(r.getValue(), resourceIdentifier.asValue());
 				break;
 			case INTERNALNAME:
 				resourcePredicate = r -> // make sure that org and value match
-						(r.getOrgId().isAny() || orgId.isAny() || Objects.equals(r.getOrgId(), orgId))
+						(r.getOrgId().isAny() || orgId.isAny() || OrgId.equals(r.getOrgId(), orgId))
 								&& Objects.equals(r.getInternalName(), resourceIdentifier.asInternalName());
 				break;
 			default:
-				throw new InvalidIdentifierException(resourceIdentifier.getRawIdentifierString());
+				throw new InvalidIdentifierException(resourceIdentifier.getRawIdentifierString(), resourceIdentifier);
 		}
 
 		return resourceService.getAllActiveResources()
@@ -74,5 +75,27 @@ public class ResourceIdentifierUtil
 						.resourceName("resourceIdentifier")
 						.resourceIdentifier(resourceIdentifier.getRawIdentifierString())
 						.build());
+	}
+
+	@NonNull
+	public ProjectQuery getProjectQueryFromIdentifier(
+			@NonNull final OrgId orgId,
+			@NonNull final IdentifierString identifier)
+	{
+		final ProjectQuery.ProjectQueryBuilder projectQueryBuilder = ProjectQuery.builder().orgId(orgId);
+
+		switch (identifier.getType())
+		{
+			case VALUE:
+				projectQueryBuilder.value(identifier.asValue());
+				break;
+			case EXTERNAL_ID:
+				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
+				break;
+			default:
+				throw new InvalidIdentifierException(identifier.getRawIdentifierString());
+		}
+
+		return projectQueryBuilder.build();
 	}
 }

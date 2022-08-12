@@ -22,93 +22,45 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import de.metas.common.rest_api.common.JsonExternalId;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.OBJECT_UNDER_TEST_IDENTIFIER_DOC;
+import javax.annotation.Nullable;
+import java.util.List;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
+@Value
+@ApiModel
 public class JsonWorkOrderObjectUnderTestUpsertRequest
 {
-	@ApiModelProperty(position = 10,
-			required = true,
-			value = OBJECT_UNDER_TEST_IDENTIFIER_DOC) //
-	@Setter
-	String identifier;
+	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_WO_ObjectUnderTest.C_Project_ID`", required = true)
+	JsonMetasfreshId projectId;
 
-	@ApiModelProperty(required = true)
-	@Setter
-	Integer numberOfObjectsUnderTest;
+	@ApiModelProperty(position = 20, required = true)
+	List<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems;
 
-	String woDeliveryNote;
+	@ApiModelProperty(position = 30, value = "Default sync-advise\n" + READ_ONLY_SYNC_ADVISE_DOC)
+	SyncAdvise syncAdvise;
 
-	@ApiModelProperty(hidden = true)
-	boolean woDeliveryNoteSet;
-
-	String woManufacturer;
-
-	@ApiModelProperty(hidden = true)
-	boolean woManufacturerSet;
-
-	String woObjectType;
-
-	@ApiModelProperty(hidden = true)
-	boolean woObjectTypeSet;
-
-	String woObjectName;
-
-	@ApiModelProperty(hidden = true)
-	boolean woObjectNameSet;
-
-	String woObjectWhereabouts;
-
-	@ApiModelProperty(hidden = true)
-	boolean woObjectWhereaboutsSet;
-
-	JsonExternalId externalId;
-
-	@ApiModelProperty(hidden = true)
-	boolean externalIdSet;
-
-	public void setWoDeliveryNote(final String woDeliveryNote)
+	@Builder
+	@Jacksonized
+	public JsonWorkOrderObjectUnderTestUpsertRequest(
+			@NonNull final JsonMetasfreshId projectId,
+			@Nullable @Singular final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems,
+			@Nullable final SyncAdvise syncAdvise)
 	{
-		this.woDeliveryNote = woDeliveryNote;
-		this.woDeliveryNoteSet = true;
-	}
-
-	public void setWoManufacturer(final String woManufacturer)
-	{
-		this.woManufacturer = woManufacturer;
-		this.woManufacturerSet = true;
-	}
-
-	public void setWoObjectType(final String woObjectType)
-	{
-		this.woObjectType = woObjectType;
-		this.woObjectTypeSet = true;
-	}
-
-	public void setWoObjectName(final String woObjectName)
-	{
-		this.woObjectName = woObjectName;
-		this.woObjectNameSet = true;
-	}
-
-	public void setWoObjectWhereabouts(final String woObjectWhereabouts)
-	{
-		this.woObjectWhereabouts = woObjectWhereabouts;
-		this.woObjectWhereaboutsSet = true;
-	}
-
-	public void setExternalId(final JsonExternalId externalId)
-	{
-		this.externalId = externalId;
-		this.externalIdSet = true;
+		this.projectId = projectId;
+		this.requestItems = coalesce(requestItems, ImmutableList.of());
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

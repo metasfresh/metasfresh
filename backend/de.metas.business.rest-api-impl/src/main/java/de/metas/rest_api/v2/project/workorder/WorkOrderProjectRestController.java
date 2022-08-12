@@ -74,7 +74,7 @@ public class WorkOrderProjectRestController
 	@GetMapping("/{projectId}")
 	public ResponseEntity<JsonWorkOrderProjectResponse> getWorkOrderProjectDataById(@PathVariable("projectId") @NonNull final Integer projectId)
 	{
-		final JsonWorkOrderProjectResponse response = workOrderProjectRestService.getWorkOrderProjectDataById(ProjectId.ofRepoId(projectId));
+		final JsonWorkOrderProjectResponse response = workOrderProjectRestService.getWorkOrderProjectById(ProjectId.ofRepoId(projectId));
 
 		return ResponseEntity.ok(response);
 	}
