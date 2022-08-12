@@ -73,7 +73,7 @@ public class CustomColumnService
 		return customColumnsCollector.build();
 	}
 
-	private void setCustomColumn(@NonNull final PO po, @NonNull final String columnName, @NonNull final Object valueToSet, @NonNull final ZoneId zoneId)
+	private void setCustomColumn(@NonNull final PO po, @NonNull final String columnName, @Nullable final Object valueToSet, @NonNull final ZoneId zoneId)
 	{
 		final POInfo poInfo = po.getPOInfo();
 
