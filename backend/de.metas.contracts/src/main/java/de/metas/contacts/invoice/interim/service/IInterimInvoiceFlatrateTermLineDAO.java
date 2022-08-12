@@ -27,16 +27,26 @@ import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermId;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLine;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLineId;
 import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 public interface IInterimInvoiceFlatrateTermLineDAO extends ISingletonService
 {
 	InterimInvoiceFlatrateTermLine getById(InterimInvoiceFlatrateTermLineId id);
 
-	InterimInvoiceFlatrateTermLineId save(InterimInvoiceFlatrateTermLine interimInvoiceOverview);
+	InterimInvoiceFlatrateTermLineId save(InterimInvoiceFlatrateTermLine interimInvoiceFlatrateTermLine);
 
 	InterimInvoiceFlatrateTermLineId createInterimInvoiceLine(InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm,InOutAndLineId inOutAndLineId);
 
+	@Nullable
+	InterimInvoiceFlatrateTermLineId getByInOutLineId(@NonNull InOutLineId inOutLineId);
+
 	void setInvoiceLineToLines(InvoiceCandidateId invoiceCandidateId, final InterimInvoiceFlatrateTermId id);
+
+	Collection<InterimInvoiceFlatrateTermLine> getByInterimInvoiceFlatrateTermId(@NonNull final InterimInvoiceFlatrateTermId id);
 }

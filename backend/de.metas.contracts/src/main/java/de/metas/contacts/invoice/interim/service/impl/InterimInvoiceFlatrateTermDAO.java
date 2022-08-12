@@ -165,6 +165,7 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 						.setJoinOr()
 						.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Invoice_Candidate_Withholding_ID, icId)
 						.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Interim_Invoice_Candidate_ID, icId))
+				.orderByDescending(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID)
 				.create()
 				.firstOptional(I_C_InterimInvoice_FlatrateTerm.class)
 				.map(this::fromDbObject)

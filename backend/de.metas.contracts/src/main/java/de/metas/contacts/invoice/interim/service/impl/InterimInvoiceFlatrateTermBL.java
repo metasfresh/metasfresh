@@ -23,6 +23,7 @@
 package de.metas.contacts.invoice.interim.service.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
 import de.metas.contacts.invoice.interim.command.InterimInvoiceFlatrateTermCreateCommand;
@@ -53,7 +54,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTermBL
 {
@@ -83,8 +83,16 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 	}
 
 	@Override
-	public void updateInterimInvoiceFlatrateTermForInOutLineIds(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm, @NonNull final Set<InOutLineId> inOutLineIds)
+	public void updateQuantities(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm)
 	{
+		if (interimInvoiceFlatrateTerm.getId() == null)
+		{
+			return;
+		}
+		final ImmutableSet<InOutLineId> inOutLineIds = interimInvoiceFlatrateTermLineDAO.getByInterimInvoiceFlatrateTermId(interimInvoiceFlatrateTerm.getId())
+				.stream()
+				.map(interimInvoiceFlatrateTermLine -> interimInvoiceFlatrateTermLine.getInOutAndLineId().getInOutLineId())
+				.collect(ImmutableSet.toImmutableSet());
 		final Quantity delieveredSoFarQty = inOutDAO.getLinesByIds(inOutLineIds, I_M_InOutLine.class)
 				.stream()
 				.map(inOutLine -> Quantitys.create(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
@@ -92,6 +100,12 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 		interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm.toBuilder()
 				.qtyDelivered(delieveredSoFarQty.toBigDecimal())
 				.build());
+
+		final I_C_Invoice_Candidate interimInvoiceCandidate = invoiceCandDAO.getById(interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId());
+		setICQtyies(interimInvoiceCandidate, delieveredSoFarQty);
+
+		final I_C_Invoice_Candidate withholdingInvoiceCandidate = invoiceCandDAO.getById(interimInvoiceFlatrateTerm.getWithholdingInvoiceCandidateId());
+		setICQtyies(withholdingInvoiceCandidate, delieveredSoFarQty.negate());
 	}
 
 	@Override
@@ -119,29 +133,15 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 	 */
 	private void updateInterimInvoiceOverview(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm, @NonNull final I_M_InOutLine inOutLine)
 	{
-		final Quantity deliveredQty = Quantitys.create(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID()));
-
-		final I_C_Invoice_Candidate interimInvoiceCandidate = invoiceCandDAO.getById(interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId());
-		final Quantity interimQty = Quantitys.create(interimInvoiceCandidate.getQtyDelivered(), UomId.ofRepoId(interimInvoiceCandidate.getC_UOM_ID()));
-		final Quantity interimQtyToInvoice = interimQty.add(deliveredQty);
-
-		setICQtyies(interimInvoiceCandidate, interimQtyToInvoice);
-
-		final I_C_Invoice_Candidate withholdingInvoiceCandidate = invoiceCandDAO.getById(interimInvoiceFlatrateTerm.getWithholdingInvoiceCandidateId());
-		final Quantity withholdingQty = Quantitys.create(withholdingInvoiceCandidate.getQtyDelivered(), UomId.ofRepoId(withholdingInvoiceCandidate.getC_UOM_ID()));
-		final Quantity withheldQtyToInvoice = withholdingQty.subtract(deliveredQty);
-
-		setICQtyies(withholdingInvoiceCandidate, withheldQtyToInvoice);
-
-		final Quantity totalQtyDeliveredSoFar = Quantitys.create(interimInvoiceFlatrateTerm.getQtyDelivered(), interimInvoiceFlatrateTerm.getUomId()).add(deliveredQty);
-
 		final InOutAndLineId inOutAndLineId = InOutAndLineId.ofRepoId(inOutLine.getM_InOut_ID(), inOutLine.getM_InOutLine_ID());
+		if (interimInvoiceFlatrateTermLineDAO.getByInOutLineId(inOutAndLineId.getInOutLineId()) != null)
+		{
+			return;
+		}
 
 		interimInvoiceFlatrateTermLineDAO.createInterimInvoiceLine(interimInvoiceFlatrateTerm, inOutAndLineId);
 
-		interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm.toBuilder()
-				.qtyDelivered(totalQtyDeliveredSoFar.toBigDecimal())
-				.build());
+		updateQuantities(interimInvoiceFlatrateTerm);
 	}
 
 	private void setICQtyies(final I_C_Invoice_Candidate invoiceCandidate, final Quantity qtyToInvoice)

@@ -17,7 +17,6 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -31,7 +30,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_C_InterimInvoice_FlatrateTerm;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -79,7 +77,6 @@ public class InOutDAO implements IInOutDAO
 {
 	private static final Logger logger = LogManager.getLogger(InOutDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -128,8 +125,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
 	{
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
+		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 		return inoutLine;
 	}
 

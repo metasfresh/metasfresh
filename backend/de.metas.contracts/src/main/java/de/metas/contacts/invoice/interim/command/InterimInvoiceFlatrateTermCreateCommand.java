@@ -43,7 +43,6 @@ import de.metas.contracts.process.FlatrateTermCreator;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
-import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
@@ -86,8 +85,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class InterimInvoiceFlatrateTermCreateCommand
 {
@@ -181,10 +178,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		}
 		else
 		{
-			existingInOuts
-					.forEach(inOutLine -> interimInvoiceOverviewLineDAO.createInterimInvoiceLine(interimInvoiceFlatrateTerm, inOutLine));
-			final Set<InOutLineId> inOutLineIds = existingInOuts.stream().map(InOutAndLineId::getInOutLineId).collect(Collectors.toSet());
-			interimInvoiceOverviewBL.updateInterimInvoiceFlatrateTermForInOutLineIds(interimInvoiceFlatrateTerm, inOutLineIds);
+			existingInOuts.forEach(inOutLine -> interimInvoiceOverviewLineDAO.createInterimInvoiceLine(interimInvoiceFlatrateTerm, inOutLine));
+			interimInvoiceOverviewBL.updateQuantities(interimInvoiceFlatrateTerm);
 		}
 	}
 

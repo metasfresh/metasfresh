@@ -65,6 +65,18 @@ public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrat
 	}
 
 	@Override
+	@Nullable
+	public InterimInvoiceFlatrateTermLineId getByInOutLineId(@NonNull final InOutLineId inOutLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_M_InOutLine_ID, inOutLineId)
+				.orderByDescending(I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_C_InterimInvoice_FlatrateTerm_Line_ID)
+				.create()
+				.firstId(InterimInvoiceFlatrateTermLineId::ofRepoIdOrNull);
+	}
+
+	@Override
 	public void setInvoiceLineToLines(@NonNull final InvoiceCandidateId invoiceCandidateId, final InterimInvoiceFlatrateTermId id)
 	{
 		final ImmutableMap<Integer, I_C_InvoiceLine> inOutLineToInvoiceLineMap = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
@@ -102,8 +114,9 @@ public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrat
 				.orElse(null);
 	}
 
+	@Override
 	@NonNull
-	private Collection<InterimInvoiceFlatrateTermLine> getByInterimInvoiceFlatrateTermId(@NonNull final InterimInvoiceFlatrateTermId id)
+	public Collection<InterimInvoiceFlatrateTermLine> getByInterimInvoiceFlatrateTermId(@NonNull final InterimInvoiceFlatrateTermId id)
 	{
 		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm_Line.class)
 				.addOnlyActiveRecordsFilter()
@@ -129,7 +142,7 @@ public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrat
 				.id(InterimInvoiceFlatrateTermLineId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_Line_ID()))
 				.interimInvoiceFlatrateTermId(InterimInvoiceFlatrateTermId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_ID()))
 				.inOutAndLineId(InOutAndLineId.ofRepoId(dbObject.getM_InOut_ID(), dbObject.getM_InOutLine_ID()))
-				.invoiceLineId(InvoiceLineId.ofRepoId(dbObject.getC_Invoice_ID(), dbObject.getC_InvoiceLine_ID()))
+				.invoiceLineId(InvoiceLineId.ofRepoIdOrNull(dbObject.getC_Invoice_ID(), dbObject.getC_InvoiceLine_ID()))
 				.build();
 	}
 
