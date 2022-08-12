@@ -26,8 +26,10 @@ import java.util.function.Function;
 class ToCalendarEntryConverter
 {
 	private static final Logger logger = LogManager.getLogger(ToCalendarEntryConverter.class);
-	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final ProjectFrontendURLsProvider frontendURLs = new ProjectFrontendURLsProvider();
+	@NonNull
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull
+	private final ProjectFrontendURLsProvider frontendURLs = new ProjectFrontendURLsProvider();
 
 	public CalendarEntry from(
 			@NonNull final WOProjectResource resource,
@@ -43,12 +45,12 @@ class ToCalendarEntryConverter
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
 				.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
 				.title(TranslatableStrings.builder()
-						.append(project.getName())
-						.append(" - ")
-						.append(step.getSeqNo() + "_" + step.getName())
-						.append(" - ")
-						.appendQty(durationInt, durationUomSymbol)
-						.build()
+							   .append(project.getName())
+							   .append(" - ")
+							   .append(step.getSeqNo() + "_" + step.getName())
+							   .append(" - ")
+							   .appendQty(durationInt, durationUomSymbol)
+							   .build()
 				)
 				.description(TranslatableStrings.anyLanguage(resource.getDescription()))
 				.dateRange(resource.getDateRange())
@@ -90,12 +92,14 @@ class ToCalendarEntryConverter
 		return CalendarEntry.builder()
 				.entryId(BudgetAndWOCalendarEntryIdConverters.from(budget.getId()))
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
-				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(), budget.getResourceGroupId())))
+				.resourceId(CalendarResourceId.ofRepoId(CoalesceUtil.coalesceNotNull(budget.getResourceId(),
+																					 budget.getResourceGroupId())))
 				.title(TranslatableStrings.builder()
-						.append(project.getName())
-						.append(" - ")
-						.appendQty(budget.getPlannedDuration().toBigDecimal(), budget.getPlannedDuration().getUOMSymbol())
-						.build())
+							   .append(project.getName())
+							   .append(" - ")
+							   .appendQty(budget.getPlannedDuration().toBigDecimal(),
+										  budget.getPlannedDuration().getUOMSymbol())
+							   .build())
 				.description(TranslatableStrings.anyLanguage(budget.getDescription()))
 				.dateRange(budget.getDateRange())
 				.editable(simulationHeaderRef != null && simulationHeaderRef.isEditable())
