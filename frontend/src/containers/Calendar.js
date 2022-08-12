@@ -5,6 +5,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
+import '@fullcalendar/common/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 
@@ -18,7 +19,7 @@ export default class Calendar extends React.Component {
   }
 
   handleDateClick = (params) => {
-    if (confirm(`Would you like to add an event to `)) {
+    if (confirm(`Would you like to add an event to ${params.dateStr}?`)) {
       this.setState({
         calendarEvents: this.state.calendarEvents.concat({
           title: 'New Event',
