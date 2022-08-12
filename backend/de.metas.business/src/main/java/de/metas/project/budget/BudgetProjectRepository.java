@@ -55,12 +55,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class BudgetProjectRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final BudgetProjectResourceRepository budgetProjectResourceRepository;
-
-	public BudgetProjectRepository(@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository)
-	{
-		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
-	}
 
 	public Optional<BudgetProject> getOptionalById(@NonNull final ProjectId projectId)
 	{
