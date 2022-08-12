@@ -342,33 +342,69 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,703943,0,546289,549712,611363,'F',TO_TIMESTAMP('2022-08-09 11:30:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Zieltermin des Geschäftspartners',20,0,0,TO_TIMESTAMP('2022-08-09 11:30:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- Field: Work Order Project -> Projekt -> Projektstatus
--- Column: C_Project.R_Project_Status_ID
--- 2022-08-09T09:33:08.312Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,559693,703945,544077,0,546289,0,TO_TIMESTAMP('2022-08-09 11:33:08','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Projektstatus',0,440,0,1,1,TO_TIMESTAMP('2022-08-09 11:33:08','YYYY-MM-DD HH24:MI:SS'),100)
+
+-- ADDING STUFF FROM OTHER REPO
+--- BEGIN ---
+-- 2022-06-10T09:17:40.303Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
+--VALUES (
+SELECT 0,559693,700634,0,546289,0,TO_TIMESTAMP('2022-06-10 10:17:39','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Projektstatus',0,410,0,1,1,TO_TIMESTAMP('2022-06-10 10:17:39','YYYY-MM-DD HH24:MI:SS'),100
+--)
+where not exists (select 1 from AD_Field where AD_Column_ID=559693 and AD_Tab_ID=546289);
 ;
 
--- 2022-08-09T09:33:08.314Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=703945 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+-- 2022-06-10T09:17:40.386Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=700634 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2022-08-09T09:33:08.316Z
+-- 2022-06-10T09:17:40.466Z
+-- URL zum Konzept
 /* DDL */  select update_FieldTranslation_From_AD_Name_Element(544077)
 ;
 
--- 2022-08-09T09:33:08.318Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=703945
+-- 2022-06-10T09:17:40.536Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=700634
 ;
 
--- 2022-08-09T09:33:08.318Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(703945)
+-- 2022-06-10T09:17:40.606Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(700634)
 ;
 
--- UI Element: Work Order Project -> Projekt.Projektstatus
--- Column: C_Project.R_Project_Status_ID
--- 2022-08-09T09:33:32.561Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,703945,0,546289,549712,611364,'F',TO_TIMESTAMP('2022-08-09 11:33:32','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Projektstatus',30,0,0,TO_TIMESTAMP('2022-08-09 11:33:32','YYYY-MM-DD HH24:MI:SS'),100)
+-- 2022-06-10T09:18:14.393Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) 
+--VALUES (
+select 0,700634,0,546289,549191,609539,'F',TO_TIMESTAMP('2022-06-10 10:18:13','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Projektstatus',65,0,0,TO_TIMESTAMP('2022-06-10 10:18:13','YYYY-MM-DD HH24:MI:SS'),100
+where exists (select 1 from ad_ui_element where ad_ui_element_id=609539)
+--)
+
 ;
+
+-- 2022-06-10T09:19:47.282Z
+-- URL zum Konzept
+UPDATE AD_Field SET AD_Name_ID=580254, Description=NULL, Help=NULL, Name='Status',Updated=TO_TIMESTAMP('2022-06-10 10:19:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=700634
+;
+
+-- 2022-06-10T09:19:47.352Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580254)
+;
+
+-- 2022-06-10T09:19:47.423Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=700634
+;
+
+-- 2022-06-10T09:19:47.491Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(700634)
+;
+--- END ---
+
 
 -- UI Element: Work Order Project -> Projekt.Projekt erstellt
 -- Column: C_Project.WOProjectCreatedDate

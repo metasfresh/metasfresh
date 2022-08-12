@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for AD_Column
  *  @author metasfresh (generated) 
@@ -914,6 +915,27 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_IsParent = new ModelColumn<>(I_AD_Column.class, "IsParent", null);
 	String COLUMNNAME_IsParent = "IsParent";
+
+	/**
+	 * Set IsRestAPICustomColumn.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRestAPICustomColumn (boolean IsRestAPICustomColumn);
+
+	/**
+	 * Get IsRestAPICustomColumn.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRestAPICustomColumn();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_IsRestAPICustomColumn = new ModelColumn<>(I_AD_Column.class, "IsRestAPICustomColumn", null);
+	String COLUMNNAME_IsRestAPICustomColumn = "IsRestAPICustomColumn";
 
 	/**
 	 * Set Selection Column.
