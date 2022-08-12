@@ -26,13 +26,13 @@ import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
+import de.metas.project.budget.BudgetProjectResourceService;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceGroup;
 import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,8 +47,6 @@ import org.compiere.model.I_C_Project_Resource_Budget;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
-import java.util.Optional;
 
 @Component
 @Callout(I_C_Project_Resource_Budget.class)
@@ -56,14 +54,17 @@ import java.util.Optional;
 public class C_Project_Resource_Budget implements ITabCallout
 {
 	private final BudgetProjectRepository budgetProjectRepository;
+	private final BudgetProjectResourceService budgetProjectResourceService;
 	private final ResourceService resourceService;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public C_Project_Resource_Budget(
 			@NonNull final BudgetProjectRepository budgetProjectRepository,
+			@NonNull final BudgetProjectResourceService budgetProjectResourceService,
 			@NonNull final ResourceService resourceService)
 	{
 		this.budgetProjectRepository = budgetProjectRepository;
+		this.budgetProjectResourceService = budgetProjectResourceService;
 		this.resourceService = resourceService;
 	}
 
@@ -80,8 +81,9 @@ public class C_Project_Resource_Budget implements ITabCallout
 	{
 		final I_C_Project_Resource_Budget budgetRecord = calloutRecord.getModel(I_C_Project_Resource_Budget.class);
 		final ProjectId budgetProjectId = ProjectId.ofRepoId(budgetRecord.getC_Project_ID());
-		final BudgetProject budgetProject = budgetProjectRepository.getById(budgetProjectId)
+		final BudgetProject budgetProject = budgetProjectRepository.getOptionalById(budgetProjectId)
 				.orElseThrow(() -> new AdempiereException("Not a valid budget project"));
+
 		budgetRecord.setAD_Org_ID(budgetProject.getOrgId().getRepoId());
 		budgetRecord.setC_Currency_ID(budgetProject.getCurrencyId().getRepoId());
 	}
@@ -145,31 +147,6 @@ public class C_Project_Resource_Budget implements ITabCallout
 
 	private void updatePlannedDuration(final I_C_Project_Resource_Budget record)
 	{
-		computePlannedDuration(record).ifPresent(record::setPlannedDuration);
-	}
-
-	private Optional<BigDecimal> computePlannedDuration(final I_C_Project_Resource_Budget record)
-	{
-		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_Time_ID());
-		if (uomId == null)
-		{
-			return Optional.empty();
-		}
-
-		final BigDecimal pricePerTimeUOM = record.getPricePerTimeUOM();
-		if (pricePerTimeUOM.signum() == 0)
-		{
-			return Optional.of(BigDecimal.ZERO);
-		}
-
-		final BigDecimal plannedAmt = record.getPlannedAmt();
-		if (plannedAmt.signum() == 0)
-		{
-			return Optional.of(BigDecimal.ZERO);
-		}
-
-		final UOMPrecision uomPrecision = uomDAO.getStandardPrecision(uomId);
-		final BigDecimal plannedDuration = plannedAmt.divide(pricePerTimeUOM, uomPrecision.toInt(), uomPrecision.getRoundingMode());
-		return Optional.of(plannedDuration);
+		budgetProjectResourceService.computePlannedDuration(record).ifPresent(record::setPlannedDuration);
 	}
 }
