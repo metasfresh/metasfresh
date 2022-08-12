@@ -51,6 +51,7 @@ import io.github.jsonSnapshot.SnapshotMatcher;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_ProjectType;
+import org.compiere.model.I_R_StatusCategory;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_C_ProjectType;
@@ -63,6 +64,8 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -71,6 +74,8 @@ class WorkOrderProjectRestServiceTest
 {
 	private WorkOrderProjectRestService workOrderProjectRestService;
 	private I_C_ProjectType projectType;
+
+	private I_R_StatusCategory requestStatusCategory;
 	private String orgValue;
 	private I_S_Resource resource;
 
@@ -82,14 +87,18 @@ class WorkOrderProjectRestServiceTest
 		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
 		orgValue = Services.get(IOrgDAO.class).retrieveOrgValue(orgId);
 
-		projectType = InterfaceWrapperHelper.newInstance(I_C_ProjectType.class);
+		requestStatusCategory = newInstance(I_R_StatusCategory.class);
+		save(requestStatusCategory);
+
+		projectType = newInstance(I_C_ProjectType.class);
 		projectType.setProjectCategory(X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob);
-		InterfaceWrapperHelper.save(projectType);
+		projectType.setR_StatusCategory_ID(requestStatusCategory.getR_StatusCategory_ID());
+		save(projectType);
 
-		final I_S_ResourceType resourceType = InterfaceWrapperHelper.newInstance(I_S_ResourceType.class);
-		InterfaceWrapperHelper.save(resourceType);
+		final I_S_ResourceType resourceType = newInstance(I_S_ResourceType.class);
+		save(resourceType);
 
-		resource = InterfaceWrapperHelper.newInstance(I_S_Resource.class);
+		resource = newInstance(I_S_Resource.class);
 		resource.setS_ResourceType_ID(resourceType.getS_ResourceType_ID());
 		resource.setInternalName("internalName");
 		resource.setValue("resourceValue");
