@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -130,5 +131,5 @@ public interface IInOutDAO extends ISingletonService
 
 	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
 
-	Collection<InOutLine> retrieveInOutLinesBy(@NonNull final InOutLineQuery inOutLineQuery);
+	Collection<InOutAndLineId> retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(OrderLineId orderLine, Object contextProvider);
 }

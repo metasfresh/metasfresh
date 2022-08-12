@@ -137,3 +137,33 @@ DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542281
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Val_Rule SET Code='C_Flatrate_Conditions.Type_Conditions = ''InterimInvoice'' AND EXISTS(SELECT 1 FROM c_order o WHERE o.m_pricingsystem_id = C_Flatrate_Conditions.m_pricingsystem_id AND o.c_order_id = @C_Order_ID/-1@)', Name='C_FlatrateConditions_InterimInvoice for Order pricesystem',Updated=TO_TIMESTAMP('2022-08-11 19:43:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540591
 ;
+
+-- 2022-08-12T09:43:45.325Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Create interim contract',Updated=TO_TIMESTAMP('2022-08-12 12:43:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585083
+;
+
+-- 2022-08-12T09:44:04.356Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Description='Create a contract which allows interim invoices to be created for the partial quantities received', Name='Create interim contract',Updated=TO_TIMESTAMP('2022-08-12 12:44:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585083
+;
+
+-- 2022-08-12T09:44:06.403Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description='Create a contract which allows interim invoices to be created for the partial quantities received',Updated=TO_TIMESTAMP('2022-08-12 12:44:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585083
+;
+
+-- 2022-08-12T09:44:16.983Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-08-12 12:44:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585083
+;
+
+-- 2022-08-12T09:44:59.363Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Parent_Column_ID=583832,Updated=TO_TIMESTAMP('2022-08-12 12:44:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546486
+;
+
+-- 2022-08-12T09:45:46.888Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET AD_Column_ID=583861,Updated=TO_TIMESTAMP('2022-08-12 12:45:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546486
+;

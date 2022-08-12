@@ -169,12 +169,14 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 	 */
 	public boolean isInterimInvoiceStillUsable(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm)
 	{
-		return invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(interimInvoiceFlatrateTerm.getOrderLineId())
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId(), interimInvoiceFlatrateTerm.getWithholdingInvoiceCandidateId())
+				.create()
 				.stream()
 				.filter(invoiceCand -> invoiceCand.getQtyInvoiced().compareTo(BigDecimal.ZERO) == 0)
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
 				.map(InvoiceCandidateId::ofRepoId)
-				.filter(invoiceCandId -> invoiceCandId.equals(interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId()) || invoiceCandId.equals(interimInvoiceFlatrateTerm.getWithholdingInvoiceCandidateId()))
 				.count() == 2;
 	}
 
