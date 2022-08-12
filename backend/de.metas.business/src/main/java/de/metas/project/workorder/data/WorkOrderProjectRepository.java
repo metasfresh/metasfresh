@@ -32,6 +32,7 @@ import de.metas.project.ProjectId;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -169,6 +170,8 @@ public class WorkOrderProjectRepository
 		}
 
 		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
+
+		projectRecord.setR_StatusCategory_ID(RequestStatusCategoryId.toRepoId(projectType.getRequestStatusCategoryId()));
 		if (projectType.getProjectCategory().isWorkOrder())
 		{
 			projectRecord.setProjectCategory(projectType.getProjectCategory().getCode());

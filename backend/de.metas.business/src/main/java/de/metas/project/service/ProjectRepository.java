@@ -39,6 +39,7 @@ import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.RStatusId;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -193,6 +194,7 @@ public class ProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(projectData.getDateFinish()));
 		projectRecord.setIsActive(projectData.isActive());
 		projectRecord.setProjectCategory(projectData.getProjectCategory() != null ? projectData.getProjectCategory().getCode() : null);
+		projectRecord.setR_StatusCategory_ID(RequestStatusCategoryId.toRepoId(projectData.getRequestStatusCategoryId()));
 
 		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(projectData.getProjectTypeId()));
 
@@ -265,6 +267,7 @@ public class ProjectRepository
 				.projectParentId(ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_Parent_ID()))
 				.projectTypeId(ProjectTypeId.ofRepoIdOrNull((projectRecord.getC_ProjectType_ID())))
 				.projectCategory(ProjectCategory.ofNullableCode(projectRecord.getProjectCategory()))
+				.requestStatusCategoryId(RequestStatusCategoryId.ofRepoId(projectRecord.getR_StatusCategory_ID()))
 				.projectStatusId(RStatusId.ofRepoIdOrNull(projectRecord.getR_Project_Status_ID()))
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(projectRecord.getC_BPartner_ID()))
 				.salesRepId(UserId.ofIntegerOrNull(projectRecord.getSalesRep_ID()))

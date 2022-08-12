@@ -394,8 +394,6 @@ public class ADWindowDAO implements IADWindowDAO
 
 		save(targetWindow);
 
-		copyWindowTrl(targetWindowId, sourceWindowId);
-
 		copyTabs(targetWindow, sourceWindow);
 	}
 

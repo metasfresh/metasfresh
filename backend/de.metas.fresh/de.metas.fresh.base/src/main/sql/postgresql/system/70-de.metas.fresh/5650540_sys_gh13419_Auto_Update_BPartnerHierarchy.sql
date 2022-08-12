@@ -1,8 +1,7 @@
 DROP FUNCTION IF EXISTS ad_user_record_access_updatefrom_bpartnerhierarchy()
 ;
 
-CREATE FUNCTION ad_user_record_access_updatefrom_bpartnerhierarchy()
-    RETURNS void
+CREATE FUNCTION ad_user_record_access_updatefrom_bpartnerhierarchy() RETURNS void
     LANGUAGE plpgsql
 AS
 $$
@@ -28,43 +27,41 @@ BEGIN
     --
     -- BPartners
     --
-    WITH RECURSIVE bpartner AS (
-        SELECT bp.c_bpartner_id                     AS root_bpartner_id,
-               bp.name                              AS root_bpartner_name,
-               u.ad_user_id                         AS root_salesRep_ID,
-               u.name                               AS root_salesRep_Name,
-               bp.c_bpartner_id,
-               bp.name                              AS BPName,
-               permissions.access                   AS access,
-               NEXTVAL('ad_user_record_access_seq') AS id,
-               NULL::numeric                        AS parent_id,
-               NULL::numeric                        AS root_id,
-               0::integer                           AS level
-        FROM c_bpartner bp
-                 INNER JOIN ad_user u ON u.c_bpartner_id = bp.c_bpartner_id AND u.isactive = 'Y' AND u.issystemuser = 'Y'
-                ,
-             (SELECT 'R' AS access
-              UNION ALL
-              SELECT 'W' AS access
-             ) AS permissions
-        --
-        UNION ALL
-        --
-        SELECT parent.root_bpartner_id,
-               parent.root_bpartner_name,
-               parent.root_salesRep_ID,
-               parent.root_salesRep_Name,
-               child.c_bpartner_id,
-               child.name                           AS BPName,
-               parent.access                        AS ACCESS,
-               NEXTVAL('ad_user_record_access_seq') AS id,
-               parent.id                            AS parent_id,
-               parent.id                            AS root_id,
-               parent.level + 1                     AS level
-        FROM bpartner parent
-                 INNER JOIN c_bpartner child
-                            ON child.c_bpartner_salesrep_id = parent.c_bpartner_id
-        WHERE child.c_bpartner_id <> parent.c_bpartner_id -- avoid recursion
+    WITH RECURSIVE bpartner AS (SELECT bp.c_bpartner_id                     AS root_bpartner_id,
+                                       bp.name                              AS root_bpartner_name,
+                                       u.ad_user_id                         AS root_salesRep_ID,
+                                       u.name                               AS root_salesRep_Name,
+                                       bp.c_bpartner_id,
+                                       bp.name                              AS BPName,
+                                       permissions.access                   AS access,
+                                       NEXTVAL('ad_user_record_access_seq') AS id,
+                                       NULL::numeric                        AS parent_id,
+                                       NULL::numeric                        AS root_id,
+                                       0::integer                           AS level
+                                FROM c_bpartner bp
+                                         INNER JOIN ad_user u ON u.c_bpartner_id = bp.c_bpartner_id AND u.isactive = 'Y' AND u.issystemuser = 'Y'
+                                        ,
+                                     (SELECT 'R' AS access
+                                      UNION ALL
+                                      SELECT 'W' AS access) AS permissions
+                                      --
+                                UNION ALL
+                                --
+                                SELECT parent.root_bpartner_id,
+                                       parent.root_bpartner_name,
+                                       parent.root_salesRep_ID,
+                                       parent.root_salesRep_Name,
+                                       child.c_bpartner_id,
+                                       child.name                           AS BPName,
+                                       parent.access                        AS ACCESS,
+                                       NEXTVAL('ad_user_record_access_seq') AS id,
+                                       parent.id                            AS parent_id,
+                                       parent.id                            AS root_id,
+                                       parent.level + 1                     AS level
+                                FROM bpartner parent
+                                         INNER JOIN c_bpartner child
+                                                    ON child.c_bpartner_salesrep_id = parent.c_bpartner_id
+                                WHERE child.c_bpartner_id <> parent.c_bpartner_id -- avoid recursion
     )
     INSERT
     INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id, level)
@@ -207,8 +204,7 @@ BEGIN
     FROM R_Request r,
          (SELECT 'R' AS access
           UNION ALL
-          SELECT 'W' AS access
-         ) AS permissions
+          SELECT 'W' AS access) AS permissions
     WHERE TRUE;
     GET DIAGNOSTICS v_count = ROW_COUNT;
     RAISE NOTICE 'Considered % R_Request(s) via their R_Request.CreatedBy', v_count;
@@ -289,10 +285,6 @@ END;
 $$
 ;
 
--- alter function ad_user_record_access_updatefrom_bpartnerhierarchy() owner to metasfresh;
-
--- Test
-/*
-select ad_user_record_access_updatefrom_bpartnerhierarchy();
- */
+ALTER FUNCTION ad_user_record_access_updatefrom_bpartnerhierarchy() OWNER TO metasfresh
+;
 
