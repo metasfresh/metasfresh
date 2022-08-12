@@ -6,14 +6,14 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice_Verification_SetLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Validator(I_C_InvoiceLine.class)
+@Interceptor(I_C_InvoiceLine.class)
 @Component
 public class C_InvoiceLine
 {
@@ -63,4 +63,11 @@ public class C_InvoiceLine
 				.create()
 				.delete();
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void updateSectionCode(final I_C_InvoiceLine invoiceLine)
+	{
+		invoiceLine.setM_SectionCode_ID(invoiceLine.getC_Invoice().getM_SectionCode_ID());
+	}
+
 }
