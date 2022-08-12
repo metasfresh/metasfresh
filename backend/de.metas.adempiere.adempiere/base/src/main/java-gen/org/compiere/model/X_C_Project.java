@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1725670829L;
+	private static final long serialVersionUID = 549700395L;
 
     /** Standard Constructor */
     public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)
@@ -138,6 +138,44 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
+	public void setCommittedAmt (final BigDecimal CommittedAmt)
+	{
+		set_Value (COLUMNNAME_CommittedAmt, CommittedAmt);
+	}
+
+	@Override
+	public BigDecimal getCommittedAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCommittedQty (final BigDecimal CommittedQty)
+	{
+		set_Value (COLUMNNAME_CommittedQty, CommittedQty);
+	}
+
+	@Override
+	public BigDecimal getCommittedQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
+	}
+
+	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
@@ -195,15 +233,15 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public org.compiere.model.I_C_Project_Label getC_Project_Label()
+	public I_C_Project_Label getC_Project_Label()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_Label_ID, org.compiere.model.I_C_Project_Label.class);
+		return get_ValueAsPO(COLUMNNAME_C_Project_Label_ID, I_C_Project_Label.class);
 	}
 
 	@Override
-	public void setC_Project_Label(final org.compiere.model.I_C_Project_Label C_Project_Label)
+	public void setC_Project_Label(final I_C_Project_Label C_Project_Label)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Project_Label_ID, org.compiere.model.I_C_Project_Label.class, C_Project_Label);
+		set_ValueFromPO(COLUMNNAME_C_Project_Label_ID, I_C_Project_Label.class, C_Project_Label);
 	}
 
 	@Override
@@ -246,44 +284,6 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public int getC_ProjectType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_ProjectType_ID);
-	}
-
-	@Override
-	public void setCommittedAmt (final BigDecimal CommittedAmt)
-	{
-		set_Value (COLUMNNAME_CommittedAmt, CommittedAmt);
-	}
-
-	@Override
-	public BigDecimal getCommittedAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCommittedQty (final BigDecimal CommittedQty)
-	{
-		set_Value (COLUMNNAME_CommittedQty, CommittedQty);
-	}
-
-	@Override
-	public BigDecimal getCommittedQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -652,6 +652,33 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public int getR_Project_Status_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_R_Project_Status_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_R_StatusCategory getR_StatusCategory()
+	{
+		return get_ValueAsPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class);
+	}
+
+	@Override
+	public void setR_StatusCategory(final org.compiere.model.I_R_StatusCategory R_StatusCategory)
+	{
+		set_ValueFromPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class, R_StatusCategory);
+	}
+
+	@Override
+	public void setR_StatusCategory_ID (final int R_StatusCategory_ID)
+	{
+		if (R_StatusCategory_ID < 1) 
+			set_Value (COLUMNNAME_R_StatusCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_R_StatusCategory_ID, R_StatusCategory_ID);
+	}
+
+	@Override
+	public int getR_StatusCategory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_R_StatusCategory_ID);
 	}
 
 	@Override

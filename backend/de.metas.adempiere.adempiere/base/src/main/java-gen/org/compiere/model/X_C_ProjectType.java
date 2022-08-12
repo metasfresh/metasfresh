@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_ProjectType extends org.compiere.model.PO implements I_C_ProjectType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -596423106L;
+	private static final long serialVersionUID = -964932490L;
 
     /** Standard Constructor */
     public X_C_ProjectType (final Properties ctx, final int C_ProjectType_ID, @Nullable final String trxName)
@@ -137,5 +137,32 @@ public class X_C_ProjectType extends org.compiere.model.PO implements I_C_Projec
 	public java.lang.String getProjectCategory() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProjectCategory);
+	}
+
+	@Override
+	public org.compiere.model.I_R_StatusCategory getR_StatusCategory()
+	{
+		return get_ValueAsPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class);
+	}
+
+	@Override
+	public void setR_StatusCategory(final org.compiere.model.I_R_StatusCategory R_StatusCategory)
+	{
+		set_ValueFromPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class, R_StatusCategory);
+	}
+
+	@Override
+	public void setR_StatusCategory_ID (final int R_StatusCategory_ID)
+	{
+		if (R_StatusCategory_ID < 1) 
+			set_Value (COLUMNNAME_R_StatusCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_R_StatusCategory_ID, R_StatusCategory_ID);
+	}
+
+	@Override
+	public int getR_StatusCategory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_R_StatusCategory_ID);
 	}
 }
