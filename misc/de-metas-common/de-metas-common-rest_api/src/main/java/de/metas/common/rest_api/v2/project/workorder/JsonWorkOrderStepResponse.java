@@ -114,6 +114,10 @@ public class JsonWorkOrderStepResponse
 	LocalDate woFindingsCreatedDate;
 
 	@Nullable
+	@JsonProperty("externalId")
+	String externalId;
+
+	@Nullable
 	@JsonProperty("resources")
 	List<JsonWorkOrderResourceResponse> resources;
 

@@ -92,7 +92,7 @@ public class JsonWorkOrderResourceResponse
 
 	@Nullable
 	@JsonProperty("externalId")
-	JsonExternalId externalId;
+	String externalId;
 
 	@JsonCreator
 	@Builder
@@ -109,7 +109,7 @@ public class JsonWorkOrderResourceResponse
 			@JsonProperty("budgetProjectId") final @Nullable JsonMetasfreshId budgetProjectId,
 			@JsonProperty("projectResourceBudgetId") final @Nullable JsonMetasfreshId projectResourceBudgetId,
 			@JsonProperty("testFacilityGroupName") @Nullable final String testFacilityGroupName,
-			@JsonProperty ("externalId") @Nullable final JsonExternalId externalId)
+			@JsonProperty("externalId") final @Nullable String externalId)
 	{
 		this.woResourceId = woResourceId;
 		this.stepId = stepId;

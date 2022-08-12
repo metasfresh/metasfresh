@@ -388,4 +388,21 @@ public class DataTableUtil
 		return value;
 	}
 
+	@Nullable
+	public Double extractDoubleOrNullForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+
+		try
+		{
+			return Check.isBlank(string) ? null : Double.parseDouble(string);
+		}
+		catch (final NumberFormatException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
 }

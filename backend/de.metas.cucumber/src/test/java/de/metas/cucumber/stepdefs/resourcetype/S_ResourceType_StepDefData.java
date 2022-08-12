@@ -20,14 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.resourcetype;
 
-import org.compiere.model.I_C_ProjectType;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_S_ResourceType;
 
-public class C_ProjectType_StepDefData extends StepDefData<I_C_ProjectType>
+public class S_ResourceType_StepDefData extends StepDefData<I_S_ResourceType>
 {
-	public C_ProjectType_StepDefData()
+	public S_ResourceType_StepDefData()
 	{
-		super(I_C_ProjectType.class);
+		super(I_S_ResourceType.class);
 	}
 }

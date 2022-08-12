@@ -2,9 +2,11 @@ package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -33,6 +35,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.util.concurrent.TimeUnit.DAYS;
@@ -1300,6 +1303,11 @@ public class TimeUtil
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
+		return asTimestamp(obj, null);
+	}
+
+	public static Timestamp asTimestamp(@Nullable final Object obj, @Nullable final ZoneId zoneId)
+	{
 		if (obj == null)
 		{
 			return null;
@@ -1318,7 +1326,8 @@ public class TimeUtil
 		}
 		else
 		{
-			return Timestamp.from(asInstant(obj));
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId,SystemTime.zoneId());
+			return Timestamp.from(asInstant(obj, zoneIdNonNull));
 		}
 	}
 
@@ -1621,6 +1630,22 @@ public class TimeUtil
 	}
 
 	/**
+	 * @deprecated Consider using {@link InstantAndOrgId#toLocalDate(Function)}.
+	 */
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
+	{
+		if (ts == null)
+		{
+			return null;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		return InstantAndOrgId.ofTimestamp(ts, orgId).toLocalDate(orgDAO::getTimeZone);
+	}
+
+	/**
 	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
 	 */
 	@Deprecated
@@ -1633,21 +1658,13 @@ public class TimeUtil
 	}
 
 	@Nullable
-	public static LocalDate asLocalDate(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
+	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{
-		if (ts == null)
-		{
-			return null;
-		}
-
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-
-		return asLocalDate(ts, zoneId);
+		return asLocalDate(obj, null);
 	}
 
 	@Nullable
-	public static LocalDate asLocalDate(@Nullable final Object obj)
+	public static LocalDate asLocalDate(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1663,7 +1680,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalDate();
+			return asLocalDateTime(obj,zoneId).toLocalDate();
 		}
 	}
 
@@ -1698,7 +1715,14 @@ public class TimeUtil
 		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
 	}
 
+	@Nullable
 	public static LocalTime asLocalTime(@Nullable final Object obj)
+	{
+		return asLocalTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1710,7 +1734,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalTime();
+			return asLocalDateTime(obj, zoneId).toLocalTime();
 		}
 	}
 
@@ -1725,6 +1749,12 @@ public class TimeUtil
 
 	@Nullable
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj)
+	{
+		return asLocalDateTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1748,7 +1778,10 @@ public class TimeUtil
 		}
 		else
 		{
-			return asInstant(obj).atZone(de.metas.common.util.time.SystemTime.zoneId()).toLocalDateTime();
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
+
+			return asInstant(obj, zoneIdNonNull)
+					.atZone(zoneIdNonNull).toLocalDateTime();
 		}
 	}
 
@@ -1793,6 +1826,10 @@ public class TimeUtil
 		return timestamp != null ? timestamp.toInstant().atZone(SystemTime.zoneId()) : null;
 	}
 
+	/**
+	 * @deprecated Consider using {@link InstantAndOrgId#toZonedDateTime(Function)}.
+	 */
+	@Deprecated
 	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
 	{
@@ -1802,11 +1839,9 @@ public class TimeUtil
 		}
 
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-
-		return asZonedDateTime(ts, zoneId);
+		return InstantAndOrgId.ofTimestamp(ts, orgId).toZonedDateTime(orgDAO::getTimeZone);
 	}
-	
+
 	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
 		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;
@@ -1893,16 +1928,20 @@ public class TimeUtil
 		return timestamp.toInstant();
 	}
 
+	/**
+	 * @deprecated Consider using {@link LocalDateAndOrgId#toEndOfDayInstant(Function)}.
+	 */
+	@Deprecated
 	@Nullable
 	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final OrgId orgId)
 	{
-		if(localDate == null)
+		if (localDate == null)
 		{
 			return null;
 		}
-		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
 
-		return asInstant(endOfDay, orgId);
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toEndOfDayInstant(orgDAO::getTimeZone);
 	}
 
 	@Nullable
@@ -1916,16 +1955,25 @@ public class TimeUtil
 
 		return asInstant(endOfDay, zoneId);
 	}
-	
+
+	/**
+	 * @deprecated Consider using {@link LocalDateAndOrgId#toInstant(Function)}.
+	 */
+	@Deprecated
 	@Nullable
 	public static Instant asInstant(
-			@Nullable final Object obj,
+			@Nullable final LocalDate localDate,
 			@NonNull final OrgId orgId)
 	{
-		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(orgId);
-		return asInstant(obj,timeZone);
+		if (localDate == null)
+		{
+			return null;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toInstant(orgDAO::getTimeZone);
 	}
-	
+
 	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,

@@ -312,4 +312,9 @@ public class IdentifierString
 
 		return value;
 	}
+
+	public boolean isMetasfreshId()
+	{
+		return Type.METASFRESH_ID.equals(type);
+	}
 }
