@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project
  *  @author metasfresh (generated) 
@@ -759,5 +759,17 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public java.lang.String getWOOwner() 
 	{
 		return get_ValueAsString(COLUMNNAME_WOOwner);
+	}
+
+	@Override
+	public void setWOProjectCreatedDate (final @Nullable java.sql.Timestamp WOProjectCreatedDate)
+	{
+		set_Value (COLUMNNAME_WOProjectCreatedDate, WOProjectCreatedDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getWOProjectCreatedDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_WOProjectCreatedDate);
 	}
 }

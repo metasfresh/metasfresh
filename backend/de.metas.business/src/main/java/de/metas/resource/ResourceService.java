@@ -42,7 +42,9 @@ import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.I_S_Resource_Group;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -237,6 +239,14 @@ public class ResourceService
 		}
 
 		productDAO.updateProductsByResourceIds(resourceIds, product -> updateProductFromResourceType(product, resourceType));
+	}
+
+	@NonNull
+	public Optional<ResourceGroupId> getResourceGroupId(@Nullable final ResourceId resourceId)
+	{
+		return Optional.ofNullable(resourceId)
+				.map(this::getResourceById)
+				.map(Resource::getResourceGroupId);
 	}
 
 	private static void updateProductFromResourceType(final I_M_Product product, final ResourceType from)
