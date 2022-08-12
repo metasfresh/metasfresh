@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.compiere.util.converters;
+package de.metas.util.converter;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -33,6 +33,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
 
@@ -40,64 +41,28 @@ import java.util.function.Function;
 public class DateTimeConverters
 {
 	@Nullable
-	public static Object fromObject(@NonNull final Object valueObj, final int displayType)
+	public static Object fromObject(@NonNull final Object valueObj, final int displayType, @NonNull final ZoneId zoneId)
 	{
 		switch (displayType)
 		{
 			case DisplayType.Date:
-				return fromObjectToLocalDate(valueObj);
+				return fromObjectToLocalDate(valueObj, zoneId);
 			case DisplayType.Time:
-				return fromObjectToLocalTime(valueObj);
+				return fromObjectToLocalTime(valueObj, zoneId);
 			case DisplayType.DateTime:
 			{
 				try
 				{
-					return fromObjectToZonedDateTime(valueObj);
+					return fromObjectToZonedDateTime(valueObj, zoneId);
 				}
 				catch (final Exception e)
 				{
-					return fromObjectToInstant(valueObj);
+					return fromObjectToInstant(valueObj, zoneId);
 				}
 			}
 		}
 
 		throw new AdempiereException("Invalid date/time type: " + displayType);
-	}
-
-	@Nullable
-	public static LocalDate fromObjectToLocalDate(final Object valueObj)
-	{
-		return fromObjectTo(valueObj,
-							LocalDate.class,
-							DateTimeConverters::fromJsonToLocalDate,
-							TimeUtil::asLocalDate);
-	}
-
-	@Nullable
-	public static LocalTime fromObjectToLocalTime(final Object valueObj)
-	{
-		return fromObjectTo(valueObj,
-							LocalTime.class,
-							DateTimeConverters::fromJsonToLocalTime,
-							TimeUtil::asLocalTime);
-	}
-
-	@Nullable
-	public static ZonedDateTime fromObjectToZonedDateTime(final Object valueObj)
-	{
-		return fromObjectTo(valueObj,
-							ZonedDateTime.class,
-							DateTimeConverters::fromJsonToZonedDateTime,
-							TimeUtil::asZonedDateTime);
-	}
-
-	@Nullable
-	public static Instant fromObjectToInstant(final Object valueObj)
-	{
-		return fromObjectTo(valueObj,
-							Instant.class,
-							DateTimeConverters::fromJsonToInstant,
-							TimeUtil::asInstant);
 	}
 
 	@NonNull
@@ -127,6 +92,42 @@ public class DateTimeConverters
 		final JSONDateConfig config = JSONDateConfig.DEFAULT;
 		return ZonedDateTime.parse(valueStr, config.getTimestampFormatter())
 				.toInstant();
+	}
+
+	@Nullable
+	private static LocalDate fromObjectToLocalDate(final Object valueObj, final ZoneId zoneId)
+	{
+		return fromObjectTo(valueObj,
+							LocalDate.class,
+							DateTimeConverters::fromJsonToLocalDate,
+							(object) -> TimeUtil.asLocalDate(object, zoneId));
+	}
+
+	@Nullable
+	private static LocalTime fromObjectToLocalTime(final Object valueObj, final ZoneId zoneId)
+	{
+		return fromObjectTo(valueObj,
+							LocalTime.class,
+							DateTimeConverters::fromJsonToLocalTime,
+							(object) -> TimeUtil.asLocalTime(object, zoneId));
+	}
+
+	@Nullable
+	private static ZonedDateTime fromObjectToZonedDateTime(final Object valueObj, final ZoneId zoneId)
+	{
+		return fromObjectTo(valueObj,
+							ZonedDateTime.class,
+							DateTimeConverters::fromJsonToZonedDateTime,
+							(object) -> TimeUtil.asZonedDateTime(object, zoneId));
+	}
+
+	@Nullable
+	private static Instant fromObjectToInstant(final Object valueObj, final ZoneId zoneId)
+	{
+		return fromObjectTo(valueObj,
+							Instant.class,
+							DateTimeConverters::fromJsonToInstant,
+							(object) -> TimeUtil.asInstant(object, zoneId));
 	}
 
 	@Nullable
