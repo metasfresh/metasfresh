@@ -32,7 +32,9 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.project.sequence.ProjectValueSequenceProvider;
 import de.metas.quantity.Quantity;
 import de.metas.servicerepair.project.CreateServiceOrRepairProjectRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,6 +44,7 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_R_StatusCategory;
+import org.elasticsearch.common.collect.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -66,14 +69,14 @@ public class ProjectServiceTest
 
 		final ProjectTypeRepository projectTypeRepository = new ProjectTypeRepository();
 
-		final ProjectRepository projectRepository = Mockito.spy(new ProjectRepository(Mockito.mock(DocumentNoBuilderFactory.class), projectTypeRepository));
-		Mockito.doReturn(MOCKED_DocNo).when(projectRepository).computeNextProjectValue(any(I_C_Project.class));
+		this.projectService = Mockito.spy(new ProjectService(
+				projectTypeRepository,
+				new ProjectRepository(),
+				new ProjectLineRepository(),
+				new DocumentNoBuilderFactory(Optional.of(List.of(new ProjectValueSequenceProvider(new ProjectTypeRepository())))),
+				Optional.of(ImmutableList.of())));
 
-		this.projectService = new ProjectService(
-				projectTypeRepository, 
-				projectRepository, 
-				new ProjectLineRepository(), 
-				Optional.of(ImmutableList.of()));
+		Mockito.doReturn(MOCKED_DocNo).when(projectService).getNextProjectValue(any(ProjectTypeId.class));
 	}
 
 	@Test

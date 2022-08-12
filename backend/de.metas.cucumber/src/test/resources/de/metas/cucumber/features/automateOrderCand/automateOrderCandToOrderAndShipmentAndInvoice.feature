@@ -18,13 +18,13 @@ Feature: Process order candidate and automatically generate shipment and invoice
   Scenario: Order candidate to shipment and invoice flow and closed order
     Given metasfresh contains C_Project
       | C_Project_ID | Name     | C_Currency_ID.ISO_Code |
-      | 1000000      | testName | EUR                    |
+      | 2100000      | testName | EUR                    |
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project' and fulfills with '200' status code
     """
 {
 "requestItems":[
     {
-        "projectId": 1000000,
+        "projectId": 2100000,
         "orgId": 1000000,
         "name": "nameFromTest",
         "projectTypeId": 540004,
@@ -50,7 +50,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created projects
       | C_Project_ID.Identifier | OPT.C_Project_ID | OPT.Name     | OPT.Description     | OPT.C_BPartner_ID.Identifier | OPT.C_Currency_ID.ISO_Code | OPT.C_ProjectType_ID.Identifier | OPT.R_Project_Status_ID.Identifier | OPT.IsActive |
-      | project_1               | 1000000          | nameFromTest | descriptionFromTest | 2156425                      | EUR                        | 540004                          | 540030                             | true         |
+      | project_1               | 2100000          | nameFromTest | descriptionFromTest | 2156425                      | EUR                        | 540004                          | 540030                             | true         |
 
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -77,7 +77,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "deliveryViaRule": "S",
     "deliveryRule": "F",
     "bpartnerName": "testName",
-    "projectId": 1000000
+    "projectId": 2100000
 }
 """
 
@@ -98,7 +98,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created orders
       | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | OPT.C_Project_ID.Identifier |
-      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | 1000000                     |
+      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | 2100000                     |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_Project_ID.Identifier |

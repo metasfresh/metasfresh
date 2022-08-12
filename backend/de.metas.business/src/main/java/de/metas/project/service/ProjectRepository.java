@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
@@ -35,9 +34,7 @@ import de.metas.project.Project;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
-import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
-import de.metas.project.ProjectTypeRepository;
 import de.metas.project.RStatusId;
 import de.metas.project.RequestStatusCategoryId;
 import de.metas.user.UserId;
@@ -64,16 +61,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class ProjectRepository
 {
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	private final ProjectTypeRepository projectTypeRepository;
-
-	public ProjectRepository(
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final ProjectTypeRepository projectTypeRepository)
-	{
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-		this.projectTypeRepository = projectTypeRepository;
-	}
 
 	@NonNull
 	public Optional<Project> getOptionalById(@NonNull final ProjectId id)
@@ -145,29 +132,6 @@ public class ProjectRepository
 				rs -> ProjectId.ofRepoId(rs.getInt(1)));
 	}
 
-	public void updateFromProjectType(@NonNull final I_C_Project projectRecord)
-	{
-		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
-		if (projectTypeId == null)
-		{
-			return;
-		}
-
-		final String projectValue = computeNextProjectValue(projectRecord);
-		if (projectValue != null)
-		{
-			projectRecord.setValue(projectValue);
-		}
-		if (Check.isEmpty(projectRecord.getName()))
-		{
-			projectRecord.setName(projectValue != null ? projectValue : ".");
-		}
-
-		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
-		projectRecord.setProjectCategory(projectType.getProjectCategory().getCode());
-		projectRecord.setR_StatusCategory_ID(RequestStatusCategoryId.toRepoId(projectType.getRequestStatusCategoryId()));
-	}
-
 	@NonNull
 	private Project save(
 			@NonNull final I_C_Project projectRecord,
@@ -199,45 +163,9 @@ public class ProjectRepository
 
 		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(projectData.getProjectTypeId()));
 
-		updateFromProjectType(projectRecord);
-
-		projectRecord.setValue(getValue(projectData, projectRecord));
-
 		saveRecord(projectRecord);
 
 		return ofProjectRecord(projectRecord);
-	}
-
-	@Nullable
-	public String computeNextProjectValue(final I_C_Project projectRecord)
-	{
-		return documentNoBuilderFactory
-				.createValueBuilderFor(projectRecord)
-				.setFailOnError(false)
-				.build();
-	}
-
-	@NonNull
-	private String getValue(@NonNull final ProjectData projectData, final I_C_Project projectRecord)
-	{
-		if (Check.isNotBlank(projectData.getValue()))
-		{
-			return projectData.getValue();
-		}
-
-		if (Check.isNotBlank(projectRecord.getValue()))
-		{
-			return projectRecord.getValue();
-		}
-
-		final String computedValue = computeNextProjectValue(projectRecord);
-
-		if (computedValue == null)
-		{
-			throw new AdempiereException("No C_Project.Value could be computed for C_Project_ID=" + projectRecord.getC_Project_ID());
-		}
-
-		return computedValue;
 	}
 
 	@NonNull

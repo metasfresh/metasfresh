@@ -47,10 +47,10 @@ public class ProjectData
 	@NonNull
 	CurrencyId currencyId;
 
-	@Nullable
+	@NonNull
 	String name;
 
-	@Nullable
+	@NonNull
 	String value;
 
 	@Builder.Default

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Project_WO_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1053617724L;
+	private static final long serialVersionUID = -1884120826L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Step (final Properties ctx, final int C_Project_WO_Step_ID, @Nullable final String trxName)
