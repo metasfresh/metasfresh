@@ -165,7 +165,7 @@ public class ProjectRepository
 
 		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
 		projectRecord.setProjectCategory(projectType.getProjectCategory().getCode());
-		projectRecord.setR_StatusCategory_ID(projectRecord.getR_StatusCategory_ID());
+		projectRecord.setR_StatusCategory_ID(RequestStatusCategoryId.toRepoId(projectType.getRequestStatusCategoryId()));
 	}
 
 	@NonNull
