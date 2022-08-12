@@ -137,23 +137,9 @@
 	<detail>
 		<band height="12" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="f383ca53-83c4-4d05-9aab-ba336b6096db">
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "Y" ))]]></printWhenExpression>
-				</reportElement>
-				<subreportParameter name="c_invoice_id">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/purchase/invoice/report_details.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="719c6631-877d-4631-ba74-03e272eaef21">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="c_invoice_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
