@@ -131,7 +131,7 @@ public class C_Project_StepDef
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyIsoCode));
 
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
-
+		projectRecord.setR_StatusCategory_ID(540004); /*Opportunity*/
 		projectRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());
 		projectRecord.setC_Project_ID(projectId);
 		projectRecord.setName(name);
