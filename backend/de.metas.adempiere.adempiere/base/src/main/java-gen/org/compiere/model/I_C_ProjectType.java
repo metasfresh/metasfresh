@@ -252,7 +252,7 @@ public interface I_C_ProjectType
 	 * Request Status Category
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getR_StatusCategory_ID();
