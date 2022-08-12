@@ -134,6 +134,7 @@ const DLmapStateToProps = (state, props) => {
     viewData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
+    mapConfig: master.mapConfig,
     referenceId: queryReferenceId,
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
