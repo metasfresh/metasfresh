@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13405](https://github.com/metasfresh/metasfresh/issues/13405) Allow custom columns in API upserts (for Budget-Project)
   * [#13415](https://github.com/metasfresh/metasfresh/issues/13415) Customer returns error
   * [#13413](https://github.com/metasfresh/metasfresh/issues/13413) Display project fields in various windows(SO, Shipment, Request(all)...)
   * [#13392](https://github.com/metasfresh/metasfresh/issues/13316) Extend invoice-candidate test-coverage to IC QtyToInoviceOverride
