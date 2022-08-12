@@ -26,6 +26,7 @@ import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermQuery;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.order.OrderLineId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
@@ -42,5 +43,5 @@ public interface IInterimInvoiceFlatrateTermDAO extends ISingletonService
 
 	boolean isInterimInvoiceStillUsable(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm);
 
-	InterimInvoiceFlatrateTerm getInterimInvoiceOverviewForFlatrateTerm(@NonNull final FlatrateTermId flatrateTerm);
+	InterimInvoiceFlatrateTerm getInterimInvoiceOverviewForFlatrateTermAndOrderLineId(@NonNull final FlatrateTermId flatrateTerm, final @NonNull OrderLineId orderLineId);
 }

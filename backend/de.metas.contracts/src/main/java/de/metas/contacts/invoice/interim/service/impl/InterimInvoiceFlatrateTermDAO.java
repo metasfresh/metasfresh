@@ -143,11 +143,12 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 	}
 
 	@Nullable
-	public InterimInvoiceFlatrateTerm getInterimInvoiceOverviewForFlatrateTerm(@NonNull final FlatrateTermId flatrateTermId)
+	public InterimInvoiceFlatrateTerm getInterimInvoiceOverviewForFlatrateTermAndOrderLineId(@NonNull final FlatrateTermId flatrateTermId, final @NonNull OrderLineId orderLineId)
 	{
 		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
+				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.orderByDescending(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID)
 				.create()
 				.firstOptional(I_C_InterimInvoice_FlatrateTerm.class)

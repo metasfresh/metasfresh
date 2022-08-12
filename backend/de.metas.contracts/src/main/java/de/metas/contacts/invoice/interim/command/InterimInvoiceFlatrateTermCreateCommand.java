@@ -176,7 +176,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 
 	private InterimInvoiceFlatrateTerm getOrCreateInterimInvoiceOverview(final I_C_Flatrate_Term flatrateTerm, final I_C_Invoice_Candidate existingIC)
 	{
-		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceOverviewDAO.getInterimInvoiceOverviewForFlatrateTerm(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()));
+		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceOverviewDAO.getInterimInvoiceOverviewForFlatrateTermAndOrderLineId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()), orderLineId);
 		if (interimInvoiceFlatrateTerm != null && interimInvoiceOverviewDAO.isInterimInvoiceStillUsable(interimInvoiceFlatrateTerm))
 		{
 			return interimInvoiceFlatrateTerm;
@@ -285,6 +285,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		withholdingIC.setQtyEntered(existingIC.getQtyEntered().negate());
 		withholdingIC.setQtyDeliveredInUOM(BigDecimal.ZERO);
 		withholdingIC.setM_Product_ID(interimInvoiceSettings.getWithholdingProductId().getRepoId());
+		withholdingIC.setC_OrderLine_ID(0);
+		withholdingIC.setC_Order_ID(0);
 
 		invoiceCandDAO.save(withholdingIC);
 		return withholdingIC;
