@@ -86,6 +86,8 @@ import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -400,12 +402,7 @@ public class C_Invoice_Candidate_StepDef
 			}
 			catch (final Throwable e)
 			{
-				final List<String> invCandidateDetails = DB.retrieveRows("select * from c_invoice_candidate where c_invoice_candidate_id = " + invoiceCandidateRecord.getC_Invoice_Candidate_ID(),
-																		 new ArrayList<>(),
-																		 (resultSet) -> "[c_invoice_candidate_id:" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + ":" + "QtyToInvoice" + resultSet.getBigDecimal("QtyToInvoice") + "]");
-				throw AdempiereException.wrapIfNeeded(e)
-						.appendParametersToMessage()
-						.setParameter("InvoiceCandidateDetails", String.join(",", invCandidateDetails));
+				wrapInvoiceCandidateRelatedException(e, invoiceCandidateRecord, invoiceCandidateIdentifier);
 			}
 		}
 	}
@@ -481,12 +478,7 @@ public class C_Invoice_Candidate_StepDef
 			}
 			catch (final Throwable e)
 			{
-				final List<String> invCandidateDetails = DB.retrieveRows("select * from c_invoice_candidate where c_invoice_candidate_id = " + invoiceCandidateRecord.getC_Invoice_Candidate_ID(),
-																		 new ArrayList<>(),
-																		 (resultSet) -> "[c_invoice_candidate_id:" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + ":" + "QtyToInvoice" + resultSet.getBigDecimal("QtyToInvoice") + "]");
-				throw AdempiereException.wrapIfNeeded(e)
-						.appendParametersToMessage()
-						.setParameter("InvoiceCandidateDetails", String.join(",", invCandidateDetails));
+				wrapInvoiceCandidateRelatedException(e, invoiceCandidateRecord, invoiceCandidateIdentifier);
 			}
 		}
 	}
@@ -1041,5 +1033,43 @@ public class C_Invoice_Candidate_StepDef
 						.append("\n"));
 
 		logger.error("*** Error while looking for C_Invoice_Candidate records, see current context: \n" + message);
+	}
+
+	private void wrapInvoiceCandidateRelatedException(
+			@NonNull final Throwable e,
+			@NonNull final I_C_Invoice_Candidate invCandidate,
+			@NonNull final String invoiceCandidateIdentifier)
+	{
+		final String rawSQLQuery = "select * from c_invoice_candidate where c_invoice_candidate_id = " + invCandidate.getC_Invoice_Candidate_ID();
+
+		final List<String> invCandidateDetailList = DB.retrieveRows(rawSQLQuery,
+																 new ArrayList<>(),
+																 (resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
+
+		//query by id
+		final String invCandDetails = invCandidateDetailList.get(0);
+
+		throw AdempiereException.wrapIfNeeded(e)
+				.appendParametersToMessage()
+				.setParameter("InvoiceCandidateDetails", invCandDetails);
+	}
+
+	@NonNull
+	private String getInvoiceCandidateExceptionDetails(
+			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
+			@NonNull final ResultSet resultSet,
+			@NonNull final String invoiceCandIdentifier) throws SQLException
+	{
+		final StringBuilder detailsBuilder = new StringBuilder();
+
+		detailsBuilder.append("[")
+				.append("C_Invoice_Candidate_ID:").append(invoiceCandidate.getC_Invoice_Candidate_ID()).append(" - Identifier->").append(invoiceCandIdentifier)
+				.append(", ")
+				.append(COLUMNNAME_QtyToInvoice).append(":").append("I_->").append(invoiceCandidate.getQtyToInvoice()).append(" - ResultSet->").append(resultSet.getBigDecimal(COLUMNNAME_QtyToInvoice))
+				.append(", ")
+				.append(COLUMNNAME_QtyDelivered).append(":").append("I_->").append(invoiceCandidate.getQtyDelivered()).append(" - ResultSet->").append(resultSet.getBigDecimal(COLUMNNAME_QtyDelivered))
+				.append("]");
+
+		return detailsBuilder.toString();
 	}
 }
