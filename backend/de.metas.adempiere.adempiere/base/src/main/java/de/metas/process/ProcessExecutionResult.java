@@ -16,6 +16,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.report.ReportResultData;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -1055,5 +1056,6 @@ public class ProcessExecutionResult
 		@Nullable String calendarResourceId;
 		@Nullable String projectId;
 		@Nullable BPartnerId customerId;
+		@Nullable UserId responsibleId;
 	}
 }

@@ -11,8 +11,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.resource.ResourceGroupId;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_SimulationPlan;
@@ -103,6 +105,16 @@ public class OpenCalendarProcess extends JavaProcess implements IProcessPrecondi
 			}
 
 			return Optional.of(CalendarToOpen.builder().customerId(bpartnerId).build());
+		}
+		else if (I_AD_User.Table_Name.equals(tableName))
+		{
+			final UserId responsibleId = UserId.ofRepoIdOrNull(recordId);
+			if (responsibleId == null)
+			{
+				return Optional.empty();
+			}
+
+			return Optional.of(CalendarToOpen.builder().responsibleId(responsibleId).build());
 		}
 		else
 		{

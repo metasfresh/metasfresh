@@ -77,6 +77,11 @@ public class WOProjectRepository
 			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_BPartner_ID, query.getOnlyCustomerId());
 		}
 
+		if (query.getOnlyResponsibleId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_SalesRep_ID, query.getOnlyResponsibleId());
+		}
+
 		return queryBuilder;
 	}
 

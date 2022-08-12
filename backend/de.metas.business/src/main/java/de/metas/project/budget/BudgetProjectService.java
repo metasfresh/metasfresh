@@ -89,7 +89,7 @@ public class BudgetProjectService
 
 	public Optional<BudgetProject> getById(@NonNull final ProjectId projectId)
 	{
-		return projectRepository.getById(projectId);
+		return projectRepository.getOptionalById(projectId);
 	}
 
 	public void updateProjectResourcesByIds(
