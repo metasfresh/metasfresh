@@ -159,7 +159,7 @@ public class ModelClassGenerator
 		for (final ColumnInfo columnInfo : columnInfos)
 		{
 			// Skip standard columns because for those we already have methods in org.compiere.model.PO
-			if (skipColumn(columnInfo))
+			if (isSkipColumn(columnInfo))
 			{
 				continue;
 			}
@@ -533,7 +533,7 @@ public class ModelClassGenerator
 		sb.append(NL);
 	}
 
-	private static boolean skipColumn(@NonNull final ColumnInfo columnInfo)
+	private static boolean isSkipColumn(@NonNull final ColumnInfo columnInfo)
 	{
 		return columnInfo.isRestAPICustomColumn()
 			|| COLUMNNAMES_STANDARD.contains(columnInfo.getColumnName());
