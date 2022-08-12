@@ -92,6 +92,7 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -4812,7 +4813,7 @@ public abstract class PO
 			final DOMSource source = new DOMSource(get_xmlDocument(xml.length() != 0));
 			final TransformerFactory tFactory = TransformerFactory.newInstance();
 			final Transformer transformer = tFactory.newTransformer();
-			transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.transform(source, result);
 			final StringBuffer newXML = writer.getBuffer();
 			//
@@ -5294,20 +5295,20 @@ public abstract class PO
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Client getAD_Client()
+	public I_AD_Client getAD_Client()
 	{
-		return get_ValueAsPO("AD_Client_ID", org.compiere.model.I_AD_Client.class);
+		return get_ValueAsPO("AD_Client_ID", I_AD_Client.class);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Org getAD_Org()
+	public I_AD_Org getAD_Org()
 	{
-		return get_ValueAsPO("AD_Org_ID", org.compiere.model.I_AD_Org.class);
+		return get_ValueAsPO("AD_Org_ID", I_AD_Org.class);
 	}
 
-	public final void setAD_Org(final org.compiere.model.I_AD_Org org)
+	public final void setAD_Org(final I_AD_Org org)
 	{
-		set_ValueFromPO("AD_Org_ID", org.compiere.model.I_AD_Org.class, org);
+		set_ValueFromPO("AD_Org_ID", I_AD_Org.class, org);
 	}
 
 	/**
@@ -5481,10 +5482,8 @@ public abstract class PO
 
 	public final void setCustomColumns(final Map<String, Object> valuesByColumnName)
 	{
-		final POInfo poInfo = getPOInfo();
-
 		valuesByColumnName.keySet()
-				.forEach(columnName -> setActualColumnValue(poInfo, columnName, valuesByColumnName.get(columnName)));
+				.forEach(columnName -> setCustomColumnValue(columnName, valuesByColumnName.get(columnName)));
 	}
 
 	@NonNull
@@ -5501,8 +5500,10 @@ public abstract class PO
 		return customColumnsCollector.build();
 	}
 
-	private void setActualColumnValue(@NonNull final POInfo poInfo, @NonNull final String columnName, @Nullable final Object valueToSet)
+	private void setCustomColumnValue(@NonNull final String columnName, @Nullable final Object valueToSet)
 	{
+		final POInfo poInfo = getPOInfo();
+
 		if (!poInfo.isRestAPICustomColumn(columnName))
 		{
 			throw new AdempiereException(MSG_CUSTOM_REST_API_COLUMN, columnName)
@@ -5512,7 +5513,10 @@ public abstract class PO
 		final Class<?> columnTargetClass = poInfo.getColumnClass(columnName);
 		if (columnTargetClass == null)
 		{
-			throw new RuntimeException("Cannot get the actual PO value if targetClass is missing!");
+			throw new AdempiereException("Cannot get the actual PO value if targetClass is missing!")
+					.appendParametersToMessage()
+					.setParameter("TableName", poInfo.getTableName())
+					.setParameter("ColumnName", columnName);
 		}
 
 		final int displayType = poInfo.getColumnDisplayType(columnName);

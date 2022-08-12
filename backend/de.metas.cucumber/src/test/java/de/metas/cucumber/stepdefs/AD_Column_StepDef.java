@@ -38,6 +38,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_Order;
@@ -95,20 +96,24 @@ public class AD_Column_StepDef
 		{
 			final String tableName = DataTableUtil.extractStringForColumnName(row, "TableName");
 			final String columnName = DataTableUtil.extractStringForColumnName(row, "ColumnName");
-			final Boolean isRestAPICustomColumn = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn, false);
+			final boolean isRestAPICustomColumn = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn, false);
 
-			if (Boolean.TRUE.equals(isRestAPICustomColumn))
-			{
-				final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
-				assertThat(tableId).isNotNull();
+			final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
+			assertThat(tableId).isNotNull();
 
-				markAsCustomColumn(tableId, columnName);
-			}
+			final I_AD_Column targetColumn = queryBL.createQueryBuilder(I_AD_Column.class)
+					.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
+					.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
+					.create()
+					.firstOnlyNotNull(I_AD_Column.class);
+
+			targetColumn.setIsRestAPICustomColumn(isRestAPICustomColumn);
+			saveRecord(targetColumn);
 		}
 	}
 
-	@When("set custom columns for C_Order:")
-	public void setCustomColumn_C_Order(@NonNull final DataTable dataTable)
+	@When("^set custom columns for C_Order( expecting error:|:)$")
+	public void setCustomColumn_C_Order(@NonNull final String semantics, @NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
@@ -133,33 +138,26 @@ public class AD_Column_StepDef
 			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final String resourceTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_ResourceType.COLUMNNAME_S_ResourceType_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final ImmutableMap.Builder<String, Object> columns = ImmutableMap.builder();
+			final Map<String, Object> columns;
 			if (Check.isNotBlank(orderIdentifier))
 			{
-				columns.putAll(validate_C_OrderCustomColumns(orderIdentifier));
+				columns = getOrderCustomColumns(orderIdentifier);
 			}
 			else if (Check.isNotBlank(resourceTypeIdentifier))
 			{
-				columns.putAll(validate_S_ResourceType_customColumns(resourceTypeIdentifier));
+				columns = getResourceTypeCustomColumns(resourceTypeIdentifier);
+			}
+			else
+			{
+				throw new RuntimeException("One of " + "OPT." + I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER
+												   + " OR " + "OPT." + I_S_ResourceType.COLUMNNAME_S_ResourceType_ID + "." + TABLECOLUMN_IDENTIFIER + " must be set!");
 			}
 
 			final String customColumnJSONValue = DataTableUtil.extractStringForColumnName(row, "CustomColumnJSONValue");
-			final String retrievedColumns = objectMapper.writeValueAsString(columns.build());
+			final String retrievedColumns = objectMapper.writeValueAsString(columns);
 
 			assertThat(retrievedColumns).isEqualTo(customColumnJSONValue);
 		}
-	}
-
-	private void markAsCustomColumn(@NonNull final AdTableId tableId, @NonNull final String columnName)
-	{
-		final I_AD_Column foundColumn = queryBL.createQueryBuilder(I_AD_Column.class)
-				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
-				.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
-				.create()
-				.firstOnlyNotNull(I_AD_Column.class);
-
-		foundColumn.setIsRestAPICustomColumn(true);
-		saveRecord(foundColumn);
 	}
 
 	private void setC_Order_CustomColumnsValues(@NonNull final Map<String, String> row)
@@ -213,14 +211,20 @@ public class AD_Column_StepDef
 		final I_C_Order order = orderTable.get(orderIdentifier);
 		assertThat(order).isNotNull();
 
+		final String errorMsg = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorMessage");
+
 		try
 		{
 			getPO(order).setCustomColumns(valuesByColumnName);
 			InterfaceWrapperHelper.save(order);
+
+			if (Check.isNotBlank(errorMsg))
+			{
+				throw new RuntimeException("Was expecting operation to fail!");
+			}
 		}
-		catch (final Exception e)
+		catch (final AdempiereException e)
 		{
-			final String errorMsg = DataTableUtil.extractStringForColumnName(row, "OPT.ErrorMessage");
 			assertThat(e.getMessage()).isEqualTo(errorMsg);
 		}
 	}
@@ -229,13 +233,24 @@ public class AD_Column_StepDef
 	{
 		final Map<String, Object> valuesByColumnName = new HashMap<>();
 
-		final String timeSlotStart = DataTableUtil.extractStringForColumnName(row, "OPT." + I_S_ResourceType.COLUMNNAME_TimeSlotStart);
-		final String timeSlotEnd = DataTableUtil.extractStringForColumnName(row, "OPT." + I_S_ResourceType.COLUMNNAME_TimeSlotEnd);
+		final String timeSlotStart = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_ResourceType.COLUMNNAME_TimeSlotStart);
+		final String timeSlotEnd = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_ResourceType.COLUMNNAME_TimeSlotEnd);
 		final Integer chargeableQty = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_S_ResourceType.COLUMNNAME_ChargeableQty);
 
-		valuesByColumnName.put(I_S_ResourceType.COLUMNNAME_TimeSlotStart, timeSlotStart);
-		valuesByColumnName.put(I_S_ResourceType.COLUMNNAME_TimeSlotEnd, timeSlotEnd);
-		valuesByColumnName.put(I_S_ResourceType.COLUMNNAME_ChargeableQty, chargeableQty);
+		if (timeSlotStart != null)
+		{
+			valuesByColumnName.put(I_S_ResourceType.COLUMNNAME_TimeSlotStart, timeSlotStart);
+		}
+
+		if (timeSlotEnd != null)
+		{
+			valuesByColumnName.put(I_S_ResourceType.COLUMNNAME_TimeSlotEnd, timeSlotEnd);
+		}
+
+		if (chargeableQty != null)
+		{
+			valuesByColumnName.put(I_S_ResourceType.COLUMNNAME_ChargeableQty, chargeableQty);
+		}
 
 		final String resourceTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_S_ResourceType.COLUMNNAME_S_ResourceType_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_S_ResourceType resourceType = resourceTypeTable.get(resourceTypeIdentifier);
@@ -247,7 +262,7 @@ public class AD_Column_StepDef
 	}
 
 	@NonNull
-	private ImmutableMap<String, Object> validate_C_OrderCustomColumns(@NonNull final String identifier)
+	private ImmutableMap<String, Object> getOrderCustomColumns(@NonNull final String identifier)
 	{
 		final I_C_Order order = orderTable.get(identifier);
 		assertThat(order).isNotNull();
@@ -258,7 +273,7 @@ public class AD_Column_StepDef
 	}
 
 	@NonNull
-	private ImmutableMap<String, Object> validate_S_ResourceType_customColumns(@NonNull final String identifier)
+	private ImmutableMap<String, Object> getResourceTypeCustomColumns(@NonNull final String identifier)
 	{
 		final I_S_ResourceType resourceType = resourceTypeTable.get(identifier);
 		assertThat(resourceType).isNotNull();

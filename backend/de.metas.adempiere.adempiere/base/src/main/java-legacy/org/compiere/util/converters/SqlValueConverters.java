@@ -22,6 +22,7 @@
 
 package org.compiere.util.converters;
 
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -101,7 +102,7 @@ public class SqlValueConverters
 		{
 			if (String.class.equals(valueClass))
 			{
-				return Boolean.valueOf((String)value);
+				return StringUtils.toBoolean(value);
 			}
 		}
 		else if (BigDecimal.class.equals(targetClass))

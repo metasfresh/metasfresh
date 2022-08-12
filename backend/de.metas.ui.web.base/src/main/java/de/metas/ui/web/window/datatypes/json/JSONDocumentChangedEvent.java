@@ -23,9 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
 
-import static org.compiere.util.converters.DateTimeConverters.fromObjectToLocalDate;
-import static org.compiere.util.converters.DateTimeConverters.fromObjectToZonedDateTime;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -176,12 +173,12 @@ public class JSONDocumentChangedEvent
 
 	public ZonedDateTime getValueAsZonedDateTime()
 	{
-		return fromObjectToZonedDateTime(value);
+		return DateTimeConverters.fromObjectToZonedDateTime(value);
 	}
 
 	public LocalDate getValueAsLocalDate()
 	{
-		return fromObjectToLocalDate(value);
+		return DateTimeConverters.fromObjectToLocalDate(value);
 	}
 
 	public IntegerLookupValue getValueAsIntegerLookupValue()

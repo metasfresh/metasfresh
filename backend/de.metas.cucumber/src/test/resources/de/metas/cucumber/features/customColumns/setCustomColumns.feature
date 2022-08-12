@@ -15,7 +15,7 @@ Feature: Setting customColumns via SetCustomColumns method
       | M_Product_Category_ID.Identifier | Name     | Value    |
       | standard_category                | Standard | Standard |
 
-  Scenario: Use I_C_Order and I_S_ResourceType to set customColumns for target class:
+  Scenario: Use I_C_Order and I_S_ResourceType to set custom columns (AD_Column-IsRestAPICustomColumn=Y) covering the following target class and displayType combination:
   _BigDecimal
   _String
   _Integer
@@ -62,7 +62,7 @@ Feature: Setting customColumns via SetCustomColumns method
       | order                     |                                  | {"BPartnerName":"BPartnerName","DateOrdered":"2022-08-05","DatePromised":"2022-08-05T14:38:40Z","IsDropShip":true,"Volume":2.1234} |
       |                           | resourceType                     | {"ChargeableQty":10,"TimeSlotEnd":"15:00:00","TimeSlotStart":"12:25:00"}                                                           |
 
-    And set custom columns for C_Order:
+    And set custom columns for C_Order expecting error:
       | C_Order_ID.Identifier | OPT.DeliveryInfo | OPT.ErrorMessage                                                                                           |
       | order                 | DeliveryInfo     | DeliveryInfo ist nicht als benutzerdefinierte REST API-Spalte markiert (AD_Column.IsRestAPICustomColumn=N) |
 

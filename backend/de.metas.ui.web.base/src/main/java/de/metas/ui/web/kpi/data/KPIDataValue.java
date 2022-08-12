@@ -27,13 +27,13 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.dashboard.json.KPIJsonOptions;
 import de.metas.ui.web.kpi.descriptor.KPIField;
 import de.metas.ui.web.kpi.descriptor.KPIFieldValueType;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.converters.DateTimeConverters;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -109,12 +109,12 @@ public class KPIDataValue
 				case Date:
 				{
 					final LocalDate date = DateTimeConverters.fromObjectToLocalDate(value);
-					return de.metas.ui.web.window.datatypes.json.DateTimeConverters.toJson(date);
+					return DateTimeConverters.toJson(date);
 				}
 				case DateTime:
 				{
 					final ZonedDateTime date = DateTimeConverters.fromObjectToZonedDateTime(value);
-					return de.metas.ui.web.window.datatypes.json.DateTimeConverters.toJson(date, jsonOpts.getZoneId());
+					return DateTimeConverters.toJson(date, jsonOpts.getZoneId());
 				}
 				case Number:
 				{

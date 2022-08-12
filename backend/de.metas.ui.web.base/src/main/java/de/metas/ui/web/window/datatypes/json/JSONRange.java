@@ -11,8 +11,6 @@ import lombok.Value;
 import java.time.LocalDate;
 import java.util.Map;
 
-import static org.compiere.util.converters.DateTimeConverters.fromObjectToLocalDate;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -53,10 +51,10 @@ public class JSONRange
 	public static DateRangeValue dateRangeFromJSONMap(final Map<String, String> map)
 	{
 		final String jsonFrom = map.get("value");
-		final LocalDate from = fromObjectToLocalDate(jsonFrom);
+		final LocalDate from = DateTimeConverters.fromObjectToLocalDate(jsonFrom);
 
 		final String jsonTo = map.get("valueTo");
-		final LocalDate to = fromObjectToLocalDate(jsonTo);
+		final LocalDate to = DateTimeConverters.fromObjectToLocalDate(jsonTo);
 
 		return DateRangeValue.of(from, to);
 	}
