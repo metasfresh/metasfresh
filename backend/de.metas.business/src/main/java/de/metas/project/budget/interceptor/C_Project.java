@@ -46,8 +46,8 @@ public class C_Project
 		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_C_Project record)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void afterSave(final I_C_Project record)
 	{
 		if (!ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory()).isBudget())
 		{
@@ -58,6 +58,7 @@ public class C_Project
 		{
 			final BudgetProject project = BudgetProjectRepository.fromRecord(record)
 					.orElseThrow(() -> new AdempiereException("Not a valid budget project"));
+
 			budgetProjectResourceRepository.updateAllByProjectId(project.getProjectId(), project.getOrgId(), project.getCurrencyId());
 		}
 	}
