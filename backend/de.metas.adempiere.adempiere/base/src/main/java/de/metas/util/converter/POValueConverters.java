@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.compiere.util.converters;
+package de.metas.util.converter;
 
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -32,12 +32,13 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 
 @UtilityClass
-public class SqlValueConverters
+public class POValueConverters
 {
 	@Nullable
-	public static Object convertFromPOValue(@Nullable final Object value, final int displayType)
+	public static Object convertFromPOValue(@Nullable final Object value, final int displayType, @NonNull final ZoneId zoneId)
 	{
 		if (value == null)
 		{
@@ -48,22 +49,22 @@ public class SqlValueConverters
 		{
 			if (displayType == DisplayType.Time)
 			{
-				return TimeUtil.asLocalTime(value);
+				return TimeUtil.asLocalTime(value, zoneId);
 			}
 			else if (displayType == DisplayType.Date)
 			{
-				return TimeUtil.asLocalDate(value);
+				return TimeUtil.asLocalDate(value, zoneId);
 			}
 			else if (displayType == DisplayType.DateTime)
 			{
-				return TimeUtil.asInstant(value);
+				return TimeUtil.asInstant(value, zoneId);
 			}
 		}
 		return value;
 	}
 
 	@Nullable
-	public static Object convertToPOValue(@Nullable final Object value, @NonNull final Class<?> targetClass, final int displayType)
+	public static Object convertToPOValue(@Nullable final Object value, @NonNull final Class<?> targetClass, final int displayType,@NonNull final ZoneId zoneId)
 	{
 		if (value == null)
 		{
@@ -94,7 +95,7 @@ public class SqlValueConverters
 		}
 		else if (Timestamp.class.equals(targetClass))
 		{
-			final Object valueDate = DateTimeConverters.fromObject(value, displayType);
+			final Object valueDate = DateTimeConverters.fromObject(value, displayType, zoneId);
 
 			return TimeUtil.asTimestamp(valueDate);
 		}

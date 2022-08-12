@@ -1,17 +1,8 @@
-package org.compiere.util.converters;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.compiere.util.Env;
-
-import java.time.format.DateTimeFormatter;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,6 +19,15 @@ import java.time.format.DateTimeFormatter;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.util.converter;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.compiere.util.Env;
+
+import java.time.format.DateTimeFormatter;
 
 @Value
 @Builder

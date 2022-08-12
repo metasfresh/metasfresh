@@ -4,11 +4,11 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
+import de.metas.util.converter.JSONDateConfig;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.converters.JSONDateConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,7 +168,7 @@ public final class DateTimeConverters
 	{
 		return fromObjectTo(valueObj,
 							LocalDate.class,
-							org.compiere.util.converters.DateTimeConverters::fromJsonToLocalDate,
+							de.metas.util.converter.DateTimeConverters::fromJsonToLocalDate,
 							TimeUtil::asLocalDate);
 	}
 
@@ -176,7 +176,7 @@ public final class DateTimeConverters
 	{
 		return fromObjectTo(valueObj,
 							LocalTime.class,
-							org.compiere.util.converters.DateTimeConverters::fromJsonToLocalTime,
+							de.metas.util.converter.DateTimeConverters::fromJsonToLocalTime,
 							TimeUtil::asLocalTime);
 	}
 
@@ -184,7 +184,7 @@ public final class DateTimeConverters
 	{
 		return fromObjectTo(valueObj,
 							ZonedDateTime.class,
-							org.compiere.util.converters.DateTimeConverters::fromJsonToZonedDateTime,
+							de.metas.util.converter.DateTimeConverters::fromJsonToZonedDateTime,
 							TimeUtil::asZonedDateTime);
 	}
 
@@ -192,7 +192,7 @@ public final class DateTimeConverters
 	{
 		return fromObjectTo(valueObj,
 							Instant.class,
-							org.compiere.util.converters.DateTimeConverters::fromJsonToInstant,
+							de.metas.util.converter.DateTimeConverters::fromJsonToInstant,
 							TimeUtil::asInstant);
 	}
 

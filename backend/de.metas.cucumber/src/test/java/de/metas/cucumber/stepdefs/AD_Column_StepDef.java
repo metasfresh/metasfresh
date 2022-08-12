@@ -24,9 +24,9 @@ package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.resourcetype.S_ResourceType_StepDefData;
+import de.metas.po.CustomColumnService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -40,6 +40,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_ResourceType;
@@ -59,6 +60,7 @@ public class AD_Column_StepDef
 
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
 
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
@@ -215,7 +217,7 @@ public class AD_Column_StepDef
 
 		try
 		{
-			getPO(order).setCustomColumns(valuesByColumnName);
+			customColumnService.setCustomColumns(getPO(order), valuesByColumnName);
 			InterfaceWrapperHelper.save(order);
 
 			if (Check.isNotBlank(errorMsg))
@@ -256,30 +258,30 @@ public class AD_Column_StepDef
 		final I_S_ResourceType resourceType = resourceTypeTable.get(resourceTypeIdentifier);
 		assertThat(resourceType).isNotNull();
 
-		getPO(resourceType).setCustomColumns(valuesByColumnName);
+		customColumnService.setCustomColumns(getPO(resourceType), valuesByColumnName);
 
 		InterfaceWrapperHelper.save(resourceType);
 	}
 
 	@NonNull
-	private ImmutableMap<String, Object> getOrderCustomColumns(@NonNull final String identifier)
+	private Map<String, Object> getOrderCustomColumns(@NonNull final String identifier)
 	{
 		final I_C_Order order = orderTable.get(identifier);
 		assertThat(order).isNotNull();
 
 		InterfaceWrapperHelper.refresh(order);
 
-		return getPO(order).retrieveCustomColumns();
+		return customColumnService.getCustomColumnsAsMap(getPO(order));
 	}
 
 	@NonNull
-	private ImmutableMap<String, Object> getResourceTypeCustomColumns(@NonNull final String identifier)
+	private Map<String, Object> getResourceTypeCustomColumns(@NonNull final String identifier)
 	{
 		final I_S_ResourceType resourceType = resourceTypeTable.get(identifier);
 		assertThat(resourceType).isNotNull();
 
 		InterfaceWrapperHelper.refresh(resourceType);
 
-		return getPO(resourceType).retrieveCustomColumns();
+		return customColumnService.getCustomColumnsAsMap(getPO(resourceType));
 	}
 }

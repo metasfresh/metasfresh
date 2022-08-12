@@ -34,7 +34,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static org.compiere.util.converters.DateTimeConverters.fromObjectToInstant;
+import static de.metas.ui.web.window.datatypes.json.DateTimeConverters.fromObjectToInstant;
 
 /**
  * A helper class to precisely control how {@link java.time.ZonedDateTime}s are serialized/deserialized from/to JSON.

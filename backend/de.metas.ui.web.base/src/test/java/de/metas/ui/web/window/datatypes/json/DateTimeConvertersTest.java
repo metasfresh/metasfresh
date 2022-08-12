@@ -24,8 +24,8 @@ package de.metas.ui.web.window.datatypes.json;
 
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.converter.JSONDateConfig;
 import org.assertj.core.api.AbstractCharSequenceAssert;
-import org.compiere.util.converters.JSONDateConfig;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
