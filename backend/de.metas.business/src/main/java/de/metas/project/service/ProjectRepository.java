@@ -143,6 +143,7 @@ public class ProjectRepository
 		{
 			projectRecord.setName(projectData.getName());
 		}
+		projectRecord.setValue(projectData.getValue());
 
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(projectData.getOrgId()));
 		projectRecord.setDescription(projectData.getDescription());
