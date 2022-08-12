@@ -22,48 +22,59 @@
 
 package de.metas.contacts.invoice.interim.service.impl;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
 import de.metas.contacts.invoice.interim.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermDAO;
+import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermLineDAO;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTermBL
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IInterimInvoiceFlatrateTermDAO interimInvoiceOverviewDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
+	private final IInterimInvoiceFlatrateTermDAO interimInvoiceFlatrateTermDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
+	private final IInterimInvoiceFlatrateTermLineDAO interimInvoiceFlatrateTermLineDAO = Services.get(IInterimInvoiceFlatrateTermLineDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+	private static final Logger logger = LogManager.getLogger(InterimInvoiceFlatrateTermBL.class);
 
 	@Override
 	public void updateInterimInvoiceFlatrateTermForInOutLine(@NonNull final I_M_InOutLine inOutLine)
 	{
-
-		InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceOverviewDAO.getInterimInvoiceOverviewForInOutLine(inOutLine);
+		InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceFlatrateTermDAO.getInterimInvoiceOverviewForInOutLine(inOutLine);
 		if (interimInvoiceFlatrateTerm == null)
 		{
 			//inOutLine is not part of a contract
 			return;
 		}
-		if (!interimInvoiceOverviewDAO.isInterimInvoiceStillUsable(interimInvoiceFlatrateTerm))
+		if (!interimInvoiceFlatrateTermDAO.isInterimInvoiceStillUsable(interimInvoiceFlatrateTerm))
 		{
 			interimInvoiceFlatrateTerm = createInterimInvoiceFlatrateTerm(interimInvoiceFlatrateTerm, inOutLine);
 		}
@@ -71,15 +82,36 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 		updateInterimInvoiceOverview(interimInvoiceFlatrateTerm, inOutLine);
 	}
 
+	@Override
+	public void updateInterimInvoiceFlatrateTermForInOutLineIds(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm, @NonNull final Set<InOutLineId> inOutLineIds)
+	{
+		final Quantity delieveredSoFarQty = inOutDAO.getLinesByIds(inOutLineIds, I_M_InOutLine.class)
+				.stream()
+				.map(inOutLine -> Quantitys.create(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
+				.reduce(Quantitys.createZero(interimInvoiceFlatrateTerm.getUomId()), Quantity::add);
+		interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm.toBuilder()
+				.qtyDelivered(delieveredSoFarQty.toBigDecimal())
+				.build());
+	}
 
 	@Override
-	public void updateInterimInvoiceFlatrateTermForInOutLine(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm, @NonNull final InOutLineId inOutLineId)
+	public void updateInvoicedQtyForPartialPayment(@NonNull final I_C_Invoice_Candidate invoiceCand)
 	{
-		final I_M_InOutLine line = inOutDAO.getLineById(inOutLineId);
-		if (line != null)
+		if (!invoiceCand.isPartialPayment())
 		{
-			updateInterimInvoiceOverview(interimInvoiceFlatrateTerm, line);
+			return;
 		}
+		final InvoiceCandidateId icId = InvoiceCandidateId.ofRepoId(invoiceCand.getC_Invoice_Candidate_ID());
+		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceFlatrateTermDAO.getInterimInvoiceFlatrateTermForWithwoldingOrInterimICId(icId);
+		if (interimInvoiceFlatrateTerm == null)
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("Invoice candidate with ID={} marked as partial payment, but no InterimInvoiceFlatrateTerm record found for it.", icId);
+			return;
+		}
+		interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm.toBuilder()
+				.qtyInvoiced(invoiceCand.getQtyInvoiced())
+				.build());
+		interimInvoiceFlatrateTermLineDAO.setInvoiceLineToLines(InvoiceCandidateIds.ofRecord(invoiceCand), interimInvoiceFlatrateTerm.getId());
 	}
 
 	/**
@@ -103,7 +135,11 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 
 		final Quantity totalQtyDeliveredSoFar = Quantitys.create(interimInvoiceFlatrateTerm.getQtyDelivered(), interimInvoiceFlatrateTerm.getUomId()).add(deliveredQty);
 
-		interimInvoiceOverviewDAO.save(interimInvoiceFlatrateTerm.toBuilder()
+		final InOutAndLineId inOutAndLineId = InOutAndLineId.ofRepoId(inOutLine.getM_InOut_ID(), inOutLine.getM_InOutLine_ID());
+
+		interimInvoiceFlatrateTermLineDAO.createInterimInvoiceLine(interimInvoiceFlatrateTerm, inOutAndLineId);
+
+		interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm.toBuilder()
 				.qtyDelivered(totalQtyDeliveredSoFar.toBigDecimal())
 				.build());
 	}

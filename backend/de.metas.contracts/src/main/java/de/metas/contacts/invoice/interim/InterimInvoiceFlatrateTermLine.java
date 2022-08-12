@@ -31,13 +31,13 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class InterimInvoiceFlatrateTermLine
 {
 	@Nullable
 	InterimInvoiceFlatrateTermLineId id;
 	@NonNull InterimInvoiceFlatrateTermId interimInvoiceFlatrateTermId;
-	@Nullable
+	@NonNull
 	InOutAndLineId inOutAndLineId;
 	@Nullable
 	InvoiceLineId invoiceLineId;

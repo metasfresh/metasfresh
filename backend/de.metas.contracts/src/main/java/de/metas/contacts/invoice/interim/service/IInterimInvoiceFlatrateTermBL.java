@@ -24,12 +24,18 @@ package de.metas.contacts.invoice.interim.service;
 
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
 import de.metas.inout.InOutLineId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
+
+import java.util.Set;
 
 public interface IInterimInvoiceFlatrateTermBL extends ISingletonService
 {
-	void updateInterimInvoiceFlatrateTermForInOutLine(InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm, InOutLineId inOutLineId);
+	void updateInterimInvoiceFlatrateTermForInOutLineIds(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm, @NonNull final Set<InOutLineId> inOutLineIds);
 
 	void updateInterimInvoiceFlatrateTermForInOutLine(I_M_InOutLine inOutLine);
+
+	void updateInvoicedQtyForPartialPayment(I_C_Invoice_Candidate invoiceCand);
 }

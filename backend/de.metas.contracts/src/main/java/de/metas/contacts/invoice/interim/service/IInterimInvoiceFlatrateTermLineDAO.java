@@ -22,14 +22,21 @@
 
 package de.metas.contacts.invoice.interim.service;
 
+import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
+import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermId;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLine;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLineId;
+import de.metas.inout.InOutAndLineId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 public interface IInterimInvoiceFlatrateTermLineDAO extends ISingletonService
 {
-	InterimInvoiceFlatrateTermLine getById(@NonNull final InterimInvoiceFlatrateTermLineId id);
+	InterimInvoiceFlatrateTermLine getById(InterimInvoiceFlatrateTermLineId id);
 
-	InterimInvoiceFlatrateTermLineId save(@NonNull final InterimInvoiceFlatrateTermLine interimInvoiceOverview);
+	InterimInvoiceFlatrateTermLineId save(InterimInvoiceFlatrateTermLine interimInvoiceOverview);
+
+	InterimInvoiceFlatrateTermLineId createInterimInvoiceLine(InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm,InOutAndLineId inOutAndLineId);
+
+	void setInvoiceLineToLines(InvoiceCandidateId invoiceCandidateId, final InterimInvoiceFlatrateTermId id);
 }

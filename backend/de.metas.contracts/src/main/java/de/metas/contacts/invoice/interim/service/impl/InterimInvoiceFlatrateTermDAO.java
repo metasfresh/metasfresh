@@ -24,8 +24,8 @@ package de.metas.contacts.invoice.interim.service.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
-import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermQuery;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermId;
+import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermQuery;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -143,13 +143,28 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 	}
 
 	@Nullable
-	public InterimInvoiceFlatrateTerm getInterimInvoiceOverviewForFlatrateTermAndOrderLineId(@NonNull final FlatrateTermId flatrateTermId, final @NonNull OrderLineId orderLineId)
+	public InterimInvoiceFlatrateTerm getInterimInvoiceForFlatrateTermAndOrderLineId(@NonNull final FlatrateTermId flatrateTermId, final @NonNull OrderLineId orderLineId)
 	{
 		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
 				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.orderByDescending(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID)
+				.create()
+				.firstOptional(I_C_InterimInvoice_FlatrateTerm.class)
+				.map(this::fromDbObject)
+				.orElse(null);
+	}
+
+	@Nullable
+	public InterimInvoiceFlatrateTerm getInterimInvoiceFlatrateTermForWithwoldingOrInterimICId(@NonNull final InvoiceCandidateId icId)
+	{
+		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(queryBL.createCompositeQueryFilter(I_C_InterimInvoice_FlatrateTerm.class)
+						.setJoinOr()
+						.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Invoice_Candidate_Withholding_ID, icId)
+						.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Interim_Invoice_Candidate_ID, icId))
 				.create()
 				.firstOptional(I_C_InterimInvoice_FlatrateTerm.class)
 				.map(this::fromDbObject)
@@ -173,6 +188,7 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId(), interimInvoiceFlatrateTerm.getWithholdingInvoiceCandidateId())
 				.create()
+				.list()
 				.stream()
 				.filter(invoiceCand -> invoiceCand.getQtyInvoiced().compareTo(BigDecimal.ZERO) == 0)
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)

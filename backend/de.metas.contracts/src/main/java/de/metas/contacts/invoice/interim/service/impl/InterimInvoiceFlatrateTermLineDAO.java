@@ -22,6 +22,8 @@
 
 package de.metas.contacts.invoice.interim.service.impl;
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermId;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLine;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLineId;
@@ -31,20 +33,63 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
+import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Repository
 public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrateTermLineDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
+	@Override
+	@NonNull
+	public InterimInvoiceFlatrateTermLineId createInterimInvoiceLine(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm, @NonNull final InOutAndLineId inOutAndLineId)
+	{
+		return save(InterimInvoiceFlatrateTermLine.builder()
+				.interimInvoiceFlatrateTermId(interimInvoiceFlatrateTerm.getId())
+				.inOutAndLineId(inOutAndLineId)
+				.build());
+	}
+
+	@Override
+	public void setInvoiceLineToLines(@NonNull final InvoiceCandidateId invoiceCandidateId, final InterimInvoiceFlatrateTermId id)
+	{
+		final ImmutableMap<Integer, I_C_InvoiceLine> inOutLineToInvoiceLineMap = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(I_C_InvoiceLine::getM_InOutLine_ID, Function.identity()));
+		getByInterimInvoiceFlatrateTermId(id)
+				.forEach(line -> setInvoiceLineToLine(line, inOutLineToInvoiceLineMap));
+	}
+
+	private void setInvoiceLineToLine(final InterimInvoiceFlatrateTermLine line, final ImmutableMap<Integer, I_C_InvoiceLine> inOutLineToInvoiceLineMap)
+	{
+		final InOutLineId inOutLineId = line.getInOutAndLineId().getInOutLineId();
+		if (!inOutLineToInvoiceLineMap.containsKey(inOutLineId.getRepoId()))
+		{
+			return;
+		}
+		final I_C_InvoiceLine invoiceLine = inOutLineToInvoiceLineMap.get(inOutLineId.getRepoId());
+		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+
+		save(line.toBuilder()
+				.invoiceLineId(invoiceLineId)
+				.build());
+	}
+
+	@Override
 	@Nullable
 	public InterimInvoiceFlatrateTermLine getById(@NonNull final InterimInvoiceFlatrateTermLineId id)
 	{
@@ -57,6 +102,20 @@ public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrat
 				.orElse(null);
 	}
 
+	@NonNull
+	private Collection<InterimInvoiceFlatrateTermLine> getByInterimInvoiceFlatrateTermId(@NonNull final InterimInvoiceFlatrateTermId id)
+	{
+		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID, id)
+				.create()
+				.iterateAndStream()
+				.map(this::fromDbObject)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	@NonNull
 	public InterimInvoiceFlatrateTermLineId save(@NonNull final InterimInvoiceFlatrateTermLine interimInvoiceFlatrateTermLine)
 	{
 		final I_C_InterimInvoice_FlatrateTerm_Line dbObject = toDbObject(interimInvoiceFlatrateTermLine);
@@ -89,12 +148,8 @@ public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrat
 		}
 
 		final InOutAndLineId inOutAndLineId = object.getInOutAndLineId();
-		if (inOutAndLineId != null)
-		{
 			dbObject.setM_InOut_ID(InOutId.toRepoId(inOutAndLineId.getInOutId()));
 			dbObject.setM_InOutLine_ID(InOutLineId.toRepoId(inOutAndLineId.getInOutLineId()));
-		}
-
 		return dbObject;
 	}
 

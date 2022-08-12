@@ -23,9 +23,10 @@
 package de.metas.contacts.invoice.interim.service;
 
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
-import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermQuery;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermId;
+import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermQuery;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -43,5 +44,7 @@ public interface IInterimInvoiceFlatrateTermDAO extends ISingletonService
 
 	boolean isInterimInvoiceStillUsable(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm);
 
-	InterimInvoiceFlatrateTerm getInterimInvoiceOverviewForFlatrateTermAndOrderLineId(@NonNull final FlatrateTermId flatrateTerm, final @NonNull OrderLineId orderLineId);
+	InterimInvoiceFlatrateTerm getInterimInvoiceForFlatrateTermAndOrderLineId(@NonNull final FlatrateTermId flatrateTerm, final @NonNull OrderLineId orderLineId);
+
+	InterimInvoiceFlatrateTerm getInterimInvoiceFlatrateTermForWithwoldingOrInterimICId(@NonNull final InvoiceCandidateId icId);
 }
