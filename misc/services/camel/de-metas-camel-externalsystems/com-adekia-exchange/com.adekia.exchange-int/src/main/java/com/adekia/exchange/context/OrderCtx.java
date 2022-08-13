@@ -20,23 +20,19 @@
  * #L%
  */
 
+<<<<<<<< HEAD:misc/services/camel/de-metas-camel-externalsystems/com-adekia-exchange/com.adekia.exchange-int/src/main/java/com/adekia/exchange/context/OrderCtx.java
 package com.adekia.exchange.context;
 
 import lombok.Builder;
 import lombok.Data;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
+========
+package com.adekia.exchange.transformer;
 
-import java.util.Map;
+import oasis.names.specification.ubl.schema.xsd.despatchadvice_23.DespatchAdviceType;
+>>>>>>>> 687d3e71b3 (Backup / Refactoring / Shipping Amazon side / Ctx):misc/services/camel/de-metas-camel-externalsystems/com-adekia-exchange/com.adekia.exchange-int/src/main/java/com/adekia/exchange/transformer/ShipmentTransformer.java
 
-@Data
-public class OrderCtx extends Ctx {
-    @Builder
-    public OrderCtx(Map<String, String> properties, final OrderType order) {
-        super(properties);
-        this.order = order;
-    }
-
-    public static String CAMEL_PROPERTY_NAME = "camelProperty";
-
-    private OrderType order;
+public interface ShipmentTransformer
+{
+    public Object transform(final DespatchAdviceType despatchAdvice) throws Exception;
 }

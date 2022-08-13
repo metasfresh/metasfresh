@@ -33,7 +33,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "mock")
+@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon-mock")
 public class AmazonGetOrderProviderMockImpl implements AmazonGetOrderProvider {
     @Override
     public OrderType getOrder(Ctx ctx) throws Exception {

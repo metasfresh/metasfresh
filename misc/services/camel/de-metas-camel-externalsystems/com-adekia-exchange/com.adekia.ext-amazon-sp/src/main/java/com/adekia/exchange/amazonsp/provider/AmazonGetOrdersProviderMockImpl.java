@@ -22,6 +22,7 @@
 
 package com.adekia.exchange.amazonsp.provider;
 
+import com.adekia.exchange.amazonsp.client.orders.ApiClient;
 import com.adekia.exchange.amazonsp.client.orders.ApiException;
 import com.adekia.exchange.amazonsp.client.orders.api.OrdersV0Api;
 import com.adekia.exchange.amazonsp.client.orders.model.GetOrderItemsResponse;
@@ -46,7 +47,9 @@ public class AmazonGetOrdersProviderMockImpl implements AmazonGetOrdersProvider
 	public List<OrderType> getOrders(Ctx ctx) throws Exception
 	{
 		OrdersV0Api ordersApi = AmazonOrderApiHelper.getOrdersAPI(ctx);
-		ordersApi.getApiClient().setBasePath("http://localhost:3101/sp-api");
+		ordersApi.getApiClient().setBasePath("http://localhost:3101/sp-api");  // todo : shoud be context based
+		ordersApi.getApiClient().mock =true;									// todo : shoud be context based
+
 		;
 		/* Parameters used for selection */
 		List<String> marketplaceIds = Arrays.asList("marketplaceIds_example"); // List<String> | A list of MarketplaceId values. Used to select orders that were placed in the specified marketplaces.  See the [Selling Partner API Developer Guide](doc:marketplace-ids) for a complete list of marketplaceId values.

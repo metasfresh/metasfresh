@@ -36,7 +36,7 @@
 
     <groupId>com.adekia.exchange</groupId>
     <artifactId>exchange-model</artifactId>
-    <name>Adekia Exchange - models (BUL)</name>
+    <name>Adekia Exchange - models (UBL)</name>
     <packaging>jar</packaging>
     <version>10.0.0</version>
     <url>https://www.adekia.com</url>
@@ -48,5 +48,9 @@
             <version>6.7.0</version>
         </dependency>
     </dependencies>
+
+
+
+
 
 </project>

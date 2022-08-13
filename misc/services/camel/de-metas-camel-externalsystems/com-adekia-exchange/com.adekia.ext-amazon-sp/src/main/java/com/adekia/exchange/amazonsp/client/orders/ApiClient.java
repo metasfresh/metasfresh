@@ -17,6 +17,7 @@ import com.adekia.exchange.amazonsp.client.orders.auth.ApiKeyAuth;
 import com.adekia.exchange.amazonsp.client.orders.auth.Authentication;
 import com.adekia.exchange.amazonsp.client.orders.auth.HttpBasicAuth;
 import com.adekia.exchange.amazonsp.client.orders.auth.OAuth;
+import com.adekia.exchange.context.Ctx;
 import com.amazon.SellingPartnerAPIAA.AWSSigV4Signer;
 import com.amazon.SellingPartnerAPIAA.LWAAuthorizationSigner;
 import com.amazon.SellingPartnerAPIAA.RateLimitConfiguration;
@@ -79,7 +80,6 @@ public class ApiClient {
 
 
     public boolean mock = false;
-
     private String basePath = "https://sellingpartnerapi-na.amazon.com";
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();

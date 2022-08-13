@@ -49,4 +49,13 @@ public class Ctx {
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
+
+    private String log;
+
+    public String getLog() {
+        String currentLog = log;
+        log=null;
+        return currentLog;
+    }
+
 }
