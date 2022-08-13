@@ -27,6 +27,7 @@ import org.junit.Ignore;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class OrdersV0ApiTest {
      */
     @Test
     public void getOrderTest() throws Exception {
-        String orderId = null;
+        String orderId = "1234";
         GetOrderResponse response = api.getOrder(orderId);
 
         // TODO: test validations
@@ -66,7 +67,7 @@ public class OrdersV0ApiTest {
      */
     @Test
     public void getOrderAddressTest() throws Exception {
-        String orderId = null;
+        String orderId = "1234";
         GetOrderAddressResponse response = api.getOrderAddress(orderId);
 
         // TODO: test validations
@@ -82,7 +83,7 @@ public class OrdersV0ApiTest {
      */
     @Test
     public void getOrderBuyerInfoTest() throws Exception {
-        String orderId = null;
+        String orderId = "1234";
         GetOrderBuyerInfoResponse response = api.getOrderBuyerInfo(orderId);
 
         // TODO: test validations
@@ -98,7 +99,7 @@ public class OrdersV0ApiTest {
      */
     @Test
     public void getOrderItemsTest() throws Exception {
-        String orderId = null;
+        String orderId = "1234";
         String nextToken = null;
         GetOrderItemsResponse response = api.getOrderItems(orderId, nextToken);
 
@@ -115,7 +116,7 @@ public class OrdersV0ApiTest {
      */
     @Test
     public void getOrderItemsBuyerInfoTest() throws Exception {
-        String orderId = null;
+        String orderId = "1234";
         String nextToken = null;
         GetOrderItemsBuyerInfoResponse response = api.getOrderItemsBuyerInfo(orderId, nextToken);
 
@@ -132,7 +133,7 @@ public class OrdersV0ApiTest {
      */
     @Test
     public void getOrderRegulatedInfoTest() throws Exception {
-        String orderId = null;
+        String orderId = "1234";
         GetOrderRegulatedInfoResponse response = api.getOrderRegulatedInfo(orderId);
 
         // TODO: test validations
@@ -148,19 +149,21 @@ public class OrdersV0ApiTest {
      */
     @Test
     public void getOrdersTest() throws Exception {
-        List<String> marketplaceIds = null;
+        final List<String> marketplaceIds = Arrays.asList("marketplaceIds_example"); // List<String> | A list of MarketplaceId values. Used to select orders that were placed in the specified marketplaces.  See the [Selling Partner API Developer Guide](doc:marketplace-ids) for a complete list of marketplaceId values.
+        final String lastUpdatedAfter = "lastUpdatedAfter_example"; // String | A date used for selecting orders that were last updated after (or at) a specified time. An update is defined as any change in order status, including the creation of a new order. Includes updates made by Amazon and by the seller. The date must be in ISO 8601 format.
+        // Technical one
+        final Integer maxResultsPerPage = 100; // Integer | A number that indicates the maximum number of orders that can be returned per page. Value must be 1 - 100. Default 100.
+        // todo : take this one from parameter of the route ? For the moment we consider only first 100 Orders in time intervalle
+        final String nextToken = null; // String | A string token returned in the response of your previous request.
         String createdAfter = null;
         String createdBefore = null;
-        String lastUpdatedAfter = null;
         String lastUpdatedBefore = null;
         List<String> orderStatuses = null;
         List<String> fulfillmentChannels = null;
         List<String> paymentMethods = null;
         String buyerEmail = null;
         String sellerOrderId = null;
-        Integer maxResultsPerPage = null;
         List<String> easyShipShipmentStatuses = null;
-        String nextToken = null;
         List<String> amazonOrderIds = null;
         String actualFulfillmentSupplySourceId = null;
         Boolean isISPU = null;
@@ -180,7 +183,7 @@ public class OrdersV0ApiTest {
      */
     @Test
     public void updateVerificationStatusTest() throws Exception {
-        String orderId = null;
+        String orderId = "1234";
         UpdateVerificationStatusRequest payload = null;
         api.updateVerificationStatus(orderId, payload);
 

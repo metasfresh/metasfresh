@@ -22,9 +22,11 @@
 
 package com.adekia.exchange.camel.processor;
 
-import com.adekia.exchange.camel.context.OrderCtx;
+import com.adekia.exchange.sender.OrderPaymentSender;
 import com.adekia.exchange.transformer.OrderPaymentTransformer;
+import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.stereotype.Component;
@@ -32,21 +34,25 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@ConditionalOnSingleCandidate(OrderPaymentProcessorImpl.class)
-public class OrderPaymentProcessorImpl implements OrderPaymentProcessor {
-
+@ConditionalOnSingleCandidate(OrderPaymentProcessor.class)
+public class OrderPaymentProcessorImpl implements OrderPaymentProcessor
+{
     private final OrderPaymentTransformer orderPaymentTransformer;
-
+    private final OrderPaymentSender orderPaymentSender;
     @Autowired
-    public OrderPaymentProcessorImpl(OrderPaymentTransformer orderPaymentTransformer) {
+    public OrderPaymentProcessorImpl(
+            OrderPaymentTransformer orderPaymentTransformer,
+            OrderPaymentSender orderPaymentSender) {
         this.orderPaymentTransformer = orderPaymentTransformer;
+        this.orderPaymentSender=orderPaymentSender;
     }
 
     @Override
     public void process(final Exchange exchange) throws Exception {
-        OrderCtx orderCtx = exchange.getProperty(OrderCtx.CAMEL_PROPERTY_NAME, OrderCtx.class);
-
-        List<Object> transformedPayments = orderPaymentTransformer.transform(orderCtx.getOrder());
-        exchange.getIn().setBody(transformedPayments);
+        OrderType order = exchange.getIn().getBody(OrderType.class);
+        List<Object> transformedPayments = orderPaymentTransformer.transform(order);
+        for (Object transformedPayment : transformedPayments)
+            orderPaymentSender.send(transformedPayment);
+        exchange.getIn().setBody(order);    //todo needed?
     }
 }

@@ -22,7 +22,12 @@
 
 package com.adekia.exchange.camel.route;
 
-import com.adekia.exchange.camel.processor.*;
+import com.adekia.exchange.camel.processor.GetOrderProcessor;
+import com.adekia.exchange.camel.processor.GetOrdersProcessor;
+import com.adekia.exchange.camel.processor.OrderBPProcessor;
+import com.adekia.exchange.camel.processor.CtxProcessor;
+import com.adekia.exchange.camel.processor.OrderPaymentProcessor;
+import com.adekia.exchange.camel.processor.OrderProcessor;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +38,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class OrdersRouteBuilder extends RouteBuilder {
-    public static final String CTX_PROCESSOR_ID = "Adekia-Ctx-processorId";
+    public static final String CTX_PROCESSOR_ID = "Adekia-Ctx-orderProcessorId";
     public static final String GET_ORDERS_ROUTE_ID = "Adekia-Order-getOrders";
     public static final String GET_ORDERS_PROCESSOR_ID = "Adekia-Order-getOrdersProcessorId";
     public static final String GET_ORDER_ROUTE_ID = "Adekia-Order-getOrder";
@@ -44,7 +49,7 @@ public class OrdersRouteBuilder extends RouteBuilder {
     public static final String ORDER_PAYMENT_PROCESSOR_ID = "Adekia-OrderPayment-PaymentProcessorId";
     public static final String ORDER_BP_PROCESSOR_ID = "Adekia-OrderBP-BPProcessorId";
 
-    private final OrderCtxProcessor ctxBuilderProcessor;
+    private final CtxProcessor ctxBuilderProcessor;
     private final GetOrderProcessor getOrderProcessor;
     private final GetOrdersProcessor getOrdersProcessor;
     private final OrderProcessor orderProcessor;
@@ -53,7 +58,7 @@ public class OrdersRouteBuilder extends RouteBuilder {
 
     @Autowired
     public OrdersRouteBuilder(
-            OrderCtxProcessor ctxBuilderProcessor,
+            CtxProcessor ctxBuilderProcessor,
             GetOrdersProcessor getOrdersProcessor,
             GetOrderProcessor getOrderProcessor,
             OrderProcessor orderProcessor,
@@ -105,22 +110,12 @@ public class OrdersRouteBuilder extends RouteBuilder {
                 .log(LoggingLevel.INFO, "    Processing Order :")
                 .choice()
                 .when(body().isNull())
-                .log(LoggingLevel.INFO, "    Nothing to do ! Order was skipped !")
-                .endChoice()
+                .log(LoggingLevel.INFO, "    Nothing to do ! Order was skipped !").endChoice()
                 .otherwise()
                 .log(LoggingLevel.INFO, "      ORDERTYPE  : ${body}")
                 .process(orderBPProcessor).id(ORDER_BP_PROCESSOR_ID)
-                .log(LoggingLevel.INFO, "      ORDERBP    : ${body}")
-                // todo					.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-
                 .process(orderProcessor).id(ORDER_PROCESSOR_ID)
-                .log(LoggingLevel.INFO, "      JSONOLCAND : ${body}")
-                // todo						.to(direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID))
                 .process(orderPaymentProcessor).id(ORDER_PAYMENT_PROCESSOR_ID)
-                .split(body())
-                .log(LoggingLevel.INFO, "      JSONOLPAY  : ${body}")
-                // todo						.to(direct(ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID))
-                .end()
                 .endChoice()
                 .end();
 

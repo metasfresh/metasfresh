@@ -22,7 +22,9 @@
 
 package com.adekia.exchange.camel.processor;
 
-import com.adekia.exchange.camel.context.OrderCtx;
+import com.adekia.exchange.context.Ctx;
+import com.adekia.exchange.sender.OrderPaymentSender;
+import com.adekia.exchange.sender.OrderSender;
 import com.adekia.exchange.transformer.OrderTransformer;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
 import org.apache.camel.Exchange;
@@ -31,21 +33,26 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandi
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnSingleCandidate(OrderPaymentProcessorImpl.class)
-public class OrderProcessorImpl implements OrderProcessor {
+@ConditionalOnSingleCandidate(OrderProcessor.class)
+public class OrderProcessorImpl implements OrderProcessor
+{
 
     private final OrderTransformer orderTransformer;
+    private final OrderSender orderSender;
 
     @Autowired
-    public OrderProcessorImpl(OrderTransformer orderTransformer) {
+    public OrderProcessorImpl(
+            OrderTransformer orderTransformer,
+            OrderSender orderSender) {
         this.orderTransformer = orderTransformer;
+        this.orderSender=orderSender;
     }
 
     @Override
     public void process(final Exchange exchange) throws Exception {
-        OrderType order = exchange.getProperty(OrderCtx.CAMEL_PROPERTY_NAME, OrderCtx.class).getOrder();
-
+        OrderType order = exchange.getIn().getBody(OrderType.class);
         Object transformedOrder = orderTransformer.transform(order);
-        exchange.getIn().setBody(transformedOrder);
+        orderSender.send(transformedOrder);
+        exchange.getIn().setBody(order);    //todo needed?
     }
 }

@@ -1,0 +1,47 @@
+/*
+ * #%L
+ * ext-amazon-sp
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package com.adekia.exchange.amazonsp.sender;
+
+import com.adekia.exchange.amazonsp.client.shipments.api.ShippingApi;
+import com.adekia.exchange.amazonsp.client.shipments.model.CreateShipmentRequest;
+import com.adekia.exchange.amazonsp.client.shipments.model.CreateShipmentResponse;
+import com.adekia.exchange.amazonsp.util.AmazonShippingApiHelper;
+import com.adekia.exchange.sender.ShipmentSender;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
+
+@Service
+@ConditionalOnProperty(prefix = "shipment", name = "sender", havingValue = "amazon")
+public class AmazonShipmentSenderImpl implements ShipmentSender
+{
+	@Override
+	public String send(final Object shipment) throws Exception
+	{
+
+		ShippingApi api = AmazonShippingApiHelper.getShippingAPI();
+		CreateShipmentResponse response = api.createShipment((CreateShipmentRequest)shipment);
+
+		return response.toString();
+
+	}
+}
