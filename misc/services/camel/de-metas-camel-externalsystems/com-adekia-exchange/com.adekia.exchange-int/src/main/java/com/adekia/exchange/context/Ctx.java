@@ -22,15 +22,24 @@
 
 package com.adekia.exchange.context;
 
+import lombok.Builder;
+import lombok.Data;
+import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
+
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Ctx {
+@Data
+public class Ctx {
+
+    public static String CAMEL_PROPERTY_NAME = "camelProperty";
+
     private Map<String, String> properties;
 
     public Ctx() {
         this.properties = new HashMap<>();
     }
+    @Builder
     public Ctx(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -42,4 +51,13 @@ public abstract class Ctx {
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
+
+    private String log;
+
+    public String getLog() {
+        String currentLog = log;
+        log=null;
+        return currentLog;
+    }
+
 }

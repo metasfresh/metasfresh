@@ -1,0 +1,133 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:ForecastRevision-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "ForecastRevision":[{
+ "UBLVersionID":[{"_":"2.1"}],
+ "ProfileID":[{"_":"bpid:urn:oasis:names:draft:bpss:ubl-2-sbs-credit-notification-draft"}],
+ "ID":[{"_":"OFR_758494"}],
+ "CopyIndicator":[{"_":false}],
+ "UUID":[{"_":"349ABBAE-DF9D-40B4-849F-94C5FF9D1AF4"}],
+ "IssueDate":[{"_":"2002-02-10"}],
+ "IssueTime":[{"_":"12:00:01.000Z"}],
+ "Note":[{"_":"sample"}],
+ "SequenceNumberID":[{"_":"1"}],
+ "RevisionStatusCode":[{"_":"NEW"}],
+ "PurposeCode":[{"_":"ORDER_FORECAST"}],
+ "ForecastPeriod":[{
+  "StartDate":[{"_":"2005-02-26"}],
+  "EndDate":[{"_":"2005-12-26"}]
+ }],
+ "SenderParty":[{
+  "PartyIdentification":[{
+   "ID":[{"_":"6903148000007"}]
+  }],
+  "PartyName":[{
+   "Name":[{"_":"Consortial"}]
+  }],
+  "PostalAddress":[{
+   "StreetName":[{"_":"Busy Street"}],
+   "BuildingName":[{"_":"Thereabouts"}],
+   "BuildingNumber":[{"_":"56A"}],
+   "CityName":[{"_":"Farthing"}],
+   "PostalZone":[{"_":"AA99 1BB"}],
+   "CountrySubentity":[{"_":"Heremouthshire"}],
+   "AddressLine":[{
+    "Line":[{"_":"The Roundabout"}]
+   }],
+   "Country":[{
+    "IdentificationCode":[{"_":"GB"}]
+   }]
+  }],
+  "PartyTaxScheme":[{
+   "RegistrationName":[{"_":"Farthing Purchasing Consortium"}],
+   "CompanyID":[{"_":"175 269 2355"}],
+   "ExemptionReason":[{"_":"N/A"}],
+   "TaxScheme":[{
+    "ID":[{"_":"VAT"}],
+    "TaxTypeCode":[{"_":"VAT"}]
+   }]
+  }],
+  "Contact":[{
+   "Name":[{"_":"Mrs Bouquet"}],
+   "Telephone":[{"_":"0158 1233714"}],
+   "Telefax":[{"_":"0158 1233856"}],
+   "ElectronicMail":[{"_":"bouquet@fpconsortial.co.uk"}]
+  }]
+ }],
+ "ReceiverParty":[{
+  "PartyIdentification":[{
+   "ID":[{"_":"2203148000007"}]
+  }],
+  "PartyName":[{
+   "Name":[{"_":"IYT Corporation"}]
+  }],
+  "PostalAddress":[{
+   "StreetName":[{"_":"Avon Way"}],
+   "BuildingName":[{"_":"Thereabouts"}],
+   "BuildingNumber":[{"_":"56A"}],
+   "CityName":[{"_":"Bridgtow"}],
+   "PostalZone":[{"_":"ZZ99 1ZZ"}],
+   "CountrySubentity":[{"_":"Avon"}],
+   "AddressLine":[{
+    "Line":[{"_":"3rd Floor, Room 5"}]
+   }],
+   "Country":[{
+    "IdentificationCode":[{"_":"GB"}]
+   }]
+  }],
+  "PartyTaxScheme":[{
+   "RegistrationName":[{"_":"Bridgtow District Council"}],
+   "CompanyID":[{"_":"12356478"}],
+   "ExemptionReason":[{"_":"Local Authority"}],
+   "TaxScheme":[{
+    "ID":[{"_":"UK VAT"}],
+    "TaxTypeCode":[{"_":"VAT"}]
+   }]
+  }],
+  "Contact":[{
+   "Name":[{"_":"Mr Fred Churchill"}],
+   "Telephone":[{"_":"0127 2653214"}],
+   "Telefax":[{"_":"0127 2653215"}],
+   "ElectronicMail":[{"_":"fred@iytcorporation.gov.uk"}]
+  }]
+ }],
+ "BuyerCustomerParty":[{
+  "Party":[{
+   "PartyIdentification":[{
+    "ID":[{"_":"0012345000359"}]
+   }]
+  }]
+ }],
+ "SellerSupplierParty":[{
+  "Party":[{
+   "PartyIdentification":[{
+    "ID":[{"_":"0012345000058"}]
+   }]
+  }]
+ }],
+ "ForecastRevisionLine":[{
+  "ID":[{"_":"FRL1"}],
+  "RevisedForecastLineID":[{"_":"RFL1"}],
+  "SourceForecastIssueDate":[{"_":"2005-02-17"}],
+  "SourceForecastIssueTime":[{"_":"10:00:00.000Z"}],
+  "AdjustmentReasonCode":[{"_":"REVISED_PROMOTION"}],
+  "ForecastPeriod":[{
+   "StartDate":[{"_":"2005-02-26"}],
+   "EndDate":[{"_":"2005-12-26"}]
+  }],
+  "SalesItem":[{
+   "Quantity":[{"_":20,
+    "unitCode":"KGM"}],
+   "Item":[{
+    "Description":[{"_":"Acme beeswax"}],
+    "Name":[{"_":"beeswax"}],
+    "BuyersItemIdentification":[{
+     "ID":[{"_":"6578489"}]
+    }],
+    "SellersItemIdentification":[{
+     "ID":[{"_":"17589683"}]
+    }]
+   }]
+  }]
+ }]
+}]}

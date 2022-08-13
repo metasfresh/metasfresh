@@ -1,0 +1,105 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:Manifest-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "Manifest":[{
+ "UBLVersionID":[{"_":"2.3"}],
+ "CustomizationID":[{"_":"urn:oasis:names:specification:ubl:xpath:ForwardingInstructions-2.0:samples-2.0-draft"}],
+ "ProfileID":[{"_":"bpid:urn:oasis:names:draft:bpss:ubl-2-sample-international-scenario"}],
+ "ID":[{"_":"KHN23-44048"}],
+ "UUID":[{"_":"6E09886B-DC6E-439F-82D1-7C83709652B1"}],
+ "IssueDate":[{"_":"2005-06-24"}],
+ "IssueTime":[{"_":"14:20:00.0Z"}],
+ "SendingLogisticsOperatorParty":[{
+  "PartyName":[{
+   "Name":[{"_":"One-Stop Forwarders"}]
+  }],
+  "PostalAddress":[{
+   "Postbox":[{"_":"99043"}],
+   "CityName":[{"_":"Boston"}],
+   "PostalZone":[{"_":"02210"}],
+   "CountrySubentityCode":[{"_":"MA"}],
+   "Country":[{
+    "IdentificationCode":[{"_":"US"}]
+   }]
+  }],
+  "Contact":[{
+   "Name":[{"_":"Con Solidador"}],
+   "Telephone":[{"_":" +1 343 1453654"}],
+   "Telefax":[{"_":"+1 343 1453655"}],
+   "ElectronicMail":[{"_":"ctanner@onestopfreight.com"}]
+  }]
+ }],
+ "ConsignorParty":[{
+  "PartyName":[{
+   "Name":[{"_":"Consortial"}]
+  }],
+  "PostalAddress":[{
+   "StreetName":[{"_":"Boston Road"}],
+   "BuildingName":[{"_":"Suite M-102"}],
+   "BuildingNumber":[{"_":"630"}],
+   "CityName":[{"_":"Billerica"}],
+   "PostalZone":[{"_":"01821"}],
+   "CountrySubentity":[{"_":"Massachusetts"}],
+   "CountrySubentityCode":[{"_":"MA"}],
+   "Country":[{
+    "IdentificationCode":[{"_":"US"}]
+   }]
+  }],
+  "Contact":[{
+   "Name":[{"_":"Mrs Bouquet"}],
+   "Telephone":[{"_":" +1 158 1233714"}],
+   "Telefax":[{"_":"+ 1 158 1233856"}],
+   "ElectronicMail":[{"_":"bouquet@fpconsortial.com"}]
+  }]
+ }],
+ "ConsigneeParty":[{
+  "PartyName":[{
+   "Name":[{"_":"IYT Corporation"}]
+  }],
+  "PostalAddress":[{
+   "StreetName":[{"_":"Avon Way"}],
+   "BuildingName":[{"_":"Thereabouts"}],
+   "BuildingNumber":[{"_":"56A"}],
+   "CityName":[{"_":"Bridgtow"}],
+   "PostalZone":[{"_":"ZZ99 1ZZ"}],
+   "CountrySubentity":[{"_":"Avon"}],
+   "AddressLine":[{
+    "Line":[{"_":"3rd Floor, Room 5"}]
+   }],
+   "Country":[{
+    "IdentificationCode":[{"_":"GB"}]
+   }]
+  }],
+  "Contact":[{
+   "Name":[{"_":"Mr Fred Churchill"}],
+   "Telephone":[{"_":"+44 127 2653214"}],
+   "Telefax":[{"_":"+44 127 2653215"}],
+   "ElectronicMail":[{"_":"fred@iytcorporation.gov.uk"}]
+  }]
+ }],
+ "DocumentReference":[{
+  "ID":[{"_":"234534533"}],
+  "DocumentType":[{"_":"CMR"}],
+  "IssuerParty":[{
+   "PartyName":[{
+    "Name":[{"_":"Boston Road"}]
+   }]
+  }]
+ },{
+  "ID":[{"_":"2343456533"}],
+  "DocumentType":[{"_":"CMR"}],
+  "IssuerParty":[{
+   "PartyName":[{
+    "Name":[{"_":"Boston Road"}]
+   }]
+  }]
+ },{
+  "ID":[{"_":"XD534533"}],
+  "DocumentType":[{"_":"BOL"}],
+  "IssuerParty":[{
+   "PartyName":[{
+    "Name":[{"_":"Maersk"}]
+   }]
+  }]
+ }]
+}]}
