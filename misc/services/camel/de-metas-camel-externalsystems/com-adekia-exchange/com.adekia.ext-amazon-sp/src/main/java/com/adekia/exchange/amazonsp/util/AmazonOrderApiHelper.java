@@ -46,14 +46,15 @@ public class AmazonOrderApiHelper
 				.roleArn(AmazonCtxHelper.AmazonAuthProperties.get("roleArn"))
 				.roleSessionName(AmazonCtxHelper.AmazonAuthProperties.get("roleSessionName"))
 				.build();
-		/**
+
 		LWAAuthorizationCredentials lwaAuthorizationCredentials = LWAAuthorizationCredentials.builder()
-				.clientId("myClientId")
-				.clientSecret("myClientSecret")
-				.refreshToken("Aztr|...")
+				.clientId(AmazonCtxHelper.AmazonAuthProperties.get("clientId"))
+				.clientSecret(AmazonCtxHelper.AmazonAuthProperties.get("clientSecret"))
+				.refreshToken(AmazonCtxHelper.AmazonAuthProperties.get("refreshToken"))
 				.endpoint("https://api.amazon.com/auth/o2/token")
 				.build();
-		*/
+
+	/*
 		LWAAuthorizationCredentials lwaAuthorizationCredentials =
 				LWAAuthorizationCredentials.builder()
 						.clientId(AmazonCtxHelper.AmazonAuthProperties.get("clientId"))
@@ -61,7 +62,7 @@ public class AmazonOrderApiHelper
 						.withScopes(SCOPE_NOTIFICATIONS_API, SCOPE_MIGRATION_API)
 						.endpoint("https://api.amazon.com/auth/o2/token")
 						.build();
-
+*/
 		OrdersV0Api ordersApi = new OrdersV0Api.Builder()
 				.awsAuthenticationCredentials(awsAuthenticationCredentials)
 				.lwaAuthorizationCredentials(lwaAuthorizationCredentials)

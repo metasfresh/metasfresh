@@ -22,11 +22,11 @@
 
 package com.adekia.exchange.amazonsp.provider;
 
+import com.adekia.exchange.amazonsp.client.orders.ApiClient;
 import com.adekia.exchange.amazonsp.client.orders.ApiException;
 import com.adekia.exchange.amazonsp.client.orders.api.OrdersV0Api;
 import com.adekia.exchange.amazonsp.client.orders.model.GetOrderItemsResponse;
 import com.adekia.exchange.amazonsp.client.orders.model.GetOrdersResponse;
-import com.adekia.exchange.amazonsp.util.AmazonOrderApiHelper;
 import com.adekia.exchange.amazonsp.util.AmazonOrder;
 import com.adekia.exchange.context.Ctx;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
@@ -39,14 +39,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "mock")
+@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon-mock")
+
 public class AmazonGetOrdersProviderMockImpl implements AmazonGetOrdersProvider
 {
 	@Override
 	public List<OrderType> getOrders(Ctx ctx) throws Exception
 	{
-		OrdersV0Api ordersApi = AmazonOrderApiHelper.getOrdersAPI();
-		//ApiClient apiClient = ordersApi.getApiClient().setBasePath("http://localhost:3101/sp-api");
+		//OrdersV0Api ordersApi = AmazonOrderApiHelper.getOrdersAPI();
+		OrdersV0Api ordersApi = new OrdersV0Api();
+		ApiClient apiClient = ordersApi.getApiClient().setBasePath("http://localhost:3101/sp-api");
+		apiClient.apiType ="mock";
 		;
 		/* Parameters used for selection */
 		List<String> marketplaceIds = Arrays.asList("marketplaceIds_example"); // List<String> | A list of MarketplaceId values. Used to select orders that were placed in the specified marketplaces.  See the [Selling Partner API Developer Guide](doc:marketplace-ids) for a complete list of marketplaceId values.

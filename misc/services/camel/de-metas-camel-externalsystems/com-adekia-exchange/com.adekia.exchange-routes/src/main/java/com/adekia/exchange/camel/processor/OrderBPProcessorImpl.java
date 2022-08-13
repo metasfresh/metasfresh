@@ -22,7 +22,8 @@
 
 package com.adekia.exchange.camel.processor;
 
-import com.adekia.exchange.camel.context.OrderCtx;
+import com.adekia.exchange.context.Ctx;
+import com.adekia.exchange.sender.OrderBPSender;
 import com.adekia.exchange.transformer.OrderBPTransformer;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
 import org.apache.camel.Exchange;
@@ -32,24 +33,28 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnSingleCandidate(OrderBPProcessorImpl.class)
-public class OrderBPProcessorImpl implements OrderBPProcessor {
+public class OrderBPProcessorImpl implements OrderBPProcessor
+{
 
     private final OrderBPTransformer orderBPTransformer;
+    private final OrderBPSender orderBPSender;
+
 
     @Autowired
-    public OrderBPProcessorImpl(OrderBPTransformer orderBPTransformer) {
+    public OrderBPProcessorImpl(
+            OrderBPTransformer orderBPTransformer,
+            OrderBPSender orderBPSender) {
         this.orderBPTransformer = orderBPTransformer;
+        this.orderBPSender = orderBPSender;
     }
 
     @Override
     public void process(final Exchange exchange) throws Exception {
-        //OrderCtx orderCtx = exchange.getProperty(OrderCtx.CAMEL_PROPERTY_NAME, OrderCtx.class);
-        //OrderType order = orderCtx.getOrder();
-
         OrderType order = exchange.getIn().getBody(OrderType.class);
         Object transformedBP = orderBPTransformer.transform(order);
-        exchange.getIn().setBody(transformedBP);
-        exchange.setProperty(OrderCtx.CAMEL_PROPERTY_NAME, OrderCtx.builder().order(order).build());  // todo find a better place
+        orderBPSender.send(transformedBP);
+        exchange.getIn().setBody(order);    //todo needed?
 
+        //       exchange.setProperty(Ctx.CAMEL_PROPERTY_NAME, Ctx.builder().object(order).build());  // todo find a better place
     }
 }
