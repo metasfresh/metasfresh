@@ -1,6 +1,6 @@
 /*
  * #%L
- * exchange-routes
+ * ext-metasfresh
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,19 +20,27 @@
  * #L%
  */
 
-package com.adekia.exchange.camel.sender;
+package com.adekia.exchange.metasfresh.sender;
 
 import com.adekia.exchange.sender.OrderBPSender;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
-import org.springframework.stereotype.Component;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import org.apache.camel.ProducerTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
 
-@Component
-@ConditionalOnSingleCandidate(OrderBPSender.class)
-public class OrderBPSenderSimplImpl implements OrderBPSender
+@Service
+@ConditionalOnProperty(prefix = "order", name = "sender", havingValue = "metasfresh-mock")
+public class MetasfreshOrderBPSenderMockImpl implements OrderBPSender
 {
+	private ProducerTemplate producerTemplate;
+
+	@Autowired
+	public MetasfreshOrderBPSenderMockImpl(ProducerTemplate producerTemplate) { this.producerTemplate=producerTemplate;}
+
 	@Override
 	public String send(final Object orderBP) throws Exception
 	{
-		return "    --> Sent to SimpleSending";
+		return "    --> Sent to Metasfresh : Mock";
 	}
 }

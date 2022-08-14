@@ -31,16 +31,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 @ConditionalOnProperty(prefix = "order", name = "sender", havingValue = "metasfresh")
-public class MetasfreshOrderSender implements OrderSender
+public class MetasfreshOrderSenderImpl implements OrderSender
 {
 	private ProducerTemplate producerTemplate;
 
 	@Autowired
-	public MetasfreshOrderSender(ProducerTemplate producerTemplate) { this.producerTemplate=producerTemplate;}
+	public MetasfreshOrderSenderImpl(ProducerTemplate producerTemplate) { this.producerTemplate=producerTemplate;}
 
 	@Override
-	public void send(final Object orderBP) throws Exception
+	public String send(final Object order) throws Exception
 	{
-		producerTemplate.sendBody("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID , orderBP);
+		producerTemplate.sendBody("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID , order);
+		return "    --> Sent to Metasfresh : " + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
 	}
 }

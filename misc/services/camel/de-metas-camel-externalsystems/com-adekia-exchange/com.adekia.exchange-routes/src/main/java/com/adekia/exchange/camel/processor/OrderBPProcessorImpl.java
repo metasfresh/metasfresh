@@ -22,7 +22,7 @@
 
 package com.adekia.exchange.camel.processor;
 
-import com.adekia.exchange.context.Ctx;
+import com.adekia.exchange.camel.logger.SimpleLog;
 import com.adekia.exchange.sender.OrderBPSender;
 import com.adekia.exchange.transformer.OrderBPTransformer;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
@@ -50,11 +50,18 @@ public class OrderBPProcessorImpl implements OrderBPProcessor
 
     @Override
     public void process(final Exchange exchange) throws Exception {
-        OrderType order = exchange.getIn().getBody(OrderType.class);
-        Object transformedBP = orderBPTransformer.transform(order);
-        orderBPSender.send(transformedBP);
-        exchange.getIn().setBody(order);    //todo needed?
+        SimpleLog logger = SimpleLog.getLogger(exchange);
+        logger.clear();
 
-        //       exchange.setProperty(Ctx.CAMEL_PROPERTY_NAME, Ctx.builder().object(order).build());  // todo find a better place
+        OrderType order = exchange.getIn().getBody(OrderType.class);
+
+        Object transformedBP = orderBPTransformer.transform(order);
+        logger.add(transformedBP.toString());
+
+        String response = orderBPSender.send(transformedBP);
+        logger.add(response);
+
+        //exchange.getIn().setBody(order);    //todo needed?
+
     }
 }

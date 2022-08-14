@@ -22,6 +22,8 @@
 
 package com.adekia.exchange.camel.processor;
 
+import com.adekia.exchange.camel.logger.SimpleLog;
+import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.sender.OrderPaymentSender;
 import com.adekia.exchange.transformer.OrderPaymentTransformer;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
@@ -49,10 +51,17 @@ public class OrderPaymentProcessorImpl implements OrderPaymentProcessor
 
     @Override
     public void process(final Exchange exchange) throws Exception {
+        SimpleLog logger = SimpleLog.getLogger(exchange);
+        logger.clear();
+
         OrderType order = exchange.getIn().getBody(OrderType.class);
         List<Object> transformedPayments = orderPaymentTransformer.transform(order);
-        for (Object transformedPayment : transformedPayments)
-            orderPaymentSender.send(transformedPayment);
-        exchange.getIn().setBody(order);    //todo needed?
+        for (Object transformedPayment : transformedPayments) {
+            logger.add(transformedPayment.toString());
+            String response = orderPaymentSender.send(transformedPayment);
+            logger.add(response);
+        }
+
+        //exchange.getIn().setBody(order);    //todo needed?
     }
 }
