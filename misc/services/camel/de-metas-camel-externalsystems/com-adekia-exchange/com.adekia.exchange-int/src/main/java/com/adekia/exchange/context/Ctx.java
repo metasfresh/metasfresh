@@ -26,6 +26,7 @@ import lombok.Builder;
 import lombok.Data;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,14 +51,6 @@ public class Ctx {
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
-    }
-
-    private String log;
-
-    public String getLog() {
-        String currentLog = log;
-        log=null;
-        return currentLog;
     }
 
 }

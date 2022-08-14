@@ -44,6 +44,8 @@ public class AmazonShipmentSenderMockImpl implements ShipmentSender
 
 		CreateShipmentResponse response = shippingApi.createShipment((CreateShipmentRequest)shipment);
 
-		return response.toString();
+		return "  --> sent to Amazon (Mock) : "+shippingApi.getApiClient().getBasePath() + "/shipping/v1/shipments [" + response.getPayload().getShipmentId() + "] "
+				+ ((response.getErrors() != null) ? response.getErrors().toString() : "");
+
 	}
 }

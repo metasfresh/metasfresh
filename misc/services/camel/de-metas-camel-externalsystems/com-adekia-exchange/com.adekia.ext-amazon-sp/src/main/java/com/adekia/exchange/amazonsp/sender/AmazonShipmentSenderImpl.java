@@ -41,7 +41,8 @@ public class AmazonShipmentSenderImpl implements ShipmentSender
 		ShippingApi api = AmazonShippingApiHelper.getShippingAPI();
 		CreateShipmentResponse response = api.createShipment((CreateShipmentRequest)shipment);
 
-		return response.toString();
+		return "  --> sent to Amazon : "+api.getApiClient().getBasePath() + "/shipping/v1/shipments [" + response.getPayload().getShipmentId() + "] "
+				+ ((response.getErrors() != null) ? response.getErrors().toString() : "");
 
 	}
 }

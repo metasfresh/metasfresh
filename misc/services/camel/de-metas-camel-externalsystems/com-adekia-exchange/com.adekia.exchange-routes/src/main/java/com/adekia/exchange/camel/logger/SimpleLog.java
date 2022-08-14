@@ -20,20 +20,36 @@
  * #L%
  */
 
-package com.adekia.exchange.camel.sender;
+package com.adekia.exchange.camel.logger;
 
-import com.adekia.exchange.sender.OrderBPSender;
-import com.adekia.exchange.sender.OrderSender;
+import com.adekia.exchange.context.Ctx;
+import org.apache.camel.Exchange;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+
 @Component
-@ConditionalOnSingleCandidate(OrderSender.class)
-public class OrderSenderSimplImpl implements OrderSender
+@ConditionalOnSingleCandidate(SimpleLog.class)
+public class SimpleLog extends ArrayList<String>
 {
-	@Override
-	public String send(final Object order) throws Exception
+	public static String CAMEL_PROPERTY_NAME = "camelLogs";
+
+	public  static SimpleLog getLogger(Exchange exchange)
 	{
-		return "    --> Sent to SimpleSending";
+		SimpleLog logs = (SimpleLog) exchange.getProperty(CAMEL_PROPERTY_NAME);
+		if (logs == null)
+		{
+			logs = new SimpleLog();
+			exchange.setProperty(CAMEL_PROPERTY_NAME, logs);
+		}
+		return logs;
+	}
+
+	@Override
+	public boolean add(final String s)
+	{
+		String cleanString = s.replaceAll("\\s{2,}", " ");
+		return super.add(cleanString);
 	}
 }

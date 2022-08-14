@@ -32,8 +32,8 @@ import org.springframework.stereotype.Component;
 public class OrderPaymentSenderSimplImpl implements OrderPaymentSender
 {
 	@Override
-	public void send(final Object orderPayment) throws Exception
+	public String send(final Object orderPayment) throws Exception
 	{
-		System.out.println("Sending -> Log : " + orderPayment);
+		return "    --> Sent to SimpleSending";
 	}
 }

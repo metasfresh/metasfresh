@@ -31,8 +31,8 @@ import org.springframework.stereotype.Component;
 public class ShipmentSenderSimplImpl implements ShipmentSender
 {
 	@Override
-	public String send(final Object order) throws Exception
+	public String send(final Object shipment) throws Exception
 	{
-		return "SimpleSending -> Order : " + order;
+		return "    --> Sent to SimpleSending";
 	}
 }

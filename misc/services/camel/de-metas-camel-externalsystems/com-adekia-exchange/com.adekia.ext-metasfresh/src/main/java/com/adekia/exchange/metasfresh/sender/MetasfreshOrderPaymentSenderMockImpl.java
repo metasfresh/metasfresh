@@ -23,24 +23,23 @@
 package com.adekia.exchange.metasfresh.sender;
 
 import com.adekia.exchange.sender.OrderPaymentSender;
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnProperty(prefix = "order", name = "sender", havingValue = "metasfresh")
-public class MetasfreshOrderPaymentSender implements OrderPaymentSender
+@ConditionalOnProperty(prefix = "order", name = "sender", havingValue = "metasfresh-mock")
+public class MetasfreshOrderPaymentSenderMockImpl implements OrderPaymentSender
 {
 	private ProducerTemplate producerTemplate;
 
 	@Autowired
-	public MetasfreshOrderPaymentSender(ProducerTemplate producerTemplate) { this.producerTemplate=producerTemplate;}
+	public MetasfreshOrderPaymentSenderMockImpl(ProducerTemplate producerTemplate) { this.producerTemplate=producerTemplate;}
 
 	@Override
-	public void send(final Object orderPayment) throws Exception
+	public String send(final Object orderPayment) throws Exception
 	{
-		producerTemplate.sendBody("direct:"+ ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID, orderPayment);
+		return "    --> Sent to Metasfresh : Mock";
 	}
 }

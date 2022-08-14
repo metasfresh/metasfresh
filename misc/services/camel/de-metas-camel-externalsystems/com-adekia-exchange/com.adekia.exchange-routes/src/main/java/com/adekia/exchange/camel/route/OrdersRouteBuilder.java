@@ -22,12 +22,14 @@
 
 package com.adekia.exchange.camel.route;
 
+import com.adekia.exchange.camel.logger.SimpleLog;
 import com.adekia.exchange.camel.processor.GetOrderProcessor;
 import com.adekia.exchange.camel.processor.GetOrdersProcessor;
 import com.adekia.exchange.camel.processor.OrderBPProcessor;
 import com.adekia.exchange.camel.processor.CtxProcessor;
 import com.adekia.exchange.camel.processor.OrderPaymentProcessor;
 import com.adekia.exchange.camel.processor.OrderProcessor;
+import com.adekia.exchange.context.Ctx;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,8 +116,17 @@ public class OrdersRouteBuilder extends RouteBuilder {
                 .otherwise()
                 .log(LoggingLevel.INFO, "      ORDERTYPE  : ${body}")
                 .process(orderBPProcessor).id(ORDER_BP_PROCESSOR_ID)
+                .split(exchangeProperty(SimpleLog.CAMEL_PROPERTY_NAME))
+                    .log("        ${body}")
+                .end()
                 .process(orderProcessor).id(ORDER_PROCESSOR_ID)
+                .split(exchangeProperty(SimpleLog.CAMEL_PROPERTY_NAME))
+                    .log("        ${body}")
+                .end()
                 .process(orderPaymentProcessor).id(ORDER_PAYMENT_PROCESSOR_ID)
+                .split(exchangeProperty(SimpleLog.CAMEL_PROPERTY_NAME))
+                    .log("        ${body}")
+                .end()
                 .endChoice()
                 .end();
 
