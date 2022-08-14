@@ -24,6 +24,7 @@ package com.adekia.exchange.context;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,14 +49,6 @@ public class Ctx {
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
-    }
-
-    private String log;
-
-    public String getLog() {
-        String currentLog = log;
-        log=null;
-        return currentLog;
     }
 
 }
