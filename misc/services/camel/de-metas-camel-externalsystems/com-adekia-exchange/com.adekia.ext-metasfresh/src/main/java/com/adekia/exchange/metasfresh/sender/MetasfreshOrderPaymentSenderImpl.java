@@ -42,7 +42,7 @@ public class MetasfreshOrderPaymentSenderImpl implements OrderPaymentSender
 	public String send(final Object orderPayment) throws Exception
 	{
 		producerTemplate.sendBody("direct:"+ ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID, orderPayment);
-		return "    --> Sent to Metasfresh : " + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID;
+		return "    --> Sent to Metasfresh route direct: " + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID;
 
 	}
 }

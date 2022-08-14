@@ -41,6 +41,7 @@ public class MetasfreshOrderBPSenderMockImpl implements OrderBPSender
 	@Override
 	public String send(final Object orderBP) throws Exception
 	{
-		return "    --> Sent to Metasfresh : Mock";
+		producerTemplate.sendBody("mock:" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI , orderBP);
+		return "    --> Sent to Metasfresh route mock:" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
 	}
 }

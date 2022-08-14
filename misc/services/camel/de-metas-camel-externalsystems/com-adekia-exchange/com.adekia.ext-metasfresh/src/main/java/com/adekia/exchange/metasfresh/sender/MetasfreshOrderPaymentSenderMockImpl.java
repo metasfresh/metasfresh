@@ -23,6 +23,7 @@
 package com.adekia.exchange.metasfresh.sender;
 
 import com.adekia.exchange.sender.OrderPaymentSender;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -40,6 +41,7 @@ public class MetasfreshOrderPaymentSenderMockImpl implements OrderPaymentSender
 	@Override
 	public String send(final Object orderPayment) throws Exception
 	{
-		return "    --> Sent to Metasfresh : Mock";
+		producerTemplate.sendBody("mock:"+ ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID, orderPayment);
+		return "    --> Sent to Metasfresh route mock:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID;
 	}
 }
