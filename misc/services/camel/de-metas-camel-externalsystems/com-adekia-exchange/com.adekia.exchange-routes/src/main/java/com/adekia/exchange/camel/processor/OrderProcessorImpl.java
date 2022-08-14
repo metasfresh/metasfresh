@@ -22,6 +22,7 @@
 
 package com.adekia.exchange.camel.processor;
 
+import com.adekia.exchange.camel.logger.SimpleLog;
 import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.sender.OrderPaymentSender;
 import com.adekia.exchange.sender.OrderSender;
@@ -50,9 +51,16 @@ public class OrderProcessorImpl implements OrderProcessor
 
     @Override
     public void process(final Exchange exchange) throws Exception {
+        SimpleLog logger = SimpleLog.getLogger(exchange);
+        logger.clear();
+
         OrderType order = exchange.getIn().getBody(OrderType.class);
         Object transformedOrder = orderTransformer.transform(order);
-        orderSender.send(transformedOrder);
-        exchange.getIn().setBody(order);    //todo needed?
+        logger.add(transformedOrder.toString());
+
+        String response = orderSender.send(transformedOrder);
+        logger.add(response);
+
+        //exchange.getIn().setBody(order);    //todo needed?
     }
 }

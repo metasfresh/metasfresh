@@ -24,6 +24,6 @@ package com.adekia.exchange.sender;
 
 public interface OrderPaymentSender
 {
-	public void send(final Object orderPayment) throws Exception;
+	public String send(final Object orderPayment) throws Exception;
 
 }

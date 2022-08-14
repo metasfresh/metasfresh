@@ -22,6 +22,7 @@
 
 package com.adekia.exchange.camel.route;
 
+import com.adekia.exchange.camel.logger.SimpleLog;
 import com.adekia.exchange.camel.processor.CtxProcessor;
 import com.adekia.exchange.camel.processor.GetShipmentProcessor;
 import com.adekia.exchange.camel.processor.ShipmentProcessor;
@@ -77,7 +78,9 @@ public class ShipmentRouteBuilder extends RouteBuilder
 				.otherwise()
 				.log(LoggingLevel.INFO, "    Processing Shipment")
 				.process(shipmentProcessor).id(SHIPMENT_TRANSFORMER_ID)
-				.log(LoggingLevel.INFO, "      SHIPMENT : ${body}" )
+				.split(exchangeProperty(SimpleLog.CAMEL_PROPERTY_NAME))
+					.log("      ${body}")
+				.end()
 				.endChoice()
 				.end();
 

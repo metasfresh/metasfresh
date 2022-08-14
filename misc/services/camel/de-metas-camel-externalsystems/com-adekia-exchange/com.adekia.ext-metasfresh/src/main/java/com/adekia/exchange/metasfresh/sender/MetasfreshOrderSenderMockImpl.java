@@ -22,25 +22,24 @@
 
 package com.adekia.exchange.metasfresh.sender;
 
-import com.adekia.exchange.sender.OrderBPSender;
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import com.adekia.exchange.sender.OrderSender;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnProperty(prefix = "order", name = "sender", havingValue = "metasfresh")
-public class MetasfreshOrderBPSender implements OrderBPSender
+@ConditionalOnProperty(prefix = "order", name = "sender", havingValue = "metasfresh-mock")
+public class MetasfreshOrderSenderMockImpl implements OrderSender
 {
 	private ProducerTemplate producerTemplate;
 
 	@Autowired
-	public MetasfreshOrderBPSender(ProducerTemplate producerTemplate) { this.producerTemplate=producerTemplate;}
+	public MetasfreshOrderSenderMockImpl(ProducerTemplate producerTemplate) { this.producerTemplate=producerTemplate;}
 
 	@Override
-	public void send(final Object orderBP) throws Exception
+	public String send(final Object order) throws Exception
 	{
-		producerTemplate.sendBody("direct:" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI , orderBP);
+		return "    --> Sent to Metasfresh : Mock";
 	}
 }

@@ -24,6 +24,6 @@ package com.adekia.exchange.sender;
 
 public interface OrderBPSender
 {
-	public void send(final Object orderBP) throws Exception;
+	public String send(final Object orderBP) throws Exception;
 
 }

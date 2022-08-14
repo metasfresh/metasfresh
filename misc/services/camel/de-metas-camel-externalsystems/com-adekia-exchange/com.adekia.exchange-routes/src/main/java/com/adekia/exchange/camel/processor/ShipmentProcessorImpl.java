@@ -22,6 +22,8 @@
 
 package com.adekia.exchange.camel.processor;
 
+import com.adekia.exchange.camel.logger.SimpleLog;
+import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.sender.ShipmentSender;
 import com.adekia.exchange.transformer.ShipmentTransformer;
 import oasis.names.specification.ubl.schema.xsd.despatchadvice_23.DespatchAdviceType;
@@ -50,9 +52,16 @@ public class ShipmentProcessorImpl implements ShipmentProcessor
 
     @Override
     public void process(final Exchange exchange) throws Exception {
+        SimpleLog logger = SimpleLog.getLogger(exchange);
+        logger.clear();
+
         DespatchAdviceType despatchAdvice = exchange.getIn().getBody(DespatchAdviceType.class);
         Object transformedDa = shipmentTransformer.transform(despatchAdvice);
-        shipmentSender.send(transformedDa);
+        logger.add(transformedDa.toString());
+
+        String response = shipmentSender.send(transformedDa);
+        logger.add(response);
+
         exchange.getIn().setBody(despatchAdvice);
     }
 }
