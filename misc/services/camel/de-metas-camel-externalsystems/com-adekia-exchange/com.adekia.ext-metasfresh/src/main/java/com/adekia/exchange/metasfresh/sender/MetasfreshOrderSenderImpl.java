@@ -42,6 +42,6 @@ public class MetasfreshOrderSenderImpl implements OrderSender
 	public String send(final Object order) throws Exception
 	{
 		producerTemplate.sendBody("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID , order);
-		return "    --> Sent to Metasfresh : " + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
+		return "    --> Sent to Metasfresh route direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
 	}
 }

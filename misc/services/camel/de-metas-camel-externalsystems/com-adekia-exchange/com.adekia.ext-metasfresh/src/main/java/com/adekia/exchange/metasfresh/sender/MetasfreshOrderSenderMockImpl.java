@@ -23,6 +23,7 @@
 package com.adekia.exchange.metasfresh.sender;
 
 import com.adekia.exchange.sender.OrderSender;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -40,6 +41,7 @@ public class MetasfreshOrderSenderMockImpl implements OrderSender
 	@Override
 	public String send(final Object order) throws Exception
 	{
-		return "    --> Sent to Metasfresh : Mock";
+		producerTemplate.sendBody("mock:"+ ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID, order);
+		return "    --> Sent to Metasfresh route mock:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
 	}
 }
