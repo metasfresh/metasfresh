@@ -198,11 +198,42 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			StepDefUtil.tryAndWait(timeoutSec, 1000, () -> load_C_Invoice_Candidate(row));
+			try
+			{
+				StepDefUtil.tryAndWait(timeoutSec, 1000, () -> load_C_Invoice_Candidate(row));
+			}
+			catch (final Throwable exception)
+			{
+				logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
+									+ "Error message: {}", timeoutSec, exception.getMessage());
+
+				final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+				final Optional<I_C_Invoice_Candidate> invoiceCandidate = invoiceCandTable.getOptional(invoiceCandIdentifier);
+
+				if (!invoiceCandidate.isPresent())
+				{
+					logger.warn("*** C_Invoice_Candidate was not previously loaded => cannot invalidate!");
+					throw exception;
+				}
+
+				invoiceCandDAO.invalidateCand(invoiceCandidate.get());
+
+				final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = InvoiceCandidateIdsSelection.ofIdsSet(
+						ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidate.get().getC_Invoice_Candidate_ID())));
+
+				invoiceCandBL.updateInvalid()
+						.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+						.setTaggedWithAnyTag()
+						.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
+						.update();
+
+				StepDefUtil.tryAndWait(timeoutSec, 1000, () -> load_C_Invoice_Candidate(row));
+			}
 		}
 	}
 
-	@And("validate C_Invoice_Candidates do not exist")
+	@And("validate C_Invoice_Candidates does not exist")
 	public void validate_no_created_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())

@@ -270,7 +270,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 10               | 10           | receiptLine_1                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | loadingProduct          |
 
@@ -336,7 +336,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_2                     | o_1                       | null                      | 1                | 1            | receiptLine_2                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | packingProduct          |
 
@@ -740,7 +740,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 10               | 10           | receiptLine_1                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | loadingProduct          |
 
@@ -819,7 +819,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_2                     | o_1                       | null                      | 1                | 1            | receiptLine_2                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | packingProduct          |
 
@@ -1472,7 +1472,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 10               | 10           | receiptLine_1                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | loadingProduct          |
 
@@ -1568,7 +1568,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_2                     | o_1                       | null                      | 1                | 1            | receiptLine_2                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | packingProduct          |
 
@@ -2061,7 +2061,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 10               | 10           | receiptLine_1                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | loadingProduct          |
 
@@ -2140,7 +2140,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_2                     | o_1                       | null                      | 1                | 1            | receiptLine_2                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | packingProduct          |
 
@@ -2581,7 +2581,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 10               | 10           | receiptLine_1                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | loadingProduct          |
 
@@ -2660,7 +2660,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_2                     | o_1                       | null                      | 1                | 1            | receiptLine_2                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | packingProduct          |
 
@@ -3111,7 +3111,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_1                     | o_1                       | null                      | 10               | 10           | receiptLine_1                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | loadingProduct          |
 
@@ -3193,7 +3193,7 @@ Feature: Packing material invoice candidates: receipts
     And after not more than 120s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.M_InOutLine_ID.Identifier |
       | invoiceCand_2                     | o_1                       | null                      | 1                | 1            | receiptLine_2                 |
-    And validate C_Invoice_Candidates do not exist
+    And validate C_Invoice_Candidates does not exist
       | C_Order_ID.Identifier | M_Product_ID.Identifier |
       | o_1                   | packingProduct          |
 
