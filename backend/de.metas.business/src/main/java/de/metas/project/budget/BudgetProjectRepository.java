@@ -31,7 +31,6 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
-import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
@@ -121,7 +120,7 @@ public class BudgetProjectRepository
 	}
 
 	@NonNull
-	public Optional<BudgetProject> getOptionalBy(@NonNull final ProjectQuery query)
+	public Optional<BudgetProject> getOptionalBy(@NonNull final BudgetProjectQuery query)
 	{
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()

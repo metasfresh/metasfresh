@@ -25,9 +25,9 @@ package de.metas.project.workorder.data;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.money.CurrencyId;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
@@ -38,11 +38,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.X_C_Project;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -51,17 +51,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class WorkOrderProjectRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@NonNull
-	public Optional<WOProject> getOptionalById(@NonNull final ProjectId id)
+	public WOProject getById(@NonNull final ProjectId id)
 	{
 		return Optional.ofNullable(getRecordById(id))
-				.map(this::ofRecord);
+				.map(WorkOrderProjectRepository::ofRecord)
+				.orElseThrow(() -> new AdempiereException("No WOProject found for C_Project_ID=" + id.getRepoId()));
 	}
 
 	@NonNull
-	public Optional<WOProject> getOptionalBy(@NonNull final ProjectQuery query)
+	public Optional<WOProject> getOptionalBy(@NonNull final WOProjectQuery query)
 	{
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
@@ -129,33 +129,37 @@ public class WorkOrderProjectRepository
 	}
 
 	@NonNull
-	public WOProject save(@NonNull final CreateWOProjectRequest createWOProjectRequest)
+	public WOProject create(@NonNull final CreateWOProjectRequest createWOProjectRequest)
 	{
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(createWOProjectRequest.getOrgId()));
-		projectRecord.setIsActive(createWOProjectRequest.isActive());
+		projectRecord.setC_Project_Reference_Ext(createWOProjectRequest.getProjectReferenceExt());
+
 		projectRecord.setName(createWOProjectRequest.getName());
 		projectRecord.setValue(createWOProjectRequest.getValue());
+		projectRecord.setPOReference(createWOProjectRequest.getPoReference());
+		projectRecord.setDescription(createWOProjectRequest.getDescription());
+
+		projectRecord.setProjectCategory(X_C_Project.PROJECTCATEGORY_WorkOrderJob);
+		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectTypeId().getRepoId());
+		projectRecord.setC_Currency_ID(createWOProjectRequest.getCurrencyId().getRepoId());
+		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(createWOProjectRequest.getProjectParentId()));
 		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(createWOProjectRequest.getPriceListVersionId()));
 		projectRecord.setSalesRep_ID(UserId.toRepoId(createWOProjectRequest.getSalesRepId()));
-		projectRecord.setDateContract(TimeUtil.asTimestamp(createWOProjectRequest.getDateContract()));
 		projectRecord.setC_BPartner_ID(BPartnerId.toRepoId(createWOProjectRequest.getBPartnerId()));
+
+		projectRecord.setWOProjectCreatedDate(TimeUtil.asTimestamp(createWOProjectRequest.getWoProjectCreatedDate()));
+		projectRecord.setDateContract(TimeUtil.asTimestamp(createWOProjectRequest.getDateContract()));
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(createWOProjectRequest.getDateFinish()));
 		projectRecord.setDateOfProvisionByBPartner(TimeUtil.asTimestamp(createWOProjectRequest.getDateOfProvisionByBPartner()));
-		projectRecord.setC_Project_Reference_Ext(createWOProjectRequest.getProjectReferenceExt());
-		projectRecord.setDescription(createWOProjectRequest.getDescription());
-		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(createWOProjectRequest.getCurrencyId()));
-		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(createWOProjectRequest.getProjectParentId()));
+		projectRecord.setBPartnerTargetDate(TimeUtil.asTimestamp(createWOProjectRequest.getBpartnerTargetDate()));
+
 		projectRecord.setBPartnerDepartment(createWOProjectRequest.getBpartnerDepartment());
 		projectRecord.setWOOwner(createWOProjectRequest.getWoOwner());
-		projectRecord.setPOReference(createWOProjectRequest.getPoReference());
-		projectRecord.setBPartnerTargetDate(TimeUtil.asTimestamp(createWOProjectRequest.getBpartnerTargetDate()));
-		projectRecord.setWOProjectCreatedDate(TimeUtil.asTimestamp(createWOProjectRequest.getWoProjectCreatedDate()));
 		projectRecord.setSpecialist_Consultant_ID(createWOProjectRequest.getSpecialistConsultantId());
-		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectTypeId().getRepoId());
-		projectRecord.setName(createWOProjectRequest.getName());
-		projectRecord.setValue(createWOProjectRequest.getValue());
+
+		projectRecord.setIsActive(createWOProjectRequest.isActive());
 
 		saveRecord(projectRecord);
 
@@ -163,37 +167,46 @@ public class WorkOrderProjectRepository
 	}
 
 	@NonNull
-	private WOProject ofRecord(@NonNull final I_C_Project projectRecord)
+	private static WOProject ofRecord(@NonNull final I_C_Project projectRecord)
 	{
-		final OrgId orgId = OrgId.ofRepoId(projectRecord.getAD_Org_ID());
+		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(projectRecord.getProjectCategory());
+		if (!projectCategory.isWorkOrder())
+		{
+			throw new AdempiereException("Project " + projectRecord.getC_Project_ID() + " is not a work order project!");
+		}
 
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		final OrgId orgId = OrgId.ofRepoId(projectRecord.getAD_Org_ID());
 
 		final ProjectId projectId = ProjectId.ofRepoId(projectRecord.getC_Project_ID());
 
 		return WOProject.builder()
 				.projectId(projectId)
 				.orgId(orgId)
+				.projectReferenceExt(projectRecord.getC_Project_Reference_Ext())
+
 				.name(projectRecord.getName())
 				.value(projectRecord.getValue())
-				.bPartnerId(BPartnerId.ofRepoIdOrNull(projectRecord.getC_BPartner_ID()))
-				.currencyId(CurrencyId.ofRepoIdOrNull(projectRecord.getC_Currency_ID()))
-				.projectParentId(ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_Parent_ID()))
-				.isActive(projectRecord.isActive())
+				.poReference(projectRecord.getPOReference())
 				.description(projectRecord.getDescription())
-				.projectTypeId(ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID()))
+
+				.currencyId(CurrencyId.ofRepoId(projectRecord.getC_Currency_ID()))
+				.projectTypeId(ProjectTypeId.ofRepoId(projectRecord.getC_ProjectType_ID()))
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(projectRecord.getC_BPartner_ID()))
+				.projectParentId(ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_Parent_ID()))
 				.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(projectRecord.getM_PriceList_Version_ID()))
 				.salesRepId(UserId.ofRepoIdOrNull(projectRecord.getSalesRep_ID()))
-				.projectReferenceExt(projectRecord.getC_Project_Reference_Ext())
-				.dateContract(TimeUtil.asInstant(projectRecord.getDateContract(), timeZone))
-				.dateFinish(TimeUtil.asInstant(projectRecord.getDateFinish(), timeZone))
-				.specialistConsultantId(projectRecord.getSpecialist_Consultant_ID())
+
+				.dateContract(TimeUtil.asInstant(projectRecord.getDateContract()))
+				.dateFinish(TimeUtil.asInstant(projectRecord.getDateFinish()))
+				.dateOfProvisionByBPartner(TimeUtil.asInstant(projectRecord.getDateOfProvisionByBPartner()))
+				.bpartnerTargetDate(TimeUtil.asInstant(projectRecord.getBPartnerTargetDate()))
+				.woProjectCreatedDate(TimeUtil.asInstant(projectRecord.getWOProjectCreatedDate()))
+
 				.bpartnerDepartment(projectRecord.getBPartnerDepartment())
-				.dateOfProvisionByBPartner(TimeUtil.asInstant(projectRecord.getDateOfProvisionByBPartner(), timeZone))
+				.specialistConsultantId(projectRecord.getSpecialist_Consultant_ID())
 				.woOwner(projectRecord.getWOOwner())
-				.poReference(projectRecord.getPOReference())
-				.bpartnerTargetDate(TimeUtil.asInstant(projectRecord.getBPartnerTargetDate(), timeZone))
-				.woProjectCreatedDate(TimeUtil.asInstant(projectRecord.getWOProjectCreatedDate(), timeZone))
+
+				.isActive(projectRecord.isActive())
 				.build();
 	}
 }

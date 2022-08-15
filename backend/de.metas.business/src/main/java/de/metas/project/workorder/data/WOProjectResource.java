@@ -42,6 +42,9 @@ import java.time.Instant;
 public class WOProjectResource
 {
 	@NonNull
+	OrgId orgId;
+
+	@NonNull
 	WOProjectResourceId woProjectResourceId;
 
 	@NonNull

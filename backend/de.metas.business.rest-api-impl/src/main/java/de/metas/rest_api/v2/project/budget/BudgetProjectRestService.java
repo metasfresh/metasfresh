@@ -43,14 +43,15 @@ import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectQuery;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.CreateBudgetProjectRequest;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.rest_api.v2.project.resource.ResourceIdentifierUtil;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
@@ -236,7 +237,7 @@ public class BudgetProjectRestService
 			return budgetProjectRepository.getOptionalById(existingProjectId);
 		}
 
-		return budgetProjectRepository.getOptionalBy(ResourceIdentifierUtil.getProjectQueryFromIdentifier(orgId, projectIdentifier));
+		return budgetProjectRepository.getOptionalBy(getProjectQueryFromIdentifier(orgId, projectIdentifier));
 	}
 
 	private void validateJsonBudgetProjectUpsertRequest(@NonNull final JsonBudgetProjectUpsertRequest request)
@@ -263,7 +264,7 @@ public class BudgetProjectRestService
 					.build();
 		}
 
-		if (!projectType.getProjectCategory().isBudget()) //todo fp: same for WOProject
+		if (!projectType.getProjectCategory().isBudget())
 		{
 			throw new AdempiereException("ProjectType.ProjectCategory is not meant for budget!")
 					.appendParametersToMessage()
@@ -276,5 +277,27 @@ public class BudgetProjectRestService
 				throw new MissingPropertyException("resourceIdentifier", resourceRequest);
 			}
 		});
+	}
+
+	@NonNull
+	private static BudgetProjectQuery getProjectQueryFromIdentifier(
+			@NonNull final OrgId orgId,
+			@NonNull final IdentifierString identifier)
+	{
+		final BudgetProjectQuery.BudgetProjectQueryBuilder projectQueryBuilder = BudgetProjectQuery.builder().orgId(orgId);
+
+		switch (identifier.getType())
+		{
+			case VALUE:
+				projectQueryBuilder.value(identifier.asValue());
+				break;
+			case EXTERNAL_ID:
+				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
+				break;
+			default:
+				throw new InvalidIdentifierException(identifier.getRawIdentifierString());
+		}
+
+		return projectQueryBuilder.build();
 	}
 }

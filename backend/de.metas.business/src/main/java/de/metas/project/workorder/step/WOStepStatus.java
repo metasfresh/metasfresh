@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.step;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;

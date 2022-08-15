@@ -24,6 +24,8 @@ package de.metas.rest_api.v2.project.workorder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -31,14 +33,15 @@ import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTes
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectsUnderTestResponse;
+import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.data.CreateWOProjectObjectUnderTestRequest;
 import de.metas.project.workorder.data.WOProject;
-import de.metas.project.workorder.data.WOProjectObjectUnderTest;
-import de.metas.project.workorder.data.WorkOrderProjectObjectUnderTestRepository;
 import de.metas.project.workorder.data.WorkOrderProjectRepository;
+import de.metas.project.workorder.undertest.CreateWOProjectObjectUnderTestRequest;
+import de.metas.project.workorder.undertest.WOObjectUnderTestQuery;
+import de.metas.project.workorder.undertest.WOProjectObjectUnderTest;
+import de.metas.project.workorder.undertest.WorkOrderProjectObjectUnderTestRepository;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.v2.project.workorder.responsemapper.WOProjectObjectUnderTestResponseMapper;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -46,12 +49,15 @@ import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,134 +94,79 @@ public class WorkOrderProjectObjectUnderTestRestService
 	@NonNull
 	private List<JsonWorkOrderObjectUnderTestUpsertResponse> upsertObjectUnderTestWithinTrx(@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request)
 	{
+		if (Check.isEmpty(request.getRequestItems()))
+		{
+			return ImmutableList.of();
+		}
+
 		validateJsonWorkOrderObjectUnderTestUpsertRequest(request);
 
-		final ProjectId projectId = ProjectId.ofRepoId(JsonMetasfreshId.toValueInt(request.getProjectId()));
+		final ProjectId projectId = request.getProjectId().mapValue(ProjectId::ofRepoId);
 
-		final WOProject woProject = workOrderProjectRepository.getOptionalById(projectId)
-				.orElseThrow(() -> MissingResourceException.builder()
-						.resourceName("Work Order Project")
-						.parentResource(request)
-						.build());
+		final WOProject woProject = workOrderProjectRepository.getById(projectId);
 
-		return upsertObjectUnderTestItems(request, woProject.getProjectId());
+		return upsertObjectUnderTestItems(request, woProject);
 	}
 
 	@NonNull
 	private List<JsonWorkOrderObjectUnderTestUpsertResponse> upsertObjectUnderTestItems(
 			@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request,
-			@NonNull final ProjectId woProjectId)
+			@NonNull final WOProject woProject)
 	{
-		final Map<IdentifierString, JsonWorkOrderObjectUnderTestUpsertItemRequest> identifierString2JsonObjectUnderTest = request.getRequestItems().stream()
-				.collect(Collectors.toMap((jsonObjectUnderTest) -> IdentifierString.of(jsonObjectUnderTest.getIdentifier()), Function.identity()));
+		final Map<IdentifierString, JsonWorkOrderObjectUnderTestUpsertItemRequest> identifier2ObjectUnderTest = Maps.uniqueIndex(
+				request.getRequestItems(),
+				(requestItem) -> requestItem.mapObjectIdentifier(IdentifierString::of));
 
-		final Map<IdentifierString, WOProjectObjectUnderTest> identifierString2ExistingObjectUnderTest = woProjectObjectUnderTestToUpdateMap(request.getRequestItems(), woProjectId);
-
-		return upsertObjectUnderTestItems(woProjectId, request.getRequestItems(), request.getSyncAdvise(), identifierString2JsonObjectUnderTest, identifierString2ExistingObjectUnderTest);
-	}
-
-	@NonNull
-	private Map<IdentifierString, WOProjectObjectUnderTest> woProjectObjectUnderTestToUpdateMap(
-			@NonNull final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> jsonObjectsUnderTest,
-			@NonNull final ProjectId woProjectId)
-	{
-		final List<WOProjectObjectUnderTest> existingObjectUnderTests = workOrderProjectObjectUnderTestRepository.getByProjectId(woProjectId);
-
-		if (existingObjectUnderTests == null || existingObjectUnderTests.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableMap.Builder<IdentifierString, WOProjectObjectUnderTest> woProjectObjectUnderTestToUpdateMap = ImmutableMap.builder();
-
-		for (final JsonWorkOrderObjectUnderTestUpsertItemRequest jsonObjectUnderTest : jsonObjectsUnderTest)
-		{
-			final IdentifierString identifier = IdentifierString.of(jsonObjectUnderTest.getIdentifier());
-
-			WorkOrderMapperUtil.resolveObjectUnderTestForExternalIdentifier(identifier, existingObjectUnderTests)
-					.ifPresent(matchingProject -> woProjectObjectUnderTestToUpdateMap.put(identifier, matchingProject));
-		}
-
-		return woProjectObjectUnderTestToUpdateMap.build();
+		return upsertObjectUnderTestItems(woProject.getProjectId(),
+										  woProject.getOrgId(),
+										  identifier2ObjectUnderTest,
+										  request.getSyncAdvise());
 	}
 
 	@NonNull
 	private List<JsonWorkOrderObjectUnderTestUpsertResponse> upsertObjectUnderTestItems(
 			@NonNull final ProjectId woProjectId,
-			@NonNull final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> jsonObjectsUnderTest,
-			@NonNull final SyncAdvise syncAdvise,
-			@NonNull final Map<IdentifierString, JsonWorkOrderObjectUnderTestUpsertItemRequest> identifierString2JsonObjectUnderTest,
-			@NonNull final Map<IdentifierString, WOProjectObjectUnderTest> identifierString2ExistingObjectUnderTest)
+			@NonNull final OrgId orgId,
+			@NonNull final Map<IdentifierString, JsonWorkOrderObjectUnderTestUpsertItemRequest> identifier2RequestItem,
+			@NonNull final SyncAdvise syncAdvise)
 	{
-		final ImmutableList.Builder<WOProjectObjectUnderTest> objectUnderTestToUpdate = ImmutableList.builder();
-		final ImmutableList.Builder<CreateWOProjectObjectUnderTestRequest> objectUnderTestToCreate = ImmutableList.builder();
-		final ImmutableList.Builder<WOProjectObjectUnderTestResponseMapper> responseMapper = ImmutableList.builder();
-		final ImmutableList.Builder<WOProjectObjectUnderTest> objectUnderTestCollectorBuilder = ImmutableList.builder();
+		final List<WOProjectObjectUnderTest> existingObjectsUnderTest = workOrderProjectObjectUnderTestRepository.getByProjectId(woProjectId);
 
-		for (final JsonWorkOrderObjectUnderTestUpsertItemRequest jsonWorkOrderObjectUnderTestUpsertItemRequest : jsonObjectsUnderTest)
+		final Map<IdentifierString, WOProjectObjectUnderTest> objectsToUpdate =
+				getItemsToUpdate(existingObjectsUnderTest, identifier2RequestItem.values(), syncAdvise);
+
+		final Map<IdentifierString, CreateWOProjectObjectUnderTestRequest> objectsToCreate =
+				getItemsToCreate(woProjectId, orgId, objectsToUpdate.keySet(), identifier2RequestItem, syncAdvise);
+
+		final ImmutableList.Builder<JsonWorkOrderObjectUnderTestUpsertResponse> responseCollector = ImmutableList.builder();
+
+		if (syncAdvise.getIfExists().isUpdate())
 		{
-			final String identifier = jsonWorkOrderObjectUnderTestUpsertItemRequest.getIdentifier();
-			final IdentifierString identifierString = IdentifierString.of(identifier);
-
-			final JsonWorkOrderObjectUnderTestUpsertItemRequest requestItem = identifierString2JsonObjectUnderTest.get(identifierString);
-
-			final Optional<WOProjectObjectUnderTest> existingObjectUnderTestOpt = Optional.ofNullable(identifierString2ExistingObjectUnderTest.get(identifierString));
-
-			if (existingObjectUnderTestOpt.isPresent() && !syncAdvise.getIfExists().isUpdate())
-			{
-				final WOProjectObjectUnderTest existingObjectUnderTest = existingObjectUnderTestOpt.get();
-
-				responseMapper.add(WOProjectObjectUnderTestResponseMapper.builder()
-										   .identifier(identifier)
-										   .syncOutcome(JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE)
-										   .build());
-
-				objectUnderTestCollectorBuilder.add(existingObjectUnderTest);
-			}
-			else if (existingObjectUnderTestOpt.isPresent() || !syncAdvise.isFailIfNotExists())
-			{
-				final JsonResponseUpsertItem.SyncOutcome syncOutcome;
-
-				final WOProjectObjectUnderTest existingObjectUnderTest = existingObjectUnderTestOpt.orElse(null);
-
-				if (existingObjectUnderTest == null)
-				{
-					objectUnderTestToCreate.add(buildCreateWOProjectObjectUnderTestRequest(requestItem, woProjectId));
-
-					syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
-				}
-				else
-				{
-					objectUnderTestToUpdate.add(syncWOProjectObjectUnderTestWithJson(requestItem, existingObjectUnderTest));
-
-					syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
-				}
-
-				responseMapper.add(WOProjectObjectUnderTestResponseMapper.builder()
-										   .identifier(identifier)
-										   .syncOutcome(syncOutcome)
-										   .build());
-			}
-			else
-			{
-				throw MissingResourceException.builder()
-						.resourceName("Work order project object under test")
-						.parentResource(requestItem)
-						.build()
-						.setParameter("objectUnderTestSyncAdvise", syncAdvise);
-			}
-
-			objectUnderTestCollectorBuilder.addAll(workOrderProjectObjectUnderTestRepository.updateAll(objectUnderTestToUpdate.build()));
-
-			objectUnderTestCollectorBuilder.addAll(workOrderProjectObjectUnderTestRepository.createAll(objectUnderTestToCreate.build()));
+			workOrderProjectObjectUnderTestRepository.updateAll(objectsToUpdate.values());
 		}
 
-		final List<WOProjectObjectUnderTest> objectUnderTestCollector = objectUnderTestCollectorBuilder.build();
+		final JsonResponseUpsertItem.SyncOutcome toUpdateSyncOutcome = syncAdvise.getIfExists().isUpdate()
+			? JsonResponseUpsertItem.SyncOutcome.UPDATED
+			: JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE;
 
-		return responseMapper.build()
-				.stream()
-				.map(objectUnderTestMapper -> objectUnderTestMapper.map(objectUnderTestCollector)) //todo fp: drop mapper
-				.collect(ImmutableList.toImmutableList());
+		objectsToUpdate.forEach((identifier,objectUnderTest) -> responseCollector
+				.add(JsonWorkOrderObjectUnderTestUpsertResponse.builder()
+							 .identifier(identifier.getRawIdentifierString())
+							 .metasfreshId(JsonMetasfreshId.of(objectUnderTest.getObjectUnderTestId().getRepoId()))
+							 .syncOutcome(toUpdateSyncOutcome)
+							 .build()));
+
+		objectsToCreate.forEach((identifier,createRequest) -> {
+			final WOProjectObjectUnderTest objectUnderTest = workOrderProjectObjectUnderTestRepository.create(createRequest);
+
+			responseCollector.add(JsonWorkOrderObjectUnderTestUpsertResponse.builder()
+										  .identifier(identifier.getRawIdentifierString())
+										  .metasfreshId(JsonMetasfreshId.of(objectUnderTest.getObjectUnderTestId().getRepoId()))
+										  .syncOutcome(JsonResponseUpsertItem.SyncOutcome.CREATED)
+										  .build());
+		});
+
+		return responseCollector.build();
 	}
 
 	@NonNull
@@ -253,27 +204,201 @@ public class WorkOrderProjectObjectUnderTestRestService
 
 		if (request.isExternalIdSet())
 		{
-			objectUnderTestBuilder.externalId(ExternalId.of(request.getExternalId().getValue()));
+			objectUnderTestBuilder.externalId(ExternalId.ofOrNull(request.getExternalId()));
 		}
 
 		return objectUnderTestBuilder.build();
 	}
 
 	@NonNull
-	public static CreateWOProjectObjectUnderTestRequest buildCreateWOProjectObjectUnderTestRequest(
+	private Map<IdentifierString, WOProjectObjectUnderTest> getItemsToUpdate(
+			@NonNull final List<WOProjectObjectUnderTest> existingProjectUnderTestForProject,
+			@NonNull final Collection<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems,
+			@NonNull final SyncAdvise syncAdvise)
+	{
+		final ImmutableMap.Builder<IdentifierString, WOProjectObjectUnderTest> updatesCollector = ImmutableMap.builder();
+
+		for (final JsonWorkOrderObjectUnderTestUpsertItemRequest item : requestItems)
+		{
+			final IdentifierString objectUnderTestIdentifier = item.mapObjectIdentifier(IdentifierString::of);
+
+			resolveObjectUnderTestForExternalIdentifier(objectUnderTestIdentifier, existingProjectUnderTestForProject)
+					//dev-note: avoid unnecessary processing
+					.map(matchingWOProjectUnderTest -> syncAdvise.getIfExists().isUpdate()
+							? syncWOProjectObjectUnderTestWithJson(item, matchingWOProjectUnderTest)
+							: matchingWOProjectUnderTest)
+
+					.ifPresent(syncedWOProjectUnderTest -> updatesCollector.put(objectUnderTestIdentifier, syncedWOProjectUnderTest));
+		}
+
+		return updatesCollector.build();
+	}
+
+	@NonNull
+	private Map<IdentifierString, CreateWOProjectObjectUnderTestRequest> getItemsToCreate(
+			@NonNull final ProjectId projectId,
+			@NonNull final OrgId orgId,
+			@NonNull final Set<IdentifierString> objectIdentifiersMatchedForUpdate,
+			@NonNull final Map<IdentifierString, JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems,
+			@NonNull final SyncAdvise syncAdvise)
+	{
+		final ImmutableMap.Builder<IdentifierString, CreateWOProjectObjectUnderTestRequest> itemsToCreate = ImmutableMap.builder();
+
+		final Set<IdentifierString> identifiesToCreate = getIdentifiersToCreate(orgId, objectIdentifiersMatchedForUpdate, requestItems.values());
+
+		if (syncAdvise.getIfNotExists().isFail() && !identifiesToCreate.isEmpty())
+		{
+			final String missingRawIdentifiers = identifiesToCreate.stream()
+					.map(IdentifierString::getRawIdentifierString)
+					.collect(Collectors.joining(","));
+
+			throw MissingResourceException.builder()
+					.resourceName("WOProjectObjectUnderTest")
+					.resourceIdentifier(missingRawIdentifiers)
+					.build()
+					.setParameter("objectUnderTestSyncAdvise", syncAdvise);
+		}
+
+		for (final IdentifierString identifier : identifiesToCreate)
+		{
+			final JsonWorkOrderObjectUnderTestUpsertItemRequest item2Create = requestItems.get(identifier);
+
+			final CreateWOProjectObjectUnderTestRequest createWOProjectObjectUnderTestRequest = buildCreateWOProjectObjectUnderTestRequest(item2Create, projectId, orgId);
+
+			itemsToCreate.put(identifier, createWOProjectObjectUnderTestRequest);
+		}
+
+		return itemsToCreate.build();
+	}
+
+	@NonNull
+	private Set<IdentifierString> getIdentifiersToCreate(
+			@NonNull final OrgId orgId,
+			@NonNull final Set<IdentifierString> objectIdentifiersMatchedForUpdate,
+			@NonNull final Collection<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems)
+	{
+		final ImmutableSet.Builder<IdentifierString> externalIdsToInsertCollector = ImmutableSet.builder();
+
+		for (final JsonWorkOrderObjectUnderTestUpsertItemRequest item : requestItems)
+		{
+			final IdentifierString objectUnderTestIdentifier = item.mapObjectIdentifier(IdentifierString::of);
+
+			if (objectIdentifiersMatchedForUpdate.contains(objectUnderTestIdentifier))
+			{
+				continue;
+			}
+
+			if (objectUnderTestIdentifier.isMetasfreshId())
+			{
+				throw new AdempiereException("C_Project_WO_ObjectUnderTest_ID is already placed below another project!")
+						.setParameter("C_Project_WO_ObjectUnderTest_ID", objectUnderTestIdentifier.asMetasfreshId().getValue());
+			}
+			else if (objectUnderTestIdentifier.isExternalId())
+			{
+				externalIdsToInsertCollector.add(objectUnderTestIdentifier);
+			}
+			else
+			{
+				throw new AdempiereException("Unsupported identifier type=" + objectUnderTestIdentifier.getType());
+			}
+		}
+
+		final Set<IdentifierString> externalIdsToCreate = externalIdsToInsertCollector.build();
+
+		validateAreNotStoredUnderDifferentProject(externalIdsToCreate, orgId);
+
+		return externalIdsToCreate;
+	}
+
+	private void validateAreNotStoredUnderDifferentProject(@NonNull final Set<IdentifierString> externalIdsToCreate, @NonNull final OrgId orgId)
+	{
+		if (externalIdsToCreate.isEmpty())
+		{
+			return;
+		}
+
+		final Set<String> rawExternalIds = externalIdsToCreate.stream()
+				.map(IdentifierString::asExternalId)
+				.map(ExternalId::getValue)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final WOObjectUnderTestQuery query = WOObjectUnderTestQuery.builder()
+				.orgId(orgId)
+				.externalIds(rawExternalIds)
+				.build();
+
+		final List<WOProjectObjectUnderTest> existingWOProjectUnderTest = workOrderProjectObjectUnderTestRepository.getByQuery(query);
+
+		if (!existingWOProjectUnderTest.isEmpty())
+		{
+			final String projectIds = existingWOProjectUnderTest.stream()
+					.map(WOProjectObjectUnderTest::getProjectId)
+					.map(ProjectId::getRepoId)
+					.map(String::valueOf)
+					.collect(Collectors.joining(","));
+
+			throw new AdempiereException("WOProjectUnderTest.ExternalId already stored under a different project!")
+					.setParameter("ExternalIds", StringUtils.join(rawExternalIds, ", "))
+					.setParameter("ProjectIds", projectIds);
+		}
+	}
+
+	@NonNull
+	private static CreateWOProjectObjectUnderTestRequest buildCreateWOProjectObjectUnderTestRequest(
 			@NonNull final JsonWorkOrderObjectUnderTestUpsertItemRequest request,
-			@NonNull final ProjectId woProjectId)
+			@NonNull final ProjectId woProjectId,
+			@NonNull final OrgId orgId)
 	{
 		return CreateWOProjectObjectUnderTestRequest.builder()
+				.orgId(orgId)
 				.projectId(woProjectId)
 				.numberOfObjectsUnderTest(request.getNumberOfObjectsUnderTest())
-				.externalId(ExternalId.of(request.getExternalId().getValue()))
+				.externalId(ExternalId.of(request.getExternalId()))
 				.woDeliveryNote(request.getWoDeliveryNote())
 				.woManufacturer(request.getWoManufacturer())
 				.woObjectType(request.getWoObjectType())
 				.woObjectName(request.getWoObjectName())
 				.woObjectWhereabouts(request.getWoObjectWhereabouts())
 				.build();
+	}
+
+	@NonNull
+	private static JsonWorkOrderObjectsUnderTestResponse toJsonWorkOrderObjectsUnderTestResponse(@NonNull final WOProjectObjectUnderTest objectUnderTest)
+	{
+		return JsonWorkOrderObjectsUnderTestResponse.builder()
+				.objectUnderTestId(JsonMetasfreshId.of(objectUnderTest.getObjectUnderTestId().getRepoId()))
+				.numberOfObjectsUnderTest(objectUnderTest.getNumberOfObjectsUnderTest())
+				.externalId(ExternalId.toValue(objectUnderTest.getExternalId()))
+				.woDeliveryNote(objectUnderTest.getWoDeliveryNote())
+				.woManufacturer(objectUnderTest.getWoManufacturer())
+				.woObjectType(objectUnderTest.getWoObjectType())
+				.woObjectName(objectUnderTest.getWoObjectName())
+				.woObjectWhereabouts(objectUnderTest.getWoObjectWhereabouts())
+				.build();
+	}
+
+	@NonNull
+	public Optional<WOProjectObjectUnderTest> resolveObjectUnderTestForExternalIdentifier(
+			@NonNull final IdentifierString identifier,
+			@NonNull final List<WOProjectObjectUnderTest> objectsUnderTest)
+	{
+		switch (identifier.getType())
+		{
+			case METASFRESH_ID:
+				return objectsUnderTest.stream()
+						.filter(objectUnderTest -> {
+							final int id = objectUnderTest.getObjectUnderTestId().getRepoId();
+							return id == identifier.asMetasfreshId().getValue();
+						})
+						.findFirst();
+			case EXTERNAL_ID:
+				return objectsUnderTest.stream()
+						.filter(objectUnderTest -> objectUnderTest.getExternalId() != null)
+						.filter(objectUnderTest -> objectUnderTest.getExternalId().equals(identifier.asExternalId()))
+						.findFirst();
+			default:
+				throw new AdempiereException("Unhandled IdentifierString type=" + identifier);
+		}
 	}
 
 	private static void validateJsonWorkOrderObjectUnderTestUpsertRequest(@NonNull final JsonWorkOrderObjectUnderTestUpsertRequest request)
@@ -288,21 +413,16 @@ public class WorkOrderProjectObjectUnderTestRestService
 			{
 				throw new MissingPropertyException("numberOfObjectsUnderTest", requestItem);
 			}
-		});
-	}
 
-	@NonNull
-	private static JsonWorkOrderObjectsUnderTestResponse toJsonWorkOrderObjectsUnderTestResponse(@NonNull final WOProjectObjectUnderTest objectUnderTest)
-	{
-		return JsonWorkOrderObjectsUnderTestResponse.builder()
-				.objectUnderTestId(JsonMetasfreshId.of(objectUnderTest.getObjectUnderTestId().getRepoId()))
-				.numberOfObjectsUnderTest(objectUnderTest.getNumberOfObjectsUnderTest())
-				.externalId(JsonMetasfreshId.ofOrNull(Integer.valueOf(ExternalId.toValue(objectUnderTest.getExternalId()))))
-				.woDeliveryNote(objectUnderTest.getWoDeliveryNote())
-				.woManufacturer(objectUnderTest.getWoManufacturer())
-				.woObjectType(objectUnderTest.getWoObjectType())
-				.woObjectName(objectUnderTest.getWoObjectName())
-				.woObjectWhereabouts(objectUnderTest.getWoObjectWhereabouts())
-				.build();
+			final IdentifierString identifierString = requestItem.mapObjectIdentifier(IdentifierString::of);
+
+			if (identifierString.isExternalId() && !identifierString.asExternalId().getValue().equals(requestItem.getExternalId()))
+			{
+				throw new AdempiereException("WorkOrderObjectUnderTest.Identifier doesn't match with WorkOrderObjectUnderTest.ExternalId")
+						.appendParametersToMessage()
+						.setParameter("WorkOrderObjectUnderTest.Identifier", identifierString.getRawIdentifierString())
+						.setParameter("WorkOrderObjectUnderTest.ExternalId", requestItem.getExternalId());
+			}
+		});
 	}
 }

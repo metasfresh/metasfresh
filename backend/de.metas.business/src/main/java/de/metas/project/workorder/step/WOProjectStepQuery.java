@@ -20,66 +20,22 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.step;
 
-import de.metas.project.ProjectId;
-import de.metas.util.lang.ExternalId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
+import java.util.Set;
 
 @Value
 @Builder
-public class CreateWOProjectStepRequest
+public class WOProjectStepQuery
 {
 	@NonNull
-	ProjectId projectId;
+	Set<String> externalIds;
 
 	@NonNull
-	String name;
-
-	@NonNull
-	ExternalId externalId;
-
-	@NonNull
-	Integer seqNo;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	Instant dateStart;
-
-	@Nullable
-	Instant dateEnd;
-
-	@Nullable
-	Instant woPartialReportDate;
-
-	@Nullable
-	Integer woPlannedResourceDurationHours;
-
-	@Nullable
-	Instant deliveryDate;
-
-	@Nullable
-	Instant woTargetStartDate;
-
-	@Nullable
-	Instant woTargetEndDate;
-
-	@Nullable
-	Integer woPlannedPersonDurationHours;
-
-	@Nullable
-	WOStepStatus woStepStatus;
-
-	@Nullable
-	Instant woFindingsReleasedDate;
-
-	@Nullable
-	Instant woFindingsCreatedDate;
+	OrgId orgId;
 }

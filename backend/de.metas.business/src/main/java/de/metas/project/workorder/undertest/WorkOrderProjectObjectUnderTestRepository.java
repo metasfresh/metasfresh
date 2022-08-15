@@ -20,11 +20,12 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.undertest;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.Services;
@@ -36,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_WO_ObjectUnderTest;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +62,7 @@ public class WorkOrderProjectObjectUnderTestRepository
 	}
 
 	@NonNull
-	public List<WOProjectObjectUnderTest> updateAll(@NonNull final List<WOProjectObjectUnderTest> objectUnderTestList)
+	public List<WOProjectObjectUnderTest> updateAll(@NonNull final Collection<WOProjectObjectUnderTest> objectUnderTestList)
 	{
 		final Set<Integer> objectUnderTestIds = objectUnderTestList.stream()
 				.map(WOProjectObjectUnderTest::getObjectUnderTestId)
@@ -105,33 +107,37 @@ public class WorkOrderProjectObjectUnderTestRepository
 	}
 
 	@NonNull
-	public List<WOProjectObjectUnderTest> createAll(@NonNull final List<CreateWOProjectObjectUnderTestRequest> createWOProjectObjectUnderTestRequests)
+	public WOProjectObjectUnderTest create(@NonNull final CreateWOProjectObjectUnderTestRequest createWOProjectObjectUnderTestRequest)
 	{
-		final ImmutableList.Builder<WOProjectObjectUnderTest> savedObjectsUnderTest = ImmutableList.builder();
+		final I_C_Project_WO_ObjectUnderTest record = InterfaceWrapperHelper.newInstance(I_C_Project_WO_ObjectUnderTest.class);
 
-		for (final CreateWOProjectObjectUnderTestRequest createWOProjectObjectUnderTestRequest : createWOProjectObjectUnderTestRequests)
-		{
-			final I_C_Project_WO_ObjectUnderTest record = InterfaceWrapperHelper.newInstance(I_C_Project_WO_ObjectUnderTest.class);
+		record.setAD_Org_ID(createWOProjectObjectUnderTestRequest.getOrgId().getRepoId());
+		record.setC_Project_ID(createWOProjectObjectUnderTestRequest.getProjectId().getRepoId());
+		record.setExternalId(createWOProjectObjectUnderTestRequest.getExternalId().getValue());
 
-			if (createWOProjectObjectUnderTestRequest.getExternalId() != null)
-			{
-				record.setExternalId(createWOProjectObjectUnderTestRequest.getExternalId().getValue());
-			}
+		record.setNumberOfObjectsUnderTest(createWOProjectObjectUnderTestRequest.getNumberOfObjectsUnderTest());
 
-			record.setNumberOfObjectsUnderTest(createWOProjectObjectUnderTestRequest.getNumberOfObjectsUnderTest());
-			record.setC_Project_ID(createWOProjectObjectUnderTestRequest.getProjectId().getRepoId());
-			record.setWODeliveryNote(createWOProjectObjectUnderTestRequest.getWoDeliveryNote());
-			record.setWOManufacturer(createWOProjectObjectUnderTestRequest.getWoManufacturer());
-			record.setWOObjectType(createWOProjectObjectUnderTestRequest.getWoObjectType());
-			record.setWOObjectName(createWOProjectObjectUnderTestRequest.getWoObjectName());
-			record.setWOObjectWhereabouts(createWOProjectObjectUnderTestRequest.getWoObjectWhereabouts());
+		record.setWODeliveryNote(createWOProjectObjectUnderTestRequest.getWoDeliveryNote());
+		record.setWOManufacturer(createWOProjectObjectUnderTestRequest.getWoManufacturer());
+		record.setWOObjectType(createWOProjectObjectUnderTestRequest.getWoObjectType());
+		record.setWOObjectName(createWOProjectObjectUnderTestRequest.getWoObjectName());
+		record.setWOObjectWhereabouts(createWOProjectObjectUnderTestRequest.getWoObjectWhereabouts());
 
-			saveRecord(record);
+		saveRecord(record);
 
-			savedObjectsUnderTest.add(ofRecord(record));
-		}
+		return ofRecord(record);
+	}
 
-		return savedObjectsUnderTest.build();
+	@NonNull
+	public List<WOProjectObjectUnderTest> getByQuery(@NonNull final WOObjectUnderTestQuery query)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_WO_ObjectUnderTest.class)
+				.addEqualsFilter(I_C_Project_WO_ObjectUnderTest.COLUMNNAME_AD_Org_ID, query.getOrgId())
+				.addInArrayFilter(I_C_Project_WO_ObjectUnderTest.COLUMNNAME_ExternalId, query.getExternalIds())
+				.create()
+				.stream()
+				.map(WorkOrderProjectObjectUnderTestRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -141,10 +147,11 @@ public class WorkOrderProjectObjectUnderTestRepository
 		final WOProjectObjectUnderTestId woProjectObjectUnderTestId = WOProjectObjectUnderTestId.ofRepoId(projectId, record.getC_Project_WO_ObjectUnderTest_ID());
 
 		return WOProjectObjectUnderTest.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.objectUnderTestId(woProjectObjectUnderTestId)
 				.projectId(projectId)
 				.numberOfObjectsUnderTest(record.getNumberOfObjectsUnderTest())
-				.externalId(ExternalId.of(record.getExternalId()))
+				.externalId(ExternalId.ofOrNull(record.getExternalId()))
 				.woDeliveryNote(record.getWODeliveryNote())
 				.woManufacturer(record.getWOManufacturer())
 				.woObjectType(record.getWOObjectType())

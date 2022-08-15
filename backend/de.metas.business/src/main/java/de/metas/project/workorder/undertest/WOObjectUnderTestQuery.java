@@ -20,35 +20,22 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.undertest;
 
-import de.metas.common.util.EmptyUtil;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.util.Set;
 
 @Value
-public class ProjectQuery
+@Builder
+public class WOObjectUnderTestQuery
 {
-	OrgId orgId;
-	String value;
-	ExternalId externalProjectReference;
+	@NonNull
+	Set<String> externalIds;
 
-	@Builder
-	public ProjectQuery(
-			@NonNull final OrgId orgId,
-			@Nullable final String value,
-			@Nullable final ExternalId externalProjectReference)
-	{
-		this.orgId = orgId;
-		
-		this.value = value;
-		this.externalProjectReference = externalProjectReference;
-		Check.errorIf(EmptyUtil.isBlank(value) && externalProjectReference == null, "At least one of value or externalProjectReference need to be specified");
-	}
+	@NonNull
+	OrgId orgId;
 }

@@ -73,6 +73,11 @@ public class JsonMetasfreshId
 		return value;
 	}
 
+	@NonNull
+	public <T> T mapValue(@NonNull final Function<Integer, T> mapper) {
+		return mapper.apply(value);
+	}
+
 	public static boolean equals(@Nullable final JsonMetasfreshId id1, @Nullable final JsonMetasfreshId id2)
 	{
 		return Objects.equals(id1, id2);

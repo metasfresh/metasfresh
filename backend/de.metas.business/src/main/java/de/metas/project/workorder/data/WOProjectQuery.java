@@ -22,52 +22,33 @@
 
 package de.metas.project.workorder.data;
 
+import de.metas.common.util.EmptyUtil;
 import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectStepId;
+import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
 
 @Value
-@Builder
-public class CreateWOProjectResourceRequest
+public class WOProjectQuery
 {
-	@NonNull
 	OrgId orgId;
+	String value;
+	ExternalId externalProjectReference;
 
-	@NonNull
-	WOProjectStepId woProjectStepId;
-
-	@NonNull
-	Instant assignDateFrom;
-
-	@NonNull
-	Instant assignDateTo;
-
-	@NonNull
-	ResourceId resourceId;
-
-	@Nullable
-	Boolean isActive;
-
-	@Nullable
-	Boolean isAllDay;
-
-	@Nullable
-	BigDecimal duration;
-
-	@Nullable
-	DurationUnit durationUnit;
-
-	@Nullable
-	ExternalId externalId;
-
-	@Nullable
-	String testFacilityGroupName;
+	@Builder
+	public WOProjectQuery(
+			@NonNull final OrgId orgId,
+			@Nullable final String value,
+			@Nullable final ExternalId externalProjectReference)
+	{
+		this.orgId = orgId;
+		
+		this.value = value;
+		this.externalProjectReference = externalProjectReference;
+		Check.errorIf(EmptyUtil.isBlank(value) && externalProjectReference == null, "At least one of value or externalProjectReference need to be specified");
+	}
 }

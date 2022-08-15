@@ -25,9 +25,6 @@ package de.metas.rest_api.v2.project.workorder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
-import de.metas.currency.Currency;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -38,13 +35,12 @@ import de.metas.project.ProjectTypeId;
 import de.metas.project.service.ProjectService;
 import de.metas.project.workorder.data.CreateWOProjectRequest;
 import de.metas.project.workorder.data.WOProject;
+import de.metas.rest_api.v2.project.ValidateProjectHelper;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingPropertyException;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -55,7 +51,6 @@ import java.time.ZoneId;
 public class WorkOrderMapper
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final ProjectService projectService;
@@ -74,36 +69,41 @@ public class WorkOrderMapper
 		final CurrencyId currencyId = getCurrencyId(request, existingWOProject);
 		final PriceListVersionId priceListVersionId = getPriceListVersionId(request, existingWOProject);
 
-		assertCurrencyIdsMatch(currencyId, priceListVersionId);
+		ValidateProjectHelper.assertCurrencyIdsMatch(currencyId, priceListVersionId, priceListDAO::getPriceListByPriceListVersionId);
 
 		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
-		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoId(request.getProjectTypeId().getValue());
-
-		final String projectValue = getProjectValue(request, projectTypeId);
-		final String projectName = getName(request, projectValue);
+		final ProjectTypeId projectTypeId = request.getProjectTypeId().mapValue(ProjectTypeId::ofRepoId);
 
 		final WOProject.WOProjectBuilder woProjectBuilder = existingWOProject.toBuilder()
 				.orgId(orgId)
 				.projectTypeId(projectTypeId)
 				.currencyId(currencyId)
-				.priceListVersionId(priceListVersionId)
-				.value(projectValue)
-				.name(projectName);
+				.priceListVersionId(priceListVersionId);
+
+		if (request.isValueSet())
+		{
+			woProjectBuilder.value(request.getValue());
+		}
+
+		if (request.isNameSet())
+		{
+			woProjectBuilder.name(request.getName());
+		}
 
 		if (request.isSalesRepIdSet())
 		{
-			woProjectBuilder.salesRepId(UserId.ofRepoIdOrNull(request.getSalesRepId().getValue()));
+			woProjectBuilder.salesRepId(JsonMetasfreshId.mapToOrNull(request.getSalesRepId(), UserId::ofRepoId));
 		}
 
 		if (request.isBusinessPartnerIdSet())
 		{
-			woProjectBuilder.bPartnerId(BPartnerId.ofRepoIdOrNull(request.getBusinessPartnerId().getValue()));
+			woProjectBuilder.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBusinessPartnerId(), BPartnerId::ofRepoId));
 		}
 
 		if (request.isProjectParentIdSet())
 		{
-			woProjectBuilder.projectParentId(ProjectId.ofRepoIdOrNull(request.getProjectTypeId().getValue()));
+			woProjectBuilder.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId));
 		}
 
 		if (request.isProjectReferenceExtSet())
@@ -138,7 +138,7 @@ public class WorkOrderMapper
 
 		if (request.isDateOfProvisionByBPartnerSet())
 		{
-			woProjectBuilder.dateOfProvisionByBPartner(TimeUtil.asInstant(request.getDateOfProvisionByBPartner(), orgId));
+			woProjectBuilder.dateOfProvisionByBPartner(TimeUtil.asInstant(request.getDateOfProvisionByBPartner(), zoneId));
 		}
 
 		if (request.isBpartnerDepartmentSet())
@@ -179,12 +179,12 @@ public class WorkOrderMapper
 			throw new MissingPropertyException("currencyId", request);
 		}
 
-		final CurrencyId currencyId = getCurrencyId(request);
-		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getPriceListVersionId()));
+		final CurrencyId currencyId = request.getCurrencyId().mapValue(CurrencyId::ofRepoId);
+		final PriceListVersionId priceListVersionId = JsonMetasfreshId.mapToOrNull(request.getPriceListVersionId(), PriceListVersionId::ofRepoId);
 
-		assertCurrencyIdsMatch(currencyId, priceListVersionId);
+		ValidateProjectHelper.assertCurrencyIdsMatch(currencyId, priceListVersionId, priceListDAO::getPriceListByPriceListVersionId);
 
-		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoId(JsonMetasfreshId.toValueInt(request.getProjectTypeId()));
+		final ProjectTypeId projectTypeId = request.getProjectTypeId().mapValue(ProjectTypeId::ofRepoId);
 		final String projectValue = getProjectValue(request, projectTypeId);
 		final String projectName = getName(request, projectValue);
 
@@ -209,76 +209,10 @@ public class WorkOrderMapper
 				.poReference(request.getPoReference())
 				.bpartnerTargetDate(TimeUtil.asInstant(request.getBpartnerTargetDate(), zoneId))
 				.woProjectCreatedDate(TimeUtil.asInstant(request.getWoProjectCreatedDate(), zoneId))
-				.salesRepId(UserId.ofRepoIdOrNull(request.getSalesRepId().getValue()))
-				.bPartnerId(BPartnerId.ofRepoIdOrNull(request.getBusinessPartnerId().getValue()))
-				.projectParentId(ProjectId.ofRepoIdOrNull(request.getProjectParentId().getValue()))
+				.salesRepId(JsonMetasfreshId.mapToOrNull(request.getSalesRepId(), UserId::ofRepoId))
+				.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBusinessPartnerId(), BPartnerId::ofRepoId))
+				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId))
 				.build();
-	}
-
-	@NonNull
-	private CurrencyId getCurrencyId(
-			@NonNull final JsonWorkOrderProjectUpsertRequest request,
-			@NonNull final WOProject existingWOProject)
-	{
-		if (request.isCurrencyIdSet())
-		{
-			return getCurrencyId(request);
-		}
-		else
-		{
-			return existingWOProject.getCurrencyId();
-		}
-	}
-
-	@NonNull
-	private CurrencyId getCurrencyId(@NonNull final JsonWorkOrderProjectUpsertRequest request)
-	{
-		final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(CurrencyId.ofRepoId(request.getCurrencyId().getValue()));
-		final Currency currency = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode.toThreeLetterCode()));
-
-		return currency.getId();
-	}
-
-	private void assertCurrencyIdsMatch(
-			@NonNull final CurrencyId currencyId,
-			@Nullable final PriceListVersionId priceListVersionId) //todo fp move to some common service
-	{
-		if (priceListVersionId == null)
-		{
-			return;
-		}
-
-		final I_M_PriceList priceListRecord = priceListDAO.getPriceListByPriceListVersionId(priceListVersionId);
-
-		if (priceListRecord == null)
-		{
-			return;
-		}
-
-		final CurrencyId priceListCurrencyId = CurrencyId.ofRepoId(priceListRecord.getC_Currency_ID());
-
-		if (currencyId.getRepoId() != priceListCurrencyId.getRepoId())
-		{
-			throw new AdempiereException("Currency of the budget project does not match the currency of the price list!")
-					.appendParametersToMessage()
-					.setParameter("Project.CurrencyId", currencyId)
-					.setParameter("PriceList.CurrencyId", priceListCurrencyId);
-		}
-	}
-
-	@Nullable
-	private static PriceListVersionId getPriceListVersionId(
-			@NonNull final JsonWorkOrderProjectUpsertRequest request,
-			@NonNull final WOProject existingWOProject)
-	{
-		if (request.isPriceListVersionIdSet())
-		{
-			return PriceListVersionId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getPriceListVersionId()));
-		}
-		else
-		{
-			return existingWOProject.getPriceListVersionId();
-		}
 	}
 
 	@NonNull
@@ -286,16 +220,9 @@ public class WorkOrderMapper
 			@NonNull final JsonWorkOrderProjectUpsertRequest request,
 			@NonNull final ProjectTypeId projectTypeId)
 	{
-		final String projectValue;
-
-		if (request.isValueSet())
-		{
-			projectValue = request.getValue();
-		}
-		else
-		{
-			projectValue = projectService.getNextProjectValue(projectTypeId);
-		}
+		final String projectValue = request.isValueSet()
+				? request.getValue()
+				: projectService.getNextProjectValue(projectTypeId);
 
 		if (Check.isBlank(projectValue))
 		{
@@ -306,17 +233,35 @@ public class WorkOrderMapper
 	}
 
 	@NonNull
-	private static String getName(
-			@NonNull final JsonWorkOrderProjectUpsertRequest request,
-			@NonNull final String updatedProjectValue)
+	private static String getName(@NonNull final JsonWorkOrderProjectUpsertRequest request, @NonNull final String updatedProjectValue)
 	{
-		if (request.isNameSet())
+		final String projectName = request.isNameSet()
+				? request.getName()
+				: updatedProjectValue;
+
+		if (Check.isBlank(projectName))
 		{
-			return request.getName();
+			throw new RuntimeException("Couldn't determine project name for projectIdentifier:" + request.getIdentifier());
 		}
-		else
-		{
-			return updatedProjectValue;
-		}
+
+		return projectName;
+	}
+
+	@NonNull
+	private static CurrencyId getCurrencyId(@NonNull final JsonWorkOrderProjectUpsertRequest request, @NonNull final WOProject existingWOProject)
+	{
+		return request.isCurrencyIdSet()
+				? request.getCurrencyId().mapValue(CurrencyId::ofRepoId)
+				: existingWOProject.getCurrencyId();
+	}
+
+	@Nullable
+	private static PriceListVersionId getPriceListVersionId(
+			@NonNull final JsonWorkOrderProjectUpsertRequest request,
+			@NonNull final WOProject existingWOProject)
+	{
+		return request.isPriceListVersionIdSet()
+				? JsonMetasfreshId.mapToOrNull(request.getPriceListVersionId(), PriceListVersionId::ofRepoId)
+				: existingWOProject.getPriceListVersionId();
 	}
 }

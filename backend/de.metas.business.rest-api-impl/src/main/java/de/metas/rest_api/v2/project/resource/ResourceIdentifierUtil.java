@@ -24,7 +24,6 @@ package de.metas.rest_api.v2.project.resource;
 
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -75,27 +74,5 @@ public class ResourceIdentifierUtil
 						.resourceName("resourceIdentifier")
 						.resourceIdentifier(resourceIdentifier.getRawIdentifierString())
 						.build());
-	}
-
-	@NonNull
-	public ProjectQuery getProjectQueryFromIdentifier(
-			@NonNull final OrgId orgId,
-			@NonNull final IdentifierString identifier)
-	{
-		final ProjectQuery.ProjectQueryBuilder projectQueryBuilder = ProjectQuery.builder().orgId(orgId);
-
-		switch (identifier.getType())
-		{
-			case VALUE:
-				projectQueryBuilder.value(identifier.asValue());
-				break;
-			case EXTERNAL_ID:
-				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
-				break;
-			default:
-				throw new InvalidIdentifierException(identifier.getRawIdentifierString());
-		}
-
-		return projectQueryBuilder.build();
 	}
 }

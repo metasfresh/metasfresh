@@ -44,17 +44,18 @@ import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.workorder.data.CreateWOProjectRequest;
 import de.metas.project.workorder.data.WOProject;
+import de.metas.project.workorder.data.WOProjectQuery;
 import de.metas.project.workorder.data.WorkOrderProjectRepository;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.rest_api.v2.project.resource.ResourceIdentifierUtil;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -92,12 +93,7 @@ public class WorkOrderProjectRestService
 	@NonNull
 	public JsonWorkOrderProjectResponse getWorkOrderProjectById(@NonNull final ProjectId projectId)
 	{
-		return woProjectRepository.getOptionalById(projectId)
-				.map(this::toJsonWorkOrderProjectResponse)
-				.orElseThrow(() -> MissingResourceException.builder()
-						.resourceName("Work Order Project")
-						.resourceIdentifier(String.valueOf(projectId.getRepoId()))
-						.build());
+		return toJsonWorkOrderProjectResponse(woProjectRepository.getById(projectId));
 	}
 
 	@NonNull
@@ -109,17 +105,13 @@ public class WorkOrderProjectRestService
 	@NonNull
 	private JsonWorkOrderProjectUpsertResponse upsertWOProjectWithinTrx(@NonNull final JsonWorkOrderProjectUpsertRequest request)
 	{
-		final SyncAdvise woProjectSyncAdvise = request.getSyncAdvise();
-		if (woProjectSyncAdvise == null)
-		{
-			throw new MissingPropertyException("syncAdvise", request);
-		}
-
 		validateJsonWorkOrderProjectUpsertRequest(request);
+
+		final SyncAdvise woProjectSyncAdvise = request.getSyncAdvise();
 
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
 
-		final Optional<WOProject> existingWOProjectOpt = getExistingWOProject(request, orgId);
+		final Optional<WOProject> existingWOProjectOpt = getExistingWOProject(request.mapProjectIdentifier(IdentifierString::of), orgId);
 
 		if (existingWOProjectOpt.isPresent() && !woProjectSyncAdvise.getIfExists().isUpdate())
 		{
@@ -161,7 +153,7 @@ public class WorkOrderProjectRestService
 		if (existingWOProject == null)
 		{
 			final CreateWOProjectRequest createWOProjectRequest = woProjectMapper.buildCreateWOProjectRequest(request, orgId);
-			woProject = woProjectRepository.save(createWOProjectRequest);
+			woProject = woProjectRepository.create(createWOProjectRequest);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
@@ -173,11 +165,9 @@ public class WorkOrderProjectRestService
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 		}
 
-		final JsonWorkOrderObjectUnderTestUpsertRequest jsonWorkOrderObjectUnderTestUpsertRequest = buildJsonWorkOrderObjectUnderTestUpsertRequest(request, woProject.getProjectId(), syncAdvise);
-		final List<JsonWorkOrderObjectUnderTestUpsertResponse> workOrderObjectUnderTestUpsertResponse = workOrderProjectObjectUnderTestRestService.upsertObjectUnderTest(jsonWorkOrderObjectUnderTestUpsertRequest);
+		final List<JsonWorkOrderObjectUnderTestUpsertResponse> workOrderObjectUnderTestUpsertResponse = upsertObjectsUnderTest(request, woProject.getProjectId(), syncAdvise);
 
-		final JsonWorkOrderStepUpsertRequest jsonWorkOrderStepUpsertRequest = buildJsonWorkOrderStepUpsertRequest(request, woProject.getProjectId(), syncAdvise);
-		final List<JsonWorkOrderStepUpsertResponse> workOrderStepUpsertResponse = workOrderProjectStepRestService.upsertStep(jsonWorkOrderStepUpsertRequest);
+		final List<JsonWorkOrderStepUpsertResponse> workOrderStepUpsertResponse = upsertWOProjectSteps(request, woProject.getProjectId(), syncAdvise);
 
 		return JsonWorkOrderProjectUpsertResponse.builder()
 				.metasfreshId(JsonMetasfreshId.of(woProject.getProjectId().getRepoId()))
@@ -189,17 +179,15 @@ public class WorkOrderProjectRestService
 	}
 
 	@NonNull
-	private Optional<WOProject> getExistingWOProject(@NonNull final JsonWorkOrderProjectUpsertRequest request, @NonNull final OrgId orgId)
+	private Optional<WOProject> getExistingWOProject(@NonNull final IdentifierString projectIdentifier, @NonNull final OrgId orgId)
 	{
-		final IdentifierString projectIdentifier = IdentifierString.of(request.getIdentifier());
-
 		if (projectIdentifier.isMetasfreshId())
 		{
-			final ProjectId existingProjectId = ProjectId.ofRepoId(MetasfreshId.toValue(projectIdentifier.asMetasfreshId()));
-			return woProjectRepository.getOptionalById(existingProjectId);
+			final ProjectId existingProjectId = ProjectId.ofRepoId(projectIdentifier.asMetasfreshId().getValue());
+			return Optional.of(woProjectRepository.getById(existingProjectId));
 		}
 
-		return woProjectRepository.getOptionalBy(ResourceIdentifierUtil.getProjectQueryFromIdentifier(orgId, projectIdentifier));
+		return woProjectRepository.getOptionalBy(getWOProjectQueryFromIdentifier(orgId, projectIdentifier));
 	}
 
 	private void validateJsonWorkOrderProjectUpsertRequest(@NonNull final JsonWorkOrderProjectUpsertRequest request)
@@ -215,6 +203,12 @@ public class WorkOrderProjectRestService
 			throw new MissingPropertyException("projectTypeId", request);
 		}
 
+		final SyncAdvise woProjectSyncAdvise = request.getSyncAdvise();
+		if (woProjectSyncAdvise == null)
+		{
+			throw new MissingPropertyException("syncAdvise", request);
+		}
+
 		final ProjectType projectType = projectTypeRepository.getByIdOrNull(projectTypeId);
 
 		if (projectType == null)
@@ -225,64 +219,108 @@ public class WorkOrderProjectRestService
 					.parentResource(request)
 					.build();
 		}
+
+		if (!projectType.getProjectCategory().isWorkOrder())
+		{
+			throw new AdempiereException("Given C_Project_ID is not a work order project!")
+					.appendParametersToMessage()
+					.setParameter("ProjectCategory", projectType.getProjectCategory());
+		}
+
+		final IdentifierString projectIdentifier = request.mapProjectIdentifier(IdentifierString::of);
+
+		if (projectIdentifier.isExternalId() && !projectIdentifier.asExternalId().getValue().equals(request.getProjectReferenceExt()))
+		{
+			throw new AdempiereException("WorkOrderProject.Identifier doesn't match with WorkOrderProject.ProjectReferenceExt")
+					.appendParametersToMessage()
+					.setParameter("WorkOrderProject.Identifier", projectIdentifier.getRawIdentifierString())
+					.setParameter("WorkOrderProject.ExternalId", request.getProjectReferenceExt());
+		}
 	}
 
 	@NonNull
-	private static JsonWorkOrderObjectUnderTestUpsertRequest buildJsonWorkOrderObjectUnderTestUpsertRequest(
+	private JsonWorkOrderProjectResponse toJsonWorkOrderProjectResponse(@NonNull final WOProject project)
+	{
+		final ZoneId zoneId = orgDAO.getTimeZone(project.getOrgId());
+
+		return JsonWorkOrderProjectResponse.builder()
+				.projectId(JsonMetasfreshId.of(project.getProjectId().getRepoId()))
+				.value(project.getValue())
+				.name(project.getName())
+				.projectTypeId(JsonMetasfreshId.of(ProjectTypeId.toRepoId(project.getProjectTypeId())))
+				.priceListVersionId(JsonMetasfreshId.ofOrNull(PriceListVersionId.toRepoId(project.getPriceListVersionId())))
+				.currencyId(JsonMetasfreshId.ofOrNull(CurrencyId.toRepoId(project.getCurrencyId())))
+				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(project.getSalesRepId())))
+				.description(project.getDescription())
+				.dateContract(TimeUtil.asLocalDate(project.getDateContract(), zoneId))
+				.dateFinish(TimeUtil.asLocalDate(project.getDateFinish(), zoneId))
+				.bPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(project.getBPartnerId())))
+				.projectReferenceExt(project.getProjectReferenceExt())
+				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(project.getProjectParentId())))
+				.orgCode(orgDAO.retrieveOrgValue(project.getOrgId()))
+				.isActive(project.getIsActive())
+				.specialistConsultantId(project.getSpecialistConsultantId())
+				.bpartnerDepartment(project.getBpartnerDepartment())
+				.dateOfProvisionByBPartner(TimeUtil.asLocalDate(project.getDateOfProvisionByBPartner(), zoneId))
+				.woOwner(project.getWoOwner())
+				.poReference(project.getPoReference())
+				.bpartnerTargetDate(TimeUtil.asLocalDate(project.getBpartnerTargetDate(), zoneId))
+				.woProjectCreatedDate(TimeUtil.asLocalDate(project.getWoProjectCreatedDate(), zoneId))
+				.steps(workOrderProjectStepRestService.getByProjectId(project.getProjectId(), project.getOrgId()))
+				.objectsUnderTest(workOrderProjectObjectUnderTestRestService.getByProjectId(project.getProjectId()))
+				.build();
+	}
+
+	@NonNull
+	private List<JsonWorkOrderObjectUnderTestUpsertResponse> upsertObjectsUnderTest(
 			@NonNull final JsonWorkOrderProjectUpsertRequest request,
 			@NonNull final ProjectId projectId,
 			@NonNull final SyncAdvise syncAdvise)
 	{
-		return JsonWorkOrderObjectUnderTestUpsertRequest.builder()
+		final JsonWorkOrderObjectUnderTestUpsertRequest jsonWorkOrderObjectUnderTestUpsertRequest = JsonWorkOrderObjectUnderTestUpsertRequest.builder()
 				.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(projectId)))
 				.requestItems(request.getObjectsUnderTest())
 				.syncAdvise(syncAdvise)
 				.build();
+
+		return workOrderProjectObjectUnderTestRestService.upsertObjectUnderTest(jsonWorkOrderObjectUnderTestUpsertRequest);
 	}
 
 	@NonNull
-	private static JsonWorkOrderStepUpsertRequest buildJsonWorkOrderStepUpsertRequest(
+	private List<JsonWorkOrderStepUpsertResponse> upsertWOProjectSteps(
 			@NonNull final JsonWorkOrderProjectUpsertRequest request,
 			@NonNull final ProjectId projectId,
 			@NonNull final SyncAdvise syncAdvise)
 	{
-		return JsonWorkOrderStepUpsertRequest.builder()
+		final JsonWorkOrderStepUpsertRequest jsonWorkOrderStepUpsertRequest = JsonWorkOrderStepUpsertRequest.builder()
 				.projectId(JsonMetasfreshId.of(ProjectId.toRepoId(projectId)))
 				.requestItems(request.getSteps())
 				.syncAdvise(syncAdvise)
 				.build();
+
+		return workOrderProjectStepRestService.upsertStep(jsonWorkOrderStepUpsertRequest);
 	}
 
 	@NonNull
-	private JsonWorkOrderProjectResponse toJsonWorkOrderProjectResponse(@NonNull final WOProject projectData)
+	private static WOProjectQuery getWOProjectQueryFromIdentifier(
+			@NonNull final OrgId orgId,
+			@NonNull final IdentifierString identifier)
 	{
-		final ZoneId zoneId = orgDAO.getTimeZone(projectData.getOrgId());
+		final WOProjectQuery.WOProjectQueryBuilder projectQueryBuilder = WOProjectQuery.builder()
+				.orgId(orgId);
 
-		return JsonWorkOrderProjectResponse.builder()
-				.projectId(JsonMetasfreshId.of(projectData.getProjectId().getRepoId()))
-				.value(projectData.getValue())
-				.name(projectData.getName())
-				.projectTypeId(JsonMetasfreshId.of(ProjectTypeId.toRepoId(projectData.getProjectTypeId())))
-				.priceListVersionId(JsonMetasfreshId.ofOrNull(PriceListVersionId.toRepoId(projectData.getPriceListVersionId())))
-				.currencyId(JsonMetasfreshId.ofOrNull(CurrencyId.toRepoId(projectData.getCurrencyId())))
-				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(projectData.getSalesRepId())))
-				.description(projectData.getDescription())
-				.dateContract(TimeUtil.asLocalDate(projectData.getDateContract(), zoneId))
-				.dateFinish(TimeUtil.asLocalDate(projectData.getDateFinish(), zoneId))
-				.bPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(projectData.getBPartnerId())))
-				.projectReferenceExt(projectData.getProjectReferenceExt())
-				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(projectData.getProjectParentId())))
-				.orgCode(orgDAO.retrieveOrgValue(projectData.getOrgId()))
-				.isActive(projectData.getIsActive())
-				.specialistConsultantId(projectData.getSpecialistConsultantId())
-				.bpartnerDepartment(projectData.getBpartnerDepartment())
-				.dateOfProvisionByBPartner(TimeUtil.asLocalDate(projectData.getDateOfProvisionByBPartner(), zoneId))
-				.woOwner(projectData.getWoOwner())
-				.poReference(projectData.getPoReference())
-				.bpartnerTargetDate(TimeUtil.asLocalDate(projectData.getBpartnerTargetDate(), zoneId))
-				.woProjectCreatedDate(TimeUtil.asLocalDate(projectData.getWoProjectCreatedDate(), zoneId))
-				.steps(workOrderProjectStepRestService.getByProjectId(projectData.getProjectId(), projectData.getOrgId()))
-				.objectsUnderTest(workOrderProjectObjectUnderTestRestService.getByProjectId(projectData.getProjectId()))
-				.build();
+		switch (identifier.getType())
+		{
+			case VALUE:
+				projectQueryBuilder.value(identifier.asValue());
+				break;
+			case EXTERNAL_ID:
+				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
+				break;
+			default:
+				throw new InvalidIdentifierException(identifier.getRawIdentifierString());
+		}
+
+		return projectQueryBuilder.build();
 	}
 }

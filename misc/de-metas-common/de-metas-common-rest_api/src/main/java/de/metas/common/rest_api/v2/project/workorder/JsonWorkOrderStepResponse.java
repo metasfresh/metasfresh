@@ -69,7 +69,7 @@ public class JsonWorkOrderStepResponse
 
 	@Nullable
 	@JsonProperty("externalId")
-	JsonMetasfreshId externalId;
+	String externalId;
 
 	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -127,7 +127,7 @@ public class JsonWorkOrderStepResponse
 			@Nullable @JsonProperty("description") final String description,
 			@Nullable @JsonProperty("dateStart") final LocalDate dateStart,
 			@Nullable @JsonProperty("dateEnd") final LocalDate dateEnd,
-			@Nullable @JsonProperty("externalId") final JsonMetasfreshId externalId,
+			@Nullable @JsonProperty("externalId") final String externalId,
 			@Nullable @JsonProperty("woPartialReportDate") final LocalDate woPartialReportDate,
 			@Nullable @JsonProperty("woPlannedResourceDurationHours") final Integer woPlannedResourceDurationHours,
 			@Nullable @JsonProperty("deliveryDate") final LocalDate deliveryDate,

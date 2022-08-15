@@ -22,16 +22,17 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.v2.SyncAdvise;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.function.Function;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
 
@@ -81,7 +82,7 @@ public class JsonWorkOrderResourceUpsertItemRequest
 	@ApiModelProperty(hidden = true)
 	boolean testFacilityGroupNameSet;
 
-	JsonExternalId externalId;
+	String externalId;
 
 	@ApiModelProperty(hidden = true)
 	boolean externalIdSet;
@@ -116,9 +117,16 @@ public class JsonWorkOrderResourceUpsertItemRequest
 		this.testFacilityGroupNameSet = true;
 	}
 
-	public void setExternalId(final JsonExternalId externalId)
+	public void setExternalId(final String externalId)
 	{
 		this.externalId = externalId;
 		this.externalIdSet = true;
+	}
+
+	@JsonIgnore
+	@NonNull
+	public <T> T mapResourceIdentifier(@NonNull final Function<String, T> mappingFunction)
+	{
+		return mappingFunction.apply(resourceIdentifier);
 	}
 }

@@ -22,17 +22,19 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.STEP_IDENTIFIER_DOC;
 
@@ -118,13 +120,13 @@ public class JsonWorkOrderStepUpsertItemRequest
 	@ApiModelProperty(hidden = true)
 	boolean woFindingsCreatedDateSet;
 
-	JsonExternalId externalId;
+	String externalId;
 
 	@ApiModelProperty(hidden = true)
 	boolean externalIdSet;
 
 	@ApiModelProperty("Optional resource allocations that reference to this step")
-	List<JsonWorkOrderResourceUpsertItemRequest> resources;
+	List<JsonWorkOrderResourceUpsertItemRequest> resources = ImmutableList.of();
 
 	public void setDescription(final String description)
 	{
@@ -204,7 +206,7 @@ public class JsonWorkOrderStepUpsertItemRequest
 		this.woFindingsCreatedDateSet = true;
 	}
 
-	public void setExternalId(final JsonExternalId externalId)
+	public void setExternalId(final String externalId)
 	{
 		this.externalId = externalId;
 		this.externalIdSet = true;
@@ -212,6 +214,13 @@ public class JsonWorkOrderStepUpsertItemRequest
 
 	public void setResources(final List<JsonWorkOrderResourceUpsertItemRequest> resources)
 	{
-		this.resources = CoalesceUtil.coalesce(resources, ImmutableList.of());
+		this.resources = CoalesceUtil.coalesceNotNull(resources, ImmutableList.of());
+	}
+
+	@JsonIgnore
+	@NonNull
+	public <T> T mapStepIdentifier(@NonNull final Function<String, T> mappingFunction)
+	{
+		return mappingFunction.apply(identifier);
 	}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -29,11 +30,13 @@ import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER_DOC;
 
@@ -158,9 +161,9 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	private boolean dateOfProvisionByBPartnerSet;
 
-	private List<JsonWorkOrderStepUpsertItemRequest> steps;
+	private List<JsonWorkOrderStepUpsertItemRequest> steps = ImmutableList.of();
 
-	private List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest;
+	private List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest = ImmutableList.of();
 
 	public void setValue(final String value)
 	{
@@ -242,7 +245,7 @@ public class JsonWorkOrderProjectUpsertRequest
 
 	public void setSteps(final List<JsonWorkOrderStepUpsertItemRequest> steps)
 	{
-		this.steps = CoalesceUtil.coalesce(steps, ImmutableList.of());
+		this.steps = CoalesceUtil.coalesceNotNull(steps, ImmutableList.of());
 	}
 
 	public void setBpartnerDepartment(final String bpartnerDepartment)
@@ -289,6 +292,13 @@ public class JsonWorkOrderProjectUpsertRequest
 
 	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest)
 	{
-		this.objectsUnderTest = CoalesceUtil.coalesce(objectsUnderTest, ImmutableList.of());
+		this.objectsUnderTest = CoalesceUtil.coalesceNotNull(objectsUnderTest, ImmutableList.of());
+	}
+
+	@JsonIgnore
+	@NonNull
+	public <T> T mapProjectIdentifier(@NonNull final Function<String,T> mappingFunction)
+	{
+		return mappingFunction.apply(identifier);
 	}
 }

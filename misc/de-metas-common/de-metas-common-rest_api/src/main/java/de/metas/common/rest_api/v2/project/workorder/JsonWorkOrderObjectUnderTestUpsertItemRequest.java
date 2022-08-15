@@ -22,12 +22,15 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import de.metas.common.rest_api.common.JsonExternalId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.function.Function;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.OBJECT_UNDER_TEST_IDENTIFIER_DOC;
 
@@ -71,7 +74,7 @@ public class JsonWorkOrderObjectUnderTestUpsertItemRequest
 	@ApiModelProperty(hidden = true)
 	boolean woObjectWhereaboutsSet;
 
-	JsonExternalId externalId;
+	String externalId;
 
 	@ApiModelProperty(hidden = true)
 	boolean externalIdSet;
@@ -106,9 +109,16 @@ public class JsonWorkOrderObjectUnderTestUpsertItemRequest
 		this.woObjectWhereaboutsSet = true;
 	}
 
-	public void setExternalId(final JsonExternalId externalId)
+	public void setExternalId(final String externalId)
 	{
 		this.externalId = externalId;
 		this.externalIdSet = true;
+	}
+
+	@JsonIgnore
+	@NonNull
+	public <T> T mapObjectIdentifier(@NonNull final Function<String, T> mappingFunction)
+	{
+		return mappingFunction.apply(identifier);
 	}
 }

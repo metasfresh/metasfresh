@@ -42,9 +42,9 @@ public class JsonWorkOrderObjectsUnderTestResponse
 	@JsonProperty("numberOfObjectsUnderTest")
 	Integer numberOfObjectsUnderTest;
 
-	@NonNull
+	@Nullable
 	@JsonProperty("externalId")
-	JsonMetasfreshId externalId;
+	String externalId;
 
 	@Nullable
 	@JsonProperty("woDeliveryNote")
@@ -70,8 +70,8 @@ public class JsonWorkOrderObjectsUnderTestResponse
 	@JsonCreator
 	public JsonWorkOrderObjectsUnderTestResponse(
 			@NonNull @JsonProperty("objectUnderTestId") final JsonMetasfreshId objectUnderTestId,
-			@NonNull @JsonProperty("numberOfObjectsUnderTest")final Integer numberOfObjectsUnderTest,
-			@NonNull @JsonProperty("externalId") final JsonMetasfreshId externalId,
+			@NonNull @JsonProperty("numberOfObjectsUnderTest") final Integer numberOfObjectsUnderTest,
+			@Nullable @JsonProperty("externalId") final String externalId,
 			@Nullable @JsonProperty("woDeliveryNote") final String woDeliveryNote,
 			@Nullable @JsonProperty("woManufacturer") final String woManufacturer,
 			@Nullable @JsonProperty("woObjectType") final String woObjectType,

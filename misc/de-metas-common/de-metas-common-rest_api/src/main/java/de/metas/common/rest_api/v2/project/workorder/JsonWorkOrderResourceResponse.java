@@ -26,7 +26,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -79,14 +78,6 @@ public class JsonWorkOrderResourceResponse
 	JsonDurationUnit durationUnit;
 
 	@Nullable
-	@JsonProperty("budgetProjectId")
-	JsonMetasfreshId budgetProjectId;
-
-	@Nullable
-	@JsonProperty("projectResourceBudgetId")
-	JsonMetasfreshId projectResourceBudgetId;
-
-	@Nullable
 	@JsonProperty("testFacilityGroupName")
 	String testFacilityGroupName;
 
@@ -106,8 +97,6 @@ public class JsonWorkOrderResourceResponse
 			@JsonProperty("isAllDay") @Nullable final Boolean isAllDay,
 			@JsonProperty("duration") final @Nullable BigDecimal duration,
 			@JsonProperty("durationUnit") final @Nullable JsonDurationUnit durationUnit,
-			@JsonProperty("budgetProjectId") final @Nullable JsonMetasfreshId budgetProjectId,
-			@JsonProperty("projectResourceBudgetId") final @Nullable JsonMetasfreshId projectResourceBudgetId,
 			@JsonProperty("testFacilityGroupName") @Nullable final String testFacilityGroupName,
 			@JsonProperty("externalId") final @Nullable String externalId)
 	{
@@ -120,8 +109,6 @@ public class JsonWorkOrderResourceResponse
 		this.isAllDay = isAllDay;
 		this.duration = duration;
 		this.durationUnit = durationUnit;
-		this.budgetProjectId = budgetProjectId;
-		this.projectResourceBudgetId = projectResourceBudgetId;
 		this.testFacilityGroupName = testFacilityGroupName;
 		this.externalId = externalId;
 	}

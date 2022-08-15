@@ -20,8 +20,9 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.undertest;
 
+import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.lang.ExternalId;
@@ -37,6 +38,9 @@ public class WOProjectObjectUnderTest
 {
 	@NonNull
 	WOProjectObjectUnderTestId objectUnderTestId;
+
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
 	Integer numberOfObjectsUnderTest;

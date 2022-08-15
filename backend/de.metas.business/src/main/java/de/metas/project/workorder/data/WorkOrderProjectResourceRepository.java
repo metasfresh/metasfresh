@@ -26,11 +26,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.Services;
@@ -43,8 +41,9 @@ import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.ZoneId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,18 +55,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class WorkOrderProjectResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	@NonNull
-	public List<WOProjectResource> getByProjectId(@NonNull final ProjectId projectId)
-	{
-		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
-				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectId)
-				.create()
-				.stream()
-				.map(this::ofRecord)
-				.collect(ImmutableList.toImmutableList());
-	}
 
 	@NonNull
 	public List<WOProjectResource> getByStepId(@NonNull final WOProjectStepId woProjectStepId)
@@ -76,19 +63,30 @@ public class WorkOrderProjectResourceRepository
 				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Step_ID, woProjectStepId)
 				.create()
 				.stream()
-				.map(this::ofRecord)
+				.map(WorkOrderProjectResourceRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	public List<WOProjectResource> updateAll(@NonNull final List<WOProjectResource> projectResourceList)
+	public List<WOProjectResource> listByStepIds(@NonNull final Set<WOProjectStepId> woProjectStepIds)
 	{
-		final Set<Integer> resourceIds = projectResourceList.stream()
+		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Step_ID, woProjectStepIds)
+				.create()
+				.stream()
+				.map(WorkOrderProjectResourceRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<WOProjectResource> updateAll(@NonNull final Collection<WOProjectResource> projectResourceList)
+	{
+		final Set<Integer> woResourceIds = projectResourceList.stream()
 				.map(WOProjectResource::getWoProjectResourceId)
 				.map(WOProjectResourceId::getRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final List<I_C_Project_WO_Resource> resourceRecords = InterfaceWrapperHelper.loadByIds(resourceIds, I_C_Project_WO_Resource.class);
+		final List<I_C_Project_WO_Resource> resourceRecords = InterfaceWrapperHelper.loadByIds(woResourceIds, I_C_Project_WO_Resource.class);
 
 		final Map<Integer, I_C_Project_WO_Resource> projectResourceId2Record = Maps.uniqueIndex(resourceRecords, I_C_Project_WO_Resource::getC_Project_WO_Resource_ID);
 
@@ -103,36 +101,30 @@ public class WorkOrderProjectResourceRepository
 				throw new AdempiereException("Missing C_Project_WO_Resource for repoId:" + projectResource.getWoProjectResourceId());
 			}
 
-			if (projectResource.getExternalId() != null)
-			{
-				resourceRecord.setExternalId(projectResource.getExternalId().getValue());
-			}
+			resourceRecord.setExternalId(ExternalId.toValue(projectResource.getExternalId()));
+			resourceRecord.setIsActive(Boolean.TRUE.equals(projectResource.getIsActive()));
+			resourceRecord.setIsAllDay(Boolean.TRUE.equals(projectResource.getIsAllDay()));
 
-			if (projectResource.getIsActive() != null)
-			{
-				resourceRecord.setIsActive(projectResource.getIsActive());
-			}
-			if (projectResource.getIsAllDay() != null)
-			{
-				resourceRecord.setIsAllDay(projectResource.getIsAllDay());
-			}
+			resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(projectResource.getAssignDateFrom()));
+			resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(projectResource.getAssignDateTo()));
 
-			if (projectResource.getDurationUnit() != null)
+			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(projectResource.getResourceId()));
+			resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(projectResource.getWoProjectStepId()));
+			resourceRecord.setC_Project_ID(ProjectId.toRepoId(projectResource.getWoProjectStepId().getProjectId()));
+
+			resourceRecord.setWOTestFacilityGroupName(projectResource.getTestFacilityGroupName());
+
+			if (projectResource.getDuration() == null || projectResource.getDurationUnit() == null)
 			{
+				resourceRecord.setDuration(BigDecimal.ZERO);
+				resourceRecord.setDurationUnit(DurationUnit.Hour.getCode());
+			}
+			else
+			{
+				resourceRecord.setDuration(projectResource.getDuration());
 				resourceRecord.setDurationUnit(projectResource.getDurationUnit().getCode());
 			}
 
-			resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(projectResource.getWoProjectStepId()));
-			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(projectResource.getResourceId()));
-			resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(projectResource.getAssignDateFrom()));
-			resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(projectResource.getAssignDateTo()));
-			resourceRecord.setDuration(projectResource.getDuration());
-			resourceRecord.setBudget_Project_ID(ProjectId.toRepoId(projectResource.getBudgetProjectId()));
-			resourceRecord.setC_Project_Resource_Budget_ID(BudgetProjectResourceId.toRepoId(projectResource.getProjectResourceBudgetId()));
-			resourceRecord.setC_Project_ID(ProjectId.toRepoId(projectResource.getWoProjectStepId().getProjectId()));
-			resourceRecord.setExternalId(ExternalId.toValue(projectResource.getExternalId()));
-			resourceRecord.setWOTestFacilityGroupName(projectResource.getTestFacilityGroupName());
-
 			saveRecord(resourceRecord);
 
 			savedProjectResource.add(ofRecord(resourceRecord));
@@ -142,61 +134,54 @@ public class WorkOrderProjectResourceRepository
 	}
 
 	@NonNull
-	public List<WOProjectResource> createAll(@NonNull final List<CreateWOProjectResourceRequest> createWOProjectResourceRequests)
+	public WOProjectResource create(@NonNull final CreateWOProjectResourceRequest createWOProjectResourceRequest)
 	{
-		final ImmutableList.Builder<WOProjectResource> savedProjectResource = ImmutableList.builder();
+		final I_C_Project_WO_Resource resourceRecord = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Resource.class);
+		resourceRecord.setAD_Org_ID(createWOProjectResourceRequest.getOrgId().getRepoId());
+		resourceRecord.setExternalId(ExternalId.toValue(createWOProjectResourceRequest.getExternalId()));
 
-		for (final CreateWOProjectResourceRequest createWOProjectResourceRequest : createWOProjectResourceRequests)
+		resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateFrom()));
+		resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateTo()));
+
+		resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId()));
+		resourceRecord.setS_Resource_ID(ResourceId.toRepoId(createWOProjectResourceRequest.getResourceId()));
+		resourceRecord.setC_Project_ID(ProjectId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId().getProjectId()));
+
+		resourceRecord.setWOTestFacilityGroupName(createWOProjectResourceRequest.getTestFacilityGroupName());
+
+		if (createWOProjectResourceRequest.getIsActive() != null)
 		{
-			final I_C_Project_WO_Resource resourceRecord = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Resource.class);
-
-			if (createWOProjectResourceRequest.getIsActive() != null)
-			{
-				resourceRecord.setIsActive(createWOProjectResourceRequest.getIsActive());
-			}
-			if (createWOProjectResourceRequest.getIsAllDay() != null)
-			{
-				resourceRecord.setIsAllDay(createWOProjectResourceRequest.getIsAllDay());
-			}
-
-			if (createWOProjectResourceRequest.getDurationUnit() != null)
-			{
-				resourceRecord.setDurationUnit(createWOProjectResourceRequest.getDurationUnit().getCode());
-			}
-
-			if (createWOProjectResourceRequest.getExternalId() != null)
-			{
-				resourceRecord.setExternalId(createWOProjectResourceRequest.getExternalId().getValue());
-			}
-
-			resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId()));
-			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(createWOProjectResourceRequest.getResourceId()));
-			resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateFrom()));
-			resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateTo()));
-			resourceRecord.setDuration(createWOProjectResourceRequest.getDuration());
-			resourceRecord.setBudget_Project_ID(ProjectId.toRepoId(createWOProjectResourceRequest.getBudgetProjectId()));
-			resourceRecord.setC_Project_Resource_Budget_ID(BudgetProjectResourceId.toRepoId(createWOProjectResourceRequest.getProjectResourceBudgetId()));
-			resourceRecord.setC_Project_ID(ProjectId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId().getProjectId()));
-			resourceRecord.setExternalId(ExternalId.toValue(createWOProjectResourceRequest.getExternalId()));
-			resourceRecord.setWOTestFacilityGroupName(createWOProjectResourceRequest.getTestFacilityGroupName());
-
-			saveRecord(resourceRecord);
-
-			savedProjectResource.add(ofRecord(resourceRecord));
+			resourceRecord.setIsActive(createWOProjectResourceRequest.getIsActive());
+		}
+		if (createWOProjectResourceRequest.getIsAllDay() != null)
+		{
+			resourceRecord.setIsAllDay(createWOProjectResourceRequest.getIsAllDay());
 		}
 
-		return savedProjectResource.build();
+		if (createWOProjectResourceRequest.getDuration() == null || createWOProjectResourceRequest.getDurationUnit() == null)
+		{
+			resourceRecord.setDuration(BigDecimal.ZERO);
+			resourceRecord.setDurationUnit(DurationUnit.Hour.getCode());
+		}
+		else
+		{
+			resourceRecord.setDuration(createWOProjectResourceRequest.getDuration());
+			resourceRecord.setDurationUnit(createWOProjectResourceRequest.getDurationUnit().getCode());
+		}
+
+		saveRecord(resourceRecord);
+
+		return ofRecord(resourceRecord);
 	}
 
 	@NonNull
-	private WOProjectResource ofRecord(@NonNull final I_C_Project_WO_Resource resourceRecord)
+	private static WOProjectResource ofRecord(@NonNull final I_C_Project_WO_Resource resourceRecord)
 	{
 		final OrgId orgId = OrgId.ofRepoId(resourceRecord.getAD_Org_ID());
 
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom());
+		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo());
 
-		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom(), timeZone);
-		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo(), timeZone);
 		if (assignDateTo == null || assignDateFrom == null)
 		{
 			throw new AdempiereException("I_C_Project_WO_Resource.assignDateFrom and I_C_Project_WO_Resource.assignDateTo should be set on the record at this point!");
@@ -205,18 +190,21 @@ public class WorkOrderProjectResourceRepository
 		final ProjectId projectId = ProjectId.ofRepoId(resourceRecord.getC_Project_ID());
 
 		return WOProjectResource.builder()
-				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Step_ID()))
+				.orgId(orgId)
 				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Resource_ID()))
-				.isAllDay(resourceRecord.isAllDay())
-				.isActive(resourceRecord.isActive())
-				.resourceId(ResourceId.ofRepoIdOrNull(resourceRecord.getS_Resource_ID()))
+				.externalId(ExternalId.ofOrNull(resourceRecord.getExternalId()))
+
+				.resourceId(ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()))
+				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Step_ID()))
+
 				.assignDateFrom(assignDateFrom)
 				.assignDateTo(assignDateTo)
 				.duration(resourceRecord.getDuration())
 				.durationUnit(DurationUnit.ofNullableCode(resourceRecord.getDurationUnit()))
-				.budgetProjectId(ProjectId.ofRepoIdOrNull(resourceRecord.getBudget_Project_ID()))
-				.projectResourceBudgetId(BudgetProjectResourceId.ofRepoIdOrNull(resourceRecord.getBudget_Project_ID(), resourceRecord.getC_Project_Resource_Budget_ID()))
-				.externalId(ExternalId.ofOrNull(resourceRecord.getExternalId()))
+
+				.isAllDay(resourceRecord.isAllDay())
+				.isActive(resourceRecord.isActive())
+
 				.testFacilityGroupName(resourceRecord.getWOTestFacilityGroupName())
 				.build();
 	}

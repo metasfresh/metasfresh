@@ -144,6 +144,13 @@ public class BudgetProjectResourceRestService
 	@NonNull
 	private JsonResponseBudgetProjectResourceUpsert upsertBudgetProjectResourcesWithinTrx(@NonNull final JsonRequestBudgetProjectResourceUpsert request)
 	{
+		if (Check.isEmpty(request.getRequestItems()))
+		{
+			return JsonResponseBudgetProjectResourceUpsert.builder()
+					.responseItems(ImmutableList.of())
+					.build();
+		}
+
 		validateJsonRequestBudgetProjectResourceUpsert(request);
 
 		final SyncAdvise syncAdvise = request.getSyncAdvise();

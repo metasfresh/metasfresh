@@ -24,7 +24,6 @@ package de.metas.common.rest_api.v2.project.workorder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -35,7 +34,6 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
@@ -51,20 +49,15 @@ public class JsonWorkOrderResourceUpsertRequest
 	@ApiModelProperty(position = 30, required = true)
 	List<JsonWorkOrderResourceUpsertItemRequest> requestItems;
 
-	@ApiModelProperty(position = 40, value = "Default sync-advise\n" + READ_ONLY_SYNC_ADVISE_DOC)
-	SyncAdvise syncAdvise;
-
 	@Builder
 	@Jacksonized
 	public JsonWorkOrderResourceUpsertRequest(
 			@NonNull final JsonMetasfreshId projectId,
 			@NonNull final JsonMetasfreshId stepId,
-			@Nullable final List<JsonWorkOrderResourceUpsertItemRequest> requestItems,
-			@Nullable final SyncAdvise syncAdvise)
+			@Nullable final List<JsonWorkOrderResourceUpsertItemRequest> requestItems)
 	{
 		this.projectId = projectId;
 		this.stepId = stepId;
 		this.requestItems = coalesce(requestItems, ImmutableList.of());
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

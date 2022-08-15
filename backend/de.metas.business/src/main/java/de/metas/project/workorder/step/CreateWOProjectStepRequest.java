@@ -20,54 +20,70 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.step;
 
 import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectStepId;
+import de.metas.project.ProjectId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
 @Builder
-public class CreateWOProjectResourceRequest
+public class CreateWOProjectStepRequest
 {
 	@NonNull
 	OrgId orgId;
 
 	@NonNull
-	WOProjectStepId woProjectStepId;
+	ProjectId projectId;
 
 	@NonNull
-	Instant assignDateFrom;
+	String name;
 
 	@NonNull
-	Instant assignDateTo;
-
-	@NonNull
-	ResourceId resourceId;
-
-	@Nullable
-	Boolean isActive;
-
-	@Nullable
-	Boolean isAllDay;
-
-	@Nullable
-	BigDecimal duration;
-
-	@Nullable
-	DurationUnit durationUnit;
-
-	@Nullable
 	ExternalId externalId;
 
+	@NonNull
+	Integer seqNo;
+
+	@NonNull
+	Instant dateStart;
+
+	@NonNull
+	Instant dateEnd;
+
 	@Nullable
-	String testFacilityGroupName;
+	String description;
+
+	@Nullable
+	Instant woPartialReportDate;
+
+	@Nullable
+	Integer woPlannedResourceDurationHours;
+
+	@Nullable
+	Instant deliveryDate;
+
+	@Nullable
+	Instant woTargetStartDate;
+
+	@Nullable
+	Instant woTargetEndDate;
+
+	@Nullable
+	Integer woPlannedPersonDurationHours;
+
+	@Nullable
+	WOStepStatus woStepStatus;
+
+	@Nullable
+	Instant woFindingsReleasedDate;
+
+	@Nullable
+	Instant woFindingsCreatedDate;
 }

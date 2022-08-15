@@ -51,7 +51,7 @@ public class JsonWorkOrderProjectResponse
 	@JsonProperty("name")
 	String name;
 
-	@Nullable
+	@NonNull
 	@JsonProperty("projectTypeId")
 	JsonMetasfreshId projectTypeId;
 
@@ -144,7 +144,7 @@ public class JsonWorkOrderProjectResponse
 	@Builder
 	public JsonWorkOrderProjectResponse(
 			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@Nullable @JsonProperty("value") final String value,
+			@NonNull @JsonProperty("value") final String value,
 			@NonNull @JsonProperty("name") final String name,
 			@NonNull @JsonProperty("projectTypeId") final JsonMetasfreshId projectTypeId,
 			@Nullable @JsonProperty("priceListVersionId") final JsonMetasfreshId priceListVersionId,
@@ -166,7 +166,7 @@ public class JsonWorkOrderProjectResponse
 			@Nullable @JsonProperty("bpartnerTargetDate") final LocalDate bpartnerTargetDate,
 			@Nullable @JsonProperty("woProjectCreatedDate") final LocalDate woProjectCreatedDate,
 			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepResponse> steps,
-			@Nullable @JsonProperty("objectsUnderTest") List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest)
+			@Nullable @JsonProperty("objectsUnderTest") final List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest)
 	{
 		this.projectId = projectId;
 		this.value = value;

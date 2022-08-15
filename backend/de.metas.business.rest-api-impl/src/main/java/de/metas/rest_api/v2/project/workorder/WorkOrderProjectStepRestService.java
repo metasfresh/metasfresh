@@ -24,11 +24,12 @@ package de.metas.rest_api.v2.project.workorder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.common.rest_api.common.JsonExternalId;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.project.workorder.JsonWOStepStatus;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepResponse;
@@ -40,14 +41,15 @@ import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.WOProjectStepRepository;
-import de.metas.project.workorder.data.CreateWOProjectStepRequest;
 import de.metas.project.workorder.data.WOProject;
-import de.metas.project.workorder.data.WOProjectStep;
-import de.metas.project.workorder.data.WOStepStatus;
 import de.metas.project.workorder.data.WorkOrderProjectRepository;
-import de.metas.project.workorder.data.WorkOrderProjectStepRepository;
+import de.metas.project.workorder.step.CreateWOProjectStepRequest;
+import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepQuery;
+import de.metas.project.workorder.step.WOStepStatus;
+import de.metas.project.workorder.step.WorkOrderProjectStepRepository;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.v2.project.workorder.responsemapper.WOProjectStepResponseMapper;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -56,15 +58,20 @@ import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -96,9 +103,16 @@ public class WorkOrderProjectStepRestService
 	{
 		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
+		final List<WOProjectStep> steps = workOrderProjectStepRepository.getByProjectId(woProjectId);
+
+		final Set<WOProjectStepId> stepIds = steps.stream().map(WOProjectStep::getWoProjectStepId).collect(ImmutableSet.toImmutableSet());
+
+		final List<JsonWorkOrderResourceResponse> woResources = workOrderProjectResourceRestService.getByWOStepId(stepIds, zoneId);
+		final Map<JsonMetasfreshId, List<JsonWorkOrderResourceResponse>> stepId2WOResources = mapResourcesByStepId(woResources);
+
 		return workOrderProjectStepRepository.getByProjectId(woProjectId)
 				.stream()
-				.map(projectStep -> toJsonWorkOrderStepResponse(projectStep, zoneId))
+				.map(projectStep -> toJsonWorkOrderStepResponse(projectStep, zoneId, stepId2WOResources))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -111,15 +125,16 @@ public class WorkOrderProjectStepRestService
 	@NonNull
 	private List<JsonWorkOrderStepUpsertResponse> upsertStepWithinTrx(@NonNull final JsonWorkOrderStepUpsertRequest request)
 	{
+		if (Check.isEmpty(request.getRequestItems()))
+		{
+			return ImmutableList.of();
+		}
+
 		validateJsonWorkOrderStepUpsertRequest(request);
 
-		final ProjectId projectId = ProjectId.ofRepoId(JsonMetasfreshId.toValueInt(request.getProjectId()));
+		final ProjectId projectId = request.getProjectId().mapValue(ProjectId::ofRepoId);
 
-		final WOProject woProject = workOrderProjectRepository.getOptionalById(projectId)
-				.orElseThrow(() -> MissingResourceException.builder()
-						.resourceName("Work Order Project")
-						.parentResource(request)
-						.build());
+		final WOProject woProject = workOrderProjectRepository.getById(projectId);
 
 		return upsertStepItems(request, woProject);
 	}
@@ -130,141 +145,31 @@ public class WorkOrderProjectStepRestService
 		final Map<IdentifierString, JsonWorkOrderStepUpsertItemRequest> identifierString2JsonStep = request.getRequestItems().stream()
 				.collect(Collectors.toMap((jsonStep) -> IdentifierString.of(jsonStep.getIdentifier()), Function.identity()));
 
-		final Map<IdentifierString, WOProjectStep> identifierString2WOStep = woProjectStepToUpdateMap(request.getRequestItems(), existingWOProject.getProjectId());
-
-		return upsertStepItems(existingWOProject, request.getRequestItems(), request.getSyncAdvise(), identifierString2JsonStep, identifierString2WOStep);
-	}
-
-	@NonNull
-	private List<JsonWorkOrderStepUpsertResponse> upsertStepItems(
-			@NonNull final WOProject woProject,
-			@NonNull final List<JsonWorkOrderStepUpsertItemRequest> jsonSteps,
-			@NonNull final SyncAdvise syncAdvise,
-			@NonNull final Map<IdentifierString, JsonWorkOrderStepUpsertItemRequest> identifierString2JsonStep,
-			@NonNull final Map<IdentifierString, WOProjectStep> identifierString2WOStep)
-	{
-		final ImmutableList.Builder<WOProjectStep> stepToUpdate = ImmutableList.builder();
-		final ImmutableList.Builder<CreateWOProjectStepRequest> stepToCreate = ImmutableList.builder();
-		final ImmutableList.Builder<WOProjectStepResponseMapper> responseMapper = ImmutableList.builder();
-		final ImmutableList.Builder<WOProjectStep> stepCollectorBuilder = ImmutableList.builder();
-
-		for (final JsonWorkOrderStepUpsertItemRequest jsonWorkOrderStepUpsertItemRequest : jsonSteps)
-		{
-			final String identifier = jsonWorkOrderStepUpsertItemRequest.getIdentifier();
-			final IdentifierString identifierString = IdentifierString.of(identifier);
-
-			final JsonWorkOrderStepUpsertItemRequest requestItem = identifierString2JsonStep.get(identifierString);
-
-			final Optional<WOProjectStep> existingStepOpt = Optional.ofNullable(identifierString2WOStep.get(identifierString));
-
-			if (existingStepOpt.isPresent() && !syncAdvise.getIfExists().isUpdate())
-			{
-				final WOProjectStep existingStep = existingStepOpt.get();
-
-				responseMapper.add(WOProjectStepResponseMapper.builder()
-										   .identifier(identifier)
-										   .syncOutcome(JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE)
-										   .build());
-
-				stepCollectorBuilder.add(existingStep);
-			}
-			else if (existingStepOpt.isPresent() || !syncAdvise.isFailIfNotExists())
-			{
-				final WOProjectStep existingStep = existingStepOpt.orElse(null);
-
-				if (existingStep == null)
-				{
-					stepToCreate.add(buildCreateWOProjectStepRequest(requestItem, woProject));
-
-					responseMapper.add(WOProjectStepResponseMapper.builder()
-											   .identifier(identifier)
-											   .syncOutcome(JsonResponseUpsertItem.SyncOutcome.CREATED)
-											   .build());
-				}
-				else
-				{
-					stepToUpdate.add(syncWOProjectStepWithJson(woProject.getOrgId(), requestItem, existingStep));
-
-					responseMapper.add(WOProjectStepResponseMapper.builder()
-											   .identifier(identifier)
-											   .syncOutcome(JsonResponseUpsertItem.SyncOutcome.UPDATED)
-											   .build());
-				}
-			}
-			else
-			{
-				throw MissingResourceException.builder()
-						.resourceName("Work order project Step")
-						.parentResource(requestItem)
-						.build()
-						.setParameter("stepSyncAdvise", syncAdvise);
-			}
-		}
-
-		stepCollectorBuilder.addAll(workOrderProjectStepRepository.updateAll(stepToUpdate.build()));
-
-		stepCollectorBuilder.addAll(workOrderProjectStepRepository.createAll(stepToCreate.build()));
-
-		final List<WOProjectStep> stepCollector = stepCollectorBuilder.build();
-
-	/*	//todo fp:
-		Map<IdentifierString,WOProjectStep> stepIdentifier2WOProjectStep = new HashMap<>();
-		for (final IdentifierString stepIdentifier : identifierString2JsonStep.keySet())
-		{
-			final List<JsonWorkOrderResourceUpsertItemRequest> resourcesToUpsert = identifierString2JsonStep.get(stepIdentifier).getResources();
-
-			final WOProjectStep storedWOProjectStep = stepIdentifier2WOProjectStep.get(stepIdentifier);
-
-			//todo fp: upsertAll resourcesToUpsert; -> response
-		}
-		//*/
-
-		final Map<WOProjectStepId, List<JsonWorkOrderResourceUpsertResponse>> stepId2ResourcesResponse = upsertResources(syncAdvise, stepCollector, jsonSteps); //todo fp: drop
-
-		return responseMapper.build()
-				.stream()
-				.map(stepMapper -> stepMapper.map(stepCollector, stepId2ResourcesResponse))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private Map<IdentifierString, WOProjectStep> woProjectStepToUpdateMap(
-			@NonNull final List<JsonWorkOrderStepUpsertItemRequest> requestSteps,
-			@NonNull final ProjectId woProjectId)
-	{
-		final List<WOProjectStep> existingSteps = workOrderProjectStepRepository.getByProjectId(woProjectId);
-
-		if (existingSteps == null || existingSteps.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableMap.Builder<IdentifierString, WOProjectStep> woProjectStepToUpdateMap = ImmutableMap.builder();
-
-		for (final JsonWorkOrderStepUpsertItemRequest jsonStep : requestSteps)
-		{
-			final IdentifierString stepIdentifier = IdentifierString.of(jsonStep.getIdentifier());
-
-			WorkOrderMapperUtil.resolveStepForExternalIdentifier(stepIdentifier, existingSteps)
-					.ifPresent(matchingStep -> woProjectStepToUpdateMap.put(stepIdentifier, matchingStep));
-		}
-
-		return woProjectStepToUpdateMap.build();
+		return upsertWOSteps(existingWOProject.getProjectId(),
+							 existingWOProject.getOrgId(),
+							 identifierString2JsonStep,
+							 request.getSyncAdvise());
 	}
 
 	@NonNull
 	private CreateWOProjectStepRequest buildCreateWOProjectStepRequest(
 			@NonNull final JsonWorkOrderStepUpsertItemRequest request,
-			@NonNull final WOProject woProject)
+			@NonNull final ProjectId projectId,
+			@NonNull final OrgId orgId)
 	{
-		final ZoneId zoneId = orgDAO.getTimeZone(woProject.getOrgId());
+		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+
+		final Integer seqNo = request.isSeqNoSet()
+				? request.getSeqNo()
+				: woProjectStepRepository.getNextSeqNo(projectId);
 
 		return CreateWOProjectStepRequest.builder()
-				.projectId(woProject.getProjectId())
-				.externalId(ExternalId.of(request.getExternalId().getValue()))
+				.orgId(orgId)
+				.projectId(projectId)
+				.seqNo(seqNo)
+				.externalId(ExternalId.of(request.getExternalId()))
 				.name(request.getName())
 				.description(request.getDescription())
-				.seqNo(getSeqNo(request, woProject.getProjectId()))
 				.dateStart(TimeUtil.asInstant(request.getDateStart(), zoneId))
 				.dateEnd(TimeUtil.asInstant(request.getDateEnd(), zoneId))
 				.woPartialReportDate(TimeUtil.asInstant(request.getWoPartialReportDate(), zoneId))
@@ -288,13 +193,16 @@ public class WorkOrderProjectStepRestService
 		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
 		final WOProjectStep.WOProjectStepBuilder stepBuilder = existingWOProjectStep.toBuilder()
-				.name(request.getName())
-				.seqNo(getSeqNo(request, existingWOProjectStep.getProjectId()));
+				.name(request.getName());
+
+		if (request.isSeqNoSet())
+		{
+			stepBuilder.seqNo(request.getSeqNo());
+		}
 
 		if (request.isExternalIdSet())
 		{
-			final JsonExternalId jsonExternalId = request.getExternalId();
-			final ExternalId externalId = ExternalId.of(jsonExternalId.getValue());
+			final ExternalId externalId = ExternalId.ofOrNull(request.getExternalId());
 			stepBuilder.externalId(externalId);
 		}
 
@@ -365,31 +273,42 @@ public class WorkOrderProjectStepRestService
 	@NonNull
 	private Map<WOProjectStepId, List<JsonWorkOrderResourceUpsertResponse>> upsertResources(
 			@NonNull final SyncAdvise syncAdvise,
-			@NonNull final List<WOProjectStep> existingSteps,
-			@NonNull final List<JsonWorkOrderStepUpsertItemRequest> jsonSteps)
+			@NonNull final Map<IdentifierString, WOProjectStepId> stepIdentifier2MetasfreshId,
+			@NonNull final Collection<JsonWorkOrderStepUpsertItemRequest> jsonSteps)
 	{
-		final ImmutableMap.Builder<WOProjectStepId, List<JsonWorkOrderResourceUpsertResponse>> stepId2ResourcesResponse = ImmutableMap.builder();
+
+		final ImmutableList.Builder<JsonWorkOrderResourceUpsertRequest> upsertResourceRequestCollector = ImmutableList.builder();
 
 		for (final JsonWorkOrderStepUpsertItemRequest jsonStep : jsonSteps)
 		{
-			final IdentifierString stepIdentifier = IdentifierString.of(jsonStep.getIdentifier());
+			if (Check.isEmpty(jsonStep.getResources()))
+			{
+				continue;
+			}
 
-			WorkOrderMapperUtil.resolveStepForExternalIdentifier(stepIdentifier, existingSteps)
-					.ifPresent(matchingStep -> {
-								   final JsonWorkOrderResourceUpsertRequest jsonWorkOrderResourceUpsertRequest = buildJsonWorkOrderResourceUpsertRequest(jsonStep, matchingStep.getWoProjectStepId(), syncAdvise);
-								   final List<JsonWorkOrderResourceUpsertResponse> resourcesResponse = workOrderProjectResourceRestService.upsertResource(jsonWorkOrderResourceUpsertRequest);
+			final IdentifierString stepIdentifier = jsonStep.mapStepIdentifier(IdentifierString::of);
+			final WOProjectStepId woProjectStepId = stepIdentifier2MetasfreshId.get(stepIdentifier);
 
-								   stepId2ResourcesResponse.put(matchingStep.getWoProjectStepId(), resourcesResponse);
-							   }
-					);
+			final JsonWorkOrderResourceUpsertRequest upsertResourceRequest = JsonWorkOrderResourceUpsertRequest.builder()
+					.projectId(JsonMetasfreshId.of(woProjectStepId.getProjectId().getRepoId()))
+					.stepId(JsonMetasfreshId.of(woProjectStepId.getRepoId()))
+					.requestItems(jsonStep.getResources())
+					.build();
+
+			upsertResourceRequestCollector.add(upsertResourceRequest);
 		}
 
-		return stepId2ResourcesResponse.build();
+		return workOrderProjectResourceRestService.upsertResource(syncAdvise, upsertResourceRequestCollector.build());
 	}
 
 	@NonNull
-	private JsonWorkOrderStepResponse toJsonWorkOrderStepResponse(@NonNull final WOProjectStep woProjectStep, @NonNull final ZoneId zoneId)
+	private JsonWorkOrderStepResponse toJsonWorkOrderStepResponse(
+			@NonNull final WOProjectStep woProjectStep,
+			@NonNull final ZoneId zoneId,
+			@NonNull final Map<JsonMetasfreshId, List<JsonWorkOrderResourceResponse>> stepId2Resources)
 	{
+		final JsonMetasfreshId stepId = JsonMetasfreshId.of(woProjectStep.getWoProjectStepId().getRepoId());
+
 		return JsonWorkOrderStepResponse.builder()
 				.stepId(JsonMetasfreshId.of(woProjectStep.getWoProjectStepId().getRepoId()))
 				.name(woProjectStep.getName())
@@ -398,7 +317,7 @@ public class WorkOrderProjectStepRestService
 				.seqNo(woProjectStep.getSeqNo())
 				.dateStart(TimeUtil.asLocalDate(woProjectStep.getDateStart(), zoneId))
 				.dateEnd(TimeUtil.asLocalDate(woProjectStep.getDateEnd(), zoneId))
-				.externalId(JsonMetasfreshId.ofOrNull(Integer.valueOf(ExternalId.toValue(woProjectStep.getExternalId()))))
+				.externalId(ExternalId.toValue(woProjectStep.getExternalId()))
 				.woPartialReportDate(TimeUtil.asLocalDate(woProjectStep.getWoPartialReportDate(), zoneId))
 				.woPlannedResourceDurationHours(woProjectStep.getWoPlannedResourceDurationHours())
 				.deliveryDate(TimeUtil.asLocalDate(woProjectStep.getDeliveryDate(), zoneId))
@@ -408,50 +327,227 @@ public class WorkOrderProjectStepRestService
 				.woStepStatus(toJsonWOStepStatus(woProjectStep.getWoStepStatus()))
 				.woFindingsReleasedDate(TimeUtil.asLocalDate(woProjectStep.getWoFindingsReleasedDate(), zoneId))
 				.woFindingsCreatedDate(TimeUtil.asLocalDate(woProjectStep.getWoFindingsCreatedDate(), zoneId))
-				.resources(workOrderProjectResourceRestService.getByWOStepId(woProjectStep.getWoProjectStepId(), zoneId))
+				.resources(stepId2Resources.get(stepId))
 				.build();
 	}
 
 	@NonNull
-	private Integer getSeqNo(
-			@NonNull final JsonWorkOrderStepUpsertItemRequest request, //todo fp
-			@NonNull final ProjectId projectId)
-	{
-		if (request.isSeqNoSet())
-		{
-			return request.getSeqNo();
-		}
-
-		return woProjectStepRepository.getNextSeqNo(projectId);
-	}
-
-	private static void validateJsonWorkOrderStepUpsertRequest(@NonNull final JsonWorkOrderStepUpsertRequest request)
-	{
-		request.getRequestItems().forEach(requestItem -> {
-			if (Check.isBlank(requestItem.getIdentifier()))
-			{
-				throw new MissingPropertyException("identifier", request);
-			}
-
-			if (Check.isBlank(requestItem.getName()))
-			{
-				throw new MissingPropertyException("name", request);
-			}
-		});
-	}
-
-	@NonNull
-	private static JsonWorkOrderResourceUpsertRequest buildJsonWorkOrderResourceUpsertRequest(
-			@NonNull final JsonWorkOrderStepUpsertItemRequest request,
-			@NonNull final WOProjectStepId woProjectStepId,
+	private List<JsonWorkOrderStepUpsertResponse> upsertWOSteps(
+			@NonNull final ProjectId woProjectId,
+			@NonNull final OrgId orgId,
+			@NonNull final Map<IdentifierString, JsonWorkOrderStepUpsertItemRequest> identifier2RequestItem,
 			@NonNull final SyncAdvise syncAdvise)
 	{
-		return JsonWorkOrderResourceUpsertRequest.builder()
-				.projectId(JsonMetasfreshId.of(woProjectStepId.getProjectId().getRepoId()))
-				.stepId(JsonMetasfreshId.of(woProjectStepId.getRepoId()))
-				.requestItems(request.getResources())
-				.syncAdvise(syncAdvise)
+		final List<WOProjectStep> existingWOSteps = workOrderProjectStepRepository.getByProjectId(woProjectId);
+
+		final Map<IdentifierString, WOProjectStep> objectsToUpdate =
+				getItemsToUpdate(orgId, existingWOSteps, identifier2RequestItem.values(), syncAdvise);
+
+		final Map<IdentifierString, CreateWOProjectStepRequest> objectsToCreate =
+				getItemsToCreate(woProjectId, orgId, objectsToUpdate.keySet(), identifier2RequestItem, syncAdvise);
+
+		final ImmutableList.Builder<JsonWorkOrderStepUpsertResponse> responseCollector = ImmutableList.builder();
+
+		final JsonResponseUpsertItem.SyncOutcome toUpdateSyncOutcome;
+		if (syncAdvise.getIfExists().isUpdate())
+		{
+			workOrderProjectStepRepository.updateAll(objectsToUpdate.values());
+			toUpdateSyncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
+		}
+		else
+		{
+			toUpdateSyncOutcome = JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE;
+		}
+
+		final Map<IdentifierString, WOProjectStepId> identifier2MetasfreshId = new HashMap<>();
+		objectsToUpdate.forEach((identifier, woStep) -> identifier2MetasfreshId.put(identifier, woStep.getWoProjectStepId()));
+
+		objectsToCreate.forEach((identifier, createRequest) -> {
+			final WOProjectStep woProjectStep = workOrderProjectStepRepository.create(createRequest);
+
+			identifier2MetasfreshId.put(identifier, woProjectStep.getWoProjectStepId());
+		});
+
+		final Map<WOProjectStepId, List<JsonWorkOrderResourceUpsertResponse>> step2ResourceResponse =
+				upsertResources(syncAdvise, identifier2MetasfreshId, identifier2RequestItem.values());
+
+		objectsToUpdate.forEach((identifier, woProjectStep) -> responseCollector
+				.add(JsonWorkOrderStepUpsertResponse.builder()
+							 .identifier(identifier.getRawIdentifierString())
+							 .metasfreshId(JsonMetasfreshId.of(woProjectStep.getWoProjectStepId().getRepoId()))
+							 .syncOutcome(toUpdateSyncOutcome)
+							 .resources(step2ResourceResponse.get(woProjectStep.getWoProjectStepId()))
+							 .build()));
+
+		objectsToCreate.keySet().forEach(identifier -> responseCollector
+				.add(JsonWorkOrderStepUpsertResponse.builder()
+							 .identifier(identifier.getRawIdentifierString())
+							 .metasfreshId(JsonMetasfreshId.of(identifier2MetasfreshId.get(identifier).getRepoId()))
+							 .syncOutcome(JsonResponseUpsertItem.SyncOutcome.CREATED)
+							 .resources(step2ResourceResponse.get(identifier2MetasfreshId.get(identifier)))
+							 .build()));
+
+		return responseCollector.build();
+	}
+
+	@NonNull
+	private Map<IdentifierString, WOProjectStep> getItemsToUpdate(
+			@NonNull final OrgId orgId,
+			@NonNull final List<WOProjectStep> existingProjectSteps,
+			@NonNull final Collection<JsonWorkOrderStepUpsertItemRequest> requestItems,
+			@NonNull final SyncAdvise syncAdvise)
+	{
+		final ImmutableMap.Builder<IdentifierString, WOProjectStep> updatesCollector = ImmutableMap.builder();
+
+		for (final JsonWorkOrderStepUpsertItemRequest item : requestItems)
+		{
+			final IdentifierString stepIdentifier = item.mapStepIdentifier(IdentifierString::of);
+
+			resolveStepForExternalIdentifier(stepIdentifier, existingProjectSteps)
+					//dev-note: avoid unnecessary processing
+					.map(matchingStep -> syncAdvise.getIfExists().isUpdate()
+							? syncWOProjectStepWithJson(orgId, item, matchingStep)
+							: matchingStep)
+
+					.ifPresent(syncedWOProjectUnderTest -> updatesCollector.put(stepIdentifier, syncedWOProjectUnderTest));
+		}
+
+		return updatesCollector.build();
+	}
+
+	@NonNull
+	private Map<IdentifierString, CreateWOProjectStepRequest> getItemsToCreate(
+			@NonNull final ProjectId projectId,
+			@NonNull final OrgId orgId,
+			@NonNull final Set<IdentifierString> stepIdentifiersMatchedForUpdate,
+			@NonNull final Map<IdentifierString, JsonWorkOrderStepUpsertItemRequest> requestItems,
+			@NonNull final SyncAdvise syncAdvise)
+	{
+		final ImmutableMap.Builder<IdentifierString, CreateWOProjectStepRequest> itemsToCreate = ImmutableMap.builder();
+
+		final Set<IdentifierString> identifiesToCreate = getIdentifiersToCreate(orgId, stepIdentifiersMatchedForUpdate, requestItems.values());
+
+		if (syncAdvise.getIfNotExists().isFail() && !identifiesToCreate.isEmpty())
+		{
+			final String missingRawIdentifiers = identifiesToCreate.stream()
+					.map(IdentifierString::getRawIdentifierString)
+					.collect(Collectors.joining(","));
+
+			throw MissingResourceException.builder()
+					.resourceName("WOProjectStep")
+					.resourceIdentifier(missingRawIdentifiers)
+					.build()
+					.setParameter("WOProjectStepSyncAdvise", syncAdvise);
+		}
+
+		for (final IdentifierString identifier : identifiesToCreate)
+		{
+			final JsonWorkOrderStepUpsertItemRequest item2Create = requestItems.get(identifier);
+
+			final CreateWOProjectStepRequest createStepRequest = buildCreateWOProjectStepRequest(item2Create, projectId, orgId);
+
+			itemsToCreate.put(identifier, createStepRequest);
+		}
+
+		return itemsToCreate.build();
+	}
+
+	@NonNull
+	private Set<IdentifierString> getIdentifiersToCreate(
+			@NonNull final OrgId orgId,
+			@NonNull final Set<IdentifierString> stepIdentifiersMatchedForUpdate,
+			@NonNull final Collection<JsonWorkOrderStepUpsertItemRequest> requestItems)
+	{
+		final ImmutableSet.Builder<IdentifierString> externalIdsToInsertCollector = ImmutableSet.builder();
+
+		for (final JsonWorkOrderStepUpsertItemRequest item : requestItems)
+		{
+			final IdentifierString stepIdentifier = item.mapStepIdentifier(IdentifierString::of);
+
+			if (stepIdentifiersMatchedForUpdate.contains(stepIdentifier))
+			{
+				continue;
+			}
+
+			if (stepIdentifier.isMetasfreshId())
+			{
+				throw new AdempiereException("WorkOrderStep is already placed below another project!")
+						.setParameter("WorkOrderStepId", stepIdentifier.asMetasfreshId().getValue());
+			}
+			else if (stepIdentifier.isExternalId())
+			{
+				externalIdsToInsertCollector.add(stepIdentifier);
+			}
+			else
+			{
+				throw new AdempiereException("Unsupported identifier type=" + stepIdentifier.getType());
+			}
+		}
+
+		final Set<IdentifierString> externalIdsToCreate = externalIdsToInsertCollector.build();
+
+		validateAreNotStoredUnderDifferentProject(externalIdsToCreate, orgId);
+
+		return externalIdsToCreate;
+	}
+
+	private void validateAreNotStoredUnderDifferentProject(@NonNull final Set<IdentifierString> externalIdsToCreate, @NonNull final OrgId orgId)
+	{
+		if (externalIdsToCreate.isEmpty())
+		{
+			return;
+		}
+
+		final Set<String> rawExternalIds = externalIdsToCreate.stream()
+				.map(IdentifierString::asExternalId)
+				.map(ExternalId::getValue)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final WOProjectStepQuery query = WOProjectStepQuery.builder()
+				.orgId(orgId)
+				.externalIds(rawExternalIds)
 				.build();
+
+		final List<WOProjectStep> existingProjectSteps = workOrderProjectStepRepository.getByQuery(query);
+
+		if (!existingProjectSteps.isEmpty())
+		{
+			final String projectIds = existingProjectSteps.stream()
+					.map(WOProjectStep::getProjectId)
+					.map(ProjectId::getRepoId)
+					.map(String::valueOf)
+					.collect(Collectors.joining(","));
+
+			throw new AdempiereException("WOProjectStep.ExternalId already stored under a different project!")
+					.setParameter("ExternalIds", StringUtils.join(rawExternalIds, ", "))
+					.setParameter("ProjectIds", projectIds);
+		}
+	}
+
+	@NonNull
+	private Optional<WOProjectStep> resolveStepForExternalIdentifier(
+			@NonNull final IdentifierString externalIdentifier,
+			@NonNull final List<WOProjectStep> projectSteps)
+	{
+		switch (externalIdentifier.getType())
+		{
+			case METASFRESH_ID:
+				return projectSteps.stream()
+						.filter(step -> {
+							final WOProjectStepId stepId = step.getWoProjectStepId();
+							final MetasfreshId metasfreshStepId = MetasfreshId.of(stepId);
+
+							return metasfreshStepId.equals(externalIdentifier.asMetasfreshId());
+						})
+						.findFirst();
+
+			case EXTERNAL_ID:
+				return projectSteps.stream()
+						.filter(step -> externalIdentifier.asExternalId().equals(step.getExternalId()))
+						.findFirst();
+			default:
+				throw new AdempiereException("Unhandled IdentifierString type=" + externalIdentifier);
+		}
 	}
 
 	@Nullable
@@ -518,5 +614,48 @@ public class WorkOrderProjectStepRestService
 			default:
 				throw new AdempiereException("Unhandled woStepStatus: " + woStepStatus);
 		}
+	}
+
+	private static void validateJsonWorkOrderStepUpsertRequest(@NonNull final JsonWorkOrderStepUpsertRequest request)
+	{
+		request.getRequestItems().forEach(requestItem -> {
+			if (Check.isBlank(requestItem.getIdentifier()))
+			{
+				throw new MissingPropertyException("identifier", request);
+			}
+
+			if (Check.isBlank(requestItem.getName()))
+			{
+				throw new MissingPropertyException("name", request);
+			}
+
+			final IdentifierString identifierString = requestItem.mapStepIdentifier(IdentifierString::of);
+
+			if (identifierString.isExternalId() && !identifierString.asExternalId().getValue().equals(requestItem.getExternalId()))
+			{
+				throw new AdempiereException("WorkOrderStep.Identifier doesn't match with WorkOrderObjectUnderTest.ExternalId")
+						.appendParametersToMessage()
+						.setParameter("WorkOrderStep.Identifier", identifierString.getRawIdentifierString())
+						.setParameter("WorkOrderStep.ExternalId", requestItem.getExternalId());
+			}
+		});
+	}
+
+	@NonNull
+	private static Map<JsonMetasfreshId, List<JsonWorkOrderResourceResponse>> mapResourcesByStepId(@NonNull final List<JsonWorkOrderResourceResponse> resourceResponses)
+	{
+		final Map<JsonMetasfreshId, List<JsonWorkOrderResourceResponse>> stepId2Resources = new HashMap<>();
+
+		resourceResponses.forEach(resourceResponse -> {
+			final List<JsonWorkOrderResourceResponse> resourceListByStepId = new ArrayList<>();
+			resourceListByStepId.add(resourceResponse);
+
+			stepId2Resources.merge(resourceResponse.getStepId(), resourceListByStepId, (oldList, newList) -> {
+				oldList.addAll(newList);
+				return oldList;
+			});
+		});
+
+		return stepId2Resources;
 	}
 }
