@@ -31,6 +31,8 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.location.LocationId;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -80,6 +82,9 @@ public class CalloutInOut extends CalloutEngine
 	private static final String CTXNAME_C_BPartner_ID = "C_BPartner_ID";
 	private static final String CTXNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
+	private static final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository =
+			SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+
 	/**
 	 * C_Order - Order Defaults.
 	 */
@@ -109,6 +114,16 @@ public class CalloutInOut extends CalloutEngine
 		inout.setC_Project_ID(order.getC_Project_ID());
 		inout.setUser1_ID(order.getUser1_ID());
 		inout.setUser2_ID(order.getUser2_ID());
+		inout.setC_Incoterms_ID(order.getC_Incoterms_ID());
+		inout.setIncotermLocation(order.getIncotermLocation());
+
+		if(orderEmailPropagationSysConfigRepository.isPropagateToMInOut(
+				ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
+		{
+			inout.setEMail(order.getEMail());
+		}
+
+		inout.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 		// Warehouse (05251 begin: we need to use the advisor)
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateOrderWarehouse(order);
@@ -165,6 +180,9 @@ public class CalloutInOut extends CalloutEngine
 			inout.setM_Shipper_ID(originalReceipt.getM_Shipper_ID());
 			inout.setFreightCostRule(originalReceipt.getFreightCostRule());
 			inout.setFreightAmt(originalReceipt.getFreightAmt());
+			inout.setC_Incoterms_ID(originalReceipt.getC_Incoterms_ID());
+			inout.setIncotermLocation(originalReceipt.getIncotermLocation());
+			inout.setEMail(originalReceipt.getEMail());
 
 			InOutDocumentLocationAdapterFactory.locationAdapter(inout).setFrom(originalReceipt);
 		}

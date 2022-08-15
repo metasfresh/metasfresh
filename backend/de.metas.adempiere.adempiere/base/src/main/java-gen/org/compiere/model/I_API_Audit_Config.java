@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for API_Audit_Config
  *  @author metasfresh (generated) 
@@ -147,27 +148,88 @@ public interface I_API_Audit_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Invoker waits.
-	 * If checked the client gets the actual endpoint response as soon as the endpoint is ready. Otherwise, the client directly gets a response with HTTP code 202 and the api audit record's ID.
+	 * Set Force async processing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsInvokerWaitsForResult (boolean IsInvokerWaitsForResult);
+	void setIsForceProcessedAsync (boolean IsForceProcessedAsync);
 
 	/**
-	 * Get Invoker waits.
-	 * If checked the client gets the actual endpoint response as soon as the endpoint is ready. Otherwise, the client directly gets a response with HTTP code 202 and the api audit record's ID.
+	 * Get Force async processing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isInvokerWaitsForResult();
+	boolean isForceProcessedAsync();
 
-	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsInvokerWaitsForResult = new ModelColumn<>(I_API_Audit_Config.class, "IsInvokerWaitsForResult", null);
-	String COLUMNNAME_IsInvokerWaitsForResult = "IsInvokerWaitsForResult";
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsForceProcessedAsync = new ModelColumn<>(I_API_Audit_Config.class, "IsForceProcessedAsync", null);
+	String COLUMNNAME_IsForceProcessedAsync = "IsForceProcessedAsync";
+
+	/**
+	 * Set Synchronous audit enabled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSynchronousAuditLoggingEnabled (boolean IsSynchronousAuditLoggingEnabled);
+
+	/**
+	 * Get Synchronous audit enabled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSynchronousAuditLoggingEnabled();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsSynchronousAuditLoggingEnabled = new ModelColumn<>(I_API_Audit_Config.class, "IsSynchronousAuditLoggingEnabled", null);
+	String COLUMNNAME_IsSynchronousAuditLoggingEnabled = "IsSynchronousAuditLoggingEnabled";
+
+	/**
+	 * Set Wrap response.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWrapApiResponse (boolean IsWrapApiResponse);
+
+	/**
+	 * Get Wrap response.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWrapApiResponse();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_IsWrapApiResponse = new ModelColumn<>(I_API_Audit_Config.class, "IsWrapApiResponse", null);
+	String COLUMNNAME_IsWrapApiResponse = "IsWrapApiResponse";
+
+	/**
+	 * Set Days keep errored request audit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setKeepErroredRequestDays (int KeepErroredRequestDays);
+
+	/**
+	 * Get Days keep errored request audit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getKeepErroredRequestDays();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_KeepErroredRequestDays = new ModelColumn<>(I_API_Audit_Config.class, "KeepErroredRequestDays", null);
+	String COLUMNNAME_KeepErroredRequestDays = "KeepErroredRequestDays";
 
 	/**
 	 * Set Days keep request body.

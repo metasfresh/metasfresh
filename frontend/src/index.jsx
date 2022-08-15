@@ -3,11 +3,10 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
 import App from './containers/App';
-import configureStore from './store/configureStore';
 import { ProvideAuth } from './hooks/useAuth';
 import { historyDoubleBackOnPopstate } from './utils';
 
-const store = configureStore();
+import store from './store/store';
 
 if (window.Cypress) {
   window.store = store;

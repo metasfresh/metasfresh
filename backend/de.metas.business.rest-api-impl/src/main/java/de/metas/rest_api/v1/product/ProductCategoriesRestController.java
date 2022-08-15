@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,12 @@
 
 package de.metas.rest_api.v1.product;
 
+import de.metas.Profiles;
+import de.metas.logging.LogManager;
+import de.metas.rest_api.v1.product.command.GetProductCategoriesCommand;
+import de.metas.rest_api.v1.product.response.JsonGetProductCategoriesResponse;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import lombok.NonNull;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -31,17 +37,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.Profiles;
-import de.metas.logging.LogManager;
-import de.metas.rest_api.v1.product.command.GetProductCategoriesCommand;
-import de.metas.rest_api.product.response.JsonGetProductCategoriesResponse;
-import de.metas.util.web.MetasfreshRestAPIConstants;
-import lombok.NonNull;
-
+@Deprecated
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/productCategories",
 		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/productCategories",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/productCategories" })
+})
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ProductCategoriesRestController

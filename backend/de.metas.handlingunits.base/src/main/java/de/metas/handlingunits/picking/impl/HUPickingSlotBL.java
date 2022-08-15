@@ -349,11 +349,7 @@ public class HUPickingSlotBL
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Picked);
 
 		// Take it out from it's parent, if any
-		huTrxBL.setParentHU(huContext,
-				null, // parentHUItem
-				hu,
-				true // destroyOldParentIfEmptyStorage
-		);
+		huTrxBL.extractHUFromParentIfNeeded(huContext, hu);
 
 		// If we have an after picking locator, set that to the HU (06902)
 		final I_M_PickingSlot pickingSlotEx = InterfaceWrapperHelper.create(pickingSlot, I_M_PickingSlot.class);
@@ -543,11 +539,6 @@ public class HUPickingSlotBL
 	@Override
 	public void releasePickingSlotIfPossible(final I_M_PickingSlot pickingSlot)
 	{
-		releasePickingSlotIfPossible(pickingSlot, null);
-	}
-
-	public void releasePickingSlotIfPossible(final I_M_PickingSlot pickingSlot, final PickingJobId pickingJobId)
-	{
 		//
 		// Not dynamic picking slot; gtfo
 		if (!pickingSlot.isDynamic())
@@ -558,13 +549,6 @@ public class HUPickingSlotBL
 		//
 		// Not allocated at all?
 		if (isAvailableForAnyBPartner(pickingSlot))
-		{
-			return;
-		}
-
-		//
-		// If used in a picking job make sure that picking job is provided as param
-		if (!PickingJobId.equals(PickingJobId.ofRepoIdOrNull(pickingSlot.getM_Picking_Job_ID()), pickingJobId))
 		{
 			return;
 		}
@@ -600,14 +584,7 @@ public class HUPickingSlotBL
 	public void releasePickingSlotIfPossible(final PickingSlotId pickingSlotId)
 	{
 		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
-		releasePickingSlotIfPossible(pickingSlot, null);
-	}
-
-	@Override
-	public void releasePickingSlotIfPossible(final PickingSlotId pickingSlotId, final PickingJobId pickingJobId)
-	{
-		final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
-		releasePickingSlotIfPossible(pickingSlot, pickingJobId);
+		releasePickingSlotIfPossible(pickingSlot);
 	}
 
 	@Override

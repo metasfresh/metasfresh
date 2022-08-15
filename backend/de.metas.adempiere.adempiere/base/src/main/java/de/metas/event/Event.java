@@ -22,21 +22,6 @@ package de.metas.event;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Supplier;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.util.DisplayType;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -48,18 +33,31 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
+import de.metas.async.QueueWorkPackageId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
-import de.metas.common.util.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Event that can be sent/received on {@link IEventBus}.
@@ -70,6 +68,7 @@ import javax.annotation.Nullable;
 @Value
 public class Event
 {
+	private static final String PROP_Body = "body";
 	public static Builder builder()
 	{
 		return new Builder();
@@ -110,6 +109,10 @@ public class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	ImmutableSet<Integer> recipientUserIds;
 
+	@JsonProperty("queueWorkPackageId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	QueueWorkPackageId queueWorkPackageId;
+
 	private enum LoggingStatus
 	{
 		SHALL_NOT_BE_LOGGED,
@@ -145,6 +148,7 @@ public class Event
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
 		loggingStatus = builder.loggingStatus;
+		queueWorkPackageId = builder.getQueueWorkPackageId();
 	}
 
 	@JsonCreator
@@ -157,6 +161,7 @@ public class Event
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties,
+			@JsonProperty("queueWorkPackageId") final QueueWorkPackageId queueWorkPackageId,
 			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus)
 	{
 		this.uuid = uuid;
@@ -168,6 +173,7 @@ public class Event
 		this.senderId = senderId;
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
+		this.queueWorkPackageId = queueWorkPackageId;
 		this.loggingStatus = loggingStatus;
 	}
 
@@ -200,7 +206,7 @@ public class Event
 
 	/**
 	 * @return true if this event is for all users.<br>
-	 *         If no recipients were specified, consider that this event is for anybody
+	 * If no recipients were specified, consider that this event is for anybody
 	 */
 	public boolean isAllRecipients()
 	{
@@ -321,6 +327,11 @@ public class Event
 		return LoggingStatus.WAS_LOGGED.equals(loggingStatus);
 	}
 
+	public String getBody()
+	{
+		return getPropertyAsString(PROP_Body);
+	}
+
 	public Builder toBuilder()
 	{
 		final Builder builder = new Builder();
@@ -333,6 +344,7 @@ public class Event
 		builder.uuid = uuid;
 		builder.when = when;
 		builder.loggingStatus = loggingStatus;
+		builder.queueWorkPackageId = queueWorkPackageId;
 
 		return builder;
 	}
@@ -351,6 +363,7 @@ public class Event
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
 		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;
+		private QueueWorkPackageId queueWorkPackageId;
 
 		private Builder()
 		{
@@ -382,6 +395,11 @@ public class Event
 		public Builder setDetailPlain(final String detailPlain)
 		{
 			this.detailPlain = detailPlain;
+			return this;
+		}
+		public Builder withBody(final String body)
+		{
+			properties.put(PROP_Body, body);
 			return this;
 		}
 
@@ -620,7 +638,7 @@ public class Event
 			}
 		}
 
-		public Builder setSuggestedWindowId(int suggestedWindowId)
+		public Builder setSuggestedWindowId(final int suggestedWindowId)
 		{
 			putProperty(PROPERTY_SuggestedWindowId, suggestedWindowId);
 			return this;
@@ -635,6 +653,17 @@ public class Event
 		public Builder shallBeLogged()
 		{
 			this.loggingStatus = LoggingStatus.SHALL_BE_LOGGED;
+			return this;
+		}
+
+		public QueueWorkPackageId getQueueWorkPackageId()
+		{
+			return queueWorkPackageId;
+		}
+
+		public Builder setQueueWorkPackageId(final QueueWorkPackageId workpackageQueueId)
+		{
+			this.queueWorkPackageId = workpackageQueueId;
 			return this;
 		}
 	}

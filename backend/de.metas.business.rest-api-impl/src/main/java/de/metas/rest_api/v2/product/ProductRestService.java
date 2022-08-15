@@ -25,11 +25,11 @@ package de.metas.rest_api.v2.product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
-import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
@@ -45,7 +45,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -364,14 +364,18 @@ public class ProductRestService
 				productRepository.updateBPartnerProduct(bPartnerProduct);
 			}
 		}
+		else if (effectiveSyncAdvise.isFailIfNotExists())
+		{
+			throw MissingResourceException.builder()
+					.resourceName("C_BPartner_Product")
+					.resourceIdentifier("{c_bpartner_identifier:" + jsonRequestBPartnerProductUpsert.getBpartnerIdentifier() + ", m_product_id: " + productId.getRepoId())
+					.build()
+					.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
+		}
 		else
 		{
-			validateCreateSyncAdvise(jsonRequestBPartnerProductUpsert, jsonRequestBPartnerProductUpsert.getBpartnerIdentifier(),
-									 effectiveSyncAdvise, "BPartnerProduct");
-
 			final CreateBPartnerProductRequest createBPartnerProductRequest = getCreateBPartnerProductRequest(jsonRequestBPartnerProductUpsert, productId, bPartnerId);
 			productRepository.createBPartnerProduct(createBPartnerProductRequest);
-
 		}
 	}
 
@@ -489,16 +493,6 @@ public class ProductRestService
 			builder.description(existingBPartnerProduct.getDescription());
 		}
 
-		// exclusionFromSalesReason
-		if (jsonRequestBPartnerProductUpsert.isExclusionFromSalesReasonSet())
-		{
-			builder.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason());
-		}
-		else
-		{
-			builder.exclusionFromSalesReason(existingBPartnerProduct.getExclusionFromSalesReason());
-		}
-
 		// ean
 		if (jsonRequestBPartnerProductUpsert.isCuEANSet())
 		{
@@ -573,6 +567,16 @@ public class ProductRestService
 			builder.isExcludedFromSales(existingBPartnerProduct.getIsExcludedFromSales());
 		}
 
+		// exclusionFromSalesReason
+		if (jsonRequestBPartnerProductUpsert.isExclusionFromSalesReasonSet())
+		{
+			builder.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason());
+		}
+		else
+		{
+			builder.exclusionFromSalesReason(existingBPartnerProduct.getExclusionFromSalesReason());
+		}
+
 		// isDropShip
 		if (jsonRequestBPartnerProductUpsert.isDropShipSet())
 		{
@@ -605,6 +609,33 @@ public class ProductRestService
 		else
 		{
 			builder.usedForVendor(existingBPartnerProduct.getUsedForVendor());
+		}
+
+		// isExcludedFromPurchase
+		if (jsonRequestBPartnerProductUpsert.isExcludedFromPurchaseSet())
+		{
+			if (jsonRequestBPartnerProductUpsert.getExcludedFromPurchase() == null)
+			{
+				logger.debug("Ignoring boolean property \"isExcludedFromPurchase\" : null ");
+			}
+			else
+			{
+				builder.isExcludedFromPurchase(jsonRequestBPartnerProductUpsert.getExcludedFromPurchase());
+			}
+		}
+		else
+		{
+			builder.isExcludedFromPurchase(existingBPartnerProduct.getIsExcludedFromPurchase());
+		}
+
+		// exclusionFromPurchaseReason
+		if (jsonRequestBPartnerProductUpsert.isExclusionFromPurchaseReasonSet())
+		{
+			builder.exclusionFromPurchaseReason(jsonRequestBPartnerProductUpsert.getExclusionFromPurchaseReason());
+		}
+		else
+		{
+			builder.exclusionFromPurchaseReason(existingBPartnerProduct.getExclusionFromPurchaseReason());
 		}
 
 		builder.productId(existingBPartnerProduct.getProductId());
@@ -696,18 +727,21 @@ public class ProductRestService
 		// discontinued
 		if (jsonRequestProductUpsertItem.isDiscontinuedSet())
 		{
-			if (jsonRequestProductUpsertItem.getDiscontinued() == null)
-			{
-				logger.debug("Ignoring boolean property \"discontinued\" : null ");
-			}
-			else
-			{
-				builder.discontinued(jsonRequestProductUpsertItem.getDiscontinued());
-			}
+			builder.discontinued(jsonRequestProductUpsertItem.getDiscontinued());
 		}
 		else
 		{
 			builder.discontinued(existingProduct.getDiscontinued());
+		}
+
+		// discontinuedFrom
+		if (jsonRequestProductUpsertItem.isDiscontinuedFromSet())
+		{
+			builder.discontinuedFrom(jsonRequestProductUpsertItem.getDiscontinuedFrom());
+		}
+		else
+		{
+			builder.discontinuedFrom(existingProduct.getDiscontinuedFrom());
 		}
 
 		// active
@@ -775,6 +809,7 @@ public class ProductRestService
 				.stocked(jsonRequestProductUpsertItem.getStocked())
 				.active(jsonRequestProductUpsertItem.getActive())
 				.discontinued(jsonRequestProductUpsertItem.getDiscontinued())
+				.discontinuedFrom(jsonRequestProductUpsertItem.getDiscontinuedFrom())
 				.description(jsonRequestProductUpsertItem.getDescription())
 				.gtin(jsonRequestProductUpsertItem.getGtin())
 				.ean(jsonRequestProductUpsertItem.getEan())
@@ -804,6 +839,8 @@ public class ProductRestService
 				.dropShip(jsonRequestBPartnerProductUpsert.getDropShip())
 				.usedForVendor(jsonRequestBPartnerProductUpsert.getUsedForVendor())
 				.productId(productId)
+				.isExcludedFromPurchase(jsonRequestBPartnerProductUpsert.getExcludedFromPurchase())
+				.exclusionFromPurchaseReason(jsonRequestBPartnerProductUpsert.getExclusionFromPurchaseReason())
 				.build();
 	}
 

@@ -3,6 +3,7 @@ package org.compiere.util;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -1862,6 +1863,10 @@ public class TimeUtil
 		{
 			return null;
 		}
+		else if (obj instanceof InstantAndOrgId)
+		{
+			return ((InstantAndOrgId)obj).toInstant();
+		}
 		else if (obj instanceof Instant)
 		{
 			return (Instant)obj;
@@ -2063,16 +2068,18 @@ public class TimeUtil
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
+	public static Range<Instant> toInstantsRange(
 			@Nullable final java.sql.Timestamp from,
 			@Nullable final java.sql.Timestamp to)
 	{
-		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
+		return toInstantsRange(
+				from != null ? from.toInstant() : null,
+				to != null ? to.toInstant() : null);
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
-			@Nullable final LocalDate from,
-			@Nullable final LocalDate to)
+	public static Range<Instant> toInstantsRange(
+			@Nullable final Instant from,
+			@Nullable final Instant to)
 	{
 		if (from == null)
 		{
@@ -2084,4 +2091,8 @@ public class TimeUtil
 		}
 	}
 
+	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
+	{
+		return timestamp2.getTime() - timestamp1.getTime();
+	}
 }    // TimeUtil

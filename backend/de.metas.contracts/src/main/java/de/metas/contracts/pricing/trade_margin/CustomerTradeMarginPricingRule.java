@@ -99,6 +99,9 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
+	// loaded by applies, used by compute
+	private MarginConfig marginConfig;
+
 	@Override
 	public boolean applies(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
@@ -123,7 +126,6 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 		}
 
 		final Optional<BPartnerId> salesRepId = getSalesRepId(referencedObj);
-
 		if (!salesRepId.isPresent())
 		{
 			loggable.addLog("applies - SalesRepId is null for referenced object={}; -> return false", pricingCtx.getReferencedObject());
@@ -165,6 +167,16 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 			return false;
 		}
 
+		final Optional<MarginConfig> marginConfig = getMarginConfig(
+				salesRepId.get(),
+				pricingCtx);
+		if (!marginConfig.isPresent())
+		{
+			loggable.addLog("applies - salesrep has no MarginConfig; -> return false");
+			return false;
+		}
+
+		this.marginConfig = marginConfig.get();
 		return true;
 	}
 
@@ -201,22 +213,16 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 	private void calculateCustomerPrice(@NonNull final CustomerPricingContext customerPricingContext, @NonNull final BPartnerId salesRepId)
 	{
 		final Optional<ProductPrice> salesRepNetUnitPriceOpt = getSalesRepNetUnitPrice(customerPricingContext, salesRepId);
-
 		if (!salesRepNetUnitPriceOpt.isPresent())
 		{
 			loggable.addLog("calculate - Not applying! salesRep price could not be computed in customer currency, salesRepId={}" + salesRepId);
 			return;
 		}
 
-		final Optional<MarginConfig> marginConfig = getMarginConfig(customerPricingContext, salesRepId);
-
-		if (!marginConfig.isPresent())
-		{
-			loggable.addLog("calculate - Not applying! no margin config found for sales rep, salesRepId={}" + salesRepId);
-			return;
-		}
-
-		final BigDecimal newCustomerPrice = calculateNewCustomerPriceStd(customerPricingContext, salesRepNetUnitPriceOpt.get(), marginConfig.get());
+		final BigDecimal newCustomerPrice = calculateNewCustomerPriceStd(
+				customerPricingContext,
+				salesRepNetUnitPriceOpt.get(),
+				marginConfig /*was loaded by applies() method*/);
 
 		final IPricingResult pricingResult = customerPricingContext.getPricingResult();
 
@@ -243,18 +249,19 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		return customerTradeMarginService.calculateSalesRepNetUnitPrice(request);
 	}
-
-	@NonNull
-	private Optional<MarginConfig> getMarginConfig(@NonNull final CustomerPricingContext customerPricingContext, @NonNull final BPartnerId salesRepId)
+	
+	private Optional<MarginConfig> getMarginConfig(
+			@NonNull final BPartnerId salesRepId, 
+			@NonNull final IPricingContext pricingCtx)
 	{
 		final CommissionConfigProvider.ConfigRequestForNewInstance configRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
-				.orgId(customerPricingContext.getOrgId())
+				.orgId(pricingCtx.getOrgId())
 				.salesRepBPartnerId(salesRepId)
 				.commissionTriggerType(CommissionTriggerType.Plain)
-				.salesProductId(customerPricingContext.getProductId())
-				.customerBPartnerId(customerPricingContext.getBPartnerId())
+				.salesProductId(pricingCtx.getProductId())
+				.customerBPartnerId(pricingCtx.getBPartnerId())
 				.commissionHierarchy(Hierarchy.EMPTY_HIERARCHY)
-				.commissionDate(customerPricingContext.getResultPriceDate())
+				.commissionDate(pricingCtx.getPriceDate())
 				.build();
 
 		final List<CommissionConfig> marginCommissionConfig = marginCommissionConfigFactory.createForNewCommissionInstances(configRequest);
@@ -309,12 +316,11 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		final TaxId taxId = taxBL.getTaxNotNull(
 				null,
-				null,
 				customerPricingContext.getResultTaxCategory(),
 				customerPricingContext.getProductId().getRepoId(),
 				Objects.requireNonNull(TimeUtil.asTimestamp(customerPricingContext.getResultPriceDate())),
 				customerPricingContext.getOrgId(),
-				(WarehouseId)null,
+				null /*WarehouseId*/,
 				customerPricingContext.getBPartnerLocationAndCaptureId(),
 				SOTrx.SALES);
 

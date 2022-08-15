@@ -22,18 +22,17 @@
 
 package de.metas.rest_api.v1.bpartner.bpartnercomposite;
 
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.rest_api.v1.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
-import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
+import de.metas.rest_api.v1.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JsonServiceFactory

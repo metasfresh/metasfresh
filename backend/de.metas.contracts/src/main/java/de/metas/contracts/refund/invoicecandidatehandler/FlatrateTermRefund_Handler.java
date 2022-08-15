@@ -9,6 +9,10 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+import de.metas.contracts.refund.CandidateAssignmentService;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
@@ -60,20 +64,21 @@ public class FlatrateTermRefund_Handler
 	}
 
 	/**
-	 * @return an empty iterator; invoice candidates that need to be there are created from {@link de.metas.contracts.CandidateAssignmentService}.
+	 * @return an empty iterator; invoice candidates that need to be there are created from {@link CandidateAssignmentService}.
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return ImmutableList
 				.<I_C_Flatrate_Term> of()
 				.iterator();
 	}
 
+	@NonNull
 	@Override
-	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	public CandidatesAutoCreateMode isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
@@ -110,13 +115,13 @@ public class FlatrateTermRefund_Handler
 
 	@Override
 	public Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(
-			Consumer<I_C_Invoice_Candidate> IGNORED_defaultImplementation)
+			final Consumer<I_C_Invoice_Candidate> IGNORED_defaultImplementation)
 	{
 		return ic -> {
 
 			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(ic.getRecord_ID());
 
-			RefundContractRepository refundContractRepository = SpringContextHolder.instance.getBean(RefundContractRepository.class);
+			final RefundContractRepository refundContractRepository = SpringContextHolder.instance.getBean(RefundContractRepository.class);
 			final RefundContract refundContract = refundContractRepository.getById(flatrateTermId);
 			final NextInvoiceDate nextInvoiceDate = refundContract.computeNextInvoiceDate(asLocalDate(ic.getDeliveryDate()));
 

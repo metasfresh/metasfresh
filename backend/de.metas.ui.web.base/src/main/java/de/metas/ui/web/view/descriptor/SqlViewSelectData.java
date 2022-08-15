@@ -18,6 +18,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
@@ -258,7 +259,7 @@ public class SqlViewSelectData
 				if (sqlSelectValueAgg == null)
 				{
 					sqlSelectValueAgg = SqlSelectValue.builder()
-							.virtualColumnSql("NULL")
+							.virtualColumnSql(ColumnSql.SQL_NULL)
 							.columnNameAlias(field.getColumnName())
 							.build();
 				}

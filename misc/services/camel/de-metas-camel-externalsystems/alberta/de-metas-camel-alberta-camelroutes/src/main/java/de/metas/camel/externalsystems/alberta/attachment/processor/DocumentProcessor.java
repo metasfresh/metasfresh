@@ -23,11 +23,11 @@
 package de.metas.camel.externalsystems.alberta.attachment.processor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.AttachmentUtil;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;

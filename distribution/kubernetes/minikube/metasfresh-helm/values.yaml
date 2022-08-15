@@ -1,0 +1,71 @@
+app:
+  image: nexus.metasfresh.com:6001/metasfresh/metasfresh-app:master_dockerimages_5.175.2_61_masterdockerimages
+  port:
+    app: 8282
+    debug: 8788
+  resources:
+    memory: 1200M
+  debug:
+    suspend: '"n"' 
+    printBashCmds: '"n"'
+
+db:
+  image: dockerhub.metasfresh.com/postgres:14.2
+  imageInit: nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-14-2:master_dockerimages_5.175.2_61_masterdockerimages
+  urlSeedDump: https://nexus.metasfresh.com/repository/mvn-release-releases/de/metas/dist/metasfresh-dist-dist/5.173/metasfresh-dist-dist-5.173-customfmt.pgdump
+  urlMigrationScript: https://repo.metasfresh.com/repository/mvn-master_dockerimages-releases/de/metas/dist/metasfresh-dist-dist/5.175.2-61%2Bmasterdockerimages/metasfresh-dist-dist-5.175.2-61%2Bmasterdockerimages-sql-only.tar.gz
+  name: metasfresh
+  port: 
+    db: 5432
+  username: metasfresh
+  password: metasfresh
+  postgrespw: metasfresh
+  debug:
+    printBashCmds: '"n"'
+  dbConnectionPoolMaxSize: 60
+
+rabbitmq:
+  image: dockerhub.metasfresh.com/rabbitmq:3.7.4-management
+  port:
+    broker: 5672
+    management: 15672
+  username: metasfresh
+  password: metasfresh
+  
+search:
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+  port: 
+    search: 9200
+  resources:
+    limits:
+      memory: 1024Mi
+  clusterName: metasfresh
+
+pgadmin:
+  image: dpage/pgadmin4
+  port:
+    pgadmin: 80
+  defaultEmail: metasfresh@metasfresh.com
+  defaultPassword: metasfresh
+
+webapi:
+  image: nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-api:master_dockerimages_5.175.2_61_masterdockerimages
+  port:
+    webapi: 8080
+    debug: 8789
+
+webui:
+  image: nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:master_dockerimages_5.175.2_59_masterdockerimages
+  port:
+    webui: 80
+
+ingress:
+  webui:
+    url: demouser-demo.metasfresh.com
+  pgadmin: 
+    url: pgadmin.demouser-demo.metasfresh.com
+    enabled: true
+  tls:
+    enabled: false
+
+    

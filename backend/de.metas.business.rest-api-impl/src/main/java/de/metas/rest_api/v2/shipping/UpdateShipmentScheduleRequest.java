@@ -22,7 +22,7 @@
 
 package de.metas.rest_api.v2.shipping;
 
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
@@ -33,7 +33,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 

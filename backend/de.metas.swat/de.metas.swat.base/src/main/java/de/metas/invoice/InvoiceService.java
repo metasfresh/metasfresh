@@ -22,64 +22,80 @@
 
 package de.metas.invoice;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.service.AsyncBatchService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
+import org.compiere.util.Trx;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
-import static de.metas.async.asyncbatchmilestone.MilestoneName.INVOICE_CREATION;
 import static org.compiere.util.Env.getCtx;
 
 @Service
 public class InvoiceService
 {
+	private final static transient Logger logger = LogManager.getLogger(InvoiceService.class);
+
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
+	private final AsyncBatchService asyncBatchService;
 
-	public InvoiceService(@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService)
+	public InvoiceService(@NonNull final AsyncBatchService asyncBatchService)
 	{
-		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
+		this.asyncBatchService = asyncBatchService;
 	}
 
 	@NonNull
 	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
 	{
+		if (shipmentLines.isEmpty())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("generateInvoicesFromShipmentLines - Given shipmentLines lit is empty; -> nothing to do");
+			return ImmutableSet.of();
+		}
+		
 		final Set<InvoiceCandidateId> invoiceCandidateIds = retrieveInvoiceCandsByInOutLines(shipmentLines)
 				.stream()
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
+		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
+	}
+
+	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
 		processInvoiceCandidates(invoiceCandidateIds);
 
 		return invoiceCandidateIds.stream()
@@ -90,11 +106,14 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds);
 
-		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId));
+		for (final Map.Entry<AsyncBatchId, List<InvoiceCandidateId>> entry : asyncBatchId2InvoiceCandIds.entrySet())
+		{
+			generateInvoicesForAsyncBatch(ImmutableSet.copyOf(entry.getValue()), entry.getKey());
+		}
 	}
 
 	@NonNull
@@ -146,25 +165,23 @@ public class InvoiceService
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
 		final Supplier<Void> enqueueInvoiceCandidates = () -> {
-			trxManager.runInNewTrx(() -> {
-				final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, null);
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, Trx.TRXNAME_None);
 
-				invoiceCandBL.enqueueForInvoicing()
-						.setContext(getCtx())
-						.setC_Async_Batch(asyncBatch)
-						.setInvoicingParams(getDefaultIInvoicingParams())
-						.setFailIfNothingEnqueued(true)
-						.enqueueSelection(invoiceCandidatesSelectionId);
-			});
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(getCtx())
+					.setC_Async_Batch(asyncBatch)
+					.setInvoicingParams(createDefaultIInvoicingParams())
+					.setFailIfNothingEnqueued(true)
+					.enqueueSelection(invoiceCandidatesSelectionId);
 
 			return null;
 		};
 
-		asyncBatchMilestoneService.executeMilestone(enqueueInvoiceCandidates, asyncBatchId, INVOICE_CREATION);
+		asyncBatchService.executeBatch(enqueueInvoiceCandidates, asyncBatchId);
 	}
 
 	@NonNull
-	private IInvoicingParams getDefaultIInvoicingParams()
+	private IInvoicingParams createDefaultIInvoicingParams()
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(false);

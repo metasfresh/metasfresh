@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-{{ .Release.Name }}-db
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-db
+spec:
+  selector:
+    app: metasfresh-{{ .Release.Name }}-db
+  ports:
+  - name: db
+    port: {{ .Values.db.port.db }}
+    protocol: TCP
+    targetPort: {{ .Values.db.port.db }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metasfresh-{{ .Release.Name }}-db
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-db
+spec:
+  selector:
+    matchLabels:
+        app: metasfresh-{{ .Release.Name }}-db
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: metasfresh-{{ .Release.Name }}-db
+    spec:
+      containers:
+      - name: metasfresh-{{ .Release.Name }}-db
+        image: {{ .Values.db.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: {{ .Values.db.port.db }}
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: data
+        - mountPath: /var/log/postgresql
+          name: log
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      initContainers:
+        - name: init-postgres
+          image: {{ .Values.db.imageInit }}
+          imagePullPolicy: Always
+          env:
+          - name: DB_NAME
+            value: {{ .Values.db.name }}
+          - name: DB_PORT
+            value: '{{ .Values.db.port.db }}'
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: metasfresh-{{ .Release.Name }}-db-secret
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: metasfresh-{{ .Release.Name }}-db-secret
+                key: password
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: metasfresh-{{ .Release.Name }}-db-secret
+                key: postgrespw
+          - name: DEBUG_PRINT_BASH_CMDS
+            value: {{ .Values.db.debug.printBashCmds }}
+          - name: URL_SEED_DUMP
+            value: {{ .Values.db.urlSeedDump }}
+          - name: URL_MIGRATION_SCRIPTS_PACKAGE
+            value: {{ .Values.db.urlMigrationScript }}
+          volumeMounts:
+          - name: host-localtime
+            mountPath: /etc/localtime
+            readOnly: true
+          - name: host-timezone
+            mountPath: /etc/timezone
+            readOnly: true
+          - mountPath: /var/lib/postgresql/data
+            name: data
+        - name: inject-postgres-config
+          image: busybox
+          command: ['sh', '-c', 'cp -f /tmp/postgresql.conf /var/lib/postgresql/data/postgresql.conf']
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: data
+          - name: postgresql-config
+            mountPath: /tmp/postgresql.conf
+            subPath: postgresql.conf
+      volumes:
+      - name: postgresql-config
+        configMap:
+          name: metasfresh-{{ .Release.Namespace }}-db-configmap
+      - name: data
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/db/data
+          type: DirectoryOrCreate
+      - name: log
+        hostPath:
+          path: /volumes/{{ .Release.Namespace }}/db/log
+          type: DirectoryOrCreate
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone

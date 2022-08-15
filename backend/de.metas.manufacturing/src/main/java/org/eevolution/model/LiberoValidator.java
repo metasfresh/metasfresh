@@ -37,6 +37,8 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
+import org.eevolution.api.impl.ProductBOMService;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 
 /**
  * Libero Validator
@@ -58,14 +60,18 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final DDOrderLowLevelService ddOrderLowLevelService;
+	private final ProductBOMVersionsDAO bomVersionsDAO;
+	private final ProductBOMService productBOMService;
 
 	public LiberoValidator()
 	{
 		this(SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
-				SpringContextHolder.instance.getBean(PostMaterialEventService.class),
-				SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class),
-				SpringContextHolder.instance.getBean(IPPOrderBOMBL.class),
-				SpringContextHolder.instance.getBean(DDOrderLowLevelService.class));
+			 SpringContextHolder.instance.getBean(PostMaterialEventService.class),
+			 SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class),
+			 SpringContextHolder.instance.getBean(IPPOrderBOMBL.class),
+			 SpringContextHolder.instance.getBean(DDOrderLowLevelService.class),
+			 SpringContextHolder.instance.getBean(ProductBOMVersionsDAO.class),
+			 SpringContextHolder.instance.getBean(ProductBOMService.class));
 	}
 
 	public LiberoValidator(
@@ -73,13 +79,17 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
 			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
-			@NonNull final DDOrderLowLevelService ddOrderLowLevelService)
+			@NonNull final DDOrderLowLevelService ddOrderLowLevelService,
+			@NonNull final ProductBOMVersionsDAO bomVersionsDAO,
+			@NonNull final ProductBOMService productBOMService)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.ppOrderBOMBL = ppOrderBOMBL;
 		this.ddOrderLowLevelService = ddOrderLowLevelService;
+		this.bomVersionsDAO = bomVersionsDAO;
+		this.productBOMService = productBOMService;
 	}
 
 	@Override
@@ -87,16 +97,17 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	{
 		//
 		// Master data
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOM());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOM(bomVersionsDAO, productBOMService));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOMLine());
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_Planning());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_Planning(bomVersionsDAO, productBOMService));
 
 		// PP_Order related
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(
 				ppOrderConverter,
 				materialEventService,
 				documentNoBuilderFactory,
-				ppOrderBOMBL));
+				ppOrderBOMBL,
+				bomVersionsDAO));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine());

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -26,6 +27,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -77,7 +80,7 @@ public class UserNotification
 	@JsonProperty("targetRecord")
 	private final TableRecordReference targetRecord;
 	@JsonProperty("targetWindowId")
-	private final int targetWindowId;
+	private final AdWindowId targetWindowId;
 	@JsonProperty("targetViewId")
 	private final String targetViewId;
 
@@ -105,7 +108,7 @@ public class UserNotification
 			// Target action
 			@JsonProperty("targetType") @NonNull final UserNotificationTargetType targetType,
 			@JsonProperty("targetRecord") final TableRecordReference targetRecord,
-			@JsonProperty("targetWindowId") final int targetWindowId,
+			@JsonProperty("targetWindowId") final AdWindowId targetWindowId,
 			@JsonProperty("targetViewId") final String targetViewId)
 	{
 		Check.assumeGreaterThanZero(id, "id");
@@ -125,13 +128,13 @@ public class UserNotification
 		{
 			Check.assumeNotNull(targetRecord, "Parameter targetRecord is not null");
 			this.targetRecord = targetRecord;
-			this.targetWindowId = targetWindowId > 0 ? targetWindowId : 0;
+			this.targetWindowId = targetWindowId;
 			this.targetViewId = null;
 		}
 		else if (targetType == UserNotificationTargetType.View)
 		{
 			Check.assumeNotEmpty(targetViewId, "targetViewId is not empty");
-			Check.assumeGreaterThanZero(targetWindowId, "targetWindowId");
+			Check.assumeNotNull(targetWindowId, "targetWindowId");
 			this.targetRecord = null;
 			this.targetWindowId = targetWindowId;
 			this.targetViewId = targetViewId;
@@ -139,7 +142,7 @@ public class UserNotification
 		else
 		{
 			this.targetRecord = null;
-			this.targetWindowId = 0;
+			this.targetWindowId = null;
 			this.targetViewId = targetViewId;
 		}
 	}
@@ -154,7 +157,7 @@ public class UserNotification
 		return adLanguage2message.computeIfAbsent(adLanguage, this::buildMessage);
 	}
 
-	private final String buildMessage(final String adLanguage)
+	private String buildMessage(final String adLanguage)
 	{
 		//
 		// Build detail message
@@ -209,9 +212,10 @@ public class UserNotification
 		return readOld;
 	}
 
-	public String getTargetDocumentType()
+	@Nullable
+	public String getTargetWindowIdAsString()
 	{
-		return targetWindowId > 0 ? String.valueOf(targetWindowId) : null;
+		return targetWindowId != null ? String.valueOf(targetWindowId.getRepoId()) : null;
 	}
 
 	public String getTargetDocumentId()

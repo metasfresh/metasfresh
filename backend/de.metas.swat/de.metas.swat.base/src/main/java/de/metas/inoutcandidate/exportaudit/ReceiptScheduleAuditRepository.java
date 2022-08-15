@@ -28,7 +28,6 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.error.AdIssueId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_ExportAudit;

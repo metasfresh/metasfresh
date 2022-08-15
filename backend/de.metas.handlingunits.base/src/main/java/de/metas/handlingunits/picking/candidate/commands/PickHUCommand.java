@@ -1,14 +1,14 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -21,7 +21,7 @@ import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -64,6 +64,7 @@ public class PickHUCommand
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
@@ -76,7 +77,7 @@ public class PickHUCommand
 	private final PickingSlotId pickingSlotId;
 	private final Quantity qtyToPick;
 	private final QtyRejectedWithReason qtyRejected;
-	private final HuPackingInstructionsId packToId;
+	private final PackToSpec packToSpec;
 	private final boolean autoReview;
 	private final ImmutableList<IssueToPickingOrderRequest> issuesToPickingOrderRequests;
 
@@ -95,7 +96,7 @@ public class PickHUCommand
 		this.pickFrom = request.getPickFrom();
 
 		this.pickingSlotId = request.getPickingSlotId();
-		this.packToId = request.getPackToId();
+		this.packToSpec = request.getPackToSpec();
 		this.qtyToPick = request.getQtyToPick();
 		this.qtyRejected = request.getQtyRejected();
 		this.autoReview = request.isAutoReview();
@@ -109,6 +110,9 @@ public class PickHUCommand
 
 	private PickHUResult performInTrx()
 	{
+		final ProductId productId = getProductId();
+		huAttributesBL.validateMandatoryPickingAttributes(pickFrom.getHuId(), productId);
+
 		final Quantity qtyToPick = getQtyToPick();
 		if (qtyToPick.signum() <= 0)
 		{
@@ -124,7 +128,7 @@ public class PickHUCommand
 		}
 
 		pickingCandidate.pick(qtyToPick);
-		pickingCandidate.packTo(packToId);
+		pickingCandidate.packTo(packToSpec);
 
 		if (qtyRejected != null)
 		{
@@ -145,6 +149,12 @@ public class PickHUCommand
 		return PickHUResult.builder()
 				.pickingCandidate(pickingCandidate)
 				.build();
+	}
+
+	private ProductId getProductId()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
+		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 	}
 
 	private PickingCandidate preparePickingCandidate()
@@ -238,8 +248,7 @@ public class PickHUCommand
 	{
 		final I_M_HU pickFromHU = handlingUnitsDAO.getById(pickFrom.getHuId());
 
-		final I_M_ShipmentSchedule shipmentSchedule = getShipmentSchedule();
-		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		final ProductId productId = getProductId();
 
 		final IHUProductStorage productStorage = huContextFactory
 				.createMutableHUContext()

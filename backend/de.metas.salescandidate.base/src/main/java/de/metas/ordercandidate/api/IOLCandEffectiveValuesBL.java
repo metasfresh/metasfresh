@@ -1,25 +1,25 @@
 package de.metas.ordercandidate.api;
 
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /**
  * Use this service to get the "actual" values for a given order line candidate. If this service has no getter for a given field (like <code>DateCandidate</code>), it is save to get the value directly
@@ -172,9 +172,18 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	UomId getRecordOrStockUOMId(I_C_OLCand olCandRecord);
 
 	/**
+	 * @return might return zero.
+	 */
+	@NonNull
+	Quantity getQtyItemCapacity_Effective(@NonNull I_C_OLCand olCandRecord);
+
+	/**
 	 * Like {@link #getEffectiveUomId(I_C_OLCand)} , but return the actual uom.
 	 */
 	I_C_UOM getC_UOM_Effective(I_C_OLCand olCand);
 
 	I_C_BPartner_Location getHandOver_Location_Effective(I_C_OLCand olCand);
+
+	@Nullable
+	HUPIItemProductId getEffectivePackingInstructions(I_C_OLCand olCand);
 }

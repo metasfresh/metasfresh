@@ -1,18 +1,19 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_WF_Node
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1654983024L;
+	private static final long serialVersionUID = -636683421L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -313,7 +314,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setAttributeName (final java.lang.String AttributeName)
+	public void setAttributeName (final @Nullable java.lang.String AttributeName)
 	{
 		set_Value (COLUMNNAME_AttributeName, AttributeName);
 	}
@@ -325,7 +326,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setAttributeValue (final java.lang.String AttributeValue)
+	public void setAttributeValue (final @Nullable java.lang.String AttributeValue)
 	{
 		set_Value (COLUMNNAME_AttributeValue, AttributeValue);
 	}
@@ -365,7 +366,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -412,7 +413,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
 	@Override
-	public void setDocAction (final java.lang.String DocAction)
+	public void setDocAction (final @Nullable java.lang.String DocAction)
 	{
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
@@ -448,7 +449,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setDynPriorityChange (final BigDecimal DynPriorityChange)
+	public void setDynPriorityChange (final @Nullable BigDecimal DynPriorityChange)
 	{
 		set_Value (COLUMNNAME_DynPriorityChange, DynPriorityChange);
 	}
@@ -472,7 +473,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	/** Day = D */
 	public static final String DYNPRIORITYUNIT_Day = "D";
 	@Override
-	public void setDynPriorityUnit (final java.lang.String DynPriorityUnit)
+	public void setDynPriorityUnit (final @Nullable java.lang.String DynPriorityUnit)
 	{
 		set_Value (COLUMNNAME_DynPriorityUnit, DynPriorityUnit);
 	}
@@ -484,7 +485,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setEMail (final java.lang.String EMail)
+	public void setEMail (final @Nullable java.lang.String EMail)
 	{
 		set_Value (COLUMNNAME_EMail, EMail);
 	}
@@ -507,7 +508,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	/** WFResponsible = R */
 	public static final String EMAILRECIPIENT_WFResponsible = "R";
 	@Override
-	public void setEMailRecipient (final java.lang.String EMailRecipient)
+	public void setEMailRecipient (final @Nullable java.lang.String EMailRecipient)
 	{
 		set_Value (COLUMNNAME_EMailRecipient, EMailRecipient);
 	}
@@ -545,7 +546,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	/** Manuell = M */
 	public static final String FINISHMODE_Manuell = "M";
 	@Override
-	public void setFinishMode (final java.lang.String FinishMode)
+	public void setFinishMode (final @Nullable java.lang.String FinishMode)
 	{
 		set_Value (COLUMNNAME_FinishMode, FinishMode);
 	}
@@ -557,7 +558,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setHelp (final java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
@@ -659,6 +660,37 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public int getOverlapUnits() 
 	{
 		return get_ValueAsInt(COLUMNNAME_OverlapUnits);
+	}
+
+	/** 
+	 * PP_Activity_Type AD_Reference_ID=541463
+	 * Reference name: PP_Activity_Type
+	 */
+	public static final int PP_ACTIVITY_TYPE_AD_Reference_ID=541463;
+	/** RawMaterialsIssue = MI */
+	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssue = "MI";
+	/** MaterialReceipt = MR */
+	public static final String PP_ACTIVITY_TYPE_MaterialReceipt = "MR";
+	/** WorkReport = WR */
+	public static final String PP_ACTIVITY_TYPE_WorkReport = "WR";
+	/** ActivityConfirmation = AC */
+	public static final String PP_ACTIVITY_TYPE_ActivityConfirmation = "AC";
+	/** Generate HU QR Codes = GenerateHUQRCodes */
+	public static final String PP_ACTIVITY_TYPE_GenerateHUQRCodes = "GenerateHUQRCodes";
+	/** ScanScaleDevice = ScanScaleDevice */
+	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
+	/** RawMaterialsIssueAdjustment = MIA */
+	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
+	@Override
+	public void setPP_Activity_Type (final @Nullable java.lang.String PP_Activity_Type)
+	{
+		set_Value (COLUMNNAME_PP_Activity_Type, PP_Activity_Type);
+	}
+
+	@Override
+	public java.lang.String getPP_Activity_Type() 
+	{
+		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
 	}
 
 	@Override
@@ -782,7 +814,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	/** Manuell = M */
 	public static final String STARTMODE_Manuell = "M";
 	@Override
-	public void setStartMode (final java.lang.String StartMode)
+	public void setStartMode (final @Nullable java.lang.String StartMode)
 	{
 		set_Value (COLUMNNAME_StartMode, StartMode);
 	}
@@ -803,7 +835,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	/** Synchronously = S */
 	public static final String SUBFLOWEXECUTION_Synchronously = "S";
 	@Override
-	public void setSubflowExecution (final java.lang.String SubflowExecution)
+	public void setSubflowExecution (final @Nullable java.lang.String SubflowExecution)
 	{
 		set_Value (COLUMNNAME_SubflowExecution, SubflowExecution);
 	}
@@ -815,7 +847,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setUnitsCycles (final BigDecimal UnitsCycles)
+	public void setUnitsCycles (final @Nullable BigDecimal UnitsCycles)
 	{
 		set_Value (COLUMNNAME_UnitsCycles, UnitsCycles);
 	}
@@ -828,7 +860,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setValidFrom (final java.sql.Timestamp ValidFrom)
+	public void setValidFrom (final @Nullable java.sql.Timestamp ValidFrom)
 	{
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
@@ -840,7 +872,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public void setValidTo (final java.sql.Timestamp ValidTo)
+	public void setValidTo (final @Nullable java.sql.Timestamp ValidTo)
 	{
 		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}

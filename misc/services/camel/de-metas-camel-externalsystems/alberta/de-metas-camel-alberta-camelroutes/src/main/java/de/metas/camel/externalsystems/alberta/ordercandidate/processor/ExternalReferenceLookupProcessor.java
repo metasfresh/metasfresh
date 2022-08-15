@@ -22,10 +22,10 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.common.externalreference.v1.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v1.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.PharmacyApi;

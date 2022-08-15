@@ -149,6 +149,7 @@ public class InvokeAlbertaService
 				.command(EXTERNAL_SYSTEM_COMMAND_SYNC_BPARTNER)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(pInstanceId)))
 				.traceId(externalSystemConfigService.getTraceId())
+				.externalSystemChildConfigValue(config.getChildConfig().getValue())
 				.writeAuditEndpoint(config.getAuditEndpointIfEnabled())
 				.build();
 	}

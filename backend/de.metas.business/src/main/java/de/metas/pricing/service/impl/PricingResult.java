@@ -25,6 +25,7 @@ package de.metas.pricing.service.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -70,7 +71,7 @@ import java.util.List;
 final class PricingResult implements IPricingResult
 {
 	private boolean calculated;
-
+	@Nullable
 	private PricingSystemId pricingSystemId;
 	@Nullable
 	private PriceListId priceListId;
@@ -90,10 +91,11 @@ final class PricingResult implements IPricingResult
 
 	@Nullable
 	private PricingConditionsResult pricingConditions;
-
+	@Nullable
 	private BigDecimal priceList = BigDecimal.ZERO;
 	@Nullable
 	private BigDecimal priceStd = BigDecimal.ZERO;
+	@Nullable
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
 
@@ -113,6 +115,12 @@ final class PricingResult implements IPricingResult
 
 	private boolean isDiscountCalculated;
 
+	/**
+	 * If this flag is set to true, then the discount should not be changed.
+	 *
+	 */
+	private boolean dontOverrideDiscountAdvice = false;
+
 	private InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
 
 	@Getter(AccessLevel.NONE)
@@ -125,6 +133,9 @@ final class PricingResult implements IPricingResult
 	private ImmutableList<String> loggableMessages;
 
 	private BigDecimal baseCommissionPointsPerPriceUOM;
+
+	@Nullable
+	private HUPIItemProductId packingMaterialId;
 
 	@Builder
 	private PricingResult(
@@ -168,7 +179,7 @@ final class PricingResult implements IPricingResult
 	@NonNull
 	public Percent getDiscount()
 	{
-		return CoalesceUtil.coalesce(discount, Percent.ZERO);
+		return CoalesceUtil.coalesceNotNull(discount, Percent.ZERO);
 	}
 
 	@Override
@@ -179,6 +190,10 @@ final class PricingResult implements IPricingResult
 			throw new AdempiereException("Attempt to set the discount although isDisallowDiscount()==true")
 					.appendParametersToMessage()
 					.setParameter("this", this);
+		}
+		if (isDontOverrideDiscountAdvice())
+		{
+			return;
 		}
 		this.discount = discount;
 		this.isDiscountCalculated = true;

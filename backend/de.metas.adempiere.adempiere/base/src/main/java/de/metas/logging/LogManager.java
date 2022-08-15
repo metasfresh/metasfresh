@@ -49,8 +49,7 @@ public final class LogManager
 	/**
 	 * See {@link ILoggerCustomizer#dumpConfig()}.
 	 *
-	 * @return
-	 * @task https://github.com/metasfresh/metasfresh/issues/288
+	 * task https://github.com/metasfresh/metasfresh/issues/288
 	 */
 	public static String dumpCustomizerConfig()
 	{

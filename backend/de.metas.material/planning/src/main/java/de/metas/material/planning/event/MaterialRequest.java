@@ -43,9 +43,14 @@ public class MaterialRequest implements IMaterialRequest
 	int mrpDemandOrderLineSOId = -1;
 
 	@Default
+	int mrpDemandShipmentScheduleId = -1;
+
+	@Default
 	int mrpDemandBPartnerId = -1;
 
 	IMaterialPlanningContext  mrpContext;
 
 	Instant demandDate;
+
+	boolean isSimulated;
 }

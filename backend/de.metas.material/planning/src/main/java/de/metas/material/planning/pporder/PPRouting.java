@@ -14,8 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /*
  * #%L
@@ -45,7 +44,7 @@ public class PPRouting
 {
 	@NonNull PPRoutingId id;
 	@Default boolean valid = true;
-	@NonNull @Default Range<LocalDate> validDates = Range.all();
+	@NonNull @Default Range<Instant> validDates = Range.all();
 	@NonNull String code;
 	@NonNull WFDurationUnit durationUnit;
 	@NonNull Duration duration;
@@ -57,10 +56,10 @@ public class PPRouting
 	@NonNull @Default ImmutableList<PPRoutingActivity> activities = ImmutableList.of();
 	@NonNull @Default ImmutableList<PPRoutingProduct> products = ImmutableList.of();
 
-	public boolean isValidAtDate(final LocalDateTime dateTime)
+	public boolean isValidAtDate(@NonNull final Instant dateTime)
 	{
 		return isValid()
-				&& validDates.contains(dateTime.toLocalDate());
+				&& validDates.contains(dateTime);
 	}
 
 	public PPRoutingActivity getActivityById(@NonNull final PPRoutingActivityId activityId)

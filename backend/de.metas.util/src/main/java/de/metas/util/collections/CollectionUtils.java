@@ -2,6 +2,7 @@ package de.metas.util.collections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -18,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -286,7 +289,7 @@ public final class CollectionUtils
 			return ImmutableList.of();
 		}
 
-		ImmutableList.Builder<R> result = ImmutableList.builder();
+		final ImmutableList.Builder<R> result = ImmutableList.builder();
 		boolean hasChanges = false;
 		for (final T item : collection)
 		{
@@ -301,6 +304,43 @@ public final class CollectionUtils
 
 		//noinspection unchecked
 		return hasChanges ? result.build() : (ImmutableList<R>)collection;
+	}
+
+	public static <K, V> ImmutableMap<K, V> mapValue(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final K key,
+			@NonNull final UnaryOperator<V> mappingFunction)
+	{
+		return mapValues(
+				map,
+				(currentKey, currentValue) -> currentKey.equals(key) ? mappingFunction.apply(currentValue) : currentValue);
+	}
+
+	public static <K, V, W> ImmutableMap<K, W> mapValues(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final BiFunction<K, V, W> mappingFunction)
+	{
+		if (map.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<K, W> result = ImmutableMap.builder();
+		boolean hasChanges = false;
+		for (final K key : map.keySet())
+		{
+			final V item = map.get(key);
+			final W changedItem = mappingFunction.apply(key, item);
+			result.put(key, changedItem);
+
+			if (!hasChanges && !Objects.equals(item, changedItem))
+			{
+				hasChanges = true;
+			}
+		}
+
+		//noinspection unchecked
+		return hasChanges ? result.build() : (ImmutableMap<K, W>)map;
 	}
 
 	/**

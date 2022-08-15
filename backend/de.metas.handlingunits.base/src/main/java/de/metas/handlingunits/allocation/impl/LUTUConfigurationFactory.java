@@ -27,6 +27,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
@@ -48,6 +49,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -226,9 +228,17 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setIsInfiniteQtyLU(true); // we produce as many as needed
 			lutuConfiguration.setQtyLU(BigDecimal.ZERO);
 
-			final int qtyTU = luPIItem.getQty().intValueExact();
-			lutuConfiguration.setIsInfiniteQtyTU(false);
-			lutuConfiguration.setQtyTU(BigDecimal.valueOf(qtyTU));
+			final QtyTU qtyTU = QtyTU.ofBigDecimal(luPIItem.getQty());
+			if (qtyTU.isPositive())
+			{
+				lutuConfiguration.setIsInfiniteQtyTU(false);
+				lutuConfiguration.setQtyTU(qtyTU.toBigDecimal());
+			}
+			else // qtyTU is 0
+			{
+				throw new AdempiereException("Invalid QtyTU on LU PI Item:`" + luPI.getName() + "/" + luPIItem.getM_HU_PI_Item_ID() + "`"
+						+ ", TU:`" + tuPI.getName() + "`");
+			}
 		}
 		else
 		{

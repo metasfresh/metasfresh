@@ -23,16 +23,16 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.OrderLineId;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
+import de.metas.quantity.Quantitys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -82,11 +82,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);;
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
 
 	private final OrderLineShipmentScheduleHandlerExtension extensions;
+	
 
 	public OrderLineShipmentScheduleHandler(
 			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
@@ -169,6 +169,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		shipmentSchedule.setC_Order_ID(orderLine.getC_Order_ID());
 		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		shipmentSchedule.setC_Flatrate_Term_ID(orderLine.getC_Flatrate_Term_ID());
 
 		shipmentSchedule.setAD_Table_ID(getTableId(I_C_OrderLine.class));
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
@@ -209,9 +210,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final I_C_UOM priceUOM = uomdao.getById(orderLine.getPrice_UOM_ID());
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, priceUOM, orderLine.getQtyReserved());
-		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
+		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.create(orderLine.getQtyReserved(), productId), orderLine);
+		
+		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual()));
 
 		// only display item products
 		final boolean display = productBL.getProductType(productId).isItem();
@@ -233,7 +234,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		extensions.updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLine);
 	}
 
-	private static void updateShipmentScheduleFromOrder(
+	private void updateShipmentScheduleFromOrder(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final I_C_Order order)
 	{
@@ -273,6 +274,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType());
 
 		shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
+
+		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(OrderId.ofRepoId(order.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+		shipmentSchedule.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 	}
 
 	/**
@@ -391,8 +395,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 																	   //
 																	   .salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
 																	   .customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
-																	   //
-																	   .pickingOrder(true)
 																	   //
 																	   .completeDocument(true)
 																	   //

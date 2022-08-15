@@ -22,7 +22,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
@@ -113,14 +112,13 @@ public class ESRImportBL implements IESRImportBL
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/2118
+	 * task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private static final String CFG_PROCESS_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.ProcessUnspportedTrxTypes";
 
@@ -147,6 +145,7 @@ public class ESRImportBL implements IESRImportBL
 			@NonNull final I_ESR_Import esrImport,
 			@NonNull final Runnable processor)
 	{
+		trxManager.assertThreadInheritedTrxNotExists();
 
 		if (!lockManager.lock(esrImport))
 		{
@@ -548,14 +547,14 @@ public class ESRImportBL implements IESRImportBL
 					{
 						continue;
 					}
-					processLinesNoInvoice(linesNoInvoices);
+					trxManager.runInThreadInheritedTrx(() -> processLinesNoInvoice(linesNoInvoices));
 				}
 				else
 				{
 					final List<I_ESR_ImportLine> linesForKey = invoiceKey2Line.get(key);
 					try
 					{
-						processLinesWithInvoice(linesForKey);
+						trxManager.runInThreadInheritedTrx(() -> processLinesWithInvoice(linesForKey));
 					}
 					catch (final Exception e)
 					{
@@ -889,10 +888,6 @@ public class ESRImportBL implements IESRImportBL
 			Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
 			documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-			final boolean ignoreProcessed = false;
-
-			invoiceBL.testAllocation(invoice, ignoreProcessed);
-			invoiceDAO.save(invoice);
 
 			importLine.setC_Payment_ID(payment.getC_Payment_ID());
 			esrImportDAO.save(importLine);
@@ -1434,6 +1429,12 @@ public class ESRImportBL implements IESRImportBL
 
 		final ImmutableSet<ESRImportId> esrImportIds = extractESRImportIds(esrImportLines);
 		updateESRImportReconciledStatus(esrImportIds);
+	}
+
+	@Override
+	public I_ESR_Import getById(final ESRImportId esrImportId)
+	{
+		return esrImportDAO.getById(esrImportId);
 	}
 
 	private static ImmutableSet<ESRImportId> extractESRImportIds(@NonNull final List<I_ESR_ImportLine> esrImportLines)

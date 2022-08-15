@@ -42,7 +42,6 @@ import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -67,7 +66,6 @@ import org.compiere.model.POResultSet;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import javax.sql.RowSet;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -685,6 +683,10 @@ public class DB
 		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		}
+		else if(param instanceof byte[])
+		{
+			pstmt.setBytes(index, (byte[])param);
+		}
 		else
 		{
 			throw new DBException("Unknown parameter type " + index + " - " + param + " (" + param.getClass() + ")");
@@ -915,7 +917,7 @@ public class DB
 	 * @param trxName transaction
 	 * @return number of rows updated
 	 */
-	public int executeUpdateEx(final String sql, final Object[] params, final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, final Object[] params, @Nullable final String trxName) throws DBException
 	{
 		final int timeOut = 0;
 		return executeUpdateEx(sql, params, trxName, timeOut);
@@ -1077,35 +1079,6 @@ public class DB
 	}    // commit
 
 	/**
-	 * Get Row Set. When a Rowset is closed, it also closes the underlying connection. If the created RowSet is transfered by RMI, closing it makes no difference
-	 *
-	 * @param sql sql
-	 * @return row set or null
-	 */
-	public RowSet getRowSet(final String sql, final List<Object> sqlParams)
-	{
-		// Bugfix Gunther Hoppe, 02.09.2005, vpj-cd e-evolution
-		final String sqlConverted = DB.getDatabase().convertStatement(sql);
-		final String trxName = ITrx.TRXNAME_None;
-		final CStatementVO info = new CStatementVO(RowSet.TYPE_SCROLL_INSENSITIVE, RowSet.CONCUR_READ_ONLY, sqlConverted, trxName);
-		final CPreparedStatement stmt = statementsFactory.newCPreparedStatement(info);
-		try
-		{
-			setParameters(stmt, sqlParams);
-			final RowSet retValue = stmt.getRowSet();
-			return retValue;
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, sqlParams);
-		}
-		finally
-		{
-			close(stmt);
-		}
-	}    // getRowSet
-
-	/**
 	 * Get int Value from sql
 	 *
 	 * @param trxName trx
@@ -1171,7 +1144,7 @@ public class DB
 	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int getSQLValue(final String trxName, final String sql, final Object... params)
+	public int getSQLValue(@Nullable final String trxName, final String sql, final Object... params)
 	{
 		int retValue = -1;
 		try
@@ -1793,6 +1766,10 @@ public class DB
 		{
 			return String.valueOf(((RepoIdAware)param).getRepoId());
 		}
+		else if(param instanceof ReferenceListAwareEnum)
+		{
+			return TO_STRING(((ReferenceListAwareEnum)param).getCode());
+		}
 		else if (param instanceof BigDecimal)
 		{
 			return TO_NUMBER((BigDecimal)param, DisplayType.Number);
@@ -2096,7 +2073,7 @@ public class DB
 	// Following methods are kept for BeanShell compatibility.
 	// See BF [ 2030233 ] Remove duplicate code from DB class
 	// TODO: remove this when BeanShell will support varargs methods
-	public int getSQLValue(final String trxName, final String sql)
+	public int getSQLValue(@Nullable final String trxName, final String sql)
 	{
 		return getSQLValue(trxName, sql, new Object[] {});
 	}
@@ -2180,7 +2157,7 @@ public class DB
 		return pinstanceId;
 	}
 
-	public PInstanceId createT_Selection(final Set<? extends RepoIdAware> selection, final String trxName)
+	public PInstanceId createT_Selection(@NonNull final Set<? extends RepoIdAware> selection, @Nullable final String trxName)
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
 		return createT_Selection(ids, trxName);
@@ -2218,7 +2195,7 @@ public class DB
 	 * @param trxName
 	 * @return number of records that were deleted
 	 */
-	public int deleteT_Selection(final PInstanceId pinstanceId, final String trxName)
+	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
 		final int no = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);

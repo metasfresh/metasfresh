@@ -25,8 +25,9 @@ package de.metas.handlingunits.picking.job.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -35,8 +36,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -52,7 +52,6 @@ public class PickingJobLine
 
 	// computed values
 	@NonNull Quantity qtyToPick;
-	@NonNull Quantity qtyPicked;
 	@NonNull PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
@@ -72,7 +71,6 @@ public class PickingJobLine
 
 		this.progress = computeProgress(steps);
 		this.qtyToPick = computeQtyToPick(steps);
-		this.qtyPicked = computeQtyPicked(steps).orElseGet(this.qtyToPick::toZero);
 	}
 
 	@NonNull
@@ -82,43 +80,10 @@ public class PickingJobLine
 		return steps.stream().map(PickingJobStep::getQtyToPick).reduce(Quantity::add).get();
 	}
 
-	private static Optional<Quantity> computeQtyPicked(final @NonNull ImmutableList<PickingJobStep> steps)
-	{
-		return steps.stream()
-				.map(PickingJobStep::getPicked)
-				.filter(Objects::nonNull)
-				.map(PickingJobStepPickedInfo::getQtyPicked)
-				.reduce(Quantity::add);
-	}
-
 	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps)
 	{
-		int countDoneSteps = 0;
-		int countNotDoneSteps = 0;
-		for (final PickingJobStep step : steps)
-		{
-			if (step.isPicked())
-			{
-				countDoneSteps++;
-			}
-			else
-			{
-				countNotDoneSteps++;
-			}
-		}
-
-		if (countDoneSteps <= 0)
-		{
-			return PickingJobProgress.NOT_STARTED;
-		}
-		else if (countNotDoneSteps <= 0)
-		{
-			return PickingJobProgress.DONE;
-		}
-		else
-		{
-			return PickingJobProgress.IN_PROGRESS;
-		}
+		final ImmutableSet<PickingJobProgress> stepProgresses = steps.stream().map(PickingJobStep::getProgress).collect(ImmutableSet.toImmutableSet());
+		return PickingJobProgress.reduce(stepProgresses);
 	}
 
 	Stream<ShipmentScheduleId> streamShipmentScheduleId()
@@ -142,6 +107,16 @@ public class PickingJobLine
 	{
 		return withChangedSteps(
 				step -> PickingJobStepId.equals(step.getId(), stepId)
+						? stepMapper.apply(step)
+						: step);
+	}
+
+	public PickingJobLine withChangedSteps(
+			@NonNull final Set<PickingJobStepId> stepIds,
+			@NonNull final UnaryOperator<PickingJobStep> stepMapper)
+	{
+		return withChangedSteps(
+				step -> stepIds.contains(step.getId())
 						? stepMapper.apply(step)
 						: step);
 	}

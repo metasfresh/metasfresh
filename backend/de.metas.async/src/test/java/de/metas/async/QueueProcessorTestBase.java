@@ -22,9 +22,14 @@ package de.metas.async;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import ch.qos.logback.classic.Level;
+import de.metas.async.api.NOPWorkpackageLogsRepository;
+import de.metas.async.processor.impl.StaticMockedWorkpackageProcessor;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.impl.PlainLockManager;
+import de.metas.lock.spi.impl.PlainLockDatabase;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.After;
@@ -35,14 +40,8 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 
-import ch.qos.logback.classic.Level;
-import de.metas.async.api.NOPWorkpackageLogsRepository;
-import de.metas.async.processor.impl.StaticMockedWorkpackageProcessor;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.impl.PlainLockManager;
-import de.metas.lock.spi.impl.PlainLockDatabase;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
 
 public class QueueProcessorTestBase
 {

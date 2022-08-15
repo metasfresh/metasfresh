@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 <a name="addArticle"></a>
 # **addArticle**
-> ArticleMapping addArticle(albertaApiKey, tenant, body)
+> ArticleMapping addArticle(albertaApiKey, body)
 
 neuen Artikel in Alberta anlegen
 
@@ -26,10 +26,9 @@ Legt einen neuen Artikel in Alberta an
 
 DefaultApi apiInstance = new DefaultApi();
 String albertaApiKey = "albertaApiKey_example"; // String | 
-String tenant = "tenant_example"; // String | 
 Article body = new Article(); // Article | article to add
 try {
-    ArticleMapping result = apiInstance.addArticle(albertaApiKey, tenant, body);
+    ArticleMapping result = apiInstance.addArticle(albertaApiKey, body);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling DefaultApi#addArticle");
@@ -42,7 +41,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albertaApiKey** | **String**|  |
- **tenant** | **String**|  |
  **body** | [**Article**](Article.md)| article to add | [optional]
 
 ### Return type
@@ -60,7 +58,7 @@ No authorization required
 
 <a name="addInsuranceContract"></a>
 # **addInsuranceContract**
-> ArticleMapping addInsuranceContract(albertaApiKey, tenant, body)
+> ArticleMapping addInsuranceContract(albertaApiKey, body)
 
 neuen Krankenkassenvertrag in Alberta anlegen
 
@@ -75,10 +73,9 @@ Legt einen neuen Krankenkassenvertrag in Alberta an
 
 DefaultApi apiInstance = new DefaultApi();
 String albertaApiKey = "albertaApiKey_example"; // String | 
-String tenant = "tenant_example"; // String | 
 Article body = new Article(); // Article | insuranceContract to add
 try {
-    ArticleMapping result = apiInstance.addInsuranceContract(albertaApiKey, tenant, body);
+    ArticleMapping result = apiInstance.addInsuranceContract(albertaApiKey, body);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling DefaultApi#addInsuranceContract");
@@ -91,7 +88,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albertaApiKey** | **String**|  |
- **tenant** | **String**|  |
  **body** | [**Article**](Article.md)| insuranceContract to add | [optional]
 
 ### Return type
@@ -109,7 +105,7 @@ No authorization required
 
 <a name="updateArticle"></a>
 # **updateArticle**
-> ArticleMapping updateArticle(albertaApiKey, tenant, customerNumber, body)
+> ArticleMapping updateArticle(albertaApiKey, customerNumber, body)
 
 Artikel in Alberta ändern
 
@@ -124,11 +120,10 @@ Artikel in Alberta ändern
 
 DefaultApi apiInstance = new DefaultApi();
 String albertaApiKey = "albertaApiKey_example"; // String | 
-String tenant = "tenant_example"; // String | 
 String customerNumber = "customerNumber_example"; // String | 
 Article body = new Article(); // Article | article to update
 try {
-    ArticleMapping result = apiInstance.updateArticle(albertaApiKey, tenant, customerNumber, body);
+    ArticleMapping result = apiInstance.updateArticle(albertaApiKey, customerNumber, body);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling DefaultApi#updateArticle");
@@ -141,7 +136,6 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **albertaApiKey** | **String**|  |
- **tenant** | **String**|  |
  **customerNumber** | **String**|  |
  **body** | [**Article**](Article.md)| article to update | [optional]
 

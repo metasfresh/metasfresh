@@ -1,61 +1,75 @@
-import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import PropTypes from 'prop-types';
+import React, { useEffect } from 'react';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { useRouteMatch } from 'react-router-dom';
 
-import PickStepButtonsGroup from './PickStepButtonsGroup';
-import { selectWFProcessFromState } from '../../../reducers/wfProcesses_status';
+import { trl } from '../../../utils/translations';
+import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { getLineById } from '../../../reducers/wfProcesses';
 
-class PickLineScreen extends PureComponent {
-  render() {
-    const { wfProcessId, activityId, lineId, stepsById } = this.props;
+import PickStepButton from './PickStepButton';
 
-    return (
-      <div className="pt-2 section lines-screen-container">
-        <PickStepButtonsGroup
-          wfProcessId={wfProcessId}
-          activityId={activityId}
-          lineId={lineId}
-          steps={Object.values(stepsById)}
-        />
-      </div>
+const PickLineScreen = () => {
+  const {
+    url,
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
+  } = useRouteMatch();
+
+  const { caption, steps } = useSelector(
+    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
+    shallowEqual
+  );
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(
+      pushHeaderEntry({
+        location: url,
+        caption: trl('activities.picking.PickingLine'),
+        values: [
+          {
+            caption: trl('activities.picking.PickingLine'),
+            value: caption,
+            bold: true,
+          },
+        ],
+      })
     );
-  }
-}
+  }, [url, caption]);
 
-const mapStateToProps = (state, ownProps) => {
-  const { workflowId: wfProcessId, activityId, lineId } = ownProps.match.params;
-  const wfProcess = selectWFProcessFromState(state, wfProcessId);
-  const activity = wfProcess && wfProcess.activities ? wfProcess.activities[activityId] : null;
+  return (
+    <div className="section pt-2">
+      <div className="buttons">
+        {steps.length > 0 &&
+          steps.map((stepItem, idx) => {
+            return (
+              <PickStepButton
+                key={idx}
+                applicationId={applicationId}
+                wfProcessId={wfProcessId}
+                activityId={activityId}
+                lineId={lineId}
+                stepId={stepItem.pickingStepId}
+                pickFromAlternatives={stepItem.pickFromAlternatives}
+                //
+                uom={stepItem.uom}
+                qtyToPick={stepItem.qtyToPick}
+                pickFrom={stepItem.mainPickFrom}
+              />
+            );
+          })}
+      </div>
+    </div>
+  );
+};
 
-  const lineProps = activity != null ? activity.componentProps.lines[lineId] : null;
-  const stepsById = lineProps != null ? lineProps.steps : {};
-
-  // TODO: handle the case when we didn't find the wfProcess or activity or line
-  // usually that happens when the workflow process is no longer in the state because:
-  // * user refreshed some old link
-  // * for some reason it was taken out from backend side
-  // Possible solutions:
-  // * have a flag here to indicate to the component that we deal with a not found case
-  // * component notifies the user using a nice toast and then forwards him back to launchers
-  //
-  // NOTE to dev: please please check the other Screens where we could have this case and pls handle it
+const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
+  const lineProps = getLineById(state, wfProcessId, activityId, lineId);
+  const stepsById = lineProps != null && lineProps.steps ? lineProps.steps : {};
 
   return {
-    wfProcessId,
-    activityId,
-    lineId,
-    stepsById,
+    caption: lineProps?.caption,
+    steps: Object.values(stepsById),
   };
 };
 
-PickLineScreen.propTypes = {
-  //
-  // Props
-  wfProcessId: PropTypes.string.isRequired,
-  activityId: PropTypes.string.isRequired,
-  lineId: PropTypes.string.isRequired,
-  stepsById: PropTypes.object.isRequired,
-};
-
-export default withRouter(connect(mapStateToProps, null)(PickLineScreen));
+export default PickLineScreen;

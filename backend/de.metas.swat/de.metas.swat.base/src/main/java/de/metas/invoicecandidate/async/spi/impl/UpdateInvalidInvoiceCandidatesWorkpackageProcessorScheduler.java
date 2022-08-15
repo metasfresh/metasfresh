@@ -2,7 +2,6 @@ package de.metas.invoicecandidate.async.spi.impl;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.invoicecandidate.api.IInvoiceCandUpdateScheduler;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 
 import java.util.Optional;
@@ -31,7 +30,6 @@ import java.util.Properties;
  */
 
 class UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler extends WorkpackagesOnCommitSchedulerTemplate<IInvoiceCandUpdateSchedulerRequest>
-		implements IInvoiceCandUpdateScheduler
 {
 	public UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(final boolean createOneWorkpackagePerAsyncBatch)
 	{

@@ -61,6 +61,24 @@ public class JsonOrderAddress
 	@JsonProperty("additionalAddressLine2")
 	String additionalAddressLine2;
 
+	@JsonProperty("company")
+	String company;
+
+	@JsonProperty("department")
+	String department;
+
+	@JsonProperty("salutationId")
+	String salutationId;
+
+	@JsonProperty("title")
+	String title;
+
+	@JsonProperty("firstName")
+	String firstName;
+
+	@JsonProperty("lastName")
+	String lastName;
+
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
 	static class JsonOrderAddressBuilder

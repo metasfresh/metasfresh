@@ -27,7 +27,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -55,6 +55,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -207,7 +208,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				final IInvoiceCandidateHandler creatorImpl = mkInstance(handlerRecord);
 
 				// HARDCODED BufferSize/Limit to be used when we are creating missing candidates
-				final int bufferSize = 500;
+				final QueryLimit bufferSize = QueryLimit.ofInt(500);
 
 				List<I_C_Invoice_Candidate> newCandidates = createCandidates(model, bufferSize, creatorImpl);
 				final int candidatesCount = newCandidates.size();
@@ -261,7 +262,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 */
 	private List<I_C_Invoice_Candidate> createCandidates(
 			final Object modelOrNoModel,
-			final int bufferSize,
+			final QueryLimit bufferSize,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
 		//
@@ -314,7 +315,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-		if (!invoiceCandiateHandler.isMissingInvoiceCandidate(model))
+			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
 		{
 			return ImmutableList.of();
 		}

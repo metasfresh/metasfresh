@@ -131,12 +131,7 @@ public class C_OrderLine
 	})
 	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
 	{
-		if (orderLine.getC_Flatrate_Conditions_ID() <= 0)
-		{
-			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
-			orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
-		}
-		else
+		if (subscriptionBL.isSubscription(orderLine))
 		{
 			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
@@ -147,6 +142,11 @@ public class C_OrderLine
 			}
 
 			subscriptionBL.updateQtysAndPrices(orderLine, soTrx, true);
+		}
+		else
+		{
+			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
+			orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 		}
 	}
 }
