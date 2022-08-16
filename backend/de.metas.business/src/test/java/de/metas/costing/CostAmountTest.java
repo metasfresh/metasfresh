@@ -1,10 +1,9 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-
 import de.metas.money.CurrencyId;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
