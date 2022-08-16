@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import org.junit.BeforeClass;
@@ -74,12 +73,11 @@ public class JsonWorkOrderProjectRequestTest
 		woProjectRequest.setValue("Test WO Project");
 		woProjectRequest.setOrgCode("ORG");
 		woProjectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
-		woProjectRequest.setSpecialistConsultantId("specialistConsultantId");
 		woProjectRequest.setDateOfProvisionByBPartner(LocalDate.parse("2022-07-22"));
 		woProjectRequest.setWoOwner("woOwner");
 		woProjectRequest.setIdentifier("ext-252525");
 
-		final JsonWorkOrderStepUpsertRequest woProjectStep = new JsonWorkOrderStepUpsertRequest();
+		final JsonWorkOrderStepUpsertItemRequest woProjectStep = new JsonWorkOrderStepUpsertItemRequest();
 		woProjectStep.setIdentifier("ext-1111");
 		woProjectStep.setName("Test WO Project Step");
 		woProjectStep.setDescription("Test WO Project Step Description");
@@ -95,11 +93,11 @@ public class JsonWorkOrderProjectRequestTest
 		woProjectStep.setWOStepStatus(JsonWOStepStatus.CANCELED);
 		woProjectStep.setWOFindingsReleasedDate(LocalDate.parse("2022-08-03"));
 		woProjectStep.setWOFindingsCreatedDate(LocalDate.parse("2022-08-01"));
-		woProjectStep.setExternalId(JsonExternalId.of("1111"));
+		woProjectStep.setExternalId("1111");
 
 		woProjectRequest.setSteps(ImmutableList.of(woProjectStep));
 
-		final JsonWorkOrderResourceUpsertRequest woProjectResource = new JsonWorkOrderResourceUpsertRequest();
+		final JsonWorkOrderResourceUpsertItemRequest woProjectResource = new JsonWorkOrderResourceUpsertItemRequest();
 		woProjectResource.setResourceIdentifier("int-resourceIdentifier");
 		woProjectResource.setAssignDateFrom(LocalDate.parse("2022-07-15"));
 		woProjectResource.setAssignDateTo(LocalDate.parse("2022-07-16"));
@@ -108,18 +106,18 @@ public class JsonWorkOrderProjectRequestTest
 		woProjectResource.setDuration(BigDecimal.TEN);
 		woProjectResource.setDurationUnit(JsonDurationUnit.Month);
 		woProjectResource.setTestFacilityGroupName("testFacilityGroupName");
-		woProjectResource.setExternalId(JsonExternalId.of("1111"));
+		woProjectResource.setExternalId("1111");
 
 		woProjectStep.setResources(ImmutableList.of(woProjectResource));
 
-		final JsonWorkOrderObjectUnderTestUpsertRequest woObjectUnderTest = new JsonWorkOrderObjectUnderTestUpsertRequest();
+		final JsonWorkOrderObjectUnderTestUpsertItemRequest woObjectUnderTest = new JsonWorkOrderObjectUnderTestUpsertItemRequest();
 		woObjectUnderTest.setNumberOfObjectsUnderTest(10);
 		woObjectUnderTest.setWoDeliveryNote("woDeliveryNote");
 		woObjectUnderTest.setWoManufacturer("woManufacturer");
 		woObjectUnderTest.setWoObjectType("woObjectType");
 		woObjectUnderTest.setWoObjectName("woObjectName");
 		woObjectUnderTest.setWoObjectWhereabouts("woObjectWhereabouts");
-		woObjectUnderTest.setExternalId(JsonExternalId.of("3333"));
+		woObjectUnderTest.setExternalId("3333");
 		woObjectUnderTest.setIdentifier("ext-3333");
 
 		woProjectRequest.setObjectsUnderTest(ImmutableList.of(woObjectUnderTest));

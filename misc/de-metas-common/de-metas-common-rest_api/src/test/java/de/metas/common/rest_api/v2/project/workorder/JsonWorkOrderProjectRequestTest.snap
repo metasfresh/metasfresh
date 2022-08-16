@@ -1,11 +1,15 @@
 de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequestTest.serializeDeserialize=[
   {
     "identifier" : "ext-252525",
+    "projectTypeId" : 3,
+    "syncAdvise" : {
+      "ifNotExists" : "CREATE",
+      "ifExists" : "UPDATE_MERGE"
+    },
     "value" : "Test WO Project",
     "valueSet" : true,
     "name" : "Test WO Project",
     "nameSet" : true,
-    "projectTypeId" : 3,
     "priceListVersionId" : 5,
     "priceListVersionIdSet" : true,
     "currencyId" : 4,
@@ -38,19 +42,12 @@ de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRequestTest.se
     "orgCodeSet" : true,
     "isActive" : true,
     "activeSet" : true,
-    "syncAdvise" : {
-      "ifNotExists" : "CREATE",
-      "ifExists" : "UPDATE_MERGE"
-    },
-    "syncAdviseSet" : true,
     "bpartnerDepartmentSet" : false,
     "woOwner" : "woOwner",
     "woOwnerSet" : true,
     "poReferenceSet" : false,
     "bpartnerTargetDateSet" : false,
     "woProjectCreatedDateSet" : false,
-    "specialistConsultantId" : "specialistConsultantId",
-    "specialistConsultantIdSet" : true,
     "dateOfProvisionByBPartner" : {
       "year" : 2022,
       "month" : 7,
