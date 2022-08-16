@@ -109,6 +109,23 @@ public class CostAmount
 		}
 	}
 
+	public static void assertCurrencyMatching(@NonNull final CostAmount... amts)
+	{
+		if (amts.length <= 1)
+		{
+			return;
+		}
+
+		final CurrencyId expectedCurrencyId = amts[0].currencyId;
+		for (int i = 1; i < amts.length; i++)
+		{
+			if (!CurrencyId.equals(amts[i].currencyId, expectedCurrencyId))
+			{
+				throw new AdempiereException("Amount has invalid currency: " + amts[i] + ". Expected: " + expectedCurrencyId);
+			}
+		}
+	}
+
 	public int signum()
 	{
 		return value.signum();
@@ -269,5 +286,11 @@ public class CostAmount
 	public Money toMoney()
 	{
 		return Money.of(value, currencyId);
+	}
+
+	public boolean compareToEquals(@NonNull final CostAmount other)
+	{
+		assertCurrencyMatching(other);
+		return this.value.compareTo(other.value) == 0;
 	}
 }
