@@ -38,7 +38,7 @@ import lombok.Value;
 public class CostSegment
 {
 	@Getter(AccessLevel.NONE)
-	CostingLevel costingLevel; // we have it here only for toString()
+	CostingLevel costingLevel; // we have it here only for toBuilder() and toString()
 
 	AcctSchemaId acctSchemaId;
 	CostTypeId costTypeId;
