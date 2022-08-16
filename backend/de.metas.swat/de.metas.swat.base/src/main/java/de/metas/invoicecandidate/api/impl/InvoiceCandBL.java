@@ -1801,6 +1801,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyToInvoiceInPriceUOM(ZERO);
 			ic.setQtyToInvoice(ZERO);
 			ic.setQtyToInvoiceInUOM(ZERO);
+			ic.setQtyToInvoiceBeforeDiscount(ZERO);
 
 			ic.setApprovalForInvoicing(false);
 		}
