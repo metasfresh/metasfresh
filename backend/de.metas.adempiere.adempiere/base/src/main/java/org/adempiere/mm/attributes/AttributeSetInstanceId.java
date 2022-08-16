@@ -1,13 +1,11 @@
 package org.adempiere.mm.attributes;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -100,7 +98,9 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return repoId == NONE.repoId;
 	}
 
-	/** @return true if this is about a "real" greater-than-zero {@code M_AttributeSetInstance_ID}. */
+	/**
+	 * @return true if this is about a "real" greater-than-zero {@code M_AttributeSetInstance_ID}.
+	 */
 	public boolean isRegular()
 	{
 		return repoId > NONE.repoId;
@@ -110,4 +110,7 @@ public class AttributeSetInstanceId implements RepoIdAware
 	{
 		return asiId != null && asiId.isRegular();
 	}
+
+	@Nullable
+	public AttributeSetInstanceId asRegularOrNull() {return isRegular() ? this : null;}
 }
