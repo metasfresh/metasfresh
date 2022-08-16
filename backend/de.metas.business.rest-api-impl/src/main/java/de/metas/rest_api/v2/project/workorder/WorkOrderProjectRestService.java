@@ -229,12 +229,12 @@ public class WorkOrderProjectRestService
 
 		final IdentifierString projectIdentifier = request.mapProjectIdentifier(IdentifierString::of);
 
-		if (projectIdentifier.isExternalId() && !projectIdentifier.asExternalId().getValue().equals(request.getPoReference()))
+		if (projectIdentifier.isExternalId() && !projectIdentifier.asExternalId().getValue().equals(request.getProjectReferenceExt()))
 		{
-			throw new AdempiereException("WorkOrderProject.Identifier doesn't match with WorkOrderProject.POReference")
+			throw new AdempiereException("WorkOrderProject.Identifier doesn't match with WorkOrderProject.ProjectReferenceExt")
 					.appendParametersToMessage()
 					.setParameter("WorkOrderProject.Identifier", projectIdentifier.getRawIdentifierString())
-					.setParameter("WorkOrderProject.POReference", request.getPoReference());
+					.setParameter("WorkOrderProject.ExternalId", request.getProjectReferenceExt());
 		}
 	}
 

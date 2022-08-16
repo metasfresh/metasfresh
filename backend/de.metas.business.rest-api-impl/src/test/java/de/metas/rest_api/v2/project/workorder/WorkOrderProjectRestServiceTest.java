@@ -184,7 +184,7 @@ class WorkOrderProjectRestServiceTest
 		final JsonMetasfreshId bpartnerId = JsonMetasfreshId.of(BusinessTestHelper.createBPartner("test").getC_BPartner_ID());
 		final String bpartnerDepartment = "bpartnerDepartment";
 		final String woOwner = "woOwner";
-		final String projectReferenceExt = "projectReferenceExt";
+		final String poReference = "POReference";
 		final LocalDate bpartnerTargetDate = LocalDate.parse("2022-08-20");
 		final LocalDate woProjectCreatedDate = LocalDate.parse("2022-07-15");
 		final LocalDate dateOfProvisionByBPartner = LocalDate.parse("2022-08-15");
@@ -201,11 +201,11 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setDateContract(dateContract);
 		projectRequest.setDateFinish(dateFinish);
 		projectRequest.setBusinessPartnerId(bpartnerId);
-		projectRequest.setProjectReferenceExt(projectReferenceExt);
+		projectRequest.setProjectReferenceExt(projectExternalId);
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		projectRequest.setBpartnerDepartment(bpartnerDepartment);
 		projectRequest.setWoOwner(woOwner);
-		projectRequest.setPOReference(projectExternalId);
+		projectRequest.setPOReference(poReference);
 		projectRequest.setBPartnerTargetDate(bpartnerTargetDate);
 		projectRequest.setWOProjectCreatedDate(woProjectCreatedDate);
 		projectRequest.setIsActive(false);
@@ -306,10 +306,10 @@ class WorkOrderProjectRestServiceTest
 		assertThat(data.getDateContract()).isEqualTo(dateContract);
 		assertThat(data.getDateFinish()).isEqualTo(dateFinish);
 		assertThat(data.getBPartnerId()).isEqualTo(bpartnerId);
-		assertThat(data.getProjectReferenceExt()).isEqualTo(projectReferenceExt);
+		assertThat(data.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(data.getBpartnerDepartment()).isEqualTo(bpartnerDepartment);
 		assertThat(data.getWoOwner()).isEqualTo(woOwner);
-		assertThat(data.getPoReference()).isEqualTo(projectExternalId);
+		assertThat(data.getPoReference()).isEqualTo(poReference);
 		assertThat(data.getBpartnerTargetDate()).isEqualTo(bpartnerTargetDate);
 		assertThat(data.getWoProjectCreatedDate()).isEqualTo(woProjectCreatedDate);
 		assertThat(data.getIsActive()).isEqualTo(false);
@@ -378,7 +378,7 @@ class WorkOrderProjectRestServiceTest
 		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
 		projectRequest.setIdentifier("ext-" + projectExternalId);
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
-		projectRequest.setPOReference(projectExternalId);
+		projectRequest.setProjectReferenceExt(projectExternalId);
 		projectRequest.setCurrencyId(JsonMetasfreshId.of(currencyId.getRepoId()));
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 
@@ -397,7 +397,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getName()).isEqualTo(nextValue);
 		assertThat(storedProject.getProjectTypeId()).isEqualTo(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
 		assertThat(storedProject.getIsActive()).isEqualTo(true);
-		assertThat(storedProject.getPoReference()).isEqualTo(projectExternalId);
+		assertThat(storedProject.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(storedProject.getOrgCode()).isEqualTo("0");
 		assertThat(storedProject.getCurrencyId()).isEqualTo(JsonMetasfreshId.of(currencyId.getRepoId()));
 
@@ -409,7 +409,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getBPartnerId()).isNull();
 		assertThat(storedProject.getBpartnerDepartment()).isNull();
 		assertThat(storedProject.getWoOwner()).isNull();
-		assertThat(storedProject.getProjectReferenceExt()).isNull();
+		assertThat(storedProject.getPoReference()).isNull();
 		assertThat(storedProject.getBpartnerTargetDate()).isNull();
 		assertThat(storedProject.getWoProjectCreatedDate()).isNull();
 		assertThat(storedProject.getDateOfProvisionByBPartner()).isNull();
@@ -433,7 +433,7 @@ class WorkOrderProjectRestServiceTest
 		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
 		projectRequest.setIdentifier("ext-" + projectExternalId);
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
-		projectRequest.setPOReference(projectExternalId);
+		projectRequest.setProjectReferenceExt(projectExternalId);
 		projectRequest.setCurrencyId(JsonMetasfreshId.of(currencyId.getRepoId()));
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 
@@ -490,7 +490,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getName()).isEqualTo(nextValue);
 		assertThat(storedProject.getProjectTypeId()).isEqualTo(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
 		assertThat(storedProject.getIsActive()).isEqualTo(true);
-		assertThat(storedProject.getPoReference()).isEqualTo(projectExternalId);
+		assertThat(storedProject.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(storedProject.getOrgCode()).isEqualTo("0");
 		assertThat(storedProject.getCurrencyId()).isEqualTo(JsonMetasfreshId.of(currencyId.getRepoId()));
 
@@ -502,7 +502,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getBPartnerId()).isNull();
 		assertThat(storedProject.getBpartnerDepartment()).isNull();
 		assertThat(storedProject.getWoOwner()).isNull();
-		assertThat(storedProject.getProjectReferenceExt()).isNull();
+		assertThat(storedProject.getPoReference()).isNull();
 		assertThat(storedProject.getBpartnerTargetDate()).isNull();
 		assertThat(storedProject.getWoProjectCreatedDate()).isNull();
 		assertThat(storedProject.getDateOfProvisionByBPartner()).isNull();
@@ -615,8 +615,8 @@ class WorkOrderProjectRestServiceTest
 				.build();
 
 		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
-		projectRequest.setIdentifier("ext-" + project.getPOReference());
-		projectRequest.setPOReference(project.getPOReference());
+		projectRequest.setIdentifier("ext-" + project.getC_Project_Reference_Ext());
+		projectRequest.setProjectReferenceExt(project.getC_Project_Reference_Ext());
 		projectRequest.setName("newProjectName");
 		projectRequest.setIsActive(false);
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
@@ -748,8 +748,8 @@ class WorkOrderProjectRestServiceTest
 				.build();
 
 		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
-		projectRequest.setIdentifier("ext-" + project.getPOReference());
-		projectRequest.setPOReference(project.getPOReference());
+		projectRequest.setIdentifier("ext-" + project.getC_Project_Reference_Ext());
+		projectRequest.setProjectReferenceExt(project.getC_Project_Reference_Ext());
 		projectRequest.setName("newProjectName");
 		projectRequest.setIsActive(false);
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
@@ -810,7 +810,8 @@ class WorkOrderProjectRestServiceTest
 		project.setC_ProjectType_ID(projectTypeId.getRepoId());
 		project.setProjectCategory(projectCategory);
 
-		Optional.ofNullable(externalReference).ifPresent(project::setPOReference);
+		Optional.ofNullable(externalReference)
+				.ifPresent(project::setC_Project_Reference_Ext);
 
 		final Boolean isActive = CoalesceUtil.coalesceNotNull(active, Boolean.TRUE);
 		project.setIsActive(isActive);
