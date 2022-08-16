@@ -131,11 +131,6 @@ public class WorkOrderMapper
 			woProjectBuilder.isActive(request.getIsActive());
 		}
 
-		if (request.isSpecialistConsultantIdSet())
-		{
-			woProjectBuilder.specialistConsultantId(request.getSpecialistConsultantId());
-		}
-
 		if (request.isDateOfProvisionByBPartnerSet())
 		{
 			woProjectBuilder.dateOfProvisionByBPartner(TimeUtil.asInstant(request.getDateOfProvisionByBPartner(), zoneId));
@@ -202,7 +197,6 @@ public class WorkOrderMapper
 				.projectReferenceExt(request.getProjectReferenceExt())
 				.dateContract(TimeUtil.asInstant(request.getDateContract(), zoneId))
 				.dateFinish(TimeUtil.asInstant(request.getDateFinish(), zoneId))
-				.specialistConsultantId(request.getSpecialistConsultantId())
 				.dateOfProvisionByBPartner(TimeUtil.asInstant(request.getDateOfProvisionByBPartner(), zoneId))
 				.bpartnerDepartment(request.getBpartnerDepartment())
 				.woOwner(request.getWoOwner())

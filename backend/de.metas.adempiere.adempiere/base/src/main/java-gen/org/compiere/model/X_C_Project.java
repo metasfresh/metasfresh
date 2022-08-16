@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Project
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1338049950L;
+	private static final long serialVersionUID = -2096227408L;
 
     /** Standard Constructor */
     public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)
@@ -723,15 +723,18 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public void setSpecialist_Consultant_ID (final @Nullable java.lang.String Specialist_Consultant_ID)
+	public void setSpecialist_Consultant_ID (final int Specialist_Consultant_ID)
 	{
-		set_Value (COLUMNNAME_Specialist_Consultant_ID, Specialist_Consultant_ID);
+		if (Specialist_Consultant_ID < 1) 
+			set_Value (COLUMNNAME_Specialist_Consultant_ID, null);
+		else 
+			set_Value (COLUMNNAME_Specialist_Consultant_ID, Specialist_Consultant_ID);
 	}
 
 	@Override
-	public java.lang.String getSpecialist_Consultant_ID() 
+	public int getSpecialist_Consultant_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_Specialist_Consultant_ID);
+		return get_ValueAsInt(COLUMNNAME_Specialist_Consultant_ID);
 	}
 
 	@Override

@@ -120,7 +120,6 @@ public class WorkOrderProjectRepository
 		projectRecord.setPOReference(woProject.getPoReference());
 		projectRecord.setBPartnerTargetDate(TimeUtil.asTimestamp(woProject.getBpartnerTargetDate()));
 		projectRecord.setWOProjectCreatedDate(TimeUtil.asTimestamp(woProject.getWoProjectCreatedDate()));
-		projectRecord.setSpecialist_Consultant_ID(woProject.getSpecialistConsultantId());
 		projectRecord.setC_ProjectType_ID(woProject.getProjectTypeId().getRepoId());
 
 		saveRecord(projectRecord);
@@ -157,7 +156,6 @@ public class WorkOrderProjectRepository
 
 		projectRecord.setBPartnerDepartment(createWOProjectRequest.getBpartnerDepartment());
 		projectRecord.setWOOwner(createWOProjectRequest.getWoOwner());
-		projectRecord.setSpecialist_Consultant_ID(createWOProjectRequest.getSpecialistConsultantId());
 
 		projectRecord.setIsActive(createWOProjectRequest.isActive());
 
@@ -203,7 +201,6 @@ public class WorkOrderProjectRepository
 				.woProjectCreatedDate(TimeUtil.asInstant(projectRecord.getWOProjectCreatedDate()))
 
 				.bpartnerDepartment(projectRecord.getBPartnerDepartment())
-				.specialistConsultantId(projectRecord.getSpecialist_Consultant_ID())
 				.woOwner(projectRecord.getWOOwner())
 
 				.isActive(projectRecord.isActive())

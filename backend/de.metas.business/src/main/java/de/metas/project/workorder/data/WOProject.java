@@ -86,9 +86,6 @@ public class WOProject
 	Instant dateFinish;
 
 	@Nullable
-	String specialistConsultantId;
-
-	@Nullable
 	Instant dateOfProvisionByBPartner;
 
 	@Nullable

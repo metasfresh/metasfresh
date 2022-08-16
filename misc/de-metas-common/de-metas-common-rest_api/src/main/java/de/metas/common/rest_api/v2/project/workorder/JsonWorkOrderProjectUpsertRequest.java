@@ -151,11 +151,6 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	private boolean woProjectCreatedDateSet;
 
-	private String specialistConsultantId;
-
-	@ApiModelProperty(hidden = true)
-	private boolean specialistConsultantIdSet;
-
 	private LocalDate dateOfProvisionByBPartner;
 
 	@ApiModelProperty(hidden = true)
@@ -276,12 +271,6 @@ public class JsonWorkOrderProjectUpsertRequest
 	{
 		this.woProjectCreatedDate = woProjectCreatedDate;
 		this.woProjectCreatedDateSet = true;
-	}
-
-	public void setSpecialistConsultantId(final String specialistConsultantId)
-	{
-		this.specialistConsultantId = specialistConsultantId;
-		this.specialistConsultantIdSet = true;
 	}
 
 	public void setDateOfProvisionByBPartner(final LocalDate dateOfProvisionByBPartner)

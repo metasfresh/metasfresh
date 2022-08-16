@@ -102,10 +102,6 @@ public class JsonWorkOrderProjectResponse
 	Boolean isActive;
 
 	@Nullable
-	@JsonProperty("specialistConsultantId")
-	String specialistConsultantId;
-
-	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dateOfProvisionByBPartner")
 	LocalDate dateOfProvisionByBPartner;
@@ -158,7 +154,6 @@ public class JsonWorkOrderProjectResponse
 			@Nullable @JsonProperty("projectParentId") final JsonMetasfreshId projectParentId,
 			@NonNull @JsonProperty("orgCode") final String orgCode,
 			@Nullable @JsonProperty("isActive") final Boolean isActive,
-			@Nullable @JsonProperty("specialistConsultantId") final String specialistConsultantId,
 			@Nullable @JsonProperty("dateOfProvisionByBPartner") final LocalDate dateOfProvisionByBPartner,
 			@Nullable @JsonProperty("woOwner") final String woOwner,
 			@Nullable @JsonProperty("poReference") final String poReference,
@@ -183,7 +178,6 @@ public class JsonWorkOrderProjectResponse
 		this.projectParentId = projectParentId;
 		this.orgCode = orgCode;
 		this.isActive = isActive;
-		this.specialistConsultantId = specialistConsultantId;
 		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
 		this.woOwner = woOwner;
 		this.poReference = poReference;

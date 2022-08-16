@@ -5,8 +5,3 @@ INSERT INTO t_alter_column values('c_project_wo_resource','DurationUnit','CHAR(1
 -- 2022-08-04T06:07:35.153Z
 UPDATE C_Project_WO_Resource SET DurationUnit='h' WHERE DurationUnit IS NULL
 ;
-
--- 2022-08-04T09:26:31.847Z
-INSERT INTO t_alter_column values('c_project','Specialist_Consultant_ID','VARCHAR(255)',null,null)
-;
-

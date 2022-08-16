@@ -259,7 +259,6 @@ public class WorkOrderProjectRestService
 				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(project.getProjectParentId())))
 				.orgCode(orgDAO.retrieveOrgValue(project.getOrgId()))
 				.isActive(project.getIsActive())
-				.specialistConsultantId(project.getSpecialistConsultantId())
 				.bpartnerDepartment(project.getBpartnerDepartment())
 				.dateOfProvisionByBPartner(TimeUtil.asLocalDate(project.getDateOfProvisionByBPartner(), zoneId))
 				.woOwner(project.getWoOwner())

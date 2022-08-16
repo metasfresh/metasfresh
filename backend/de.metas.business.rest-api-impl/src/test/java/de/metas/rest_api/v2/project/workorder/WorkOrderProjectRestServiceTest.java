@@ -187,7 +187,6 @@ class WorkOrderProjectRestServiceTest
 		final String poReference = "POReference";
 		final LocalDate bpartnerTargetDate = LocalDate.parse("2022-08-20");
 		final LocalDate woProjectCreatedDate = LocalDate.parse("2022-07-15");
-		final String specialistConsultantId = "111";
 		final LocalDate dateOfProvisionByBPartner = LocalDate.parse("2022-08-15");
 
 		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
@@ -211,7 +210,6 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setWOProjectCreatedDate(woProjectCreatedDate);
 		projectRequest.setIsActive(false);
 		projectRequest.setOrgCode(orgValue);
-		projectRequest.setSpecialistConsultantId(specialistConsultantId);
 		projectRequest.setDateOfProvisionByBPartner(dateOfProvisionByBPartner);
 
 		// JsonWorkOrderStepUpsertRequest
@@ -316,7 +314,6 @@ class WorkOrderProjectRestServiceTest
 		assertThat(data.getWoProjectCreatedDate()).isEqualTo(woProjectCreatedDate);
 		assertThat(data.getIsActive()).isEqualTo(false);
 		assertThat(data.getOrgCode()).isEqualTo(orgValue);
-		assertThat(data.getSpecialistConsultantId()).isEqualTo(specialistConsultantId);
 		assertThat(data.getDateOfProvisionByBPartner()).isEqualTo(dateOfProvisionByBPartner);
 		assertThat(data.getProjectParentId()).isNull();
 
@@ -415,7 +412,6 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getPoReference()).isNull();
 		assertThat(storedProject.getBpartnerTargetDate()).isNull();
 		assertThat(storedProject.getWoProjectCreatedDate()).isNull();
-		assertThat(storedProject.getSpecialistConsultantId()).isNull();
 		assertThat(storedProject.getDateOfProvisionByBPartner()).isNull();
 		assertThat(storedProject.getProjectParentId()).isNull();
 
@@ -509,7 +505,6 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getPoReference()).isNull();
 		assertThat(storedProject.getBpartnerTargetDate()).isNull();
 		assertThat(storedProject.getWoProjectCreatedDate()).isNull();
-		assertThat(storedProject.getSpecialistConsultantId()).isNull();
 		assertThat(storedProject.getDateOfProvisionByBPartner()).isNull();
 		assertThat(storedProject.getProjectParentId()).isNull();
 

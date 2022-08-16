@@ -81,9 +81,6 @@ public class CreateWOProjectRequest
 	Instant dateFinish;
 
 	@Nullable
-	String specialistConsultantId;
-
-	@Nullable
 	Instant dateOfProvisionByBPartner;
 
 	@Nullable
@@ -117,7 +114,6 @@ public class CreateWOProjectRequest
 			@Nullable final UserId salesRepId,
 			@Nullable final Instant dateContract,
 			@Nullable final Instant dateFinish,
-			@Nullable final String specialistConsultantId,
 			@Nullable final Instant dateOfProvisionByBPartner,
 			@Nullable final String bpartnerDepartment,
 			@Nullable final String woOwner,
@@ -138,7 +134,6 @@ public class CreateWOProjectRequest
 		this.salesRepId = salesRepId;
 		this.dateContract = dateContract;
 		this.dateFinish = dateFinish;
-		this.specialistConsultantId = specialistConsultantId;
 		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
 		this.bpartnerDepartment = bpartnerDepartment;
 		this.woOwner = woOwner;
