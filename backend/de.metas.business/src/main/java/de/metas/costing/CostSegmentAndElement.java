@@ -102,6 +102,11 @@ public class CostSegmentAndElement
 		return getCostSegment().getCostTypeId();
 	}
 
+	public ClientId getClientId()
+	{
+		return getCostSegment().getClientId();
+	}
+
 	public OrgId getOrgId()
 	{
 		return getCostSegment().getOrgId();
