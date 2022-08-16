@@ -74,7 +74,7 @@ public class WorkOrderProjectRepository
 		}
 		if (query.getExternalProjectReference() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, query.getExternalProjectReference().getValue());
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_POReference, query.getExternalProjectReference().getValue());
 		}
 
 		final I_C_Project projectRecord = queryBuilder.create().first();
