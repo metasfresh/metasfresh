@@ -1,3 +1,6 @@
+DROP FUNCTION IF EXISTS setBaseLanguage( numeric) ;
+
+
 CREATE OR REPLACE FUNCTION setBaseLanguage(p_ad_language_id numeric = -1) RETURNS VOID
 AS
 $$
