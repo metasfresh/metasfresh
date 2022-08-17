@@ -59,17 +59,17 @@ public class C_Project
 		if (project.getC_BPartner_ID() <= 0)
 		{
 			project.setC_BPartner_ID(parentProjectRecord.getC_BPartner_ID());
-			updatedColumns.add("C_BPartner_ID");
+			updatedColumns.add(I_C_Project.COLUMNNAME_C_BPartner_ID);
 		}
 		if (project.getSalesRep_ID() <= 0)
 		{
 			project.setSalesRep_ID(parentProjectRecord.getSalesRep_ID());
-			updatedColumns.add("SalesRep_ID");
+			updatedColumns.add(I_C_Project.COLUMNNAME_SalesRep_ID);
 		}
 		if (project.getSpecialist_Consultant_ID() <= 0)
 		{
 			project.setSpecialist_Consultant_ID(parentProjectRecord.getSpecialist_Consultant_ID());
-			updatedColumns.add("Specialist_Consultant_ID");
+			updatedColumns.add(I_C_Project.COLUMNNAME_Specialist_Consultant_ID);
 		}
 		if (updatedColumns.size() > 0) // log this, particularly in case the change is done via API 
 		{
