@@ -359,7 +359,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final org.compiere.model.I_C_OrderLine orderLine = icRecord.getC_OrderLine();
 
-		if (orderLine.getM_Product_ID() != icRecord.getM_Product_ID() || icRecord.isPartialPayment())
+		if (orderLine.getM_Product_ID() != icRecord.getM_Product_ID() || icRecord.isInterimInvoice())
 		{
 			return;
 		}

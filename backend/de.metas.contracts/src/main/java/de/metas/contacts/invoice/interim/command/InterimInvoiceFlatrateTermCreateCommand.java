@@ -313,7 +313,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	{
 		final I_C_Invoice_Candidate interimIC = copyInvoiceCandidate(flatrateTerm, existingIC);
 
-		interimIC.setIsPartialPayment(true);
+		interimIC.setIsInterimInvoice(true);
 		invoiceCandDAO.save(interimIC);
 		return interimIC;
 	}

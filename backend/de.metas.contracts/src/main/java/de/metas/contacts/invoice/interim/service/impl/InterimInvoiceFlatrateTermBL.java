@@ -111,7 +111,7 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 	@Override
 	public void updateInvoicedQtyForPartialPayment(@NonNull final I_C_Invoice_Candidate invoiceCand)
 	{
-		if (!invoiceCand.isPartialPayment())
+		if (!invoiceCand.isInterimInvoice())
 		{
 			return;
 		}
