@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -61,9 +62,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
@@ -75,10 +78,20 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_Name;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_DeliveryRule;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_DeliveryViaRule;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_M_Warehouse_ID;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_MovementType;
+import static org.compiere.model.X_M_InOut.DOCSTATUS_Completed;
+import static org.compiere.model.X_M_InOut.DOCSTATUS_Drafted;
 
 public class M_InOut_StepDef
 {
@@ -89,6 +102,7 @@ public class M_InOut_StepDef
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -106,7 +120,8 @@ public class M_InOut_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable)
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
@@ -115,6 +130,7 @@ public class M_InOut_StepDef
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@And("^validate the created (shipments|material receipt)$")
@@ -158,6 +174,20 @@ public class M_InOut_StepDef
 			{
 				final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
 				assertThat(shipment.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+			}
+
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DocType.Table_Name + "." + COLUMNNAME_DocBaseType);
+			if (Check.isNotBlank(docBaseType))
+			{
+				final String name = DataTableUtil.extractStringForColumnName(row, "OPT." + I_C_DocType.Table_Name + "." + COLUMNNAME_Name);
+
+				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+						.addEqualsFilter(COLUMNNAME_Name, name)
+						.create()
+						.firstOnlyNotNull(I_C_DocType.class);
+
+				assertThat(shipment.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
 			}
 		}
 	}
@@ -266,7 +296,7 @@ public class M_InOut_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
 	}
 
-	@And("^the (shipment|material receipt) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
+	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
 	{
 		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
