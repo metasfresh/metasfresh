@@ -1,0 +1,9 @@
+-- 2022-08-17T09:52:13.262Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType SET IsDefault='Y',Updated=TO_TIMESTAMP('2022-08-17 11:52:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=1000016
+;
+
+-- 2022-08-17T09:50:51.164Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType SET IsDefault='Y',Updated=TO_TIMESTAMP('2022-08-17 11:50:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=1000030
+;
