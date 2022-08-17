@@ -141,7 +141,7 @@ public class FlatrateTermCreator
 	}
 
 	@Nullable
-	public ProductAndCategoryId createProductAndCategoryId(@Nullable final I_M_Product productRecord)
+	private ProductAndCategoryId createProductAndCategoryId(@Nullable final I_M_Product productRecord)
 	{
 		if (productRecord == null)
 		{
