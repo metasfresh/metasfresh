@@ -1100,7 +1100,7 @@ public interface I_C_Project
 	/**
 	 * Set Specialist consultant.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1109,7 +1109,7 @@ public interface I_C_Project
 	/**
 	 * Get Specialist consultant.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

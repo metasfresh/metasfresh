@@ -22,69 +22,40 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 
 @Value
+@Builder
+@Jacksonized
 public class JsonWorkOrderObjectsUnderTestResponse
 {
 	@NonNull
-	@JsonProperty("objectUnderTestId")
 	JsonMetasfreshId objectUnderTestId;
 
 	@NonNull
-	@JsonProperty("numberOfObjectsUnderTest")
 	Integer numberOfObjectsUnderTest;
 
 	@Nullable
-	@JsonProperty("externalId")
 	String externalId;
 
 	@Nullable
-	@JsonProperty("woDeliveryNote")
 	String woDeliveryNote;
 
 	@Nullable
-	@JsonProperty("woManufacturer")
 	String woManufacturer;
 
 	@Nullable
-	@JsonProperty("woObjectType")
 	String woObjectType;
 
 	@Nullable
-	@JsonProperty("woObjectName")
 	String woObjectName;
 
 	@Nullable
-	@JsonProperty("woObjectWhereabouts")
 	String woObjectWhereabouts;
-
-	@Builder
-	@JsonCreator
-	public JsonWorkOrderObjectsUnderTestResponse(
-			@NonNull @JsonProperty("objectUnderTestId") final JsonMetasfreshId objectUnderTestId,
-			@NonNull @JsonProperty("numberOfObjectsUnderTest") final Integer numberOfObjectsUnderTest,
-			@Nullable @JsonProperty("externalId") final String externalId,
-			@Nullable @JsonProperty("woDeliveryNote") final String woDeliveryNote,
-			@Nullable @JsonProperty("woManufacturer") final String woManufacturer,
-			@Nullable @JsonProperty("woObjectType") final String woObjectType,
-			@Nullable @JsonProperty("woObjectName") final String woObjectName,
-			@Nullable @JsonProperty("woObjectWhereabouts") final String woObjectWhereabouts)
-	{
-		this.objectUnderTestId = objectUnderTestId;
-		this.numberOfObjectsUnderTest = numberOfObjectsUnderTest;
-		this.externalId = externalId;
-		this.woDeliveryNote = woDeliveryNote;
-		this.woManufacturer = woManufacturer;
-		this.woObjectType = woObjectType;
-		this.woObjectName = woObjectName;
-		this.woObjectWhereabouts = woObjectWhereabouts;
-	}
 }

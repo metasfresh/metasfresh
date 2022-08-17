@@ -22,18 +22,19 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
+@Builder
+@Jacksonized
 public class JsonWorkOrderProjectUpsertResponse
 {
 	@NonNull
@@ -50,21 +51,4 @@ public class JsonWorkOrderProjectUpsertResponse
 
 	@Nullable
 	List<JsonWorkOrderObjectUnderTestUpsertResponse> objectsUnderTest;
-
-	@Builder
-	@JsonCreator
-	public JsonWorkOrderProjectUpsertResponse(
-			@NonNull @JsonProperty("metasfreshId") final JsonMetasfreshId metasfreshId,
-			@NonNull @JsonProperty("identifier") final String identifier,
-			@NonNull @JsonProperty("syncOutcome") final JsonResponseUpsertItem.SyncOutcome syncOutcome,
-			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepUpsertResponse> steps,
-			@Nullable @JsonProperty("objectsUnderTest") final List<JsonWorkOrderObjectUnderTestUpsertResponse> objectsUnderTest
-	)
-	{
-		this.metasfreshId = metasfreshId;
-		this.identifier = identifier;
-		this.syncOutcome = syncOutcome;
-		this.steps = steps;
-		this.objectsUnderTest = objectsUnderTest;
-	}
 }

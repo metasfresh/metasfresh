@@ -33,6 +33,7 @@ import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -117,7 +118,7 @@ public class WorkOrderProjectResourceRepository
 			if (projectResource.getDuration() == null || projectResource.getDurationUnit() == null)
 			{
 				resourceRecord.setDuration(BigDecimal.ZERO);
-				resourceRecord.setDurationUnit(DurationUnit.Hour.getCode());
+				resourceRecord.setDurationUnit(WFDurationUnit.Hour.getCode());
 			}
 			else
 			{
@@ -161,7 +162,7 @@ public class WorkOrderProjectResourceRepository
 		if (createWOProjectResourceRequest.getDuration() == null || createWOProjectResourceRequest.getDurationUnit() == null)
 		{
 			resourceRecord.setDuration(BigDecimal.ZERO);
-			resourceRecord.setDurationUnit(DurationUnit.Hour.getCode());
+			resourceRecord.setDurationUnit(WFDurationUnit.Hour.getCode());
 		}
 		else
 		{
@@ -200,7 +201,7 @@ public class WorkOrderProjectResourceRepository
 				.assignDateFrom(assignDateFrom)
 				.assignDateTo(assignDateTo)
 				.duration(resourceRecord.getDuration())
-				.durationUnit(DurationUnit.ofNullableCode(resourceRecord.getDurationUnit()))
+				.durationUnit(WFDurationUnit.ofNullableCode(resourceRecord.getDurationUnit()))
 
 				.isAllDay(resourceRecord.isAllDay())
 				.isActive(resourceRecord.isActive())

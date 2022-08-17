@@ -26,6 +26,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -63,7 +64,7 @@ public class CreateWOProjectResourceRequest
 	BigDecimal duration;
 
 	@Nullable
-	DurationUnit durationUnit;
+	WFDurationUnit durationUnit;
 
 	@Nullable
 	ExternalId externalId;

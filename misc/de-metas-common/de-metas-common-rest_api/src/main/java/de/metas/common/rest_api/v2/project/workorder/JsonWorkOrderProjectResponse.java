@@ -22,169 +22,93 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
+@Builder
+@Jacksonized
 public class JsonWorkOrderProjectResponse
 {
 	@NonNull
-	@JsonProperty("projectId")
 	JsonMetasfreshId projectId;
 
 	@NonNull
-	@JsonProperty("value")
 	String value;
 
 	@NonNull
-	@JsonProperty("name")
 	String name;
 
 	@NonNull
-	@JsonProperty("projectTypeId")
 	JsonMetasfreshId projectTypeId;
 
 	@Nullable
-	@JsonProperty("priceListVersionId")
 	JsonMetasfreshId priceListVersionId;
 
 	@NonNull
-	@JsonProperty("currencyCode")
 	String currencyCode;
 
 	@Nullable
-	@JsonProperty("salesRepId")
 	JsonMetasfreshId salesRepId;
 
 	@Nullable
-	@JsonProperty("description")
 	String description;
 
 	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonProperty("dateContract")
 	LocalDate dateContract;
 
 	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonProperty("dateFinish")
 	LocalDate dateFinish;
 
 	@Nullable
-	@JsonProperty("bPartnerId")
 	JsonMetasfreshId bPartnerId;
 
 	@Nullable
-	@JsonProperty("projectReferenceExt")
 	String projectReferenceExt;
 
 	@Nullable
-	@JsonProperty("projectParentId")
 	JsonMetasfreshId projectParentId;
 
 	@NonNull
-	@JsonProperty("orgCode")
 	String orgCode;
 
 	@Nullable
-	@JsonProperty("isActive")
 	Boolean isActive;
 
 	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonProperty("dateOfProvisionByBPartner")
 	LocalDate dateOfProvisionByBPartner;
 
 	@Nullable
-	@JsonProperty("woOwner")
 	String woOwner;
 
 	@Nullable
-	@JsonProperty("poReference")
 	String poReference;
 
 	@Nullable
-	@JsonProperty("bpartnerDepartment")
 	String bpartnerDepartment;
 
 	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonProperty("bpartnerTargetDate")
 	LocalDate bpartnerTargetDate;
 
 	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonProperty("woProjectCreatedDate")
 	LocalDate woProjectCreatedDate;
 
 	@Nullable
-	@JsonProperty("steps")
 	List<JsonWorkOrderStepResponse> steps;
 
 	@Nullable
-	@JsonProperty("objectsUnderTest")
 	List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest;
-
-	@JsonCreator
-	@Builder
-	public JsonWorkOrderProjectResponse(
-			@NonNull @JsonProperty("projectId") final JsonMetasfreshId projectId,
-			@NonNull @JsonProperty("value") final String value,
-			@NonNull @JsonProperty("name") final String name,
-			@NonNull @JsonProperty("projectTypeId") final JsonMetasfreshId projectTypeId,
-			@Nullable @JsonProperty("priceListVersionId") final JsonMetasfreshId priceListVersionId,
-			@NonNull @JsonProperty("currencyCode") final String currencyCode,
-			@Nullable @JsonProperty("salesRepId") final JsonMetasfreshId salesRepId,
-			@Nullable @JsonProperty("description") final String description,
-			@Nullable @JsonProperty("dateContract") final LocalDate dateContract,
-			@Nullable @JsonProperty("dateFinish") final LocalDate dateFinish,
-			@Nullable @JsonProperty("bPartnerId") final JsonMetasfreshId bPartnerId,
-			@Nullable @JsonProperty("projectReferenceExt") final String projectReferenceExt,
-			@Nullable @JsonProperty("projectParentId") final JsonMetasfreshId projectParentId,
-			@NonNull @JsonProperty("orgCode") final String orgCode,
-			@Nullable @JsonProperty("isActive") final Boolean isActive,
-			@Nullable @JsonProperty("dateOfProvisionByBPartner") final LocalDate dateOfProvisionByBPartner,
-			@Nullable @JsonProperty("woOwner") final String woOwner,
-			@Nullable @JsonProperty("poReference") final String poReference,
-			@Nullable @JsonProperty("bpartnerDepartment") final String bpartnerDepartment,
-			@Nullable @JsonProperty("bpartnerTargetDate") final LocalDate bpartnerTargetDate,
-			@Nullable @JsonProperty("woProjectCreatedDate") final LocalDate woProjectCreatedDate,
-			@Nullable @JsonProperty("steps") final List<JsonWorkOrderStepResponse> steps,
-			@Nullable @JsonProperty("objectsUnderTest") final List<JsonWorkOrderObjectsUnderTestResponse> objectsUnderTest)
-	{
-		this.projectId = projectId;
-		this.value = value;
-		this.name = name;
-		this.projectTypeId = projectTypeId;
-		this.priceListVersionId = priceListVersionId;
-		this.currencyCode = currencyCode;
-		this.salesRepId = salesRepId;
-		this.description = description;
-		this.dateContract = dateContract;
-		this.dateFinish = dateFinish;
-		this.bPartnerId = bPartnerId;
-		this.projectReferenceExt = projectReferenceExt;
-		this.projectParentId = projectParentId;
-		this.orgCode = orgCode;
-		this.isActive = isActive;
-		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
-		this.woOwner = woOwner;
-		this.poReference = poReference;
-		this.bpartnerDepartment = bpartnerDepartment;
-		this.bpartnerTargetDate = bpartnerTargetDate;
-		this.woProjectCreatedDate = woProjectCreatedDate;
-		this.steps = steps;
-		this.objectsUnderTest = objectsUnderTest;
-	}
 }

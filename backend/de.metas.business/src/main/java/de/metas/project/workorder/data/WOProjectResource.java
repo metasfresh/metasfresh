@@ -29,6 +29,7 @@ import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -69,7 +70,7 @@ public class WOProjectResource
 	BigDecimal duration;
 
 	@Nullable
-	DurationUnit durationUnit;
+	WFDurationUnit durationUnit;
 
 	@Nullable
 	ProjectId budgetProjectId;

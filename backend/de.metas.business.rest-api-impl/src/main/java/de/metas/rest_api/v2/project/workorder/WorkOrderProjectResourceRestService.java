@@ -40,7 +40,6 @@ import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.data.CreateWOProjectResourceRequest;
-import de.metas.project.workorder.data.DurationUnit;
 import de.metas.project.workorder.data.WOProjectResource;
 import de.metas.project.workorder.data.WorkOrderProjectResourceRepository;
 import de.metas.project.workorder.step.WOProjectStep;
@@ -53,6 +52,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
+import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -136,7 +136,7 @@ public class WorkOrderProjectResourceRestService
 
 		final Map<IdentifierString, ResourceId> resourceIdentifier2RepoId = resolveResourceIdentifiers(getOrgId, allRequestItems);
 
-		return upsertResourceItems(getOrgId, stepId2Step.keySet(),allRequestItems, resourceIdentifier2RepoId, syncAdvise);
+		return upsertResourceItems(getOrgId, stepId2Step.keySet(), allRequestItems, resourceIdentifier2RepoId, syncAdvise);
 	}
 
 	@NonNull
@@ -160,7 +160,7 @@ public class WorkOrderProjectResourceRestService
 				.isActive(request.getIsActive())
 				.isAllDay(request.getIsAllDay())
 				.duration(request.getDuration())
-				.durationUnit(toDurationUnit(request.getDurationUnit()))
+				.durationUnit(toWFDurationUnit(request.getDurationUnit()))
 				.externalId(ExternalId.ofOrNull(request.getExternalId()))
 				.testFacilityGroupName(request.getTestFacilityGroupName())
 				.build();
@@ -203,7 +203,7 @@ public class WorkOrderProjectResourceRestService
 
 		if (request.isDurationUnitSet())
 		{
-			resourceBuilder.durationUnit(toDurationUnit(request.getDurationUnit()));
+			resourceBuilder.durationUnit(toWFDurationUnit(request.getDurationUnit()));
 		}
 
 		if (request.isTestFacilityGroupNameSet())
@@ -243,7 +243,7 @@ public class WorkOrderProjectResourceRestService
 			toUpdateSyncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
 
-		objectsToUpdate.forEach((identifier,woResource) -> {
+		objectsToUpdate.forEach((identifier, woResource) -> {
 			final WOProjectStepId stepId = woResource.getWoProjectStepId();
 
 			final JsonWorkOrderResourceUpsertResponse responseItem = JsonWorkOrderResourceUpsertResponse.builder()
@@ -254,7 +254,10 @@ public class WorkOrderProjectResourceRestService
 
 			final List<JsonWorkOrderResourceUpsertResponse> responseList = new ArrayList<>();
 			responseList.add(responseItem);
-			responseCollector.merge(stepId, responseList, (oldList,newList) -> {oldList.addAll(newList); return oldList;});
+			responseCollector.merge(stepId, responseList, (oldList, newList) -> {
+				oldList.addAll(newList);
+				return oldList;
+			});
 		});
 
 		objectsToCreate.forEach((identifier, createRequest) -> {
@@ -393,7 +396,7 @@ public class WorkOrderProjectResourceRestService
 	}
 
 	@Nullable
-	private static DurationUnit toDurationUnit(@Nullable final JsonDurationUnit jsonDurationUnit)
+	private static WFDurationUnit toWFDurationUnit(@Nullable final JsonDurationUnit jsonDurationUnit)
 	{
 		if (jsonDurationUnit == null)
 		{
@@ -403,24 +406,24 @@ public class WorkOrderProjectResourceRestService
 		switch (jsonDurationUnit)
 		{
 			case Year:
-				return DurationUnit.Year;
+				return WFDurationUnit.Year;
 			case Month:
-				return DurationUnit.Month;
+				return WFDurationUnit.Month;
 			case Day:
-				return DurationUnit.Day;
+				return WFDurationUnit.Day;
 			case Hour:
-				return DurationUnit.Hour;
+				return WFDurationUnit.Hour;
 			case Minute:
-				return DurationUnit.Minute;
+				return WFDurationUnit.Minute;
 			case Second:
-				return DurationUnit.Second;
+				return WFDurationUnit.Second;
 			default:
 				throw new IllegalStateException("JsonDurationUnit not supported: " + jsonDurationUnit);
 		}
 	}
 
 	@Nullable
-	private static JsonDurationUnit toJsonDurationUnit(@Nullable final DurationUnit durationUnit)
+	private static JsonDurationUnit toJsonDurationUnit(@Nullable final WFDurationUnit durationUnit)
 	{
 		if (durationUnit == null)
 		{

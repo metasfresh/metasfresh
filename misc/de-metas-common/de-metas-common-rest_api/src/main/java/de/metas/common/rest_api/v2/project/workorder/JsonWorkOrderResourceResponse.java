@@ -22,94 +22,54 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
+@Builder
+@Jacksonized
 public class JsonWorkOrderResourceResponse
 {
 	@NonNull
-	@JsonProperty("woResourceId")
 	JsonMetasfreshId woResourceId;
 
 	@NonNull
-	@JsonProperty("stepId")
 	JsonMetasfreshId stepId;
 
 	@NonNull
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonProperty("assignDateFrom")
 	LocalDate assignDateFrom;
 
 	@NonNull
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonProperty("assignDateTo")
 	LocalDate assignDateTo;
 
 	@Nullable
-	@JsonProperty("isActive")
 	Boolean isActive;
 
 	@Nullable
-	@JsonProperty("resourceId")
 	JsonMetasfreshId resourceId;
 
 	@Nullable
-	@JsonProperty("isAllDay")
 	Boolean isAllDay;
 
 	@Nullable
-	@JsonProperty("duration")
 	BigDecimal duration;
 
 	@Nullable
-	@JsonProperty("durationUnit")
 	JsonDurationUnit durationUnit;
 
 	@Nullable
-	@JsonProperty("testFacilityGroupName")
 	String testFacilityGroupName;
 
 	@Nullable
-	@JsonProperty("externalId")
 	String externalId;
-
-	@JsonCreator
-	@Builder
-	public JsonWorkOrderResourceResponse(
-			@JsonProperty("woResourceId") @NonNull final JsonMetasfreshId woResourceId,
-			@JsonProperty("stepId") @NonNull final JsonMetasfreshId stepId,
-			@JsonProperty("assignDateFrom") @NonNull final LocalDate assignDateFrom,
-			@JsonProperty("assignDateTo") @NonNull final LocalDate assignDateTo,
-			@JsonProperty("isActive") @Nullable final Boolean isActive,
-			@JsonProperty("resourceId") @Nullable final JsonMetasfreshId resourceId,
-			@JsonProperty("isAllDay") @Nullable final Boolean isAllDay,
-			@JsonProperty("duration") final @Nullable BigDecimal duration,
-			@JsonProperty("durationUnit") final @Nullable JsonDurationUnit durationUnit,
-			@JsonProperty("testFacilityGroupName") @Nullable final String testFacilityGroupName,
-			@JsonProperty("externalId") final @Nullable String externalId)
-	{
-		this.woResourceId = woResourceId;
-		this.stepId = stepId;
-		this.assignDateFrom = assignDateFrom;
-		this.assignDateTo = assignDateTo;
-		this.isActive = isActive;
-		this.resourceId = resourceId;
-		this.isAllDay = isAllDay;
-		this.duration = duration;
-		this.durationUnit = durationUnit;
-		this.testFacilityGroupName = testFacilityGroupName;
-		this.externalId = externalId;
-	}
 }
