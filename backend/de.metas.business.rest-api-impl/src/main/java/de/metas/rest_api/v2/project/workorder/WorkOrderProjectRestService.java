@@ -34,7 +34,8 @@ import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertR
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResponse;
-import de.metas.money.CurrencyId;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
@@ -69,6 +70,7 @@ public class WorkOrderProjectRestService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final WorkOrderProjectRepository woProjectRepository;
 	private final ProjectTypeRepository projectTypeRepository;
@@ -243,13 +245,15 @@ public class WorkOrderProjectRestService
 	{
 		final ZoneId zoneId = orgDAO.getTimeZone(project.getOrgId());
 
+		final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(project.getCurrencyId());
+
 		return JsonWorkOrderProjectResponse.builder()
 				.projectId(JsonMetasfreshId.of(project.getProjectId().getRepoId()))
 				.value(project.getValue())
 				.name(project.getName())
 				.projectTypeId(JsonMetasfreshId.of(ProjectTypeId.toRepoId(project.getProjectTypeId())))
 				.priceListVersionId(JsonMetasfreshId.ofOrNull(PriceListVersionId.toRepoId(project.getPriceListVersionId())))
-				.currencyId(JsonMetasfreshId.ofOrNull(CurrencyId.toRepoId(project.getCurrencyId())))
+				.currencyCode(currencyCode.toThreeLetterCode())
 				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(project.getSalesRepId())))
 				.description(project.getDescription())
 				.dateContract(TimeUtil.asLocalDate(project.getDateContract(), zoneId))

@@ -74,10 +74,10 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean priceListVersionIdSet;
 
-	JsonMetasfreshId currencyId;
+	String currencyCode;
 
 	@ApiModelProperty(hidden = true)
-	boolean currencyIdSet;
+	boolean currencyCodeSet;
 
 	JsonMetasfreshId salesRepId;
 
@@ -178,10 +178,10 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.priceListVersionIdSet = true;
 	}
 
-	public void setCurrencyId(final JsonMetasfreshId currencyId)
+	public void setCurrencyCode(final String currencyCode)
 	{
-		this.currencyId = currencyId;
-		this.currencyIdSet = true;
+		this.currencyCode = currencyCode;
+		this.currencyCodeSet = true;
 	}
 
 	public void setSalesRepId(final JsonMetasfreshId salesRepId)

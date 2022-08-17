@@ -25,6 +25,8 @@ package de.metas.rest_api.v2.project.workorder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -52,6 +54,7 @@ public class WorkOrderMapper
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final ProjectService projectService;
 
@@ -169,12 +172,12 @@ public class WorkOrderMapper
 			@NonNull final JsonWorkOrderProjectUpsertRequest request,
 			@NonNull final OrgId orgId)
 	{
-		if (request.getCurrencyId() == null)
+		if (request.getCurrencyCode() == null)
 		{
-			throw new MissingPropertyException("currencyId", request);
+			throw new MissingPropertyException("currencyCode", request);
 		}
 
-		final CurrencyId currencyId = request.getCurrencyId().mapValue(CurrencyId::ofRepoId);
+		final CurrencyId currencyId = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getCurrencyCode())).getId();
 		final PriceListVersionId priceListVersionId = JsonMetasfreshId.mapToOrNull(request.getPriceListVersionId(), PriceListVersionId::ofRepoId);
 
 		ValidateProjectHelper.assertCurrencyIdsMatch(currencyId, priceListVersionId, priceListDAO::getPriceListByPriceListVersionId);
@@ -242,10 +245,10 @@ public class WorkOrderMapper
 	}
 
 	@NonNull
-	private static CurrencyId getCurrencyId(@NonNull final JsonWorkOrderProjectUpsertRequest request, @NonNull final WOProject existingWOProject)
+	private CurrencyId getCurrencyId(@NonNull final JsonWorkOrderProjectUpsertRequest request, @NonNull final WOProject existingWOProject)
 	{
-		return request.isCurrencyIdSet()
-				? request.getCurrencyId().mapValue(CurrencyId::ofRepoId)
+		return request.isCurrencyCodeSet()
+				? currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getCurrencyCode())).getId()
 				: existingWOProject.getCurrencyId();
 	}
 

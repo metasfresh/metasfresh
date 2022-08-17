@@ -61,7 +61,7 @@ public class JsonWorkOrderProjectRequestTest
 		woProjectRequest.setBusinessPartnerId(JsonMetasfreshId.of(1));
 		woProjectRequest.setProjectParentId(JsonMetasfreshId.of(2));
 		woProjectRequest.setProjectTypeId(JsonMetasfreshId.of(3));
-		woProjectRequest.setCurrencyId(JsonMetasfreshId.of(4));
+		woProjectRequest.setCurrencyCode("currencyCode");
 		woProjectRequest.setPriceListVersionId(JsonMetasfreshId.of(5));
 		woProjectRequest.setSalesRepId(JsonMetasfreshId.of(6));
 		woProjectRequest.setIsActive(true);

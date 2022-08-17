@@ -59,9 +59,9 @@ public class JsonWorkOrderProjectResponse
 	@JsonProperty("priceListVersionId")
 	JsonMetasfreshId priceListVersionId;
 
-	@Nullable
-	@JsonProperty("currencyId")
-	JsonMetasfreshId currencyId;
+	@NonNull
+	@JsonProperty("currencyCode")
+	String currencyCode;
 
 	@Nullable
 	@JsonProperty("salesRepId")
@@ -144,7 +144,7 @@ public class JsonWorkOrderProjectResponse
 			@NonNull @JsonProperty("name") final String name,
 			@NonNull @JsonProperty("projectTypeId") final JsonMetasfreshId projectTypeId,
 			@Nullable @JsonProperty("priceListVersionId") final JsonMetasfreshId priceListVersionId,
-			@Nullable @JsonProperty("currencyId") final JsonMetasfreshId currencyId,
+			@NonNull @JsonProperty("currencyCode") final String currencyCode,
 			@Nullable @JsonProperty("salesRepId") final JsonMetasfreshId salesRepId,
 			@Nullable @JsonProperty("description") final String description,
 			@Nullable @JsonProperty("dateContract") final LocalDate dateContract,
@@ -168,7 +168,7 @@ public class JsonWorkOrderProjectResponse
 		this.name = name;
 		this.projectTypeId = projectTypeId;
 		this.priceListVersionId = priceListVersionId;
-		this.currencyId = currencyId;
+		this.currencyCode = currencyCode;
 		this.salesRepId = salesRepId;
 		this.description = description;
 		this.dateContract = dateContract;

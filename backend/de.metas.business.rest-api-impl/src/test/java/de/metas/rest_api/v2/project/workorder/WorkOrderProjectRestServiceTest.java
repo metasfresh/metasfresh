@@ -176,7 +176,6 @@ class WorkOrderProjectRestServiceTest
 		final String projectExternalId = "projectReferenceExt";
 		final String projectValue = "projectValue";
 		final String projectName = "projectName";
-		final JsonMetasfreshId currencyId = JsonMetasfreshId.of(BusinessTestHelper.getEURCurrencyId().getRepoId());
 		final JsonMetasfreshId salesRepId = JsonMetasfreshId.of(UserId.METASFRESH.getRepoId());
 		final String projectDescription = "projectDescription";
 		final LocalDate dateContract = LocalDate.parse("2022-08-10");
@@ -195,7 +194,7 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setName(projectName);
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
 		projectRequest.setPriceListVersionId(JsonMetasfreshId.of(priceListVersionId.getRepoId()));
-		projectRequest.setCurrencyId(currencyId);
+		projectRequest.setCurrencyCode(CurrencyCode.EUR.toThreeLetterCode());
 		projectRequest.setSalesRepId(salesRepId);
 		projectRequest.setDescription(projectDescription);
 		projectRequest.setDateContract(dateContract);
@@ -300,7 +299,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(data.getName()).isEqualTo(projectName);
 		assertThat(data.getProjectTypeId()).isEqualTo(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
 		assertThat(data.getPriceListVersionId()).isEqualTo(JsonMetasfreshId.of(priceListVersionId.getRepoId()));
-		assertThat(data.getCurrencyId()).isEqualTo(currencyId);
+		assertThat(data.getCurrencyCode()).isEqualTo(CurrencyCode.EUR.toThreeLetterCode());
 		assertThat(data.getSalesRepId()).isEqualTo(salesRepId);
 		assertThat(data.getDescription()).isEqualTo(projectDescription);
 		assertThat(data.getDateContract()).isEqualTo(dateContract);
@@ -379,7 +378,7 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setIdentifier("ext-" + projectExternalId);
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
 		projectRequest.setProjectReferenceExt(projectExternalId);
-		projectRequest.setCurrencyId(JsonMetasfreshId.of(currencyId.getRepoId()));
+		projectRequest.setCurrencyCode(CurrencyCode.EUR.toThreeLetterCode());
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 
 		//when
@@ -399,7 +398,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getIsActive()).isEqualTo(true);
 		assertThat(storedProject.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(storedProject.getOrgCode()).isEqualTo("0");
-		assertThat(storedProject.getCurrencyId()).isEqualTo(JsonMetasfreshId.of(currencyId.getRepoId()));
+		assertThat(storedProject.getCurrencyCode()).isEqualTo(CurrencyCode.EUR.toThreeLetterCode());
 
 		assertThat(storedProject.getPriceListVersionId()).isNull();
 		assertThat(storedProject.getSalesRepId()).isNull();
@@ -434,7 +433,7 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setIdentifier("ext-" + projectExternalId);
 		projectRequest.setProjectTypeId(JsonMetasfreshId.of(projectType.getC_ProjectType_ID()));
 		projectRequest.setProjectReferenceExt(projectExternalId);
-		projectRequest.setCurrencyId(JsonMetasfreshId.of(currencyId.getRepoId()));
+		projectRequest.setCurrencyCode(CurrencyCode.EUR.toThreeLetterCode());
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 
 		// JsonWorkOrderStepUpsertRequest
@@ -492,7 +491,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getIsActive()).isEqualTo(true);
 		assertThat(storedProject.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(storedProject.getOrgCode()).isEqualTo("0");
-		assertThat(storedProject.getCurrencyId()).isEqualTo(JsonMetasfreshId.of(currencyId.getRepoId()));
+		assertThat(storedProject.getCurrencyCode()).isEqualTo(CurrencyCode.EUR.toThreeLetterCode());
 
 		assertThat(storedProject.getPriceListVersionId()).isNull();
 		assertThat(storedProject.getSalesRepId()).isNull();
