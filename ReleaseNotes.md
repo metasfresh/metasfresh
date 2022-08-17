@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13443](https://github.com/metasfresh/metasfresh/issues/13443) Workorder-Project - Inherit certain properties from parent
   * [#13283](https://github.com/metasfresh/metasfresh/issues/13283) Create REST Endpoint to read and write WorkOrder- and Budget-C_Projects
   * [#13405](https://github.com/metasfresh/metasfresh/issues/13405) Allow custom columns in API upserts (for Budget-Project)
   * [#13415](https://github.com/metasfresh/metasfresh/issues/13415) Customer returns error
