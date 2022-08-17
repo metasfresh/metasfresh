@@ -28,6 +28,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 import java.util.Properties;
@@ -146,6 +147,7 @@ public class HUEmptiesService implements IHUEmptiesService
 	}
 
 	@Override
+	@Nullable
 	public I_M_InOut createDraftEmptiesInOutFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final String movementType)
 	{
 		//
