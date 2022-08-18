@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.undertest;
 
-import de.metas.common.util.EmptyUtil;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
+import de.metas.project.ProjectId;
+import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,22 +33,36 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class ProjectQuery
+@Builder(toBuilder = true)
+public class WOProjectObjectUnderTest
 {
-	OrgId orgId;
-	String value;
-	ExternalId externalProjectReference;
+	@NonNull
+	WOProjectObjectUnderTestId objectUnderTestId;
 
-	@Builder
-	public ProjectQuery(
-			@NonNull final OrgId orgId,
-			@Nullable final String value,
-			@Nullable final ExternalId externalProjectReference)
-	{
-		this.orgId = orgId;
-		
-		this.value = value;
-		this.externalProjectReference = externalProjectReference;
-		Check.errorIf(EmptyUtil.isBlank(value) && externalProjectReference == null, "At least one of value or externalProjectReference need to be specified");
-	}
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	Integer numberOfObjectsUnderTest;
+
+	@NonNull
+	ProjectId projectId;
+
+	@Nullable
+	ExternalId externalId;
+
+	@Nullable
+	String woDeliveryNote;
+
+	@Nullable
+	String woManufacturer;
+
+	@Nullable
+	String woObjectType;
+
+	@Nullable
+	String woObjectName;
+
+	@Nullable
+	String woObjectWhereabouts;
 }

@@ -1700,6 +1700,14 @@ public class TimeUtil
 				: null;
 	}
 
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
+	{
+		return instant != null
+				? instant.atZone(zoneId).toLocalDate()
+				: null;
+	}
+
 	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime)
@@ -1934,6 +1942,18 @@ public class TimeUtil
 
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toEndOfDayInstant(orgDAO::getTimeZone);
+	}
+
+	@Nullable
+	public static Instant asEndOfDayInstant(@Nullable final LocalDate localDate, @NonNull final ZoneId zoneId)
+	{
+		if(localDate == null)
+		{
+			return null;
+		}
+		final LocalDateTime endOfDay = localDate.atTime(LocalTime.MAX);
+
+		return asInstant(endOfDay, zoneId);
 	}
 
 	/**

@@ -37,13 +37,12 @@ import de.metas.project.ProjectTypeId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.CreateBudgetProjectRequest;
 import de.metas.project.service.ProjectService;
+import de.metas.rest_api.v2.project.ValidateProjectHelper;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingPropertyException;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_PriceList;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -71,7 +70,7 @@ public class BudgetProjectJsonConverter
 		final CurrencyId currencyId = getCurrencyId(request, existingBudgetProject);
 		final PriceListVersionId priceListVersionId = getPriceListVersionId(request, existingBudgetProject);
 
-		assertCurrencyIdsMatch(currencyId, priceListVersionId);
+		ValidateProjectHelper.assertCurrencyIdsMatch(currencyId, priceListVersionId, priceListDAO::getPriceListByPriceListVersionId);
 
 		final BudgetProject.BudgetProjectBuilder budgetProjectBuilder = existingBudgetProject.toBuilder()
 				.projectTypeId(projectTypeId)
@@ -148,7 +147,7 @@ public class BudgetProjectJsonConverter
 		final CurrencyId currencyId = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getCurrencyCode())).getId();
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getPriceListVersionId()));
 
-		assertCurrencyIdsMatch(currencyId, priceListVersionId);
+		ValidateProjectHelper.assertCurrencyIdsMatch(currencyId, priceListVersionId, priceListDAO::getPriceListByPriceListVersionId);
 
 		return CreateBudgetProjectRequest.builder()
 				.orgId(orgId)
@@ -166,21 +165,6 @@ public class BudgetProjectJsonConverter
 				.dateContract(request.getDateContract())
 				.dateFinish(request.getDateFinish())
 				.build();
-	}
-
-	@NonNull
-	private String getName(
-			@NonNull final JsonBudgetProjectUpsertRequest request,
-			@NonNull final String updatedProjectValue)
-	{
-		if (request.isNameSet())
-		{
-			return request.getName();
-		}
-		else
-		{
-			return updatedProjectValue;
-		}
 	}
 
 	@NonNull
@@ -225,7 +209,7 @@ public class BudgetProjectJsonConverter
 	}
 
 	@Nullable
-	private PriceListVersionId getPriceListVersionId(
+	private static PriceListVersionId getPriceListVersionId(
 			@NonNull final JsonBudgetProjectUpsertRequest request,
 			@NonNull final BudgetProject existingBudgetProject)
 	{
@@ -239,30 +223,19 @@ public class BudgetProjectJsonConverter
 		}
 	}
 
-	private void assertCurrencyIdsMatch(
-			@NonNull final CurrencyId currencyId,
-			@Nullable final PriceListVersionId priceListVersionId)
+
+	@NonNull
+	private static String getName(
+			@NonNull final JsonBudgetProjectUpsertRequest request,
+			@NonNull final String updatedProjectValue)
 	{
-		if (priceListVersionId == null)
+		if (request.isNameSet())
 		{
-			return;
+			return request.getName();
 		}
-
-		final I_M_PriceList priceListRecord = priceListDAO.getPriceListByPriceListVersionId(priceListVersionId);
-
-		if (priceListRecord == null)
+		else
 		{
-			return;
-		}
-
-		final CurrencyId priceListCurrencyId = CurrencyId.ofRepoId(priceListRecord.getC_Currency_ID());
-
-		if (currencyId.getRepoId() != priceListCurrencyId.getRepoId())
-		{
-			throw new AdempiereException("Currency of the budget project does not match the currency of the price list!")
-					.appendParametersToMessage()
-					.setParameter("Project.CurrencyId", currencyId)
-					.setParameter("PriceList.CurrencyId", priceListCurrencyId);
+			return updatedProjectValue;
 		}
 	}
 }

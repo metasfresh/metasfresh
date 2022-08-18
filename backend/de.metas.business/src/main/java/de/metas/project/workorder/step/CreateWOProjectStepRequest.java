@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,56 +20,70 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.project.workorder;
+package de.metas.project.workorder.step;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Value
 @Builder
-@Jacksonized
-public class JsonWorkOrderResourceResponse
+public class CreateWOProjectStepRequest
 {
 	@NonNull
-	JsonMetasfreshId woResourceId;
+	OrgId orgId;
 
 	@NonNull
-	JsonMetasfreshId stepId;
+	ProjectId projectId;
 
 	@NonNull
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate assignDateFrom;
+	String name;
 
 	@NonNull
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate assignDateTo;
+	ExternalId externalId;
+
+	@NonNull
+	Integer seqNo;
+
+	@NonNull
+	Instant dateStart;
+
+	@NonNull
+	Instant dateEnd;
 
 	@Nullable
-	Boolean isActive;
+	String description;
 
 	@Nullable
-	JsonMetasfreshId resourceId;
+	Instant woPartialReportDate;
 
 	@Nullable
-	Boolean isAllDay;
+	Integer woPlannedResourceDurationHours;
 
 	@Nullable
-	BigDecimal duration;
+	Instant deliveryDate;
 
 	@Nullable
-	JsonDurationUnit durationUnit;
+	Instant woTargetStartDate;
 
 	@Nullable
-	String testFacilityGroupName;
+	Instant woTargetEndDate;
 
 	@Nullable
-	String externalId;
+	Integer woPlannedPersonDurationHours;
+
+	@Nullable
+	WOStepStatus woStepStatus;
+
+	@Nullable
+	Instant woFindingsReleasedDate;
+
+	@Nullable
+	Instant woFindingsCreatedDate;
 }

@@ -30,25 +30,20 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.experimental.UtilityClass;
 
 import java.util.Objects;
 import java.util.function.Predicate;
 
-@Service
-public class ResourceRestService
+@UtilityClass
+public class ResourceIdentifierUtil
 {
-	private final ResourceService resourceService;
-
-	public ResourceRestService(@NonNull final ResourceService resourceService)
-	{
-		this.resourceService = resourceService;
-	}
-
 	@NonNull
 	public ResourceId resolveResourceIdentifier(
 			@NonNull final OrgId orgId,
-			@NonNull final IdentifierString resourceIdentifier)
+			@NonNull final IdentifierString resourceIdentifier,
+			@NonNull final ResourceService resourceService
+	)
 	{
 		final Predicate<Resource> resourcePredicate;
 		switch (resourceIdentifier.getType())

@@ -41,22 +41,22 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
 @ApiModel
-public class JsonWorkOrderStepUpsertRequest
+public class JsonWorkOrderObjectUnderTestUpsertRequest
 {
-	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_WO_Step.C_Project_ID`", required = true)
+	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_WO_ObjectUnderTest.C_Project_ID`", required = true)
 	JsonMetasfreshId projectId;
 
 	@ApiModelProperty(position = 20, required = true)
-	List<JsonWorkOrderStepUpsertItemRequest> requestItems;
+	List<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems;
 
 	@ApiModelProperty(position = 30, value = "Default sync-advise\n" + READ_ONLY_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@Builder
 	@Jacksonized
-	public JsonWorkOrderStepUpsertRequest(
+	public JsonWorkOrderObjectUnderTestUpsertRequest(
 			@NonNull final JsonMetasfreshId projectId,
-			@Nullable @Singular final List<JsonWorkOrderStepUpsertItemRequest> requestItems,
+			@Nullable @Singular final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems,
 			@Nullable final SyncAdvise syncAdvise)
 	{
 		this.projectId = projectId;

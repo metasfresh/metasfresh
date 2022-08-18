@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,56 +20,74 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.project.workorder;
+package de.metas.project.workorder.step;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
+import de.metas.project.workorder.WOProjectStepId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Value
-@Builder
-@Jacksonized
-public class JsonWorkOrderResourceResponse
+@Builder(toBuilder = true)
+public class WOProjectStep
 {
 	@NonNull
-	JsonMetasfreshId woResourceId;
+	WOProjectStepId woProjectStepId;
 
 	@NonNull
-	JsonMetasfreshId stepId;
+	String name;
 
 	@NonNull
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate assignDateFrom;
+	ProjectId projectId;
 
 	@NonNull
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate assignDateTo;
+	Integer seqNo;
+
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	Instant dateStart;
+
+	@NonNull
+	Instant dateEnd;
 
 	@Nullable
-	Boolean isActive;
+	String description;
 
 	@Nullable
-	JsonMetasfreshId resourceId;
+	ExternalId externalId;
 
 	@Nullable
-	Boolean isAllDay;
+	Instant woPartialReportDate;
 
 	@Nullable
-	BigDecimal duration;
+	Integer woPlannedResourceDurationHours;
 
 	@Nullable
-	JsonDurationUnit durationUnit;
+	Instant deliveryDate;
 
 	@Nullable
-	String testFacilityGroupName;
+	Instant woTargetStartDate;
 
 	@Nullable
-	String externalId;
+	Instant woTargetEndDate;
+
+	@Nullable
+	Integer woPlannedPersonDurationHours;
+
+	@Nullable
+	WOStepStatus woStepStatus;
+
+	@Nullable
+	Instant woFindingsReleasedDate;
+
+	@Nullable
+	Instant woFindingsCreatedDate;
 }
