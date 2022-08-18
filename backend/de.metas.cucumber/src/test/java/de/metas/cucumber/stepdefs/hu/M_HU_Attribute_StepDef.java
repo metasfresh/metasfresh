@@ -23,7 +23,11 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -42,6 +46,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -49,6 +54,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class M_HU_Attribute_StepDef
 {
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -56,10 +62,12 @@ public class M_HU_Attribute_StepDef
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	private final M_HU_StepDefData huTable;
+	private final M_Attribute_StepDefData attributeTable;
 
-	public M_HU_Attribute_StepDef(@NonNull final M_HU_StepDefData huTable)
+	public M_HU_Attribute_StepDef(@NonNull final M_HU_StepDefData huTable, @NonNull final M_Attribute_StepDefData attributeTable)
 	{
 		this.huTable = huTable;
+		this.attributeTable = attributeTable;
 	}
 
 	@And("M_HU_Attribute is changed")
@@ -77,6 +85,24 @@ public class M_HU_Attribute_StepDef
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			validateHUAttribute(tableRow);
+		}
+	}
+
+	@And("update M_HU_Attribute:")
+	public void update_M_HU_Attribute(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_HU hu = huTable.get(huIdentifier);
+
+			final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Attribute attribute = attributeTable.get(attributeIdentifier);
+
+			final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(row, "OPT." + I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+
+			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeCode.ofString(attribute.getValue()), valueNumber, null);
 		}
 	}
 

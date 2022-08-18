@@ -33,8 +33,10 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -60,9 +62,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
@@ -74,8 +78,20 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_Name;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_DeliveryRule;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_DeliveryViaRule;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_M_Warehouse_ID;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_MovementType;
+import static org.compiere.model.X_M_InOut.DOCSTATUS_Completed;
+import static org.compiere.model.X_M_InOut.DOCSTATUS_Drafted;
 
 public class M_InOut_StepDef
 {
@@ -86,6 +102,7 @@ public class M_InOut_StepDef
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -94,6 +111,7 @@ public class M_InOut_StepDef
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
 	public M_InOut_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
@@ -102,7 +120,8 @@ public class M_InOut_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable)
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
@@ -111,10 +130,11 @@ public class M_InOut_StepDef
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
+		this.warehouseTable = warehouseTable;
 	}
 
-	@And("validate the created shipments")
-	public void validate_created_shipments(@NonNull final DataTable table)
+	@And("^validate the created (shipments|material receipt)$")
+	public void validate_created_shipments(@NonNull final String inoutType, @NonNull final DataTable table)
 	{
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
@@ -154,6 +174,20 @@ public class M_InOut_StepDef
 			{
 				final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
 				assertThat(shipment.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+			}
+
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DocType.Table_Name + "." + COLUMNNAME_DocBaseType);
+			if (Check.isNotBlank(docBaseType))
+			{
+				final String name = DataTableUtil.extractStringForColumnName(row, "OPT." + I_C_DocType.Table_Name + "." + COLUMNNAME_Name);
+
+				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+						.addEqualsFilter(COLUMNNAME_Name, name)
+						.create()
+						.firstOnlyNotNull(I_C_DocType.class);
+
+				assertThat(shipment.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
 			}
 		}
 	}
@@ -262,10 +296,11 @@ public class M_InOut_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
 	}
 
-	@And("^the (shipment|material receipt) identified by (.*) is (completed|reactivated|reversed)$")
+	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
 	{
 		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		InterfaceWrapperHelper.refresh(shipment);
 
 		switch (StepDefDocAction.valueOf(action))
 		{
@@ -280,6 +315,14 @@ public class M_InOut_StepDef
 			case reversed:
 				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
 				documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				break;
+			case voided:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			case closed:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled M_InOut action")
@@ -353,6 +396,30 @@ public class M_InOut_StepDef
 		{
 			locateShipmentByScheduleId(row);
 		}
+	}
+
+	@And("validate M_In_Out status")
+	public void validate_M_In_Out_status(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+			InterfaceWrapperHelper.refresh(shipment);
+
+			final String docStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_DocStatus);
+			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
+		}
+	}
+
+	@And("^reset M_InOut packing lines for shipment (.*)$")
+	public void reset_M_InOut_PackingLines(@NonNull final String shipmentIdentifier)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		assertThat(shipment).isNotNull();
+
+		huInOutBL.recreatePackingMaterialLines(shipment);
 	}
 
 	private void locateShipmentByScheduleId(@NonNull final Map<String, String> row)

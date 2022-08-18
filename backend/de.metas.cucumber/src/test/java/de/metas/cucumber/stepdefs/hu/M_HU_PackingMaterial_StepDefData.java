@@ -20,13 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.hu;
 
-public enum StepDefDocAction
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+
+public class M_HU_PackingMaterial_StepDefData extends StepDefData<I_M_HU_PackingMaterial>
 {
-	completed,
-	reactivated,
-	reversed,
-	voided,
-	closed
+	public M_HU_PackingMaterial_StepDefData()
+	{
+		super(I_M_HU_PackingMaterial.class);
+	}
 }
