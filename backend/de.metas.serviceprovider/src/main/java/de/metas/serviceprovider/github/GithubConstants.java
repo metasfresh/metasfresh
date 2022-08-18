@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.issue.tracking.github
+ * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,31 +20,11 @@
  * #L%
  */
 
-package de.metas.issue.tracking.github.api.v3.service.rest.info;
+package de.metas.serviceprovider.github;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
-import org.springframework.util.MultiValueMap;
-
-import javax.annotation.Nullable;
-import java.util.List;
-
-@Value
-@Builder
-@ToString(exclude = "oAuthToken")
-public class GetRequest
+public interface GithubConstants
 {
-	@NonNull
-	final String baseURL;
+	final String X_HUB_SIGNATURE_256_HEADER = "x-hub-signature-256";
 
-	@NonNull
-	private String oAuthToken;
-
-	@Nullable
-	final List<String> pathVariables;
-
-	@Nullable
-	final MultiValueMap<String, String> queryParameters;
+	final String SHA_256_PREFIX = "sha256=";
 }

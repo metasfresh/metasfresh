@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.github
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,27 +20,34 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.project;
+package de.metas.issue.tracking.github.api.v3.service.rest.info;
 
-import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalSystem;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
+import org.springframework.util.MultiValueMap;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
-public class GetExternalProjectRequest
+@ToString(exclude = "oAuthToken")
+public class Request
 {
 	@NonNull
-	ExternalSystem externalSystem;
+	final String baseURL;
 
 	@NonNull
-	String externalReference;
+	private String oAuthToken;
 
-	@NonNull
-	String externalProjectOwner;
+	@Nullable
+	final List<String> pathVariables;
 
-	@NonNull
-	OrgId orgId;
+	@Nullable
+	final MultiValueMap<String, String> queryParameters;
+
+	@Nullable
+	final String requestBody;
 }
