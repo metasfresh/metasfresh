@@ -65,6 +65,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 
 public class M_Product_StepDef
@@ -175,6 +176,25 @@ public class M_Product_StepDef
 		taxCategory.setProductType(null);
 
 		InterfaceWrapperHelper.saveRecord(taxCategory);
+	}
+
+	@And("update M_Product:")
+	public void update_M_Product(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+			assertThat(product).isNotNull();
+
+			final boolean isStocked = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsStocked);
+			product.setIsStocked(isStocked);
+
+			InterfaceWrapperHelper.saveRecord(product);
+
+			productTable.putOrReplace(productIdentifier, product);
+		}
 	}
 
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
