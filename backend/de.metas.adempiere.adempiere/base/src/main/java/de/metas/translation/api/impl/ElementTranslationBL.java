@@ -181,6 +181,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	public void updateElementTrlFromElement(@NonNull final AdElementId adElementId, @NonNull final String adLanguage)
 	{
 		// TODO update AD_Element_Trl from AD_Element.
+		// NOTE: this can be kicked since the element doesn't directly change anymore after it was created.
 		throw new UnsupportedOperationException("not implemented");
 	}
 
