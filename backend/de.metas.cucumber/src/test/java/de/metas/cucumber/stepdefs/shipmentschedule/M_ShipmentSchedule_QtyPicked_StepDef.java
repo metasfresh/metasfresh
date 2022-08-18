@@ -74,7 +74,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		}
 	}
 
-	@And("validate created M_ShipmentSchedule_QtyPicked records")
+	@And("validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule")
 	public void validate_m_shipmentSchedule_qtyPicked_records(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);

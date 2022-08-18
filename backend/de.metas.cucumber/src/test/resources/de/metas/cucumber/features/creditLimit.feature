@@ -87,7 +87,7 @@ Feature: credit limit
 
     And the metasfresh REST-API endpoint path 'api/v2/shipments' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    Then validate created M_ShipmentSchedule_QtyPicked records
+    Then validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly |
       | s_s_1                            | 10        | true      | true                        |
     And locate M_InOut by shipment schedule Id

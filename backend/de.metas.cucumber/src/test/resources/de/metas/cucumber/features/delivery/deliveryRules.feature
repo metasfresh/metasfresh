@@ -95,7 +95,7 @@ Feature: Delivery rules with and without quantity in stock
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_2               | inOut                 |
-    And validate created M_ShipmentSchedule_QtyPicked records
+    And validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
       | shipmentSchedule_2               | 1         | true      | false                       | null                  |
 
@@ -153,7 +153,7 @@ Feature: Delivery rules with and without quantity in stock
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_3               | inOut                 |
-    And validate created M_ShipmentSchedule_QtyPicked records
+    And validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
       | shipmentSchedule_3               | 1         | true      | true                        | hu_A_stocked          |
 
@@ -214,7 +214,7 @@ Feature: Delivery rules with and without quantity in stock
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_4               | inOut                 |
-    And validate created M_ShipmentSchedule_QtyPicked records
+    And validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
       | shipmentSchedule_4               | 1         | true      | false                       | null                  |
 
@@ -258,7 +258,7 @@ Feature: Delivery rules with and without quantity in stock
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_5               | inOut                 |
-    And validate created M_ShipmentSchedule_QtyPicked records
+    And validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
       | shipmentSchedule_5               | 1         | true      | false                       | null                  |
 
@@ -302,7 +302,7 @@ Feature: Delivery rules with and without quantity in stock
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_6               | inOut                 |
-    And validate created M_ShipmentSchedule_QtyPicked records
+    And validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
       | shipmentSchedule_6               | 1         | true      | false                       | null                  |
 
@@ -363,7 +363,7 @@ Feature: Delivery rules with and without quantity in stock
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_7               | inOut                 |
-    And validate created M_ShipmentSchedule_QtyPicked records
+    And validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
       | shipmentSchedule_7               | 1         | true      | false                       | null                  |
 
@@ -421,7 +421,7 @@ Feature: Delivery rules with and without quantity in stock
     Then after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_8               | inOut                 |
-    And validate created M_ShipmentSchedule_QtyPicked records
+    And validate single  M_ShipmentSchedule_QtyPicked record created for shipment schedule
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
       | shipmentSchedule_8               | 1         | true      | true                        | hu_F_stocked          |
 
