@@ -69,14 +69,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
-import org.compiere.model.I_R_StatusCategory;
 import org.compiere.model.I_C_Project_WO_ObjectUnderTest;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.model.I_C_Project_WO_Step;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_R_StatusCategory;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
+import org.compiere.model.X_C_ProjectType;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -891,14 +892,14 @@ class WorkOrderProjectRestServiceTest
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
 		priceList.setM_PriceList_ID(priceListId.getRepoId());
 		priceList.setC_Currency_ID(currencyId.getRepoId());
-		saveRecord(priceList);
+		save(priceList);
 
 		final I_M_PriceList_Version priceListVersion = newInstance(I_M_PriceList_Version.class);
 
 		priceListVersion.setM_PriceList_ID(priceListId.getRepoId());
 		priceListVersion.setValidFrom(Timestamp.from(Instant.now()));
 
-		saveRecord(priceListVersion);
+		save(priceListVersion);
 
 		return priceListVersion;
 	}
