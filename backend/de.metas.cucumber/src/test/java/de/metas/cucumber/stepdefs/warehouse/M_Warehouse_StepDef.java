@@ -32,10 +32,13 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
@@ -101,10 +104,20 @@ public class M_Warehouse_StepDef
 
 			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnName(row, I_M_Warehouse.COLUMNNAME_IsIssueWarehouse);
 
+			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
+					.map(bPartnerTable::get)
+					.map(I_C_BPartner::getC_BPartner_ID)
+					.orElse(2155894);
+
+			final int bPartnerLocationId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER))
+					.map(bPartnerLocationTable::get)
+					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+					.orElse(2202690);
+
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);
-			warehouseRecord.setC_BPartner_ID(2155894); //dev-note: org BPartner
-			warehouseRecord.setC_BPartner_Location_ID(2202690);
+			warehouseRecord.setC_BPartner_ID(bPartnerId);
+			warehouseRecord.setC_BPartner_Location_ID(bPartnerLocationId);
 			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
 
 			InterfaceWrapperHelper.saveRecord(warehouseRecord);

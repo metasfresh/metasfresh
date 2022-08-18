@@ -22,15 +22,19 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.location.ICountryDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -47,10 +51,14 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Tax_StepDef
 {
 	private final C_Tax_StepDefData taxTable;
+	private final AD_Org_StepDefData orgTable;
 
-	public C_Tax_StepDef(@NonNull final C_Tax_StepDefData taxTable)
+	public C_Tax_StepDef(
+			@NonNull final C_Tax_StepDefData taxTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.taxTable = taxTable;
+		this.orgTable = orgTable;
 	}
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
@@ -92,7 +100,11 @@ public class C_Tax_StepDef
 				.map(currentMinSeqNo -> currentMinSeqNo - 1)
 				.orElse(0);
 
-		final I_C_Tax taxRecord = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
+		final I_C_Tax taxRecord = CoalesceUtil.coalesce(queryBL.createQueryBuilder(I_C_Tax.class)
+																.addEqualsFilter(I_C_Tax.COLUMNNAME_Name, taxName)
+																.create()
+																.firstOnlyOrNull(I_C_Tax.class),
+														InterfaceWrapperHelper.newInstance(I_C_Tax.class));
 		taxRecord.setName(taxName);
 		taxRecord.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 		taxRecord.setValidFrom(validFrom);
@@ -100,6 +112,13 @@ public class C_Tax_StepDef
 		taxRecord.setC_Country_ID(countryRecord.getC_Country_ID());
 		taxRecord.setTo_Country_ID(toCountryRecord.getC_Country_ID());
 		taxRecord.setSeqNo(seqNo);
+
+		final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Tax.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orgIdentifier))
+		{
+			final I_AD_Org org = orgTable.get(orgIdentifier);
+			taxRecord.setAD_Org_ID(org.getAD_Org_ID());
+		}
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 
