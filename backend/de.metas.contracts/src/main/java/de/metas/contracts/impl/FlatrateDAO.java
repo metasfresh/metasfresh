@@ -1039,7 +1039,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public boolean hasOverlappingTerms(final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria)
+	public boolean hasOverlappingTerms(@NonNull final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
