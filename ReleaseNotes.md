@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13430](https://github.com/metasfresh/metasfresh/issues/13430) github & everhour - Services Invoicing 
   * [#13442](https://github.com/metasfresh/metasfresh/issues/13442) Option to set the base language if same as the previous one #13442
   * [#13443](https://github.com/metasfresh/metasfresh/issues/13443) Workorder-Project - Inherit certain properties from parent
   * [#13283](https://github.com/metasfresh/metasfresh/issues/13283) Create REST Endpoint to read and write WorkOrder- and Budget-C_Projects
