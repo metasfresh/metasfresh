@@ -43,9 +43,9 @@ import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectQuery;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.CreateBudgetProjectRequest;
-import de.metas.project.workorder.data.ProjectQuery;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.user.UserId;
@@ -237,22 +237,7 @@ public class BudgetProjectRestService
 			return budgetProjectRepository.getOptionalById(existingProjectId);
 		}
 
-		final ProjectQuery.ProjectQueryBuilder projectQueryBuilder = ProjectQuery.builder()
-				.orgId(orgId);
-
-		switch (projectIdentifier.getType())
-		{
-			case VALUE:
-				projectQueryBuilder.value(projectIdentifier.asValue());
-				break;
-			case EXTERNAL_ID:
-				projectQueryBuilder.externalProjectReference(projectIdentifier.asExternalId());
-				break;
-			default:
-				throw new InvalidIdentifierException(projectIdentifier.getRawIdentifierString(), request);
-		}
-
-		return budgetProjectRepository.getOptionalBy(projectQueryBuilder.build());
+		return budgetProjectRepository.getOptionalBy(getProjectQueryFromIdentifier(orgId, projectIdentifier));
 	}
 
 	private void validateJsonBudgetProjectUpsertRequest(@NonNull final JsonBudgetProjectUpsertRequest request)
@@ -292,5 +277,27 @@ public class BudgetProjectRestService
 				throw new MissingPropertyException("resourceIdentifier", resourceRequest);
 			}
 		});
+	}
+
+	@NonNull
+	private static BudgetProjectQuery getProjectQueryFromIdentifier(
+			@NonNull final OrgId orgId,
+			@NonNull final IdentifierString identifier)
+	{
+		final BudgetProjectQuery.BudgetProjectQueryBuilder projectQueryBuilder = BudgetProjectQuery.builder().orgId(orgId);
+
+		switch (identifier.getType())
+		{
+			case VALUE:
+				projectQueryBuilder.value(identifier.asValue());
+				break;
+			case EXTERNAL_ID:
+				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
+				break;
+			default:
+				throw new InvalidIdentifierException(identifier.getRawIdentifierString());
+		}
+
+		return projectQueryBuilder.build();
 	}
 }

@@ -22,7 +22,6 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,46 +29,33 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Value
 @Builder
 @Jacksonized
-public class JsonWorkOrderResourceResponse
+public class JsonWorkOrderObjectsUnderTestResponse
 {
 	@NonNull
-	JsonMetasfreshId woResourceId;
+	JsonMetasfreshId objectUnderTestId;
 
 	@NonNull
-	JsonMetasfreshId stepId;
-
-	@NonNull
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate assignDateFrom;
-
-	@NonNull
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	LocalDate assignDateTo;
-
-	@Nullable
-	Boolean isActive;
-
-	@Nullable
-	JsonMetasfreshId resourceId;
-
-	@Nullable
-	Boolean isAllDay;
-
-	@Nullable
-	BigDecimal duration;
-
-	@Nullable
-	JsonDurationUnit durationUnit;
-
-	@Nullable
-	String testFacilityGroupName;
+	Integer numberOfObjectsUnderTest;
 
 	@Nullable
 	String externalId;
+
+	@Nullable
+	String woDeliveryNote;
+
+	@Nullable
+	String woManufacturer;
+
+	@Nullable
+	String woObjectType;
+
+	@Nullable
+	String woObjectName;
+
+	@Nullable
+	String woObjectWhereabouts;
 }

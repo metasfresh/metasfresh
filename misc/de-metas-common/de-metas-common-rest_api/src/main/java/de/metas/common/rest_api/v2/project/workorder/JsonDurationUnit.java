@@ -22,30 +22,42 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
-import lombok.Builder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Arrays;
 
-@Value
-@Builder
-@Jacksonized
-public class JsonWorkOrderStepUpsertResponse
+//dev-note: to be kept in sync with AD_Reference_ID=299
+public enum JsonDurationUnit
 {
-	@NonNull
-	JsonMetasfreshId metasfreshId;
+	Year("Y"),
+	Month("M"),
+	Day("D"),
+	Hour("h"),
+	Minute("m"),
+	Second("s");
+
+	@Getter
+	private final String code;
+
+	JsonDurationUnit(@NonNull final String code)
+	{
+		this.code = code;
+	}
 
 	@NonNull
-	String identifier;
+	public static JsonDurationUnit ofCode(@NonNull final String code)
+	{
+		final JsonDurationUnit targetFieldType = typesByCode.get(code);
 
-	@NonNull
-	JsonResponseUpsertItem.SyncOutcome syncOutcome;
+		if (targetFieldType == null)
+		{
+			throw new IllegalArgumentException("JsonDurationUnit does not support code: " + code);
+		}
+		return targetFieldType;
+	}
 
-	@Nullable
-	List<JsonWorkOrderResourceUpsertResponse> resources;
+	private static final ImmutableMap<String, JsonDurationUnit> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), JsonDurationUnit::getCode);
 }

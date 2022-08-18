@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,32 +20,35 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.project.workorder;
+package de.metas.project.budget;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.common.util.EmptyUtil;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Value
-@Builder
-@Jacksonized
-public class JsonWorkOrderStepUpsertResponse
+public class BudgetProjectQuery
 {
-	@NonNull
-	JsonMetasfreshId metasfreshId;
+	OrgId orgId;
+	String value;
+	ExternalId externalProjectReference;
 
-	@NonNull
-	String identifier;
+	@Builder
+	public BudgetProjectQuery(
+			@NonNull final OrgId orgId,
+			@Nullable final String value,
+			@Nullable final ExternalId externalProjectReference)
+	{
+		this.orgId = orgId;
 
-	@NonNull
-	JsonResponseUpsertItem.SyncOutcome syncOutcome;
-
-	@Nullable
-	List<JsonWorkOrderResourceUpsertResponse> resources;
+		this.value = value;
+		this.externalProjectReference = externalProjectReference;
+		Check.errorIf(EmptyUtil.isBlank(value) && externalProjectReference == null, "At least one of value or externalProjectReference need to be specified");
+	}
 }
