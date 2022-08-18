@@ -37,7 +37,8 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.po.CustomColumnService;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnsJsonValues;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectType;
@@ -56,7 +57,7 @@ import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
 
@@ -227,7 +228,7 @@ public class BudgetProjectRestService
 				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(budgetProject.getSalesRepId())))
 				.isActive(budgetProject.isActive())
 				.value(budgetProject.getValue())
-				.extendedProps(getCustomColumns(projectId))
+				.extendedProps(getCustomColumns(projectId).toMap())
 				.projectResources(budgetProjectResourceResponses)
 				.build();
 	}
@@ -287,17 +288,17 @@ public class BudgetProjectRestService
 		});
 	}
 
-
-	private void saveCustomColumns(@NonNull final ProjectId projectId, @NonNull final Map<String, Object> customColumns)
+	private void saveCustomColumns(@NonNull final ProjectId projectId, @NonNull final Map<String, Object> valuesByColumnName)
 	{
-		final TableRecordReference tableRecordReference = TableRecordReference.of(I_C_Project.Table_Name, projectId);
-
-		customColumnService.saveCustomColumns(tableRecordReference, customColumns);
+		final I_C_Project projectRecord = budgetProjectRepository.getRecordById(projectId);
+		customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(projectRecord), valuesByColumnName);
+		budgetProjectRepository.saveRecord(projectRecord);
 	}
 
 	@NonNull
-	private Map<String, Object> getCustomColumns(@NonNull final ProjectId projectId)
+	private CustomColumnsJsonValues getCustomColumns(@NonNull final ProjectId projectId)
 	{
-		return customColumnService.getCustomColumnsAsMap(TableRecordReference.of(I_C_Project.Table_Name, projectId));
+		final I_C_Project projectRecord = budgetProjectRepository.getRecordById(projectId);
+		return customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(projectRecord));
 	}
 }

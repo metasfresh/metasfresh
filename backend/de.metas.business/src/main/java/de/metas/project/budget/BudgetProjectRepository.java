@@ -48,8 +48,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 @Repository
 public class BudgetProjectRepository
 {
@@ -58,8 +56,18 @@ public class BudgetProjectRepository
 	@NonNull
 	public Optional<BudgetProject> getOptionalById(@NonNull final ProjectId projectId)
 	{
-		final I_C_Project record = InterfaceWrapperHelper.load(projectId, I_C_Project.class);
+		final I_C_Project record = getRecordById(projectId);
 		return fromRecord(record);
+	}
+
+	public I_C_Project getRecordById(final @NonNull ProjectId projectId)
+	{
+		return InterfaceWrapperHelper.load(projectId, I_C_Project.class);
+	}
+
+	public void saveRecord(final @NonNull I_C_Project record)
+	{
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	@NonNull
@@ -151,7 +159,7 @@ public class BudgetProjectRepository
 	@NonNull
 	public BudgetProject update(@NonNull final BudgetProject budgetProject)
 	{
-		final I_C_Project projectRecord = InterfaceWrapperHelper.load(budgetProject.getProjectId(), I_C_Project.class);
+		final I_C_Project projectRecord = getRecordById(budgetProject.getProjectId());
 
 		if (projectRecord == null)
 		{
