@@ -31,6 +31,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.impl.FlatrateTermOverlapCriteria;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -45,6 +46,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -61,6 +63,8 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -312,5 +316,18 @@ public class CallOrderContractService
 									 contract.getDocumentNo(),
 									 documentLineSeqNo)
 				.markAsUserValidationError();
+	}
+
+	public boolean hasOverlappingTerms(@NonNull final I_C_OrderLine orderLine)
+	{
+		final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria = FlatrateTermOverlapCriteria
+				.builder()
+				.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()))
+				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
+				.conditionsId(ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID()))
+				.datePromised(Objects.requireNonNull(orderLine.getDatePromised()))
+				.build();
+		return flatrateDAO.hasOverlappingTerms(flatrateTermOverlapCriteria);
 	}
 }
