@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Resource_Conflict extends org.compiere.model.PO implements I_C_Project_WO_Resource_Conflict, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2051285220L;
+	private static final long serialVersionUID = -1805985154L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource_Conflict (final Properties ctx, final int C_Project_WO_Resource_Conflict_ID, @Nullable final String trxName)
@@ -158,6 +158,18 @@ public class X_C_Project_WO_Resource_Conflict extends org.compiere.model.PO impl
 	public int getC_SimulationPlan_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_SimulationPlan_ID);
+	}
+
+	@Override
+	public void setIsApproved (final boolean IsApproved)
+	{
+		set_Value (COLUMNNAME_IsApproved, IsApproved);
+	}
+
+	@Override
+	public boolean isApproved() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
 	}
 
 	/** 

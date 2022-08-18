@@ -8,6 +8,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -22,9 +23,11 @@ import java.util.Optional;
 public class SimulationPlanService
 {
 	private static final Logger logger = LogManager.getLogger(SimulationPlanService.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final SimulationPlanRepository simulationPlanRepository;
 	private final CompositeSimulationPlanServiceHook hooks;
+	private final SimulationPlanChangesDispatcher changesDispatcher = new SimulationPlanChangesDispatcher();
 
 	public SimulationPlanService(
 			final SimulationPlanRepository simulationPlanRepository,
@@ -36,7 +39,25 @@ public class SimulationPlanService
 		logger.info("Hooks: {}", this.hooks);
 	}
 
+	public void subscribe(@NonNull final SimulationPlanId simulationId, @NonNull final SimulationPlanChangesListener listener)
+	{
+		changesDispatcher.subscribe(simulationId, listener);
+	}
+
+	public void unsubscribe(@NonNull final SimulationPlanId simulationId, @NonNull final SimulationPlanChangesListener listener)
+	{
+		changesDispatcher.unsubscribe(simulationId, listener);
+	}
+
 	public SimulationPlanRef createNewSimulation(
+			@Nullable String name,
+			@Nullable SimulationPlanId copyFromSimulationId,
+			@NonNull UserId responsibleUserId)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> createNewSimulationInTrx(name, copyFromSimulationId, responsibleUserId));
+	}
+
+	public SimulationPlanRef createNewSimulationInTrx(
 			@Nullable String name,
 			@Nullable SimulationPlanId copyFromSimulationId,
 			@NonNull UserId responsibleUserId)
@@ -84,8 +105,28 @@ public class SimulationPlanService
 		return simulationPlanRepository.getById(id);
 	}
 
-	public Collection<SimulationPlanRef> getAllNotProcessed()
+	public Collection<SimulationPlanRef> getAllDrafts(@Nullable final SimulationPlanId alwaysIncludeId)
 	{
-		return simulationPlanRepository.getAllNotProcessed();
+		return simulationPlanRepository.getAllDrafts(alwaysIncludeId);
+	}
+
+	public void complete(@NonNull final SimulationPlanId simulationPlanId)
+	{
+		trxManager.runInThreadInheritedTrx(() -> completeInTrx(simulationPlanId));
+	}
+
+	private void completeInTrx(@NonNull final SimulationPlanId simulationPlanId)
+	{
+		SimulationPlanRef simulationRef = simulationPlanRepository.getById(simulationPlanId);
+		if (!simulationRef.getDocStatus().isDrafted())
+		{
+			throw new AdempiereException("Only Drafted simulations can be completed");
+		}
+
+		hooks.onComplete(simulationRef);
+
+		simulationRef = simulationPlanRepository.changeDocStatus(simulationPlanId, SimulationPlanDocStatus.Completed);
+
+		changesDispatcher.notifyOnAfterComplete(simulationRef);
 	}
 }

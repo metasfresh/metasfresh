@@ -4,6 +4,6 @@ import Calendar from '../../../pages/calendar/Calendar';
 
 describe('Calendar', () => {
   it('renders without errors', () => {
-    shallow(<Calendar />);
+    shallow(<Calendar view="resourceTimelineYear" />);
   });
 });

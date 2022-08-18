@@ -55,6 +55,11 @@ export const getQueryString = (query) => {
   return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
 };
 
+export const buildURL = (baseUrl, query) => {
+  const queryString = query ? getQueryString(query) : null;
+  return !queryString ? baseUrl : `${baseUrl}?${queryString}`;
+};
+
 // TODO: Move to api ?
 export const createPatchRequestPayload = (property, value) => {
   if (Array.isArray(property) && Array.isArray(value)) {

@@ -1,11 +1,6 @@
-import { updateResourcesFromConflicts } from './updateResourcesFromConflicts';
-
-export const extractResourcesFromCalendarsArray = ({
-  calendarsArray,
-  entries,
-  conflicts,
-}) => {
+export const extractResourcesFromCalendarsArray = (calendarsArray) => {
   if (!calendarsArray) {
+    console.log('extractResourcesFromCalendarsArray: returning empty!');
     return [];
   }
 
@@ -27,8 +22,6 @@ export const extractResourcesFromCalendarsArray = ({
     }
   });
   //console.log('extractResourcesFromCalendarsArray', resources);
-
-  resources = updateResourcesFromConflicts({ resources, conflicts, entries });
 
   return resources;
 };

@@ -22,11 +22,14 @@
 
 package de.metas.ui.web.calendar.json;
 
+import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
@@ -34,5 +37,19 @@ import java.util.List;
 @Jacksonized
 public class JsonCalendarEntriesQueryResponse
 {
+	@Value
+	@Builder
+	@Jacksonized
+	public static class ResolvedQuery
+	{
+		@Nullable SimulationPlanId simulationId;
+		@Nullable List<JSONLookupValue> onlyResources;
+		@Nullable JSONLookupValue onlyProject;
+		@Nullable JSONLookupValue onlyCustomer;
+		@Nullable JSONLookupValue onlyResponsible;
+	}
+
+	@NonNull ResolvedQuery query;
+
 	@NonNull List<JsonCalendarEntry> entries;
 }

@@ -52,14 +52,6 @@ class JsonDateTimeTest
 	}
 
 	@Test
-	void ofZonedDateTime_toZonedDateTime()
-	{
-		final ZonedDateTime zdt = LocalDate.parse("2022-02-03").atTime(13, 14).atZone(ZoneId.of("Europe/Berlin"));
-		final JsonDateTime json = JsonDateTime.ofZonedDateTime(zdt, zdt.getZone());
-		Assertions.assertThat(json.toZonedDateTime()).isEqualTo(zdt);
-	}
-
-	@Test
 	void ofInstant_toInstant()
 	{
 		final Instant instant = LocalDate.parse("2022-02-03").atTime(13, 14).atZone(ZoneId.of("Europe/Berlin")).toInstant();

@@ -33,9 +33,11 @@ import lombok.Value;
 public class WOProjectStep
 {
 	@NonNull WOProjectStepId id;
-	@NonNull ProjectId projectId;
+
 	int seqNo;
 	@NonNull String name;
 
 	@NonNull CalendarDateRange dateRange;
+
+	public ProjectId getProjectId() {return id.getProjectId();}
 }

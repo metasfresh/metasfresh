@@ -1,10 +1,9 @@
 package de.metas.calendar.conflicts;
 
-import de.metas.calendar.simulation.SimulationPlanId;
-
-import javax.annotation.Nullable;
+import de.metas.calendar.CalendarConflictsQuery;
+import lombok.NonNull;
 
 public interface CalendarConflictsService
 {
-	CalendarEntryConflicts query(@Nullable final SimulationPlanId simulationId);
+	CalendarEntryConflicts query(@NonNull final CalendarConflictsQuery query);
 }

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Resource
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_WO_Resource extends org.compiere.model.PO implements I_C_Project_WO_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2034969764L;
+	private static final long serialVersionUID = -1167923606L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Resource (final Properties ctx, final int C_Project_WO_Resource_ID, @Nullable final String trxName)

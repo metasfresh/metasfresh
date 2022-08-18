@@ -7,7 +7,6 @@ import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResource;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceSimulation;
@@ -69,11 +68,11 @@ class WOProjectSimulationPlanEditor
 	}
 
 	public void changeResourceDateRangeAndShiftSteps(
-			@NonNull final WOProjectAndResourceId projectAndResourceId,
+			@NonNull final WOProjectResourceId projectResourceId,
 			@NonNull final CalendarDateRange newDateRange,
 			@NonNull final WOProjectStepId stepId)
 	{
-		changeResource(projectAndResourceId, newDateRange);
+		changeResource(projectResourceId, newDateRange);
 		updateStepDateRangeFromResources(stepId);
 
 		shiftLeftAllStepsBefore(stepId);
@@ -199,17 +198,17 @@ class WOProjectSimulationPlanEditor
 	}
 
 	private void changeResource(
-			@NonNull final WOProjectAndResourceId projectAndResourceId,
+			@NonNull final WOProjectResourceId projectResourceId,
 			@NonNull final CalendarDateRange newDateRange)
 	{
 		simulationProjectResourcesById.compute(
-				projectAndResourceId.getProjectResourceId(),
+				projectResourceId,
 				(k, existingSimulation) -> {
 					final WOProjectResourceSimulation.WOProjectResourceSimulationBuilder builder;
 					if (existingSimulation == null)
 					{
 						builder = WOProjectResourceSimulation.builder()
-								.projectAndResourceId(projectAndResourceId);
+								.projectResourceId(projectResourceId);
 					}
 					else
 					{
@@ -219,7 +218,7 @@ class WOProjectSimulationPlanEditor
 					return builder.dateRange(newDateRange).build();
 				});
 
-		changedProjectResourceIds.add(projectAndResourceId.getProjectResourceId());
+		changedProjectResourceIds.add(projectResourceId);
 	}
 
 	private void shiftLeftAllStepsBefore(@NonNull final WOProjectStepId stepId)
@@ -272,7 +271,7 @@ class WOProjectSimulationPlanEditor
 		for (final WOProjectResource projectResource : getProjectResourcesByStepId(stepId))
 		{
 			final CalendarDateRange newDateRange = projectResource.getDateRange().plus(offset);
-			changeResource(projectResource.getWOProjectAndResourceId(), newDateRange);
+			changeResource(projectResource.getId(), newDateRange);
 		}
 	}
 

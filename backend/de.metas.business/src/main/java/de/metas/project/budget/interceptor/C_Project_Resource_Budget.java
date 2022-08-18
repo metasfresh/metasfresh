@@ -24,9 +24,12 @@ package de.metas.project.budget.interceptor;
 
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.MultiCalendarService;
-import de.metas.project.budget.BudgetProjectAndResourceId;
+import de.metas.product.ResourceId;
 import de.metas.project.budget.BudgetProjectResourceRepository;
+import de.metas.project.budget.BudgetProjectResourceService;
 import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
+import de.metas.resource.ResourceGroupId;
+import de.metas.resource.ResourceService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -41,23 +44,25 @@ import org.springframework.stereotype.Component;
 public class C_Project_Resource_Budget
 {
 	private final MultiCalendarService multiCalendarService;
+	private final BudgetProjectResourceService budgetProjectResourceService;
+	private final ResourceService resourceService;
 
 	public C_Project_Resource_Budget(
-			final MultiCalendarService multiCalendarService)
+			@NonNull final MultiCalendarService multiCalendarService,
+			@NonNull final BudgetProjectResourceService budgetProjectResourceService,
+			@NonNull final ResourceService resourceService)
 	{
 		this.multiCalendarService = multiCalendarService;
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_C_Project_Resource_Budget record)
-	{
-		// make sure it's valid
-		BudgetProjectResourceRepository.fromRecord(record);
+		this.budgetProjectResourceService = budgetProjectResourceService;
+		this.resourceService = resourceService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(final I_C_Project_Resource_Budget record, final ModelChangeType changeType)
 	{
+		// make sure it's valid
+		BudgetProjectResourceRepository.fromRecord(record);
+
 		notifyIfUserChange(record, changeType);
 	}
 
@@ -65,6 +70,27 @@ public class C_Project_Resource_Budget
 	public void afterDelete(final I_C_Project_Resource_Budget record, final ModelChangeType changeType)
 	{
 		notifyIfUserChange(record, changeType);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Project_Resource_Budget.COLUMNNAME_PlannedDuration)
+	public void computePlannedDuration(final I_C_Project_Resource_Budget record)
+	{
+		if (record.getPlannedDuration() == null || record.getPlannedDuration().signum() == 0)
+		{
+			budgetProjectResourceService.computePlannedDuration(record).ifPresent(record::setPlannedDuration);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
+			I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_ID,
+			I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_Group_ID })
+	public void setResourceGroupIdAndValidateUOM(final I_C_Project_Resource_Budget record)
+	{
+		resourceService.getResourceGroupId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
+				.map(ResourceGroupId::getRepoId)
+				.ifPresent(record::setS_Resource_Group_ID);
+
+		budgetProjectResourceService.validateDurationUOMFromResource(record);
 	}
 
 	private void notifyIfUserChange(
@@ -79,19 +105,18 @@ public class C_Project_Resource_Budget
 		final CalendarEntryId entryId = extractCalendarEntryId(record);
 		if (changeType.isNewOrChange() && record.isActive())
 		{
-			multiCalendarService.notifyEntryUpdatedByUser(entryId);
+			multiCalendarService.notifyEntryUpdated(entryId);
 		}
 		else
 		{
-			multiCalendarService.notifyEntryDeletedByUser(entryId);
+			multiCalendarService.notifyEntryDeleted(entryId);
 		}
 	}
 
 	@NonNull
 	private static CalendarEntryId extractCalendarEntryId(final I_C_Project_Resource_Budget record)
 	{
-		final BudgetProjectAndResourceId projectAndResourceId = BudgetProjectResourceRepository.fromRecord(record).getProjectAndResourceId();
-		return BudgetAndWOCalendarEntryIdConverters.from(projectAndResourceId);
+		return BudgetAndWOCalendarEntryIdConverters.from(BudgetProjectResourceRepository.extractBudgetProjectResourceId(record));
 	}
 
 }

@@ -6,6 +6,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -13,11 +14,12 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class BudgetProjectResourceSimulation
 {
-	@NonNull BudgetProjectAndResourceId projectAndResourceId;
+	@NonNull BudgetProjectResourceId projectResourceId;
 
 	@NonNull CalendarDateRange dateRange;
 
-	public BudgetProjectResourceId getProjectResourceId() {return getProjectAndResourceId().getProjectResourceId();}
+	boolean isAppliedOnActualData;
+	CalendarDateRange dateRangeBeforeApplying;
 
 	public static BudgetProjectResourceSimulation reduce(@Nullable BudgetProjectResourceSimulation simulation, @NonNull UpdateRequest updateRequest)
 	{
@@ -25,11 +27,11 @@ public class BudgetProjectResourceSimulation
 		if (simulation == null)
 		{
 			builder = builder()
-					.projectAndResourceId(updateRequest.getProjectAndResourceId());
+					.projectResourceId(updateRequest.getProjectResourceId());
 		}
 		else
 		{
-			Check.assumeEquals(simulation.getProjectAndResourceId(), updateRequest.getProjectAndResourceId(), "expected same projectAndResourceId: {}, {}", simulation, updateRequest);
+			Check.assumeEquals(simulation.getProjectResourceId(), updateRequest.getProjectResourceId(), "expected same projectResourceId: {}, {}", simulation, updateRequest);
 
 			builder = simulation.toBuilder();
 		}
@@ -42,10 +44,23 @@ public class BudgetProjectResourceSimulation
 
 	public BudgetProjectResource applyOn(@NonNull final BudgetProjectResource resource)
 	{
-		Check.assumeEquals(resource.getProjectAndResourceId(), projectAndResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
+		Check.assumeEquals(resource.getId(), projectResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
 
 		return resource.toBuilder()
 				.dateRange(dateRange)
+				.build();
+	}
+
+	public BudgetProjectResourceSimulation markingAsApplied(@NonNull final CalendarDateRange dateRangeBeforeApplying)
+	{
+		if (isAppliedOnActualData)
+		{
+			throw new AdempiereException("Already applied");
+		}
+
+		return toBuilder()
+				.isAppliedOnActualData(true)
+				.dateRangeBeforeApplying(dateRangeBeforeApplying)
 				.build();
 	}
 
@@ -58,7 +73,7 @@ public class BudgetProjectResourceSimulation
 	public static class UpdateRequest
 	{
 		@NonNull SimulationPlanId simulationId;
-		@NonNull BudgetProjectAndResourceId projectAndResourceId;
+		@NonNull BudgetProjectResourceId projectResourceId;
 
 		@NonNull CalendarDateRange dateRange;
 	}

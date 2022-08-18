@@ -23,12 +23,15 @@
 package de.metas.project.budget;
 
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.resource.ResourceGroupId;
 import de.metas.uom.UomId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,39 +41,61 @@ import javax.annotation.Nullable;
 @Value
 public class BudgetProjectResource
 {
-	@NonNull BudgetProjectResourceId id;
+	@NonNull
+	BudgetProjectResourceId id;
 
-	@NonNull ProjectId projectId;
+	@NonNull
+	OrgId orgId;
 
-	@NonNull ResourceGroupId resourceGroupId;
-	@Nullable ResourceId resourceId;
+	@Nullable
+	ResourceGroupId resourceGroupId;
 
-	@NonNull UomId durationUomId;
-	@NonNull Money plannedAmount;
-	@NonNull Quantity plannedDuration;
-	@NonNull Money pricePerDurationUnit;
+	@Nullable
+	ResourceId resourceId;
 
-	@NonNull CalendarDateRange dateRange;
+	@NonNull
+	UomId durationUomId;
 
-	@Nullable String description;
+	@NonNull
+	Money plannedAmount;
+
+	@NonNull
+	Quantity plannedDuration;
+
+	@NonNull
+	Money pricePerDurationUnit;
+
+	@NonNull
+	CalendarDateRange dateRange;
+
+	@NonNull
+	Boolean isActive;
+
+	@Nullable
+	String description;
+
+	@Nullable
+	ExternalId externalId;
 
 	@Builder(toBuilder = true)
 	private BudgetProjectResource(
 			@NonNull final BudgetProjectResourceId id,
-			@NonNull final ProjectId projectId,
-			@NonNull final ResourceGroupId resourceGroupId,
+			@NonNull final OrgId orgId,
+			@Nullable final ResourceGroupId resourceGroupId,
 			@Nullable final ResourceId resourceId,
 			@NonNull final UomId durationUomId,
 			@NonNull final Money plannedAmount,
 			@NonNull final Quantity plannedDuration,
 			@NonNull final Money pricePerDurationUnit,
 			@NonNull final CalendarDateRange dateRange,
-			@Nullable final String description)
+			@Nullable final Boolean isActive,
+			@Nullable final String description,
+			@Nullable final ExternalId externalId)
 	{
-		Money.getCommonCurrencyIdOfAll(plannedAmount, pricePerDurationUnit); // make sure they are in the same currency
+		Money.getCommonCurrencyIdOfAll(plannedAmount, pricePerDurationUnit);
 
 		this.id = id;
-		this.projectId = projectId;
+		this.orgId = orgId;
 		this.resourceGroupId = resourceGroupId;
 		this.resourceId = resourceId;
 		this.durationUomId = durationUomId;
@@ -78,11 +103,20 @@ public class BudgetProjectResource
 		this.plannedDuration = plannedDuration;
 		this.pricePerDurationUnit = pricePerDurationUnit;
 		this.dateRange = dateRange;
+		this.isActive = isActive == null || isActive;
 		this.description = description;
+		this.externalId = externalId;
 	}
 
-	public BudgetProjectAndResourceId getProjectAndResourceId()
+	@NonNull
+	public ProjectId getProjectId()
 	{
-		return BudgetProjectAndResourceId.of(projectId, id);
+		return id.getProjectId();
+	}
+
+	@NonNull
+	public CurrencyId getCurrencyId()
+	{
+		return Money.getCommonCurrencyIdOfAll(plannedAmount, pricePerDurationUnit);
 	}
 }

@@ -22,28 +22,43 @@
 
 package de.metas.project.workorder;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.project.ProjectId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-/**
- * Note that this class is somewhat redundant with {@link WOProjectAndResourceId}.
- * One Of the two should be refactored away. The remaining class should be RepoIdAware.
- */
 @Value
 public class WOProjectResourceId implements RepoIdAware
 {
-	@JsonCreator
 	public static WOProjectResourceId ofRepoId(@NonNull final ProjectId projectId, final int repoId)
 	{
 		return new WOProjectResourceId(projectId, repoId);
+	}
+
+	public static WOProjectResourceId ofRepoId(final int projectRepoId, final int repoId)
+	{
+		return new WOProjectResourceId(ProjectId.ofRepoId(projectRepoId), repoId);
+	}
+
+	public static WOProjectResourceId ofRepoIdObjects(final Object projectRepoIdObj, final Object repoIdObj)
+	{
+		try
+		{
+			return new WOProjectResourceId(
+					ProjectId.ofRepoId(NumberUtils.asInt(projectRepoIdObj)),
+					NumberUtils.asInt(repoIdObj));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + projectRepoIdObj + "` and `" + repoIdObj + "` to " + WOProjectResourceId.class.getSimpleName());
+		}
 	}
 
 	@Nullable

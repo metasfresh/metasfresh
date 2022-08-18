@@ -22,11 +22,14 @@
 
 package de.metas.project.budget;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -34,28 +37,45 @@ import java.util.Objects;
 @Value
 public class BudgetProjectResourceId implements RepoIdAware
 {
-	@JsonCreator
-	public static BudgetProjectResourceId ofRepoId(final int repoId)
+	ProjectId projectId;
+	int repoId;
+
+	private BudgetProjectResourceId(
+			@NonNull final ProjectId projectId,
+			final int repoId)
 	{
-		return new BudgetProjectResourceId(repoId);
+		this.projectId = projectId;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Project_Resource_Budget_ID");
+	}
+
+	public static BudgetProjectResourceId ofRepoId(final int projectRepoId, final int repoId)
+	{
+		return new BudgetProjectResourceId(ProjectId.ofRepoId(projectRepoId), repoId);
 	}
 
 	@Nullable
-	public static BudgetProjectResourceId ofRepoIdOrNull(final int repoId)
+	public static BudgetProjectResourceId ofRepoIdOrNull(final int projectRepoId, final int repoId)
 	{
-		return repoId > 0 ? new BudgetProjectResourceId(repoId) : null;
+		return projectRepoId > 0 && repoId > 0 ? ofRepoId(projectRepoId, repoId) : null;
+	}
+
+	public static BudgetProjectResourceId ofRepoIdObjects(final Object projectRepoIdObj, final Object repoIdObj)
+	{
+		try
+		{
+			return new BudgetProjectResourceId(
+					ProjectId.ofRepoId(NumberUtils.asInt(projectRepoIdObj)),
+					NumberUtils.asInt(repoIdObj));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + projectRepoIdObj + "` and `" + repoIdObj + "` to " + BudgetProjectResourceId.class.getSimpleName());
+		}
 	}
 
 	public static int toRepoId(@Nullable final BudgetProjectResourceId id)
 	{
 		return id != null ? id.getRepoId() : -1;
-	}
-
-	int repoId;
-
-	private BudgetProjectResourceId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Project_Resource_Budget_ID");
 	}
 
 	@Override

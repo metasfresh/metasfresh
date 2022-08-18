@@ -1,37 +1,34 @@
 de.metas.project.workorder.calendar.WOProjectSimulationPlanEditorTest.test=[ {
   "projectResourcesById" : {
     "1" : {
+      "appliedOnActualData" : false,
       "dateRange" : {
         "allDay" : true,
         "endDate" : "2022-06-12T22:00:00Z",
         "startDate" : "2022-06-10T22:00:00Z"
       },
-      "projectAndResourceId" : {
-        "projectId" : 1,
-        "projectResourceId" : 1
-      }
+      "isAppliedOnActualData" : false,
+      "projectResourceId" : 1
     },
     "3" : {
+      "appliedOnActualData" : false,
       "dateRange" : {
         "allDay" : true,
         "endDate" : "2022-06-14T22:00:00Z",
         "startDate" : "2022-06-12T22:00:00Z"
       },
-      "projectAndResourceId" : {
-        "projectId" : 1,
-        "projectResourceId" : 3
-      }
+      "isAppliedOnActualData" : false,
+      "projectResourceId" : 3
     },
     "4" : {
+      "appliedOnActualData" : false,
       "dateRange" : {
         "allDay" : true,
         "endDate" : "2022-06-15T22:00:00Z",
         "startDate" : "2022-06-14T22:00:00Z"
       },
-      "projectAndResourceId" : {
-        "projectId" : 1,
-        "projectResourceId" : 4
-      }
+      "isAppliedOnActualData" : false,
+      "projectResourceId" : 4
     }
   },
   "simulationPlanId" : 1,

@@ -3,21 +3,56 @@ import * as StompJs from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
 import converters from '../api/converters';
+import { getQueryString } from '../../../utils';
 
+const WS_TOPIC_NAME_PREFIX = '/v2/calendar';
 const WS_DEBUG = true;
 
-export const WSEventType_addOrChange = 'addOrChange';
-export const WSEventType_remove = 'remove';
+export const WSEventType_entryAddOrChange = 'addOrChange';
+export const WSEventType_entryRemove = 'remove';
 const WSEventType_conflictsChanged = 'conflictsChanged';
+const WSEventType_simulationPlanChanged = 'simulationPlanChanged';
 
-export const useCalendarWebsocketEvents = ({ simulationId, onWSEvents }) => {
+export const useCalendarWebsocketEvents = ({
+  simulationId,
+  onlyResourceIds,
+  onlyProjectId,
+  onWSEvents,
+}) => {
   useEffect(() => {
-    return connectToWS({ simulationId, onWSEvents });
-  }, [simulationId]);
+    return connectToWS({
+      simulationId,
+      onlyResourceIds,
+      onlyProjectId,
+      onWSEvents,
+    });
+  }, [simulationId, onlyResourceIds, onlyProjectId]);
 };
 
-const connectToWS = ({ simulationId, onWSEvents }) => {
-  const wsTopicName = `/v2/calendar/${simulationId || 'actual'}`;
+const toWSTopicName = ({ simulationId, onlyResourceIds, onlyProjectId }) => {
+  const queryParams = getQueryString({
+    simulationId,
+    onlyResourceIds:
+      onlyResourceIds && onlyResourceIds.length > 0 ? onlyResourceIds : null,
+    onlyProjectId,
+  });
+
+  return queryParams
+    ? `${WS_TOPIC_NAME_PREFIX}?${queryParams}`
+    : WS_TOPIC_NAME_PREFIX;
+};
+
+const connectToWS = ({
+  simulationId,
+  onlyResourceIds,
+  onlyProjectId,
+  onWSEvents,
+}) => {
+  const wsTopicName = toWSTopicName({
+    simulationId,
+    onlyResourceIds,
+    onlyProjectId,
+  });
 
   const stompJsConfig = {
     reconnectDelay: 5000,
@@ -71,16 +106,17 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
 
   const entryEvents = [];
   const conflictEvents = [];
+  const changedSimulationIds = [];
 
   apiWSEventsArray.forEach((apiWSEvent) => {
-    if (apiWSEvent.type === WSEventType_addOrChange) {
+    if (apiWSEvent.type === WSEventType_entryAddOrChange) {
       entryEvents.push({
-        type: WSEventType_addOrChange,
+        type: WSEventType_entryAddOrChange,
         entry: converters.fromAPIEntry(apiWSEvent.entry),
       });
-    } else if (apiWSEvent.type === WSEventType_remove) {
+    } else if (apiWSEvent.type === WSEventType_entryRemove) {
       entryEvents.push({
-        type: WSEventType_remove,
+        type: WSEventType_entryRemove,
         simulationId: apiWSEvent.simulationId,
         entryId: apiWSEvent.entryId,
       });
@@ -91,12 +127,22 @@ const fromAPIWebsocketEventsArray = (apiWSEventsArray) => {
         affectedEntryIds: apiWSEvent.affectedEntryIds,
         conflicts: apiWSEvent.conflicts.map(converters.fromAPIConflict),
       });
+    } else if (apiWSEvent.type === WSEventType_simulationPlanChanged) {
+      if (!changedSimulationIds.includes(apiWSEvent.simulationId)) {
+        changedSimulationIds.push(apiWSEvent.simulationId);
+      }
+    } else {
+      console.log('Ignored unknown WS event: ', apiWSEvent);
     }
   });
 
-  if (entryEvents.length <= 0 && conflictEvents.length <= 0) {
+  if (
+    entryEvents.length <= 0 &&
+    conflictEvents.length <= 0 &&
+    changedSimulationIds.length <= 0
+  ) {
     return null;
   }
 
-  return { entryEvents, conflictEvents };
+  return { entryEvents, conflictEvents, changedSimulationIds };
 };

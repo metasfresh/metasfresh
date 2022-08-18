@@ -1,16 +1,19 @@
 package de.metas.project.workorder.conflicts;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.calendar.simulation.SimulationIdsPredicate;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectAndResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.InSetPredicate;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project_WO_Resource_Conflict;
 import org.slf4j.Logger;
@@ -18,9 +21,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -39,14 +39,14 @@ public class WOProjectResourceConflictRepository
 		final SimulationPlanId simulationId = conflicts.getSimulationId();
 
 		final HashMap<ProjectResourceIdsPair, I_C_Project_WO_Resource_Conflict> recordsByResourceIds = streamRecords(
-				Collections.singleton(simulationId),
-				null,
-				projectResourceIds)
+				SimulationIdsPredicate.only(simulationId),
+				InSetPredicate.any(),
+				InSetPredicate.only(projectResourceIds))
 				.collect(GuavaCollectors.toHashMapByKey(WOProjectResourceConflictRepository::extractProjectResourceIds));
 
 		for (final ResourceAllocationConflict conflict : conflicts.toCollection())
 		{
-			if (simulationId != null && conflict.getSimulationId() == null)
+			if (simulationId != null && !conflict.isSimulation())
 			{
 				logger.warn("Skip saving actual conflict when saving simulation conflicts: {}", conflict);
 				continue;
@@ -61,7 +61,9 @@ public class WOProjectResourceConflictRepository
 			}
 
 			record.setStatus(conflict.getStatus().getCode());
-			InterfaceWrapperHelper.save(record);
+			conflict.getApproved().ifPresent(record::setIsApproved);
+
+			InterfaceWrapperHelper.saveRecord(record);
 		}
 
 		InterfaceWrapperHelper.deleteAll(recordsByResourceIds.values());
@@ -73,46 +75,51 @@ public class WOProjectResourceConflictRepository
 		I_C_Project_WO_Resource_Conflict record = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Resource_Conflict.class);
 
 		record.setC_Project_ID(resourceIdsPair.getProjectResourceId1().getProjectId().getRepoId());
-		record.setC_Project_WO_Resource_ID(resourceIdsPair.getProjectResourceId1().getProjectResourceId().getRepoId());
+		record.setC_Project_WO_Resource_ID(resourceIdsPair.getProjectResourceId1().getRepoId());
 
 		record.setC_Project2_ID(resourceIdsPair.getProjectResourceId2().getProjectId().getRepoId());
-		record.setC_Project_WO_Resource2_ID(resourceIdsPair.getProjectResourceId2().getProjectResourceId().getRepoId());
+		record.setC_Project_WO_Resource2_ID(resourceIdsPair.getProjectResourceId2().getRepoId());
 
 		record.setC_SimulationPlan_ID(SimulationPlanId.toRepoId(simulationId));
+
+		record.setIsApproved(false);
 
 		return record;
 	}
 
 	public ResourceAllocationConflicts getActualConflicts(
-			@NonNull final Set<WOProjectResourceId> projectResourceIds)
+			@NonNull final Set<WOProjectResourceId> onlyProjectResourceIds)
 	{
-		if (projectResourceIds.isEmpty())
+		if (onlyProjectResourceIds.isEmpty())
 		{
 			return ResourceAllocationConflicts.empty();
 		}
 
 		final ImmutableList<ResourceAllocationConflict> conflicts = streamRecords(
-				Collections.singleton(null),
-				null,
-				projectResourceIds)
+				SimulationIdsPredicate.ACTUAL_DATA_ONLY,
+				InSetPredicate.any(),
+				InSetPredicate.only(onlyProjectResourceIds))
 				.map(WOProjectResourceConflictRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 
 		return ResourceAllocationConflicts.actualConflicts(conflicts);
 	}
 
-	public ResourceAllocationConflicts getActualAndSimulation(@Nullable final SimulationPlanId simulationId, @NonNull final Set<ProjectId> onlyProjectIds)
+	public ResourceAllocationConflicts getActualAndSimulation(
+			@Nullable final SimulationPlanId simulationId,
+			@NonNull final InSetPredicate<ProjectId> projectIds,
+			@NonNull final InSetPredicate<WOProjectResourceId> projectResourceIds)
 	{
 		final ArrayList<ResourceAllocationConflict> actualConflictsList = new ArrayList<>();
 		final ArrayList<ResourceAllocationConflict> simulationOnlyConflictsList = new ArrayList<>();
 
 		streamRecords(
-				Arrays.asList(null, simulationId),
-				onlyProjectIds,
-				null)
+				SimulationIdsPredicate.actualDataAnd(simulationId),
+				projectIds,
+				projectResourceIds)
 				.map(WOProjectResourceConflictRepository::fromRecord)
 				.forEach(conflict -> {
-					if (conflict.getSimulationId() == null)
+					if (!conflict.isSimulation())
 					{
 						actualConflictsList.add(conflict);
 					}
@@ -133,34 +140,69 @@ public class WOProjectResourceConflictRepository
 		return actualConflicts.mergeWithSimulation(simulationOnlyConflicts);
 	}
 
-	private Stream<I_C_Project_WO_Resource_Conflict> streamRecords(
-			@Nullable final Collection<SimulationPlanId> simulationIds,
-			@Nullable final Set<ProjectId> onlyProjectIds,
-			@Nullable final Set<WOProjectResourceId> onlyProjectResourceIds)
+	public ResourceAllocationConflicts getSimulationOnly(@NonNull final SimulationPlanId simulationId)
 	{
-		final IQueryBuilder<I_C_Project_WO_Resource_Conflict> queryBuilder = queryBL.createQueryBuilder(I_C_Project_WO_Resource_Conflict.class);
+		final ImmutableList<ResourceAllocationConflict> conflictsList = streamRecords(
+				SimulationIdsPredicate.only(simulationId),
+				InSetPredicate.any(),
+				InSetPredicate.any())
+				.map(WOProjectResourceConflictRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 
-		if (simulationIds != null && !simulationIds.isEmpty())
+		return ResourceAllocationConflicts.of(simulationId, conflictsList);
+	}
+
+	private Stream<I_C_Project_WO_Resource_Conflict> streamRecords(
+			@NonNull final SimulationIdsPredicate simulationIds,
+			@NonNull final InSetPredicate<ProjectId> projectIds,
+			@NonNull final InSetPredicate<WOProjectResourceId> projectResourceIds)
+	{
+		final IQueryBuilder<I_C_Project_WO_Resource_Conflict> queryBuilder = queryBL.createQueryBuilder(I_C_Project_WO_Resource_Conflict.class)
+				.addOnlyActiveRecordsFilter();
+
+		//
+		// Simulations
+		queryBuilder.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_SimulationPlan_ID, simulationIds.toCollection());
+
+		//
+		// Projects
+		//noinspection StatementWithEmptyBody
+		if (projectIds.isAny())
 		{
-			queryBuilder.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_SimulationPlan_ID, simulationIds);
+			// don't filter by projects
 		}
-
-		if (onlyProjectIds != null && !onlyProjectIds.isEmpty())
+		else if (projectIds.isNone())
+		{
+			return Stream.empty();
+		}
+		else
 		{
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
-					.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_ID, onlyProjectIds)
-					.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project2_ID, onlyProjectIds);
+					.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_ID, projectIds)
+					.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project2_ID, projectIds);
 		}
 
-		if (onlyProjectResourceIds != null && !onlyProjectResourceIds.isEmpty())
+		//
+		// Resources
+		//noinspection StatementWithEmptyBody
+		if (projectResourceIds.isAny())
+		{
+			// don't filter by resources
+		}
+		else if (projectResourceIds.isNone())
+		{
+			return Stream.empty();
+		}
+		else
 		{
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
-					.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource_ID, onlyProjectResourceIds)
-					.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource2_ID, onlyProjectResourceIds);
+					.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
+					.addInArrayFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource2_ID, projectResourceIds);
 		}
 
+		//
 		return queryBuilder.stream();
 	}
 
@@ -170,6 +212,7 @@ public class WOProjectResourceConflictRepository
 				.projectResourceIdsPair(extractProjectResourceIds(record))
 				.simulationId(SimulationPlanId.ofRepoIdOrNull(record.getC_SimulationPlan_ID()))
 				.status(ResourceAllocationConflictStatus.ofCode(record.getStatus()))
+				.approved(OptionalBoolean.ofBoolean(record.isApproved()))
 				.build();
 	}
 
@@ -177,9 +220,20 @@ public class WOProjectResourceConflictRepository
 	private static ProjectResourceIdsPair extractProjectResourceIds(final @NonNull I_C_Project_WO_Resource_Conflict record)
 	{
 		return ProjectResourceIdsPair.of(
-				WOProjectAndResourceId.ofRepoIds(record.getC_Project_ID(), record.getC_Project_WO_Resource_ID()),
-				WOProjectAndResourceId.ofRepoIds(record.getC_Project2_ID(), record.getC_Project_WO_Resource2_ID())
+				WOProjectResourceId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Resource_ID()),
+				WOProjectResourceId.ofRepoId(record.getC_Project2_ID(), record.getC_Project_WO_Resource2_ID())
 		);
 	}
 
+	public void deactivateBySimulationId(@NonNull final SimulationPlanId simulationId)
+	{
+		queryBL.createQueryBuilder(I_C_Project_WO_Resource_Conflict.class)
+				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_SimulationPlan_ID, simulationId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.update(record -> {
+					record.setIsActive(false);
+					return IQueryUpdater.MODEL_UPDATED;
+				});
+	}
 }

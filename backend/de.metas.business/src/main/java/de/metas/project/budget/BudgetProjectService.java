@@ -22,11 +22,13 @@
 
 package de.metas.project.budget;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.resource.ResourceGroupAndResourceId;
 import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
+import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 @Service
 public class BudgetProjectService
@@ -52,24 +55,22 @@ public class BudgetProjectService
 		this.resourceBudgetRepository = resourceBudgetRepository;
 	}
 
-	public List<BudgetProject> getAllActiveProjects()
+	public List<BudgetProject> queryAllActiveProjects(
+			@NonNull final InSetPredicate<ResourceGroupId> resourceGroupIds,
+			@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
-		return projectRepository.getAllActive();
+		final InSetPredicate<ProjectId> projectIdsEffective = resourceBudgetRepository.getProjectIdsPredicateByResourceGroupIds(resourceGroupIds, projectIds);
+		return projectRepository.queryAllActiveProjects(projectIdsEffective);
 	}
 
-	public Map<ProjectId, BudgetProjectResources> getBudgetsByProjectIds(@NonNull final Set<ProjectId> projectIds)
+	public BudgetProjectResourcesCollection getBudgetsByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		return resourceBudgetRepository.getByProjectIds(projectIds);
 	}
 
-	public BudgetProjectResource getBudgetsById(@NonNull final ProjectId projectId, @NonNull final BudgetProjectResourceId id)
+	public BudgetProjectResource getBudgetsById(@NonNull final BudgetProjectResourceId id)
 	{
-		return resourceBudgetRepository.getByProjectId(projectId).getBudgetById(id);
-	}
-
-	public BudgetProjectResource getBudgetsById(@NonNull final BudgetProjectAndResourceId id)
-	{
-		return resourceBudgetRepository.getByProjectId(id.getProjectId()).getBudgetById(id.getProjectResourceId());
+		return resourceBudgetRepository.getByProjectId(id.getProjectId()).getBudgetById(id);
 	}
 
 	public Optional<BudgetProjectResource> findBudgetForResource(
@@ -88,6 +89,13 @@ public class BudgetProjectService
 
 	public Optional<BudgetProject> getById(@NonNull final ProjectId projectId)
 	{
-		return projectRepository.getById(projectId);
+		return projectRepository.getOptionalById(projectId);
+	}
+
+	public void updateProjectResourcesByIds(
+			@NonNull final ImmutableSet<BudgetProjectResourceId> ids,
+			@NonNull final UnaryOperator<BudgetProjectResource> mapper)
+	{
+		resourceBudgetRepository.updateProjectResourcesByIds(ids, mapper);
 	}
 }

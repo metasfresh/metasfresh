@@ -51,11 +51,13 @@ public class JsonWorkOrderStepUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean seqNoSet;
 
+	@ApiModelProperty(required = true)
 	LocalDate dateStart;
 
 	@ApiModelProperty(hidden = true)
 	boolean dateStartSet;
 
+	@ApiModelProperty(required = true)
 	LocalDate dateEnd;
 
 	@ApiModelProperty(hidden = true)

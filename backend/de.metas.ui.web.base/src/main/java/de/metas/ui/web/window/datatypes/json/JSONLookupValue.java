@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiModel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.NamePair;
 
 import javax.annotation.Nullable;
@@ -92,6 +93,13 @@ public final class JSONLookupValue
 		return ofLookupValue(lookupValue, adLanguage, false);
 	}
 
+	public static JSONLookupValue ofNullableLookupValue(@Nullable final LookupValue lookupValue, @NonNull final String adLanguage)
+	{
+		return lookupValue != null
+				? ofLookupValue(lookupValue, adLanguage, false)
+				: null;
+	}
+
 	public static JSONLookupValue ofLookupValue(@NonNull final LookupValue lookupValue, @NonNull final String adLanguage, final boolean appendDescriptionToName)
 	{
 		final String id = lookupValue.getIdAsString();
@@ -162,6 +170,10 @@ public final class JSONLookupValue
 	{
 		final Object keyObj = map.get(PROPERTY_Key);
 		final String key = keyObj != null ? keyObj.toString() : null;
+		if (key == null)
+		{
+			throw new AdempiereException("No valid `" + PROPERTY_Key + "` property defined in " + map);
+		}
 
 		final ITranslatableString displayName = extractCaption(map);
 		final ITranslatableString description = extractDescription(map);
@@ -187,16 +199,14 @@ public final class JSONLookupValue
 	{
 		final Object captionObj = map.get(PROPERTY_Caption);
 		final String caption = captionObj != null ? captionObj.toString() : "";
-		final ITranslatableString displayName = TranslatableStrings.anyLanguage(caption);
-		return displayName;
+		return TranslatableStrings.anyLanguage(caption);
 	}
 
 	private static ITranslatableString extractDescription(@NonNull final Map<String, Object> map)
 	{
 		final Object descriptionObj = map.get(PROPERTY_Description);
 		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
-		final ITranslatableString description = TranslatableStrings.anyLanguage(descriptionStr);
-		return description;
+		return TranslatableStrings.anyLanguage(descriptionStr);
 	}
 
 	private static Boolean extractActive(@NonNull final Map<String, Object> map)
@@ -315,7 +325,7 @@ public final class JSONLookupValue
 
 	private boolean isActive()
 	{
-		return active == null || active.booleanValue();
+		return active == null || active;
 	}
 
 }
