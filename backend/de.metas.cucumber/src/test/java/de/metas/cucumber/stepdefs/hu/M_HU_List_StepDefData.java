@@ -20,13 +20,17 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.hu;
 
-public enum StepDefDocAction
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.handlingunits.model.I_M_HU;
+
+import java.util.List;
+
+public class M_HU_List_StepDefData extends StepDefData<List<I_M_HU>>
 {
-	completed,
-	reactivated,
-	reversed,
-	voided,
-	closed
+	public M_HU_List_StepDefData()
+	{
+		super(null);
+	}
 }

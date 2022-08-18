@@ -67,7 +67,6 @@ public class DeliveredDataLoader
 {
 	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	
 	UomId stockUomId;
 
 	UomId icUomId;
@@ -171,12 +170,12 @@ public class DeliveredDataLoader
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
 			qtyInStockUom = Quantitys.add(conversionCtx,
-					qtyInStockUom,
-					deliveredQtyItem.getQtyInStockUom());
+										  qtyInStockUom,
+										  deliveredQtyItem.getQtyInStockUom());
 
 			qtyNominal = Quantitys.add(conversionCtx,
-					qtyNominal,
-					coalesceNotNull(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal()));
+									   qtyNominal,
+									   coalesceNotNull(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal()));
 
 			final Quantity qtyCatchEffective = coalesce(
 					deliveredQtyItem.getQtyOverride(),
@@ -189,8 +188,8 @@ public class DeliveredDataLoader
 			{
 				deliveredQtyItemsWithCatch.add(deliveredQtyItem);
 				qtyCatch = Quantitys.add(conversionCtx,
-						qtyCatch,
-						qtyCatchEffective);
+										 qtyCatch,
+										 qtyCatchEffective);
 			}
 		}
 
@@ -237,7 +236,7 @@ public class DeliveredDataLoader
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
-			
+
 			final Quantity currentQtyInStockUom = deliveredQtyItem.getQtyInStockUom();
 			final Quantity currentQtyNominal = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal());
 			final Quantity currentQtyCatch = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyCatch());
@@ -296,7 +295,7 @@ public class DeliveredDataLoader
 			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
 
 			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
-			
+
 			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
 					.inDispute(inoutLine.isInDispute())
 					.completedOrClosed(inoutCompletedOrClosed);

@@ -207,6 +207,12 @@ public class C_OrderLine_StepDef
 				orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 			}
 
+			final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);
+			if (qtyEnteredTU != null)
+			{
+				orderLine.setQtyEnteredTU(qtyEnteredTU);
+			}
+
 			saveRecord(orderLine);
 
 			orderLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);

@@ -20,13 +20,16 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.workpackage;
 
-public enum StepDefDocAction
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.cucumber.stepdefs.StepDefData;
+
+public class C_Queue_Processor_StepDefData extends StepDefData<I_C_Queue_Processor>
 {
-	completed,
-	reactivated,
-	reversed,
-	voided,
-	closed
+	public C_Queue_Processor_StepDefData()
+	{
+		super(I_C_Queue_Processor.class);
+	}
 }
+

@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.warehouse;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -76,6 +77,40 @@ public class M_Warehouse_StepDef
 
 			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 
+			warehouseTable.put(warehouseIdentifier, warehouseRecord);
+		}
+	}
+
+	@And("metasfresh contains M_Warehouse:")
+	public void create_M_Warehouse(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
+
+			final I_M_Warehouse warehouseRecord = CoalesceUtil.coalesceSuppliers(
+					() -> queryBL.createQueryBuilder(I_M_Warehouse.class)
+							.addEqualsFilter(COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyOrNull(I_M_Warehouse.class),
+					() -> InterfaceWrapperHelper.newInstance(I_M_Warehouse.class));
+
+			assertThat(warehouseRecord).isNotNull();
+
+			final String name = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_Name);
+
+			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnName(row, I_M_Warehouse.COLUMNNAME_IsIssueWarehouse);
+
+			warehouseRecord.setValue(value);
+			warehouseRecord.setName(name);
+			warehouseRecord.setC_BPartner_ID(2155894); //dev-note: org BPartner
+			warehouseRecord.setC_BPartner_Location_ID(2202690);
+			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+
+			InterfaceWrapperHelper.saveRecord(warehouseRecord);
+
+			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			warehouseTable.put(warehouseIdentifier, warehouseRecord);
 		}
 	}
