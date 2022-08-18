@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.issue.tracking.github.api.v3.GitHubApiConstants;
 import de.metas.issue.tracking.github.api.v3.model.CreatWebhookRequest;
+import de.metas.issue.tracking.github.api.v3.model.CreateIssueRequest;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
 import de.metas.issue.tracking.github.api.v3.model.ResourceState;
@@ -154,6 +155,50 @@ public class GithubClient
 					.build();
 
 			return restService.performPost(postRequest, String.class).getBody();
+		}
+		catch (final HttpClientErrorException.UnprocessableEntity e)
+		{
+			final String errorMessage = getErrorMessageIfAny(e).orElse(e.getMessage());
+
+			throw new AdempiereException(errorMessage)
+					.markAsUserValidationError();
+		}
+	}
+
+	@NonNull
+	public Issue createIssue(@NonNull final CreateIssueRequest request) throws JsonProcessingException
+	{
+		try
+		{
+			final ImmutableMap.Builder<String, Object> body = ImmutableMap.builder();
+			body.put("title", request.getTitle());
+
+			if (Check.isNotBlank(request.getBody()))
+			{
+				body.put("body", request.getBody());
+			}
+
+			if (request.getLabels() != null || !request.getLabels().isEmpty())
+			{
+				body.put("labels", request.getLabels());
+			}
+
+			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.writeValueAsString(body.build());
+
+			final List<String> pathVariables = ImmutableList.of(REPOS.getValue(),
+																request.getRepositoryOwner(),
+																request.getRepositoryName(),
+																ISSUES.getValue());
+
+			final Request postRequest = Request.builder()
+					.baseURL(GITHUB_BASE_URI)
+					.pathVariables(pathVariables)
+					.oAuthToken(request.getOAuthToken())
+					.requestBody(requestBody)
+					.build();
+
+			return restService.performPost(postRequest, Issue.class).getBody();
 		}
 		catch (final HttpClientErrorException.UnprocessableEntity e)
 		{

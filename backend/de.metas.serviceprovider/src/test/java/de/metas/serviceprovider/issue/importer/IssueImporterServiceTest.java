@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.activity.repository.ActivityRepository;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -33,6 +34,7 @@ import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
+import de.metas.serviceprovider.external.label.IssueLabelService;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
@@ -41,6 +43,7 @@ import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.IssueType;
 import de.metas.serviceprovider.issue.Status;
+import de.metas.serviceprovider.issue.activity.CostCenterActivityService;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.milestone.MilestoneRepository;
 import de.metas.serviceprovider.model.I_S_Issue;
@@ -49,7 +52,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -79,7 +81,6 @@ class IssueImporterServiceTest
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 
@@ -97,8 +98,8 @@ class IssueImporterServiceTest
 				issueRepository,
 				externalReferenceRepository,
 				trxManager,
-				adReferenceDAO,
-				new IssueLabelRepository(queryBL)
+				new IssueLabelService(new IssueLabelRepository(queryBL)),
+				new CostCenterActivityService(new ActivityRepository())
 		);
 	}
 

@@ -50,6 +50,8 @@ public interface GithubImporterConstants
 		PLANNED_UAT(Pattern.compile("^p_uat:(?<uat>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "uat"),
 		ROUGH_EST(Pattern.compile("^p_est:(?<pest>[0-9]+(\\.[0-9]+)?)$"), "pest"),
 		DELIVERED_DATE(Pattern.compile("^del_date:(?<deldate>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "deldate"),
+		COST_CENTER(Pattern.compile("^cost:(?<cost>[A-Za-z0-9 ]+)$"), "cost"),
+		CUSTOMER(Pattern.compile("^cus:(?<customer>[A-Za-z0-9]+)$"), "customer"),
 
 		UNKNOWN(Pattern.compile(".*"), "");
 

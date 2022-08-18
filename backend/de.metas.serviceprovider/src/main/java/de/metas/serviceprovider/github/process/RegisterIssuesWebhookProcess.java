@@ -20,14 +20,16 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.process;
+package de.metas.serviceprovider.github.process;
 
+import ch.qos.logback.classic.Level;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.github.GithubService;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
@@ -54,7 +56,11 @@ public class RegisterIssuesWebhookProcess extends JavaProcess implements IProces
 	@Override
 	protected String doIt() throws Exception
 	{
-		githubService.createSyncIssuesWebhook(ExternalProjectReferenceId.ofRepoId(getRecord_ID()));
+		final ExternalProjectReferenceId externalProjectReferenceId = ExternalProjectReferenceId.ofRepoId(getRecord_ID());
+
+		Loggables.withLogger(log, Level.DEBUG).addLog("*** Invoking RegisterIssuesWebhookProcess for ExternalProjectReferenceId: {}", externalProjectReferenceId.getRepoId());
+
+		githubService.createSyncIssuesWebhook(externalProjectReferenceId);
 
 		return MSG_OK;
 	}

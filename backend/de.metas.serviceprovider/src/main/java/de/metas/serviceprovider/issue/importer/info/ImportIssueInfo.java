@@ -23,9 +23,9 @@
 package de.metas.serviceprovider.issue.importer.info;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.externalreference.ExternalId;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
@@ -110,6 +110,9 @@ public class ImportIssueInfo
 
 	@Nullable
 	LocalDate deliveredDate;
+
+	@Nullable
+	String costCenterValue;
 
 
 	public String getSearchKey()

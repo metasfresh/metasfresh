@@ -29,6 +29,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Activity;
 import org.springframework.stereotype.Repository;
 
@@ -58,6 +59,20 @@ public class ActivityRepository
 
 		return activityQueryBuilder
 				.create()
-				.firstIdOnlyOptional(ActivityId::ofRepoId);
+				.firstIdOnlyOptional(ActivityId::ofRepoIdOrNull);
+	}
+
+	@NonNull
+	public ActivityId save(@NonNull final CreateActivityRequest request)
+	{
+		final I_C_Activity record = InterfaceWrapperHelper.newInstance(I_C_Activity.class);
+
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setName(request.getName());
+		record.setValue(request.getValue());
+
+		InterfaceWrapperHelper.save(record);
+
+		return ActivityId.ofRepoId(record.getC_Activity_ID());
 	}
 }
