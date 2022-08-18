@@ -67,7 +67,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
@@ -81,21 +80,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_Name;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_DeliveryRule;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_DeliveryViaRule;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_M_Warehouse_ID;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_MovementType;
-import static org.compiere.model.X_M_InOut.DOCSTATUS_Completed;
-import static org.compiere.model.X_M_InOut.DOCSTATUS_Drafted;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_C_Order_ID;
 
 public class M_InOut_StepDef
 {
