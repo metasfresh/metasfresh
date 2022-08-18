@@ -238,9 +238,7 @@ public class M_HU_StepDef
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			final String inventoryLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer inventoryLineId = inventoryLineTable.getOptional(inventoryLineIdentifier)
-					.map(I_M_InventoryLine::getM_InventoryLine_ID)
-					.orElseGet(() -> Integer.parseInt(inventoryLineIdentifier));
+			final Integer inventoryLineId = inventoryLineTable.get(inventoryLineIdentifier).getM_InventoryLine_ID();
 
 			final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 

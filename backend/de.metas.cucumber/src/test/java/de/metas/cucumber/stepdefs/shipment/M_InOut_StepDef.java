@@ -373,7 +373,8 @@ public class M_InOut_StepDef
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.create()
-				.firstOnlyOrNull(I_M_InOut.class);
+				.firstOnly(I_M_InOut.class);
+
 		assertThat(inOut).isNull();
 	}
 

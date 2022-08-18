@@ -229,7 +229,7 @@ public class C_BPartner_StepDef
 		}
 
 		final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DeliveryRule);
-		bPartnerRecord.setDeliveryRule(Check.isNotBlank(deliveryRule) ? deliveryRule : DELIVERYRULE_Force);
+		bPartnerRecord.setDeliveryRule(CoalesceUtil.firstNotBlank(deliveryRule, DELIVERYRULE_Force));
 
 
 		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
