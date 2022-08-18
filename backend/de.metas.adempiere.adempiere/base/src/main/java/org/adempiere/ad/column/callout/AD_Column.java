@@ -176,13 +176,14 @@ public class AD_Column
 			updateEntityTypeColumn(column);
 		}
 
-		else if (columnName.toUpperCase().contains("AMT"))
+		else if (columnName.toUpperCase().contains("AMT")
+				|| columnName.contains("Amount"))
 		{
 			updateAmountColumn(column);
 		}
-		else if (columnName.contains("Amount"))
+		else if (columnName.toUpperCase().endsWith("PRICE"))
 		{
-			updateAmountColumn(column);
+			updateCostPriceColumn(column);
 		}
 		else if (columnName.toUpperCase().contains("QTY"))
 		{
@@ -297,6 +298,13 @@ public class AD_Column
 	private static void updateAmountColumn(final I_AD_Column column)
 	{
 		column.setAD_Reference_ID(DisplayType.Amount);
+		column.setFieldLength(10);
+		column.setIsMandatory(true);
+	}
+
+	private static void updateCostPriceColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.CostPrice);
 		column.setFieldLength(10);
 		column.setIsMandatory(true);
 	}
