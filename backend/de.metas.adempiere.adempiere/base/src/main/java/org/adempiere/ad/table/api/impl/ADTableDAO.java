@@ -34,6 +34,7 @@ import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.AdTableId;
@@ -147,8 +148,8 @@ public class ADTableDAO implements IADTableDAO
 
 	@Override
 	public IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName,
-			final String columnName,
-			@Nullable final String trxName)
+																 final String columnName,
+																 @Nullable final String trxName)
 	{
 		return queryBL.createQueryBuilder(I_AD_Column.class, Env.getCtx(), trxName)
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, retrieveTableId(tableName))
@@ -415,5 +416,18 @@ public class ADTableDAO implements IADTableDAO
 	public @NonNull TooltipType getTooltipTypeByTableName(@NonNull final String tableName)
 	{
 		return TableIdsCache.instance.getTooltipType(tableName);
+	}
+
+	@Override
+	public void updateColumnNameByAdElementId(
+			@NonNull final AdElementId adElementId,
+			@Nullable final String newColumnName)
+	{
+		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
+
+		DB.executeUpdateEx(
+				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=? WHERE AD_Element_ID=?",
+				new Object[] { adElementId, newColumnName },
+				ITrx.TRXNAME_ThreadInherited);
 	}
 }
