@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.project.workorder;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -29,7 +30,9 @@ import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTestUpsertResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectQuery;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponses;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertRequest;
@@ -102,6 +105,26 @@ public class WorkOrderProjectRestService
 	public JsonWorkOrderProjectUpsertResponse upsertWOProject(@NonNull final JsonWorkOrderProjectUpsertRequest request)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> upsertWOProjectWithinTrx(request));
+	}
+
+	@NonNull
+	public JsonWorkOrderProjectResponses getWorkOrderProjectsByQuery(@NonNull final JsonWorkOrderProjectQuery queryRequest)
+	{
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(queryRequest.getOrgCode());
+
+		final WOProjectQuery query = WOProjectQuery.builder()
+				.orgId(orgId)
+				.externalProjectReferencePattern(queryRequest.getProjectReferenceExtPattern())
+				.build();
+
+		final List<JsonWorkOrderProjectResponse> projects = woProjectRepository.listBy(query)
+				.stream()
+				.map(this::toJsonWorkOrderProjectResponse)
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonWorkOrderProjectResponses.builder()
+				.projects(projects)
+				.build();
 	}
 
 	@NonNull
@@ -258,7 +281,7 @@ public class WorkOrderProjectRestService
 				.description(project.getDescription())
 				.dateContract(TimeUtil.asLocalDate(project.getDateContract(), zoneId))
 				.dateFinish(TimeUtil.asLocalDate(project.getDateFinish(), zoneId))
-				.bPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(project.getBPartnerId())))
+				.businessPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(project.getBPartnerId())))
 				.projectReferenceExt(project.getProjectReferenceExt())
 				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(project.getProjectParentId())))
 				.orgCode(orgDAO.retrieveOrgValue(project.getOrgId()))

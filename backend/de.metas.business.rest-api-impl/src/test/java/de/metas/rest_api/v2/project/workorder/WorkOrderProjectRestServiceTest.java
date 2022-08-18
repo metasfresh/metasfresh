@@ -304,7 +304,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(data.getDescription()).isEqualTo(projectDescription);
 		assertThat(data.getDateContract()).isEqualTo(dateContract);
 		assertThat(data.getDateFinish()).isEqualTo(dateFinish);
-		assertThat(data.getBPartnerId()).isEqualTo(bpartnerId);
+		assertThat(data.getBusinessPartnerId()).isEqualTo(bpartnerId);
 		assertThat(data.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(data.getBpartnerDepartment()).isEqualTo(bpartnerDepartment);
 		assertThat(data.getWoOwner()).isEqualTo(woOwner);
@@ -405,7 +405,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getDescription()).isNull();
 		assertThat(storedProject.getDateContract()).isNull();
 		assertThat(storedProject.getDateFinish()).isNull();
-		assertThat(storedProject.getBPartnerId()).isNull();
+		assertThat(storedProject.getBusinessPartnerId()).isNull();
 		assertThat(storedProject.getBpartnerDepartment()).isNull();
 		assertThat(storedProject.getWoOwner()).isNull();
 		assertThat(storedProject.getPoReference()).isNull();
@@ -498,7 +498,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getDescription()).isNull();
 		assertThat(storedProject.getDateContract()).isNull();
 		assertThat(storedProject.getDateFinish()).isNull();
-		assertThat(storedProject.getBPartnerId()).isNull();
+		assertThat(storedProject.getBusinessPartnerId()).isNull();
 		assertThat(storedProject.getBpartnerDepartment()).isNull();
 		assertThat(storedProject.getWoOwner()).isNull();
 		assertThat(storedProject.getPoReference()).isNull();

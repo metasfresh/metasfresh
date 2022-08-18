@@ -37,13 +37,13 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.po.CustomColumnService;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
-import de.metas.project.budget.BudgetProjectQuery;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.CreateBudgetProjectRequest;
 import de.metas.rest_api.utils.IdentifierString;
@@ -51,16 +51,18 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -74,17 +76,20 @@ public class BudgetProjectRestService
 	private final ProjectTypeRepository projectTypeRepository;
 	private final BudgetProjectJsonConverter budgetProjectJsonConverter;
 	private final BudgetProjectResourceRestService budgetProjectResourceRestService;
+	private final CustomColumnService customColumnService;
 
 	public BudgetProjectRestService(
 			@NonNull final BudgetProjectRepository budgetProjectRepository,
 			@NonNull final ProjectTypeRepository projectTypeRepository,
 			@NonNull final BudgetProjectJsonConverter budgetProjectJsonConverter,
-			@NonNull final BudgetProjectResourceRestService budgetProjectResourceRestService)
+			@NonNull final BudgetProjectResourceRestService budgetProjectResourceRestService,
+			@NonNull final CustomColumnService customColumnService)
 	{
 		this.budgetProjectRepository = budgetProjectRepository;
 		this.projectTypeRepository = projectTypeRepository;
 		this.budgetProjectJsonConverter = budgetProjectJsonConverter;
 		this.budgetProjectResourceRestService = budgetProjectResourceRestService;
+		this.customColumnService = customColumnService;
 	}
 
 	@NonNull
@@ -170,6 +175,8 @@ public class BudgetProjectRestService
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
 
+		saveCustomColumns(projectId, request.getExtendedProps());
+
 		final JsonRequestBudgetProjectResourceUpsert jsonRequestBudgetProjectResourceUpsert = buildJsonRequestBudgetProjectResourceUpsert(request, projectId, syncAdvise);
 		final List<JsonResponseBudgetProjectResourceUpsertItem> budgetProjectResourceResponseItems = budgetProjectResourceRestService
 				.upsertBudgetProjectResources(jsonRequestBudgetProjectResourceUpsert)
@@ -220,6 +227,7 @@ public class BudgetProjectRestService
 				.salesRepId(JsonMetasfreshId.ofOrNull(UserId.toRepoId(budgetProject.getSalesRepId())))
 				.isActive(budgetProject.isActive())
 				.value(budgetProject.getValue())
+				.extendedProps(getCustomColumns(projectId))
 				.projectResources(budgetProjectResourceResponses)
 				.build();
 	}
@@ -237,7 +245,7 @@ public class BudgetProjectRestService
 			return budgetProjectRepository.getOptionalById(existingProjectId);
 		}
 
-		return budgetProjectRepository.getOptionalBy(getProjectQueryFromIdentifier(orgId, projectIdentifier));
+		return budgetProjectRepository.getOptionalBy(BudgetProjectJsonConverter.getProjectQueryFromIdentifier(orgId, projectIdentifier));
 	}
 
 	private void validateJsonBudgetProjectUpsertRequest(@NonNull final JsonBudgetProjectUpsertRequest request)
@@ -279,25 +287,17 @@ public class BudgetProjectRestService
 		});
 	}
 
-	@NonNull
-	private static BudgetProjectQuery getProjectQueryFromIdentifier(
-			@NonNull final OrgId orgId,
-			@NonNull final IdentifierString identifier)
+
+	private void saveCustomColumns(@NonNull final ProjectId projectId, @NonNull final Map<String, Object> customColumns)
 	{
-		final BudgetProjectQuery.BudgetProjectQueryBuilder projectQueryBuilder = BudgetProjectQuery.builder().orgId(orgId);
+		final TableRecordReference tableRecordReference = TableRecordReference.of(I_C_Project.Table_Name, projectId);
 
-		switch (identifier.getType())
-		{
-			case VALUE:
-				projectQueryBuilder.value(identifier.asValue());
-				break;
-			case EXTERNAL_ID:
-				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
-				break;
-			default:
-				throw new InvalidIdentifierException(identifier.getRawIdentifierString());
-		}
+		customColumnService.saveCustomColumns(tableRecordReference, customColumns);
+	}
 
-		return projectQueryBuilder.build();
+	@NonNull
+	private Map<String, Object> getCustomColumns(@NonNull final ProjectId projectId)
+	{
+		return customColumnService.getCustomColumnsAsMap(TableRecordReference.of(I_C_Project.Table_Name, projectId));
 	}
 }

@@ -22,87 +22,55 @@
 
 package de.metas.po;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import de.metas.util.converter.POValueConverters;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
-import org.compiere.model.POInfo;
-import org.compiere.model.POInfoColumn;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class CustomColumnService
 {
-	private static final AdMessageKey MSG_CUSTOM_REST_API_COLUMN = AdMessageKey.of("CUSTOM_REST_API_COLUMN");
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	public void setCustomColumns(@NonNull final PO po, @NonNull final Map<String, Object> columnName2Value)
+	private final CustomColumnDAO customColumnDAO;
+
+	public CustomColumnService(@NonNull final CustomColumnDAO customColumnDAO)
 	{
+		this.customColumnDAO = customColumnDAO;
+	}
+
+	public void saveCustomColumns(@NonNull final TableRecordReference tableRecordReference, @NonNull final Map<String, Object> columnName2Value)
+	{
+		if (columnName2Value.isEmpty())
+		{
+			return;
+		}
+
+		final PO po = InterfaceWrapperHelper.getPO(tableRecordReference.getModel());
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(po.getAD_Org_ID()));
-		columnName2Value.forEach((columnName, value) -> setCustomColumn(po, columnName, value, zoneId));
+
+		final SaveCustomColumnsRequest saveCustomColumnsRequest = SaveCustomColumnsRequest.builder()
+				.po(po)
+				.zoneId(zoneId)
+				.columnName2Value(columnName2Value)
+				.build();
+
+		this.customColumnDAO.save(saveCustomColumnsRequest);
 	}
 
 	@NonNull
-	public Map<String, Object> getCustomColumnsAsMap(@NonNull final PO po)
+	public Map<String, Object> getCustomColumnsAsMap(@NonNull final TableRecordReference tableRecordReference)
 	{
+		final PO po = InterfaceWrapperHelper.getPO(tableRecordReference.getModel());
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(po.getAD_Org_ID()));
 
-		final POInfo poInfo = po.getPOInfo();
-
-		final ImmutableMap.Builder<String, Object> customColumnsCollector = ImmutableMap.builder();
-
-		poInfo.streamColumns(POInfoColumn::isRestAPICustomColumn)
-				.forEach(customColumn -> {
-					final Object actualValue = convertFromPOValue(po, customColumn, zoneId);
-
-					Optional.ofNullable(actualValue)
-							.ifPresent(nonNullValue -> customColumnsCollector.put(customColumn.getColumnName(), nonNullValue));
-				});
-
-		return customColumnsCollector.build();
-	}
-
-	private void setCustomColumn(@NonNull final PO po, @NonNull final String columnName, @Nullable final Object valueToSet, @NonNull final ZoneId zoneId)
-	{
-		final POInfo poInfo = po.getPOInfo();
-
-		if (!poInfo.isRestAPICustomColumn(columnName))
-		{
-			throw new AdempiereException(MSG_CUSTOM_REST_API_COLUMN, columnName)
-					.markAsUserValidationError();
-		}
-
-		final Class<?> columnTargetClass = poInfo.getColumnClass(columnName);
-		if (columnTargetClass == null)
-		{
-			throw new AdempiereException("Cannot get the actual PO value if targetClass is missing!")
-					.appendParametersToMessage()
-					.setParameter("TableName", poInfo.getTableName())
-					.setParameter("ColumnName", columnName);
-		}
-
-		final int displayType = poInfo.getColumnDisplayType(columnName);
-		final Object convertedValue = POValueConverters.convertToPOValue(valueToSet, columnTargetClass, displayType, zoneId);
-
-		po.set_ValueOfColumn(columnName, convertedValue);
-	}
-
-	@Nullable
-	private Object convertFromPOValue(@NonNull final PO po, @NonNull final POInfoColumn poInfoColumn, @NonNull final ZoneId zoneId)
-	{
-		final Object poValue = po.get_Value(poInfoColumn.getColumnName());
-
-		return POValueConverters.convertFromPOValue(poValue, poInfoColumn.getDisplayType(), zoneId);
+		return this.customColumnDAO.getCustomColumns(po, zoneId);
 	}
 }

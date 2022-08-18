@@ -40,6 +40,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_Order;
@@ -49,7 +50,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.getPO;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
@@ -217,8 +217,7 @@ public class AD_Column_StepDef
 
 		try
 		{
-			customColumnService.setCustomColumns(getPO(order), valuesByColumnName);
-			InterfaceWrapperHelper.save(order);
+			customColumnService.saveCustomColumns(TableRecordReference.of(order), valuesByColumnName);
 
 			if (Check.isNotBlank(errorMsg))
 			{
@@ -258,9 +257,7 @@ public class AD_Column_StepDef
 		final I_S_ResourceType resourceType = resourceTypeTable.get(resourceTypeIdentifier);
 		assertThat(resourceType).isNotNull();
 
-		customColumnService.setCustomColumns(getPO(resourceType), valuesByColumnName);
-
-		InterfaceWrapperHelper.save(resourceType);
+		customColumnService.saveCustomColumns(TableRecordReference.of(resourceType), valuesByColumnName);
 	}
 
 	@NonNull
@@ -271,7 +268,7 @@ public class AD_Column_StepDef
 
 		InterfaceWrapperHelper.refresh(order);
 
-		return customColumnService.getCustomColumnsAsMap(getPO(order));
+		return customColumnService.getCustomColumnsAsMap(TableRecordReference.of(order));
 	}
 
 	@NonNull
@@ -282,6 +279,6 @@ public class AD_Column_StepDef
 
 		InterfaceWrapperHelper.refresh(resourceType);
 
-		return customColumnService.getCustomColumnsAsMap(getPO(resourceType));
+		return customColumnService.getCustomColumnsAsMap(TableRecordReference.of(resourceType));
 	}
 }

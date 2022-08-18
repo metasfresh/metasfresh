@@ -29,15 +29,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.*;
 
 public class JsonWorkOrderProjectRequestTest
@@ -47,12 +44,6 @@ public class JsonWorkOrderProjectRequestTest
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 			.enable(MapperFeature.USE_ANNOTATIONS);
-
-	@BeforeClass
-	public static void beforeAll()
-	{
-		start();
-	}
 
 	@Test
 	public void serializeDeserialize() throws IOException
@@ -128,6 +119,5 @@ public class JsonWorkOrderProjectRequestTest
 		final JsonWorkOrderProjectUpsertRequest result = mapper.readValue(string, JsonWorkOrderProjectUpsertRequest.class);
 
 		assertThat(result).isEqualTo(woProjectRequest);
-		expect(result).toMatchSnapshot();
 	}
 }

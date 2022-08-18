@@ -55,12 +55,14 @@ public class BudgetProjectRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@NonNull
 	public Optional<BudgetProject> getOptionalById(@NonNull final ProjectId projectId)
 	{
 		final I_C_Project record = InterfaceWrapperHelper.load(projectId, I_C_Project.class);
 		return fromRecord(record);
 	}
 
+	@NonNull
 	public List<BudgetProject> queryAllActiveProjects(@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
 		if (projectIds.isNone())
@@ -124,6 +126,7 @@ public class BudgetProjectRepository
 	{
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget.getCode())
 				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
 				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);
 
