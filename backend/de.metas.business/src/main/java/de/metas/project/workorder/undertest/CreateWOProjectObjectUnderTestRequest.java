@@ -20,74 +20,45 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.undertest;
 
+import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.List;
 
 @Value
 @Builder
-public class WOProjectStep
+public class CreateWOProjectObjectUnderTestRequest
 {
-	@Nullable
-	@Getter
-	WOProjectStepId woProjectStepId;
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
-	String name;
+	Integer numberOfObjectsUnderTest;
 
-	@With
-	@Nullable
+	@NonNull
+	ExternalId externalId;
+
+	@NonNull
 	ProjectId projectId;
 
 	@Nullable
-	String description;
+	String woDeliveryNote;
 
 	@Nullable
-	Integer seqNo;
+	String woManufacturer;
 
 	@Nullable
-	Instant dateStart;
+	String woObjectType;
 
 	@Nullable
-	Instant dateEnd;
+	String woObjectName;
 
 	@Nullable
-	ExternalId externalId;
-	
-	@Singular
-	List<WOProjectResource> projectResources;
-
-	@NonNull
-	public WOProjectStepId getWOProjectStepIdNonNull()
-	{
-		if (woProjectStepId == null)
-		{
-			throw new AdempiereException("WOProjectStepId cannot be null at this stage!");
-		}
-		return woProjectStepId;
-	}
-
-	@NonNull
-	public Integer getSeqNoNonNull()
-	{
-		if (seqNo == null)
-		{
-			throw new AdempiereException("WOProjectStep SeqNo cannot be null at this stage!");
-		}
-		return seqNo;
-	}
-
+	String woObjectWhereabouts;
 }

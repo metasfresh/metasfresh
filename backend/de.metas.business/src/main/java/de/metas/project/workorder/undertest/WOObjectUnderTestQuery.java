@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,32 +20,22 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.project.workorder;
+package de.metas.project.workorder.undertest;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Set;
 
 @Value
 @Builder
-@Jacksonized
-public class JsonWorkOrderStepUpsertResponse
+public class WOObjectUnderTestQuery
 {
 	@NonNull
-	JsonMetasfreshId metasfreshId;
+	Set<String> externalIds;
 
 	@NonNull
-	String identifier;
-
-	@NonNull
-	JsonResponseUpsertItem.SyncOutcome syncOutcome;
-
-	@Nullable
-	List<JsonWorkOrderResourceUpsertResponse> resources;
+	OrgId orgId;
 }

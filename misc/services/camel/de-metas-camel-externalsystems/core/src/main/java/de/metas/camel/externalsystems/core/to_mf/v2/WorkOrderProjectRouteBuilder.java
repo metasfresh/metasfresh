@@ -55,7 +55,7 @@ public class WorkOrderProjectRouteBuilder extends RouteBuilder
 						throw new RuntimeCamelException("The route " + MF_UPSERT_WORK_ORDER_PROJECT_V2_ROUTE_ID + " requires the body to be instanceof JsonWorkOrderProjectRequest."
 																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
-					
+
 					final JsonWorkOrderProjectUpsertRequest jsonRequestUpsert = ((JsonWorkOrderProjectUpsertRequest)lookupRequest);
 
 					log.info("WorkOrder-Project upsert route invoked");
@@ -64,7 +64,7 @@ public class WorkOrderProjectRouteBuilder extends RouteBuilder
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProjectUpsert.class))
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{" + MF_UPSERT_WORK_ORDER_PROJECT_V2_CAMEL_URI + "}}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));

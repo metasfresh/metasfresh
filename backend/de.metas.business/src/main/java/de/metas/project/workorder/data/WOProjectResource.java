@@ -22,33 +22,33 @@
 
 package de.metas.project.workorder.data;
 
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.workorder.WOProjectResourceId;
 import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class WOProjectResource
 {
-	@Nullable
-	@Getter
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
 	WOProjectResourceId woProjectResourceId;
 
-	@With
-	@Nullable
+	@NonNull
 	WOProjectStepId woProjectStepId;
 
 	@NonNull
@@ -57,11 +57,11 @@ public class WOProjectResource
 	@NonNull
 	Instant assignDateTo;
 
-	@Nullable
-	Boolean isActive;
+	@NonNull
+	ResourceId resourceId;
 
 	@Nullable
-	ResourceId resourceId;
+	Boolean isActive;
 
 	@Nullable
 	Boolean isAllDay;
@@ -70,7 +70,7 @@ public class WOProjectResource
 	BigDecimal duration;
 
 	@Nullable
-	String durationUnit;
+	WFDurationUnit durationUnit;
 
 	@Nullable
 	ProjectId budgetProjectId;
@@ -80,14 +80,7 @@ public class WOProjectResource
 
 	@Nullable
 	ExternalId externalId;
-	
-	@NonNull
-	public WOProjectResourceId getWOProjectResourceIdNotNull()
-	{
-		if (woProjectResourceId == null)
-		{
-			throw new AdempiereException("WOProjectResourceId cannot be null at this stage!");
-		}
-		return woProjectResourceId;
-	}
+
+	@Nullable
+	String testFacilityGroupName;
 }
