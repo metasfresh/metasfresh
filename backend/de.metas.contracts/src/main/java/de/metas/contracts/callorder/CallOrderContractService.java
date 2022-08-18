@@ -78,6 +78,8 @@ public class CallOrderContractService
 	private static final AdMessageKey MSG_SALES_CALL_ORDER_CONTRACT_TRX_NOT_MATCH = AdMessageKey.of("SALES_CALL_ORDER_CONTRACT_TRX_NOT_MATCH");
 	private static final AdMessageKey MSG_PURCHASE_CALL_ORDER_CONTRACT_TRX_NOT_MATCH = AdMessageKey.of("PURCHASE_CALL_ORDER_CONTRACT_TRX_NOT_MATCH");
 
+	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("C_OrderLine_OverlappingTerms");
+
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -318,7 +320,7 @@ public class CallOrderContractService
 				.markAsUserValidationError();
 	}
 
-	public boolean hasOverlappingTerms(@NonNull final I_C_OrderLine orderLine)
+	public void forbidOverlappingTerms(@NonNull final I_C_OrderLine orderLine)
 	{
 		final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria = FlatrateTermOverlapCriteria
 				.builder()
@@ -328,6 +330,13 @@ public class CallOrderContractService
 				.conditionsId(ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID()))
 				.datePromised(Objects.requireNonNull(orderLine.getDatePromised()))
 				.build();
-		return flatrateDAO.hasOverlappingTerms(flatrateTermOverlapCriteria);
+
+		final boolean hasOverlappingTerms = flatrateDAO.hasOverlappingTerms(flatrateTermOverlapCriteria);
+
+		if (hasOverlappingTerms)
+		{
+			throw new AdempiereException(MSG_HasOverlapping_Term, orderLine.getC_Flatrate_Conditions_ID())
+					.markAsUserValidationError();
+		}
 	}
 }
