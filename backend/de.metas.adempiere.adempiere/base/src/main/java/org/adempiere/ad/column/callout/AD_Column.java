@@ -1,21 +1,32 @@
 package org.adempiere.ad.column.callout;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
+import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /*
@@ -44,6 +55,7 @@ import java.util.regex.Pattern;
 @Component
 public class AD_Column
 {
+	private static final Logger logger = LogManager.getLogger(AD_Column.class);
 	public static final String ENTITYTYPE_Dictionary = "D";
 
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
@@ -216,6 +228,13 @@ public class AD_Column
 				|| "DocumentNo".equals(columnName))
 		{
 			updateNameOrDocumentNoColumn(column);
+		}
+
+		else
+		{
+			AdElementId.optionalOfRepoId(column.getAD_Element_ID())
+					.flatMap(this::suggestColumnTypeAndLength)
+					.ifPresent(suggestion -> updateColumnFromSuggestion(column, suggestion));
 		}
 
 		if (column.getAD_Reference_ID() <= 0)
@@ -409,5 +428,58 @@ public class AD_Column
 				|| (referenceId.getRepoId() == DisplayType.Search && column.getAD_Reference_Value_ID() <= 0);
 
 		column.setIsExcludeFromZoomTargets(!includeInRelatedDocuments);
+	}
+
+	@Data
+	@Builder
+	private static class ColumnTypeAndLengthStats
+	{
+		@NonNull private final ReferenceId displayType;
+		@Nullable private final ReferenceId referenceValueId;
+		private final int fieldLength;
+		private final int existingCasesCount;
+	}
+
+	private Optional<ColumnTypeAndLengthStats> suggestColumnTypeAndLength(@NonNull final AdElementId adElementId)
+	{
+		final String sql = "SELECT "
+				+ " " + I_AD_Column.COLUMNNAME_AD_Reference_ID
+				+ ", " + I_AD_Column.COLUMNNAME_AD_Reference_Value_ID
+				+ ", " + I_AD_Column.COLUMNNAME_FieldLength
+				+ ", COUNT(1) as count"
+				+ " FROM " + I_AD_Column.Table_Name
+				+ " WHERE " + I_AD_Column.COLUMNNAME_AD_Element_ID + "=?"
+				+ " GROUP BY "
+				+ " " + I_AD_Column.COLUMNNAME_AD_Reference_ID
+				+ ", " + I_AD_Column.COLUMNNAME_AD_Reference_Value_ID
+				+ ", " + I_AD_Column.COLUMNNAME_FieldLength
+				+ " ORDER BY count DESC";
+
+		final ImmutableList<ColumnTypeAndLengthStats> suggestions = DB.retrieveRows(
+				sql,
+				Collections.singletonList(adElementId),
+				rs -> ColumnTypeAndLengthStats.builder()
+						.displayType(ReferenceId.ofRepoId(rs.getInt(I_AD_Column.COLUMNNAME_AD_Reference_ID)))
+						.referenceValueId(ReferenceId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_AD_Reference_Value_ID)))
+						.fieldLength(rs.getInt(I_AD_Column.COLUMNNAME_FieldLength))
+						.existingCasesCount(rs.getInt("count"))
+						.build());
+
+		if (suggestions.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			logger.info("Returning first suggestion from: {}", suggestions);
+			return Optional.of(suggestions.get(0));
+		}
+	}
+
+	private void updateColumnFromSuggestion(@NonNull final I_AD_Column column, @NonNull final ColumnTypeAndLengthStats suggestion)
+	{
+		column.setAD_Reference_ID(suggestion.getDisplayType().getRepoId());
+		column.setAD_Reference_Value_ID(ReferenceId.toRepoId(suggestion.getReferenceValueId()));
+		column.setFieldLength(suggestion.getFieldLength());
 	}
 }
