@@ -36,6 +36,8 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
@@ -47,7 +49,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -63,7 +64,6 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -480,9 +480,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	}
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateOrdered());
+		return InstantAndOrgId.ofTimestamp(getDateOrdered(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	@Override

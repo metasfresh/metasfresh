@@ -44,6 +44,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.IPriceListDAO;
@@ -65,14 +66,12 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -1615,9 +1614,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	}    // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateInvoiced());
+		return InstantAndOrgId.ofTimestamp(getDateInvoiced(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	@Override

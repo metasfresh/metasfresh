@@ -26,15 +26,15 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_CostRevaluation;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 class CostRevaluationDocumentHandler implements DocumentHandler
 {
@@ -70,10 +70,10 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
 	{
-		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
-		return TimeUtil.asLocalDate(costRevaluation.getDateAcct());
+		final I_M_CostRevaluation record = extractRecord(docFields);
+		return InstantAndOrgId.ofTimestamp(record.getDateAcct(), OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
 	@Override

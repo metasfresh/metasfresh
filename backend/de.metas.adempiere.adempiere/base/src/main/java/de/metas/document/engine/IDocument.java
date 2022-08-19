@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
 
+import de.metas.organization.InstantAndOrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
@@ -148,7 +149,7 @@ public interface IDocument
 
 	String getDocAction();
 
-	LocalDate getDocumentDate();
+	InstantAndOrgId getDocumentDate();
 
 	Properties getCtx();
 
