@@ -336,10 +336,11 @@ public class LetterRestController
 	@ApiOperation("Available Letter templates")
 	public JSONLookupValuesList getTemplates()
 	{
+		userSession.assertLoggedIn();
+
 		final BoilerPlateId defaultBoilerPlateId = userSession.getDefaultBoilerPlateId();
 
-		return MADBoilerPlate.getAll(Env.getCtx())
-				.stream()
+		return MADBoilerPlate.streamAllReadable(userSession.getUserRolePermissions())
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
 				.collect(JSONLookupValuesList.collect())
 				.setDefaultId(defaultBoilerPlateId == null ? null : String.valueOf(defaultBoilerPlateId.getRepoId()));
