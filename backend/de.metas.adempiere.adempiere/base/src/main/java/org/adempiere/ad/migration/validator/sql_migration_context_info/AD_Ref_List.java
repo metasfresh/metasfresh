@@ -22,62 +22,44 @@
 
 package org.adempiere.ad.migration.validator.sql_migration_context_info;
 
+import de.metas.reflist.ReferenceId;
 import de.metas.util.StringUtils;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_AD_Field.class)
+@Interceptor(I_AD_Ref_List.class)
 @Component
-public class AD_Field
+public class AD_Ref_List
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void logSqlMigrationContextInfo(final I_AD_Field field)
+	public void logSqlMigrationContextInfo(final I_AD_Ref_List record)
 	{
 		if (MigrationScriptFileLoggerHolder.isDisabled())
 		{
 			return;
 		}
 
-		final String fieldNameFQ = retrieveTabNameFQ(field.getAD_Tab_ID()) + " -> " + field.getName();
-		MigrationScriptFileLoggerHolder.logComment("Field: "+fieldNameFQ);
-
-		final String columnNameFQ = retrieveColumnNameFQ(AdColumnId.ofRepoId(field.getAD_Column_ID()));
-		MigrationScriptFileLoggerHolder.logComment("Column: " + columnNameFQ);
+		final ReferenceId referenceId = ReferenceId.ofRepoId(record.getAD_Reference_ID());
+		MigrationScriptFileLoggerHolder.logComment("Reference: " + retrieveADReferenceName(referenceId));
+		MigrationScriptFileLoggerHolder.logComment("Value: " + record.getValue());
+		MigrationScriptFileLoggerHolder.logComment("Name: " + record.getName());
 	}
 
-	static String retrieveTabNameFQ(final int adTabId)
+	static String retrieveADReferenceName(final ReferenceId adReferenceId)
 	{
-		final String tabName = DB.getSQLValueStringEx(
+		final String name = DB.getSQLValueStringEx(
 				ITrx.TRXNAME_ThreadInherited,
-				"SELECT w.Name || ' -> ' || tt.Name"
-						+ " FROM AD_Tab tt "
-						+ " LEFT OUTER JOIN AD_Window w on w.AD_Window_ID=tt.AD_Window_ID "
-						+ " WHERE AD_Tab_ID=?",
-				adTabId);
+				"SELECT Name FROM AD_Reference WHERE AD_Reference_ID=?",
+				adReferenceId);
 
-		return StringUtils.trimBlankToOptional(tabName)
-				.orElseGet(() -> "<" + adTabId + ">");
-	}
-
-	static String retrieveColumnNameFQ(final AdColumnId adColumnId)
-	{
-		final String columnNameFQ = DB.getSQLValueStringEx(
-				ITrx.TRXNAME_ThreadInherited,
-				"SELECT t.TableName || '.' || c.ColumnName"
-						+ " FROM AD_Column c "
-						+ " LEFT OUTER JOIN AD_Table t on t.AD_Table_ID=c.AD_Table_ID "
-						+ " WHERE AD_Column_ID=?",
-				adColumnId);
-
-		return StringUtils.trimBlankToOptional(columnNameFQ)
-				.orElseGet(() -> "<" + adColumnId.getRepoId() + ">");
+		return StringUtils.trimBlankToOptional(name)
+				.orElseGet(() -> "<" + adReferenceId.getRepoId() + ">");
 	}
 
 }

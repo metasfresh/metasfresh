@@ -22,47 +22,25 @@
 
 package org.adempiere.ad.migration.validator.sql_migration_context_info;
 
-import de.metas.util.StringUtils;
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.impl.TableIdsCache;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.DB;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_AD_Tab.class)
+@Interceptor(I_AD_Val_Rule.class)
 @Component
-public class AD_Tab
+public class AD_Val_Rule
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void logSqlMigrationContextInfo(final I_AD_Tab tab)
+	public void logSqlMigrationContextInfo(final I_AD_Val_Rule record)
 	{
 		if (MigrationScriptFileLoggerHolder.isDisabled())
 		{
 			return;
 		}
 
-		final String tabNameFQ = retrieveWindowNameFQ(AdWindowId.ofRepoId(tab.getAD_Window_ID())) + " -> " + tab.getName();
-		MigrationScriptFileLoggerHolder.logComment("Tab: " + tabNameFQ);
-
-		final AdTableId adTableId = AdTableId.ofRepoId(tab.getAD_Table_ID());
-		final String tableName = TableIdsCache.instance.getTableNameIfPresent(adTableId).orElseGet(() -> "<" + adTableId + ">");
-		MigrationScriptFileLoggerHolder.logComment("Table: " + tableName);
-	}
-
-	static String retrieveWindowNameFQ(final AdWindowId adWindowId)
-	{
-		final String windowName = DB.getSQLValueStringEx(
-				ITrx.TRXNAME_ThreadInherited,
-				"SELECT Name FROM AD_Window WHERE AD_Window_ID=?",
-				adWindowId);
-
-		return StringUtils.trimBlankToOptional(windowName)
-				.orElseGet(() -> "<" + adWindowId + ">");
+		MigrationScriptFileLoggerHolder.logComment("Name: " + record.getName());
 	}
 }
