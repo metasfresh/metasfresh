@@ -44,7 +44,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -600,6 +599,7 @@ public class InOutBL implements IInOutBL
 		return requestsRepo.createRequest(requestCandidate);
 	}
 
+	@Nullable
 	public String getLocationEmail(@NonNull final InOutId inOutId)
 	{
 		final I_M_InOut inout = inOutDAO.getById(inOutId);
@@ -613,21 +613,12 @@ public class InOutBL implements IInOutBL
 			return locationEmail;
 		}
 
-		final I_AD_User contactRecord = bpartnerDAO.getContactById(BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID()));
-
-		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
-		if (contactLocationId != null)
+		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, inout.getAD_User_ID());
+		if (contactId == null)
 		{
-			final I_C_BPartner_Location contactLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(contactLocationId);
-			final String contactLocationEmail = contactLocationRecord.getEMail();
-
-			if (!Check.isEmpty(contactLocationEmail))
-			{
-				return contactLocationEmail;
-			}
+			return null;
 		}
-
-		return null;
+		return bpartnerDAO.getContactLocationEmail(contactId);
 	}
 
 	@Override

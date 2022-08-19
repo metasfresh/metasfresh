@@ -25,7 +25,6 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.RetrieveHUCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
@@ -63,7 +62,6 @@ public class HURouteBuilderV2 extends RouteBuilder
 				.process(this::validateAndAttachHeaders)
 
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("{{" + MF_RETRIEVE_HU_V2_CAMEL_URI + "}}/${header.M_HU_ID}")
 
@@ -76,10 +74,8 @@ public class HURouteBuilderV2 extends RouteBuilder
 				.process(this::validateHUUpdateRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonHUAttributeCodeAndValues.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{" + MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_URI + "}}")
-
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
 		from(direct(MF_CLEAR_HU_V2_CAMEL_ROUTE_ID))
@@ -89,7 +85,6 @@ public class HURouteBuilderV2 extends RouteBuilder
 				.process(this::processClearanceStatusRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonSetClearanceStatusRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{" + MF_CLEAR_HU_V2_URI + "}}/clearance")
 

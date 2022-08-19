@@ -80,6 +80,37 @@ public class M_Locator_StepDef
 		}
 	}
 
+	@And("metasfresh contains M_Locator:")
+	public void create_M_Locator(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String value = DataTableUtil.extractStringForColumnName(row, I_M_Locator.COLUMNNAME_Value);
+
+			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+
+			final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
+					() -> queryBL.createQueryBuilder(I_M_Locator.class)
+							.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
+							.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyOrNull(I_M_Locator.class),
+					() -> InterfaceWrapperHelper.newInstance(I_M_Locator.class));
+
+			assertThat(locatorRecord).isNotNull();
+
+			locatorRecord.setValue(value);
+			locatorRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+
+			InterfaceWrapperHelper.saveRecord(locatorRecord);
+
+			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			locatorTable.put(locatorIdentifier, locatorRecord);
+		}
+	}
+
 	@And("metasfresh contains M_Locators:")
 	public void metasfresh_contains_m_locator(@NonNull final DataTable dataTable)
 	{

@@ -26,6 +26,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -64,6 +65,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -93,6 +95,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
@@ -112,19 +115,22 @@ public class C_Order_StepDef
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final AD_User_StepDefData userTable;
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.userTable = userTable;
 		this.pricingSystemDataTable = pricingSystemDataTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -134,7 +140,6 @@ public class C_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -150,7 +155,6 @@ public class C_Order_StepDef
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			order.setC_BPartner_ID(bPartnerId);
-			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 			order.setDropShip_BPartner_ID(dropShipPartnerId);
@@ -273,6 +277,15 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(paymentRule))
 			{
 				order.setPaymentRule(paymentRule);
+			}
+
+			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(warehouseIdentifier))
+			{
+				final int warehouseId = warehouseTable.getOptional(warehouseIdentifier)
+						.map(I_M_Warehouse::getM_Warehouse_ID)
+						.orElseGet(() -> Integer.parseInt(warehouseIdentifier));
+				order.setM_Warehouse_ID(warehouseId);
 			}
 
 			saveRecord(order);

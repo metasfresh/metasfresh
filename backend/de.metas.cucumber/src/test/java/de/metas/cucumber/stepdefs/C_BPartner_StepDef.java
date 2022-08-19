@@ -181,6 +181,16 @@ public class C_BPartner_StepDef
 		}
 	}
 
+	@And("load C_BPartner:")
+	public void load_C_BPartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			loadBPartner(tableRow);
+		}
+	}
+
 	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final String bPartnerName = tableRow.get("Name");
@@ -277,13 +287,13 @@ public class C_BPartner_StepDef
 		}
 
 		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
-		if(Check.isNotBlank(paymentRule))
+		if (Check.isNotBlank(paymentRule))
 		{
 			bPartnerRecord.setPaymentRule(paymentRule);
 		}
 
 		final String paymentRulePO = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRulePO);
-		if(Check.isNotBlank(paymentRulePO))
+		if (Check.isNotBlank(paymentRulePO))
 		{
 			bPartnerRecord.setPaymentRulePO(paymentRulePO);
 		}
@@ -358,5 +368,20 @@ public class C_BPartner_StepDef
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
+	}
+
+	private void loadBPartner(@NonNull final Map<String, String> row)
+	{
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
+
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID);
+
+		if (id != null)
+		{
+			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(id);
+			assertThat(bPartnerRecord).isNotNull();
+
+			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+		}
 	}
 }
