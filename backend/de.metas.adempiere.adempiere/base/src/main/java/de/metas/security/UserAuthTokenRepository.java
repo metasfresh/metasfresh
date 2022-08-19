@@ -1,5 +1,6 @@
 package de.metas.security;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.security.requests.CreateUserAuthTokenRequest;
@@ -105,16 +106,41 @@ public class UserAuthTokenRepository
 
 	public UserAuthToken retrieveByUserId(@NonNull final UserId userId, @NonNull final RoleId roleId)
 	{
-		final List<I_AD_User_AuthToken> userAuthTokens = queryBL
+		final ImmutableList<I_AD_User_AuthToken> userAuthTokens = retrieveByUserAndRoleId(userId, roleId);
+
+		return extractSingleToken(userAuthTokens);
+	}
+
+	@NonNull
+	public Optional<UserAuthToken> retrieveOptionalByUserAndRoleId(@NonNull final UserId userId, @NonNull final RoleId roleId)
+	{
+		final ImmutableList<I_AD_User_AuthToken> userAuthTokens = retrieveByUserAndRoleId(userId, roleId);
+
+		if (!userAuthTokens.isEmpty() && userAuthTokens.size() > 1)
+		{
+			throw new AdempiereException("More than one record found for AD_User_ID and AD_Role_ID!")
+					.appendParametersToMessage()
+					.setParameter("AD_User_ID", userId.getRepoId())
+					.setParameter("AD_Role_ID", roleId.getRepoId());
+		}
+
+		return userAuthTokens.isEmpty()
+				? Optional.empty()
+				: Optional.of(fromRecord(userAuthTokens.get(0)));
+	}
+
+	@NonNull
+	private ImmutableList<I_AD_User_AuthToken> retrieveByUserAndRoleId(@NonNull final UserId userId, @NonNull final RoleId roleId)
+	{
+		return queryBL
 				.createQueryBuilder(I_AD_User_AuthToken.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_Role_ID, roleId)
 				.setLimit(QueryLimit.TWO)
 				.create()
-				.list(I_AD_User_AuthToken.class);
-
-		return extractSingleToken(userAuthTokens);
+				.stream()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private UserAuthToken extractSingleToken(@NonNull final List<I_AD_User_AuthToken> userAuthTokens)
