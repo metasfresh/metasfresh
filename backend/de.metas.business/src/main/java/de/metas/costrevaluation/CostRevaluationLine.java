@@ -1,7 +1,7 @@
-package de.metas.costrevaluation.impl;
+package de.metas.costrevaluation;
 
 import de.metas.costing.CostAmount;
-import de.metas.product.ProductId;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,13 +30,39 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class CostRevaluationLine
 {
 	@NonNull CostRevaluationLineId id;
 
-	@NonNull ProductId productId;
+	@NonNull CostSegmentAndElement costSegmentAndElement;
+
 	@NonNull Quantity currentQty;
 	@NonNull CostAmount currentCostPrice;
 	@NonNull CostAmount newCostPrice;
+
+	@NonNull CostAmount deltaAmountToBook;
+
+	@Builder(toBuilder = true)
+	private CostRevaluationLine(
+			@NonNull final CostRevaluationLineId id,
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Quantity currentQty,
+			@NonNull final CostAmount currentCostPrice,
+			@NonNull final CostAmount newCostPrice,
+			@NonNull final CostAmount deltaAmountToBook)
+	{
+		CostAmount.assertCurrencyMatching(currentCostPrice, newCostPrice, deltaAmountToBook);
+
+		this.id = id;
+		this.costSegmentAndElement = costSegmentAndElement;
+		this.currentQty = currentQty;
+		this.currentCostPrice = currentCostPrice;
+		this.newCostPrice = newCostPrice;
+		this.deltaAmountToBook = deltaAmountToBook;
+	}
+
+	public CostRevaluationLine withDeltaAmountToBook(@NonNull CostAmount deltaAmountToBook)
+	{
+		return toBuilder().deltaAmountToBook(deltaAmountToBook).build();
+	}
 }

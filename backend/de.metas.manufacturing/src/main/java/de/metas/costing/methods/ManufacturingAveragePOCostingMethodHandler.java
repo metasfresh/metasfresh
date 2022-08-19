@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
@@ -70,14 +72,18 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	//
 	private final CostingMethodHandlerUtils utils;
 
+	private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
+
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
 	public ManufacturingAveragePOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils)
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final AveragePOCostingMethodHandler averagePOCostingMethodHandler)
 	{
 		this.utils = utils;
+		this.averagePOCostingMethodHandler = averagePOCostingMethodHandler;
 	}
 
 	@Override
@@ -259,5 +265,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
+	{
+		return averagePOCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
 }

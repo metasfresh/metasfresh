@@ -5,6 +5,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
@@ -80,6 +81,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final ICostDetailService costDetailsService;
 	private final CostingMethodHandlerUtils utils;
 
+	private final StandardCostingMethodHandler standardCostingMethodHandler;
+
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
@@ -87,11 +90,13 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	public ManufacturingStandardCostingMethodHandler(
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailService costDetailsService,
-			@NonNull final CostingMethodHandlerUtils utils)
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final StandardCostingMethodHandler standardCostingMethodHandler)
 	{
 		this.currentCostsRepo = currentCostsRepo;
 		this.costDetailsService = costDetailsService;
 		this.utils = utils;
+		this.standardCostingMethodHandler = standardCostingMethodHandler;
 	}
 
 	@Override
@@ -470,4 +475,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
+	{
+		return standardCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
+	}
+
 }

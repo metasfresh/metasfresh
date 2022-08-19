@@ -1,5 +1,7 @@
 package de.metas.costing;
 
+import lombok.NonNull;
+
 import java.util.Optional;
 
 /*
@@ -37,4 +39,6 @@ public interface ICostingService
 	Optional<CostPrice> getCurrentCostPrice(
 			CostSegment costSegment,
 			CostingMethod costingMethod);
+
+	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 }

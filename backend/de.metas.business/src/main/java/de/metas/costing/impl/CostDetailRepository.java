@@ -32,7 +32,6 @@ import org.compiere.model.I_M_CostDetail;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -168,21 +167,16 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
-	public Optional<CostDetail> getCostDetail(@NonNull final CostDetailQuery query)
+	public Optional<CostDetail> firstOnly(@NonNull final CostDetailQuery query)
 	{
-		final I_M_CostDetail record = createQueryBuilder(query)
-				.create()
-				.firstOnly(I_M_CostDetail.class);
-
-		return record != null
-				? Optional.of(toCostDetail(record))
-				: Optional.empty();
+		return toSqlQuery(query)
+				.firstOnlyOptional()
+				.map(this::toCostDetail);
 	}
 
-	private IQueryBuilder<I_M_CostDetail> createQueryBuilder(@NonNull final CostDetailQuery query)
+	private IQueryBuilder<I_M_CostDetail> toSqlQuery(@NonNull final CostDetailQuery query)
 	{
-		final IQueryBuilder<I_M_CostDetail> queryBuilder = queryBL.createQueryBuilder(I_M_CostDetail.class)
-				.orderBy(I_M_CostDetail.COLUMN_M_CostDetail_ID);
+		final IQueryBuilder<I_M_CostDetail> queryBuilder = queryBL.createQueryBuilder(I_M_CostDetail.class);
 
 		boolean someFiltersApplied = false;
 
@@ -247,10 +241,33 @@ public class CostDetailRepository implements ICostDetailRepository
 			someFiltersApplied = true;
 		}
 
+		if (query.getDateAcctRage() != null)
+		{
+			queryBuilder.addInRange(I_M_CostDetail.COLUMNNAME_DateAcct, query.getDateAcctRage());
+			someFiltersApplied = true;
+		}
+
 		// Fail if no filters were applied. Else we would fetch the whole database.
 		if (!someFiltersApplied)
 		{
 			throw new AdempiereException("Invalid query. No filters were applied: " + query);
+		}
+
+		//
+		// ORDER BYs
+		if (!query.getOrderBys().isEmpty())
+		{
+			for (final CostDetailQuery.OrderBy orderBy : query.getOrderBys())
+			{
+				if (orderBy.isAscending())
+				{
+					queryBuilder.orderBy(orderBy.getColumnName());
+				}
+				else
+				{
+					queryBuilder.orderByDescending(orderBy.getColumnName());
+				}
+			}
 		}
 
 		//
@@ -345,53 +362,26 @@ public class CostDetailRepository implements ICostDetailRepository
 		}
 	}
 
-	@Override
-	public List<CostDetail> getAllForDocument(@NonNull final CostingDocumentRef documentRef)
-	{
-		return listOrderedById(CostDetailQuery.builder()
-				.documentRef(documentRef)
-				.build());
-	}
 
 	@Override
-	public List<CostDetail> getAllForDocumentAndAcctSchemaId(
-			@NonNull final CostingDocumentRef documentRef,
-			@NonNull final AcctSchemaId acctSchemaId)
+	public boolean hasCostDetailsByProductId(@NonNull final ProductId productId)
 	{
-		return listOrderedById(CostDetailQuery.builder()
-				.documentRef(documentRef)
-				.acctSchemaId(acctSchemaId)
-				.build());
-	}
-
-	@Override
-	public boolean hasCostDetailsForProductId(@NonNull final ProductId productId)
-	{
-		final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
-				.productId(productId)
-				.build();
-		return createQueryBuilder(costDetailQuery)
-				.create()
+		return toSqlQuery(CostDetailQuery.builder().productId(productId).build())
 				.anyMatch();
 	}
 
 	@Override
-	public Stream<CostDetail> streamOrderedById(@NonNull final CostDetailQuery query)
+	public Stream<CostDetail> stream(@NonNull final CostDetailQuery query)
 	{
-		return createQueryBuilder(query)
-				.clearOrderBys()
-				.orderBy(I_M_CostDetail.COLUMN_M_CostDetail_ID)
-				.create()
+		return toSqlQuery(query)
 				.iterateAndStream()
 				.map(this::toCostDetail);
 	}
 
-	private List<CostDetail> listOrderedById(@NonNull final CostDetailQuery query)
+	@Override
+	public ImmutableList<CostDetail> list(@NonNull final CostDetailQuery query)
 	{
-		return createQueryBuilder(query)
-				.clearOrderBys()
-				.orderBy(I_M_CostDetail.COLUMN_M_CostDetail_ID)
-				.create()
+		return toSqlQuery(query)
 				.stream()
 				.map(this::toCostDetail)
 				.collect(ImmutableList.toImmutableList());

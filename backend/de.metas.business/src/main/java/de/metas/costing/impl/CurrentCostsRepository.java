@@ -2,7 +2,6 @@ package de.metas.costing.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -17,6 +16,7 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostId;
+import de.metas.costing.CurrentCostQuery;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
@@ -50,6 +50,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -104,7 +105,6 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		return queryBL
 				.createQueryBuilder(I_M_Cost.class)
 				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, ids)
-				.create()
 				.stream()
 				.map(this::toCurrentCost)
 				.collect(ImmutableList.toImmutableList());
@@ -126,26 +126,52 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Nullable
 	private I_M_Cost getCostRecordOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return queryCostRecords(costSegmentAndElement)
-				.create()
-				.firstOnly(I_M_Cost.class);
+		return toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.firstOnly();
 	}
 
-	private IQueryBuilder<I_M_Cost> queryCostRecords(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	@Override
+	public Stream<CurrentCost> stream(@NonNull final CurrentCostQuery query)
 	{
-		return queryCostRecords(costSegmentAndElement.toCostSegment())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costSegmentAndElement.getCostElementId());
+		return toSqlQuery(query)
+				.stream()
+				.map(this::toCurrentCost);
 	}
 
-	private IQueryBuilder<I_M_Cost> queryCostRecords(@NonNull final CostSegment costSegment)
+	private IQueryBuilder<I_M_Cost> toSqlQuery(@NonNull final CurrentCostQuery query)
 	{
-		return queryBL
-				.createQueryBuilder(I_M_Cost.class)
-				.addEqualsFilter(I_M_Cost.COLUMN_AD_Org_ID, costSegment.getOrgId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_Product_ID, costSegment.getProductId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_AttributeSetInstance_ID, costSegment.getAttributeSetInstanceId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostType_ID, costSegment.getCostTypeId())
-				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID, costSegment.getAcctSchemaId());
+		final IQueryBuilder<I_M_Cost> queryBuilder = queryBL.createQueryBuilder(I_M_Cost.class);
+
+		if (query.getClientId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Client_ID, query.getClientId());
+		}
+		if (query.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+		if (!query.getProductIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Product_ID, query.getProductIds());
+		}
+		if (query.getAttributeSetInstanceId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributeSetInstanceId());
+		}
+		if (query.getCostTypeId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostType_ID, query.getCostTypeId());
+		}
+		if (query.getAcctSchemaId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, query.getAcctSchemaId());
+		}
+		if (!query.getCostElementIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, query.getCostElementIds());
+		}
+
+		return queryBuilder;
 	}
 
 	@Override
@@ -174,11 +200,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return Optional.empty();
 		}
 
-		final ImmutableMap<CostElement, CostPrice> costPrices = queryCostRecords(costSegment)
-				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementIds)
-				.create()
-				.stream(I_M_Cost.class)
-				.map(this::toCurrentCost)
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment).costElementIds(costElementIds).build();
+		final ImmutableMap<CostElement, CostPrice> costPrices = stream(query)
 				.collect(ImmutableMap.toImmutableMap(CurrentCost::getCostElement, CurrentCost::getCostPrice));
 		if (costPrices.isEmpty())
 		{
@@ -204,7 +227,8 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return ImmutableList.of();
 		}
 
-		return getByCostSegmentAndCostElements(costSegment, costElementIds);
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment).costElementIds(costElementIds).build();
+		return list(query);
 	}
 
 	@Override
@@ -212,13 +236,11 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			@NonNull final CostSegment costSegment,
 			@NonNull final Set<CostElementId> costElementIds)
 	{
-		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
-		return queryCostRecords(costSegment)
-				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementIds)
-				.create()
-				.stream(I_M_Cost.class)
-				.map(this::toCurrentCost)
-				.collect(ImmutableList.toImmutableList());
+		final CurrentCostQuery query = CurrentCostQuery.builderFrom(costSegment)
+				.costElementIds(Check.assumeNotEmpty(costElementIds, "costElementIds is not empty"))
+				.build();
+
+		return list(query);
 	}
 
 	@Override
@@ -339,13 +361,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public void deleteForProduct(final I_M_Product product)
 	{
-		forEachCostSegmentAndElement(product, costSegmentAndElement -> {
-			final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
-			if (costRecord != null)
-			{
-				InterfaceWrapperHelper.delete(costRecord);
-			}
-		});
+		forEachCostSegmentAndElement(product, costSegmentAndElement -> toSqlQuery(CurrentCostQuery.builderFrom(costSegmentAndElement).build())
+				.create()
+				.delete());
 	}
 
 	private void forEachCostSegmentAndElement(
@@ -422,26 +440,5 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		updater.accept(costRecord);
 		saveRecord(costRecord);
-	}
-
-	@Override
-	public List<CurrentCost> getByCostElementAndProduct(@NonNull final AcctSchemaId acctSchemaId,
-														@NonNull final CostElementId costElementId,
-														@NonNull final ImmutableSet<ProductId> productIds)
-	{
-		if (productIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return queryBL.createQueryBuilder(I_M_Cost.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Cost.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
-				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_CostElement_ID, costElementId)
-				.addInArrayFilter(I_M_Cost.COLUMN_M_Product_ID, productIds)
-				.create()
-				.stream()
-				.map(this::toCurrentCost)
-				.collect(ImmutableList.toImmutableList());
 	}
 }

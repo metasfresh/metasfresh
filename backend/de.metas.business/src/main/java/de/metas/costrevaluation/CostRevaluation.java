@@ -1,8 +1,9 @@
-package de.metas.costrevaluation.impl;
+package de.metas.costrevaluation;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostElementId;
 import de.metas.document.engine.DocStatus;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,6 +41,7 @@ public class CostRevaluation
 	@NonNull AcctSchemaId acctSchemaId;
 	@NonNull CostElementId costElementId;
 	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 	@NonNull Instant evaluationStartDate;
 
 	@NonNull DocStatus docStatus;
