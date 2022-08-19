@@ -448,8 +448,9 @@ public class MailRestController
 	@ApiOperation("Available Email templates")
 	public JSONLookupValuesList getTemplates()
 	{
-		return MADBoilerPlate.getAll(Env.getCtx())
-				.stream()
+		userSession.assertLoggedIn();
+
+		return MADBoilerPlate.streamAllReadable(userSession.getUserRolePermissions())
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
 				.collect(JSONLookupValuesList.collect());
 	}

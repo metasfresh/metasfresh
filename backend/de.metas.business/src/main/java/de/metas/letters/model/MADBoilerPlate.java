@@ -11,7 +11,9 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -26,6 +28,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
@@ -73,6 +76,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getPO;
@@ -427,6 +431,22 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				.endOrderBy()
 				.create()
 				.list(MADBoilerPlate.class);
+	}
+
+	public static Stream<MADBoilerPlate> streamAllReadable(@NonNull final IUserRolePermissions permissions)
+	{
+		return getAll(Env.getCtx())
+				.stream()
+				.filter(template -> isReadable(template, permissions));
+	}
+
+	private static boolean isReadable(@NonNull final MADBoilerPlate template, @NonNull final IUserRolePermissions permissions)
+	{
+		final ClientId clientId = ClientId.ofRepoId(template.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(template.getAD_Org_ID());
+		final int adTableId = template.get_Table_ID();
+		final int recordId = template.getAD_BoilerPlate_ID();
+		return permissions.checkCanView(clientId, orgId, adTableId, recordId).isTrue();
 	}
 
 	private void checkCycles(int AD_BoilerPlate_ID, Collection<KeyNamePair> trace)
