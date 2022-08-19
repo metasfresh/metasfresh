@@ -5,9 +5,8 @@ import { get } from 'lodash';
 
 import {
   DATE_FORMAT,
-  TIME_FORMAT,
   DATE_TIMEZONE_FORMAT,
-  DATE_FIELD_FORMATS,
+  TIME_FORMAT,
 } from '../../constants/Constants';
 import { getClassNames, getFormattedDate } from '../../utils/widgetHelpers';
 import { WidgetRendererPropTypes } from './PropTypes';
@@ -16,7 +15,7 @@ import { withForwardedRef } from '../hoc/WithRouterAndRef';
 import ActionButton from './ActionButton';
 import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
-import DatePicker from './DatePicker';
+import DatePicker from './DateTime/DatePicker';
 import DatetimeRange from './DatetimeRange';
 import Image from './Image';
 import Labels from './Labels';
@@ -34,7 +33,6 @@ class WidgetRenderer extends PureComponent {
     super(props);
 
     this.getClassNames = getClassNames.bind(this);
-    this.getFormattedDate = getFormattedDate.bind(this);
   }
 
   /**
@@ -240,22 +238,20 @@ class WidgetRenderer extends PureComponent {
             <div className={this.getClassNames({ icon: true })}>
               <DatePicker
                 {...dateProps}
-                timeFormat={false}
                 dateFormat={dateFormat || true}
+                timeFormat={false}
+                timeZone={timeZone}
                 value={widgetValue || widgetData[0].value}
+                isOpenDatePicker={isOpenDatePicker}
                 patch={(date) =>
                   onPatch(
                     widgetField,
-                    this.getFormattedDate(date, DATE_FORMAT),
+                    getFormattedDate(date, DATE_FORMAT),
                     null,
                     null,
                     true
                   )
                 }
-                {...{
-                  isOpenDatePicker,
-                  timeZone,
-                }}
               />
             </div>
           );
@@ -265,23 +261,21 @@ class WidgetRenderer extends PureComponent {
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
               {...dateProps}
-              timeFormat={true}
               dateFormat={dateFormat || true}
+              timeFormat={true}
               hasTimeZone={true}
+              timeZone={timeZone}
+              isOpenDatePicker={isOpenDatePicker}
               value={widgetValue || widgetData[0].value}
-              patch={(date) =>
+              patch={(dateTime) =>
                 onPatch(
                   widgetField,
-                  this.getFormattedDate(date, DATE_TIMEZONE_FORMAT),
+                  getFormattedDate(dateTime, DATE_TIMEZONE_FORMAT),
                   null,
                   null,
                   true
                 )
               }
-              {...{
-                isOpenDatePicker,
-                timeZone,
-              }}
             />
           </div>
         );
@@ -290,13 +284,13 @@ class WidgetRenderer extends PureComponent {
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
               {...dateProps}
-              timeFormat={TIME_FORMAT}
               dateFormat={false}
-              value={this.getFormattedDate(widgetValue, TIME_FORMAT)}
+              timeFormat={TIME_FORMAT}
+              value={getFormattedDate(widgetValue, TIME_FORMAT)}
               patch={(date) =>
                 onPatch(
                   widgetField,
-                  this.getFormattedDate(date, TIME_FORMAT),
+                  getFormattedDate(date, TIME_FORMAT),
                   null,
                   null,
                   true
@@ -311,13 +305,15 @@ class WidgetRenderer extends PureComponent {
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
               {...dateProps}
-              timeFormat={false}
-              dateFormat={DATE_FIELD_FORMATS[widgetType]}
+              dateFormat={dateFormat || true}
+              timeFormat={'LTS'}
+              hasTimeZone={true}
+              timeZone={timeZone}
               value={widgetValue}
               patch={(date) =>
                 onPatch(
                   widgetField,
-                  this.getFormattedDate(date, `x`),
+                  getFormattedDate(date, `x`),
                   null,
                   null,
                   true
