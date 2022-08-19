@@ -218,33 +218,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 			if (Check.isNotBlank(expectedJsonAvailableStockParam))
 			{
-				final JsonAvailableForSales expectedStock = objectMapper.readValue(expectedJsonAvailableStockParam, JsonAvailableForSales.class);
-
-				final StringBuilder context = new StringBuilder();
-
-				final JsonAvailableForSales actualStock = requests.stream()
-						.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
-						.map(req -> req.getParameters().get(ExternalSystemConstants.PARAM_JSON_AVAILABLE_FOR_SALES))
-						.filter(Objects::nonNull)
-						.map(this::readJsonAvailableForSales)
-						.peek(availStock -> {
-							try
-							{
-								context
-										.append("Received: [")
-										.append(objectMapper.writeValueAsString(availStock))
-										.append("]\n");
-							}
-							catch (final JsonProcessingException e)
-							{
-								throw new RuntimeException(e);
-							}
-						})
-						.filter(jsonAvailableForSales -> matchStockAndExternalReference(expectedStock, jsonAvailableForSales))
-						.findFirst()
-						.orElse(null);
-
-				assertThat(actualStock).as(context.toString()).isNotNull();
+				checkExistingJsonExternalSystemRequestForJsonAvailableForSales(requests, externalSystemConfig, expectedJsonAvailableStockParam);
 			}
 
 			final String ppOrderIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -599,7 +573,18 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		final String bpIdentifier = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT.parameters." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 				.orElseGet(() -> DataTableUtil.extractStringOrNullForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER));
 
-		return checkMatchingESRequestBasedOnBPartner(bpIdentifier, externalSystemRequest);
+		if (checkMatchingESRequestBasedOnBPartner(bpIdentifier, externalSystemRequest))
+		{
+			return true;
+		}
+
+		final String expectedStockAndExternalReferenceParam = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + PARAM_JSON_AVAILABLE_FOR_SALES);
+		if (isMatchingESRequestBasedOnStockAndExternalReference(expectedStockAndExternalReferenceParam, externalSystemRequest))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	private void checkExistingJsonExternalSystemRequestForHu(
@@ -719,5 +704,73 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			return Check.isNotBlank(bpartnerIdAsString) && Integer.parseInt(bpartnerIdAsString) == bPartner.getC_BPartner_ID();
 		}
 		return false;
+	}
+
+	private boolean isMatchingESRequestBasedOnStockAndExternalReference(@Nullable final String expectedJsonExternalReferenceLookupRequest, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		if (Check.isBlank(expectedJsonExternalReferenceLookupRequest))
+		{
+			return false;
+		}
+
+		final String jsonExternalRefLookupReq = externalSystemRequest.getParameters().get(PARAM_JSON_AVAILABLE_FOR_SALES);
+		if (Check.isBlank(jsonExternalRefLookupReq))
+		{
+			return false;
+		}
+
+		try
+		{
+			final JsonAvailableForSales expectedRequest = objectMapper.readValue(expectedJsonExternalReferenceLookupRequest, JsonAvailableForSales.class);
+
+			final JsonAvailableForSales actualRequest = readJsonAvailableForSales(jsonExternalRefLookupReq);
+
+			final boolean isJsonRequestMatching = matchStockAndExternalReference(expectedRequest, actualRequest);
+
+			if (isJsonRequestMatching)
+			{
+				return true;
+			}
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e.getMessage());
+		}
+
+		return false;
+	}
+
+	private void checkExistingJsonExternalSystemRequestForJsonAvailableForSales(
+			@NonNull final List<JsonExternalSystemRequest> requests,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final String expectedJsonAvailableStockParam) throws JsonProcessingException
+	{
+		final JsonAvailableForSales expectedStock = objectMapper.readValue(expectedJsonAvailableStockParam, JsonAvailableForSales.class);
+
+		final StringBuilder context = new StringBuilder();
+
+		final JsonAvailableForSales actualStock = requests.stream()
+				.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+				.map(req -> req.getParameters().get(ExternalSystemConstants.PARAM_JSON_AVAILABLE_FOR_SALES))
+				.filter(Objects::nonNull)
+				.map(this::readJsonAvailableForSales)
+				.peek(availStock -> {
+					try
+					{
+						context
+								.append("Received: [")
+								.append(objectMapper.writeValueAsString(availStock))
+								.append("]\n");
+					}
+					catch (final JsonProcessingException e)
+					{
+						throw new RuntimeException(e);
+					}
+				})
+				.filter(jsonAvailableForSales -> matchStockAndExternalReference(expectedStock, jsonAvailableForSales))
+				.findFirst()
+				.orElse(null);
+
+		assertThat(actualStock).as(context.toString()).isNotNull();
 	}
 }
