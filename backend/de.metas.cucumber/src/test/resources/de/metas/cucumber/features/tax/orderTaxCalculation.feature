@@ -54,8 +54,8 @@ Feature: Validate tax calculation for orders taking into account dropship locati
       | AD_OrgInfo_ID.Identifier | AD_Org_ID.Identifier | Org_BPartner_ID.Identifier | OrgBP_Location_ID.Identifier |
       | switzerland_org_info     | switzerland_org      | org_bpartner               | org_Bp_location_Switzerland  |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                 | Name                 | IsIssueWarehouse | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | switzerland_warehouse     | switzerland_warehouse | switzerlandWarehouse | false            | org_bpartner                 | org_Bp_location_Switzerland           |
+      | M_Warehouse_ID.Identifier | Value                 | Name                 | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | switzerland_warehouse     | switzerland_warehouse | switzerlandWarehouse | org_bpartner                 | org_Bp_location_Switzerland           |
     And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
       | switzerland_locator     | switzerland_locator | switzerland_warehouse     |

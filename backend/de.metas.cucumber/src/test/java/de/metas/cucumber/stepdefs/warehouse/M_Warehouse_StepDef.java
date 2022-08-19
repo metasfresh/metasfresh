@@ -103,7 +103,7 @@ public class M_Warehouse_StepDef
 
 			final String name = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_Name);
 
-			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnName(row, I_M_Warehouse.COLUMNNAME_IsIssueWarehouse);
+			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, false);
 
 			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 					.map(bPartnerTable::get)

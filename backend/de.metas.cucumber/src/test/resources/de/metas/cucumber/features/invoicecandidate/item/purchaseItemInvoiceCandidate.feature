@@ -376,8 +376,8 @@ Feature: Product items invoice candidates: receipts
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huItemPurchaseProduct_260          | huPiItemTU_260             | p_1                     | 330 | 2021-01-01 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value          | Name           | IsIssueWarehouse |
-      | issueWarehouse            | issueWarehouse | issueWarehouse | true             |
+      | M_Warehouse_ID.Identifier | Value          | Name           | OPT.IsIssueWarehouse |
+      | issueWarehouse            | issueWarehouse | issueWarehouse | true                 |
     And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value        | M_Warehouse_ID.Identifier |
       | issueLocator            | issueLocator | issueWarehouse            |
