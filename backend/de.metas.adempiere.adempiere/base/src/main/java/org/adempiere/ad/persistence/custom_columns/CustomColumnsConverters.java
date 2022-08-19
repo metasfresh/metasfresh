@@ -26,18 +26,42 @@ public class CustomColumnsConverters
 {
 	private static final AdMessageKey MSG_CUSTOM_REST_API_COLUMN = AdMessageKey.of("CUSTOM_REST_API_COLUMN");
 
+	@NonNull
 	public static CustomColumnsPOValues convertToPOValues(
 			@NonNull final Map<String, Object> valuesByColumnName,
-			@NonNull POInfo poInfo,
-			@NonNull ZoneId zoneId)
+			@NonNull final POInfo poInfo,
+			@NonNull final ZoneId zoneId)
 	{
 		final ImmutableMap.Builder<String, Object> poValues = ImmutableMap.builder();
+
 		valuesByColumnName.forEach((columnName, value) -> {
 			final Object poValue = convertToPOValue(columnName, value, poInfo, zoneId);
 			poValues.put(columnName, Null.box(poValue));
 		});
 
 		return CustomColumnsPOValues.ofPOValues(poValues.build());
+	}
+
+
+	@NonNull
+	public static CustomColumnsJsonValues convertToJsonValues(final @NonNull PO record, final ZoneId zoneId)
+	{
+		final POInfo poInfo = record.getPOInfo();
+
+		final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
+
+		poInfo.streamColumns(POInfoColumn::isRestAPICustomColumn)
+				.forEach(customColumn -> {
+					final String columnName = customColumn.getColumnName();
+					final Object poValue = record.get_Value(columnName);
+					final Object jsonValue = CustomColumnsConverters.convertToJsonValue(poValue, customColumn.getDisplayType(), zoneId);
+					if (jsonValue != null)
+					{
+						map.put(columnName, jsonValue);
+					}
+				});
+
+		return CustomColumnsJsonValues.ofJsonValuesMap(map.build());
 	}
 
 	@Nullable
@@ -67,29 +91,8 @@ public class CustomColumnsConverters
 		return convertToPOValue(value, columnTargetClass, displayType, zoneId);
 	}
 
-	public static CustomColumnsJsonValues convertToJsonValues(final @NonNull PO record, final ZoneId zoneId)
-	{
-		final POInfo poInfo = record.getPOInfo();
-
-		final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
-
-		poInfo.streamColumns(POInfoColumn::isRestAPICustomColumn)
-				.forEach(customColumn -> {
-					final String columnName = customColumn.getColumnName();
-					final Object poValue = record.get_Value(columnName);
-					final Object jsonValue = CustomColumnsConverters.convertToJsonValue(poValue, customColumn.getDisplayType(), zoneId);
-					if (jsonValue != null)
-					{
-						map.put(columnName, jsonValue);
-					}
-				});
-
-		return CustomColumnsJsonValues.ofJsonValuesMap(map.build());
-	}
-
-
 	@Nullable
-	public static Object convertToJsonValue(@Nullable final Object value, final int displayType, @NonNull final ZoneId zoneId)
+	private static Object convertToJsonValue(@Nullable final Object value, final int displayType, @NonNull final ZoneId zoneId)
 	{
 		if (value == null)
 		{
@@ -115,7 +118,7 @@ public class CustomColumnsConverters
 	}
 
 	@Nullable
-	public static Object convertToPOValue(@Nullable final Object value, @NonNull final Class<?> targetClass, final int displayType,@NonNull final ZoneId zoneId)
+	private static Object convertToPOValue(@Nullable final Object value, @NonNull final Class<?> targetClass, final int displayType,@NonNull final ZoneId zoneId)
 	{
 		if (value == null)
 		{

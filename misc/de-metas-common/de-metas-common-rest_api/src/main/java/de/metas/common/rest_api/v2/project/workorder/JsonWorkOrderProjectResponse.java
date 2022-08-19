@@ -71,7 +71,7 @@ public class JsonWorkOrderProjectResponse
 	LocalDate dateFinish;
 
 	@Nullable
-	JsonMetasfreshId businessPartnerId;
+	JsonMetasfreshId bpartnerId;
 
 	@Nullable
 	String projectReferenceExt;

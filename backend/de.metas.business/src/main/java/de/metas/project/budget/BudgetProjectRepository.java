@@ -47,6 +47,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Repository
 public class BudgetProjectRepository
@@ -56,18 +58,7 @@ public class BudgetProjectRepository
 	@NonNull
 	public Optional<BudgetProject> getOptionalById(@NonNull final ProjectId projectId)
 	{
-		final I_C_Project record = getRecordById(projectId);
-		return fromRecord(record);
-	}
-
-	public I_C_Project getRecordById(final @NonNull ProjectId projectId)
-	{
-		return InterfaceWrapperHelper.load(projectId, I_C_Project.class);
-	}
-
-	public void saveRecord(final @NonNull I_C_Project record)
-	{
-		InterfaceWrapperHelper.saveRecord(record);
+		return fromRecord(getRecordByIdNotNull(projectId));
 	}
 
 	@NonNull
@@ -159,12 +150,7 @@ public class BudgetProjectRepository
 	@NonNull
 	public BudgetProject update(@NonNull final BudgetProject budgetProject)
 	{
-		final I_C_Project projectRecord = getRecordById(budgetProject.getProjectId());
-
-		if (projectRecord == null)
-		{
-			throw new AdempiereException("No C_Project record found for id: " + budgetProject.getProjectId().getRepoId());
-		}
+		final I_C_Project projectRecord = getRecordByIdNotNull(budgetProject.getProjectId());
 
 		projectRecord.setName(budgetProject.getName());
 		projectRecord.setValue(budgetProject.getValue());
@@ -181,7 +167,7 @@ public class BudgetProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(budgetProject.getDateFinish()));
 		projectRecord.setC_Project_Reference_Ext(budgetProject.getProjectReferenceExt());
 
-		saveRecord(projectRecord);
+		InterfaceWrapperHelper.saveRecord(projectRecord);
 
 		return fromRecord(projectRecord)
 				.orElseThrow(() -> new AdempiereException("BudgetProject has not been successfully saved!"));
@@ -207,9 +193,39 @@ public class BudgetProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(request.getDateFinish()));
 		projectRecord.setC_Project_Reference_Ext(request.getProjectReferenceExt());
 
-		saveRecord(projectRecord);
+		InterfaceWrapperHelper.saveRecord(projectRecord);
 
 		return fromRecord(projectRecord)
 				.orElseThrow(() -> new AdempiereException("BudgetProject has not been successfully saved!"));
+	}
+
+	public void applyAndSave(@NonNull final ProjectId projectId, @NonNull final Consumer<I_C_Project> updateProject)
+	{
+		final I_C_Project projectRecord = getRecordByIdNotNull(projectId);
+
+		updateProject.accept(projectRecord);
+
+		InterfaceWrapperHelper.save(projectRecord);
+	}
+
+	@NonNull
+	public <T> T mapProject(@NonNull final ProjectId projectId, @NonNull final Function<I_C_Project, T> mapProject)
+	{
+		final I_C_Project projectRecord = getRecordByIdNotNull(projectId);
+
+		return mapProject.apply(projectRecord);
+	}
+
+	@NonNull
+	private I_C_Project getRecordByIdNotNull(final @NonNull ProjectId projectId)
+	{
+		final I_C_Project projectRecord = InterfaceWrapperHelper.load(projectId, I_C_Project.class);
+
+		if (projectRecord == null)
+		{
+			throw new AdempiereException("No C_Project record found for id: " + projectId);
+		}
+
+		return projectRecord;
 	}
 }

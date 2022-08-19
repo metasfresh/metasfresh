@@ -281,7 +281,7 @@ public class WorkOrderProjectRestService
 				.description(project.getDescription())
 				.dateContract(TimeUtil.asLocalDate(project.getDateContract(), zoneId))
 				.dateFinish(TimeUtil.asLocalDate(project.getDateFinish(), zoneId))
-				.businessPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(project.getBPartnerId())))
+				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(project.getBPartnerId())))
 				.projectReferenceExt(project.getProjectReferenceExt())
 				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(project.getProjectParentId())))
 				.orgCode(orgDAO.retrieveOrgValue(project.getOrgId()))

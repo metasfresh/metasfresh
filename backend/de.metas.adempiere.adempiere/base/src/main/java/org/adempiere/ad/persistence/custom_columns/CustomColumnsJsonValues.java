@@ -18,6 +18,7 @@ public class CustomColumnsJsonValues
 		this.map = map;
 	}
 
+	@NonNull
 	public static CustomColumnsJsonValues ofJsonValuesMap(@NonNull final ImmutableMap<String, Object> map)
 	{
 		return !map.isEmpty()
@@ -25,5 +26,9 @@ public class CustomColumnsJsonValues
 				: EMPTY;
 	}
 
-	public ImmutableMap<String, Object> toMap() {return map;}
+	@NonNull
+	public ImmutableMap<String, Object> toMap()
+	{
+		return map;
+	}
 }

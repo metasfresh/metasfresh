@@ -101,7 +101,7 @@ public class WorkOrderMapper
 
 		if (request.isBusinessPartnerIdSet())
 		{
-			woProjectBuilder.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBusinessPartnerId(), BPartnerId::ofRepoId));
+			woProjectBuilder.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBpartnerId(), BPartnerId::ofRepoId));
 		}
 
 		if (request.isProjectParentIdSet())
@@ -207,7 +207,7 @@ public class WorkOrderMapper
 				.bpartnerTargetDate(TimeUtil.asInstant(request.getBpartnerTargetDate(), zoneId))
 				.woProjectCreatedDate(TimeUtil.asInstant(request.getWoProjectCreatedDate(), zoneId))
 				.salesRepId(JsonMetasfreshId.mapToOrNull(request.getSalesRepId(), UserId::ofRepoId))
-				.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBusinessPartnerId(), BPartnerId::ofRepoId))
+				.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBpartnerId(), BPartnerId::ofRepoId))
 				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId))
 				.build();
 	}

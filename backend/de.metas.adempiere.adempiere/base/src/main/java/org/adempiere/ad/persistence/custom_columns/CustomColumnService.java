@@ -38,8 +38,6 @@ public class CustomColumnService
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private ZoneId extractZoneId(final @NonNull PO record) {return orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));}
-
 	@NonNull
 	public CustomColumnsJsonValues getCustomColumnsJsonValues(@NonNull final PO record)
 	{
@@ -61,4 +59,5 @@ public class CustomColumnService
 	{
 		poValues.forEach((columnName, value) -> record.set_ValueOfColumn(columnName, Null.unbox(value)));
 	}
-}
+
+	private ZoneId extractZoneId(final @NonNull PO record) {return orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));}}

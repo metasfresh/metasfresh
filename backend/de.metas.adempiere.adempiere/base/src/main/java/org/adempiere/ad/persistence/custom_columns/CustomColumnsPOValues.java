@@ -20,6 +20,7 @@ public class CustomColumnsPOValues
 		this.map = map;
 	}
 
+	@NonNull
 	public static CustomColumnsPOValues ofPOValues(@NonNull final ImmutableMap<String, Object> map)
 	{
 		return !map.isEmpty()

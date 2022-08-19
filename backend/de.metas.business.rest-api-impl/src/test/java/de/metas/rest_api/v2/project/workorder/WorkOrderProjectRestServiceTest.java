@@ -199,7 +199,7 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setDescription(projectDescription);
 		projectRequest.setDateContract(dateContract);
 		projectRequest.setDateFinish(dateFinish);
-		projectRequest.setBusinessPartnerId(bpartnerId);
+		projectRequest.setBpartnerId(bpartnerId);
 		projectRequest.setProjectReferenceExt(projectExternalId);
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		projectRequest.setBpartnerDepartment(bpartnerDepartment);
@@ -304,7 +304,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(data.getDescription()).isEqualTo(projectDescription);
 		assertThat(data.getDateContract()).isEqualTo(dateContract);
 		assertThat(data.getDateFinish()).isEqualTo(dateFinish);
-		assertThat(data.getBusinessPartnerId()).isEqualTo(bpartnerId);
+		assertThat(data.getBpartnerId()).isEqualTo(bpartnerId);
 		assertThat(data.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(data.getBpartnerDepartment()).isEqualTo(bpartnerDepartment);
 		assertThat(data.getWoOwner()).isEqualTo(woOwner);
@@ -405,7 +405,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getDescription()).isNull();
 		assertThat(storedProject.getDateContract()).isNull();
 		assertThat(storedProject.getDateFinish()).isNull();
-		assertThat(storedProject.getBusinessPartnerId()).isNull();
+		assertThat(storedProject.getBpartnerId()).isNull();
 		assertThat(storedProject.getBpartnerDepartment()).isNull();
 		assertThat(storedProject.getWoOwner()).isNull();
 		assertThat(storedProject.getPoReference()).isNull();
@@ -498,7 +498,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getDescription()).isNull();
 		assertThat(storedProject.getDateContract()).isNull();
 		assertThat(storedProject.getDateFinish()).isNull();
-		assertThat(storedProject.getBusinessPartnerId()).isNull();
+		assertThat(storedProject.getBpartnerId()).isNull();
 		assertThat(storedProject.getBpartnerDepartment()).isNull();
 		assertThat(storedProject.getWoOwner()).isNull();
 		assertThat(storedProject.getPoReference()).isNull();

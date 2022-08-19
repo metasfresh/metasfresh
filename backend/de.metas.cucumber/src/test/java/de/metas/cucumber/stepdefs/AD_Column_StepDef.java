@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.resourcetype.S_ResourceType_StepDefData;
-import de.metas.po.CustomColumnService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,11 +35,11 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_Order;
@@ -217,7 +216,7 @@ public class AD_Column_StepDef
 
 		try
 		{
-			customColumnService.saveCustomColumns(TableRecordReference.of(order), valuesByColumnName);
+			customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(order), valuesByColumnName);
 
 			if (Check.isNotBlank(errorMsg))
 			{
@@ -257,7 +256,7 @@ public class AD_Column_StepDef
 		final I_S_ResourceType resourceType = resourceTypeTable.get(resourceTypeIdentifier);
 		assertThat(resourceType).isNotNull();
 
-		customColumnService.saveCustomColumns(TableRecordReference.of(resourceType), valuesByColumnName);
+		customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(resourceType), valuesByColumnName);
 	}
 
 	@NonNull
@@ -268,7 +267,7 @@ public class AD_Column_StepDef
 
 		InterfaceWrapperHelper.refresh(order);
 
-		return customColumnService.getCustomColumnsAsMap(TableRecordReference.of(order));
+		return customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(order)).toMap();
 	}
 
 	@NonNull
@@ -279,6 +278,6 @@ public class AD_Column_StepDef
 
 		InterfaceWrapperHelper.refresh(resourceType);
 
-		return customColumnService.getCustomColumnsAsMap(TableRecordReference.of(resourceType));
+		return customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(resourceType)).toMap();
 	}
 }

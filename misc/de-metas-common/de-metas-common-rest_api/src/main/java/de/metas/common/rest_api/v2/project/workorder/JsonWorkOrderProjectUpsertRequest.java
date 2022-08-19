@@ -99,7 +99,7 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean dateFinishSet;
 
-	JsonMetasfreshId businessPartnerId;
+	JsonMetasfreshId bpartnerId;
 
 	@ApiModelProperty(hidden = true)
 	boolean businessPartnerIdSet;
@@ -208,9 +208,9 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.dateFinishSet = true;
 	}
 
-	public void setBusinessPartnerId(final JsonMetasfreshId businessPartnerId)
+	public void setBpartnerId(final JsonMetasfreshId bpartnerId)
 	{
-		this.businessPartnerId = businessPartnerId;
+		this.bpartnerId = bpartnerId;
 		this.businessPartnerIdSet = true;
 	}
 
