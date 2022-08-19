@@ -1985,6 +1985,10 @@ public class TimeUtil
 			final long millis = (Long)obj;
 			return Instant.ofEpochMilli(millis);
 		}
+		else if(obj instanceof InstantAndOrgId)
+		{
+			return ((InstantAndOrgId)obj).toInstant();
+		}
 		else
 		{
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
