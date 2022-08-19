@@ -20,21 +20,21 @@
  * #L%
  */
 
-package org.adempiere.ad.migration.validator.sql_migration_context_info;
+package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_AD_Val_Rule;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_AD_Val_Rule.class)
+@Interceptor(I_AD_Reference.class)
 @Component
-public class AD_Val_Rule
+public class AD_Reference
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void logSqlMigrationContextInfo(final I_AD_Val_Rule record)
+	public void logSqlMigrationContextInfo(final I_AD_Reference record)
 	{
 		if (MigrationScriptFileLoggerHolder.isDisabled())
 		{

@@ -20,40 +20,27 @@
  * #L%
  */
 
-package org.adempiere.ad.migration.validator.sql_migration_context_info;
+package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
-import de.metas.reflist.ReferenceId;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.impl.TableIdsCache;
-import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_AD_Ref_Table.class)
+@Interceptor(I_AD_Window.class)
 @Component
-public class AD_Ref_Table
+public class AD_Window
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void logSqlMigrationContextInfo(final I_AD_Ref_Table record)
+	public void logSqlMigrationContextInfo(final I_AD_Window window)
 	{
 		if (MigrationScriptFileLoggerHolder.isDisabled())
 		{
 			return;
 		}
 
-		final ReferenceId referenceId = ReferenceId.ofRepoId(record.getAD_Reference_ID());
-		MigrationScriptFileLoggerHolder.logComment("Reference: " + AD_Ref_List.retrieveADReferenceName(referenceId));
-
-		final AdTableId adTableId = AdTableId.ofRepoId(record.getAD_Table_ID());
-		final String tableName = TableIdsCache.instance.getTableNameIfPresent(adTableId).orElseGet(() -> "<" + adTableId + ">");
-		MigrationScriptFileLoggerHolder.logComment("Table: " + tableName);
-
-		final AdColumnId keyColumnId = AdColumnId.ofRepoId(record.getAD_Key());
-		final String keyColumnName = AD_Field.retrieveColumnNameFQ(keyColumnId);
-		MigrationScriptFileLoggerHolder.logComment("Key: " + keyColumnName);
+		MigrationScriptFileLoggerHolder.logComment("Window: " + window.getName() + ", InternalName=" + window.getInternalName());
 	}
 }

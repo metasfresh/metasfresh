@@ -20,27 +20,37 @@
  * #L%
  */
 
-package org.adempiere.ad.migration.validator.sql_migration_context_info;
+package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADColumnNameFQ;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADTabNameFQ;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.Names;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_AD_Window;
+import org.compiere.model.I_AD_Field;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_AD_Window.class)
+@Interceptor(I_AD_Field.class)
 @Component
-public class AD_Window
+public class AD_Field
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void logSqlMigrationContextInfo(final I_AD_Window window)
+	public void logSqlMigrationContextInfo(final I_AD_Field field)
 	{
 		if (MigrationScriptFileLoggerHolder.isDisabled())
 		{
 			return;
 		}
 
-		MigrationScriptFileLoggerHolder.logComment("Window: " + window.getName() + ", InternalName=" + window.getInternalName());
+		final ADTabNameFQ tabName = Names.ADTabNameFQ_Loader.retrieve(AdTabId.ofRepoId(field.getAD_Tab_ID()));
+		final String fieldNameFQ = tabName.toShortString() + " -> " + field.getName();
+		MigrationScriptFileLoggerHolder.logComment("Field: " + fieldNameFQ);
+
+		final ADColumnNameFQ columnNameFQ = Names.ADColumnNameFQ_Loader.retrieve(AdColumnId.ofRepoId(field.getAD_Column_ID()));
+		MigrationScriptFileLoggerHolder.logComment("Column: " + columnNameFQ.toShortString());
 	}
 }

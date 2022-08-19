@@ -20,46 +20,27 @@
  * #L%
  */
 
-package org.adempiere.ad.migration.validator.sql_migration_context_info;
+package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
-import de.metas.reflist.ReferenceId;
-import de.metas.util.StringUtils;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_AD_Ref_List;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.DB;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_AD_Ref_List.class)
+@Interceptor(I_AD_Table.class)
 @Component
-public class AD_Ref_List
+public class AD_Table
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void logSqlMigrationContextInfo(final I_AD_Ref_List record)
+	public void logSqlMigrationContextInfo(final I_AD_Table adTable)
 	{
 		if (MigrationScriptFileLoggerHolder.isDisabled())
 		{
 			return;
 		}
 
-		final ReferenceId referenceId = ReferenceId.ofRepoId(record.getAD_Reference_ID());
-		MigrationScriptFileLoggerHolder.logComment("Reference: " + retrieveADReferenceName(referenceId));
-		MigrationScriptFileLoggerHolder.logComment("Value: " + record.getValue());
-		MigrationScriptFileLoggerHolder.logComment("Name: " + record.getName());
+		MigrationScriptFileLoggerHolder.logComment("Table: " + adTable.getTableName());
 	}
-
-	static String retrieveADReferenceName(final ReferenceId adReferenceId)
-	{
-		final String name = DB.getSQLValueStringEx(
-				ITrx.TRXNAME_ThreadInherited,
-				"SELECT Name FROM AD_Reference WHERE AD_Reference_ID=?",
-				adReferenceId);
-
-		return StringUtils.trimBlankToOptional(name)
-				.orElseGet(() -> "<" + adReferenceId.getRepoId() + ">");
-	}
-
 }

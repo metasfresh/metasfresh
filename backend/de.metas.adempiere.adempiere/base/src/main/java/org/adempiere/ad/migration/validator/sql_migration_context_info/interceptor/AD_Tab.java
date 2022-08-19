@@ -20,37 +20,39 @@
  * #L%
  */
 
-package org.adempiere.ad.migration.validator.sql_migration_context_info;
+package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADTableName;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADWindowName;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.Names;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_AD_Menu;
+import org.adempiere.ad.table.api.AdTableId;
+import org.compiere.model.I_AD_Tab;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_AD_Menu;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_AD_Menu.class)
+@Interceptor(I_AD_Tab.class)
 @Component
-public class AD_Menu
+public class AD_Tab
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void logSqlMigrationContextInfo(final I_AD_Menu record)
+	public void logSqlMigrationContextInfo(final I_AD_Tab tab)
 	{
 		if (MigrationScriptFileLoggerHolder.isDisabled())
 		{
 			return;
 		}
 
-		MigrationScriptFileLoggerHolder.logComment("Name: " + record.getName());
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(tab.getAD_Window_ID());
+		final ADWindowName windowName = Names.ADWindowName_Loader.retrieve(adWindowId);
+		final String tabNameFQ = windowName.toShortString() + " -> " + tab.getName();
+		MigrationScriptFileLoggerHolder.logComment("Tab: " + tabNameFQ);
 
-		final String action = record.getAction();
-		if (X_AD_Menu.ACTION_Window.equals(action))
-		{
-			final AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(record.getAD_Window_ID());
-			final String windowName = AD_Tab.retrieveWindowNameFQ(adWindowId);
-			MigrationScriptFileLoggerHolder.logComment("Window: " + windowName);
-		}
+		final AdTableId adTableId = AdTableId.ofRepoId(tab.getAD_Table_ID());
+		final ADTableName tableName = Names.ADTableName_Loader.retrieve(adTableId);
+		MigrationScriptFileLoggerHolder.logComment("Table: " + tableName.toShortString());
 	}
 }
