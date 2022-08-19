@@ -1,5 +1,6 @@
 package de.metas.currency.impl;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
@@ -72,6 +73,8 @@ public class CurrencyDAOTest
 		adempiereTestHelper.init();
 		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 		ctx = Env.getCtx();
+
+		SystemTime.setFixedTimeSource(LocalDate.parse("2022-11-12").atStartOfDay(zoneId));
 
 		currencyDAO = Services.get(ICurrencyDAO.class);
 
