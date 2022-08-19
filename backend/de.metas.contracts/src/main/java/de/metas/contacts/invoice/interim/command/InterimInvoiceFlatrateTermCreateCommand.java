@@ -55,7 +55,6 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
@@ -89,6 +88,9 @@ import java.util.Properties;
 public class InterimInvoiceFlatrateTermCreateCommand
 {
 	public static final AdMessageKey MSG_PricingSystemsDoNotMatch = AdMessageKey.of("de.metas.contacts.invoice.interim.PricingSystemsDoNotMatch");
+
+	private static final Logger logger = LogManager.getLogger(InterimInvoiceFlatrateTermCreateCommand.class);
+
 	@NonNull
 	private final Properties ctx;
 	@NonNull
@@ -107,24 +109,22 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final I_C_Flatrate_Conditions conditions;
 	private final InterimInvoiceSettings interimInvoiceSettings;
 	private final I_M_Product product;
-	private final ClientAndOrgId clientAndOrgId;
 
-	ITrxManager trxManager = Services.get(ITrxManager.class);
-	IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	IProductDAO productDAO = Services.get(IProductDAO.class);
-	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	IInterimInvoiceSettingsDAO interimInvoiceSettingsDAO = Services.get(IInterimInvoiceSettingsDAO.class);
-	IInterimInvoiceFlatrateTermDAO interimInvoiceOverviewDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
-	IInterimInvoiceFlatrateTermLineDAO interimInvoiceOverviewLineDAO = Services.get(IInterimInvoiceFlatrateTermLineDAO.class);
-	IInterimInvoiceFlatrateTermBL interimInvoiceOverviewBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
-	IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
-	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
-	private static final Logger logger = LogManager.getLogger(InterimInvoiceFlatrateTermCreateCommand.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IInterimInvoiceSettingsDAO interimInvoiceSettingsDAO = Services.get(IInterimInvoiceSettingsDAO.class);
+	private final IInterimInvoiceFlatrateTermDAO interimInvoiceOverviewDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
+	private final IInterimInvoiceFlatrateTermLineDAO interimInvoiceOverviewLineDAO = Services.get(IInterimInvoiceFlatrateTermLineDAO.class);
+	private final IInterimInvoiceFlatrateTermBL interimInvoiceOverviewBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
 
 	@Builder
 	public InterimInvoiceFlatrateTermCreateCommand(@NonNull final Properties ctx,
@@ -141,13 +141,14 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		this.dateTo = dateTo;
 		this.orderLineId = orderLineId;
 		this.orderLine = orderLineRepository.getById(orderLineId);
-		this.bpartnerId = Objects.requireNonNull(CoalesceUtil.coalesceSuppliers(() -> bpartnerId,
-				() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getC_BPartner_ID())));
+		this.bpartnerId = Objects.requireNonNull(
+				CoalesceUtil.coalesceSuppliers(
+						() -> bpartnerId,
+						() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getC_BPartner_ID())));
 		this.productId = Objects.requireNonNull(CoalesceUtil.coalesce(productId, orderLine.getProductId()));
 		this.conditions = flatrateDAO.getConditionsById(conditionsId);
 		this.interimInvoiceSettings = interimInvoiceSettingsDAO.getById(InterimInvoiceSettingsId.ofRepoId(conditions.getC_Interim_Invoice_Settings_ID()));
 		this.product = productDAO.getById(this.productId);
-		this.clientAndOrgId = Env.getClientAndOrgId(ctx);
 	}
 
 	public InterimInvoiceFlatrateTerm execute()
@@ -239,6 +240,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	{
 		return FlatrateTermCreator.builder()
 				.bPartners(Collections.singleton(bpartner))
+				.orgId(orderLine.getOrgId())
 				.conditions(conditions)
 				.ctx(ctx)
 				.product(product)
@@ -322,6 +324,5 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	{
 		return inOutDAO.retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(orderLineId, product);
 	}
-
 
 }
