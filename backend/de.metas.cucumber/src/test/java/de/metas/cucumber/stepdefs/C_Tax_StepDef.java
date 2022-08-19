@@ -100,11 +100,13 @@ public class C_Tax_StepDef
 				.map(currentMinSeqNo -> currentMinSeqNo - 1)
 				.orElse(0);
 
-		final I_C_Tax taxRecord = CoalesceUtil.coalesce(queryBL.createQueryBuilder(I_C_Tax.class)
-																.addEqualsFilter(I_C_Tax.COLUMNNAME_Name, taxName)
-																.create()
-																.firstOnlyOrNull(I_C_Tax.class),
-														InterfaceWrapperHelper.newInstance(I_C_Tax.class));
+		final I_C_Tax taxRecord = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> queryBL.createQueryBuilder(I_C_Tax.class)
+						.addEqualsFilter(I_C_Tax.COLUMNNAME_Name, taxName)
+						.create()
+						.firstOnly(I_C_Tax.class),
+				() -> InterfaceWrapperHelper.newInstance(I_C_Tax.class));
+
 		taxRecord.setName(taxName);
 		taxRecord.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 		taxRecord.setValidFrom(validFrom);

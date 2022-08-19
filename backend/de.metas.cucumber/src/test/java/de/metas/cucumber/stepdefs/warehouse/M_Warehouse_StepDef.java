@@ -26,6 +26,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -107,12 +108,12 @@ public class M_Warehouse_StepDef
 			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 					.map(bPartnerTable::get)
 					.map(I_C_BPartner::getC_BPartner_ID)
-					.orElse(2155894);
+					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId());
 
 			final int bPartnerLocationId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER))
 					.map(bPartnerLocationTable::get)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-					.orElse(2202690);
+					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
 
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);
