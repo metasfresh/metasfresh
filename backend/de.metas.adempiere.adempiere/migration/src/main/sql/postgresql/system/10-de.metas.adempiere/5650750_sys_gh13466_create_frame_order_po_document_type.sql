@@ -1,8 +1,9 @@
 -- 2022-08-12T09:27:56.864Z
 -- URL zum Konzept
 INSERT INTO C_DocType (AD_Client_ID, AD_Org_ID, C_DocType_ID, Created, CreatedBy, DocBaseType, DocumentCopies, EntityType, GL_Category_ID, HasCharges, HasProforma, IsActive, IsCopyDescriptionToDocument, IsCreateCounter, IsDefault, IsDefaultCounterDoc, IsDocNoControlled, IsExcludeFromCommision, IsIndexed, IsInTransit, IsOverwriteDateOnComplete, IsOverwriteSeqOnComplete, IsPickQAConfirm,
-                       IsShipConfirm, IsSOTrx, IsSplitWhenDifference, Name, PrintName, Updated, UpdatedBy)
-VALUES (1000000, 1000000, 541054, TO_TIMESTAMP('2022-08-12 11:27:56', 'YYYY-MM-DD HH24:MI:SS'), 100, 'POO', 1, 'D', 1000001, 'N', 'N', 'Y', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Frame Order PO', 'Frame Order PO', TO_TIMESTAMP('2022-08-12 11:27:56', 'YYYY-MM-DD HH24:MI:SS'), 100)
+                       IsShipConfirm, IsSOTrx, IsSplitWhenDifference, Name, PrintName, Updated, UpdatedBy, DocSubType)
+VALUES (1000000, 1000000, 541054, TO_TIMESTAMP('2022-08-12 11:27:56', 'YYYY-MM-DD HH24:MI:SS'), 100, 'POO', 1, 'D', 1000001, 'N', 'N', 'Y', 'Y', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Frame Order PO',
+ 'Frame Order PO', TO_TIMESTAMP('2022-08-12 11:27:56', 'YYYY-MM-DD HH24:MI:SS'), 100, 'CAO')
 ;
 
 -- 2022-08-12T09:27:56.875Z
