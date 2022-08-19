@@ -573,13 +573,19 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		final String bpIdentifier = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT.parameters." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 				.orElseGet(() -> DataTableUtil.extractStringOrNullForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER));
 
-		if (checkMatchingESRequestBasedOnBPartner(bpIdentifier, externalSystemRequest))
+		if (isMatchingESRequestBasedOnBPartner(bpIdentifier, externalSystemRequest))
 		{
 			return true;
 		}
 
 		final String expectedStockAndExternalReferenceParam = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + PARAM_JSON_AVAILABLE_FOR_SALES);
 		if (isMatchingESRequestBasedOnStockAndExternalReference(expectedStockAndExternalReferenceParam, externalSystemRequest))
+		{
+			return true;
+		}
+
+		final String ppOrderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (isMatchingESRequestBasedOnPPOrderIdentifier(ppOrderIdentifier, externalSystemRequest))
 		{
 			return true;
 		}
@@ -694,7 +700,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		return false;
 	}
 
-	private boolean checkMatchingESRequestBasedOnBPartner(@Nullable final String bpartnerIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	private boolean isMatchingESRequestBasedOnBPartner(@Nullable final String bpartnerIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		if (Check.isNotBlank(bpartnerIdentifier))
 		{
@@ -725,19 +731,12 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 			final JsonAvailableForSales actualRequest = readJsonAvailableForSales(jsonExternalRefLookupReq);
 
-			final boolean isJsonRequestMatching = matchStockAndExternalReference(expectedRequest, actualRequest);
-
-			if (isJsonRequestMatching)
-			{
-				return true;
-			}
+			return matchStockAndExternalReference(expectedRequest, actualRequest);
 		}
 		catch (final JsonProcessingException e)
 		{
 			throw new RuntimeException(e.getMessage());
 		}
-
-		return false;
 	}
 
 	private void checkExistingJsonExternalSystemRequestForJsonAvailableForSales(
@@ -772,5 +771,18 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 				.orElse(null);
 
 		assertThat(actualStock).as(context.toString()).isNotNull();
+	}
+
+	private boolean isMatchingESRequestBasedOnPPOrderIdentifier(@Nullable final String ppOrderIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		if (Check.isNotBlank(ppOrderIdentifier))
+		{
+			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+			final String ppOrderIdAsString = externalSystemRequest.getParameters().get(PARAM_PP_ORDER_ID);
+
+			return Check.isNotBlank(ppOrderIdAsString) && Integer.parseInt(ppOrderIdAsString) == ppOrder.getPP_Order_ID();
+		}
+
+		return false;
 	}
 }
