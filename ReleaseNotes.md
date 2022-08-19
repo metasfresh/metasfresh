@@ -34,6 +34,7 @@ Here come the actual release notes:
   * [#13302](https://github.com/metasfresh/metasfresh/issues/13302) Change base language via Process
   * [#13314](https://github.com/metasfresh/metasfresh/issues/13314) Prevent price lookup from base PLV
   * [#13296](https://github.com/metasfresh/metasfresh/issues/13296) Support additional shopware payment type
+  * [#13283](https://github.com/metasfresh/metasfresh/issues/13283) Create REST Endpoints to read and write WorkOrder- and Budget-C_Projects
   * [#13282](https://github.com/metasfresh/metasfresh/issues/13282) OLCand => Order Extend test-coverage cover bill-, dropship- and handover-partners
   * [#13277](https://github.com/metasfresh/metasfresh/issues/13277) Sys config: address and user to update when creating an invoice
   * [#13223](https://github.com/metasfresh/metasfresh/issues/13223) Leich&Mehl Part II
