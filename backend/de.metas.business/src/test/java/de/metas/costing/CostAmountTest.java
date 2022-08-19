@@ -2,6 +2,7 @@ package de.metas.costing;
 
 import de.metas.money.CurrencyId;
 import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -36,12 +37,12 @@ public class CostAmountTest
 	private final CurrencyId currencyId1 = CurrencyId.ofRepoId(123);
 	private final CurrencyId currencyId2 = CurrencyId.ofRepoId(4);
 
-	private CostAmount newCostAmount(final String amountStr)
+	private CostAmount amt(final String amountStr)
 	{
-		return newCostAmount(amountStr, currencyId1);
+		return amt(amountStr, currencyId1);
 	}
 
-	private CostAmount newCostAmount(final String amountStr, final CurrencyId currencyId)
+	private CostAmount amt(final String amountStr, final CurrencyId currencyId)
 	{
 		return CostAmount.of(new BigDecimal(amountStr), currencyId);
 	}
@@ -49,17 +50,119 @@ public class CostAmountTest
 	@Test
 	void testEquals()
 	{
-		assertThat(newCostAmount("10.000000")).isEqualTo(newCostAmount("10"));
-		assertThat(newCostAmount("10.00001000000")).isEqualTo(newCostAmount("10.00001"));
+		assertThat(amt("10.000000")).isEqualTo(amt("10"));
+		assertThat(amt("10.00001000000")).isEqualTo(amt("10.00001"));
 	}
 
 	@Test
 	void compareToEquals()
 	{
-		assertThat(newCostAmount("10.000000").compareToEquals(newCostAmount("10"))).isTrue();
-		assertThat(newCostAmount("1").compareToEquals(newCostAmount("2"))).isFalse();
-		assertThatThrownBy(() -> newCostAmount("1", currencyId1).compareToEquals(newCostAmount("1", currencyId2)))
+		assertThat(amt("10.000000").compareToEquals(amt("10"))).isTrue();
+		assertThat(amt("1").compareToEquals(amt("2"))).isFalse();
+		assertThatThrownBy(() -> amt("1", currencyId1).compareToEquals(amt("1", currencyId2)))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageStartingWith("Amount has invalid currency");
+	}
+
+	@Nested
+	class getCommonCurrencyIdOfAll
+	{
+		void assertFails(String messageStartingWith, CostAmount... amts)
+		{
+			assertThatThrownBy(() -> CostAmount.getCommonCurrencyIdOfAll(amts))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith(messageStartingWith);
+		}
+
+		void assertSuccess(CurrencyId expectedCurrencyId, CostAmount... amts)
+		{
+			assertThat(CostAmount.getCommonCurrencyIdOfAll(amts)).isEqualTo(expectedCurrencyId);
+		}
+
+		@Test
+		void nullParam()
+		{
+			assertFails("No Amount provided",
+					(CostAmount[])null);
+		}
+
+		@Test
+		void singleNullParam()
+		{
+			assertFails("At least one non null Amount instance was expected",
+					(CostAmount)null);
+		}
+
+		@Test
+		void multipleNullParams()
+		{
+			assertFails(
+					"At least one non null Amount instance was expected",
+					null, null, null);
+		}
+
+		@Test
+		void singleAmount() {assertSuccess(currencyId1, amt("123", currencyId1));}
+
+		@Test
+		void singleAmountAndNullFirst() {assertSuccess(currencyId1, null, amt("123", currencyId1));}
+
+		@Test
+		void singleAmountAndNulls() {assertSuccess(currencyId1, null, amt("123", currencyId1), null);}
+
+		@Test
+		void multipleAmountSameCurrency() {assertSuccess(currencyId1, amt("123", currencyId1), amt("126", currencyId1));}
+
+		@Test
+		void multipleAmountSameCurrencyAndSomeNulls() {assertSuccess(currencyId1, amt("123", currencyId1), null, amt("126", currencyId1), null);}
+
+		@Test
+		void multipleAmountDifferentCurrency()
+		{
+			assertFails("All given Amount(s) shall have the same currency",
+					amt("123", currencyId1), amt("126", currencyId2));
+		}
+
+		@Test
+		void multipleAmountDifferentCurrencyAndSomeNulls()
+		{
+			assertFails("All given Amount(s) shall have the same currency",
+					amt("123", currencyId1), null, amt("126", currencyId2), null);
+		}
+	}
+
+	@Nested
+	class assertCurrencyMatching
+	{
+		void assertNotMatching(final CostAmount... amts)
+		{
+			assertThatThrownBy(() -> CostAmount.assertCurrencyMatching(amts))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Amount has invalid currency");
+		}
+
+		@Test
+		void nullParam() {CostAmount.assertCurrencyMatching((CostAmount[])null);}
+
+		@Test
+		void nullsParams() {CostAmount.assertCurrencyMatching(null, null, null);}
+
+		@Test
+		void singleAmount() {CostAmount.assertCurrencyMatching(amt("123", currencyId1));}
+
+		@Test
+		void singleAmountAndNulls() {CostAmount.assertCurrencyMatching(null, amt("123", currencyId1), null);}
+
+		@Test
+		void multipleAmountSameCurrency() {CostAmount.assertCurrencyMatching(amt("123", currencyId1), amt("126", currencyId1));}
+
+		@Test
+		void multipleAmountSameCurrencyAndSomeNulls() {CostAmount.assertCurrencyMatching(amt("123", currencyId1), null, amt("126", currencyId1), null);}
+
+		@Test
+		void multipleAmountDifferentCurrency() {assertNotMatching(amt("123", currencyId1), amt("126", currencyId2));}
+
+		@Test
+		void multipleAmountDifferentCurrencyAndSomeNulls() {assertNotMatching(amt("123", currencyId1), null, amt("126", currencyId2), null);}
 	}
 }

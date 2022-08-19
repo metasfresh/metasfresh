@@ -14,6 +14,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -109,21 +110,9 @@ public class CostAmount
 		}
 	}
 
-	public static void assertCurrencyMatching(@NonNull final CostAmount... amts)
+	public static void assertCurrencyMatching(@Nullable final CostAmount... amts)
 	{
-		if (amts.length <= 1)
-		{
-			return;
-		}
-
-		final CurrencyId expectedCurrencyId = amts[0].currencyId;
-		for (int i = 1; i < amts.length; i++)
-		{
-			if (!CurrencyId.equals(amts[i].currencyId, expectedCurrencyId))
-			{
-				throw new AdempiereException("Amount has invalid currency: " + amts[i] + ". Expected: " + expectedCurrencyId);
-			}
-		}
+		CurrencyId.assertCurrencyMatching(CostAmount::getCurrencyId, "Amount", amts);
 	}
 
 	public int signum()
@@ -288,9 +277,17 @@ public class CostAmount
 		return Money.of(value, currencyId);
 	}
 
+	public BigDecimal toBigDecimal() {return value;}
+
 	public boolean compareToEquals(@NonNull final CostAmount other)
 	{
 		assertCurrencyMatching(other);
 		return this.value.compareTo(other.value) == 0;
 	}
+
+	public static CurrencyId getCommonCurrencyIdOfAll(@Nullable final CostAmount... costAmounts)
+	{
+		return CurrencyId.getCommonCurrencyIdOfAll(CostAmount::getCurrencyId, "Amount", costAmounts);
+	}
+
 }
