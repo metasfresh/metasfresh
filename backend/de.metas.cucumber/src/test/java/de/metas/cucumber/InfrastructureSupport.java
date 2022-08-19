@@ -23,6 +23,7 @@
 package de.metas.cucumber;
 
 import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
@@ -38,7 +39,10 @@ public class InfrastructureSupport
 	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	@Getter
-	private final boolean runAgainstDockerizedDatabase = true;
+	private boolean runAgainstDockerizedDatabase = true;
+
+    @Getter
+    private boolean cucumberIsUsingProvidedInfrastructure;
 
 	@Getter
 	private String dbHost;
@@ -64,6 +68,25 @@ public class InfrastructureSupport
 	public void start()
 	{
 		assertThat(started).isFalse(); // guard
+
+        cucumberIsUsingProvidedInfrastructure = StringUtils.toBoolean(System.getenv("CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE"), false);
+
+	// TODO replace runAgainstDockerizedDatabase and cucumberIsUsingProvidedInfrastructure with an enum
+        if (cucumberIsUsingProvidedInfrastructure) {
+            logger.info("using provided infrasstructure, not starting any containers");
+
+            runAgainstDockerizedDatabase = false;
+
+            dbHost = "db";
+            dbPort = 5432;
+            rabbitHost = "rabbitmq";
+            rabbitPort = 5672;
+            rabbitUser = "metasfresh";
+            rabbitPassword = "metasfresh";
+
+            started = true;
+            return;
+        }
 
 		final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.7.4");
 		rabbitMQContainer.start();
