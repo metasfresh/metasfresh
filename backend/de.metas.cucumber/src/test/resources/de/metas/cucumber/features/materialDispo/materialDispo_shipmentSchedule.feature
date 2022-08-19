@@ -14,8 +14,8 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_materialdispo | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
       | plv_1      | pl_1                      | salesOrder-PLV | 2020-04-01 |
