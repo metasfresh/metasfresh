@@ -1,4 +1,3 @@
-@invoiceAddressAndUser
 @from:cucumber
 Feature: Validate default address and contact is considered on invoice based on invoicing params
 
