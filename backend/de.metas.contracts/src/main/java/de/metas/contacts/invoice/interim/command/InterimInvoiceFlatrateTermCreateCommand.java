@@ -81,7 +81,6 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -141,11 +140,10 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		this.dateTo = dateTo;
 		this.orderLineId = orderLineId;
 		this.orderLine = orderLineRepository.getById(orderLineId);
-		this.bpartnerId = Objects.requireNonNull(
-				CoalesceUtil.coalesceSuppliers(
+		this.bpartnerId = CoalesceUtil.coalesceSuppliersNotNull(
 						() -> bpartnerId,
-						() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getC_BPartner_ID())));
-		this.productId = Objects.requireNonNull(CoalesceUtil.coalesce(productId, orderLine.getProductId()));
+						() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getBill_BPartner_ID()));
+		this.productId = CoalesceUtil.coalesceNotNull(productId, orderLine.getProductId());
 		this.conditions = flatrateDAO.getConditionsById(conditionsId);
 		this.interimInvoiceSettings = interimInvoiceSettingsDAO.getById(InterimInvoiceSettingsId.ofRepoId(conditions.getC_Interim_Invoice_Settings_ID()));
 		this.product = productDAO.getById(this.productId);
