@@ -99,7 +99,7 @@ public class WorkOrderMapper
 			woProjectBuilder.salesRepId(JsonMetasfreshId.mapToOrNull(request.getSalesRepId(), UserId::ofRepoId));
 		}
 
-		if (request.isBusinessPartnerIdSet())
+		if (request.isBpartnerIdSet())
 		{
 			woProjectBuilder.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBpartnerId(), BPartnerId::ofRepoId));
 		}

@@ -185,9 +185,9 @@ public class JsonBudgetProjectUpsertRequest
 		this.dateFinishSet = true;
 	}
 
-	public void setBpartnerId(final JsonMetasfreshId businessPartnerId)
+	public void setBpartnerId(final JsonMetasfreshId bpartnerId)
 	{
-		this.bpartnerId = businessPartnerId;
+		this.bpartnerId = bpartnerId;
 		this.bpartnerIdSet = true;
 	}
 

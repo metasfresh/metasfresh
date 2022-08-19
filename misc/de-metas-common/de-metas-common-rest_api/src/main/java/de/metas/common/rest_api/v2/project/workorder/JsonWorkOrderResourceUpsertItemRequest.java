@@ -93,9 +93,9 @@ public class JsonWorkOrderResourceUpsertItemRequest
 		this.activeSet = true;
 	}
 
-	public void setAllDay(final Boolean allDay)
+	public void setIsAllDay(final Boolean isAllDay)
 	{
-		this.isAllDay = allDay;
+		this.isAllDay = isAllDay;
 		this.allDaySet = true;
 	}
 

@@ -170,37 +170,37 @@ public class JsonWorkOrderStepUpsertItemRequest
 		this.deliveryDateSet = true;
 	}
 
-	public void setWOTargetStartDate(final LocalDate woTargetStartDate)
+	public void setWoTargetStartDate(final LocalDate woTargetStartDate)
 	{
 		this.woTargetStartDate = woTargetStartDate;
 		this.woTargetStartDateSet = true;
 	}
 
-	public void setWOTargetEndDate(final LocalDate woTargetEndDate)
+	public void setWoTargetEndDate(final LocalDate woTargetEndDate)
 	{
 		this.woTargetEndDate = woTargetEndDate;
 		this.woTargetEndDateSet = true;
 	}
 
-	public void setWOPlannedPersonDurationHours(final Integer woPlannedPersonDurationHours)
+	public void setWoPlannedPersonDurationHours(final Integer woPlannedPersonDurationHours)
 	{
 		this.woPlannedPersonDurationHours = woPlannedPersonDurationHours;
 		this.woPlannedPersonDurationHoursSet = true;
 	}
 
-	public void setWOStepStatus(final JsonWOStepStatus woStepStatus)
+	public void setWoStepStatus(final JsonWOStepStatus woStepStatus)
 	{
 		this.woStepStatus = woStepStatus;
 		this.woStepStatusSet = true;
 	}
 
-	public void setWOFindingsReleasedDate(final LocalDate woFindingsReleasedDate)
+	public void setWoFindingsReleasedDate(final LocalDate woFindingsReleasedDate)
 	{
 		this.woFindingsReleasedDate = woFindingsReleasedDate;
 		this.woFindingsReleasedDateSet = true;
 	}
 
-	public void setWOFindingsCreatedDate(final LocalDate woFindingsCreatedDate)
+	public void setWoFindingsCreatedDate(final LocalDate woFindingsCreatedDate)
 	{
 		this.woFindingsCreatedDate = woFindingsCreatedDate;
 		this.woFindingsCreatedDateSet = true;

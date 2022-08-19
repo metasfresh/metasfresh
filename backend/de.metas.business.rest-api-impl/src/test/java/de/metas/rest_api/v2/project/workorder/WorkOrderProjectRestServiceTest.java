@@ -204,9 +204,9 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		projectRequest.setBpartnerDepartment(bpartnerDepartment);
 		projectRequest.setWoOwner(woOwner);
-		projectRequest.setPOReference(poReference);
-		projectRequest.setBPartnerTargetDate(bpartnerTargetDate);
-		projectRequest.setWOProjectCreatedDate(woProjectCreatedDate);
+		projectRequest.setPoReference(poReference);
+		projectRequest.setBpartnerTargetDate(bpartnerTargetDate);
+		projectRequest.setWoProjectCreatedDate(woProjectCreatedDate);
 		projectRequest.setIsActive(false);
 		projectRequest.setOrgCode(orgValue);
 		projectRequest.setDateOfProvisionByBPartner(dateOfProvisionByBPartner);
@@ -238,12 +238,12 @@ class WorkOrderProjectRestServiceTest
 		stepRequest.setWoPartialReportDate(woPartialReportDate);
 		stepRequest.setWoPlannedResourceDurationHours(woPlannedResourceDurationHours);
 		stepRequest.setDeliveryDate(deliveryDate);
-		stepRequest.setWOTargetStartDate(woTargetStartDate);
-		stepRequest.setWOTargetEndDate(woTargetEndDate);
-		stepRequest.setWOPlannedPersonDurationHours(woPlannedPersonDurationHours);
-		stepRequest.setWOStepStatus(woStepStatus);
-		stepRequest.setWOFindingsReleasedDate(woFindingsReleasedDate);
-		stepRequest.setWOFindingsCreatedDate(woFindingsCreatedDate);
+		stepRequest.setWoTargetStartDate(woTargetStartDate);
+		stepRequest.setWoTargetEndDate(woTargetEndDate);
+		stepRequest.setWoPlannedPersonDurationHours(woPlannedPersonDurationHours);
+		stepRequest.setWoStepStatus(woStepStatus);
+		stepRequest.setWoFindingsReleasedDate(woFindingsReleasedDate);
+		stepRequest.setWoFindingsCreatedDate(woFindingsCreatedDate);
 		stepRequest.setExternalId(stepIdentifier);
 
 		projectRequest.setSteps(ImmutableList.of(stepRequest));
@@ -259,7 +259,7 @@ class WorkOrderProjectRestServiceTest
 		resourceRequest.setAssignDateFrom(assignDateFrom);
 		resourceRequest.setAssignDateTo(assignDateTo);
 		resourceRequest.setActive(false);
-		resourceRequest.setAllDay(true);
+		resourceRequest.setIsAllDay(true);
 		resourceRequest.setDuration(BigDecimal.TEN);
 		resourceRequest.setDurationUnit(JsonDurationUnit.Day);
 		resourceRequest.setTestFacilityGroupName(testFacilityGroupName);
