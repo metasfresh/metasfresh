@@ -18,9 +18,9 @@ ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN webpack --config webpack.docker.js
 
 
-FROM alpine as testresults
-WORKDIR /results
-COPY --from=build /app/junit.xml .
+# FROM alpine as testresults
+# WORKDIR /results
+# COPY --from=build /app/junit.xml .
 
 
 FROM nginx:1.21.6 as runtime

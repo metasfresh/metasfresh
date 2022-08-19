@@ -97,20 +97,7 @@ jobs:
           docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
           docker logout
-      - name: extract-test-results
-        run: |
-          docker buildx build \
-          -f docker-builds/Dockerfile.frontend \
-          --target testresults \
-          -t metas-frontend:testresults \
-          .
-          docker cp "$(docker create --name temp metas-frontend:testresults):/results" . && docker rm temp
-      - uses: testspace-com/setup-testspace@v1
-        with:
-          domain: metasfresh
-      - name: push-results
-        run: |
-          testspace "[jest/frontend]results/junit.xml"
+
   backend:
     runs-on: ubuntu-latest
     needs: [init, java]
