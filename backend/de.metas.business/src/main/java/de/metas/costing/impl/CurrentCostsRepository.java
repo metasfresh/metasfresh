@@ -20,9 +20,7 @@ import de.metas.costing.CurrentCostQuery;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -102,25 +100,31 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return ImmutableList.of();
 		}
 
-		return queryBL
+		final ImmutableList<I_M_Cost> records = queryBL
 				.createQueryBuilder(I_M_Cost.class)
 				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, ids)
-				.stream()
-				.map(this::toCurrentCost)
-				.collect(ImmutableList.toImmutableList());
+				.list();
 
+		return newLoader().toCurrentCosts(records);
+	}
+
+	private CurrentCostsLoader newLoader()
+	{
+		return CurrentCostsLoader.builder()
+				.acctSchemasRepo(acctSchemasRepo)
+				.uomsRepo(uomsRepo)
+				.productCostingBL(productCostingBL)
+				.costElementRepo(costElementRepo)
+				.build();
 	}
 
 	@Override
 	public CurrentCost getOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		final I_M_Cost costRecord = getCostRecordOrNull(costSegmentAndElement);
-		if (costRecord == null)
-		{
-			return null;
-		}
-
-		return toCurrentCost(costRecord);
+		return costRecord != null
+				? newLoader().toCurrentCost(costRecord)
+				: null;
 	}
 
 	@Nullable
@@ -133,9 +137,16 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public Stream<CurrentCost> stream(@NonNull final CurrentCostQuery query)
 	{
-		return toSqlQuery(query)
-				.stream()
-				.map(this::toCurrentCost);
+		return list(query).stream();
+	}
+
+	@Override
+	public ImmutableList<CurrentCost> list(@NonNull final CurrentCostQuery query)
+	{
+		final ImmutableList<I_M_Cost> records = toSqlQuery(query).list();
+		return !records.isEmpty()
+				? newLoader().toCurrentCosts(records)
+				: ImmutableList.of();
 	}
 
 	private IQueryBuilder<I_M_Cost> toSqlQuery(@NonNull final CurrentCostQuery query)
@@ -287,47 +298,6 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		InterfaceWrapperHelper.save(costRecord);
 
 		currentCost.setId(CurrentCostId.ofRepoId(costRecord.getM_Cost_ID()));
-	}
-
-	private CurrentCost toCurrentCost(final I_M_Cost record)
-	{
-
-		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
-
-		final CostElementId costElementId = CostElementId.ofRepoId(record.getM_CostElement_ID());
-		final CostElement costElement = costElementRepo.getById(costElementId);
-
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
-		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
-		final CurrencyPrecision costingPrecision = acctSchema.getCosting().getCostingPrecision();
-
-		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
-
-		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
-		final CostSegment costSegment = CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(acctSchemaId)
-				.costTypeId(acctSchema.getCosting().getCostTypeId())
-				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
-				.build();
-
-		return CurrentCost.builder()
-				.id(CurrentCostId.ofRepoId(record.getM_Cost_ID()))
-				.costSegment(costSegment)
-				.costElement(costElement)
-				.currencyId(currencyId)
-				.precision(costingPrecision)
-				.uom(uom)
-				.ownCostPrice(record.getCurrentCostPrice())
-				.componentsCostPrice(record.getCurrentCostPriceLL())
-				.currentQty(record.getCurrentQty())
-				.cumulatedAmt(record.getCumulatedAmt())
-				.cumulatedQty(record.getCumulatedQty())
-				.build();
 	}
 
 	private void updateCostRecord(

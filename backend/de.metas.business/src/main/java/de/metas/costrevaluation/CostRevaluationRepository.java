@@ -1,6 +1,7 @@
 package de.metas.costrevaluation;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailId;
@@ -34,6 +35,7 @@ import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.model.I_M_CostRevaluation_Detail;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
@@ -85,7 +87,22 @@ public class CostRevaluationRepository
 			InterfaceWrapperHelper.save(existingRecord);
 		}
 
-		InterfaceWrapperHelper.deleteAll(existingRecords.values());
+		final Collection<I_M_CostRevaluationLine> linesToDelete = existingRecords.values();
+		if (!linesToDelete.isEmpty())
+		{
+			final ImmutableSet<CostRevaluationLineId> lineIds = linesToDelete.stream()
+					.map(CostRevaluationRepository::extractCostRevaluationLineId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			deleteDetailsByLineIds(lineIds);
+			InterfaceWrapperHelper.deleteAll(linesToDelete);
+		}
+	}
+
+	@NonNull
+	private static CostRevaluationLineId extractCostRevaluationLineId(final I_M_CostRevaluationLine line)
+	{
+		return CostRevaluationLineId.ofRepoId(line.getM_CostRevaluation_ID(), line.getM_CostRevaluationLine_ID());
 	}
 
 	private static CostRevaluationLineKey extractCostRevaluationLineKey(@NonNull final CurrentCost currentCost)
@@ -159,7 +176,7 @@ public class CostRevaluationRepository
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
 		return CostRevaluationLine.builder()
-				.id(CostRevaluationLineId.ofRepoId(record.getM_CostRevaluation_ID(), record.getM_CostRevaluationLine_ID()))
+				.id(extractCostRevaluationLineId(record))
 				.costSegmentAndElement(extractCostSegmentAndElement(record))
 				.currentQty(Quantitys.create(record.getCurrentQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.currentCostPrice(CostAmount.of(record.getCurrentCostPrice(), currencyId))
@@ -243,10 +260,36 @@ public class CostRevaluationRepository
 		record.setM_CostElement_ID(from.getCostElementId().getRepoId());
 	}
 
+	public void deleteLinesByRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID, costRevaluationId)
+				.create()
+				.delete();
+	}
+
 	public void deleteDetailsByRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
 				.addEqualsFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluation_ID, costRevaluationId)
+				.create()
+				.delete();
+	}
+
+	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)
+	{
+		deleteDetailsByLineIds(ImmutableSet.of(lineId));
+	}
+
+	public void deleteDetailsByLineIds(@NonNull final Collection<CostRevaluationLineId> lineIds)
+	{
+		if (lineIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_M_CostRevaluation_Detail.class)
+				.addInArrayFilter(I_M_CostRevaluation_Detail.COLUMNNAME_M_CostRevaluationLine_ID, lineIds)
 				.create()
 				.delete();
 	}

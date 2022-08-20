@@ -63,6 +63,5 @@ public interface ICurrentCostsRepository
 
 	Stream<CurrentCost> stream(CurrentCostQuery query);
 
-	default ImmutableList<CurrentCost> list(@NonNull final CurrentCostQuery query) {return stream(query).collect(ImmutableList.toImmutableList());}
-
+	ImmutableList<CurrentCost> list(@NonNull final CurrentCostQuery query);
 }

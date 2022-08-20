@@ -76,4 +76,10 @@ public class CostSegment
 	{
 		return CostSegmentAndElement.of(this, costElementId);
 	}
+
+	public boolean isMatching(@NonNull final OrgId orgId)
+	{
+		final OrgId orgIdEffective = costingLevel.effectiveValue(orgId);
+		return OrgId.equals(this.orgId, orgIdEffective);
+	}
 }

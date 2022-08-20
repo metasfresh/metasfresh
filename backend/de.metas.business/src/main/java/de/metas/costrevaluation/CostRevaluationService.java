@@ -1,5 +1,6 @@
 package de.metas.costrevaluation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
@@ -12,6 +13,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostQuery;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.impl.CostingService;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -21,8 +23,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class CostRevaluationService
@@ -52,11 +52,18 @@ public class CostRevaluationService
 		return costRevaluationRepository.hasActiveLines(costRevaluationId);
 	}
 
+	public void deleteLinesAndDetailsByRevaluationId(@NonNull CostRevaluationId costRevaluationId)
+	{
+		costRevaluationRepository.deleteDetailsByRevaluationId(costRevaluationId);
+		costRevaluationRepository.deleteLinesByRevaluationId(costRevaluationId);
+	}
+
 	public void createLines(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
 
 		final ClientId clientId = costRevaluation.getClientId();
+		final OrgId orgId = costRevaluation.getOrgId();
 		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(clientId);
 		if (productIds.isEmpty())
 		{
@@ -65,18 +72,29 @@ public class CostRevaluationService
 
 		final AcctSchemaId acctSchemaId = costRevaluation.getAcctSchemaId();
 		final CostElementId costElementId = costRevaluation.getCostElementId();
-		final List<CurrentCost> currentCosts = currentCostsRepo.list(
-				CurrentCostQuery.builder()
-						.clientId(clientId)
-						.acctSchemaId(acctSchemaId)
-						.costElementId(costElementId)
-						.productIds(productIds)
-						.build()
-		);
-
-		// TODO retain only those current costs on which OrgId is matching
+		final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.stream(
+						CurrentCostQuery.builder()
+								.clientId(clientId)
+								// NOTE: don't filter by OrgId here because we don't know the costing level yet
+								.acctSchemaId(acctSchemaId)
+								.costElementId(costElementId)
+								.productIds(productIds)
+								.build()
+				)
+				.filter(currentCost -> isMatching(currentCost, orgId))
+				.collect(ImmutableList.toImmutableList());
 
 		costRevaluationRepository.createLinesForCurrentCosts(costRevaluationId, currentCosts);
+	}
+
+	private static boolean isMatching(@NonNull CurrentCost currentCost, @NonNull OrgId orgId)
+	{
+		return currentCost.getCostSegment().isMatching(orgId);
+	}
+
+	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)
+	{
+		costRevaluationRepository.deleteDetailsByLineId(lineId);
 	}
 
 	public void createDetails(@NonNull final CostRevaluationId costRevaluationId)
