@@ -1,15 +1,10 @@
 package de.metas.rfq;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.rfq.event.IRfQEventDispacher;
 import de.metas.rfq.exceptions.NoRfQLinesFoundException;
 import de.metas.rfq.exceptions.RfQDocumentClosedException;
@@ -20,6 +15,10 @@ import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.X_C_RfQ;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.io.File;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -69,10 +68,10 @@ class RfQDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
 		final I_C_RfQ rfcRecord = extractRfQ(docFields);
-		return TimeUtil.asLocalDate(rfcRecord.getCreated());
+		return InstantAndOrgId.ofTimestamp(rfcRecord.getCreated(), OrgId.ofRepoId(rfcRecord.getAD_Org_ID()));
 	}
 
 	@Override

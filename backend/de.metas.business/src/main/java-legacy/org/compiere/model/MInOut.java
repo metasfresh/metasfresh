@@ -29,6 +29,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -2619,9 +2620,9 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getMovementDate());
+		return InstantAndOrgId.ofTimestamp(getMovementDate(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

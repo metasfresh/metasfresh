@@ -84,7 +84,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
-					.date(getDateAcct())
+					.date(getDateAcctAsInstant())
 					.build())
 					.getTotalAmountToPost(as);
 		}
@@ -100,7 +100,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.of(this.costPrice, as.getCurrencyId()))
-							.date(getDateAcct())
+							.date(getDateAcctAsInstant())
 							.build())
 					.getTotalAmountToPost(as);
 		}

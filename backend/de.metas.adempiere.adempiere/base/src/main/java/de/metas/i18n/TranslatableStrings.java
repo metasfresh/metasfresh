@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -266,6 +267,11 @@ public class TranslatableStrings
 	public DateTimeTranslatableString dateAndTime(@NonNull final java.util.Date date)
 	{
 		return DateTimeTranslatableString.ofDateTime(date);
+	}
+
+	public DateTimeTranslatableString temporal(@NonNull final Temporal date)
+	{
+		return DateTimeTranslatableString.ofObject(date);
 	}
 
 	public ITranslatableString ofMap(final Map<String, String> trlMap)

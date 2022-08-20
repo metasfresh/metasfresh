@@ -14,6 +14,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -107,6 +108,11 @@ public class CostAmount
 		{
 			throw new AdempiereException("Amount has invalid currency: " + amt + ". Expected: " + currencyId);
 		}
+	}
+
+	public static void assertCurrencyMatching(@Nullable final CostAmount... amts)
+	{
+		CurrencyId.assertCurrencyMatching(CostAmount::getCurrencyId, "Amount", amts);
 	}
 
 	public int signum()
@@ -270,4 +276,18 @@ public class CostAmount
 	{
 		return Money.of(value, currencyId);
 	}
+
+	public BigDecimal toBigDecimal() {return value;}
+
+	public boolean compareToEquals(@NonNull final CostAmount other)
+	{
+		assertCurrencyMatching(other);
+		return this.value.compareTo(other.value) == 0;
+	}
+
+	public static CurrencyId getCommonCurrencyIdOfAll(@Nullable final CostAmount... costAmounts)
+	{
+		return CurrencyId.getCommonCurrencyIdOfAll(CostAmount::getCurrencyId, "Amount", costAmounts);
+	}
+
 }

@@ -5,10 +5,9 @@ import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.model.DataExportAuditLogId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
-import de.metas.costrevaluation.impl.CostRevaluationLineId;
+import de.metas.costrevaluation.CostRevaluationDetailId;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
-import de.metas.audit.data.model.DataExportAuditLogId;
-import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
@@ -97,6 +96,7 @@ public class All_RepoIdAware_Classes_Test
 			.skip(MediatedCommissionSettingsLineId.class)
 			//
 			.skip(CostRevaluationLineId.class)
+			.skip(CostRevaluationDetailId.class)
 			;
 
 	private static ObjectMapper jsonMapper;

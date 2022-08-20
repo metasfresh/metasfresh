@@ -16,7 +16,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Objects;
 
 /*
@@ -60,7 +60,7 @@ public class CostDetailCreateRequest
 	CostAmount amt;
 	Quantity qty;
 	CurrencyConversionTypeId currencyConversionTypeId;
-	LocalDate date;
+	Instant date;
 	String description;
 
 	@Builder(toBuilder = true)
@@ -76,7 +76,7 @@ public class CostDetailCreateRequest
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId,
-			@NonNull final LocalDate date,
+			@NonNull final Instant date,
 			@Nullable final String description)
 	{
 		this.acctSchemaId = acctSchemaId;
@@ -215,7 +215,9 @@ public class CostDetailCreateRequest
 				.qty(getQty())
 				//
 				.documentRef(getDocumentRef())
-				.description(getDescription());
+				.description(getDescription())
+				.dateAcct(getDate())
+				;
 
 		if (!isAllCostElements())
 		{
