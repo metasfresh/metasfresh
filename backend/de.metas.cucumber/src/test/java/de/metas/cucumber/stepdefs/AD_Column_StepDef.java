@@ -218,6 +218,8 @@ public class AD_Column_StepDef
 		{
 			customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(order), valuesByColumnName);
 
+			InterfaceWrapperHelper.save(order);
+
 			if (Check.isNotBlank(errorMsg))
 			{
 				throw new RuntimeException("Was expecting operation to fail!");
@@ -257,6 +259,8 @@ public class AD_Column_StepDef
 		assertThat(resourceType).isNotNull();
 
 		customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(resourceType), valuesByColumnName);
+
+		InterfaceWrapperHelper.save(resourceType);
 	}
 
 	@NonNull
