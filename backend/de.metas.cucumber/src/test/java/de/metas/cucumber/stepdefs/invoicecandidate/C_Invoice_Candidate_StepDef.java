@@ -1022,11 +1022,37 @@ public class C_Invoice_Candidate_StepDef
 
 		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 
-		if (qtyToInvoice != null && invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) == 0)
+		if (qtyToInvoice != null)
 		{
-			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
+			if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) == 0)
+			{
+				return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
+			}
+			else
+			{
+				return ItemProvider.ProviderResult
+						.resultWasNotFound("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
+										   invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice());
+			}
 		}
-		else if (qtyToInvoice == null && !invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
+
+		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyDelivered);
+
+		if (qtyDelivered != null)
+		{
+			if (invoiceCandidateRecord.getQtyDelivered().compareTo(qtyDelivered) == 0)
+			{
+				return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
+			}
+			else
+			{
+				return ItemProvider.ProviderResult
+						.resultWasNotFound("C_Invoice_Candidate_ID={0}; Expecting QtyDelivered={1} but actual is {2}",
+										   invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered());
+			}
+		}
+
+		if (!invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
 			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
 		}
