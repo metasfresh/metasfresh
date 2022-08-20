@@ -102,7 +102,8 @@ public class AD_Column
 					+ "\n 1. To reference context table name, always use the right case, e.g. C_Invoice instead of c_invoice"
 					+ "\n 2. If in your sub-query you need to join again the context table name, consider using @JoinTableNameOrAliasIncludingDot@ to reference the context table name. Pls search for examples."
 					+ "\n 3. If you think this validation is not correct, feel free to temporary deactivate this check.", ex)
-					.setParameter("Test SQL", sql);
+					.setParameter("Test SQL", sql)
+					.appendParametersToMessage();
 		}
 		finally
 		{
