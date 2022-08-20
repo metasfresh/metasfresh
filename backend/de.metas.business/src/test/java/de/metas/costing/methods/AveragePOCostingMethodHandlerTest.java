@@ -792,7 +792,7 @@ public class AveragePOCostingMethodHandlerTest
 																				   .acctSchemaId(acctSchemaId)
 																				   .clientId(ClientId.METASFRESH)
 																				   .costElement(costElement)
-																				   .date(LocalDate.parse("2020-08-14"))
+																				   .date(instant("2020-08-14"))
 																				   .productId(productId)
 																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
 																				   .qtyToMove(Quantity.of(100, eachUOM))

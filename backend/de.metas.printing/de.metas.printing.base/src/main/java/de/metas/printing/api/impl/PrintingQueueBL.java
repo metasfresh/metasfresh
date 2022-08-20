@@ -25,8 +25,6 @@ package de.metas.printing.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
-import de.metas.async.Async_Constants;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.IDocOutboundProducerService;
@@ -80,19 +78,17 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isModelInterface;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class PrintingQueueBL implements IPrintingQueueBL
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
+	private final static Logger logger = LogManager.getLogger(PrintingQueueBL.class);
 
 	/**
 	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	@Nullable
 	@Override

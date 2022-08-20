@@ -31,9 +31,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -407,8 +404,6 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 
 		// recompile needed
 		this._compiled = false;
-
-		return;
 	}
 
 	@Override
@@ -694,36 +689,5 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 		_compiled = false;
 		return this;
 
-	}
-
-	@Override
-	public CompositeQueryFilter<T> addIntervalIntersection(
-			@NonNull final String lowerBoundColumnName,
-			@NonNull final String upperBoundColumnName,
-			@Nullable final ZonedDateTime lowerBoundValue,
-			@Nullable final ZonedDateTime upperBoundValue)
-	{
-		addIntervalIntersection(
-				lowerBoundColumnName,
-				upperBoundColumnName,
-				lowerBoundValue != null ? lowerBoundValue.toInstant() : null,
-				upperBoundValue != null ? upperBoundValue.toInstant() : null);
-
-		return this;
-	}
-
-	@Override
-	public CompositeQueryFilter<T> addIntervalIntersection(
-			@NonNull final String lowerBoundColumnName,
-			@NonNull final String upperBoundColumnName,
-			@Nullable final Instant lowerBoundValue,
-			@Nullable final Instant upperBoundValue)
-	{
-		addFilter(new DateIntervalIntersectionQueryFilter<>(
-				ModelColumnNameValue.forColumnName(lowerBoundColumnName),
-				ModelColumnNameValue.forColumnName(upperBoundColumnName),
-				lowerBoundValue,
-				upperBoundValue));
-		return this;
 	}
 }

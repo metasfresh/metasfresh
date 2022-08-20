@@ -9,12 +9,14 @@ import org.adempiere.ad.dao.impl.CoalesceEqualsQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompositeQueryFilter;
 import org.adempiere.ad.dao.impl.ContextClientQueryFilter;
+import org.adempiere.ad.dao.impl.DateIntervalIntersectionQueryFilter;
 import org.adempiere.ad.dao.impl.EndsWithQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.dao.impl.InSubQueryFilterClause;
 import org.adempiere.ad.dao.impl.InstantRangeQueryFilter;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.dao.impl.StringLikeFilter;
@@ -24,6 +26,7 @@ import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
@@ -48,7 +51,7 @@ public interface ICompositeQueryFilterProxy<T, RT>
 	 * If it could not be unboxed (e.g. because JOIN method does not match) the composite filter is added as is.
 	 * Note that by "unboxing" we mean getting the filters included in the given {@code compositeFilter} and adding them to this instance directly, rather than adding the given {@code compositeFilter} itself.
 	 */
-	default RT addFiltersUnboxed(ICompositeQueryFilter<T> compositeFilter)
+	default RT addFiltersUnboxed(final ICompositeQueryFilter<T> compositeFilter)
 	{
 		compositeFiltersBase().addFiltersUnboxed0(compositeFilter);
 		return self();
@@ -334,19 +337,19 @@ public interface ICompositeQueryFilterProxy<T, RT>
 		return addFilter(filter);
 	}
 
-	default RT addEndsWithQueryFilter(String columnName, String endsWithString)
+	default RT addEndsWithQueryFilter(final String columnName, final String endsWithString)
 	{
 		final EndsWithQueryFilter<T> filter = new EndsWithQueryFilter<>(columnName, endsWithString);
 		return addFilter(filter);
 	}
 
-	default RT addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch)
+	default RT addValidFromToMatchesFilter(final ModelColumn<T, ?> validFromColumn, final ModelColumn<T, ?> validToColumn, final Date dateToMatch)
 	{
 		final ValidFromToMatchesQueryFilter<T> filter = new ValidFromToMatchesQueryFilter<>(validFromColumn, validToColumn, dateToMatch);
 		return addFilter(filter);
 	}
 
-	default RT addInRange(@NonNull String columnName, @NonNull Range<Instant> range)
+	default RT addInRange(@NonNull final String columnName, @NonNull final Range<Instant> range)
 	{
 		return addFilter(InstantRangeQueryFilter.of(columnName, range));
 	}
@@ -362,7 +365,7 @@ public interface ICompositeQueryFilterProxy<T, RT>
 	 * @param subQuery           the actual sub query
 	 * @return this
 	 */
-	default <ST> RT addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery)
+	default <ST> RT addInSubQueryFilter(final String columnName, final String subQueryColumnName, final IQuery<ST> subQuery)
 	{
 		return addFilter(InSubQueryFilter.<T>builder()
 				.tableName(getModelTableName())
@@ -371,7 +374,7 @@ public interface ICompositeQueryFilterProxy<T, RT>
 				.build());
 	}
 
-	default <ST> RT addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery)
+	default <ST> RT addNotInSubQueryFilter(final String columnName, final String subQueryColumnName, final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(getModelTableName())
@@ -388,7 +391,7 @@ public interface ICompositeQueryFilterProxy<T, RT>
 	 * @param subQuery       the actual sub query
 	 * @return this
 	 */
-	default <ST> RT addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery)
+	default <ST> RT addInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery)
 	{
 		return addFilter(InSubQueryFilter.<T>builder()
 				.tableName(getModelTableName())
@@ -397,7 +400,7 @@ public interface ICompositeQueryFilterProxy<T, RT>
 				.build());
 	}
 
-	default <ST> RT addNotInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery)
+	default <ST> RT addNotInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery)
 	{
 		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
 				.tableName(getModelTableName())
@@ -409,4 +412,32 @@ public interface ICompositeQueryFilterProxy<T, RT>
 		return addFilter(notFilter);
 	}
 
+	default RT addIntervalIntersection(
+			@NonNull final String lowerBoundColumnName,
+			@NonNull final String upperBoundColumnName,
+			@Nullable final ZonedDateTime lowerBoundValue,
+			@Nullable final ZonedDateTime upperBoundValue)
+	{
+		addIntervalIntersection(
+				lowerBoundColumnName,
+				upperBoundColumnName,
+				lowerBoundValue != null ? lowerBoundValue.toInstant() : null,
+				upperBoundValue != null ? upperBoundValue.toInstant() : null);
+
+		return self();
+	}
+
+	default RT addIntervalIntersection(
+			@NonNull final String lowerBoundColumnName,
+			@NonNull final String upperBoundColumnName,
+			@Nullable final Instant lowerBoundValue,
+			@Nullable final Instant upperBoundValue)
+	{
+		addFilter(new DateIntervalIntersectionQueryFilter<>(
+				ModelColumnNameValue.forColumnName(lowerBoundColumnName),
+				ModelColumnNameValue.forColumnName(upperBoundColumnName),
+				lowerBoundValue,
+				upperBoundValue));
+		return self();
+	}
 }

@@ -46,8 +46,6 @@ import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.workflow.WFDurationUnit;
