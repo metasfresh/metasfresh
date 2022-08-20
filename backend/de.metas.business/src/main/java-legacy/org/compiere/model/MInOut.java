@@ -51,6 +51,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.product.IProductBL;
@@ -81,13 +82,11 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -2661,9 +2660,9 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getMovementDate());
+		return InstantAndOrgId.ofTimestamp(getMovementDate(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

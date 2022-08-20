@@ -6,7 +6,8 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.model.DataExportAuditLogId;
 import de.metas.banking.PaySelectionLineId;
 import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId;
-import de.metas.costrevaluation.impl.CostRevaluationLineId;
+import de.metas.costrevaluation.CostRevaluationDetailId;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.project.budget.BudgetProjectResourceId;
@@ -106,6 +107,7 @@ public class All_RepoIdAware_Classes_Test
 			.skip(WOProjectObjectUnderTestId.class)
 			//
 			.skip(CostRevaluationLineId.class)
+			.skip(CostRevaluationDetailId.class)
 			//
 			.skip(PaySelectionLineId.class)
 			;

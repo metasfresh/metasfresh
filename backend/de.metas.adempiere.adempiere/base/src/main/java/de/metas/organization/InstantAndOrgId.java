@@ -50,6 +50,8 @@ public class InstantAndOrgId implements Comparable<InstantAndOrgId>
 
 	public LocalDate toLocalDate(@NonNull final Function<OrgId, ZoneId> orgMapper) {return toZonedDateTime(orgMapper).toLocalDate();}
 
+	public LocalDateAndOrgId toLocalDateAndOrgId(@NonNull final Function<OrgId, ZoneId> orgMapper) {return LocalDateAndOrgId.ofLocalDate(toLocalDate(orgMapper), orgId);}
+
 	@Override
 	public int compareTo(@NonNull final InstantAndOrgId other) {return this.instant.compareTo(other.instant);}
 }

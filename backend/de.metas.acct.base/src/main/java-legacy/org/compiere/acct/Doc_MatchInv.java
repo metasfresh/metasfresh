@@ -16,29 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.MTax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
@@ -56,6 +34,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -64,6 +43,24 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.MTax;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Post MatchInv Documents.
@@ -76,8 +73,7 @@ import lombok.NonNull;
  * Update Costing Records
  *
  * @author Jorg Janke
- * @version $Id: Doc_MatchInv.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- *
+ * <p>
  *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts Not Invoiced Receipts and Inventory Clearing are equal BF [
  *          2789949 ] Multicurrency in matching posting
  */
@@ -128,6 +124,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 			invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 			invoiceLineNetAmt = _invoiceLine.getLineNetAmt();
+			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
+					LocalDateAndOrgId.ofTimestamp(invoice.getDateAcct(), OrgId.ofRepoId(invoice.getAD_Org_ID()), services::getTimeZone),
+					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+					ClientId.ofRepoId(invoice.getAD_Client_ID()));
 
 			// Correct included Tax
 			final boolean taxIncluded = invoiceBL.isTaxIncluded(_invoiceLine);
@@ -271,12 +271,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	/**
 	 * Create the InvoicePriceVariance fact line
-	 *
-	 * @param fact
-	 * @param dr_NotInvoicedReceipts
-	 * @param cr_InventoryClearing
 	 */
-	private final void createFacts_InvoicePriceVariance(
+	private void createFacts_InvoicePriceVariance(
 			@NonNull final Fact fact,
 			@Nullable final FactLine dr_NotInvoicedReceipts,
 			@Nullable final FactLine cr_InventoryClearing)
@@ -370,23 +366,23 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return _invoiceLine;
 	}
 
-	private final int getInvoice_Org_ID()
+	private int getInvoice_Org_ID()
 	{
 		return getInvoiceLine().getAD_Org_ID();
 	}
 
-	private final CurrencyId getInvoiceCurrencyId()
+	private CurrencyId getInvoiceCurrencyId()
 	{
 		return this.invoiceCurrencyId;
 	}
 
 	/** @return total invoice line net amount, excluding taxes, in invoice's currency */
-	private final BigDecimal getInvoiceLineNetAmt()
+	private BigDecimal getInvoiceLineNetAmt()
 	{
 		return this.invoiceLineNetAmt;
 	}
 
-	private final BigDecimal getInvoiceLineMatchedAmt()
+	private BigDecimal getInvoiceLineMatchedAmt()
 	{
 		BigDecimal lineNetAmt = getInvoiceLineNetAmt();
 		final BigDecimal qtyInvoicedMultiplier = getQtyInvoicedMultiplier();
@@ -418,50 +414,39 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	}
 
 	/** @return total qty that was invoiced by linked invoice line */
-	private final BigDecimal getQtyInvoiced()
+	private BigDecimal getQtyInvoiced()
 	{
 		return getInvoiceLine().getQtyInvoiced();
 	}
 
-	private final I_M_InOutLine getReceiptLine()
+	private I_M_InOutLine getReceiptLine()
 	{
 		return _receiptLine;
 	}
 
-	private final int getReceipt_Org_ID()
+	private int getReceipt_Org_ID()
 	{
 		return getReceiptLine().getAD_Org_ID();
 	}
 
 	/** @return total qty that was received by linked receipt line */
-	private final BigDecimal getQtyReceived()
+	private BigDecimal getQtyReceived()
 	{
 		return getReceiptLine().getMovementQty();
 	}
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
-		if (invoiceCurrencyConversionCtx == null)
-		{
-			final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-			final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-			Check.assumeNotNull(invoice, "invoice not null");
-			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					TimeUtil.asLocalDate(invoice.getDateAcct()),
-					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-					ClientId.ofRepoId(invoice.getAD_Client_ID()),
-					OrgId.ofRepoId(invoice.getAD_Org_ID()));
-		}
-		return invoiceCurrencyConversionCtx;
+		return Check.assumeNotNull(invoiceCurrencyConversionCtx, "invoice shall be loaded");
 	}
 
-	private final boolean isCreditMemoInvoice()
+	private boolean isCreditMemoInvoice()
 	{
 		return isCreditMemoInvoice;
 	}
 
 	/** Updates dimensions and UOM of given FactLine from invoice line */
-	private final void updateFromInvoiceLine(@Nullable final FactLine fl)
+	private void updateFromInvoiceLine(@Nullable final FactLine fl)
 	{
 		if (fl == null)
 		{
@@ -477,7 +462,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setUser2_ID(invoiceLine.getUser2_ID());
 	}
 
-	private final void updateFromReceiptLine(@Nullable FactLine fl)
+	private void updateFromReceiptLine(@Nullable FactLine fl)
 	{
 		if (fl == null)
 		{

@@ -22,17 +22,10 @@
 
 package de.metas.banking.callout;
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.util.TimeUtil;
-
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
@@ -41,6 +34,12 @@ import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_BankStatementLine;
+
+import java.math.BigDecimal;
 
 @Callout(I_C_BankStatementLine.class)
 public class C_BankStatementLine
@@ -114,7 +113,7 @@ public class C_BankStatementLine
 		final CurrencyId trxAmtCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
 
 		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(bsl.getValutaDate()),
+				bsl.getValutaDate() != null ? bsl.getValutaDate().toInstant() : SystemTime.asInstant(),
 				ConversionTypeMethod.Spot,
 				ClientId.ofRepoId(bsl.getAD_Client_ID()),
 				OrgId.ofRepoId(bsl.getAD_Org_ID()));

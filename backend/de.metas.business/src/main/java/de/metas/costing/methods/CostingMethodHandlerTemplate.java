@@ -1,20 +1,20 @@
 package de.metas.costing.methods;
 
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.order.OrderLineId;
+import de.metas.costing.CurrentCost;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 {
 	protected final CostingMethodHandlerUtils utils;
 
-	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchInv)
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchPO)
 			.add(CostingDocumentRef.TABLE_NAME_M_InOutLine)
@@ -63,12 +63,6 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
-	{
-		return Optional.empty();
-	}
-
-	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
@@ -82,7 +76,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 	}
 
-	private final CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+	private CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
 	{
 		//
 		// Create new cost detail
@@ -158,10 +152,52 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected CostDetailCreateResult createCostForProjectIssue(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForProjectIssue(@SuppressWarnings("unused") final CostDetailCreateRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(
+			@NonNull final CostDetail costDetail,
+			@NonNull final CurrentCost currentCost)
+	{
+		final CurrencyPrecision precision = currentCost.getPrecision();
+
+		final Quantity qty = costDetail.getQty();
+		final CostAmount oldCostAmount = costDetail.getAmt();
+		final CostAmount oldCostPrice = qty.signum() != 0
+				? oldCostAmount.divide(qty, precision)
+				: oldCostAmount;
+
+		final CostAmount newCostPrice = currentCost.getCostPrice().toCostAmount();
+		final CostAmount newCostAmount = qty.signum() != 0
+				? newCostPrice.multiply(qty).roundToPrecisionIfNeeded(precision)
+				: newCostPrice.roundToPrecisionIfNeeded(precision);
+
+		//
+		// Inbound
+		if (costDetail.isInboundTrx())
+		{
+			currentCost.addWeightedAverage(newCostAmount, qty, utils.getQuantityUOMConverter());
+		}
+		//
+		// Outbound
+		else
+		{
+			currentCost.addToCurrentQtyAndCumulate(qty, newCostAmount, utils.getQuantityUOMConverter());
+		}
+
+		//
+		return CostDetailAdjustment.builder()
+				.costDetailId(costDetail.getId())
+				.qty(qty)
+				.oldCostPrice(oldCostPrice)
+				.oldCostAmount(oldCostAmount)
+				.newCostPrice(newCostPrice)
+				.newCostAmount(newCostAmount)
+				.build();
+	}
 }

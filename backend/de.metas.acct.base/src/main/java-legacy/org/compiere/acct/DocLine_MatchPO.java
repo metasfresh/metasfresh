@@ -16,6 +16,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -29,9 +30,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 
 /*
  * #%L
@@ -68,7 +69,10 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final int orderLineId = matchPO.getC_OrderLine_ID();
 		orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
 
-		setDateDoc(TimeUtil.asLocalDate(matchPO.getDateTrx()));
+		setDateDoc(LocalDateAndOrgId.ofTimestamp(
+				matchPO.getDateTrx(),
+				OrgId.ofRepoId(matchPO.getAD_Org_ID()),
+				doc.getServices()::getTimeZone));
 
 		final Quantity qty = Quantity.of(matchPO.getQty(), getProductStockingUOM());
 		final boolean isSOTrx = false;
@@ -92,7 +96,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final CurrencyRate conversionRate = currencyConversionBL.getCurrencyRate(
 				poCost.getCurrencyId(),
 				as.getCurrencyId(),
-				TimeUtil.asLocalDate(order.getDateAcct()),
+				order.getDateAcct().toInstant(),
 				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
 				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
 				OrgId.ofRepoId(orderLine.getAD_Org_ID()));
@@ -124,12 +128,8 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	void createCostDetails(final AcctSchema as)
 	{
-		final I_M_InOutLine receiptLine = getReceiptLine();
-		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
-
 		final I_C_OrderLine orderLine = getOrderLine();
 		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(orderLine.getC_Order().getC_ConversionType_ID());
-		final Timestamp receiptDateAcct = receiptLine.getM_InOut().getDateAcct();
 
 		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();
 
@@ -152,7 +152,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 						.qty(qty)
 						.amt(amt)
 						.currencyConversionTypeId(currencyConversionTypeId)
-						.date(TimeUtil.asLocalDate(receiptDateAcct))
+						.date(getReceiptDateAcct())
 						.description(orderLine.getDescription())
 						.build());
 	}
@@ -183,6 +183,14 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	I_M_InOutLine getReceiptLine()
 	{
 		return getModel(I_M_MatchPO.class).getM_InOutLine();
+	}
+
+	Instant getReceiptDateAcct()
+	{
+		final I_M_InOutLine receiptLine = Check.assumeNotNull(getReceiptLine(), "Parameter receiptLine is not null");
+		final I_M_InOut receipt = receiptLine.getM_InOut();
+		final Timestamp receiptDateAcct = receipt.getDateAcct();
+		return receiptDateAcct.toInstant();
 	}
 
 	boolean isReturnTrx()

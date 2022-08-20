@@ -22,25 +22,29 @@
 
 package de.metas.costrevaluation;
 
-import de.metas.costrevaluation.impl.CostRevaluationId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
-import org.compiere.model.I_M_CostRevaluationLine;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
 
-public class CostRevaluationDocumentHandler implements DocumentHandler
+class CostRevaluationDocumentHandler implements DocumentHandler
 {
-	private final CostRevaluationRepository costRevaluationRepo = SpringContextHolder.instance.getBean(CostRevaluationRepository.class);
+	private final CostRevaluationService costRevaluationService;
+
+	CostRevaluationDocumentHandler(
+			@NonNull final CostRevaluationService costRevaluationService)
+	{
+		this.costRevaluationService = costRevaluationService;
+	}
 
 	private static I_M_CostRevaluation extractRecord(final DocumentTableFields docFields)
 	{
@@ -66,10 +70,10 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
 	{
-		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
-		return TimeUtil.asLocalDate(costRevaluation.getDateAcct());
+		final I_M_CostRevaluation record = extractRecord(docFields);
+		return InstantAndOrgId.ofTimestamp(record.getDateAcct(), OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
 	@Override
@@ -77,9 +81,14 @@ public class CostRevaluationDocumentHandler implements DocumentHandler
 	{
 		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
 
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(costRevaluation.getDocStatus());
+		if (!docStatus.isDraftedOrInProgress())
+		{
+			throw new AdempiereException("Invalid document status");
+		}
+
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(costRevaluation.getM_CostRevaluation_ID());
-		final List<I_M_CostRevaluationLine> lines = costRevaluationRepo.retrieveLinesByCostRevaluationId(costRevaluationId);
-		if (lines.isEmpty())
+		if (!costRevaluationService.hasActiveLines(costRevaluationId))
 		{
 			throw new AdempiereException("@NoLines@");
 		}

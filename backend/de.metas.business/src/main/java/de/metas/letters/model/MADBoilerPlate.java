@@ -11,6 +11,26 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessInfo;
+import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
+import de.metas.email.EMail;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailSentStatus;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.security.IUserRolePermissions;
@@ -56,6 +76,27 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLEditorKit;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
@@ -342,7 +383,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public static MADBoilerPlate getByName(final Properties ctx, final String name, final String trxName)
 	{
-		return getByNameQuery(ctx, name, trxName).firstOnly();
+		return getByNameQuery(ctx, name, trxName).firstOnly(MADBoilerPlate.class);
 	}
 
 	public static KeyNamePair[] getDependsOn(final Properties ctx, final int AD_BoilerPlate_ID, final String trxName)

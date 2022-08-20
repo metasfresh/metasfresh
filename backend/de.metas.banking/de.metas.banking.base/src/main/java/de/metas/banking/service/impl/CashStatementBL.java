@@ -82,8 +82,8 @@ public class CashStatementBL implements ICashStatementBL
 				+ " AND " + I_C_BankStatement.COLUMNNAME_Processed + "=?";
 
 		I_C_BankStatement bs = new Query(ctx, I_C_BankStatement.Table_Name, whereClause, trxName)
-				.setParameters(new Object[] { C_BP_BankAccount_ID, statementDate, false })
-				.firstOnly();
+				.setParameters(C_BP_BankAccount_ID, statementDate, false)
+				.firstOnly(I_C_BankStatement.class);
 
 		if (bs != null)
 		{

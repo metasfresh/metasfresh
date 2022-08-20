@@ -52,6 +52,12 @@ import java.util.function.IntFunction;
 public abstract class AbstractTypedQuery<T> implements IQuery<T>
 {
 	@Override
+	public T firstOnly() throws DBException
+	{
+		return firstOnly(getModelClass());
+	}
+
+	@Override
 	public final <ET extends T> ET firstOnly(final Class<ET> clazz) throws DBException
 	{
 		final boolean throwExIfMoreThenOneFound = true;
@@ -71,20 +77,6 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	{
 		final boolean throwExIfMoreThenOneFound = true;
 		final ET model = firstOnly(clazz, throwExIfMoreThenOneFound);
-		if (model == null)
-		{
-			throw new DBException("@NotFound@ @" + getTableName() + "@"
-					+ "\n\n@Query@: " + this);
-		}
-
-		return model;
-	}
-
-	@NonNull
-	@Override
-	public final <ET extends T> ET firstNotNull(final Class<ET> clazz) throws DBException
-	{
-		final ET model = first(clazz);
 		if (model == null)
 		{
 			throw new DBException("@NotFound@ @" + getTableName() + "@"
@@ -152,13 +144,6 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	public <K, ET extends T> ImmutableMap<K, ET> map(final Class<ET> modelClass, final Function<ET, K> keyFunction)
 	{
 		final List<ET> list = list(modelClass);
-		return Maps.uniqueIndex(list, keyFunction::apply);
-	}
-
-	@Override
-	public <K> ImmutableMap<K, T> map(@NonNull final Function<T, K> keyFunction)
-	{
-		final List<T> list = list();
 		return Maps.uniqueIndex(list, keyFunction::apply);
 	}
 

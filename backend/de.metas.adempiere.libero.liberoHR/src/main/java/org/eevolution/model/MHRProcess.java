@@ -18,6 +18,8 @@ package org.eevolution.model;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.util.Services;
@@ -38,7 +40,6 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -452,9 +453,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	}
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateAcct());
+		return InstantAndOrgId.ofTimestamp(getDateAcct(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**
@@ -1057,23 +1058,10 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	}  // getDays
 
 	/**
-	 * Helper Method : Concept for a range from-to in periods.
-	 * Periods with values of 0 -1 1, etc. actual previous one period, next period
-	 * 0 corresponds to actual period.
-	 *
-	 * @param conceptValue concept key(value)
-	 * @param periodFrom the search is done by the period value, it helps to search from previous years
-	 * @param periodTo
-	 */
-	public double getConcept(String conceptValue, int periodFrom, int periodTo)
-	{
-		return getConcept(conceptValue, null, periodFrom, periodTo);
-	} // getConcept
-
-	/**
 	 * Helper Method : Concept by range from-to in periods from a different payroll
 	 * periods with values 0 -1 1, etc. actual previous one period, next period
 	 * 0 corresponds to actual period
+	 * @param payrollValue is the value of the payroll.
 	 */
 	public double getConcept(String conceptValue, String payrollValue, int periodFrom, int periodTo)
 	{
