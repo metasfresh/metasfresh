@@ -16,7 +16,7 @@ public class ADWindowName
 	@Nullable String entityType;
 	boolean missing;
 
-	public static ADWindowName missing(@NonNull AdWindowId adWindowId)
+	public static ADWindowName missing(@NonNull final AdWindowId adWindowId)
 	{
 		return builder()
 				.adWindowId(adWindowId)

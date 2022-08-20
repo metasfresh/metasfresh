@@ -17,7 +17,7 @@ public class ADTabNameFQ
 	@Nullable ADWindowName windowName;
 	boolean missing;
 
-	public static ADTabNameFQ missing(@NonNull AdTabId adTabId)
+	public static ADTabNameFQ missing(@NonNull final AdTabId adTabId)
 	{
 		return builder()
 				.adTabId(adTabId)

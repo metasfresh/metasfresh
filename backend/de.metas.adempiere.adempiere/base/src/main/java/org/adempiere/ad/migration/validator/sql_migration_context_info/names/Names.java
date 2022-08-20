@@ -24,7 +24,7 @@ import java.util.Collections;
 
 public final class Names
 {
-	private static String sqlSelectColumn(String tableAlias, String columnName, String asPrefix)
+	private static String sqlSelectColumn(final String tableAlias, final String columnName, final String asPrefix)
 	{
 		return tableAlias + "." + columnName + " AS " + asPrefix + columnName;
 	}
@@ -80,14 +80,14 @@ public final class Names
 		}
 
 		@SuppressWarnings("SameParameterValue")
-		private static String sqlSelect(String tableAlias)
+		private static String sqlSelect(final String tableAlias)
 		{
 			return sqlSelectColumn(tableAlias, "AD_Table_ID", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "TableName", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "EntityType", PREFIX);
 		}
 
-		private static ADTableName retrieve(ResultSet rs) throws SQLException
+		private static ADTableName retrieve(final ResultSet rs) throws SQLException
 		{
 			return ADTableName.builder()
 					.adTableId(AdTableId.ofRepoId(rs.getInt(PREFIX + "AD_Table_ID")))
@@ -137,14 +137,14 @@ public final class Names
 		}
 
 		@SuppressWarnings("SameParameterValue")
-		private static String sqlSelect(String tableAlias)
+		private static String sqlSelect(final String tableAlias)
 		{
 			return sqlSelectColumn(tableAlias, "AD_Column_ID", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "ColumnName", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "EntityType", PREFIX);
 		}
 
-		private static ADColumnNameFQ retrieve(ResultSet rs) throws SQLException
+		private static ADColumnNameFQ retrieve(final ResultSet rs) throws SQLException
 		{
 			return ADColumnNameFQ.builder()
 					.adColumnId(AdColumnId.ofRepoId(rs.getInt(PREFIX + "AD_Column_ID")))
@@ -175,7 +175,7 @@ public final class Names
 		}
 
 		@SuppressWarnings("SameParameterValue")
-		private static String sqlSelect(String tableAlias)
+		private static String sqlSelect(final String tableAlias)
 		{
 			return sqlSelectColumn(tableAlias, "AD_Window_ID", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "Name", PREFIX)
@@ -214,7 +214,7 @@ public final class Names
 		}
 
 		@SuppressWarnings("SameParameterValue")
-		private static String sqlSelect(String tableAlias)
+		private static String sqlSelect(final String tableAlias)
 		{
 			return sqlSelectColumn(tableAlias, "AD_Tab_ID", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "Name", PREFIX)
@@ -257,7 +257,7 @@ public final class Names
 		}
 
 		@SuppressWarnings("SameParameterValue")
-		private static String sqlSelect(String tableAlias)
+		private static String sqlSelect(final String tableAlias)
 		{
 			return sqlSelectColumn(tableAlias, "AD_UI_Section_ID", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "Value", PREFIX);
@@ -299,7 +299,7 @@ public final class Names
 		}
 
 		@SuppressWarnings("SameParameterValue")
-		private static String sqlSelect(String tableAlias)
+		private static String sqlSelect(final String tableAlias)
 		{
 			return sqlSelectColumn(tableAlias, "AD_UI_Column_ID", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "SeqNo", PREFIX);
@@ -342,7 +342,7 @@ public final class Names
 		}
 
 		@SuppressWarnings("SameParameterValue")
-		private static String sqlSelect(String tableAlias)
+		private static String sqlSelect(final String tableAlias)
 		{
 			return sqlSelectColumn(tableAlias, "AD_UI_ElementGroup_ID", PREFIX)
 					+ ", " + sqlSelectColumn(tableAlias, "Name", PREFIX);
@@ -384,7 +384,7 @@ public final class Names
 					+ ", " + sqlSelectColumn(tableAlias, "Classname", PREFIX);
 		}
 
-		private static ADProcessName retrieve(ResultSet rs) throws SQLException
+		private static ADProcessName retrieve(final ResultSet rs) throws SQLException
 		{
 			return ADProcessName.builder()
 					.value(rs.getString(PREFIX + "Value"))
@@ -395,7 +395,7 @@ public final class Names
 
 	public static final class ADElementName_Loader
 	{
-		public static String retrieveColumnName(@NonNull AdElementId adElementId)
+		public static String retrieveColumnName(@NonNull final AdElementId adElementId)
 		{
 			return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited,
 					"SELECT ColumnName FROM AD_Element WHERE AD_Element_ID=?",
@@ -405,7 +405,7 @@ public final class Names
 
 	public static final class ADMessageName_Loader
 	{
-		public static String retrieveValue(@NonNull AdMessageId adMessageId)
+		public static String retrieveValue(@NonNull final AdMessageId adMessageId)
 		{
 			return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited,
 					"SELECT Value FROM AD_Message WHERE AD_Message_ID=?",

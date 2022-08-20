@@ -16,7 +16,7 @@ public class ADUISectionNameFQ
 
 	boolean missing;
 
-	public static ADUISectionNameFQ missing(@NonNull AdUISectionId adUISectionId)
+	public static ADUISectionNameFQ missing(@NonNull final AdUISectionId adUISectionId)
 	{
 		return builder()
 				.adUISectionId(adUISectionId)
