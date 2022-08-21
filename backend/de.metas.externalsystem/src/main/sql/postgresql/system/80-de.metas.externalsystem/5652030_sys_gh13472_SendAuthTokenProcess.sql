@@ -446,3 +446,5 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=77, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=78, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541910 AND AD_Tree_ID=10
 ;
 
+update ad_menu_trl set name = 'Authenticate External-Systems' where ad_menu_id = 541993 and ad_language = 'en_US'
+;
