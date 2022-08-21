@@ -1491,9 +1491,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			DB.close(rs, pstmt);
 		}
 
-		// Conversion date to be used on currency conversion
-		final LocalDate dateConv = SystemTime.asLocalDate();
-
 		BigDecimal result = BigDecimal.ZERO;
 		for (final CurrencyId currencyId : currencyId2conversion2Amt.keySet())
 		{
@@ -1506,7 +1503,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						amt,
 						currencyId,    // CurFrom_ID,
 						targetCurrencyId, // CurTo_ID,
-						dateConv, // ConvDate,
+						SystemTime.asInstant(), // ConvDate,
 						conversionTypeId,
 						ClientId.ofRepoId(adClientId),
 						orgId);

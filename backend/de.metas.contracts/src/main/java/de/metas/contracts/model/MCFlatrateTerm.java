@@ -1,45 +1,21 @@
 package de.metas.contracts.model;
 
-import static java.math.BigDecimal.ZERO;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.Msg;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.time.LocalDate;
 import java.util.Properties;
 
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.Msg;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import static java.math.BigDecimal.ZERO;
 
 public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 {
@@ -172,9 +148,9 @@ public class MCFlatrateTerm extends X_C_Flatrate_Term implements IDocument
 	}
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateContracted());
+		return InstantAndOrgId.ofTimestamp(getDateContracted(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	@Override

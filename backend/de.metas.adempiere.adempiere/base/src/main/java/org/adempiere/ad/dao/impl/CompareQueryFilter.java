@@ -34,7 +34,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.compiere.Adempiere;
-import org.compiere.model.MQuery;
 import org.compiere.util.TimeUtil;
 
 import de.metas.common.util.CoalesceUtil;
@@ -53,34 +52,27 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	public enum Operator
 	{
-		EQUAL("=", MQuery.Operator.EQUAL), //
-		NOT_EQUAL("<>", MQuery.Operator.NOT_EQUAL), //
-		LESS("<", MQuery.Operator.LESS), //
-		LESS_OR_EQUAL("<=", MQuery.Operator.LESS_EQUAL), //
-		GREATER(">", MQuery.Operator.GREATER), //
-		GREATER_OR_EQUAL(">=", MQuery.Operator.GREATER_EQUAL), //
+		EQUAL("="), //
+		NOT_EQUAL("<>"), //
+		LESS("<"), //
+		LESS_OR_EQUAL("<="), //
+		GREATER(">"), //
+		GREATER_OR_EQUAL(">="), //
 
-		STRING_LIKE("LIKE", MQuery.Operator.LIKE), //
-		STRING_LIKE_IGNORECASE("ILIKE", MQuery.Operator.LIKE_I);
+		STRING_LIKE("LIKE"), //
+		STRING_LIKE_IGNORECASE("ILIKE");
 
 		private final String sql;
-		private final MQuery.Operator mqueryOperator;
 
-		Operator(final String sql, final MQuery.Operator mqueryOperator)
+		Operator(final String sql)
 		{
 			Check.assumeNotEmpty(sql, "sql not empty");
 			this.sql = sql;
-			this.mqueryOperator = mqueryOperator;
 		}
 
 		public final String getSql()
 		{
 			return sql;
-		}
-
-		public final MQuery.Operator asMQueryOperator()
-		{
-			return mqueryOperator;
 		}
 	}
 
@@ -99,13 +91,13 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	@Getter
 	private final IQueryFilterModifier operand2Modifier;
 
-	/* package */ CompareQueryFilter(
+	public CompareQueryFilter(
 			final String columnName,
 			@NonNull final Operator operator,
 			@Nullable final Object value,
 			final IQueryFilterModifier modifier)
 	{
-		this.operand1 = ModelColumnNameValue.<T>forColumnName(columnName);
+		this.operand1 = ModelColumnNameValue.forColumnName(columnName);
 		this.operand2 = value;
 
 		this.operator = operator;
@@ -115,7 +107,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 	}
 
-	/* package */ CompareQueryFilter(final String columnName, final Operator operator, final Object value)
+	public CompareQueryFilter(final String columnName, final Operator operator, final Object value)
 	{
 		this(columnName, operator, value, NullQueryFilterModifier.instance);
 	}
@@ -232,7 +224,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
-	private static final int compareValues(final Object value1, final Object value2)
+	private static int compareValues(final Object value1, final Object value2)
 	{
 		if (Objects.equals(value1, value2))
 		{
@@ -316,7 +308,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private String sqlWhereClause = null;
 	private List<Object> sqlParams = null;
 
-	private final void buildSql()
+	private void buildSql()
 	{
 		if (sqlBuilt)
 		{

@@ -24,6 +24,8 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -42,7 +44,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -146,18 +147,16 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("DocLine_Allocation[");
-		sb.append(get_ID())
-				.append(",Amt=").append(getAllocatedAmt())
-				.append(",Discount=").append(getDiscountAmt())
-				.append(",WriteOff=").append(getWriteOffAmt())
-				.append(",OverUnderAmt=").append(getOverUnderAmt())
-				.append(" - C_Payment_ID=").append(_payment)
-				.append(",C_CashLine_ID=").append(cashLine)
-				.append(",C_Invoice_ID=").append(invoice)
-				.append("]");
-		return sb.toString();
-	}    // toString
+		return "DocLine_Allocation[" + get_ID()
+				+ ",Amt=" + getAllocatedAmt()
+				+ ",Discount=" + getDiscountAmt()
+				+ ",WriteOff=" + getWriteOffAmt()
+				+ ",OverUnderAmt=" + getOverUnderAmt()
+				+ " - C_Payment_ID=" + _payment
+				+ ",C_CashLine_ID=" + cashLine
+				+ ",C_Invoice_ID=" + invoice
+				+ "]";
+	}
 
 	/**
 	 * @return allocated amount
@@ -541,10 +540,9 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			Check.assumeNotNull(invoice, "invoice not null");
 			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					TimeUtil.asLocalDate(invoice.getDateAcct()),
+					LocalDateAndOrgId.ofTimestamp(invoice.getDateAcct(), OrgId.ofRepoId(invoice.getAD_Org_ID()), services::getTimeZone),
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-					ClientId.ofRepoId(invoice.getAD_Client_ID()),
-					OrgId.ofRepoId(invoice.getAD_Org_ID()));
+					ClientId.ofRepoId(invoice.getAD_Client_ID()));
 		}
 		return invoiceCurrencyConversionCtx;
 	}
@@ -565,10 +563,9 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 				final I_C_Cash cashJournal = cashLine.getC_Cash();
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						TimeUtil.asLocalDate(cashJournal.getDateAcct()),
-						(CurrencyConversionTypeId)null, // C_ConversionType_ID - default
-						ClientId.ofRepoId(cashLine.getAD_Client_ID()),
-						OrgId.ofRepoId(cashLine.getAD_Org_ID()));
+						InstantAndOrgId.ofTimestamp(cashJournal.getDateAcct(), OrgId.ofRepoId(cashLine.getAD_Org_ID())),
+						null, // C_ConversionType_ID - default
+						ClientId.ofRepoId(cashLine.getAD_Client_ID()));
 			}
 			else
 			{

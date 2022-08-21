@@ -16,25 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
@@ -44,6 +29,19 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Match PO Model.
@@ -66,7 +64,6 @@ import de.metas.util.Services;
  *
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
 public class MMatchPO extends X_M_MatchPO
 {
@@ -74,6 +71,7 @@ public class MMatchPO extends X_M_MatchPO
 
 	private static final Logger logger = LogManager.getLogger(MMatchPO.class);
 
+	@SuppressWarnings("unused")
 	public MMatchPO(final Properties ctx, final int M_MatchPO_ID, final String trxName)
 	{
 		super(ctx, M_MatchPO_ID, trxName);
@@ -116,7 +114,7 @@ public class MMatchPO extends X_M_MatchPO
 					priceActual, 
 					CurrencyId.ofRepoId(invoiceCurrency_ID), 
 					CurrencyId.ofRepoId(orderCurrency_ID),
-					TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
+					invoice.getDateInvoiced().toInstant(),
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
 					ClientId.ofRepoId(getAD_Client_ID()), 
 					OrgId.ofRepoId(getAD_Org_ID()));
@@ -381,13 +379,12 @@ public class MMatchPO extends X_M_MatchPO
 	@Override
 	public String toString()
 	{
-		return new StringBuilder("MMatchPO[")
-				.append(getM_MatchPO_ID())
-				.append(",Qty=").append(getQty())
-				.append(",C_OrderLine_ID=").append(getC_OrderLine_ID())
-				.append(",M_InOutLine_ID=").append(getM_InOutLine_ID())
-				.append(",C_InvoiceLine_ID=").append(getC_InvoiceLine_ID())
-				.append("]")
-				.toString();
+		return "MMatchPO["
+				+ getM_MatchPO_ID()
+				+ ",Qty=" + getQty()
+				+ ",C_OrderLine_ID=" + getC_OrderLine_ID()
+				+ ",M_InOutLine_ID=" + getM_InOutLine_ID()
+				+ ",C_InvoiceLine_ID=" + getC_InvoiceLine_ID()
+				+ "]";
 	}
 }	// MMatchPO

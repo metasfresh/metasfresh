@@ -1,7 +1,6 @@
 package de.metas.costing;
 
-import de.metas.order.OrderLineId;
-import de.metas.uom.UomId;
+import lombok.NonNull;
 
 import java.util.Optional;
 
@@ -37,15 +36,9 @@ public interface ICostingService
 
 	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
 
-	/**
-	 * @return seed cost or null
-	 */
-	Optional<CostAmount> calculateSeedCosts(
-			CostSegment costSegment,
-			CostingMethod costingMethod,
-			final OrderLineId orderLineId);
-
 	Optional<CostPrice> getCurrentCostPrice(
 			CostSegment costSegment,
 			CostingMethod costingMethod);
+
+	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 }

@@ -16,6 +16,8 @@ import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -34,12 +36,10 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -54,9 +54,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 public abstract class AbstractDocumentBL implements IDocumentBL
 {
-	private static final transient Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
+	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
-	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(() -> retrieveDocActionHandlerProvidersIndexedByTableName());
+	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
 	protected abstract String retrieveString(int adTableId, int recordId, final String columnName);
 
@@ -420,7 +420,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 
-	protected final LocalDate getDocumentDate(final Object model)
+	@Nullable
+	protected final InstantAndOrgId getDocumentDate(final Object model)
 	{
 		if (model == null)
 		{
@@ -429,7 +430,8 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 		if (model instanceof I_C_OrderLine)
 		{
-			return TimeUtil.asLocalDate(((I_C_OrderLine)model).getDateOrdered());
+			final I_C_OrderLine orderLine = (I_C_OrderLine)model;
+			return InstantAndOrgId.ofTimestamp(orderLine.getDateOrdered(), OrgId.ofRepoId(orderLine.getAD_Org_ID()));
 		}
 
 		final IDocument doc = getDocumentOrNull(model);

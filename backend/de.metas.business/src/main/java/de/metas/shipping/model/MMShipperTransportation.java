@@ -40,27 +40,26 @@ package de.metas.shipping.model;
  * #L%
  */
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.util.Services;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Shipper Transportation model
@@ -307,9 +306,9 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	}    // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateDoc());
+		return InstantAndOrgId.ofTimestamp(getDateDoc(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

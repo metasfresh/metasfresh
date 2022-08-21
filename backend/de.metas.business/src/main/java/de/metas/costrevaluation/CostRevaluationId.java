@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.costrevaluation.impl;
+package de.metas.costrevaluation;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

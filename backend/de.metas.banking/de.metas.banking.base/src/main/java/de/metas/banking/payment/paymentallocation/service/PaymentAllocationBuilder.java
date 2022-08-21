@@ -25,7 +25,6 @@ package de.metas.banking.payment.paymentallocation.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.currency.CurrencyConversionContext;
@@ -39,6 +38,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.OptionalDeferredException;
@@ -825,10 +825,9 @@ public class PaymentAllocationBuilder
 	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final IPaymentDocument payment)
 	{
 		CurrencyConversionContext conversionContext = moneyService.createConversionContext(
-				payment.getDate(),
+				LocalDateAndOrgId.ofLocalDate(payment.getDate(), payment.getClientAndOrgId().getOrgId()),
 				payment.getPaymentCurrencyContext().getCurrencyConversionTypeId(),
-				payment.getClientAndOrgId()
-		);
+				payment.getClientAndOrgId().getClientId());
 
 		final FixedConversionRate fixedConversionRate = payment.getPaymentCurrencyContext().toFixedConversionRateOrNull();
 		if (fixedConversionRate != null)

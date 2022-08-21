@@ -1,20 +1,10 @@
 package de.metas.acct.callout;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.currency.CurrencyRate;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_GL_Journal;
-import org.compiere.util.TimeUtil;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
@@ -22,6 +12,14 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_GL_Journal;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 /*
  * #%L
@@ -91,11 +89,7 @@ public class GL_Journal
 		}
 
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(glJournal.getC_ConversionType_ID());
-		LocalDate dateAcct = TimeUtil.asLocalDate(glJournal.getDateAcct());
-		if (dateAcct == null)
-		{
-			dateAcct = SystemTime.asLocalDate();
-		}
+		final Instant dateAcct = glJournal.getDateAcct() != null ? glJournal.getDateAcct().toInstant() : SystemTime.asInstant();
 		final ClientId adClientId = ClientId.ofRepoId(glJournal.getAD_Client_ID());
 		final OrgId adOrgId = OrgId.ofRepoId(glJournal.getAD_Org_ID());
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(glJournal.getC_AcctSchema_ID());

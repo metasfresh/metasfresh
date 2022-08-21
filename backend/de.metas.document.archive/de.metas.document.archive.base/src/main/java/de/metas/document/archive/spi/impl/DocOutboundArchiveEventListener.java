@@ -23,10 +23,10 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.ArchiveId;
@@ -40,11 +40,9 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -129,10 +127,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	@Override
 	public void onPrintOut(final I_AD_Archive archive,
-			@Nullable final UserId userId,
-			final String printerName,
-			final int copies,
-			@NonNull final ArchivePrintOutStatus status)
+						   @Nullable final UserId userId,
+						   final String printerName,
+						   final int copies,
+						   @NonNull final ArchivePrintOutStatus status)
 	{
 		// task 05334: only assume existing archive if the status is "success"
 		if (status.isSuccess())
@@ -162,6 +160,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	/**
 	 * We don't generate logs for archives without table IDs
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isLoggableArchive(@Nullable final I_AD_Archive archive)
 	{
 		// task 05334: be robust against archive==null
@@ -240,11 +239,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setDocumentNo(archiveRecord.getDocumentNo());
 		docOutboundLogRecord.setFileName(archiveRecord.getName());
 
-		final LocalDate documentDate = CoalesceUtil.coalesce(
-				docActionBL.getDocumentDate(ctx, adTableId, recordId),
-				TimeUtil.asLocalDate(docOutboundLogRecord.getCreated()));
+		final InstantAndOrgId documentDate = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> docActionBL.getDocumentDate(ctx, adTableId, recordId),
+				() -> InstantAndOrgId.ofTimestamp(CoalesceUtil.coalesceSuppliersNotNull(docOutboundLogRecord::getCreated, SystemTime::asTimestamp), OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID())));
 
-		docOutboundLogRecord.setDateDoc(TimeUtil.asTimestamp(documentDate)); // task 08905: Also set the the documentDate
+		docOutboundLogRecord.setDateDoc(documentDate.toTimestamp()); // task 08905: Also set the the documentDate
 
 		setMailRecipient(docOutboundLogRecord);
 

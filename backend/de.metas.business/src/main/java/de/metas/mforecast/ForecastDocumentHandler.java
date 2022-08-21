@@ -4,6 +4,8 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.util.TimeUtil;
@@ -136,9 +138,9 @@ class ForecastDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
 		final I_M_Forecast forecast = extractForecast(docFields);
-		return TimeUtil.asLocalDate(forecast.getDatePromised());
+		return InstantAndOrgId.ofTimestamp(forecast.getDatePromised(), OrgId.ofRepoId(forecast.getAD_Org_ID()));
 	}
 }
