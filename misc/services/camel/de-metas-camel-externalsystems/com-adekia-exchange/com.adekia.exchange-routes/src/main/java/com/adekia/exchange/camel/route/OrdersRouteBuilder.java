@@ -23,13 +23,12 @@
 package com.adekia.exchange.camel.route;
 
 import com.adekia.exchange.camel.logger.SimpleLog;
+import com.adekia.exchange.camel.processor.CtxProcessor;
 import com.adekia.exchange.camel.processor.GetOrderProcessor;
 import com.adekia.exchange.camel.processor.GetOrdersProcessor;
 import com.adekia.exchange.camel.processor.OrderBPProcessor;
-import com.adekia.exchange.camel.processor.CtxProcessor;
 import com.adekia.exchange.camel.processor.OrderPaymentProcessor;
 import com.adekia.exchange.camel.processor.OrderProcessor;
-import com.adekia.exchange.context.Ctx;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +39,9 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class OrdersRouteBuilder extends RouteBuilder {
-    public static final String CTX_PROCESSOR_ID = "Adekia-Ctx-orderProcessorId";
+
+    public static final String CTX_ORDER_PROCESSOR_ID = "Adekia-Ctx-orderProcessorId";
+    public static final String CTX_ORDERS_PROCESSOR_ID = "Adekia-Ctx-ordersProcessorId";
     public static final String GET_ORDERS_ROUTE_ID = "Adekia-Order-getOrders";
     public static final String GET_ORDERS_PROCESSOR_ID = "Adekia-Order-getOrdersProcessorId";
     public static final String GET_ORDER_ROUTE_ID = "Adekia-Order-getOrder";
@@ -85,7 +86,7 @@ public class OrdersRouteBuilder extends RouteBuilder {
         // todo		from(direct(GET_ORDERS_ROUTE_ID))
         from("timer://foo?repeatCount=1")
                 .routeId(GET_ORDERS_ROUTE_ID)
-                .process(ctxBuilderProcessor).id(CTX_PROCESSOR_ID)
+                .process(ctxBuilderProcessor).id(CTX_ORDERS_PROCESSOR_ID)
                 .log(LoggingLevel.INFO, "RUNNING GetOrdersProcessor...")
                 .process(getOrdersProcessor).id(GET_ORDERS_PROCESSOR_ID)
                 .log(LoggingLevel.INFO, "  RESPONSE : ${body}")
@@ -102,11 +103,12 @@ public class OrdersRouteBuilder extends RouteBuilder {
         // Simple direct route to Retrieve an Order and route
         from(direct(GET_ORDER_ROUTE_ID))
                 .routeId(GET_ORDER_ROUTE_ID)
+                .process(ctxBuilderProcessor).id(CTX_ORDER_PROCESSOR_ID)
                 .log(LoggingLevel.INFO, "RUNNING GetOrderProcessor...")
                 .process(getOrderProcessor).id(GET_ORDER_PROCESSOR_ID)
                 .to(direct(ORDER_ROUTE_ID));
 
-        // Simple direct route to process an OrderType
+        // Simple private  direct route to process an OrderType
         from(direct(ORDER_ROUTE_ID))
                 .routeId(ORDER_ROUTE_ID)
                 .log(LoggingLevel.INFO, "    Processing Order :")

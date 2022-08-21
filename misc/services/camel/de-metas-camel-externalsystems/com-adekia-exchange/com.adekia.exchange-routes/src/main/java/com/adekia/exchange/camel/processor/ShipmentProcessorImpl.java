@@ -52,6 +52,7 @@ public class ShipmentProcessorImpl implements ShipmentProcessor
 
     @Override
     public void process(final Exchange exchange) throws Exception {
+        Ctx ctx = exchange.getProperty(Ctx.CAMEL_PROPERTY_NAME, Ctx.class);
         SimpleLog logger = SimpleLog.getLogger(exchange);
         logger.clear();
 
@@ -59,7 +60,7 @@ public class ShipmentProcessorImpl implements ShipmentProcessor
         Object transformedDa = shipmentTransformer.transform(despatchAdvice);
         logger.add(transformedDa.toString());
 
-        String response = shipmentSender.send(transformedDa);
+        String response = shipmentSender.send(ctx, transformedDa);
         logger.add(response);
 
         exchange.getIn().setBody(despatchAdvice);

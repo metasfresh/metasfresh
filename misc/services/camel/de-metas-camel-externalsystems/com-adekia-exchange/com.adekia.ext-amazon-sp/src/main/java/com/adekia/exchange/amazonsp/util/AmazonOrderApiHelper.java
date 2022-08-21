@@ -23,34 +23,33 @@
 package com.adekia.exchange.amazonsp.util;
 
 import com.adekia.exchange.amazonsp.client.orders.api.OrdersV0Api;
-import com.adekia.exchange.amazonsp.context.AmazonCtxHelper;
+import com.adekia.exchange.context.Ctx;
 import com.amazon.SellingPartnerAPIAA.AWSAuthenticationCredentials;
 import com.amazon.SellingPartnerAPIAA.AWSAuthenticationCredentialsProvider;
 import com.amazon.SellingPartnerAPIAA.LWAAuthorizationCredentials;
 
-import static com.amazon.SellingPartnerAPIAA.ScopeConstants.SCOPE_MIGRATION_API;
-import static com.amazon.SellingPartnerAPIAA.ScopeConstants.SCOPE_NOTIFICATIONS_API;
+import java.util.UUID;
 
 public class AmazonOrderApiHelper
 {
 
-	public static OrdersV0Api getOrdersAPI()
+	public static OrdersV0Api getOrdersAPI(Ctx ctx)
 	{
 		AWSAuthenticationCredentials awsAuthenticationCredentials = AWSAuthenticationCredentials.builder()
-				.accessKeyId(AmazonCtxHelper.AmazonAuthProperties.get("accessKeyId"))
-				.secretKey(AmazonCtxHelper.AmazonAuthProperties.get("secretKey"))
-				.region(AmazonCtxHelper.AmazonAuthProperties.get("region"))
+				.accessKeyId(ctx.getProperties().get("accessKeyId"))
+				.secretKey(ctx.getProperties().get("secretKey"))
+				.region(ctx.getProperties().get("region"))
 				.build();
 
 		AWSAuthenticationCredentialsProvider awsAuthenticationCredentialsProvider = AWSAuthenticationCredentialsProvider.builder()
-				.roleArn(AmazonCtxHelper.AmazonAuthProperties.get("roleArn"))
-				.roleSessionName(AmazonCtxHelper.AmazonAuthProperties.get("roleSessionName"))
+				.roleArn(ctx.getProperties().get("roleArn"))
+				.roleSessionName(UUID.randomUUID().toString())
 				.build();
 
 		LWAAuthorizationCredentials lwaAuthorizationCredentials = LWAAuthorizationCredentials.builder()
-				.clientId(AmazonCtxHelper.AmazonAuthProperties.get("clientId"))
-				.clientSecret(AmazonCtxHelper.AmazonAuthProperties.get("clientSecret"))
-				.refreshToken(AmazonCtxHelper.AmazonAuthProperties.get("refreshToken"))
+				.clientId(ctx.getProperties().get("clientId"))
+				.clientSecret(ctx.getProperties().get("clientSecret"))
+				.refreshToken(ctx.getProperties().get("refreshToken"))
 				.endpoint("https://api.amazon.com/auth/o2/token")
 				.build();
 
@@ -67,11 +66,9 @@ public class AmazonOrderApiHelper
 				.awsAuthenticationCredentials(awsAuthenticationCredentials)
 				.lwaAuthorizationCredentials(lwaAuthorizationCredentials)
 				.awsAuthenticationCredentialsProvider(awsAuthenticationCredentialsProvider)
-				.endpoint("https://sellingpartnerapi-na.amazon.com")
+				.endpoint(ctx.getProperties().get("endpoint"))
 				.build();
 
 		return ordersApi;
-
 	}
-
 }

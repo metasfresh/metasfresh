@@ -22,6 +22,7 @@
 
 package com.adekia.exchange.camel.sender;
 
+import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.sender.ShipmentSender;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,7 @@ import org.springframework.stereotype.Component;
 public class ShipmentSenderSimplImpl implements ShipmentSender
 {
 	@Override
-	public String send(final Object shipment) throws Exception
+	public String send(Ctx ctx, final Object shipment) throws Exception
 	{
 		return "    --> Sent to SimpleSending";
 	}

@@ -1,8 +1,8 @@
 /*
  * #%L
- * ext-amazon-sp
+ * exchange-routes
  * %%
- * Copyright (C) 2022 Adekia
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,42 @@
  * #L%
  */
 
-package com.adekia.exchange.amazonsp.context;
+package com.adekia.exchange.camel.context;
 
-import java.util.Arrays;
-import java.util.List;
+import com.adekia.exchange.context.Ctx;
+import com.adekia.exchange.context.CtxProvider;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AmazonCtxHelper {
-
+// Template, copy, set good values and uncomment next 2 lines in the copy
+//@Component
+//@ConditionalOnProperty(prefix = "ctx", name = "provider", havingValue = "mock")
+public class CtxProviderMockImpl implements CtxProvider
+{
     public static Map<String, String> AmazonAuthProperties = Stream.of(new String[][] {
             //AWSAuthenticationCredentials
-//            { "basePath", "World" },
+            //            { "basePath", "World" },
             { "accessKeyId", "accessKeyId" },
             { "secretKey", "secretKey" },
             { "region", "eu-west-1" },
             //AWSAuthenticationCredentialsProvider
             { "roleArn", "roleArn" },
-            { "roleSessionName", "roleSessionName" },
+            //            { "roleSessionName", "apiaccess" },  # USING UUID now
             // LWAAuthorizationCredentials
             { "clientId", "clientId" },
             { "clientSecret", "clientSecret" },
-//              { "refreshToken", "World" },
-//              { "endpoint", "Doe" },
+            { "refreshToken", "refreshToken" },
+            //            { "endpoint", "https://api.amazon.com/auth/o2/token" },
             //OrdersApi
- //           { "endpoint", "World" }
+            { "endpoint", "https://sellingpartnerapi-eu.amazon.com" }
     }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
 
- }
+    @Override
+    public Ctx process(final Object ctx) throws Exception {
+        return Ctx.builder()
+                .properties(AmazonAuthProperties)
+                .build();
+    }
+}
