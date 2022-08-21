@@ -53,6 +53,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+/**
+ * This repo is about {@link I_C_InterimInvoice_FlatrateTerm}.
+ */
 @Repository
 public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTermDAO
 {
