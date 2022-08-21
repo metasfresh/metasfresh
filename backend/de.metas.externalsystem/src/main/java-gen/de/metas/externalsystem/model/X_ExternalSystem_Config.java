@@ -106,6 +106,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_GRSSignum = "GRS";
 	/** Leich & Mehl = LM */
 	public static final String TYPE_LeichMehl = "LM";
+	/** Amazon = AMZ */
+	public static final String TYPE_Amazon = "AMZ";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

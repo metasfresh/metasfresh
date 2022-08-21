@@ -26,7 +26,7 @@ import com.adekia.exchange.amazonsp.client.shipments.ApiClient;
 import com.adekia.exchange.amazonsp.client.shipments.api.ShippingApi;
 import com.adekia.exchange.amazonsp.client.shipments.model.CreateShipmentRequest;
 import com.adekia.exchange.amazonsp.client.shipments.model.CreateShipmentResponse;
-import com.adekia.exchange.amazonsp.util.AmazonShippingApiHelper;
+import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.sender.ShipmentSender;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
 public class AmazonShipmentSenderMockImpl implements ShipmentSender
 {
 	@Override
-	public String send(final Object shipment) throws Exception
+	public String send(Ctx ctx, final Object shipment) throws Exception
 	{
 		ShippingApi shippingApi = new ShippingApi();
 		ApiClient apiClient = shippingApi.getApiClient().setBasePath("http://localhost:3101/sp-api");

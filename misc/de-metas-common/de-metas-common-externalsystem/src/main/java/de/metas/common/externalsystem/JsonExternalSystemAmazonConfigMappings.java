@@ -1,8 +1,8 @@
 /*
  * #%L
- * exchange-int
+ * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,22 @@
  * #L%
  */
 
-package com.adekia.exchange.sender;
+package de.metas.common.externalsystem;
 
-import com.adekia.exchange.context.Ctx;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public interface ShipmentSender
+import java.util.List;
+
+@Value
+@Builder
+@JsonDeserialize(builder = JsonExternalSystemAmazonConfigMappings.JsonExternalSystemAmazonConfigMappingsBuilder.class)
+public class JsonExternalSystemAmazonConfigMappings
 {
-	public String send(Ctx ctx, final Object shipment) throws Exception;
-
+	@NonNull
+	@JsonProperty("mappings")
+	List<JsonExternalSystemAmazonConfigMapping> jsonExternalSystemAmazonConfigMappingList;
 }

@@ -26,6 +26,7 @@ import com.adekia.exchange.amazonsp.client.shipments.api.ShippingApi;
 import com.adekia.exchange.amazonsp.client.shipments.model.CreateShipmentRequest;
 import com.adekia.exchange.amazonsp.client.shipments.model.CreateShipmentResponse;
 import com.adekia.exchange.amazonsp.util.AmazonShippingApiHelper;
+import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.sender.ShipmentSender;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -35,10 +36,10 @@ import org.springframework.stereotype.Service;
 public class AmazonShipmentSenderImpl implements ShipmentSender
 {
 	@Override
-	public String send(final Object shipment) throws Exception
+	public String send(Ctx ctx, final Object shipment) throws Exception
 	{
 
-		ShippingApi api = AmazonShippingApiHelper.getShippingAPI();
+		ShippingApi api = AmazonShippingApiHelper.getShippingAPI(ctx);
 		CreateShipmentResponse response = api.createShipment((CreateShipmentRequest)shipment);
 
 		return "  --> sent to Amazon : "+api.getApiClient().getBasePath() + "/shipping/v1/shipments [" + response.getPayload().getShipmentId() + "] "

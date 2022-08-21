@@ -46,7 +46,6 @@ public class AmazonGetOrdersProviderMockImpl implements AmazonGetOrdersProvider
 	@Override
 	public List<OrderType> getOrders(Ctx ctx) throws Exception
 	{
-		//OrdersV0Api ordersApi = AmazonOrderApiHelper.getOrdersAPI();
 		OrdersV0Api ordersApi = new OrdersV0Api();
 		ApiClient apiClient = ordersApi.getApiClient().setBasePath("http://localhost:3101/sp-api");
 		apiClient.apiType ="mock";
