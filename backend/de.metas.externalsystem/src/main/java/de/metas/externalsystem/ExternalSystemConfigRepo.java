@@ -28,9 +28,12 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.amazon.ExternalSystemAmazonConfig;
+import de.metas.externalsystem.amazon.ExternalSystemAmazonConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_AdkEx_Amazon;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
@@ -103,6 +106,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemWooCommerceConfigId.cast(id));
 			case GRSSignum:
 				return getById(ExternalSystemGRSSignumConfigId.cast(id));
+			case Amazon:
+				return getById(ExternalSystemAmazonConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -128,6 +133,9 @@ public class ExternalSystemConfigRepo
 			case RabbitMQ:
 				return getRabbitMQConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case Amazon:
+				return getAmazonConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -152,6 +160,8 @@ public class ExternalSystemConfigRepo
 				return getWooCommerceConfigByParentId(id);
 			case GRSSignum:
 				return getGRSSignumConfigByParentId(id);
+			case Amazon:
+				return getAmazonConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -775,6 +785,66 @@ public class ExternalSystemConfigRepo
 				.externalSystemShopware6ConfigId(ExternalSystemShopware6ConfigId.ofRepoId(record.getExternalSystem_Config_Shopware6_ID()))
 				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.shopwareCode(record.getShopwareCode())
+				.build();
+	}
+
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_AdkEx_Amazon> getAmazonConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_AdkEx_Amazon.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_AdkEx_Amazon.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_AdkEx_Amazon.class);
+	}
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getAmazonConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_AdkEx_Amazon.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_AdkEx_Amazon.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_AdkEx_Amazon.class)
+				.map(ex -> buildExternalSystemAmazonConfig(ex, id));
+	}
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_AdkEx_Amazon config)
+	{
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
+
+		final ExternalSystemAmazonConfig child = buildExternalSystemAmazonConfig(config, parentConfigId);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+	@NonNull
+	private ExternalSystemAmazonConfig buildExternalSystemAmazonConfig(
+			@NonNull final I_ExternalSystem_Config_AdkEx_Amazon config,
+			@NonNull final ExternalSystemParentConfigId parentConfigId)
+	{
+		final ExternalSystemAmazonConfigId externalSystemAmazonConfigId =
+				ExternalSystemAmazonConfigId.ofRepoId(config.getExternalSystem_Config_AdkEx_Amazon_ID());
+
+		final ExternalSystemAmazonConfig.ExternalSystemAmazonConfigBuilder configBuilder = ExternalSystemAmazonConfig.builder();
+
+		return configBuilder
+				.id(externalSystemAmazonConfigId)
+				.parentId(parentConfigId)
+				.value(config.getExternalSystemValue())
+				.name(config.getName())
+				.basePath(config.getBasePath())
+				.accessKeyId(config.getAccessKeyId())
+				.clientId(config.getClientID())
+				.clientSecret(config.getClientSecret())
+				.lwaEndpoint(config.getLWAEndpoint())
+				.secretKey(config.getSecretKey())
+				.refreshToken(config.getRefreshToken())
+				.region(config.getRegion())
+				.roleArn(config.getRoleArn())
+				.debug(config.isDebug())
+				.active(config.isActive())
 				.build();
 	}
 }

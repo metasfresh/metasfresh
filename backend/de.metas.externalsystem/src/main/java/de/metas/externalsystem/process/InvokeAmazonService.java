@@ -1,8 +1,8 @@
 /*
  * #%L
- * exchange-int
+ * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,25 @@
  * #L%
  */
 
-package com.adekia.exchange.sender;
+package de.metas.externalsystem.process;
 
-import com.adekia.exchange.context.Ctx;
+import de.metas.currency.CurrencyRepository;
+import de.metas.order.impl.DocTypeService;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
-public interface ShipmentSender
+@Service
+public class InvokeAmazonService
 {
-	public String send(Ctx ctx, final Object shipment) throws Exception;
 
+	private final DocTypeService docTypeService;
+	private final CurrencyRepository currencyRepository;
+
+	public InvokeAmazonService(
+			@NonNull final DocTypeService docTypeService,
+			@NonNull final CurrencyRepository currencyRepository)
+	{
+		this.docTypeService = docTypeService;
+		this.currencyRepository = currencyRepository;
+	}
 }

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config
  *  @author metasfresh (generated) 
@@ -100,6 +100,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_WooCommerce = "WOO";
 	/** GRSSignum = GRS */
 	public static final String TYPE_GRSSignum = "GRS";
+	/** GRSSignum = GRS */
+	public static final String TYPE_Amazon = "AMZ";
 	/** RabbitMQ REST API = RabbitMQ */
 	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	@Override
