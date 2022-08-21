@@ -53,11 +53,11 @@ UPDATE AD_SysConfig SET ConfigurationLevel='S', Value='540024',Updated=TO_TIMEST
 ;
 
 -- 2022-08-19T12:16:56.377Z
-UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Specifies the user id used by the External Systems when connecting to Metasfresh.',Updated=TO_TIMESTAMP('2022-08-19 15:16:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541471
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Specifies the AD_User_ID used by the External Systems when connecting to Metasfresh.',Updated=TO_TIMESTAMP('2022-08-19 15:16:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541471
 ;
 
 -- 2022-08-19T12:17:12.453Z
-UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Specifies the role id used by the External Systems when connecting to Metasfresh.',Updated=TO_TIMESTAMP('2022-08-19 15:17:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541472
+UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Specifies the AD_Role_ID used by the External Systems when connecting to Metasfresh.',Updated=TO_TIMESTAMP('2022-08-19 15:17:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541472
 ;
 
 
