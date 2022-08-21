@@ -35,8 +35,10 @@ import de.metas.ServerBoot;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
 import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
 import de.metas.common.externalsystem.JsonExternalSystemMessageType;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.authorization.AD_User_AuthToken_StepDefData;
 import de.metas.logging.LogManager;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
@@ -44,9 +46,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User_AuthToken;
 import org.slf4j.Logger;
 import org.springframework.amqp.core.MessageProperties;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -80,13 +84,20 @@ public class ExternalSystem_Authorization_StepDef
 	}
 
 	@And("Custom_ExternalSystem_To_Metasfresh queue receives an JsonExternalSystemMessage request")
-	public void send_JsonExternalSystemMessage() throws IOException, TimeoutException
+	public void send_JsonExternalSystemMessage(@NonNull final DataTable dataTable) throws IOException, TimeoutException
 	{
-		final JsonExternalSystemMessage message = JsonExternalSystemMessage.builder()
-				.type(JsonExternalSystemMessageType.REQUEST_AUTHORIZATION)
-				.build();
+		final ImmutableList.Builder<String> messageCollector = ImmutableList.builder();
 
-		final String string = objectMapper.writeValueAsString(message);
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final JsonExternalSystemMessageType externalSystemMessageType = JsonExternalSystemMessageType.valueOf(DataTableUtil.extractStringForColumnName(row, "JsonExternalSystemMessage.type"));
+
+			final JsonExternalSystemMessage message = JsonExternalSystemMessage.builder()
+					.type(externalSystemMessageType)
+					.build();
+
+			messageCollector.add(objectMapper.writeValueAsString(message));
+		}
 
 		try (final Connection connection = externalSystemsAuthorizationFactory.newConnection())
 		{
@@ -96,8 +107,11 @@ public class ExternalSystem_Authorization_StepDef
 					.contentType(MessageProperties.CONTENT_TYPE_JSON)
 					.build();
 
-			channel.basicPublish("", QUEUE_NAME_ES_TO_MF_CUSTOM, properties, string.getBytes());
-			logger.info("[x] Sent on queue '" + QUEUE_NAME_ES_TO_MF_CUSTOM + "': message= '" + string + "'");
+			for (final String message : messageCollector.build())
+			{
+				channel.basicPublish("", QUEUE_NAME_ES_TO_MF_CUSTOM, properties, message.getBytes());
+				logger.info("Sent on queue '" + QUEUE_NAME_ES_TO_MF_CUSTOM + "': message= '" + message + "'");
+			}
 		}
 	}
 

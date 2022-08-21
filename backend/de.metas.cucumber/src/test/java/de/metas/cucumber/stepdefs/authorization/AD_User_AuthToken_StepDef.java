@@ -28,8 +28,7 @@ import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.stock.MD_Stock_StepDef;
-import de.metas.logging.LogManager;
+import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -37,12 +36,10 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_AuthToken;
 import org.compiere.util.DB;
-import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -52,19 +49,20 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AD_User_AuthToken_StepDef
 {
-	private final static Logger logger = LogManager.getLogger(MD_Stock_StepDef.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final AD_User_AuthToken_StepDefData userAuthTokenTable;
 	private final AD_User_StepDefData userTable;
+	private final AD_Role_StepDefData roleTable;
 
 	public AD_User_AuthToken_StepDef(
 			@NonNull final AD_User_AuthToken_StepDefData userAuthTokenTable,
-			@NonNull final AD_User_StepDefData userTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final AD_Role_StepDefData roleTable)
 	{
 		this.userAuthTokenTable = userAuthTokenTable;
 		this.userTable = userTable;
+		this.roleTable = roleTable;
 	}
 
 	@Given("metasfresh contains AD_User_AuthToken:")
@@ -102,19 +100,12 @@ public class AD_User_AuthToken_StepDef
 		}
 	}
 
-	@And("no AD_User_AuthToken records")
-	public void no_AD_User_AuthToken_records() throws InterruptedException
+	@And("^no AD_User_AuthToken records for userId:(.*)$")
+	public void no_AD_User_AuthToken_records(final String userIdentifier)
 	{
-		try
-		{
-			DB.executeUpdateEx("TRUNCATE TABLE AD_User_AuthToken cascade", ITrx.TRXNAME_None);
-		}
-		catch (final DBDeadLockDetectedException e)
-		{
-			logger.warn("Caught DBDeadLockDetectedException while truncating MDStockData! Will retry in 1second");
-			Thread.sleep(1000);
-			DB.executeUpdateEx("TRUNCATE TABLE AD_User_AuthToken cascade", ITrx.TRXNAME_None);
-		}
+		final I_AD_User user = userTable.get(userIdentifier);
+
+		DB.executeUpdateEx("DELETE FROM AD_User_AuthToken where AD_User_ID=" + user.getAD_User_ID(), ITrx.TRXNAME_None);
 	}
 
 	@And("^after not more than (.*)s, validate AD_User_AuthToken record$")
@@ -123,11 +114,10 @@ public class AD_User_AuthToken_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String userIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer userId = userTable.getOptional(userIdentifier)
-					.map(I_AD_User::getAD_User_ID)
-					.orElseGet(() -> Integer.parseInt(userIdentifier));
+			final Integer userId = userTable.get(userIdentifier).getAD_User_ID();
 
-			final Integer roleId = DataTableUtil.extractIntForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_Role_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String roleIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_User_AuthToken.COLUMNNAME_AD_Role_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Integer roleId = roleTable.get(roleIdentifier).getAD_Role_ID();
 
 			final Supplier<Boolean> userAuthTokenFound = () -> {
 				final ImmutableList<I_AD_User_AuthToken> userAuthTokenList = queryBL.createQueryBuilder(I_AD_User_AuthToken.class)
@@ -150,7 +140,7 @@ public class AD_User_AuthToken_StepDef
 				return true;
 			};
 
-			//dev-note: tryAndWait will fail if ad_note record is not found
+			//dev-note: tryAndWait will fail if AD_User_AuthToken record is not found
 			StepDefUtil.tryAndWait(timeoutSec, 1000, userAuthTokenFound);
 		}
 	}

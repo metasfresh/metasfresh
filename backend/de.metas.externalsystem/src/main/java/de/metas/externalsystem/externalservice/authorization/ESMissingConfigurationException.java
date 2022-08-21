@@ -20,22 +20,31 @@
  * #L%
  */
 
-package de.metas.externalsystem.externalservice.utility;
+package de.metas.externalsystem.externalservice.authorization;
 
 import de.metas.i18n.AdMessageKey;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.springframework.lang.Nullable;
 
-import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
-public class SendErrorNotificationRequest
+public class ESMissingConfigurationException extends RuntimeException
 {
 	@NonNull
-	AdMessageKey errorMessage;
-
+	AdMessageKey adMessageKey;
 	@Nullable
-	Exception exception;
+	List<Object> params;
+
+	public ESMissingConfigurationException(
+			@NonNull final AdMessageKey adMessageKey,
+			@Nullable final List<Object> params)
+	{
+		super(adMessageKey.toAD_Message());
+		this.adMessageKey = adMessageKey;
+		this.params = params;
+	}
 }

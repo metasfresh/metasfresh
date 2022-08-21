@@ -20,10 +20,8 @@
  * #L%
  */
 
-package de.metas.externalsystem.externalservice.utility;
+package de.metas.externalsystem.externalservice.authorization;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.externalservice.authorization.StartupHouseKeepingTask;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -31,35 +29,30 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.user.UserGroupId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+import java.util.List;
 
-@UtilityClass
-public class NotificationHelper
+@Service
+public class ExternalSystemNotificationHelper
 {
-	private static final Logger log = LogManager.getLogger(StartupHouseKeepingTask.class);
+	private static final Logger log = LogManager.getLogger(ExternalSystemNotificationHelper.class);
 
 	private static final String SYS_CONFIG_EXTERNAL_SYSTEM_NOTIFICATION_USER_GROUP = "de.metas.externalsystem.externalservice.authorization.notificationUserGroupId";
-
-	private static final AdMessageKey EXTERNAL_SYSTEM_AUTH_NOTIFICATION_SUBJECT = AdMessageKey.of("External_Systems_Authorization_Subject");
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	public static void sendErrorNotification(
-			@NonNull final AdMessageKey errorMessage,
-			@Nullable final String sysConfig,
-			@Nullable final Exception exception)
+	public void sendNotification(
+			@NonNull final AdMessageKey messageKey,
+			@Nullable final List<Object> params)
 	{
 		final int externalSystemAPIUserGroup = sysConfigBL.getIntValue(SYS_CONFIG_EXTERNAL_SYSTEM_NOTIFICATION_USER_GROUP, -1);
 
@@ -67,48 +60,20 @@ public class NotificationHelper
 
 		if (userGroupId == null)
 		{
-			log.error("No AD_UserGroup is configured to be in charge of the ExternalSystem services authorization!");
-			log.error(msgBL.getMsg(Env.getAD_Language(), errorMessage), exception);
+			log.error("No AD_UserGroup is configured to be in charge of the ExternalSystem services authorization! Just dumping the notification here: {}",
+					  msgBL.getMsg(Env.getAD_Language(), messageKey, params));
+
 			return;
 		}
 
-		final String errorDetails = Optional.ofNullable(exception)
-				.map(Util::dumpStackTraceToString)
-				.orElse(null);
-
 		final Recipient recipient = Recipient.group(userGroupId);
 
-		final ImmutableList<Object> messageParams = buildMessageParams(errorDetails, sysConfig);
-		
 		final UserNotificationRequest verificationFailureNotification = UserNotificationRequest.builder()
 				.recipient(recipient)
-				.subjectADMessage(EXTERNAL_SYSTEM_AUTH_NOTIFICATION_SUBJECT)
-				.contentADMessage(errorMessage)
-				.contentADMessageParams(messageParams)
+				.contentADMessage(messageKey)
+				.contentADMessageParams(params)
 				.build();
 
 		notificationBL.send(verificationFailureNotification);
-	}
-	
-	@Nullable
-	private ImmutableList<Object> buildMessageParams(@Nullable final String errorDetails, @Nullable final String param)
-	{
-		if(Check.isBlank(errorDetails) && Check.isBlank(param))
-		{
-			return null;
-		}
-		
-		final ImmutableList.Builder<Object> paramsBuilder = ImmutableList.builder();
-		if(Check.isNotBlank(param))
-		{
-			paramsBuilder.add(param);
-		}
-
-		if(Check.isNotBlank(errorDetails))
-		{
-			paramsBuilder.add(errorDetails);
-		}
-		
-		return paramsBuilder.build();
 	}
 }

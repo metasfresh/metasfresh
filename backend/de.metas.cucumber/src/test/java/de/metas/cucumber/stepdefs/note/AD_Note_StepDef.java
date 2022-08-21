@@ -37,7 +37,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 import org.compiere.util.DB;
 
@@ -87,9 +86,7 @@ public class AD_Note_StepDef
 				final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_UserGroup_User_Assign.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
 				if (Check.isNotBlank(userIdentifier))
 				{
-					final Integer userId = userTable.getOptional(userIdentifier)
-							.map(I_AD_User::getAD_User_ID)
-							.orElseGet(() -> Integer.parseInt(userIdentifier));
+					final Integer userId = userTable.get(userIdentifier).getAD_User_ID();
 
 					noteQueryBuilder.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_User_ID, userId);
 				}

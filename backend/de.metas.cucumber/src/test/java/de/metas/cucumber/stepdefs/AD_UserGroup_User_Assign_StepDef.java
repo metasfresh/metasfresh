@@ -29,7 +29,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_UserGroup;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 
@@ -64,9 +63,7 @@ public class AD_UserGroup_User_Assign_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String userIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_UserGroup_User_Assign.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer userId = userTable.getOptional(userIdentifier)
-					.map(I_AD_User::getAD_User_ID)
-					.orElseGet(() -> Integer.parseInt(userIdentifier));
+			final int userId = userTable.get(userIdentifier).getAD_User_ID();
 
 			final String userGroupIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_UserGroup_User_Assign.COLUMNNAME_AD_UserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);

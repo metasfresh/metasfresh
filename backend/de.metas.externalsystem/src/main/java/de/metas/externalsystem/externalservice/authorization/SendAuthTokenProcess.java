@@ -22,9 +22,16 @@
 
 package de.metas.externalsystem.externalservice.authorization;
 
-import java.util.Optional;
+import de.metas.process.JavaProcess;
+import org.compiere.SpringContextHolder;
 
-public interface IStartupHouseKeepingTask
+public class SendAuthTokenProcess extends JavaProcess
 {
-	Optional<String> getAuthToken();
+	@Override
+	protected String doIt() throws Exception
+	{
+		SpringContextHolder.instance.getBean(ExternalSystemAuthorizationService.class).postAuthorizationReply();
+
+		return MSG_OK;
+	}
 }

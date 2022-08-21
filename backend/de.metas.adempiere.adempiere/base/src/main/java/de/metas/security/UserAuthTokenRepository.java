@@ -116,7 +116,12 @@ public class UserAuthTokenRepository
 	{
 		final ImmutableList<I_AD_User_AuthToken> userAuthTokens = retrieveByUserAndRoleId(userId, roleId);
 
-		if (!userAuthTokens.isEmpty() && userAuthTokens.size() > 1)
+		if (userAuthTokens.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		if (userAuthTokens.size() > 1)
 		{
 			throw new AdempiereException("More than one record found for AD_User_ID and AD_Role_ID!")
 					.appendParametersToMessage()
@@ -124,9 +129,8 @@ public class UserAuthTokenRepository
 					.setParameter("AD_Role_ID", roleId.getRepoId());
 		}
 
-		return userAuthTokens.isEmpty()
-				? Optional.empty()
-				: Optional.of(fromRecord(userAuthTokens.get(0)));
+		return Optional.of(userAuthTokens.get(0))
+				.map(UserAuthTokenRepository::fromRecord);
 	}
 
 	@NonNull
@@ -143,6 +147,7 @@ public class UserAuthTokenRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	private UserAuthToken extractSingleToken(@NonNull final List<I_AD_User_AuthToken> userAuthTokens)
 	{
 		if (userAuthTokens.isEmpty())
@@ -157,6 +162,7 @@ public class UserAuthTokenRepository
 		return fromRecord(userAuthTokens.get(0));
 	}
 
+	@NonNull
 	private static UserAuthToken fromRecord(final I_AD_User_AuthToken userAuthTokenPO)
 	{
 		return UserAuthToken.builder()
