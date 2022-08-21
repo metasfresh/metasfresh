@@ -127,6 +127,7 @@ public class BudgetProjectRestController_StepDef
 		assertThat(jsonBudgetProjectResponse.getSalesRepId()).isEqualTo(expectedJsonBudgetProjectResponse.getSalesRepId());
 		assertThat(jsonBudgetProjectResponse.getDateContract()).isEqualTo(expectedJsonBudgetProjectResponse.getDateContract());
 		assertThat(jsonBudgetProjectResponse.getDateFinish()).isEqualTo(expectedJsonBudgetProjectResponse.getDateFinish());
+		assertThat(jsonBudgetProjectResponse.getExtendedProps()).isEqualTo(expectedJsonBudgetProjectResponse.getExtendedProps());
 
 		final List<JsonBudgetProjectResourceResponse> projectResources = jsonBudgetProjectResponse.getProjectResources();
 		final List<JsonBudgetProjectResourceResponse> expectedProjectResources = expectedJsonBudgetProjectResponse.getProjectResources();

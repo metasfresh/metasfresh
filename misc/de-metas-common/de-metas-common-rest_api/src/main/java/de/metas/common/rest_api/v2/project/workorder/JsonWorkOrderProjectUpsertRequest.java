@@ -99,10 +99,10 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean dateFinishSet;
 
-	JsonMetasfreshId businessPartnerId;
+	JsonMetasfreshId bpartnerId;
 
 	@ApiModelProperty(hidden = true)
-	boolean businessPartnerIdSet;
+	boolean bpartnerIdSet;
 
 	String projectReferenceExt;
 
@@ -208,10 +208,10 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.dateFinishSet = true;
 	}
 
-	public void setBusinessPartnerId(final JsonMetasfreshId businessPartnerId)
+	public void setBpartnerId(final JsonMetasfreshId bpartnerId)
 	{
-		this.businessPartnerId = businessPartnerId;
-		this.businessPartnerIdSet = true;
+		this.bpartnerId = bpartnerId;
+		this.bpartnerIdSet = true;
 	}
 
 	public void setProjectReferenceExt(final String projectReferenceExt)
@@ -255,19 +255,19 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.woOwnerSet = true;
 	}
 
-	public void setPOReference(final String poReference)
+	public void setPoReference(final String poReference)
 	{
 		this.poReference = poReference;
 		this.poReferenceSet = true;
 	}
 
-	public void setBPartnerTargetDate(final LocalDate bpartnerTargetDate)
+	public void setBpartnerTargetDate(final LocalDate bpartnerTargetDate)
 	{
 		this.bpartnerTargetDate = bpartnerTargetDate;
 		this.bpartnerTargetDateSet = true;
 	}
 
-	public void setWOProjectCreatedDate(final LocalDate woProjectCreatedDate)
+	public void setWoProjectCreatedDate(final LocalDate woProjectCreatedDate)
 	{
 		this.woProjectCreatedDate = woProjectCreatedDate;
 		this.woProjectCreatedDateSet = true;

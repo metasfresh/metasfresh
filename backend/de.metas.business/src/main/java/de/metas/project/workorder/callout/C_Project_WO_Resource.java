@@ -22,7 +22,6 @@
 
 package de.metas.project.workorder.callout;
 
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;

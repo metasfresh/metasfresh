@@ -23,7 +23,9 @@
 package de.metas.rest_api.v2.project.workorder;
 
 import de.metas.Profiles;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectQuery;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectResponses;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.project.ProjectId;
@@ -36,6 +38,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -79,4 +82,12 @@ public class WorkOrderProjectRestController
 		return ResponseEntity.ok(response);
 	}
 
+	@PostMapping("/query")
+	public ResponseEntity<JsonWorkOrderProjectResponses> getWorkOrderProjectByQuery(
+			@RequestBody @NonNull final JsonWorkOrderProjectQuery queryRequest)
+	{
+		final JsonWorkOrderProjectResponses response = workOrderProjectRestService.getWorkOrderProjectsByQuery(queryRequest);
+
+		return ResponseEntity.ok(response);
+	}
 }
