@@ -25,7 +25,6 @@ package de.metas.externalsystem.externalservice.authorization;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.Profiles;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
 import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
 import de.metas.common.externalsystem.JsonExternalSystemMessageType;
@@ -48,13 +47,11 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_User;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@Profile(Profiles.PROFILE_App)
 public class ExternalSystemAuthorizationService
 {
 	private static final Logger log = LogManager.getLogger(ExternalSystemAuthorizationService.class);
