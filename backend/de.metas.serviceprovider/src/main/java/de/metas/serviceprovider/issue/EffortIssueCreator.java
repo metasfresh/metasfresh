@@ -30,6 +30,7 @@ import de.metas.issue.tracking.github.api.v3.service.GithubClient;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.label.IssueLabelService;
+import de.metas.serviceprovider.external.label.LabelCollection;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
@@ -80,13 +81,20 @@ public class EffortIssueCreator
 		this.githubImporterService = githubImporterService;
 	}
 
-	public void createFromIssue(@NonNull final IssueId issueId) throws JsonProcessingException
+	public void createFromBudgetIssue(@NonNull final IssueId budgetIssueId) throws JsonProcessingException
 	{
-		final IssueEntity issue = issueRepository.getById(issueId);
+		final IssueEntity budgetIssue = issueRepository.getById(budgetIssueId);
 
-		final ExternalProjectReference effortExternalProjectReference = getEffortExternalProjectReference(issue.getExternalProjectReferenceId());
+		if (budgetIssue.isEffortIssue())
+		{
+			throw new AdempiereException("S_Issue must be of type BUDGET.")
+					.appendParametersToMessage()
+					.setParameter("S_Issue_ID", budgetIssueId.getRepoId());
+		}
 
-		final Issue githubEffortIssue = createGithubEffortIssue(effortExternalProjectReference, issue);
+		final ExternalProjectReference effortExternalProjectReference = getEffortExternalProjectReference(budgetIssue.getExternalProjectReferenceId());
+
+		final Issue githubEffortIssue = createGithubEffortIssue(effortExternalProjectReference, budgetIssue);
 
 		importGithubEffortIssue(effortExternalProjectReference, String.valueOf(githubEffortIssue.getNumber()));
 	}
@@ -94,15 +102,15 @@ public class EffortIssueCreator
 	@NonNull
 	private Issue createGithubEffortIssue(
 			@NonNull final ExternalProjectReference externalProjectReference,
-			@NonNull final IssueEntity issue) throws JsonProcessingException
+			@NonNull final IssueEntity budgetIssue) throws JsonProcessingException
 	{
 		final CreateIssueRequest createEffortIssueRequest = CreateIssueRequest.builder()
 				.repositoryName(externalProjectReference.getExternalProjectReference())
 				.repositoryOwner(externalProjectReference.getProjectOwner())
-				.oAuthToken(githubConfigRepository.getConfigByNameAndOrg(ACCESS_TOKEN, externalProjectReference.getOrgId()))
-				.title(issue.getName())
-				.body(issue.getExternalIssueURL())
-				.labels(getLabels(issue))
+				.oAuthToken(getGithubAuthToken(externalProjectReference.getOrgId()))
+				.title(budgetIssue.getName())
+				.body(budgetIssue.getExternalIssueURL())
+				.labels(getLabels(budgetIssue))
 				.build();
 
 		return githubClient.createIssue(createEffortIssueRequest);
@@ -115,7 +123,7 @@ public class EffortIssueCreator
 		final OrgId orgId = externalProjectReference.getOrgId();
 
 		final ImportIssuesRequest importEffortIssuesRequest = ImportIssuesRequest.builder()
-				.oAuthToken(githubConfigRepository.getConfigByNameAndOrg(ACCESS_TOKEN, orgId))
+				.oAuthToken(getGithubAuthToken(orgId))
 				.externalProjectReferenceId(externalProjectReference.getExternalProjectReferenceId())
 				.repoId(externalProjectReference.getExternalProjectReference())
 				.repoOwner(externalProjectReference.getProjectOwner())
@@ -132,21 +140,12 @@ public class EffortIssueCreator
 	@NonNull
 	private List<String> getLabels(@NonNull final IssueEntity issue)
 	{
-		final List<IssueLabel> issueLabels = issueLabelService.getByIssueId(issue.getIssueId());
+		final LabelCollection issueLabelCollection = issueLabelService.getByIssueId(issue.getIssueId());
 
-		final ImmutableList.Builder<IssueLabel> issueLabelCollector = ImmutableList.builder();
-
-		matchLabel(issueLabels, GithubImporterConstants.LabelType.COST_CENTER)
-				.ifPresent(issueLabelCollector::add);
-
-		matchLabel(issueLabels, GithubImporterConstants.LabelType.CUSTOMER)
-				.ifPresent(issueLabelCollector::add);
-
-		matchLabel(issueLabels, GithubImporterConstants.LabelType.BUDGET)
-				.ifPresent(issueLabelCollector::add);
-
-		return issueLabelCollector.build()
-				.stream()
+		final ImmutableList<GithubImporterConstants.LabelType> labelTypeToImport = ImmutableList.of(GithubImporterConstants.LabelType.COST_CENTER,
+																									GithubImporterConstants.LabelType.CUSTOMER,
+																									GithubImporterConstants.LabelType.BUDGET);
+		return issueLabelCollection.streamByType(labelTypeToImport)
 				.map(IssueLabel::getValue)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -164,10 +163,8 @@ public class EffortIssueCreator
 	}
 
 	@NonNull
-	private static Optional<IssueLabel> matchLabel(@NonNull final List<IssueLabel> issueLabels, @NonNull final GithubImporterConstants.LabelType labelType)
+	private String getGithubAuthToken(@NonNull final OrgId orgId)
 	{
-		return issueLabels.stream()
-				.filter(label -> label.matchesType(labelType))
-				.findFirst();
+		return githubConfigRepository.getConfigByNameAndOrg(ACCESS_TOKEN, orgId);
 	}
 }

@@ -29,22 +29,23 @@ import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.github.GithubConstants;
 import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.Status;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import lombok.AccessLevel;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 @Value
 @Builder(toBuilder = true)
@@ -55,6 +56,9 @@ public class ImportIssueInfo
 
 	@NonNull
 	ExternalProjectReferenceId externalProjectReferenceId;
+
+	@NonNull
+	String repositoryName;
 
 	@NonNull
 	OrgId orgId;
@@ -111,14 +115,11 @@ public class ImportIssueInfo
 	ExternalId externalParentIssueId;
 
 	@NonNull
-	@Getter(AccessLevel.NONE)
+	@With
 	ImmutableList<IssueLabel> issueLabels;
 
 	@Nullable
 	LocalDate deliveredDate;
-
-	@Nullable
-	String costCenterValue;
 
 	public String getSearchKey()
 	{
@@ -133,22 +134,23 @@ public class ImportIssueInfo
 	}
 
 	@NonNull
-	public ImmutableList<IssueLabel> getIssueLabels()
+	public Optional<IssueLabel> getSingleLabel(@NonNull final Predicate<IssueLabel> filter)
 	{
-		if (isEffortIssue())
+		final List<IssueLabel> matchingLables = filterLabels(label -> label.matchesType(GithubImporterConstants.LabelType.COST_CENTER));
+
+		if (!matchingLables.isEmpty())
 		{
-			return issueLabels;
+			return Optional.of(CollectionUtils.singleElement(matchingLables));
 		}
 
-		final IssueLabel costCenterLabel = issueLabels.stream()
-				.filter(label -> label.matchesType(GithubImporterConstants.LabelType.COST_CENTER))
-				.findFirst()
-				.orElseGet(() -> IssueLabel.builder()
-						.orgId(orgId)
-						.value(GithubConstants.COST_CENTER_LABEL_PREFIX + getSearchKey())
-						.build());
+		return Optional.empty();
+	}
 
-		return Stream.concat(issueLabels.stream(), Stream.of(costCenterLabel))
+	@NonNull
+	private List<IssueLabel> filterLabels(@NonNull final Predicate<IssueLabel> filter)
+	{
+		return issueLabels.stream()
+				.filter(filter)
 				.collect(ImmutableList.toImmutableList());
 	}
 }

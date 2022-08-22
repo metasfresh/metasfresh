@@ -58,7 +58,7 @@ public class RegisterIssuesWebhookProcess extends JavaProcess implements IProces
 	{
 		final ExternalProjectReferenceId externalProjectReferenceId = ExternalProjectReferenceId.ofRepoId(getRecord_ID());
 
-		Loggables.withLogger(log, Level.DEBUG).addLog("*** Invoking RegisterIssuesWebhookProcess for ExternalProjectReferenceId: {}", externalProjectReferenceId.getRepoId());
+		Loggables.withLogger(log, Level.DEBUG).addLog("Invoking RegisterIssuesWebhookProcess for ExternalProjectReferenceId: {}", externalProjectReferenceId.getRepoId());
 
 		githubService.createSyncIssuesWebhook(externalProjectReferenceId);
 

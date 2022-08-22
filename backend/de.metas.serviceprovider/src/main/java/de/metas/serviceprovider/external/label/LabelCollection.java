@@ -2,7 +2,7 @@
  * #%L
  * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,46 +22,37 @@
 
 package de.metas.serviceprovider.external.label;
 
-import de.metas.organization.OrgId;
 import de.metas.serviceprovider.github.GithubImporterConstants;
+import de.metas.serviceprovider.issue.IssueId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
-import java.util.regex.Matcher;
+import java.util.List;
+import java.util.stream.Stream;
 
-@Builder
 @Value
-public class IssueLabel
+public class LabelCollection
 {
 	@NonNull
-	OrgId orgId;
+	IssueId issueId;
 
 	@NonNull
-	String value;
+	List<IssueLabel> issueLabelList;
 
-	@NonNull
-	public boolean matchesType(@NonNull final GithubImporterConstants.LabelType labelType)
+	@Builder
+	public LabelCollection(
+			@NonNull final IssueId issueId,
+			@NonNull final List<IssueLabel> issueLabelList)
 	{
-		final Matcher matcher = labelType.getPattern().matcher(value);
-
-		return matcher.matches();
+		this.issueId = issueId;
+		this.issueLabelList = issueLabelList;
 	}
 
 	@NonNull
-	public String getValueForType(@NonNull final GithubImporterConstants.LabelType labelType)
+	public Stream<IssueLabel> streamByType(@NonNull final List<GithubImporterConstants.LabelType> labelTypes)
 	{
-		final Matcher matcher = labelType.getPattern().matcher(value);
-
-		if (!matcher.matches())
-		{
-			throw new AdempiereException("Value doesn't match the label patten!")
-					.appendParametersToMessage()
-					.setParameter("labelType", labelType.name())
-					.setParameter("value", value);
-		}
-
-		return matcher.group(labelType.getGroupName());
+		return issueLabelList.stream()
+				.filter(label -> labelTypes.stream().anyMatch(label::matchesType));
 	}
 }

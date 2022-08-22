@@ -58,9 +58,9 @@ public class CreateEffortIssueProcess extends JavaProcess implements IProcessPre
 	{
 		final IssueId issueId = IssueId.ofRepoId(getRecord_ID());
 
-		Loggables.withLogger(log, Level.DEBUG).addLog("*** Invoking CreateEffortIssueProcess for IssueId: {}", issueId.getRepoId());
+		Loggables.withLogger(log, Level.DEBUG).addLog("Invoking CreateEffortIssueProcess for IssueId: {}", issueId.getRepoId());
 
-		effortIssueCreator.createFromIssue(issueId);
+		effortIssueCreator.createFromBudgetIssue(issueId);
 
 		return MSG_OK;
 	}

@@ -43,21 +43,7 @@ public class ActivityRepository
 	@NonNull
 	public Optional<ActivityId> getIdByActivityQuery(@NonNull final GetSingleActivityQuery activityQuery)
 	{
-		final IQueryBuilder<I_C_Activity> activityQueryBuilder = queryBL.createQueryBuilder(I_C_Activity.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_Activity.COLUMNNAME_AD_Org_ID, OrgId.ANY, activityQuery.getOrgId());
-
-		if (Check.isNotBlank(activityQuery.getValue()))
-		{
-			activityQueryBuilder.addEqualsFilter(I_C_Activity.COLUMNNAME_Value, activityQuery.getValue());
-		}
-
-		if (activityQuery.getActivityId() != null)
-		{
-			activityQueryBuilder.addEqualsFilter(I_C_Activity.COLUMNNAME_C_Activity_ID, activityQuery.getActivityId());
-		}
-
-		return activityQueryBuilder
+		return toQueryBuilder(activityQuery)
 				.create()
 				.firstIdOnlyOptional(ActivityId::ofRepoIdOrNull);
 	}
@@ -74,5 +60,44 @@ public class ActivityRepository
 		InterfaceWrapperHelper.save(record);
 
 		return ActivityId.ofRepoId(record.getC_Activity_ID());
+	}
+
+	@NonNull
+	public Optional<Activity> getByActivityQuery(@NonNull final GetSingleActivityQuery activityQuery)
+	{
+		return toQueryBuilder(activityQuery)
+				.create()
+				.firstOptional(I_C_Activity.class)
+				.map(ActivityRepository::toActivity);
+	}
+
+	@NonNull
+	private IQueryBuilder<I_C_Activity> toQueryBuilder(@NonNull final GetSingleActivityQuery activityQuery)
+	{
+		final IQueryBuilder<I_C_Activity> activityQueryBuilder = queryBL.createQueryBuilder(I_C_Activity.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Activity.COLUMNNAME_AD_Org_ID, OrgId.ANY, activityQuery.getOrgId());
+
+		if (Check.isNotBlank(activityQuery.getValue()))
+		{
+			activityQueryBuilder.addEqualsFilter(I_C_Activity.COLUMNNAME_Value, activityQuery.getValue());
+		}
+
+		if (activityQuery.getActivityId() != null)
+		{
+			activityQueryBuilder.addEqualsFilter(I_C_Activity.COLUMNNAME_C_Activity_ID, activityQuery.getActivityId());
+		}
+
+		return activityQueryBuilder;
+	}
+
+	@NonNull
+	private static Activity toActivity(@NonNull final I_C_Activity record)
+	{
+		return Activity.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.value(record.getValue())
+				.name(record.getName())
+				.build();
 	}
 }

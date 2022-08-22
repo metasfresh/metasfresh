@@ -68,7 +68,10 @@ public class S_Issue
 	private final IssueService issueService;
 	private final IssueRepository issueRepository;
 
-	public S_Issue(final ExternalReferenceRepository externalReferenceRepository, final IssueService issueService, final IssueRepository issueRepository)
+	public S_Issue(
+			final ExternalReferenceRepository externalReferenceRepository,
+			final IssueService issueService,
+			final IssueRepository issueRepository)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.issueService = issueService;
@@ -183,7 +186,8 @@ public class S_Issue
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
+			ifColumnsChanged = { I_S_Issue.COLUMNNAME_S_Parent_Issue_ID, I_S_Issue.COLUMNNAME_IssueType })
 	public void setParentIssueInProgress(@NonNull final I_S_Issue record)
 	{
 		if (!record.isEffortIssue())
@@ -199,6 +203,11 @@ public class S_Issue
 
 		final IssueEntity parentIssue = issueRepository.getById(parentIssueId);
 		if (parentIssue.isEffortIssue())
+		{
+			return;
+		}
+
+		if (Status.IN_PROGRESS.equals(parentIssue.getStatus()))
 		{
 			return;
 		}
@@ -250,5 +259,4 @@ public class S_Issue
 				&& record.getS_Parent_Issue() != null
 				&& record.getS_Parent_Issue().isEffortIssue();
 	}
-
 }
