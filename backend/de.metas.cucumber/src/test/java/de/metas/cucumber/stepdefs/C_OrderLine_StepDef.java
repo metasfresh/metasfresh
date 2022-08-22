@@ -62,6 +62,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -103,6 +104,7 @@ public class C_OrderLine_StepDef
 	private final M_Attribute_StepDefData attributeTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final IdentifierIds_StepDefData identifierIdsTable;
+	private final C_Tax_StepDefData taxTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -118,7 +120,8 @@ public class C_OrderLine_StepDef
 			@NonNull final C_Activity_StepDefData activityTable,
 			@NonNull final M_Attribute_StepDefData attributeTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final IdentifierIds_StepDefData identifierIdsTable)
+			@NonNull final IdentifierIds_StepDefData identifierIdsTable,
+			@NonNull final C_Tax_StepDefData taxTable)
 	{
 		this.productTable = productTable;
 		this.partnerTable = partnerTable;
@@ -134,6 +137,7 @@ public class C_OrderLine_StepDef
 		this.attributeTable = attributeTable;
 		this.warehouseTable = warehouseTable;
 		this.identifierIdsTable = identifierIdsTable;
+		this.taxTable = taxTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -582,6 +586,18 @@ public class C_OrderLine_StepDef
 		{
 			assertThat(orderLine.getQtyReserved()).isEqualTo(qtyReserved);
 		}
+
+		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(taxIdentifier))
+		{
+			final I_C_Tax tax = taxTable.get(taxIdentifier);
+			assertThat(orderLine.getC_Tax_ID()).isEqualTo(tax.getC_Tax_ID());
+		}
+
+
+		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		orderLineTable.putOrReplace(orderLineIdentifier, orderLine);
 	}
 
 	private void validateAttributeValue(@NonNull final I_C_OrderLine orderLine, @NonNull final String value)

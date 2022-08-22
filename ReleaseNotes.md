@@ -110,6 +110,9 @@ Here come the actual release notes:
   * [#13198](https://github.com/metasfresh/metasfresh/issues/13198) Tell camel which auth token to use when connecting to MF
   * [#13041](https://github.com/metasfresh/metasfresh/issues/13041) Create cucumber-harness for invoice and payment allocation
   * [#12760](https://github.com/metasfresh/metasfresh/issues/12760) Create import/export for C_Campaign_price
+  * [#13456](https://github.com/metasfresh/metasfresh/issues/13456) Delivery Rules & Delivery Fifo #13456
+  * [#13464](https://github.com/metasfresh/metasfresh/issues/13464) Tax calculation for orders where C_Bpartner_Location != Dropship Location (and AD_Org’s Bpartner Location country != Dropship Location country)
+  * [#13448](https://github.com/metasfresh/metasfresh/issues/13448) Address on invoice is the latest billto location from bpartner
   * [#7151](https://github.com/metasfresh/metasfresh/issues/7151) On page switching (in parent view) the includedView for the selected parent row needs to be refreshed
   * [#10032](https://github.com/metasfresh/metasfresh/issues/10032) Cleanup table styles
   * [#11732](https://github.com/metasfresh/metasfresh/issues/11732) webui frontend: improve how the 502 error is displayed to user 
