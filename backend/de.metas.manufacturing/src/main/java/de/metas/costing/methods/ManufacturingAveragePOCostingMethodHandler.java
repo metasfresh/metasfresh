@@ -101,7 +101,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());

@@ -15,6 +15,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
@@ -53,14 +54,21 @@ public class CostRevaluationRepository
 		{
 			throw new AdempiereException("No record found for " + costRevaluationId);
 		}
+		return fromRecord(record);
+	}
+
+	public static CostRevaluation fromRecord(@NonNull final I_M_CostRevaluation record)
+	{
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 
 		return CostRevaluation.builder()
-				.costRevaluationId(costRevaluationId)
+				.costRevaluationId(CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getM_CostElement_ID()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.orgId(orgId)
 				.evaluationStartDate(record.getEvaluationStartDate().toInstant())
+				.dateAcct(InstantAndOrgId.ofTimestamp(record.getDateAcct(), orgId))
 				.docStatus(DocStatus.ofCode(record.getDocStatus()))
 				.build();
 	}
@@ -147,7 +155,7 @@ public class CostRevaluationRepository
 		record.setCurrentQty(from.getCurrentQty().toBigDecimal());
 	}
 
-	private Stream<I_M_CostRevaluationLine> streamAllLineRecordsByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
+	public Stream<I_M_CostRevaluationLine> streamAllLineRecordsByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		return queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
 				.addEqualsFilter(I_M_CostRevaluationLine.COLUMN_M_CostRevaluation_ID, costRevaluationId)
@@ -171,7 +179,7 @@ public class CostRevaluationRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static CostRevaluationLine fromRecord(@NonNull final I_M_CostRevaluationLine record)
+	public static CostRevaluationLine fromRecord(@NonNull final I_M_CostRevaluationLine record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
