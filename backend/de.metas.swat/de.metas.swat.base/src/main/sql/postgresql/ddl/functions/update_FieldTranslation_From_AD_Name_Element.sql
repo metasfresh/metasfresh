@@ -1,91 +1,78 @@
-DROP FUNCTION IF EXISTS update_FieldTranslation_From_AD_Name_Element(numeric, character varying);
+DROP FUNCTION IF EXISTS update_FieldTranslation_From_AD_Name_Element(p_AD_Element_ID numeric,
+                                                                     p_AD_Language character varying)
+;
 
-CREATE OR REPLACE FUNCTION update_FieldTranslation_From_AD_Name_Element
-(
-	p_AD_Element_ID numeric,
-	p_AD_Language character varying = null
+CREATE OR REPLACE FUNCTION update_FieldTranslation_From_AD_Name_Element(
+    p_AD_Element_ID numeric = NULL,
+    p_AD_Language   character varying = NULL
 )
-RETURNS void
+    RETURNS void
 AS
 $BODY$
 DECLARE
-	update_count_via_AD_Column integer;
-	update_count_via_AD_Name integer;
+    update_count_via_AD_Column integer;
+    update_count_via_AD_Name   integer;
 BEGIN
-	--
-	-- AD_Field_Trl via AD_Column
-	UPDATE AD_Field_Trl t
-	SET 
-		IsTranslated = x.IsTranslated, 
-		Name = x.Name, 
-		Description = x.Description, 
-		Help = x.Help
-	FROM
-	(
-		select
-			f.AD_Field_ID,
-			etrl.AD_Element_ID,
-			etrl.AD_Language,
-			etrl.IsTranslated,
-			etrl.Name,
-			etrl.Description,
-			etrl.Help
-		from AD_Element_Trl_Effective_v etrl
-			join AD_Column c on c.AD_Element_ID = etrl.AD_Element_ID
-			join AD_Field f on f.AD_Column_ID = c.AD_Column_ID
-		where 
-			etrl.AD_Element_ID = p_AD_Element_ID  
-			and f.AD_Name_ID is NULL  
-			and (p_AD_Language is null OR etrl.AD_Language = p_AD_Language)
-	) x
-	WHERE
-		t.AD_Field_ID = x.AD_Field_ID
-		and t.AD_Language = x.AD_Language
-	;
-	--
-	GET DIAGNOSTICS update_count_via_AD_Column = ROW_COUNT;
+    --
+    -- AD_Field_Trl via AD_Column
+    UPDATE AD_Field_Trl t
+    SET IsTranslated = x.IsTranslated,
+        Name         = x.Name,
+        Description  = x.Description,
+        Help         = x.Help
+    FROM (SELECT f.AD_Field_ID,
+                 etrl.AD_Element_ID,
+                 etrl.AD_Language,
+                 etrl.IsTranslated,
+                 etrl.Name,
+                 etrl.Description,
+                 etrl.Help
+          FROM AD_Element_Trl_Effective_v etrl
+                   JOIN AD_Column c ON c.AD_Element_ID = etrl.AD_Element_ID
+                   JOIN AD_Field f ON f.AD_Column_ID = c.AD_Column_ID
+          WHERE etrl.AD_Element_ID = p_AD_Element_ID
+            AND f.AD_Name_ID IS NULL
+            AND (p_AD_Language IS NULL OR etrl.AD_Language = p_AD_Language)) x
+    WHERE t.AD_Field_ID = x.AD_Field_ID
+      AND t.AD_Language = x.AD_Language;
+    --
+    GET DIAGNOSTICS update_count_via_AD_Column = ROW_COUNT;
 
 
-	--
-	-- AD_Field_Trl via AD_Element -> AD_Name_ID
-	UPDATE AD_Field_Trl t
-	SET
-		IsTranslated = x.IsTranslated,
-		Name = x.Name,
-		Description = x.Description,
-		Help = x.Help
-	FROM
-	(
-		select
-			f.AD_Field_ID,
-			etrl.AD_Element_ID,
-			etrl.AD_Language,
-			etrl.IsTranslated,
-			etrl.Name,
-			etrl.Description,
-			etrl.Help
-		from AD_Element_Trl_Effective_v etrl
-			join AD_Field f on f.AD_Name_ID = etrl.AD_Element_ID
-		where 
-			etrl.AD_Element_ID = p_AD_Element_ID
-			and (p_AD_Language is null OR etrl.AD_Language = p_AD_Language)
-	) x
-	WHERE
-		t.AD_Field_ID = x.AD_Field_ID
-		and t.AD_Language = x.AD_Language
-	;
-	--
-	GET DIAGNOSTICS update_count_via_AD_Name = ROW_COUNT;
+    --
+    -- AD_Field_Trl via AD_Element -> AD_Name_ID
+    UPDATE AD_Field_Trl t
+    SET IsTranslated = x.IsTranslated,
+        Name         = x.Name,
+        Description  = x.Description,
+        Help         = x.Help
+    FROM (SELECT f.AD_Field_ID,
+                 etrl.AD_Element_ID,
+                 etrl.AD_Language,
+                 etrl.IsTranslated,
+                 etrl.Name,
+                 etrl.Description,
+                 etrl.Help
+          FROM AD_Element_Trl_Effective_v etrl
+                   JOIN AD_Field f ON f.AD_Name_ID = etrl.AD_Element_ID
+          WHERE etrl.AD_Element_ID = p_AD_Element_ID
+            AND (p_AD_Language IS NULL OR etrl.AD_Language = p_AD_Language)) x
+    WHERE t.AD_Field_ID = x.AD_Field_ID
+      AND t.AD_Language = x.AD_Language;
+    --
+    GET DIAGNOSTICS update_count_via_AD_Name = ROW_COUNT;
 
-	raise notice 'Updated AD_Field_Trl for AD_Element_ID=%, AD_Language=%: % rows via AD_Column, % rows via AD_Name',
-		p_AD_Element_ID, p_AD_Language, update_count_via_AD_Column, update_count_via_AD_Name;
-	
+    RAISE NOTICE 'Updated AD_Field_Trl for AD_Element_ID=%, AD_Language=%: % rows via AD_Column, % rows via AD_Name',
+        p_AD_Element_ID, p_AD_Language, update_count_via_AD_Column, update_count_via_AD_Name;
+
 END;
 $BODY$
-LANGUAGE plpgsql
-VOLATILE
-SECURITY DEFINER
-COST 100;
+    LANGUAGE plpgsql
+    VOLATILE
+    SECURITY DEFINER
+    COST 100
+;
 
-COMMENT ON FUNCTION update_FieldTranslation_From_AD_Name_Element(numeric, character varying) IS 
-'When the AD_Field.AD_Name_ID is changed, uypdate all the AD_Field_Trl entries of the AD_Field, based on the AD_Element behind the AD_Name';
+COMMENT ON FUNCTION update_FieldTranslation_From_AD_Name_Element(numeric, character varying) IS
+    'When the AD_Field.AD_Name_ID is changed, uypdate all the AD_Field_Trl entries of the AD_Field, based on the AD_Element behind the AD_Name'
+;
