@@ -18,6 +18,9 @@ public class ProjectIssueId implements RepoIdAware
 		return new ProjectIssueId(repoId);
 	}
 
+	@Nullable
+	public static ProjectIssueId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? ofRepoId(repoId) : null;}
+
 	public static int toRepoId(@Nullable final ProjectIssueId id)
 	{
 		return id != null ? id.getRepoId() : -1;

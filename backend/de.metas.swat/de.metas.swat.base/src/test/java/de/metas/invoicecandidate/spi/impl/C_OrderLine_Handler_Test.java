@@ -252,11 +252,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	public void testCreateMissingCandidates()
 	{
 		final I_C_DocType auftrag = docType(DocBaseType.SalesOrder, null);
-		auftrag.setC_DocType_ID(1);
 		InterfaceWrapperHelper.save(auftrag);
 
 		final I_C_DocType bestellung = docType(DocBaseType.PurchaseOrder, null);
-		bestellung.setC_DocType_ID(2);
 		InterfaceWrapperHelper.save(bestellung);
 
 		final BPartnerLocationAndCaptureId bpartnerAndLocationId = createBPartnerAndLocation();
@@ -266,7 +264,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order1.setAD_Org_ID(orgId.getRepoId());
 		order1.setM_Warehouse_ID(warehouseId.getRepoId());
 		order1.setIsSOTrx(true);
-		order1.setC_DocType_ID(1);
+		order1.setC_DocType_ID(auftrag.getC_DocType_ID());
 		order1.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order1.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 		order1.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
@@ -292,7 +290,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order2.setAD_Org_ID(orgId.getRepoId());
 		order2.setM_Warehouse_ID(warehouseId.getRepoId());
 		order2.setIsSOTrx(false);
-		order2.setC_DocType_ID(2);
+		order2.setC_DocType_ID(bestellung.getC_DocType_ID());
 		order2.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order2.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 		order2.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
@@ -318,7 +316,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order3.setAD_Org_ID(orgId.getRepoId());
 		order3.setM_Warehouse_ID(warehouseId.getRepoId());
 		order3.setIsSOTrx(false);
-		order3.setC_DocType_ID(2);
+		order3.setC_DocType_ID(bestellung.getC_DocType_ID());
 		order3.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order3.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 		order3.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
@@ -344,7 +342,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order4.setAD_Org_ID(orgId.getRepoId());
 		order4.setM_Warehouse_ID(warehouseId.getRepoId());
 		order4.setIsSOTrx(true);
-		order4.setC_DocType_ID(1);
+		order4.setC_DocType_ID(auftrag.getC_DocType_ID());
 		order4.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order4.setC_BPartner_Location_ID(bpartnerAndLocationId.getBpartnerLocationId().getRepoId());
 		order4.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
@@ -460,10 +458,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		assertThat(InvoiceCandidateLocationAdapterFactory.billLocationAdapter(ic).toDocumentLocation())
 				.usingRecursiveComparison()
 				.isEqualTo(DocumentLocation.builder()
-								   .bpartnerId(bpartnerAndLocationId.getBpartnerId())
-								   .bpartnerLocationId(bpartnerAndLocationId.getBpartnerLocationId())
-								   .locationId(differentLocationId)
-								   .build());
+						.bpartnerId(bpartnerAndLocationId.getBpartnerId())
+						.bpartnerLocationId(bpartnerAndLocationId.getBpartnerLocationId())
+						.locationId(differentLocationId)
+						.build());
 	}
 
 }

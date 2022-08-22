@@ -1,9 +1,10 @@
 package de.metas.document;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_C_DocType;
 
@@ -59,19 +60,26 @@ public enum DocBaseType implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<DocBaseType> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
 	private final String code;
 
+	@JsonCreator
 	public static DocBaseType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
+
 	public static DocBaseType ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
 	}
 
 	public static boolean equals(@Nullable final DocBaseType o1, @Nullable final DocBaseType o2) {return Objects.equals(o1, o2);}
+
+	@JsonValue
+	public String getCode()
+	{
+		return code;
+	}
 
 	public boolean isSOTrx()
 	{
