@@ -131,7 +131,7 @@ public class GithubImporterService implements IssueImporter
 				}
 			});
 			Loggables.withLogger(log, Level.INFO).addLog(" {} GithubImporterService#start() finished work in {}. ",
-					IMPORT_LOG_MESSAGE_PREFIX, stopWatch.stop());
+														 IMPORT_LOG_MESSAGE_PREFIX, stopWatch.stop());
 		}
 		catch (final Exception ex)
 		{
@@ -148,7 +148,7 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	@VisibleForTesting
-	protected void importIssues(@NonNull final ImportIssuesRequest importIssuesRequest, @NonNull final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey )
+	protected void importIssues(@NonNull final ImportIssuesRequest importIssuesRequest, @NonNull final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
 	{
 		int chunkIndex = 1;
 
@@ -157,7 +157,7 @@ public class GithubImporterService implements IssueImporter
 		while (areRemainingIssues)
 		{
 			log.info(" {} Retrieving issues from repoId:{}, owner:{}, chunkIndex: {}", IMPORT_LOG_MESSAGE_PREFIX, importIssuesRequest.getRepoId(),
-					importIssuesRequest.getRepoOwner(), chunkIndex);
+					 importIssuesRequest.getRepoOwner(), chunkIndex);
 
 			final RetrieveIssuesRequest retrieveIssuesRequest = RetrieveIssuesRequest.builder()
 					.oAuthToken(importIssuesRequest.getOAuthToken())
@@ -183,7 +183,7 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	private void importIssuesById(@NonNull final ImportIssuesRequest importIssuesRequest,
-			                      @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
+			@NonNull final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
 	{
 		if (!importIssuesRequest.importByIds())
 		{
@@ -209,8 +209,8 @@ public class GithubImporterService implements IssueImporter
 
 	@NonNull
 	private Optional<ImportIssueInfo> buildImportIssueInfo(@NonNull final Issue issue,
-			                                     @NonNull final ImportIssuesRequest importIssuesRequest,
-			 									 @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
+			@NonNull final ImportIssuesRequest importIssuesRequest,
+			@NonNull final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
 	{
 		final GithubIdSearchKey githubIdSearchKey = GithubIdSearchKey
 				.builder()
@@ -228,6 +228,7 @@ public class GithubImporterService implements IssueImporter
 		final ImportIssueInfo.ImportIssueInfoBuilder importInfoBuilder = ImportIssueInfo
 				.builder()
 				.externalProjectReferenceId(importIssuesRequest.getExternalProjectReferenceId())
+				.repositoryName(importIssuesRequest.getRepoId())
 				.externalProjectType(importIssuesRequest.getExternalProjectType())
 				.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, issue.getId()))
 				.externalIssueURL(issue.getHtmlUrl())
@@ -288,7 +289,7 @@ public class GithubImporterService implements IssueImporter
 		catch (final Exception e)
 		{
 			log.error("{} : cannot extract date from : {}",
-					IMPORT_LOG_MESSAGE_PREFIX, labelDateStr, e);
+					  IMPORT_LOG_MESSAGE_PREFIX, labelDateStr, e);
 		}
 
 		return Optional.ofNullable(date);
@@ -311,9 +312,9 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	private void lookForParentIssue(@NonNull final ImportIssuesRequest importIssuesRequest,
-			                        @NonNull final ImportIssueInfo.ImportIssueInfoBuilder issueInfoBuilder,
-			                        @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey,
-			                        @Nullable final String description)
+			@NonNull final ImportIssueInfo.ImportIssueInfoBuilder issueInfoBuilder,
+			@NonNull final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey,
+			@Nullable final String description)
 	{
 		final GithubIssueLinkMatcher linkMatcher = importIssuesRequest.getGithubIssueLinkMatcher();
 
@@ -321,7 +322,7 @@ public class GithubImporterService implements IssueImporter
 		{
 			Loggables.withLogger(log, Level.DEBUG)
 					.addLog(" {} Skipped searching for parent issue due to missing info! GithubIssueLinkMatcher:"
-							+ " {}, issue.description: {} ", IMPORT_LOG_MESSAGE_PREFIX, linkMatcher, description );
+									+ " {}, issue.description: {} ", IMPORT_LOG_MESSAGE_PREFIX, linkMatcher, description);
 			return;
 		}
 
@@ -331,7 +332,7 @@ public class GithubImporterService implements IssueImporter
 		{
 			Loggables.withLogger(log, Level.DEBUG)
 					.addLog(" {} No match found for parent issue! GithubIssueLinkMatcher: "
-							+ "{}, issue.description: {} ", IMPORT_LOG_MESSAGE_PREFIX, linkMatcher, description );
+									+ "{}, issue.description: {} ", IMPORT_LOG_MESSAGE_PREFIX, linkMatcher, description);
 			return;
 		}
 
@@ -343,7 +344,7 @@ public class GithubImporterService implements IssueImporter
 		{
 			Loggables.withLogger(log, Level.DEBUG)
 					.addLog(" {} Parent issue found in mf for URL: {}, parentIssueId: {}"
-							, IMPORT_LOG_MESSAGE_PREFIX, parentIssueLink.get().getUrl(), issueEntity.get().getIssueId() );
+							, IMPORT_LOG_MESSAGE_PREFIX, parentIssueLink.get().getUrl(), issueEntity.get().getIssueId());
 
 			issueInfoBuilder.parentIssueId(issueEntity.get().getIssueId());
 		}
@@ -356,8 +357,8 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	private Optional<ExternalId> getExternalParentId(@NonNull final ImportIssuesRequest initialRequest,
-													 @NonNull final GithubIdSearchKey parentIdSearchKey,
-													 @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
+			@NonNull final GithubIdSearchKey parentIdSearchKey,
+			@NonNull final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
 	{
 		//first check if it's in the current importing queue
 		final String parentExternalId = seenExternalIdsByKey.get(parentIdSearchKey);
@@ -366,7 +367,7 @@ public class GithubImporterService implements IssueImporter
 		{
 			Loggables.withLogger(log, Level.DEBUG)
 					.addLog(" {} Parent issue found in the current importing queue for searchKey: {}, parentIssueExternalId: {}"
-							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId );
+							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId);
 
 			return Optional.of(ExternalId.of(ExternalSystem.GITHUB, parentExternalId));
 		}
@@ -378,8 +379,8 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	private Optional<ExternalId> importParentIssue(@NonNull final ImportIssuesRequest initialRequest,
-			                             @NonNull final GithubIdSearchKey parentIdSearchKey,
-			                             @NonNull final  HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
+			@NonNull final GithubIdSearchKey parentIdSearchKey,
+			@NonNull final HashMap<GithubIdSearchKey, String> seenExternalIdsByKey)
 	{
 		final GetExternalProjectRequest getExternalProjectRequest = GetExternalProjectRequest
 				.builder()
@@ -418,7 +419,7 @@ public class GithubImporterService implements IssueImporter
 		{
 			Loggables.withLogger(log, Level.DEBUG)
 					.addLog(" {} Parent issue retrieved and added in the importing queue for searchKey: {}, parentIssueExternalId: {}"
-							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId );
+							, IMPORT_LOG_MESSAGE_PREFIX, parentIdSearchKey, parentExternalId);
 
 			return Optional.of(ExternalId.of(ExternalSystem.GITHUB, parentExternalId));
 		}

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,11 +20,23 @@
  * #L%
  */
 
-package de.metas.serviceprovider.github;
+package de.metas.activity.repository;
 
-public interface GithubConstants
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class CreateActivityRequest
 {
-	String X_HUB_SIGNATURE_256_HEADER = "x-hub-signature-256";
+	@NonNull
+	OrgId orgId;
 
-	String SHA_256_PREFIX = "sha256=";
+	@NonNull
+	String name;
+
+	@NonNull
+	String value;
 }

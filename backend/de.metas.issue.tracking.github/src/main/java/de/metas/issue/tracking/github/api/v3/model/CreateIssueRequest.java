@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.github
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,11 +20,36 @@
  * #L%
  */
 
-package de.metas.serviceprovider.github;
+package de.metas.issue.tracking.github.api.v3.model;
 
-public interface GithubConstants
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+@Value
+@Builder
+@ToString(exclude = "oAuthToken")
+public class CreateIssueRequest
 {
-	String X_HUB_SIGNATURE_256_HEADER = "x-hub-signature-256";
+	@NonNull
+	String repositoryName;
 
-	String SHA_256_PREFIX = "sha256=";
+	@NonNull
+	String repositoryOwner;
+
+	@NonNull
+	String oAuthToken;
+
+	@NonNull
+	String title;
+
+	@Nullable
+	String body;
+
+	@Nullable
+	List<String> labels;
 }
