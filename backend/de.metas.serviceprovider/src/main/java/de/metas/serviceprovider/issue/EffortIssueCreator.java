@@ -24,7 +24,6 @@ package de.metas.serviceprovider.issue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
-import de.metas.activity.repository.CreateActivityRequest;
 import de.metas.issue.tracking.github.api.v3.model.CreateIssueRequest;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
 import de.metas.issue.tracking.github.api.v3.service.GithubClient;
@@ -38,26 +37,21 @@ import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.github.GithubImporterService;
 import de.metas.serviceprovider.github.GithubService;
 import de.metas.serviceprovider.github.config.GithubConfigRepository;
-import de.metas.serviceprovider.issue.activity.CostCenterActivityService;
 import de.metas.serviceprovider.issue.importer.IssueImporterService;
 import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-import static de.metas.serviceprovider.github.GithubConstants.COST_CENTER_LABEL_PREFIX;
 import static de.metas.serviceprovider.github.config.GithubConfigName.ACCESS_TOKEN;
 
 @Service
 public class EffortIssueCreator
 {
 	private final IssueRepository issueRepository;
-	private final CostCenterActivityService costCenterActivityService;
 	private final IssueLabelService issueLabelService;
 	private final ExternalProjectRepository externalProjectRepository;
 	private final GithubConfigRepository githubConfigRepository;
@@ -68,7 +62,6 @@ public class EffortIssueCreator
 
 	public EffortIssueCreator(
 			@NonNull final IssueRepository issueRepository,
-			@NonNull final CostCenterActivityService costCenterActivityService,
 			@NonNull final IssueLabelService issueLabelService,
 			@NonNull final ExternalProjectRepository externalProjectRepository,
 			@NonNull final GithubConfigRepository githubConfigRepository,
@@ -78,7 +71,6 @@ public class EffortIssueCreator
 			@NonNull final GithubImporterService githubImporterService)
 	{
 		this.issueRepository = issueRepository;
-		this.costCenterActivityService = costCenterActivityService;
 		this.issueLabelService = issueLabelService;
 		this.externalProjectRepository = externalProjectRepository;
 		this.githubConfigRepository = githubConfigRepository;
@@ -96,7 +88,7 @@ public class EffortIssueCreator
 
 		final Issue githubEffortIssue = createGithubEffortIssue(effortExternalProjectReference, issue);
 
-		// importGithubEffortIssue(effortExternalProjectReference, String.valueOf(githubEffortIssue.getNumber())); //todo fp
+		importGithubEffortIssue(effortExternalProjectReference, String.valueOf(githubEffortIssue.getNumber()));
 	}
 
 	@NonNull
@@ -144,69 +136,19 @@ public class EffortIssueCreator
 
 		final ImmutableList.Builder<IssueLabel> issueLabelCollector = ImmutableList.builder();
 
+		matchLabel(issueLabels, GithubImporterConstants.LabelType.COST_CENTER)
+				.ifPresent(issueLabelCollector::add);
+
 		matchLabel(issueLabels, GithubImporterConstants.LabelType.CUSTOMER)
 				.ifPresent(issueLabelCollector::add);
 
 		matchLabel(issueLabels, GithubImporterConstants.LabelType.BUDGET)
 				.ifPresent(issueLabelCollector::add);
 
-		issueLabelCollector.add(getCostCenterIssueLabel(issue, issueLabels));
-
 		return issueLabelCollector.build()
 				.stream()
 				.map(IssueLabel::getValue)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private IssueLabel getCostCenterIssueLabel(@NonNull final IssueEntity issue, @NonNull final List<IssueLabel> issueLabelList)
-	{
-		final Optional<IssueLabel> costCenterLabelOpt = matchLabel(issueLabelList, GithubImporterConstants.LabelType.COST_CENTER);
-
-		if (costCenterLabelOpt.isPresent())
-		{
-			final IssueLabel existingCostCenterLabel = costCenterLabelOpt.get();
-
-			final String costCenterValue = existingCostCenterLabel.getLabelValue(GithubImporterConstants.LabelType.COST_CENTER)
-					.orElseThrow(() -> new AdempiereException("Cost center label value should not be empty at this stage"));
-
-			getOrCreateCostCenter(existingCostCenterLabel.getOrgId(), costCenterValue, costCenterValue);
-
-			return existingCostCenterLabel;
-		}
-
-		final IssueLabel costCenterLabel = createCostCenterLabelFromIssue(issue);
-
-		final String costCenterValue = costCenterLabel.getLabelValue(GithubImporterConstants.LabelType.COST_CENTER)
-				.orElseThrow(() -> new AdempiereException("Cost center label value should not be empty at this stage"));
-
-		Services.get(ITrxManager.class).runInNewTrx((() -> getOrCreateCostCenter(issue.getOrgId(), costCenterValue, issue.getName())));
-
-		return costCenterLabel;
-	}
-
-	private void getOrCreateCostCenter(@NonNull final OrgId orgId, @NonNull final String value, @NonNull final String name)
-	{
-		final CreateActivityRequest createActivityRequest = CreateActivityRequest.builder()
-				.orgId(orgId)
-				.value(value)
-				.name(name)
-				.build();
-
-		costCenterActivityService.getOrCreateCostCenter(createActivityRequest);
-	}
-
-	@NonNull
-	private IssueLabel createCostCenterLabelFromIssue(@NonNull final IssueEntity issue)
-	{
-		final IssueLabel newCostCenterLabel = IssueLabel.builder()
-				.orgId(issue.getOrgId())
-				.value(COST_CENTER_LABEL_PREFIX + issue.getSearchKey())
-				.build();
-
-		issueLabelService.createMissingRefListForLabels(ImmutableList.of(newCostCenterLabel));
-
-		return newCostCenterLabel;
 	}
 
 	@NonNull

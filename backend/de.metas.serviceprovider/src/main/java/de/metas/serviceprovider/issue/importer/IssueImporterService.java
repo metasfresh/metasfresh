@@ -25,7 +25,9 @@ package de.metas.serviceprovider.issue.importer;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.activity.repository.ActivityRepository;
 import de.metas.activity.repository.CreateActivityRequest;
+import de.metas.activity.repository.GetSingleActivityQuery;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
@@ -35,14 +37,12 @@ import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.label.IssueLabelService;
-import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.IssueType;
 import de.metas.serviceprovider.issue.Status;
-import de.metas.serviceprovider.issue.activity.CostCenterActivityService;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
@@ -54,6 +54,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -80,7 +81,7 @@ public class IssueImporterService
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ITrxManager trxManager;
 	private final IssueLabelService issueLabelService;
-	private final CostCenterActivityService costCenterActivityService;
+	private final ActivityRepository activityRepository;
 
 	public IssueImporterService(
 			final ImportQueue<ImportIssueInfo> importIssuesQueue,
@@ -89,7 +90,7 @@ public class IssueImporterService
 			final ExternalReferenceRepository externalReferenceRepository,
 			final ITrxManager trxManager,
 			final IssueLabelService issueLabelService,
-			final CostCenterActivityService costCenterActivityService)
+			final ActivityRepository activityRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.milestoneRepository = milestoneRepository;
@@ -97,7 +98,7 @@ public class IssueImporterService
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.trxManager = trxManager;
 		this.issueLabelService = issueLabelService;
-		this.costCenterActivityService = costCenterActivityService;
+		this.activityRepository = activityRepository;
 	}
 
 	public void importIssues(
@@ -243,7 +244,7 @@ public class IssueImporterService
 				.searchKey(importIssueInfo.getSearchKey())
 				.description(importIssueInfo.getDescription())
 				.type(IssueType.EXTERNAL)
-				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))
+				.isEffortIssue(importIssueInfo.isEffortIssue())
 				.estimatedEffort(importIssueInfo.getEstimation())
 				.budgetedEffort(importIssueInfo.getBudget())
 				.roughEstimation(importIssueInfo.getRoughEstimation())
@@ -256,7 +257,7 @@ public class IssueImporterService
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.deliveredDate(importIssueInfo.getDeliveredDate())
-				.costCenterActivityId(extractCostCenterActivityId(importIssueInfo.getOrgId(), importIssueInfo.getCostCenterValue()))
+				.costCenterActivityId(extractCostCenterActivityId(importIssueInfo))
 				.build();
 	}
 
@@ -273,14 +274,14 @@ public class IssueImporterService
 				? importIssueInfo.getMilestone().getMilestoneId()
 				: null;
 
-		final ActivityId costCenterActivityId = Check.isNotBlank(importIssueInfo.getCostCenterValue())
-				? extractCostCenterActivityId(existingEffortIssue.getOrgId(), importIssueInfo.getCostCenterValue())
-				: existingEffortIssue.getCostCenterActivityId();
-
 		//INVOICED can be set only from mf, after the issue was invoiced, so it should be preserved
 		final Status status = INVOICED.equals(existingEffortIssue.getStatus())
 				? INVOICED
 				: importIssueInfo.getStatus();
+
+		final ActivityId costCenterActivityId = Check.isNotBlank(importIssueInfo.getCostCenterValue())
+				? extractCostCenterActivityId(importIssueInfo)
+				: existingEffortIssue.getCostCenterActivityId();
 
 		final IssueEntity mergedIssueEntity = existingEffortIssue
 				.toBuilder()
@@ -289,7 +290,7 @@ public class IssueImporterService
 				.externalProjectReferenceId(importIssueInfo.getExternalProjectReferenceId())
 				.projectId(importIssueInfo.getProjectId())
 				.assigneeId(importIssueInfo.getAssigneeId())
-				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))
+				.isEffortIssue(importIssueInfo.isEffortIssue())
 				.description(importIssueInfo.getDescription())
 				.externalIssueNo(NumberUtils.asBigDecimal(importIssueInfo.getExternalIssueNo()))
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
@@ -359,22 +360,51 @@ public class IssueImporterService
 		}
 	}
 
-	@Nullable
-	private ActivityId extractCostCenterActivityId(
-			@NonNull final OrgId orgId,
-			@Nullable final String costCenterValue)
+	@NonNull
+	private ActivityId extractCostCenterActivityId(@NonNull final ImportIssueInfo importIssueInfo)
 	{
-		if (Check.isBlank(costCenterValue))
+		final String costCenterValue = importIssueInfo.getCostCenterValue();
+
+		if (Check.isNotBlank(costCenterValue))
 		{
-			return null;
+			return CostCenterResolver.of(activityRepository, importIssueInfo, costCenterValue)
+					.getCostCenterActivityId();
 		}
 
-		final CreateActivityRequest request = CreateActivityRequest.builder()
-				.orgId(orgId)
-				.value(costCenterValue)
-				.name(costCenterValue)
-				.build();
+		return CostCenterResolver.of(activityRepository, importIssueInfo, importIssueInfo.getSearchKey())
+				.getCostCenterActivityId();
+	}
 
-		return costCenterActivityService.getOrCreateCostCenter(request);
+	@Value(staticConstructor = "of")
+	private static class CostCenterResolver
+	{
+		@NonNull
+		ActivityRepository activityRepository;
+
+		@NonNull
+		ImportIssueInfo importIssueInfo;
+
+		@NonNull
+		String costCenterValue;
+
+		@NonNull
+		public ActivityId getCostCenterActivityId()
+		{
+			final GetSingleActivityQuery query = GetSingleActivityQuery.builder()
+					.orgId(importIssueInfo.getOrgId())
+					.value(costCenterValue)
+					.build();
+
+			return activityRepository.getIdByActivityQuery(query)
+					.orElseGet(() -> {
+						final CreateActivityRequest request = CreateActivityRequest.builder()
+								.orgId(importIssueInfo.getOrgId())
+								.value(importIssueInfo.getSearchKey())
+								.name(importIssueInfo.getName())
+								.build();
+
+						return activityRepository.save(request);
+					});
+		}
 	}
 }

@@ -29,17 +29,22 @@ import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
+import de.metas.serviceprovider.github.GithubConstants;
+import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.Status;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 @Value
 @Builder(toBuilder = true)
@@ -106,6 +111,7 @@ public class ImportIssueInfo
 	ExternalId externalParentIssueId;
 
 	@NonNull
+	@Getter(AccessLevel.NONE)
 	ImmutableList<IssueLabel> issueLabels;
 
 	@Nullable
@@ -114,11 +120,35 @@ public class ImportIssueInfo
 	@Nullable
 	String costCenterValue;
 
-
 	public String getSearchKey()
 	{
 		return externalIssueNo != null
 				? externalIssueNo + " " + getName().trim()
 				: getName().trim();
+	}
+
+	public boolean isEffortIssue()
+	{
+		return ExternalProjectType.EFFORT.equals(externalProjectType);
+	}
+
+	@NonNull
+	public ImmutableList<IssueLabel> getIssueLabels()
+	{
+		if (isEffortIssue())
+		{
+			return issueLabels;
+		}
+
+		final IssueLabel costCenterLabel = issueLabels.stream()
+				.filter(label -> label.matchesType(GithubImporterConstants.LabelType.COST_CENTER))
+				.findFirst()
+				.orElseGet(() -> IssueLabel.builder()
+						.orgId(orgId)
+						.value(GithubConstants.COST_CENTER_LABEL_PREFIX + getSearchKey())
+						.build());
+
+		return Stream.concat(issueLabels.stream(), Stream.of(costCenterLabel))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

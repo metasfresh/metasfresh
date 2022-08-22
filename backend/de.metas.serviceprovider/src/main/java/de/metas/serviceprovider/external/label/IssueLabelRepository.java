@@ -62,10 +62,7 @@ public class IssueLabelRepository
 	@NonNull
 	public List<IssueLabel> getByIssueId(@NonNull final IssueId issueId)
 	{
-		return queryBL.createQueryBuilder(I_S_IssueLabel.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_IssueLabel.COLUMNNAME_S_Issue_ID, issueId)
-				.create()
+		return getRecordsByIssueId(issueId)
 				.stream()
 				.map(IssueLabelRepository::toIssueLabel)
 				.collect(ImmutableList.toImmutableList());

@@ -30,6 +30,7 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
@@ -43,7 +44,6 @@ import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.IssueType;
 import de.metas.serviceprovider.issue.Status;
-import de.metas.serviceprovider.issue.activity.CostCenterActivityService;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.milestone.MilestoneRepository;
 import de.metas.serviceprovider.model.I_S_Issue;
@@ -57,6 +57,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -99,7 +100,7 @@ class IssueImporterServiceTest
 				externalReferenceRepository,
 				trxManager,
 				new IssueLabelService(new IssueLabelRepository(queryBL)),
-				new CostCenterActivityService(new ActivityRepository())
+				new ActivityRepository()
 		);
 	}
 
@@ -115,6 +116,13 @@ class IssueImporterServiceTest
 		{
 			final I_C_UOM mockUOMRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 			InterfaceWrapperHelper.saveRecord(mockUOMRecord);
+
+			final I_C_Activity mockCostCenterActivityRecord = InterfaceWrapperHelper.newInstance(I_C_Activity.class);
+			mockCostCenterActivityRecord.setAD_Org_ID(1);
+			mockCostCenterActivityRecord.setName("test issue");
+			mockCostCenterActivityRecord.setValue("test issue");
+
+			InterfaceWrapperHelper.save(mockCostCenterActivityRecord);
 
 			initialImportIssueInfo = ImportIssueInfo.builder()
 					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
@@ -145,6 +153,7 @@ class IssueImporterServiceTest
 					.processed(false)
 					.externalIssueNo(new BigDecimal("0"))
 					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
+					.costCenterActivityId(ActivityId.ofRepoId(mockCostCenterActivityRecord.getC_Activity_ID()))
 					.build();
 		}
 

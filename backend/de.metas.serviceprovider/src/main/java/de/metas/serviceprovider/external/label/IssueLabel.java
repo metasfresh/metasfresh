@@ -28,7 +28,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Optional;
 import java.util.regex.Matcher;
 
 @Builder
@@ -47,18 +46,5 @@ public class IssueLabel
 		final Matcher matcher = labelType.getPattern().matcher(value);
 
 		return matcher.matches();
-	}
-
-	@NonNull
-	public Optional<String> getLabelValue(@NonNull final GithubImporterConstants.LabelType labelType)
-	{
-		final Matcher matcher = labelType.getPattern().matcher(value);
-
-		if (!matcher.matches())
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(matcher.group(labelType.getGroupName()));
 	}
 }
