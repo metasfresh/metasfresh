@@ -995,7 +995,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Flag this document as multi-currency to prevent source amounts balancing.
 		// Our source amounts won't be source balanced anymore because the Invoice/Discount/WriteOff/PaymentSelect are booked in allocation's currency
 		// and the currency gain/loss is booked in accounting currency.
-		setIsMultiCurrency(true);
+		setIsMultiCurrency();
 
 		// Build up the description for the new line
 		final StringBuilder description = new StringBuilder();

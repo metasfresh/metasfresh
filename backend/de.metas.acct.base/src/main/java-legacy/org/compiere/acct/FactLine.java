@@ -18,6 +18,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -519,7 +520,9 @@ public final class FactLine extends X_Fact_Acct
 		setDocumentNo(m_doc.getDocumentNo());
 		setC_DocType_ID(m_doc.getC_DocType_ID());
 		setDocBaseType(m_doc.getDocumentType());
-		setDocStatus(m_doc.getDocStatus());
+
+		final DocStatus docStatus = m_doc.getDocStatus();
+		setDocStatus(docStatus != null ? docStatus.getCode() : null);
 
 		// Description
 		final StringBuilder description = new StringBuilder(m_doc.getDocumentNo());

@@ -253,7 +253,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 				&& cr_InventoryClearing != null
 				&& !CurrencyId.equals(dr_NotInvoicedReceipts.getCurrencyId(), cr_InventoryClearing.getCurrencyId()))
 		{
-			setIsMultiCurrency(true);
+			setIsMultiCurrency();
 		}
 
 		//
