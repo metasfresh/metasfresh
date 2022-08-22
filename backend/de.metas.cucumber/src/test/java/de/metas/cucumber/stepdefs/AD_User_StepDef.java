@@ -49,6 +49,7 @@ import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_EMail;
+import static org.compiere.model.I_AD_User.COLUMNNAME_IsBillToContact_Default;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Login;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Name;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Password;
@@ -175,6 +176,12 @@ public class AD_User_StepDef
 		if (Check.isNotBlank(login))
 		{
 			userRecord.setLogin(login);
+		}
+
+		final Boolean isBillToContactDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsBillToContact_Default, null);
+		if (isBillToContactDefault != null)
+		{
+			userRecord.setIsBillToContact_Default(isBillToContactDefault);
 		}
 
 		InterfaceWrapperHelper.saveRecord(userRecord);
