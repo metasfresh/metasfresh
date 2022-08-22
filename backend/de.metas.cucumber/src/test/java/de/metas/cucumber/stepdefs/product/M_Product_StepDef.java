@@ -223,25 +223,6 @@ public class M_Product_StepDef
 		InterfaceWrapperHelper.saveRecord(taxCategory);
 	}
 
-	@And("update M_Product:")
-	public void update_M_Product(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
-
-			final boolean isStocked = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsStocked);
-			product.setIsStocked(isStocked);
-
-			InterfaceWrapperHelper.saveRecord(product);
-
-			productTable.putOrReplace(productIdentifier, product);
-		}
-	}
-
 	@Given("load M_Product:")
 	public void load_product(@NonNull final DataTable dataTable)
 	{
@@ -409,6 +390,9 @@ public class M_Product_StepDef
 		{
 			productRecord.setGTIN(DataTableUtil.nullToken2Null(gtin));
 		}
+
+		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsStocked, true);
+		productRecord.setIsStocked(isStocked);
 
 		saveRecord(productRecord);
 	}
