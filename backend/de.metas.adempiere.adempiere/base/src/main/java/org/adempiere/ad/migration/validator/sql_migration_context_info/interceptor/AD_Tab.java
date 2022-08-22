@@ -20,27 +20,39 @@
  * #L%
  */
 
-package org.adempiere.ad.migration.validator.sql_migration_context_info;
+package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADTableName;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADWindowName;
+import org.adempiere.ad.migration.validator.sql_migration_context_info.names.Names;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_AD_Window;
+import org.adempiere.ad.table.api.AdTableId;
+import org.compiere.model.I_AD_Tab;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Interceptor(I_AD_Window.class)
+@Interceptor(I_AD_Tab.class)
 @Component
-public class AD_Window
+public class AD_Tab
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
-	public void logSqlMigrationContextInfo(final I_AD_Window window)
+	public void logSqlMigrationContextInfo(final I_AD_Tab tab)
 	{
 		if (MigrationScriptFileLoggerHolder.isDisabled())
 		{
 			return;
 		}
 
-		MigrationScriptFileLoggerHolder.logComment("Window: " + window.getName() + ", InternalName=" + window.getInternalName());
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(tab.getAD_Window_ID());
+		final ADWindowName windowName = Names.ADWindowName_Loader.retrieve(adWindowId);
+		final String tabNameFQ = windowName.toShortString() + " -> " + tab.getName();
+		MigrationScriptFileLoggerHolder.logComment("Tab: " + tabNameFQ);
+
+		final AdTableId adTableId = AdTableId.ofRepoId(tab.getAD_Table_ID());
+		final ADTableName tableName = Names.ADTableName_Loader.retrieve(adTableId);
+		MigrationScriptFileLoggerHolder.logComment("Table: " + tableName.toShortString());
 	}
 }
