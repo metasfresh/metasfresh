@@ -10,6 +10,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
@@ -492,17 +493,17 @@ public class PaymentBLTest
 		{
 			AdempiereTestHelper.get().init();
 
-			prepayDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
-			salesOrderDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
+			prepayDocType = createDocType(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
+			salesOrderDocType = createDocType(DocBaseType.SalesOrder, null);
 		}
 
 		@NonNull
 		protected I_C_DocType createDocType(
-				@NonNull final String baseType,
+				@NonNull final DocBaseType baseType,
 				@Nullable final String subType)
 		{
 			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
-			docType.setDocBaseType(baseType);
+			docType.setDocBaseType(baseType.getCode());
 			docType.setDocSubType(subType);
 			saveRecord(docType);
 			return docType;

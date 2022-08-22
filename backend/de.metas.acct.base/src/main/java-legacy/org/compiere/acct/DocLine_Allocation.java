@@ -22,6 +22,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.InstantAndOrgId;
@@ -448,8 +449,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			{
 				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
 
-				final String docBaseType = rs.getString(2);
-				if (Doc.DOCTYPE_APPayment.equals(docBaseType))
+				final DocBaseType docBaseType = DocBaseType.ofCode(rs.getString(2));
+				if (DocBaseType.APPayment.equals(docBaseType))
 				{
 					accountType = AccountType.PaymentSelect;
 				}
@@ -477,8 +478,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 
 		//

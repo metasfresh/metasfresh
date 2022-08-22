@@ -284,7 +284,7 @@ final class CreateOrderCommand
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType.getCode())
+				.docBaseType(docBaseType.toDocBaseType())
 				.adClientId(clientAndOrgId.getClientId().getRepoId())
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
 				.build());

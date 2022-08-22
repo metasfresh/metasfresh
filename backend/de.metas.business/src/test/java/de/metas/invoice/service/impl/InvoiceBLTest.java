@@ -2,7 +2,7 @@ package de.metas.invoice.service.impl;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.DocTypeId;
+import de.metas.document.DocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -14,7 +14,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,18 +67,18 @@ public class InvoiceBLTest
 
 	private I_C_DocType createSalesOrderDocType()
 	{
-		final I_C_DocType orderDocType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
-		final I_C_DocType invoiceDocType = docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
+		final I_C_DocType orderDocType = docType(DocBaseType.SalesOrder, null);
+		final I_C_DocType invoiceDocType = docType(DocBaseType.ARInvoice, null);
 		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
 		InterfaceWrapperHelper.save(orderDocType);
 
 		return orderDocType;
 	}
 
-	protected I_C_DocType docType(final String baseType, final String subType)
+	protected I_C_DocType docType(final DocBaseType baseType, final String subType)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType(baseType);
+		docType.setDocBaseType(baseType.getCode());
 		docType.setDocSubType(subType);
 		saveRecord(docType);
 		return docType;
@@ -136,7 +135,7 @@ public class InvoiceBLTest
 
 		final I_C_Invoice invoice = invoiceBL.createInvoiceFromOrder(
 				order,
-				(DocTypeId)null,
+				null,
 				SystemTime.asLocalDate(),
 				null);
 

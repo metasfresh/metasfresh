@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceDocBaseType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -234,10 +235,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 	public final boolean isCreditMemo()
 	{
-		final String docBaseType = getDocumentType();
-		final boolean cm = Doc.DOCTYPE_ARCredit.equals(docBaseType)
-				|| Doc.DOCTYPE_APCredit.equals(docBaseType);
-		return cm;
+		return InvoiceDocBaseType.ofDocBaseType(getDocBaseType()).isCreditMemo();
 	}
 
 	/**************************************************************************
@@ -295,27 +293,27 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		}
 
 		// ** ARI, ARF
-		final String docBaseType = getDocumentType();
-		if (DOCTYPE_ARInvoice.equals(docBaseType)
-				|| DOCTYPE_ARProForma.equals(docBaseType))
+		final DocBaseType docBaseType = getDocBaseType();
+		if (DocBaseType.ARInvoice.equals(docBaseType)
+				|| DocBaseType.ARProFormaInvoice.equals(docBaseType))
 		{
 			return createFacts_SalesInvoice(as);
 		}
 		// ARC
-		else if (DOCTYPE_ARCredit.equals(docBaseType))
+		else if (DocBaseType.ARCreditMemo.equals(docBaseType))
 		{
 			return createFacts_SalesCreditMemo(as);
 		}
 
 		// ** API
-		else if (DOCTYPE_APInvoice.equals(docBaseType)
+		else if (DocBaseType.APInvoice.equals(docBaseType)
 				|| InvoiceDocBaseType.AEInvoice.getDocBaseType().equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
 				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
 		}
 		// APC
-		else if (DOCTYPE_APCredit.equals(docBaseType))
+		else if (DocBaseType.APCreditMemo.equals(docBaseType))
 		{
 			return createFacts_PurchaseCreditMemo(as);
 		}

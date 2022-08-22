@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.PeriodClosedException;
@@ -51,7 +52,7 @@ public class PeriodBL implements IPeriodBL
 	private static final Logger s_log = LogManager.getLogger(PeriodBL.class);
 
 	@Override
-	public boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID)
+	public boolean isOpen(Properties ctx, Timestamp DateAcct, DocBaseType DocBaseType, int AD_Org_ID)
 	{
 		if (DateAcct == null)
 		{
@@ -78,7 +79,7 @@ public class PeriodBL implements IPeriodBL
 	}
 
 	@Override
-	public void testPeriodOpen(Properties ctx, Timestamp dateAcct, String docBaseType, int AD_Org_ID) throws PeriodClosedException
+	public void testPeriodOpen(Properties ctx, Timestamp dateAcct, DocBaseType docBaseType, int AD_Org_ID) throws PeriodClosedException
 	{
 		if (!isOpen(ctx, dateAcct, docBaseType, AD_Org_ID))
 		{

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -254,7 +255,7 @@ public class MPeriod extends X_C_Period
 	 *  @deprecated
 	 */
 	@Deprecated
-	public static boolean isOpen (Properties ctx, Timestamp DateAcct, String DocBaseType)
+	public static boolean isOpen (Properties ctx, Timestamp DateAcct, DocBaseType DocBaseType)
 	{
 		return isOpen(ctx, DateAcct,DocBaseType, 0 );
 	}	//	isOpen
@@ -267,7 +268,7 @@ public class MPeriod extends X_C_Period
 	 * @param AD_Org_ID Organization
 	 * @return true if open
 	 */
-	public static boolean isOpen (Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID)
+	public static boolean isOpen (Properties ctx, Timestamp DateAcct, DocBaseType DocBaseType, int AD_Org_ID)
 	{
 		if (DateAcct == null)
 		{
@@ -428,7 +429,7 @@ public class MPeriod extends X_C_Period
 	 * @param DocBaseType Document Base Type
 	 * @return period control or null
 	 */
-	private I_C_PeriodControl getPeriodControl(final String DocBaseType)
+	private I_C_PeriodControl getPeriodControl(final DocBaseType DocBaseType)
 	{
 		if (DocBaseType == null)
 		{
@@ -450,7 +451,7 @@ public class MPeriod extends X_C_Period
 	 * @return true if open
 	 * @since 3.3.1b
 	 */
-	public boolean isOpen (final String DocBaseType, final Timestamp dateAcct, final int ad_Org_ID)
+	public boolean isOpen (final DocBaseType DocBaseType, final Timestamp dateAcct, final int ad_Org_ID)
 	{
 		if (!isActive())
 		{
@@ -614,16 +615,11 @@ public class MPeriod extends X_C_Period
 	}	// toString
 	
 	/**
-	 * Conventient method for testing if a period is open
-	 * @param ctx
-	 * @param dateAcct
-	 * @param docBaseType
-	 * @throws PeriodClosedException if period is closed
-	 * @see #isOpen(Properties, Timestamp, String)
+	 * Convenient method for testing if a period is open
 	 * @deprecated
 	 */
 	@Deprecated
-	public static void testPeriodOpen(Properties ctx, Timestamp dateAcct, String docBaseType)
+	public static void testPeriodOpen(Properties ctx, Timestamp dateAcct, DocBaseType docBaseType)
 	throws PeriodClosedException 
 	{
 		if (!MPeriod.isOpen(ctx, dateAcct, docBaseType)) {
@@ -632,15 +628,9 @@ public class MPeriod extends X_C_Period
 	}
 	
 	/**
-	 * Conventient method for testing if a period is open
-	 * @param ctx
-	 * @param dateAcct
-	 * @param docBaseType
-	 * @param AD_Org_ID Organization
-	 * @throws PeriodClosedException if period is closed
-	 * @see #isOpen(Properties, Timestamp, String, int)
+	 * Convenient method for testing if a period is open
 	 */
-	public static void testPeriodOpen(Properties ctx, Timestamp dateAcct, String docBaseType, int AD_Org_ID)
+	public static void testPeriodOpen(Properties ctx, Timestamp dateAcct, DocBaseType docBaseType, int AD_Org_ID)
 	throws PeriodClosedException 
 	{
 		if (!MPeriod.isOpen(ctx, dateAcct, docBaseType, AD_Org_ID)) {
@@ -648,13 +638,8 @@ public class MPeriod extends X_C_Period
 		}
 	}
 	
-		/**
-	 * Conventient method for testing if a period is open
-	 * @param ctx
-	 * @param dateAcct
-	 * @param C_DocType_ID
-	 * @throws PeriodClosedException
-	 * @see {@link #isOpen(Properties, Timestamp, String)}
+	/**
+	 * Convenient method for testing if a period is open
      * @deprecated
 	 */
 	@Deprecated
@@ -662,23 +647,17 @@ public class MPeriod extends X_C_Period
 	throws PeriodClosedException
 	{
 		MDocType dt = MDocType.get(ctx, C_DocType_ID);
-		testPeriodOpen(ctx, dateAcct, dt.getDocBaseType());
+		testPeriodOpen(ctx, dateAcct, DocBaseType.ofCode(dt.getDocBaseType()));
 	}
 	
 	/**
-	 * Conventient method for testing if a period is open
-	 * @param ctx
-	 * @param dateAcct
-	 * @param C_DocType_ID
-	 * @param AD_Org_ID Organization
-	 * @throws PeriodClosedException
-	 * @see {@link #isOpen(Properties, Timestamp, String, int)}
+	 * Convenient method for testing if a period is open
 	 */
 	public static void testPeriodOpen(Properties ctx, Timestamp dateAcct, int C_DocType_ID, int AD_Org_ID)
 	throws PeriodClosedException
 	{
 		MDocType dt = MDocType.get(ctx, C_DocType_ID);
-		testPeriodOpen(ctx, dateAcct, dt.getDocBaseType(),  AD_Org_ID);
+		testPeriodOpen(ctx, dateAcct, DocBaseType.ofCode(dt.getDocBaseType()),  AD_Org_ID);
 	}
 	
 	/**

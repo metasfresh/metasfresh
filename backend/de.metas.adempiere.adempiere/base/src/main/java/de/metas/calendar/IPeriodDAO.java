@@ -26,12 +26,13 @@ package de.metas.calendar;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.document.DocBaseType;
 import org.compiere.model.I_C_PeriodControl;
 
 import de.metas.util.ISingletonService;
 
 public interface IPeriodDAO extends ISingletonService
 {
-	Map<String, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(Properties ctx, int periodId);
+	Map<DocBaseType, I_C_PeriodControl> retrievePeriodControlsByDocBaseType(Properties ctx, int periodId);
 
 }

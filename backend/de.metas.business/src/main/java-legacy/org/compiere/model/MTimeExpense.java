@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
@@ -324,7 +325,7 @@ public class MTimeExpense extends X_S_TimeExpense implements IDocument
 			return IDocument.STATUS_Invalid;
 
 		//	Std Period open? - AP (Reimbursement) Invoice
-		if (!MPeriod.isOpen(getCtx(), getDateReport(), MDocType.DOCBASETYPE_APInvoice, getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateReport(), DocBaseType.APInvoice, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
