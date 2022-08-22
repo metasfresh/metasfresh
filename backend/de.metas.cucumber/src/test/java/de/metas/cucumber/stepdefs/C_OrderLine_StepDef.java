@@ -534,10 +534,6 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getC_Activity_ID()).isEqualTo(activity.getC_Activity_ID());
 		}
 
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		orderLineTable.putOrReplace(orderLineIdentifier, orderLine);
-
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
 		if (Check.isNotBlank(projectIdentifier))

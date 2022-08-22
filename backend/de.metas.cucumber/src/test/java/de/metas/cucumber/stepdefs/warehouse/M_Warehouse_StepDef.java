@@ -105,12 +105,12 @@ public class M_Warehouse_StepDef
 			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, false);
 
 			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
-					.map(bPartnerTable::get)
+					.map(bpartnerTable::get)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId());
 
 			final int bPartnerLocationId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER))
-					.map(bPartnerLocationTable::get)
+					.map(bpartnerLocationTable::get)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
 
