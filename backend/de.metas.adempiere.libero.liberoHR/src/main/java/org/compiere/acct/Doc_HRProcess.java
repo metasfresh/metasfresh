@@ -66,7 +66,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 	protected void loadDocumentDetails()
 	{
 		final I_HR_Process process = getModel(I_HR_Process.class);
-		setDateDoc(TimeUtil.asTimestamp(getDateAcct()));
+		setDateDoc(getDateAcct());
 		setDocLines(loadLines(process));
 	}
 
