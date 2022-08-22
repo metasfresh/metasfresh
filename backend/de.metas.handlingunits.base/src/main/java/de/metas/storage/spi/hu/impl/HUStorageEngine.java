@@ -87,9 +87,9 @@ public class HUStorageEngine implements IStorageEngine
 	}
 
 	@Override
-	public Set<IStorageRecord> retrieveStorageRecords(
+	public List<IStorageRecord> retrieveStorageRecords(
 			@NonNull final IContextAware context,
-			@NonNull final Set<IStorageQuery> storageQueries)
+			@NonNull final List<IStorageQuery> storageQueries)
 	{
 		Check.assumeNotEmpty(storageQueries, "storageQueries not empty");
 
@@ -100,7 +100,7 @@ public class HUStorageEngine implements IStorageEngine
 
 		IQuery<I_M_HU_Storage> queryAgg = null;
 		int queriesCount = 0;
-		final Set<IStorageRecord> storageRecords = new HashSet<>();
+		final ArrayList<IStorageRecord> storageRecords = new ArrayList<>();
 
 		for (final IStorageQuery storageQuery : storageQueries)
 		{

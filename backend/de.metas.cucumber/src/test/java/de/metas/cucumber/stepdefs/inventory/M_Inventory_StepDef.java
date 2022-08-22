@@ -224,7 +224,8 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryRecord);
 
-		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory"), inventoryRecord);
+ 		final String inventoryIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory");
+		inventoryTable.put(inventoryIdentifier, inventoryRecord);
 	}
 
 	private void addNewInventoryLine(@NonNull final Map<String, String> tableRow)
