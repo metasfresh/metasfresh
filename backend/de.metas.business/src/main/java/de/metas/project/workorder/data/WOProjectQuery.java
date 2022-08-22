@@ -31,6 +31,8 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Value
 public class WOProjectQuery
@@ -38,17 +40,27 @@ public class WOProjectQuery
 	OrgId orgId;
 	String value;
 	ExternalId externalProjectReference;
+	String externalProjectReferencePattern;
 
 	@Builder
 	public WOProjectQuery(
 			@NonNull final OrgId orgId,
 			@Nullable final String value,
-			@Nullable final ExternalId externalProjectReference)
+			@Nullable final ExternalId externalProjectReference,
+			@Nullable final String externalProjectReferencePattern)
 	{
 		this.orgId = orgId;
 		
 		this.value = value;
 		this.externalProjectReference = externalProjectReference;
-		Check.errorIf(EmptyUtil.isBlank(value) && externalProjectReference == null, "At least one of value or externalProjectReference need to be specified");
+		this.externalProjectReferencePattern = externalProjectReferencePattern;
+
+		final boolean missingFilterOptions = Stream.of(value, externalProjectReference, externalProjectReferencePattern)
+				.filter(Objects::nonNull)
+				.count() == 0;
+
+		Check.errorIf(missingFilterOptions, "At least one of value, externalProjectReference or externalProjectReferencePattern need to be specified");
+
+		Check.errorIf(EmptyUtil.isNotBlank(value) && EmptyUtil.isNotBlank(externalProjectReferencePattern), "ExternalProjectReference and ExternalProjectReferencePattern cannot be both specified at the same time");
 	}
 }

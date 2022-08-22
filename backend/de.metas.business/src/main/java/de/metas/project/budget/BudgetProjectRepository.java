@@ -48,20 +48,21 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Repository
 public class BudgetProjectRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@NonNull
 	public Optional<BudgetProject> getOptionalById(@NonNull final ProjectId projectId)
 	{
-		final I_C_Project record = InterfaceWrapperHelper.load(projectId, I_C_Project.class);
-		return fromRecord(record);
+		return fromRecord(getRecordByIdNotNull(projectId));
 	}
 
+	@NonNull
 	public List<BudgetProject> queryAllActiveProjects(@NonNull final InSetPredicate<ProjectId> projectIds)
 	{
 		if (projectIds.isNone())
@@ -125,6 +126,7 @@ public class BudgetProjectRepository
 	{
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget.getCode())
 				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
 				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);
 
@@ -149,12 +151,7 @@ public class BudgetProjectRepository
 	@NonNull
 	public BudgetProject update(@NonNull final BudgetProject budgetProject)
 	{
-		final I_C_Project projectRecord = InterfaceWrapperHelper.load(budgetProject.getProjectId(), I_C_Project.class);
-
-		if (projectRecord == null)
-		{
-			throw new AdempiereException("No C_Project record found for id: " + budgetProject.getProjectId().getRepoId());
-		}
+		final I_C_Project projectRecord = getRecordByIdNotNull(budgetProject.getProjectId());
 
 		projectRecord.setName(budgetProject.getName());
 		projectRecord.setValue(budgetProject.getValue());
@@ -171,7 +168,7 @@ public class BudgetProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(budgetProject.getDateFinish()));
 		projectRecord.setC_Project_Reference_Ext(budgetProject.getProjectReferenceExt());
 
-		saveRecord(projectRecord);
+		InterfaceWrapperHelper.saveRecord(projectRecord);
 
 		return fromRecord(projectRecord)
 				.orElseThrow(() -> new AdempiereException("BudgetProject has not been successfully saved!"));
@@ -201,9 +198,39 @@ public class BudgetProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(request.getDateFinish()));
 		projectRecord.setC_Project_Reference_Ext(request.getProjectReferenceExt());
 
-		saveRecord(projectRecord);
+		InterfaceWrapperHelper.saveRecord(projectRecord);
 
 		return fromRecord(projectRecord)
 				.orElseThrow(() -> new AdempiereException("BudgetProject has not been successfully saved!"));
+	}
+
+	public void applyAndSave(@NonNull final ProjectId projectId, @NonNull final Consumer<I_C_Project> updateProject)
+	{
+		final I_C_Project projectRecord = getRecordByIdNotNull(projectId);
+
+		updateProject.accept(projectRecord);
+
+		InterfaceWrapperHelper.save(projectRecord);
+	}
+
+	@NonNull
+	public <T> T mapProject(@NonNull final ProjectId projectId, @NonNull final Function<I_C_Project, T> mapProject)
+	{
+		final I_C_Project projectRecord = getRecordByIdNotNull(projectId);
+
+		return mapProject.apply(projectRecord);
+	}
+
+	@NonNull
+	private I_C_Project getRecordByIdNotNull(final @NonNull ProjectId projectId)
+	{
+		final I_C_Project projectRecord = InterfaceWrapperHelper.load(projectId, I_C_Project.class);
+
+		if (projectRecord == null)
+		{
+			throw new AdempiereException("No C_Project record found for id: " + projectId);
+		}
+
+		return projectRecord;
 	}
 }

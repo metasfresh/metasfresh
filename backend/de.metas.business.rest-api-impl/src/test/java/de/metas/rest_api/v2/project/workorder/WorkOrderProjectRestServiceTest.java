@@ -207,14 +207,14 @@ class WorkOrderProjectRestServiceTest
 		projectRequest.setDescription(projectDescription);
 		projectRequest.setDateContract(dateContract);
 		projectRequest.setDateFinish(dateFinish);
-		projectRequest.setBusinessPartnerId(bpartnerId);
+		projectRequest.setBpartnerId(bpartnerId);
 		projectRequest.setProjectReferenceExt(projectExternalId);
 		projectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		projectRequest.setBpartnerDepartment(bpartnerDepartment);
 		projectRequest.setWoOwner(woOwner);
-		projectRequest.setPOReference(poReference);
-		projectRequest.setBPartnerTargetDate(bpartnerTargetDate);
-		projectRequest.setWOProjectCreatedDate(woProjectCreatedDate);
+		projectRequest.setPoReference(poReference);
+		projectRequest.setBpartnerTargetDate(bpartnerTargetDate);
+		projectRequest.setWoProjectCreatedDate(woProjectCreatedDate);
 		projectRequest.setIsActive(false);
 		projectRequest.setOrgCode(orgValue);
 		projectRequest.setDateOfProvisionByBPartner(dateOfProvisionByBPartner);
@@ -246,12 +246,12 @@ class WorkOrderProjectRestServiceTest
 		stepRequest.setWoPartialReportDate(woPartialReportDate);
 		stepRequest.setWoPlannedResourceDurationHours(woPlannedResourceDurationHours);
 		stepRequest.setDeliveryDate(deliveryDate);
-		stepRequest.setWOTargetStartDate(woTargetStartDate);
-		stepRequest.setWOTargetEndDate(woTargetEndDate);
-		stepRequest.setWOPlannedPersonDurationHours(woPlannedPersonDurationHours);
-		stepRequest.setWOStepStatus(woStepStatus);
-		stepRequest.setWOFindingsReleasedDate(woFindingsReleasedDate);
-		stepRequest.setWOFindingsCreatedDate(woFindingsCreatedDate);
+		stepRequest.setWoTargetStartDate(woTargetStartDate);
+		stepRequest.setWoTargetEndDate(woTargetEndDate);
+		stepRequest.setWoPlannedPersonDurationHours(woPlannedPersonDurationHours);
+		stepRequest.setWoStepStatus(woStepStatus);
+		stepRequest.setWoFindingsReleasedDate(woFindingsReleasedDate);
+		stepRequest.setWoFindingsCreatedDate(woFindingsCreatedDate);
 		stepRequest.setExternalId(stepIdentifier);
 
 		projectRequest.setSteps(ImmutableList.of(stepRequest));
@@ -267,7 +267,7 @@ class WorkOrderProjectRestServiceTest
 		resourceRequest.setAssignDateFrom(assignDateFrom);
 		resourceRequest.setAssignDateTo(assignDateTo);
 		resourceRequest.setActive(false);
-		resourceRequest.setAllDay(true);
+		resourceRequest.setIsAllDay(true);
 		resourceRequest.setDuration(BigDecimal.TEN);
 		resourceRequest.setDurationUnit(JsonDurationUnit.Day);
 		resourceRequest.setTestFacilityGroupName(testFacilityGroupName);
@@ -312,7 +312,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(data.getDescription()).isEqualTo(projectDescription);
 		assertThat(data.getDateContract()).isEqualTo(dateContract);
 		assertThat(data.getDateFinish()).isEqualTo(dateFinish);
-		assertThat(data.getBPartnerId()).isEqualTo(bpartnerId);
+		assertThat(data.getBpartnerId()).isEqualTo(bpartnerId);
 		assertThat(data.getProjectReferenceExt()).isEqualTo(projectExternalId);
 		assertThat(data.getBpartnerDepartment()).isEqualTo(bpartnerDepartment);
 		assertThat(data.getWoOwner()).isEqualTo(woOwner);
@@ -413,7 +413,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getDescription()).isNull();
 		assertThat(storedProject.getDateContract()).isNull();
 		assertThat(storedProject.getDateFinish()).isNull();
-		assertThat(storedProject.getBPartnerId()).isNull();
+		assertThat(storedProject.getBpartnerId()).isNull();
 		assertThat(storedProject.getBpartnerDepartment()).isNull();
 		assertThat(storedProject.getWoOwner()).isNull();
 		assertThat(storedProject.getPoReference()).isNull();
@@ -506,7 +506,7 @@ class WorkOrderProjectRestServiceTest
 		assertThat(storedProject.getDescription()).isNull();
 		assertThat(storedProject.getDateContract()).isNull();
 		assertThat(storedProject.getDateFinish()).isNull();
-		assertThat(storedProject.getBPartnerId()).isNull();
+		assertThat(storedProject.getBpartnerId()).isNull();
 		assertThat(storedProject.getBpartnerDepartment()).isNull();
 		assertThat(storedProject.getWoOwner()).isNull();
 		assertThat(storedProject.getPoReference()).isNull();

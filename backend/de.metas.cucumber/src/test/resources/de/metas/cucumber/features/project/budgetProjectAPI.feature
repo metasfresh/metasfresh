@@ -28,7 +28,7 @@ Feature: Budget Project API Test
     And metasfresh contains C_Project
       | C_Project_ID | Name       | C_Currency_ID.ISO_Code |
       | 2000000      | testName_1 | EUR                    |
-    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
 
 """
 {
@@ -45,7 +45,7 @@ Feature: Budget Project API Test
     "dateFinish" : "2021-05-14",
     "bpartnerId" : 2156423,
     "projectReferenceExt" : "testReferenceExt",
-    "projectParentId" : 2000000,
+    "projectParentIdentifier" : "2000000",
     "active" : true,
     "resources" : [
         {
@@ -105,6 +105,7 @@ Feature: Budget Project API Test
         "salesRepId": 100,
         "dateContract": "2021-05-13",
         "dateFinish": "2021-05-14",
+        "extendedProps": {},
         "projectResources": [
             {
                 "budgetProjectResourceId": 1,
@@ -130,7 +131,7 @@ Feature: Budget Project API Test
     And metasfresh contains C_Project
       | C_Project_ID | Name       | C_Currency_ID.ISO_Code |
       | 3000000      | new_parent | EUR                    |
-    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
 
 """
 {
@@ -147,7 +148,7 @@ Feature: Budget Project API Test
     "dateFinish" : "2021-05-16",
     "bpartnerId" : 2156425,
     "projectReferenceExt" : "testReferenceExt",
-    "projectParentId" : 3000000,
+    "projectParentIdentifier" : "3000000",
     "active" : true,
     "resources" : [
         {
@@ -199,6 +200,7 @@ Feature: Budget Project API Test
         "salesRepId": 100,
         "dateContract": "2021-05-15",
         "dateFinish": "2021-05-16",
+        "extendedProps": {},
         "projectResources": [
             {
                 "budgetProjectResourceId": 1,
@@ -221,7 +223,12 @@ Feature: Budget Project API Test
 }
   """
 
-    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
+    And update AD_Column:
+      | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
+      | C_Project | POReference | true                      |
+      | C_Project | Note        | true                      |
+
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
 
 """
 {
@@ -229,6 +236,10 @@ Feature: Budget Project API Test
     "orgCode" : "001",
     "bpartnerId" : 2156423,
     "projectTypeId" : 540005,
+    "extendedProps": {
+      "Note": "testNote",
+      "POReference": "testReference"
+    },
     "syncAdvise":{
       "ifNotExists":"CREATE",
       "ifExists":"UPDATE_MERGE"
@@ -258,6 +269,10 @@ Feature: Budget Project API Test
         "salesRepId": 100,
         "dateContract": "2021-05-15",
         "dateFinish": "2021-05-16",
+        "extendedProps": {
+          "Note": "testNote",
+          "POReference": "testReference"
+        },
         "projectResources": [
             {
                 "budgetProjectResourceId": 1,
@@ -279,3 +294,8 @@ Feature: Budget Project API Test
     }
 }
   """
+
+    And update AD_Column:
+      | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
+      | C_Project | POReference | false                     |
+      | C_Project | Note        | false                     |

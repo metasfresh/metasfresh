@@ -28,11 +28,14 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER_DOC;
 
@@ -43,9 +46,11 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER
 public class JsonBudgetProjectUpsertRequest
 {
 	@ApiModelProperty(position = 10, value = PROJECT_IDENTIFIER_DOC, required = true)
+	@Setter
 	private String projectIdentifier;
 
 	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project.C_ProjectType_ID`", required = true)
+	@Setter
 	private JsonMetasfreshId projectTypeId;
 
 	@ApiModelProperty(position = 30, value = "Corresponding to `C_Project.AD_Org_ID`")
@@ -115,10 +120,10 @@ public class JsonBudgetProjectUpsertRequest
 	private boolean projectReferenceExtSet;
 
 	@ApiModelProperty(position = 140, value = "Corresponding to `C_Project.C_Project_Parent_ID`")
-	private JsonMetasfreshId projectParentId;
+	private String projectParentIdentifier;
 
 	@ApiModelProperty(hidden = true)
-	private boolean projectParentIdSet;
+	private boolean projectParentIdentifierSet;
 
 	@ApiModelProperty(position = 150, value = "Corresponding to `C_Project.IsActive`")
 	private Boolean active;
@@ -127,9 +132,15 @@ public class JsonBudgetProjectUpsertRequest
 	private boolean activeSet;
 
 	@ApiModelProperty(position = 160, required = true)
+	@Setter
 	private SyncAdvise syncAdvise;
 
-	@ApiModelProperty(position = 170, value = "Corresponding to `C_Project_Resource_Budget`")
+	@ApiModelProperty(position = 170)
+	@Setter
+	private Map<String, Object> extendedProps = new HashMap<>();
+
+	@ApiModelProperty(position = 180, value = "Corresponding to `C_Project_Resource_Budget`")
+	@Setter
 	private List<JsonRequestBudgetProjectResourceUpsertItem> resources = new ArrayList<>();
 
 	public void setValue(final String value)
@@ -174,9 +185,9 @@ public class JsonBudgetProjectUpsertRequest
 		this.dateFinishSet = true;
 	}
 
-	public void setBpartnerId(final JsonMetasfreshId businessPartnerId)
+	public void setBpartnerId(final JsonMetasfreshId bpartnerId)
 	{
-		this.bpartnerId = businessPartnerId;
+		this.bpartnerId = bpartnerId;
 		this.bpartnerIdSet = true;
 	}
 
@@ -186,21 +197,16 @@ public class JsonBudgetProjectUpsertRequest
 		this.projectReferenceExtSet = true;
 	}
 
-	public void setProjectParentId(final JsonMetasfreshId projectParentId)
+	public void setProjectParentIdentifier(final String projectParentIdentifier)
 	{
-		this.projectParentId = projectParentId;
-		this.projectParentIdSet = true;
+		this.projectParentIdentifier = projectParentIdentifier;
+		this.projectParentIdentifierSet = true;
 	}
 
 	public void setIsActive(final Boolean active)
 	{
 		this.active = active;
 		this.activeSet = true;
-	}
-
-	public void setResources(final List<JsonRequestBudgetProjectResourceUpsertItem> resources)
-	{
-		this.resources = resources;
 	}
 
 	public void setOrgCode(final String orgCode)

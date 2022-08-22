@@ -35,6 +35,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Value
 public class JsonBudgetProjectResponse
@@ -113,6 +114,9 @@ public class JsonBudgetProjectResponse
 	LocalDate dateFinish;
 
 	@NonNull
+	Map<String, Object> extendedProps;
+
+	@NonNull
 	List<JsonBudgetProjectResourceResponse> projectResources;
 
 	@Builder
@@ -133,6 +137,7 @@ public class JsonBudgetProjectResponse
 			@Nullable final JsonMetasfreshId salesRepId,
 			@Nullable final LocalDate dateContract,
 			@Nullable final LocalDate dateFinish,
+			@NonNull final Map<String, Object> extendedProps,
 			@NonNull @Singular final List<JsonBudgetProjectResourceResponse> projectResources)
 	{
 		this.projectId = projectId;
@@ -150,6 +155,7 @@ public class JsonBudgetProjectResponse
 		this.salesRepId = salesRepId;
 		this.dateContract = dateContract;
 		this.dateFinish = dateFinish;
+		this.extendedProps = extendedProps;
 		this.projectResources = projectResources;
 	}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.data;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.money.CurrencyId;
@@ -37,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.X_C_Project;
@@ -44,6 +46,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -64,32 +67,12 @@ public class WorkOrderProjectRepository
 	@NonNull
 	public Optional<WOProject> getOptionalBy(@NonNull final WOProjectQuery query)
 	{
-		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
-				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);
-
-		if (EmptyUtil.isNotBlank(query.getValue()))
-		{
-			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_Value, query.getValue().trim());
-		}
-		if (query.getExternalProjectReference() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, query.getExternalProjectReference().getValue());
-		}
-
-		final I_C_Project projectRecord = queryBuilder.create().first();
+		final I_C_Project projectRecord = computeQuery(query).firstOnly(I_C_Project.class);
 		if (projectRecord == null)
 		{
 			return Optional.empty();
 		}
 		return Optional.of(ofRecord(projectRecord));
-	}
-
-	@Nullable
-	private I_C_Project getRecordById(@NonNull final ProjectId id)
-	{
-		return InterfaceWrapperHelper.load(id, I_C_Project.class);
 	}
 
 	@NonNull
@@ -171,6 +154,15 @@ public class WorkOrderProjectRepository
 	}
 
 	@NonNull
+	public List<WOProject> listBy(@NonNull final WOProjectQuery query)
+	{
+		return computeQuery(query)
+				.stream()
+				.map(WorkOrderProjectRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
 	private static WOProject ofRecord(@NonNull final I_C_Project projectRecord)
 	{
 		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(projectRecord.getProjectCategory());
@@ -211,5 +203,38 @@ public class WorkOrderProjectRepository
 
 				.isActive(projectRecord.isActive())
 				.build();
+	}
+
+	@Nullable
+	private I_C_Project getRecordById(@NonNull final ProjectId id)
+	{
+		return InterfaceWrapperHelper.load(id, I_C_Project.class);
+	}
+
+	@NonNull
+	private IQuery<I_C_Project> computeQuery(@NonNull final WOProjectQuery query)
+	{
+		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
+				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);
+
+		if (EmptyUtil.isNotBlank(query.getExternalProjectReferencePattern()))
+		{
+			queryBuilder.addStringLikeFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, "%" + query.getExternalProjectReferencePattern() + "%", true);
+		}
+
+		if (query.getExternalProjectReference() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, query.getExternalProjectReference().getValue());
+		}
+
+		if (EmptyUtil.isNotBlank(query.getValue()))
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_Value, query.getValue().trim());
+		}
+
+		return queryBuilder.create();
 	}
 }
