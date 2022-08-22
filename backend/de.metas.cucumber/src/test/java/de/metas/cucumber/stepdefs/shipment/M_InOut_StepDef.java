@@ -42,6 +42,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
@@ -66,7 +67,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
@@ -75,23 +75,18 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_Name;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_DeliveryRule;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_DeliveryViaRule;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_M_Warehouse_ID;
-import static org.compiere.model.I_M_InOut.COLUMNNAME_MovementType;
-import static org.compiere.model.X_M_InOut.DOCSTATUS_Completed;
-import static org.compiere.model.X_M_InOut.DOCSTATUS_Drafted;
 
 public class M_InOut_StepDef
 {
@@ -244,33 +239,37 @@ public class M_InOut_StepDef
 
 		final Supplier<Boolean> isShipmentCreated = () -> {
 
-			final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = queryBL
+			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = queryBL
 					.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.addNotNull(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID)
 					.create()
-					.firstOnly(I_M_ShipmentSchedule_QtyPicked.class);
+					.list(I_M_ShipmentSchedule_QtyPicked.class);
 
-			if (qtyPickedRecord == null)
+			if (qtyPickedRecords.isEmpty())
 			{
 				return false;
 			}
 
-			if (qtyPickedRecord.getM_InOutLine_ID() <= 0)
-			{
-				return false;
-			}
+			final Set<InOutLineId> shipmentLineIds = qtyPickedRecords.stream()
+					.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
+					.map(InOutLineId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
 
-			final I_M_InOutLine shipmentLine = queryBL
+			final Set<InOutId> inOutIds = queryBL
 					.createQueryBuilder(I_M_InOutLine.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, qtyPickedRecord.getM_InOutLine_ID())
+					.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, shipmentLineIds)
 					.create()
-					.firstOnly(I_M_InOutLine.class);
+					.stream()
+					.map(I_M_InOutLine::getM_InOut_ID)
+					.map(InOutId::ofRepoId)
+					.collect(Collectors.toSet());
 
-			if (shipmentLine == null)
+			if (inOutIds.size() > 1)
 			{
-				return false;
+				throw new AdempiereException("More than one M_InOut found for shipmentSchedule=" + shipmentSchedule.getM_ShipmentSchedule_ID());
 			}
 
 			final IQueryBuilder<I_M_InOut> shipmentQueryBuilder = queryBL
@@ -280,7 +279,7 @@ public class M_InOut_StepDef
 			docStatus.map(status -> shipmentQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, status));
 
 			final I_M_InOut shipment = shipmentQueryBuilder
-					.addEqualsFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, shipmentLine.getM_InOut_ID())
+					.addEqualsFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, inOutIds.iterator().next().getRepoId())
 					.create()
 					.firstOnly(I_M_InOut.class);
 
@@ -360,7 +359,7 @@ public class M_InOut_StepDef
 			final String docStatus = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DocStatus);
 			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
 
-			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orderIdentifier))
 			{
 				final I_C_Order order = orderTable.get(orderIdentifier);
@@ -420,6 +419,21 @@ public class M_InOut_StepDef
 		assertThat(shipment).isNotNull();
 
 		huInOutBL.recreatePackingMaterialLines(shipment);
+	}
+
+	@And("^validate no M_InOut found for C_Order identified by (.*)$")
+	public void no_M_InOut_found(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		assertThat(order).isNotNull();
+
+		final I_M_InOut inOut = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.firstOnly(I_M_InOut.class);
+
+		assertThat(inOut).isNull();
 	}
 
 	private void locateShipmentByScheduleId(@NonNull final Map<String, String> row)

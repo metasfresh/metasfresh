@@ -105,6 +105,7 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -510,6 +511,12 @@ public class M_ShipmentSchedule_StepDef
 			if (warehouseId > 0)
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseId);
+			}
+
+			final BigDecimal qtyToDeliver = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, COLUMNNAME_QtyToDeliver);
+			if (qtyToDeliver != null)
+			{
+				queryBuilder.addEqualsFilter(COLUMNNAME_QtyToDeliver, qtyToDeliver);
 			}
 
 			final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
