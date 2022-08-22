@@ -33,6 +33,7 @@ import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -95,6 +96,7 @@ public class WorkOrderProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(woProject.getDateFinish()));
 		projectRecord.setDateOfProvisionByBPartner(TimeUtil.asTimestamp(woProject.getDateOfProvisionByBPartner()));
 		projectRecord.setC_Project_Reference_Ext(woProject.getProjectReferenceExt());
+		projectRecord.setExternalId(ExternalId.toValue(woProject.getExternalId()));
 		projectRecord.setDescription(woProject.getDescription());
 		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(woProject.getCurrencyId()));
 		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(woProject.getProjectParentId()));
@@ -117,7 +119,7 @@ public class WorkOrderProjectRepository
 
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(createWOProjectRequest.getOrgId()));
 		projectRecord.setC_Project_Reference_Ext(createWOProjectRequest.getProjectReferenceExt());
-
+		projectRecord.setExternalId(ExternalId.toValue(createWOProjectRequest.getExternalId()));
 		projectRecord.setName(createWOProjectRequest.getName());
 		projectRecord.setValue(createWOProjectRequest.getValue());
 		projectRecord.setPOReference(createWOProjectRequest.getPoReference());
@@ -173,6 +175,7 @@ public class WorkOrderProjectRepository
 				.projectId(projectId)
 				.orgId(orgId)
 				.projectReferenceExt(projectRecord.getC_Project_Reference_Ext())
+				.externalId(ExternalId.ofOrNull(projectRecord.getExternalId()))
 
 				.name(projectRecord.getName())
 				.value(projectRecord.getValue())
@@ -219,9 +222,9 @@ public class WorkOrderProjectRepository
 			queryBuilder.addStringLikeFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, "%" + query.getExternalProjectReferencePattern() + "%", true);
 		}
 
-		if (query.getExternalProjectReference() != null)
+		if (query.getExternalId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, query.getExternalProjectReference().getValue());
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_ExternalId, query.getExternalId().getValue());
 		}
 
 		if (EmptyUtil.isNotBlank(query.getValue()))

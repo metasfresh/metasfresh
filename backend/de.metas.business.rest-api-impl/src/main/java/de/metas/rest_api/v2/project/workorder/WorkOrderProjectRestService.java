@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.project.workorder;
 import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -54,6 +55,7 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
@@ -259,7 +261,7 @@ public class WorkOrderProjectRestService
 			throw new AdempiereException("WorkOrderProject.Identifier doesn't match with WorkOrderProject.ProjectReferenceExt")
 					.appendParametersToMessage()
 					.setParameter("WorkOrderProject.Identifier", projectIdentifier.getRawIdentifierString())
-					.setParameter("WorkOrderProject.ExternalId", request.getProjectReferenceExt());
+					.setParameter("WorkOrderProject.ExternalId", request.getExternalId());
 		}
 	}
 
@@ -283,6 +285,7 @@ public class WorkOrderProjectRestService
 				.dateFinish(TimeUtil.asLocalDate(project.getDateFinish(), zoneId))
 				.bpartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(project.getBPartnerId())))
 				.projectReferenceExt(project.getProjectReferenceExt())
+				.externalId(JsonExternalId.ofOrNull(ExternalId.toValue(project.getExternalId())))
 				.projectParentId(JsonMetasfreshId.ofOrNull(ProjectId.toRepoId(project.getProjectParentId())))
 				.orgCode(orgDAO.retrieveOrgValue(project.getOrgId()))
 				.isActive(project.getIsActive())
@@ -341,7 +344,7 @@ public class WorkOrderProjectRestService
 				projectQueryBuilder.value(identifier.asValue());
 				break;
 			case EXTERNAL_ID:
-				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
+				projectQueryBuilder.externalId(identifier.asExternalId());
 				break;
 			default:
 				throw new InvalidIdentifierException(identifier.getRawIdentifierString());

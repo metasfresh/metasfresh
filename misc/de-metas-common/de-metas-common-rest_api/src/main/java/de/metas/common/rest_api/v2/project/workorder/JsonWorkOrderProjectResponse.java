@@ -23,6 +23,7 @@
 package de.metas.common.rest_api.v2.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -47,6 +48,9 @@ public class JsonWorkOrderProjectResponse
 	@NonNull
 	String name;
 
+	@Nullable
+	JsonExternalId externalId;
+	
 	@NonNull
 	JsonMetasfreshId projectTypeId;
 

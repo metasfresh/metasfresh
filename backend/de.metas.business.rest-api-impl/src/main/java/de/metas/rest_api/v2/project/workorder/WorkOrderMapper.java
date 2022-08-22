@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.project.workorder;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.currency.CurrencyCode;
@@ -41,6 +42,7 @@ import de.metas.rest_api.v2.project.ValidateProjectHelper;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.MissingPropertyException;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
@@ -114,6 +116,11 @@ public class WorkOrderMapper
 			woProjectBuilder.projectReferenceExt(request.getProjectReferenceExt());
 		}
 
+		if(request.isExternalIdSet())
+		{
+			woProjectBuilder.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(request.getExternalId())));
+		}
+		
 		if (request.isDateContractSet())
 		{
 			woProjectBuilder.dateContract(TimeUtil.asInstant(request.getDateContract(), zoneId));
@@ -198,6 +205,7 @@ public class WorkOrderMapper
 				.priceListVersionId(priceListVersionId)
 				.description(request.getDescription())
 				.projectReferenceExt(request.getProjectReferenceExt())
+				.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(request.getExternalId())))
 				.dateContract(TimeUtil.asInstant(request.getDateContract(), zoneId))
 				.dateFinish(TimeUtil.asInstant(request.getDateFinish(), zoneId))
 				.dateOfProvisionByBPartner(TimeUtil.asInstant(request.getDateOfProvisionByBPartner(), zoneId))
