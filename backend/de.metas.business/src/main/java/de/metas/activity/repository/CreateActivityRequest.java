@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,31 +20,23 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.label;
+package de.metas.activity.repository;
 
 import de.metas.organization.OrgId;
-import de.metas.serviceprovider.github.GithubImporterConstants;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.regex.Matcher;
-
-@Builder
 @Value
-public class IssueLabel
+@Builder
+public class CreateActivityRequest
 {
 	@NonNull
 	OrgId orgId;
 
 	@NonNull
-	String value;
+	String name;
 
 	@NonNull
-	public boolean matchesType(@NonNull final GithubImporterConstants.LabelType labelType)
-	{
-		final Matcher matcher = labelType.getPattern().matcher(value);
-
-		return matcher.matches();
-	}
+	String value;
 }

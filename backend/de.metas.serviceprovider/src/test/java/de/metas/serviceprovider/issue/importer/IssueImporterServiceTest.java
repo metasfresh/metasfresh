@@ -23,16 +23,19 @@
 package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.activity.repository.ActivityRepository;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
+import de.metas.serviceprovider.external.label.IssueLabelService;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
@@ -49,12 +52,12 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -79,7 +82,6 @@ class IssueImporterServiceTest
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 
@@ -97,8 +99,8 @@ class IssueImporterServiceTest
 				issueRepository,
 				externalReferenceRepository,
 				trxManager,
-				adReferenceDAO,
-				new IssueLabelRepository(queryBL)
+				new IssueLabelService(new IssueLabelRepository(queryBL)),
+				new ActivityRepository()
 		);
 	}
 
@@ -114,6 +116,13 @@ class IssueImporterServiceTest
 		{
 			final I_C_UOM mockUOMRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 			InterfaceWrapperHelper.saveRecord(mockUOMRecord);
+
+			final I_C_Activity mockCostCenterActivityRecord = InterfaceWrapperHelper.newInstance(I_C_Activity.class);
+			mockCostCenterActivityRecord.setAD_Org_ID(1);
+			mockCostCenterActivityRecord.setName("test issue");
+			mockCostCenterActivityRecord.setValue("test issue");
+
+			InterfaceWrapperHelper.save(mockCostCenterActivityRecord);
 
 			initialImportIssueInfo = ImportIssueInfo.builder()
 					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
@@ -144,6 +153,7 @@ class IssueImporterServiceTest
 					.processed(false)
 					.externalIssueNo(new BigDecimal("0"))
 					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
+					.costCenterActivityId(ActivityId.ofRepoId(mockCostCenterActivityRecord.getC_Activity_ID()))
 					.build();
 		}
 

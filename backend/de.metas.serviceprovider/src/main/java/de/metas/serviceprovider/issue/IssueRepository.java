@@ -27,6 +27,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -248,6 +249,7 @@ public class IssueRepository
 				.processed(record.isProcessed())
 				.deliveredDate(TimeUtil.asLocalDate(record.getDeliveredDate()))
 				.processedTimestamp(TimeUtil.asInstant(record.getProcessedDate()))
+				.costCenterActivityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				.build();
 	}
 
@@ -279,7 +281,7 @@ public class IssueRepository
 		record.setIssueEffort(issueEntity.getIssueEffort().getHmm());
 		record.setAggregatedEffort(issueEntity.getAggregatedEffort().getHmm());
 		record.setInvoiceableChildEffort(Quantity.toBigDecimal(issueEntity.getInvoicableChildEffort()));
-		
+
 		record.setLatestActivityOnSubIssues(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnSubIssues()));
 		record.setLatestActivity(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnIssue()));
 
@@ -295,6 +297,8 @@ public class IssueRepository
 
 		record.setExternalIssueNo(issueEntity.getExternalIssueNo());
 		record.setIssueURL(issueEntity.getExternalIssueURL());
+
+		record.setC_Activity_ID(ActivityId.toRepoId(issueEntity.getCostCenterActivityId()));
 
 		return record;
 	}

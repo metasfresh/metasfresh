@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.github
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,31 +20,36 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.label;
+package de.metas.issue.tracking.github.api.v3.model;
 
-import de.metas.organization.OrgId;
-import de.metas.serviceprovider.github.GithubImporterConstants;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
-import java.util.regex.Matcher;
+import javax.annotation.Nullable;
+import java.util.List;
 
-@Builder
 @Value
-public class IssueLabel
+@Builder
+@ToString(exclude = "oAuthToken")
+public class CreateIssueRequest
 {
 	@NonNull
-	OrgId orgId;
+	String repositoryName;
 
 	@NonNull
-	String value;
+	String repositoryOwner;
 
 	@NonNull
-	public boolean matchesType(@NonNull final GithubImporterConstants.LabelType labelType)
-	{
-		final Matcher matcher = labelType.getPattern().matcher(value);
+	String oAuthToken;
 
-		return matcher.matches();
-	}
+	@NonNull
+	String title;
+
+	@Nullable
+	String body;
+
+	@Nullable
+	List<String> labels;
 }

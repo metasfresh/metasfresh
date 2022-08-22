@@ -459,6 +459,7 @@ public class GithubImporterService implements IssueImporter
 		Optional<Status> status = Optional.empty();
 		Optional<LocalDate> plannedUATDate = Optional.empty();
 		Optional<LocalDate> deliveredDate = Optional.empty();
+		Optional<String> costCenterValue = Optional.empty();
 
 		for (final ProcessedLabel label : processedLabels)
 		{
@@ -485,6 +486,8 @@ public class GithubImporterService implements IssueImporter
 				case DELIVERED_DATE:
 					deliveredDate = deliveredDate.isPresent() ? deliveredDate : getDateFromLabel(label.getExtractedValue());
 					break;
+				case COST_CENTER:
+					costCenterValue = costCenterValue.isPresent() ? costCenterValue : Optional.of(label.getExtractedValue());
 				default:
 					// nothing to do for UNKNOWN label types
 			}
@@ -501,6 +504,7 @@ public class GithubImporterService implements IssueImporter
 		status.ifPresent(importIssueInfoBuilder::status);
 		plannedUATDate.ifPresent(importIssueInfoBuilder::plannedUATDate);
 		deliveredDate.ifPresent(importIssueInfoBuilder::deliveredDate);
+		costCenterValue.ifPresent(importIssueInfoBuilder::costCenterValue);
 
 		if (!deliveryPlatformList.isEmpty())
 		{
