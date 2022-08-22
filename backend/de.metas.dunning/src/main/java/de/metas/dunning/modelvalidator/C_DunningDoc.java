@@ -1,5 +1,6 @@
 package de.metas.dunning.modelvalidator;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -28,7 +29,7 @@ public class C_DunningDoc
 				.builder()
 				.adClientId(dunningDoc.getAD_Client_ID())
 				.adOrgId(dunningDoc.getAD_Org_ID())
-				.docBaseType(Dunning_Constants.DocBaseType_Dunnig)
+				.docBaseType(DocBaseType.DunningDoc)
 				.build();
 
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(query);

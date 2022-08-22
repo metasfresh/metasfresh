@@ -84,14 +84,6 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
-	public boolean isSOTrx(@NonNull final String docBaseType)
-	{
-		return X_C_DocType.DOCBASETYPE_SalesOrder.equals(docBaseType)
-				|| X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(docBaseType)
-				|| docBaseType.startsWith("AR"); // Account Receivables (Invoice, Payment Receipt)
-	}
-
-	@Override
 	public boolean isPrepay(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType docType = docTypesRepo.getById(docTypeId);

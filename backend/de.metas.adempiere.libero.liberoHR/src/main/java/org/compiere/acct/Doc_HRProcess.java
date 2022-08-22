@@ -15,30 +15,29 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.document.DocBaseType;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.model.MAccount;
+import org.compiere.model.MElementValue;
+import org.compiere.util.DB;
+import org.eevolution.model.I_HR_Process;
+import org.eevolution.model.MHRMovement;
+import org.eevolution.model.MHRProcess;
+import org.eevolution.model.X_HR_Concept_Acct;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.MAccount;
-import org.compiere.model.MElementValue;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_HR_Process;
-import org.eevolution.model.MHRMovement;
-import org.eevolution.model.MHRProcess;
-import org.eevolution.model.X_HR_Concept_Acct;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.util.Services;
 
 /**
  * Post Payroll Documents.
@@ -49,17 +48,13 @@ import de.metas.util.Services;
  * </pre>
  * 
  * @author Oscar Gomez Islas
- * @version $Id: Doc_Payroll.java,v 1.1 2007/01/20 00:40:02 ogomezi Exp $
  * @author Cristina Ghita, www.arhipac.ro
  */
 public class Doc_HRProcess extends Doc<DocLine_Payroll>
 {
-	/** Process Payroll **/
-	public static final String DOCTYPE_Payroll = "HRP";
-
 	public Doc_HRProcess(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_Payroll);
+		super(ctx, DocBaseType.Payroll);
 	}
 
 	@Override
@@ -70,12 +65,6 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		setDocLines(loadLines(process));
 	}
 
-	/**
-	 * Load Payroll Line
-	 * 
-	 * @param Payroll Process
-	 * @return DocLine Array
-	 */
 	private List<DocLine_Payroll> loadLines(I_HR_Process process)
 	{
 		List<DocLine_Payroll> list = new ArrayList<>();
@@ -152,8 +141,6 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		finally
 		{
 			DB.close(rs, pstmt);
-			pstmt = null;
-			rs = null;
 		}
 
 		ArrayList<Fact> facts = new ArrayList<>();
@@ -161,14 +148,6 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		return facts;
 	}
 
-	/**
-	 * get account balancing
-	 * 
-	 * @param acctSchemaId
-	 * @param HR_Concept_ID
-	 * @param AccountSign D or C only
-	 * @return
-	 */
 	private int getAccountBalancing(AcctSchemaId acctSchemaId, int HR_Concept_ID, String AccountSign)
 	{
 		String field;
@@ -186,8 +165,7 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		}
 		final String sqlAccount = "SELECT " + field + " FROM HR_Concept_Acct"
 				+ " WHERE HR_Concept_ID=? AND C_AcctSchema_ID=?";
-		int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlAccount, HR_Concept_ID, acctSchemaId);
-		return Account_ID;
+		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlAccount, HR_Concept_ID, acctSchemaId);
 	}
 
 }   // Doc_Payroll

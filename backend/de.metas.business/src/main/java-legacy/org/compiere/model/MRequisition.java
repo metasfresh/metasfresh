@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -207,7 +208,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		}
 
 		// Std Period open?
-		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), X_C_DocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), DocBaseType.PurchaseRequisition, getAD_Org_ID());
 
 		// Add up Amounts
 		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(getM_PriceList_ID()));

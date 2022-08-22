@@ -17,6 +17,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
 import de.metas.i18n.AdMessageKey;
@@ -52,7 +53,6 @@ import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -139,88 +139,88 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	@Getter(AccessLevel.PROTECTED)
 	protected final AcctDocRequiredServicesFacade services;
 
-	/**
-	 * AR Invoices - ARI
-	 */
-	public static final String DOCTYPE_ARInvoice = X_C_DocType.DOCBASETYPE_ARInvoice;
-	/**
-	 * AR Credit Memo
-	 */
-	public static final String DOCTYPE_ARCredit = "ARC";
-	/**
-	 * AR Receipt
-	 */
-	public static final String DOCTYPE_ARReceipt = "ARR";
-	/**
-	 * AR ProForma
-	 */
-	public static final String DOCTYPE_ARProForma = "ARF";
-	/**
-	 * AP Invoices
-	 */
-	public static final String DOCTYPE_APInvoice = "API";
-	/**
-	 * AP Credit Memo
-	 */
-	public static final String DOCTYPE_APCredit = "APC";
-	/**
-	 * AP Payment
-	 */
-	public static final String DOCTYPE_APPayment = "APP";
-	/**
-	 * CashManagement Bank Statement
-	 */
-	public static final String DOCTYPE_BankStatement = "CMB";
-	/**
-	 * CashManagement Cash Journals
-	 */
-	public static final String DOCTYPE_CashJournal = "CMC";
-	/**
-	 * CashManagement Allocations
-	 */
-	public static final String DOCTYPE_Allocation = "CMA";
-	/**
-	 * Material Shipment
-	 */
-	public static final String DOCTYPE_MatShipment = "MMS";
-	/**
-	 * Material Receipt
-	 */
-	public static final String DOCTYPE_MatReceipt = "MMR";
-	/**
-	 * Material Inventory
-	 */
-	public static final String DOCTYPE_MatInventory = "MMI";
-	/**
-	 * Material Movement
-	 */
-	public static final String DOCTYPE_MatMovement = "MMM";
-	// /** Material Production */
-	// public static final String DOCTYPE_MatProduction = "MMP";
-	/**
-	 * Match Invoice
-	 */
-	public static final String DOCTYPE_MatMatchInv = "MXI";
-	/**
-	 * Match PO
-	 */
-	public static final String DOCTYPE_MatMatchPO = "MXP";
-	/**
-	 * GL Journal
-	 */
-	public static final String DOCTYPE_GLJournal = "GLJ";
-	// /** Purchase Order */
-	// public static final String DOCTYPE_POrder = "POO";
-	// /** Sales Order */
-	// public static final String DOCTYPE_SOrder = "SOO";
-	/**
-	 * Project Issue
-	 */
-	public static final String DOCTYPE_ProjectIssue = "PJI";
-	/**
-	 * Purchase Requisition
-	 */
-	public static final String DOCTYPE_PurchaseRequisition = "POR";
+	// /**
+	//  * AR Invoices - ARI
+	//  */
+	// public static final String DOCTYPE_ARInvoice = X_C_DocType.DOCBASETYPE_ARInvoice;
+	// /**
+	//  * AR Credit Memo
+	//  */
+	// public static final String DOCTYPE_ARCredit = "ARC";
+	// /**
+	//  * AR Receipt
+	//  */
+	// public static final String DOCTYPE_ARReceipt = "ARR";
+	// /**
+	//  * AR ProForma
+	//  */
+	// public static final String DOCTYPE_ARProForma = "ARF";
+	// /**
+	//  * AP Invoices
+	//  */
+	// public static final String DOCTYPE_APInvoice = "API";
+	// /**
+	//  * AP Credit Memo
+	//  */
+	// public static final String DOCTYPE_APCredit = "APC";
+	// /**
+	//  * AP Payment
+	//  */
+	// public static final String DOCTYPE_APPayment = "APP";
+	// /**
+	//  * CashManagement Bank Statement
+	//  */
+	// public static final String DOCTYPE_BankStatement = "CMB";
+	// /**
+	//  * CashManagement Cash Journals
+	//  */
+	// public static final String DOCTYPE_CashJournal = "CMC";
+	// /**
+	//  * CashManagement Allocations
+	//  */
+	// public static final String DOCTYPE_Allocation = "CMA";
+	// /**
+	//  * Material Shipment
+	//  */
+	// public static final String DOCTYPE_MatShipment = "MMS";
+	// /**
+	//  * Material Receipt
+	//  */
+	// public static final String DOCTYPE_MatReceipt = "MMR";
+	// /**
+	//  * Material Inventory
+	//  */
+	// public static final String DOCTYPE_MatInventory = "MMI";
+	// /**
+	//  * Material Movement
+	//  */
+	// public static final String DOCTYPE_MatMovement = "MMM";
+	// // /** Material Production */
+	// // public static final String DOCTYPE_MatProduction = "MMP";
+	// /**
+	//  * Match Invoice
+	//  */
+	// public static final String DOCTYPE_MatMatchInv = "MXI";
+	// /**
+	//  * Match PO
+	//  */
+	// public static final String DOCTYPE_MatMatchPO = "MXP";
+	// /**
+	//  * GL Journal
+	//  */
+	// public static final String DOCTYPE_GLJournal = "GLJ";
+	// // /** Purchase Order */
+	// // public static final String DOCTYPE_POrder = "POO";
+	// // /** Sales Order */
+	// // public static final String DOCTYPE_SOrder = "SOO";
+	// /**
+	//  * Project Issue
+	//  */
+	// public static final String DOCTYPE_ProjectIssue = "PJI";
+	// /**
+	//  * Purchase Requisition
+	//  */
+	// public static final String DOCTYPE_PurchaseRequisition = "POR";
 
 	/**
 	 * Log per Document
@@ -236,7 +236,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param ctx                construction parameters
 	 * @param defaultDocBaseType suggested DocBaseType to be used
 	 */
-	protected Doc(@NonNull final AcctDocContext ctx, @Nullable final String defaultDocBaseType)
+	protected Doc(@NonNull final AcctDocContext ctx, @Nullable final DocBaseType defaultDocBaseType)
 	{
 		services = ctx.getServices();
 		acctSchemas = ctx.getAcctSchemas();
@@ -253,7 +253,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_docStatus = extractDocStatus(p_po);
 
 		// Document Type
-		setDocumentType(defaultDocBaseType);
+		setDocBaseType(defaultDocBaseType);
 	}   // Doc
 
 	private static DocStatus extractDocStatus(@NonNull final PO po)
@@ -280,7 +280,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Document Type
 	 */
-	private String m_DocumentType = null;
+	private DocBaseType _docBaseType = null;
 	/**
 	 * Document Status
 	 */
@@ -814,29 +814,29 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return document type (i.e. DocBaseType)
 	 */
-	protected final String getDocumentType()
+	protected final DocBaseType getDocBaseType()
 	{
-		if (m_DocumentType == null)
+		if (_docBaseType == null)
 		{
-			setDocumentType(null);
+			setDocBaseType(null);
 		}
-		return m_DocumentType;
-	}   // getDocumentType
+		return _docBaseType;
+	}
 
 	/**
 	 * Load Document Type and GL Info. Set p_DocumentType and p_GL_Category_ID
 	 *
 	 * @param docBaseType optional document base type to be used.
 	 */
-	private void setDocumentType(@Nullable final String docBaseType)
+	private void setDocBaseType(@Nullable final DocBaseType docBaseType)
 	{
 		if (docBaseType != null)
 		{
-			m_DocumentType = docBaseType;
+			_docBaseType = docBaseType;
 		}
 
 		// No Document Type defined
-		if (m_DocumentType == null && getC_DocType_ID() > 0)
+		if (_docBaseType == null && getC_DocType_ID() > 0)
 		{
 			final String sql = "SELECT DocBaseType, GL_Category_ID FROM C_DocType WHERE C_DocType_ID=?";
 			PreparedStatement pstmt = null;
@@ -848,7 +848,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
 				{
-					m_DocumentType = rsDT.getString(1);
+					_docBaseType = DocBaseType.ofCode(rsDT.getString(1));
 					m_GL_Category_ID = rsDT.getInt(2);
 				}
 			}
@@ -861,13 +861,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				DB.close(rsDT, pstmt);
 			}
 		}
-		if (m_DocumentType == null)
+		if (_docBaseType == null)
 		{
 			log.error("No DocBaseType for C_DocType_ID=" + getC_DocType_ID() + ", DocumentNo=" + getDocumentNo());
 		}
 
 		// We have a document Type, but no GL info - search for DocType
-		if (m_GL_Category_ID <= 0)
+		if (m_GL_Category_ID <= 0 && _docBaseType != null)
 		{
 			final String sql = "SELECT GL_Category_ID FROM C_DocType WHERE AD_Client_ID=? AND DocBaseType=?";
 			PreparedStatement pstmt = null;
@@ -876,7 +876,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			{
 				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 				pstmt.setInt(1, getClientId().getRepoId());
-				pstmt.setString(2, m_DocumentType);
+				pstmt.setString(2, _docBaseType.getCode());
 				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
 				{
@@ -928,11 +928,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			log.error("No default GL_Category - {}", this);
 		}
 
-		if (m_DocumentType == null)
+		if (_docBaseType == null)
 		{
 			throw new IllegalStateException("Document Type not found");
 		}
-	}    // setDocumentType
+	}    // setDocBaseType
 
 	/**************************************************************************
 	 * Is the Source Document Balanced
@@ -1042,7 +1042,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		// Is Period Open?
 		if (m_period != null
-				&& m_period.isOpen(getDocumentType(), getDateAcctAsTimestamp(), getOrgId().getRepoId()))
+				&& m_period.isOpen(getDocBaseType(), getDateAcctAsTimestamp(), getOrgId().getRepoId()))
 		{
 			m_C_Period_ID = m_period.getC_Period_ID();
 		}
@@ -1964,7 +1964,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			final boolean loaded = getDocLines() != null;
 			if (loaded)
 			{
-				text.append(" (").append(getDocumentType())
+				text.append(" (").append(getDocBaseType())
 						.append(" - DocumentNo=").append(getDocumentNo())
 						.append(", DateAcct=").append(getDateAcct())
 						.append(", Amount=").append(getAmount())

@@ -29,6 +29,7 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
@@ -101,7 +102,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	public Doc_MatchInv(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_MatMatchInv);
+		super(ctx, DocBaseType.MatchInvoice);
 	}
 
 	@Override

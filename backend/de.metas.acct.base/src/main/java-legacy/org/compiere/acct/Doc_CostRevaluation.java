@@ -9,6 +9,7 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.costrevaluation.CostRevaluation;
 import de.metas.costrevaluation.CostRevaluationRepository;
+import de.metas.document.DocBaseType;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -27,7 +28,7 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 
 	public Doc_CostRevaluation(final AcctDocContext ctx)
 	{
-		super(ctx, X_C_DocType.DOCBASETYPE_CostRevaluation);
+		super(ctx, DocBaseType.CostRevaluation);
 
 		final I_M_CostRevaluation costRevaluationRecord = InterfaceWrapperHelper.create(ctx.getDocumentModel(), I_M_CostRevaluation.class);
 		this.costRevaluation = CostRevaluationRepository.fromRecord(costRevaluationRecord);

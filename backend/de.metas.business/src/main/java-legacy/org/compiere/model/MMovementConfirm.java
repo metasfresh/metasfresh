@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
@@ -310,7 +311,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 			return IDocument.STATUS_Invalid;
 
 		//	Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getUpdated(), MDocType.DOCBASETYPE_MaterialMovement, getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getUpdated(), DocBaseType.MaterialMovement, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;

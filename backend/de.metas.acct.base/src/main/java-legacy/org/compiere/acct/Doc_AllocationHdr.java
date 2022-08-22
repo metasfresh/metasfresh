@@ -27,6 +27,7 @@ import de.metas.acct.doc.PostingException;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -78,7 +79,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 	public Doc_AllocationHdr(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_Allocation);
+		super(ctx, DocBaseType.PaymentAllocation);
 	}   // Doc_Allocation
 
 	@Override

@@ -17,6 +17,7 @@
 package org.compiere.model;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -78,6 +79,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public MInventory(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -161,7 +163,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+					.docBaseType(DocBaseType.MaterialPhysicalInventory)
 					.adClientId(getAD_Client_ID())
 					.adOrgId(getAD_Org_ID())
 					.build();
@@ -216,7 +218,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 
 		// Std Period open?
-		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), DocBaseType.MaterialPhysicalInventory, getAD_Org_ID());
 
 		if (!hasLines())
 		{
@@ -402,7 +404,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 
 		final MDocType docType = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), docType.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getMovementDate(), DocBaseType.ofCode(docType.getDocBaseType()), getAD_Org_ID());
 
 		final I_M_Inventory reversal = createAndProcessReversal();
 
