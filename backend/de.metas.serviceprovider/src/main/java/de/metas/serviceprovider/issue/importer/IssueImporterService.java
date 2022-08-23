@@ -38,7 +38,6 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.label.IssueLabelService;
-import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.issue.IssueEntity;
@@ -84,7 +83,6 @@ public class IssueImporterService
 	private final ITrxManager trxManager;
 	private final IssueLabelService issueLabelService;
 	private final ActivityRepository activityRepository;
-	private final ExternalProjectRepository externalProjectRepository;
 
 	public IssueImporterService(
 			final ImportQueue<ImportIssueInfo> importIssuesQueue,
@@ -93,8 +91,7 @@ public class IssueImporterService
 			final ExternalReferenceRepository externalReferenceRepository,
 			final ITrxManager trxManager,
 			final IssueLabelService issueLabelService,
-			final ActivityRepository activityRepository,
-			final ExternalProjectRepository externalProjectRepository)
+			final ActivityRepository activityRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.milestoneRepository = milestoneRepository;
@@ -103,7 +100,6 @@ public class IssueImporterService
 		this.trxManager = trxManager;
 		this.issueLabelService = issueLabelService;
 		this.activityRepository = activityRepository;
-		this.externalProjectRepository = externalProjectRepository;
 	}
 
 	public void importIssues(
@@ -404,6 +400,15 @@ public class IssueImporterService
 
 		final IssueLabel costCenterLabel = getCostCenterLabel(importIssueInfo, existingIssueEntity);
 
+		final boolean containsCostCenterLabel = importIssueInfo.getIssueLabels()
+				.stream()
+				.anyMatch(issueLabel -> issueLabel.equals(costCenterLabel));
+
+		if (containsCostCenterLabel)
+		{
+			return importIssueInfo.getIssueLabels();
+		}
+
 		return Stream.concat(importIssueInfo.getIssueLabels().stream(), Stream.of(costCenterLabel))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -427,11 +432,11 @@ public class IssueImporterService
 						.build())
 				.flatMap(activityRepository::getByActivityQuery)
 				.map(activity -> IssueLabel.builder()
-						.value(activity.getValue())
+						.value(GithubImporterConstants.LabelType.wrapCostCenterValue(activity.getValue()))
 						.orgId(activity.getOrgId())
 						.build())
 				.orElseGet(() -> IssueLabel.builder()
-						.value(GithubImporterConstants.LabelType.wrapCostCenterValue(importIssueInfo.getRepositoryName() + "-" + importIssueInfo.getExternalIssueNo()))
+						.value(GithubImporterConstants.LabelType.wrapCostCenterValue(importIssueInfo.getRepositoryName() + "_" + importIssueInfo.getExternalIssueNo()))
 						.orgId(importIssueInfo.getOrgId())
 						.build());
 	}

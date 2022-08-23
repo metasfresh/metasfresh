@@ -37,7 +37,6 @@ import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.label.IssueLabelService;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
-import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
@@ -103,8 +102,7 @@ class IssueImporterServiceTest
 				externalReferenceRepository,
 				trxManager,
 				new IssueLabelService(new IssueLabelRepository(queryBL)),
-				new ActivityRepository(),
-				new ExternalProjectRepository(queryBL)
+				new ActivityRepository()
 		);
 	}
 

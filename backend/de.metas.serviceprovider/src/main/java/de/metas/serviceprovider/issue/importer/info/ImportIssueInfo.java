@@ -29,7 +29,6 @@ import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.Status;
 import de.metas.uom.UomId;
@@ -136,11 +135,11 @@ public class ImportIssueInfo
 	@NonNull
 	public Optional<IssueLabel> getSingleLabel(@NonNull final Predicate<IssueLabel> filter)
 	{
-		final List<IssueLabel> matchingLables = filterLabels(label -> label.matchesType(GithubImporterConstants.LabelType.COST_CENTER));
+		final List<IssueLabel> matchingLabels = filterLabels(filter);
 
-		if (!matchingLables.isEmpty())
+		if (!matchingLabels.isEmpty())
 		{
-			return Optional.of(CollectionUtils.singleElement(matchingLables));
+			return Optional.of(CollectionUtils.singleElement(matchingLabels));
 		}
 
 		return Optional.empty();
