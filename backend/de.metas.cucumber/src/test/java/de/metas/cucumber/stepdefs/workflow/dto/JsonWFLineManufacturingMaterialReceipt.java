@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.workflow.rest-api
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,32 +20,23 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.controller.v2.json;
+package de.metas.cucumber.stepdefs.workflow.dto;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.util.List;
+import java.math.BigDecimal;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
+@Builder
+@Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFManufacturingAvailableReceivingTargets
+public class JsonWFLineManufacturingMaterialReceipt
 {
-	@JsonProperty("values")
-	@NonNull List<JsonWFManufacturingReceivingTargetValues> values;
+	@NonNull String id;
 
-	@Builder
-	@JsonCreator
-	public JsonWFManufacturingAvailableReceivingTargets(
-			@JsonProperty("values") @NonNull final List<JsonWFManufacturingReceivingTargetValues> values
-	)
-	{
-		this.values = values;
-	}
+	@NonNull BigDecimal qtyToReceive;
 }

@@ -28,16 +28,18 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.model.I_DD_Order_MoveSchedule;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
@@ -52,28 +54,30 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 
 public class DD_OrderLine_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final M_Product_StepDefData productTable;
 	private final DD_Order_StepDefData ddOrderTable;
 	private final DD_OrderLine_StepDefData ddOrderLineTable;
 	private final M_Locator_StepDefData locatorTable;
-	private final DDOrderService ddOrderService;
+	private final DD_Order_MoveSchedule_StepDefData moveScheduleTable;
 
 	public DD_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final DD_Order_StepDefData ddOrderTable,
 			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
 			@NonNull final M_Locator_StepDefData locatorTable,
-			@NonNull final DDOrderService ddOrderService)
+			@NonNull final DD_Order_MoveSchedule_StepDefData moveScheduleTable)
 	{
 		this.productTable = productTable;
 		this.ddOrderTable = ddOrderTable;
 		this.ddOrderLineTable = ddOrderLineTable;
 		this.locatorTable = locatorTable;
-		this.ddOrderService = ddOrderService;
+		this.moveScheduleTable = moveScheduleTable;
 	}
 
 	@Given("metasfresh contains DD_OrderLines:")
@@ -122,6 +126,29 @@ public class DD_OrderLine_StepDef
 			saveRecord(orderLine);
 
 			ddOrderLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
+		}
+	}
+
+	@And("validate DD_Order_MoveSchedule")
+	public void validate_move_schedule(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_DD_OrderLine orderLine = ddOrderLineTable.get(orderLineIdentifier);
+
+			final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_DD_Order_MoveSchedule.COLUMNNAME_QtyPicked);
+
+			final I_DD_Order_MoveSchedule moveSchedule = queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
+					.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID, orderLine.getDD_OrderLine_ID())
+					.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_Created)
+					.create()
+					.firstOnly(I_DD_Order_MoveSchedule.class);
+
+			assertThat(moveSchedule).isNotNull();
+			assertThat(moveSchedule.getQtyToPick()).isEqualTo(qtyPicked);
+
 		}
 	}
 }

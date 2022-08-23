@@ -24,7 +24,6 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -50,7 +49,6 @@ public class JsonWFActivity
 	WFActivityStatus status;
 
 	@JsonProperty
-	@JsonInclude
 	@Builder.Default
 	@NonNull Map<String, Object> componentProps = ImmutableMap.of();
 

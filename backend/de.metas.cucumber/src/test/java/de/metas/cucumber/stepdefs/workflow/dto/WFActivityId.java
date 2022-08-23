@@ -20,15 +20,13 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.workflow;
+package de.metas.cucumber.stepdefs.workflow.dto;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
+import lombok.NonNull;
+import lombok.Value;
 
-public class JsonWFProcess_StepDefData extends StepDefData<WFProcessId>
+@Value(staticConstructor = "of")
+public class WFActivityId
 {
-	public JsonWFProcess_StepDefData()
-	{
-		super(WFProcessId.class);
-	}
+	@NonNull String activityId;
 }

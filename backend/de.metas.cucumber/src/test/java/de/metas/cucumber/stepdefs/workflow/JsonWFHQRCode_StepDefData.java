@@ -22,13 +22,13 @@
 
 package de.metas.cucumber.stepdefs.workflow;
 
+import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWFHQRCode;
 
-public class JsonWFHQRCode_StepDefData extends StepDefData<JsonWFHQRCode>
+public class JsonWFHQRCode_StepDefData extends StepDefData<JsonHUQRCode>
 {
 	public JsonWFHQRCode_StepDefData()
 	{
-		super(JsonWFHQRCode.class);
+		super(JsonHUQRCode.class);
 	}
 }

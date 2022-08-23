@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.workflow.rest-api
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,42 +20,51 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.controller.v2.json;
+package de.metas.cucumber.stepdefs.workflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.handlingunits.JsonHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
-
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFManufacturingReceiveFromLine
+public class JsonWFDistributionStep
 {
 	@JsonProperty("id")
 	@NonNull String id;
 
-	@JsonProperty("qtyToReceive")
-	@NonNull BigDecimal qtyToReceive;
-
-	@JsonProperty("availableReceivingTargets")
-	@NonNull JsonWFManufacturingAvailableReceivingTargets availableReceivingTargets;
+	@JsonProperty("pickFromHU")
+	@NonNull PickFromHU pickFromHU;
 
 	@Builder
 	@JsonCreator
-	public JsonWFManufacturingReceiveFromLine(
+	public JsonWFDistributionStep(
 			@JsonProperty("id") @NonNull final String id,
-			@JsonProperty("qtyToReceive") @NonNull final BigDecimal qtyToReceive,
-			@JsonProperty("availableReceivingTargets") @NonNull final JsonWFManufacturingAvailableReceivingTargets availableReceivingTargets
-	)
+			@JsonProperty("pickFromHU") @NonNull final PickFromHU pickFromHU)
 	{
 		this.id = id;
-		this.qtyToReceive = qtyToReceive;
-		this.availableReceivingTargets = availableReceivingTargets;
+		this.pickFromHU = pickFromHU;
+	}
+
+	@Value
+	@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class PickFromHU
+	{
+		@JsonProperty("qrCode")
+		@NonNull JsonHUQRCode qrCode;
+
+		@Builder
+		@JsonCreator
+		public PickFromHU(@JsonProperty("qrCode") @NonNull final JsonHUQRCode qrCode)
+		{
+			this.qrCode = qrCode;
+		}
 	}
 }

@@ -23,12 +23,12 @@
 package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
+import de.metas.cucumber.stepdefs.workflow.dto.WFActivityId;
 
-public class JsonWFActivity_StepDefData extends StepDefData<JsonWFActivity>
+public class JsonWFActivity_StepDefData extends StepDefData<WFActivityId>
 {
 	public JsonWFActivity_StepDefData()
 	{
-		super(JsonWFActivity.class);
+		super(WFActivityId.class);
 	}
 }

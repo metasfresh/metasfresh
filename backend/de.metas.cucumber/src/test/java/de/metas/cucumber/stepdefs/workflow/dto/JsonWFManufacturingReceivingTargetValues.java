@@ -20,59 +20,44 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.controller.v2.json;
+package de.metas.cucumber.stepdefs.workflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class JsonWFStep
+public class JsonWFManufacturingReceivingTargetValues
 {
-	@JsonProperty("pickingStepId")
-	@Nullable String pickingStepId;
-	@JsonProperty("id")
-	@Nullable String id;
-	@JsonProperty("mainPickFrom")
-	@Nullable
-	JsonWFPickFrom mainPickFrom;
+	@JsonProperty("luCaption")
+	@NonNull String luCaption;
 
-	@JsonProperty("pickFromHU")
-	@Nullable
-	JsonWFPickFrom pickFromHU;
+	@JsonProperty("tuCaption")
+	@NonNull String tuCaption;
 
-	@JsonProperty("huQRCode")
-	@Nullable JsonWFHQRCode huQRCode;
+	@JsonProperty("luPIItemId")
+	@NonNull Integer luPIItemId;
 
-	@JsonProperty("qtyToIssue")
-	@Nullable BigDecimal qtyToIssue;
+	@JsonProperty("tuPIItemProductId")
+	@NonNull Integer tuPIItemProductId;
 
 	@Builder
 	@JsonCreator
-	public JsonWFStep(
-			@JsonProperty("pickingStepId") @Nullable final String pickingStepId,
-			@JsonProperty("id") @Nullable final String id,
-			@JsonProperty("mainPickFrom") @Nullable final JsonWFPickFrom mainPickFrom,
-			@JsonProperty("pickFromHU") @Nullable final JsonWFPickFrom pickFromHU,
-			@JsonProperty("huQRCode") @Nullable final JsonWFHQRCode huQRCode,
-			@JsonProperty("qtyToIssue") @Nullable final BigDecimal qtyToIssue
-	)
+	public JsonWFManufacturingReceivingTargetValues(
+			@JsonProperty("luCaption") @NonNull final String luCaption,
+			@JsonProperty("tuCaption") @NonNull final String tuCaption,
+			@JsonProperty("luPIItemId") @NonNull final Integer luPIItemId,
+			@JsonProperty("tuPIItemProductId") @NonNull final Integer tuPIItemProductId)
 	{
-		this.pickingStepId = pickingStepId;
-		this.id = id;
-		this.mainPickFrom = mainPickFrom;
-		this.pickFromHU = pickFromHU;
-		this.huQRCode = huQRCode;
-		this.qtyToIssue = qtyToIssue;
+		this.luCaption = luCaption;
+		this.tuCaption = tuCaption;
+		this.luPIItemId = luPIItemId;
+		this.tuPIItemProductId = tuPIItemProductId;
 	}
 }

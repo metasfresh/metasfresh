@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.workflow;
+package de.metas.cucumber.stepdefs.productionorder;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWFLine;
+import org.eevolution.model.I_PP_Order;
 
-public class JsonWFLine_StepDefData extends StepDefData<JsonWFLine>
+public class PP_Order_StepDefData extends StepDefData<I_PP_Order>
 {
-	public JsonWFLine_StepDefData()
+	public PP_Order_StepDefData()
 	{
-		super(JsonWFLine.class);
+		super(I_PP_Order.class);
 	}
 }

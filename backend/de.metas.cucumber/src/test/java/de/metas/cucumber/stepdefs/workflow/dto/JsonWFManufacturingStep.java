@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.workflow.rest-api
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,44 +20,42 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.controller.v2.json;
+package de.metas.cucumber.stepdefs.workflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.handlingunits.JsonHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+import java.math.BigDecimal;
+
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFManufacturingReceivingTargetValues
+public class JsonWFManufacturingStep
 {
-	@JsonProperty("luCaption")
-	@NonNull String luCaption;
+	@JsonProperty("id")
+	@NonNull String id;
 
-	@JsonProperty("tuCaption")
-	@NonNull String tuCaption;
+	@JsonProperty("qtyToIssue")
+	@NonNull BigDecimal qtyToIssue;
 
-	@JsonProperty("luPIItemId")
-	@NonNull Integer luPIItemId;
-
-	@JsonProperty("tuPIItemProductId")
-	@NonNull Integer tuPIItemProductId;
+	@JsonProperty("huQRCode")
+	@NonNull JsonHUQRCode huQRCode;
 
 	@Builder
 	@JsonCreator
-	public JsonWFManufacturingReceivingTargetValues(
-			@JsonProperty("luCaption") @NonNull final String luCaption,
-			@JsonProperty("tuCaption") @NonNull final String tuCaption,
-			@JsonProperty("luPIItemId") @NonNull final Integer luPIItemId,
-			@JsonProperty("tuPIItemProductId") @NonNull final Integer tuPIItemProductId)
+	public JsonWFManufacturingStep(
+			@JsonProperty("id") @NonNull final String id,
+			@JsonProperty("qtyToIssue") @NonNull final BigDecimal qtyToIssue,
+			@JsonProperty("huQRCode") @NonNull final JsonHUQRCode huQRCode)
 	{
-		this.luCaption = luCaption;
-		this.tuCaption = tuCaption;
-		this.luPIItemId = luPIItemId;
-		this.tuPIItemProductId = tuPIItemProductId;
+		this.id = id;
+		this.qtyToIssue = qtyToIssue;
+		this.huQRCode = huQRCode;
 	}
 }

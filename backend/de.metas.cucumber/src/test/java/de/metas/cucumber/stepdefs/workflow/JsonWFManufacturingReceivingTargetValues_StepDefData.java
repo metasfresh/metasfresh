@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.workflow.rest_api.controller.v2.json.JsonWFManufacturingReceivingTargetValues;
+import de.metas.cucumber.stepdefs.workflow.dto.JsonWFManufacturingReceivingTargetValues;
 
 public class JsonWFManufacturingReceivingTargetValues_StepDefData extends StepDefData<JsonWFManufacturingReceivingTargetValues>
 {

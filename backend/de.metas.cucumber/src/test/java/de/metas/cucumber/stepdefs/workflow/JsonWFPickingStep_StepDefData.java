@@ -23,12 +23,12 @@
 package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
+import de.metas.cucumber.stepdefs.workflow.dto.JsonWFPickingStep;
 
-public class JsonWFProcess_StepDefData extends StepDefData<WFProcessId>
+public class JsonWFPickingStep_StepDefData extends StepDefData<JsonWFPickingStep>
 {
-	public JsonWFProcess_StepDefData()
+	public JsonWFPickingStep_StepDefData()
 	{
-		super(WFProcessId.class);
+		super(JsonWFPickingStep.class);
 	}
 }
