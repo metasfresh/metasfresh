@@ -38,12 +38,12 @@ import java.util.List;
 public class JsonWFManufacturingAvailableReceivingTargets
 {
 	@JsonProperty("values")
-	@NonNull List<JsonWFManufacturingReceivingTargetValue> values;
+	@NonNull List<JsonWFManufacturingReceivingTargetValues> values;
 
 	@Builder
 	@JsonCreator
 	public JsonWFManufacturingAvailableReceivingTargets(
-			@JsonProperty("values") @NonNull final List<JsonWFManufacturingReceivingTargetValue> values
+			@JsonProperty("values") @NonNull final List<JsonWFManufacturingReceivingTargetValues> values
 	)
 	{
 		this.values = values;

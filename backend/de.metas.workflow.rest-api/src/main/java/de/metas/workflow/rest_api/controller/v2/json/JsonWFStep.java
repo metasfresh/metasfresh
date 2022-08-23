@@ -25,29 +25,54 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFPickingStep
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class JsonWFStep
 {
 	@JsonProperty("pickingStepId")
-	@NonNull String pickingStepId;
+	@Nullable String pickingStepId;
+	@JsonProperty("id")
+	@Nullable String id;
 	@JsonProperty("mainPickFrom")
-	@NonNull JsonWFPickFrom mainPickFrom;
+	@Nullable
+	JsonWFPickFrom mainPickFrom;
+
+	@JsonProperty("pickFromHU")
+	@Nullable
+	JsonWFPickFrom pickFromHU;
+
+	@JsonProperty("huQRCode")
+	@Nullable JsonWFHQRCode huQRCode;
+
+	@JsonProperty("qtyToIssue")
+	@Nullable BigDecimal qtyToIssue;
 
 	@Builder
 	@JsonCreator
-	public JsonWFPickingStep(
-			@JsonProperty("pickingStepId") @NonNull final String pickingStepId,
-			@JsonProperty("mainPickFrom") @NonNull final JsonWFPickFrom mainPickFrom
+	public JsonWFStep(
+			@JsonProperty("pickingStepId") @Nullable final String pickingStepId,
+			@JsonProperty("id") @Nullable final String id,
+			@JsonProperty("mainPickFrom") @Nullable final JsonWFPickFrom mainPickFrom,
+			@JsonProperty("pickFromHU") @Nullable final JsonWFPickFrom pickFromHU,
+			@JsonProperty("huQRCode") @Nullable final JsonWFHQRCode huQRCode,
+			@JsonProperty("qtyToIssue") @Nullable final BigDecimal qtyToIssue
 	)
 	{
 		this.pickingStepId = pickingStepId;
+		this.id = id;
 		this.mainPickFrom = mainPickFrom;
+		this.pickFromHU = pickFromHU;
+		this.huQRCode = huQRCode;
+		this.qtyToIssue = qtyToIssue;
 	}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.billofmaterial;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -122,7 +123,13 @@ public class PP_Product_Bom_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final I_PP_Product_BOMLine bomLine = newInstance(I_PP_Product_BOMLine.class);
+		final I_PP_Product_BOMLine bomLine = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
+						.create()
+						.firstOnly(I_PP_Product_BOMLine.class),
+				() -> newInstance(I_PP_Product_BOMLine.class));
 
 		bomLine.setPP_Product_BOM_ID(productBOMRecord.getPP_Product_BOM_ID());
 		bomLine.setM_Product_ID(productRecord.getM_Product_ID());
@@ -169,7 +176,12 @@ public class PP_Product_Bom_StepDef
 
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_PP_Product_BOM.COLUMNNAME_ValidFrom);
 
-		final I_PP_Product_BOM productBOMRecord = newInstance(I_PP_Product_BOM.class);
+		final I_PP_Product_BOM productBOMRecord = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+						.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.create()
+						.firstOnly(I_PP_Product_BOM.class),
+				() -> newInstance(I_PP_Product_BOM.class));
 
 		productBOMRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		productBOMRecord.setC_UOM_ID(productRecord.getC_UOM_ID());
@@ -207,7 +219,12 @@ public class PP_Product_Bom_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final I_PP_Product_BOMVersions bomVersionsRecord = newInstance(I_PP_Product_BOMVersions.class);
+		final I_PP_Product_BOMVersions bomVersionsRecord = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> queryBL.createQueryBuilder(I_PP_Product_BOMVersions.class)
+						.addEqualsFilter(I_PP_Product_BOMVersions.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.create()
+						.firstOnly(I_PP_Product_BOMVersions.class),
+				() -> newInstance(I_PP_Product_BOMVersions.class));
 
 		bomVersionsRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		bomVersionsRecord.setName(productRecord.getName());

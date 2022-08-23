@@ -25,23 +25,34 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonWFPickFrom
 {
 	@JsonProperty("huQRCode")
-	@NonNull JsonWFHQRCode huQRCode;
+	@Nullable
+	JsonWFHQRCode huQRCode;
+
+	@JsonProperty("qrCode")
+	@Nullable
+	JsonWFHQRCode qrCode;
 
 	@Builder
 	@JsonCreator
-	public JsonWFPickFrom(@JsonProperty("huQRCode") @NonNull final JsonWFHQRCode huQRCode)
+	public JsonWFPickFrom(
+			@JsonProperty("huQRCode") @Nullable final JsonWFHQRCode huQRCode,
+			@JsonProperty("qrCode") @Nullable final JsonWFHQRCode qrCode)
 	{
 		this.huQRCode = huQRCode;
+		this.qrCode = qrCode;
 	}
 }

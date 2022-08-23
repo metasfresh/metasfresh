@@ -25,27 +25,45 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFPickingLine
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class JsonWFLine
 {
 	@JsonProperty("steps")
-	@NonNull List<JsonWFPickingStep> steps;
+	@Nullable List<JsonWFStep> steps;
+
+	@JsonProperty("id")
+	@Nullable String id;
+
+	@JsonProperty("qtyToReceive")
+	@Nullable BigDecimal qtyToReceive;
+
+	@JsonProperty("availableReceivingTargets")
+	@Nullable JsonWFManufacturingAvailableReceivingTargets availableReceivingTargets;
 
 	@Builder
 	@JsonCreator
-	public JsonWFPickingLine(
-			@JsonProperty("steps") @NonNull final List<JsonWFPickingStep> steps
+	public JsonWFLine(
+			@JsonProperty("steps") @Nullable final List<JsonWFStep> steps,
+			@JsonProperty("id") @Nullable final String id,
+			@JsonProperty("qtyToReceive") final @Nullable BigDecimal qtyToReceive,
+			@JsonProperty("availableReceivingTargets") @Nullable final JsonWFManufacturingAvailableReceivingTargets availableReceivingTargets
 	)
 	{
 		this.steps = steps;
+		this.id = id;
+		this.qtyToReceive = qtyToReceive;
+		this.availableReceivingTargets = availableReceivingTargets;
 	}
 }

@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
@@ -106,6 +105,8 @@ public class M_Warehouse_StepDef
 
 			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, false);
 
+			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
+
 			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 					.map(bPartnerTable::get)
 					.map(I_C_BPartner::getC_BPartner_ID)
@@ -121,52 +122,12 @@ public class M_Warehouse_StepDef
 			warehouseRecord.setC_BPartner_ID(bPartnerId);
 			warehouseRecord.setC_BPartner_Location_ID(bPartnerLocationId);
 			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+			warehouseRecord.setIsInTransit(isInTransit);
 
 			InterfaceWrapperHelper.saveRecord(warehouseRecord);
 
 			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			warehouseTable.put(warehouseIdentifier, warehouseRecord);
-		}
-	}
-
-	@And("metasfresh contains M_Warehouses:")
-	public void metasfresh_contains_m_warehouses(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
-
-			final String name = DataTableUtil.extractStringForColumnName(tableRow, I_M_Warehouse.COLUMNNAME_Name);
-			final String value = CoalesceUtil.coalesce(DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_Value), name);
-
-			final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bPartnerLocationIdentifier);
-
-			final boolean isInTransit = DataTableUtil.extractBooleanForColumnName(tableRow, I_M_Warehouse.COLUMNNAME_IsInTransit);
-
-			final I_M_Warehouse warehouse = CoalesceUtil.coalesceSuppliers(
-					() -> queryBL.createQueryBuilder(I_M_Warehouse.class)
-							.addEqualsFilter(I_M_Warehouse.COLUMNNAME_Name, name)
-							.orderBy(I_M_Warehouse.COLUMNNAME_Created)
-							.create()
-							.first(I_M_Warehouse.class),
-					() -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Warehouse.class));
-
-			assertThat(warehouse).isNotNull();
-
-			warehouse.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-			warehouse.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
-			warehouse.setName(name);
-			warehouse.setValue(value);
-			warehouse.setIsInTransit(isInTransit);
-
-			saveRecord(warehouse);
-
-			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			warehouseTable.put(warehouseIdentifier, warehouse);
 		}
 	}
 }

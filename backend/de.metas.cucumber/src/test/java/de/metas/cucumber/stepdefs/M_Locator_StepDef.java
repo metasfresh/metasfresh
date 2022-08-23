@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
@@ -108,37 +107,6 @@ public class M_Locator_StepDef
 
 			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
 			locatorTable.put(locatorIdentifier, locatorRecord);
-		}
-	}
-
-	@And("metasfresh contains M_Locators:")
-	public void metasfresh_contains_m_locator(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String value = DataTableUtil.extractStringForColumnName(tableRow, I_M_Locator.COLUMNNAME_Value);
-
-			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
-
-			final I_M_Locator locator = CoalesceUtil.coalesceSuppliers(
-					() -> queryBL.createQueryBuilder(I_M_Locator.class)
-							.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, value)
-							.orderBy(I_M_Locator.COLUMNNAME_Created)
-							.create()
-							.first(I_M_Locator.class),
-					() -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Locator.class));
-
-			assertThat(locator).isNotNull();
-
-			locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-			locator.setValue(value);
-
-			saveRecord(locator);
-
-			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
-			locatorTable.put(locatorIdentifier, locator);
 		}
 	}
 }
