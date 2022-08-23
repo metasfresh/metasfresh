@@ -79,11 +79,16 @@ export class RawList0 extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { listHash } = this.props;
+    const { listHash, list = [] } = this.props;
     let changedValues = {};
 
-    if (listHash !== prevProps.listHash) {
-      const { list, mandatory, defaultValue, selected, emptyText } = this.props;
+    const { listHash: prevListHash, list: prevList = [] } = prevProps;
+
+    const loadDropdown = (listHash !== prevListHash && (list.length > 0 || prevList.length > 0))
+      || (listHash && !prevListHash);
+
+    if (loadDropdown) {
+      const { mandatory, defaultValue, selected, emptyText } = this.props;
       let dropdownList = [...list];
       if (!mandatory && emptyText) {
         dropdownList.push({
