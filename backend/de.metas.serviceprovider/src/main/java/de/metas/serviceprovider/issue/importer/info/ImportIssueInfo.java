@@ -146,7 +146,7 @@ public class ImportIssueInfo
 	}
 
 	@NonNull
-	private List<IssueLabel> filterLabels(@NonNull final Predicate<IssueLabel> filter)
+	public List<IssueLabel> filterLabels(@NonNull final Predicate<IssueLabel> filter)
 	{
 		return issueLabels.stream()
 				.filter(filter)

@@ -68,7 +68,7 @@ public class ActivityRepository
 		return toQueryBuilder(activityQuery)
 				.create()
 				.firstOptional(I_C_Activity.class)
-				.map(ActivityRepository::toActivity);
+				.map(ActivityRepository::fromRecord);
 	}
 
 	@NonNull
@@ -92,9 +92,10 @@ public class ActivityRepository
 	}
 
 	@NonNull
-	private static Activity toActivity(@NonNull final I_C_Activity record)
+	private static Activity fromRecord(@NonNull final I_C_Activity record)
 	{
 		return Activity.builder()
+				.activityId(ActivityId.ofRepoId(record.getC_Activity_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.value(record.getValue())
 				.name(record.getName())

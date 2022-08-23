@@ -145,9 +145,7 @@ public class IssueImporterService
 				return;
 			}
 
-			final ImmutableList<IssueLabel> allLabels = appendCustomLabels(importIssueInfo, existingEffortIssue);
-
-			final ImportIssueInfo importIssueInfoWithCustomLabels = importIssueInfo.withIssueLabels(allLabels);
+			final ImportIssueInfo importIssueInfoWithCustomLabels = appendCustomLabels(importIssueInfo, existingEffortIssue);
 
 			if (importIssueInfoWithCustomLabels.getMilestone() != null)
 			{
@@ -174,7 +172,7 @@ public class IssueImporterService
 				externalReferenceRepository.save(issueExternalRef);
 			}
 
-			issueLabelService.persistLabels(issueEntity.getIssueId(), allLabels);
+			issueLabelService.persistLabels(issueEntity.getIssueId(), importIssueInfoWithCustomLabels.getIssueLabels());
 
 			importedIdsCollector.add(issueEntity.getIssueId());
 		}
@@ -391,30 +389,30 @@ public class IssueImporterService
 	}
 
 	@NonNull
-	public ImmutableList<IssueLabel> appendCustomLabels(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final Optional<IssueEntity> existingIssueEntity)
+	public ImportIssueInfo appendCustomLabels(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final Optional<IssueEntity> existingIssueEntity)
 	{
 		if (importIssueInfo.isEffortIssue())
 		{
-			return importIssueInfo.getIssueLabels();
+			return importIssueInfo;
 		}
 
-		final IssueLabel costCenterLabel = getCostCenterLabel(importIssueInfo, existingIssueEntity);
+		final IssueLabel costCenterLabel = getOrCreateCostCenterLabel(importIssueInfo, existingIssueEntity);
 
-		final boolean containsCostCenterLabel = importIssueInfo.getIssueLabels()
-				.stream()
-				.anyMatch(issueLabel -> issueLabel.equals(costCenterLabel));
+		final boolean containsCostCenterLabel = !importIssueInfo.filterLabels(costCenterLabel::equals).isEmpty();
 
 		if (containsCostCenterLabel)
 		{
-			return importIssueInfo.getIssueLabels();
+			return importIssueInfo;
 		}
 
-		return Stream.concat(importIssueInfo.getIssueLabels().stream(), Stream.of(costCenterLabel))
+		final ImmutableList<IssueLabel> allLabels = Stream.concat(importIssueInfo.getIssueLabels().stream(), Stream.of(costCenterLabel))
 				.collect(ImmutableList.toImmutableList());
+
+		return importIssueInfo.withIssueLabels(allLabels);
 	}
 
 	@NonNull
-	private IssueLabel getCostCenterLabel(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final Optional<IssueEntity> existingIssue)
+	private IssueLabel getOrCreateCostCenterLabel(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final Optional<IssueEntity> existingIssue)
 	{
 		final IssueLabel costCenterLabel = importIssueInfo.getSingleLabel(label -> label.matchesType(GithubImporterConstants.LabelType.COST_CENTER))
 				.orElse(null);
@@ -432,11 +430,11 @@ public class IssueImporterService
 						.build())
 				.flatMap(activityRepository::getByActivityQuery)
 				.map(activity -> IssueLabel.builder()
-						.value(GithubImporterConstants.LabelType.wrapCostCenterValue(activity.getValue()))
+						.value(GithubImporterConstants.LabelType.COST_CENTER.wrapValue(activity.getValue()))
 						.orgId(activity.getOrgId())
 						.build())
 				.orElseGet(() -> IssueLabel.builder()
-						.value(GithubImporterConstants.LabelType.wrapCostCenterValue(importIssueInfo.getRepositoryName() + "_" + importIssueInfo.getExternalIssueNo()))
+						.value(GithubImporterConstants.LabelType.COST_CENTER.wrapValue(importIssueInfo.getRepositoryName() + "_" + importIssueInfo.getExternalIssueNo()))
 						.orgId(importIssueInfo.getOrgId())
 						.build());
 	}

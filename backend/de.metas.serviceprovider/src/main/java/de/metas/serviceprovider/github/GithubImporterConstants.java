@@ -60,14 +60,14 @@ public interface GithubImporterConstants
 		private final String groupName;
 		private final String labelPrefix;
 
+		public String wrapValue(@NonNull final String value)
+		{
+			return getLabelPrefix() + value;
+		}
+
 		public static Stream<LabelType> streamKnownLabelTypes()
 		{
 			return Stream.of(values()).filter(label -> !UNKNOWN.equals(label));
-		}
-
-		public static String wrapCostCenterValue(@NonNull final String value)
-		{
-			return COST_CENTER.getLabelPrefix() + value;
 		}
 	}
 }

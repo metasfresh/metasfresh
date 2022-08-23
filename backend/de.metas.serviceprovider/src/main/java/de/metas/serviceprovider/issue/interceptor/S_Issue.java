@@ -207,7 +207,7 @@ public class S_Issue
 			return;
 		}
 
-		if (Status.IN_PROGRESS.equals(parentIssue.getStatus()))
+		if (!Status.NEW.equals(parentIssue.getStatus()))
 		{
 			return;
 		}

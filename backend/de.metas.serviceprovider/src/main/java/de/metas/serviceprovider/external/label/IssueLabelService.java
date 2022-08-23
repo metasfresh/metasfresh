@@ -31,6 +31,8 @@ import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 import static de.metas.serviceprovider.model.X_S_IssueLabel.LABEL_AD_Reference_ID;
 
 @Service
@@ -47,8 +49,10 @@ public class IssueLabelService
 
 	public void persistLabels(@NonNull final IssueId issueId, @NonNull final ImmutableList<IssueLabel> issueLabels)
 	{
+		final Set<String> existingLabelValues = referenceDAO.retrieveListValues(LABEL_AD_Reference_ID);
+
 		issueLabels.stream()
-				.filter(label -> referenceDAO.retrieveListItemOrNull(LABEL_AD_Reference_ID, label.getValue()) == null)
+				.filter(label -> !existingLabelValues.contains(label.getValue()))
 				.map(IssueLabelService::buildRefList)
 				.forEach(referenceDAO::saveRefList);
 

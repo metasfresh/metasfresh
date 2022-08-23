@@ -23,6 +23,7 @@
 package de.metas.activity.repository;
 
 import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +32,9 @@ import lombok.Value;
 @Builder
 public class Activity
 {
+	@NonNull
+	ActivityId activityId;
+
 	@NonNull
 	OrgId orgId;
 

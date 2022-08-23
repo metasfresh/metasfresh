@@ -159,7 +159,8 @@ public class EffortIssueCreator
 				.map(externalProjectRepository::getById)
 				.orElseThrow(() -> new AdempiereException("No external project reference effort set on external project reference")
 						.appendParametersToMessage()
-						.setParameter("ExternalProjectReferenceId", externalProjectReferenceId));
+						.setParameter("ExternalProjectReferenceId", externalProjectReferenceId)
+						.markAsUserValidationError());
 	}
 
 	@NonNull

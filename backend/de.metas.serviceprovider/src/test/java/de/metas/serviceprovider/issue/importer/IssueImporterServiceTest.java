@@ -136,7 +136,6 @@ class IssueImporterServiceTest
 			InterfaceWrapperHelper.save(mockCostCenterActivityRecord);
 
 			initialImportIssueInfo = ImportIssueInfo.builder()
-					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
 					.status(Status.PENDING)
 					.orgId(OrgId.ofRepoId(1))
 					.externalProjectType(ExternalProjectType.BUDGET)

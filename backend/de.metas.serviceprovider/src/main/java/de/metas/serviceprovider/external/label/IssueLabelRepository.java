@@ -64,7 +64,7 @@ public class IssueLabelRepository
 	{
 		final List<IssueLabel> labelList = getRecordsByIssueId(issueId)
 				.stream()
-				.map(IssueLabelRepository::toIssueLabel)
+				.map(IssueLabelRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 
 		return LabelCollection.builder()
@@ -135,7 +135,7 @@ public class IssueLabelRepository
 	}
 
 	@NonNull
-	private static IssueLabel toIssueLabel(@NonNull final I_S_IssueLabel record)
+	private static IssueLabel fromRecord(@NonNull final I_S_IssueLabel record)
 	{
 		return IssueLabel.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
