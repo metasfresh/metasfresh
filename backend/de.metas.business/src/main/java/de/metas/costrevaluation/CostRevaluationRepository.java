@@ -63,7 +63,7 @@ public class CostRevaluationRepository
 
 		return CostRevaluation.builder()
 				.costRevaluationId(CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID()))
-				.acctSchemaId(AcctSchemaId.ofRepoId(record.getM_CostElement_ID()))
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(orgId)
