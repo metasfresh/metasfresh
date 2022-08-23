@@ -15,7 +15,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
-import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
