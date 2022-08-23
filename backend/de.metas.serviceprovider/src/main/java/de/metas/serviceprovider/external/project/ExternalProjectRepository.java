@@ -100,6 +100,7 @@ public class ExternalProjectRepository
 				.externalProjectType(externalProjectType.get())
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
+				.externalProjectReferenceEffortId(ExternalProjectReferenceId.ofRepoIdOrNull(record.getS_ExternalProjectReference_Effort_ID()))
 				.build();
 	}
 }
