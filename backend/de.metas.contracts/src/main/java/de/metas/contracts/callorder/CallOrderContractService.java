@@ -322,12 +322,13 @@ public class CallOrderContractService
 
 	public void forbidOverlappingTerms(@NonNull final I_C_OrderLine orderLine)
 	{
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
 		final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria = FlatrateTermOverlapCriteria
 				.builder()
 				.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
 				.bPartnerId(BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
-				.conditionsId(ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID()))
+				.conditionsId(conditionsId)
 				.datePromised(Objects.requireNonNull(orderLine.getDatePromised()))
 				.build();
 
@@ -335,7 +336,8 @@ public class CallOrderContractService
 
 		if (hasOverlappingTerms)
 		{
-			throw new AdempiereException(MSG_HasOverlapping_Term, orderLine.getC_Flatrate_Conditions_ID())
+			final I_C_Flatrate_Conditions conditionsRecord = flatrateDAO.getConditionsById(conditionsId);
+			throw new AdempiereException(MSG_HasOverlapping_Term, conditionsRecord.getName())
 					.markAsUserValidationError();
 		}
 	}
