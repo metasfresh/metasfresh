@@ -22,9 +22,11 @@
 
 package de.metas.cucumber.stepdefs.warehouse;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -37,6 +39,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -76,6 +79,50 @@ public class M_Warehouse_StepDef
 
 			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 
+			warehouseTable.put(warehouseIdentifier, warehouseRecord);
+		}
+	}
+
+	@And("metasfresh contains M_Warehouse:")
+	public void create_M_Warehouse(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
+
+			final I_M_Warehouse warehouseRecord = CoalesceUtil.coalesceSuppliers(
+					() -> queryBL.createQueryBuilder(I_M_Warehouse.class)
+							.addEqualsFilter(COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyOrNull(I_M_Warehouse.class),
+					() -> InterfaceWrapperHelper.newInstance(I_M_Warehouse.class));
+
+			assertThat(warehouseRecord).isNotNull();
+
+			final String name = DataTableUtil.extractStringForColumnName(row, I_M_Warehouse.COLUMNNAME_Name);
+
+			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, false);
+
+			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
+					.map(bpartnerTable::get)
+					.map(I_C_BPartner::getC_BPartner_ID)
+					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId());
+
+			final int bPartnerLocationId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER))
+					.map(bpartnerLocationTable::get)
+					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
+
+			warehouseRecord.setValue(value);
+			warehouseRecord.setName(name);
+			warehouseRecord.setC_BPartner_ID(bPartnerId);
+			warehouseRecord.setC_BPartner_Location_ID(bPartnerLocationId);
+			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+
+			InterfaceWrapperHelper.saveRecord(warehouseRecord);
+
+			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			warehouseTable.put(warehouseIdentifier, warehouseRecord);
 		}
 	}

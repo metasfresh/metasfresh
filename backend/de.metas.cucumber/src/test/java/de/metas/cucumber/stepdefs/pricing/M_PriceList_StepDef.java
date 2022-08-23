@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -53,6 +54,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -86,6 +88,7 @@ public class M_PriceList_StepDef
 	private final M_ProductPrice_StepDefData productPriceTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -101,7 +104,8 @@ public class M_PriceList_StepDef
 			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
 			@NonNull final M_ProductPrice_StepDefData productPriceTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.currencyRepository = currencyRepository;
 		this.productTable = productTable;
@@ -111,6 +115,7 @@ public class M_PriceList_StepDef
 		this.productPriceTable = productPriceTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.orgTable = orgTable;
 	}
 
 	@And("metasfresh contains M_PricingSystems")
@@ -140,15 +145,20 @@ public class M_PriceList_StepDef
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
 		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
-		final PricingSystemId pricingSystemId = priceListDAO.getPricingSystemIdByValueOrNull(value);
+		final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PricingSystem.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final int orgId = Optional.ofNullable(orgIdentifier)
+				.map(orgTable::get)
+				.map(I_AD_Org::getAD_Org_ID)
+				.orElse(ORG_ID.getRepoId());
 
+		final PricingSystemId pricingSystemId = priceListDAO.getPricingSystemIdByValueOrNull(value);
 		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.loadOrNew(pricingSystemId, I_M_PricingSystem.class);
 
-		m_pricingSystem.setAD_Org_ID(ORG_ID.getRepoId());
 		m_pricingSystem.setName(name);
 		m_pricingSystem.setValue(value);
 		m_pricingSystem.setIsActive(isActive);
 		m_pricingSystem.setDescription(description);
+		m_pricingSystem.setAD_Org_ID(orgId);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
 
@@ -170,6 +180,11 @@ public class M_PriceList_StepDef
 		final String pricePrecision = DataTableUtil.extractStringForColumnName(row, "PricePrecision");
 		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
+		final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PriceList.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER))
+				.map(orgTable::get)
+				.map(I_AD_Org::getAD_Org_ID)
+				.orElse(StepDefConstants.ORG_ID.getRepoId());
+
 		final CurrencyId currencyId = getCurrencyIdByCurrencyISO(isoCode);
 
 		final int pricingSystemId = pricingSystemTable.get(pricingSystemIdentifier).getM_PricingSystem_ID();
@@ -186,7 +201,7 @@ public class M_PriceList_StepDef
 			m_priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		}
 
-		m_priceList.setAD_Org_ID(ORG_ID.getRepoId());
+		m_priceList.setAD_Org_ID(orgId);
 		m_priceList.setM_PricingSystem_ID(pricingSystemId);
 		m_priceList.setC_Currency_ID(currencyId.getRepoId());
 		m_priceList.setName(name);
@@ -238,17 +253,16 @@ public class M_PriceList_StepDef
 
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(row, I_M_PriceList_Version.COLUMNNAME_ValidFrom);
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PriceList_Version.COLUMNNAME_Description);
-		final int priceListID = priceListTable.get(priceListIdentifier).getM_PriceList_ID();
+		final I_M_PriceList priceList = priceListTable.get(priceListIdentifier);
 
-		I_M_PriceList_Version m_priceList_Version = priceListDAO.retrievePriceListVersionOrNull(PriceListId.ofRepoId(priceListID), TimeUtil.asZonedDateTime(validFrom.toInstant()), null);
+		I_M_PriceList_Version m_priceList_Version = priceListDAO.retrievePriceListVersionOrNull(PriceListId.ofRepoId(priceList.getM_PriceList_ID()), TimeUtil.asZonedDateTime(validFrom.toInstant()), null);
 		if (m_priceList_Version == null)
 		{
 			m_priceList_Version = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
 		}
 
-		m_priceList_Version.setAD_Org_ID(ORG_ID.getRepoId());
-
-		m_priceList_Version.setM_PriceList_ID(priceListID);
+		m_priceList_Version.setAD_Org_ID(priceList.getAD_Org_ID());
+		m_priceList_Version.setM_PriceList_ID(priceList.getM_PriceList_ID());
 		m_priceList_Version.setDescription(description);
 		m_priceList_Version.setValidFrom(validFrom);
 
