@@ -49,6 +49,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			.add(CostingDocumentRef.TABLE_NAME_M_InventoryLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_MovementLine)
 			.add(CostingDocumentRef.TABLE_NAME_C_ProjectIssue)
+			.add(CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine)
 			.build();
 
 	protected CostingMethodHandlerTemplate(@NonNull final CostingMethodHandlerUtils utils)
@@ -113,6 +114,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		{
 			return createCostForProjectIssue(request);
 		}
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine))
+		{
+			return createCostRevaluationLine(request);
+		}
 		else
 		{
 			throw new AdempiereException("Unknown documentRef: " + documentRef);
@@ -153,6 +158,11 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	protected CostDetailCreateResult createCostForProjectIssue(@SuppressWarnings("unused") final CostDetailCreateRequest request)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	protected CostDetailCreateResult createCostRevaluationLine(final CostDetailCreateRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
