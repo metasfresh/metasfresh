@@ -118,3 +118,11 @@ UPDATE AD_Field SET DisplayLogic='@M_CostRevaluationLine_ID/0@>0', IsReadOnly='Y
 UPDATE AD_Field SET DisplayLogic='@M_CostRevaluation_ID/0@>0',Updated=TO_TIMESTAMP('2022-08-22 15:03:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=705456
 ;
 
+-- 2022-08-23T07:34:39.288Z
+/* DDL */ SELECT public.db_alter_table('M_CostDetail','ALTER TABLE public.M_CostDetail ADD COLUMN M_CostRevaluation_ID NUMERIC(10)')
+;
+
+-- 2022-08-23T07:34:39.440Z
+ALTER TABLE M_CostDetail ADD CONSTRAINT MCostRevaluation_MCostDetail FOREIGN KEY (M_CostRevaluation_ID) REFERENCES public.M_CostRevaluation DEFERRABLE INITIALLY DEFERRED
+;
+
