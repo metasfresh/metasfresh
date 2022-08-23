@@ -108,6 +108,10 @@ Here come the actual release notes:
 # metasfresh 5.175 (current RC)
 ## Features
 * metasfresh
+  * [#13376](https://github.com/metasfresh/metasfresh/issues/13376) Cucumber: Products (item) invoice candidates
+  * [#13355](https://github.com/metasfresh/metasfresh/issues/13355) Packing material invoice candidates: shipments
+  * [#13449](https://github.com/metasfresh/metasfresh/issues/13449) Empties Receive and Returns
+  * [#13395](https://github.com/metasfresh/metasfresh/issues/13395) Packing material invoice candidates: receipts
   * [#13198](https://github.com/metasfresh/metasfresh/issues/13198) Tell camel which auth token to use when connecting to MF
   * [#13041](https://github.com/metasfresh/metasfresh/issues/13041) Create cucumber-harness for invoice and payment allocation
   * [#12760](https://github.com/metasfresh/metasfresh/issues/12760) Create import/export for C_Campaign_price
