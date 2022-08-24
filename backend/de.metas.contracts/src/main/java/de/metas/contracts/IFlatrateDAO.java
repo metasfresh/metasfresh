@@ -23,9 +23,9 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.impl.FlatrateTermOverlapCriteria;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -49,7 +49,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -148,6 +147,8 @@ public interface IFlatrateDAO extends ISingletonService
 	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
 
 	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
+
+	boolean hasOverlappingTerms(FlatrateTermOverlapCriteria flatrateTermOverlapCriteria);
 
 	Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
 			@NonNull BPartnerId bPartnerId,
