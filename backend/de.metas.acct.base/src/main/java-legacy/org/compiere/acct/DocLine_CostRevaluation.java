@@ -55,6 +55,7 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 									.documentRef(CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId()))
 									.qty(costRevaluationLine.getCurrentQty().toZero())
 									.amt(costRevaluationLine.getDeltaAmountToBook())
+									.explicitCostPrice(costRevaluationLine.getNewCostPrice())
 									.date(getDateAcctAsInstant())
 									.build())
 					.getTotalAmountToPost(as);

@@ -6,6 +6,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
@@ -162,9 +163,32 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		throw new UnsupportedOperationException();
 	}
 
-	protected CostDetailCreateResult createCostRevaluationLine(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostRevaluationLine(@NonNull final CostDetailCreateRequest request)
 	{
-		throw new UnsupportedOperationException();
+		if (!request.getQty().isZero())
+		{
+			throw new AdempiereException("Cost revaluation requests shall have Qty=0");
+		}
+
+		final CostAmount explicitCostPrice = request.getExplicitCostPrice();
+		if (explicitCostPrice == null)
+		{
+			throw new AdempiereException("Cost revaluation requests shall have explicit cost price set");
+		}
+
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+
+		currentCosts.setOwnCostPrice(explicitCostPrice);
+		currentCosts.addCumulatedAmt(request.getAmt());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
+				previousCosts);
+
+		utils.saveCurrentCost(currentCosts);
+
+		return result;
 	}
 
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
