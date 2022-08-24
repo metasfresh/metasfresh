@@ -16,14 +16,14 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.IMsgBL;
+import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -35,14 +35,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.IMsgBL;
-import de.metas.product.IProductBL;
-import de.metas.product.IStorageBL;
-import de.metas.util.Services;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *	Inventory Movement Model
@@ -50,9 +49,7 @@ import de.metas.util.Services;
  *  @author Jorg Janke
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * 			<li>FR [ 1948157  ]  Is necessary the reference for document reverse
- *  		@see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
  * 			<li> FR [ 2520591 ] Support multiples calendar for Org
- *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *  @author Armen Rizal, Goodwill Consulting
  * 			<li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  *  @author Teo Sarca, www.arhipac.ro
@@ -66,16 +63,10 @@ public class MMovement extends X_M_Movement implements IDocument
 	 */
 	private static final long serialVersionUID = 3634169801280239573L;
 
-	/**
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param M_Movement_ID id
-	 *	@param trxName transaction
-	 */
 	public MMovement (Properties ctx, int M_Movement_ID, String trxName)
 	{
 		super (ctx, M_Movement_ID, trxName);
-		if (M_Movement_ID == 0)
+		if (is_new())
 		{
 		//	setC_DocType_ID (0);
 			setDocAction (DOCACTION_Complete);	// CO
@@ -88,12 +79,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		}
 	}	//	MMovement
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
+	@SuppressWarnings("unused")
 	public MMovement (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -414,149 +400,57 @@ public class MMovement extends X_M_Movement implements IDocument
 
 		//
 		MMovementLine[] lines = getLines(true); // NOTE: we need to load the lines again in case some model validator created/changed some lines
-		for (MMovementLine line2 : lines)
+		for (MMovementLine line : lines)
 		{
-			MMovementLine line = line2;
-			MTransaction trxFrom = null;
-
 			//Stock Movement - Counterpart MOrder.reserveStock
 			MProduct product = line.getProduct();
 			if (product != null
 					&& Services.get(IProductBL.class).isStocked(product) )
 			{
-				//Ignore the Material Policy when is Reverse Correction
-				if(!isReversal())
-				{
-					checkMaterialPolicy(line);
-				}
-
 				final IStorageBL storageBL = Services.get(IStorageBL.class);
-				if (line.getM_AttributeSetInstance_ID() == 0)
-				{
-					MMovementLineMA mas[] = MMovementLineMA.get(getCtx(), line.getM_MovementLine_ID(), get_TrxName());
-					for (MMovementLineMA ma2 : mas)
-					{
-						MMovementLineMA ma = ma2;
-						//
-						final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID());
-						//Update Storage
-						storageBL.add(getCtx(),
-								warehouseId.getRepoId(),
-								line.getM_Locator_ID(),
-								line.getM_Product_ID(),
-								ma.getM_AttributeSetInstance_ID(), 0,
-								ma.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
 
-						int M_AttributeSetInstanceTo_ID = line.getM_AttributeSetInstanceTo_ID();
-						//only can be same asi if locator is different
-						if (M_AttributeSetInstanceTo_ID <= 0 && line.getM_Locator_ID() != line.getM_LocatorTo_ID())
-						{
-							M_AttributeSetInstanceTo_ID = ma.getM_AttributeSetInstance_ID();
-						}
-						//Update Storage
-						final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
-						storageBL.add(getCtx(),
-								warehouseToId.getRepoId(),
-								line.getM_LocatorTo_ID(),
-								line.getM_Product_ID(),
-								M_AttributeSetInstanceTo_ID, 0,
-								ma.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
+				//Update Storage
+				final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID());
+				storageBL.add(getCtx(),
+						warehouseId.getRepoId(),
+						line.getM_Locator_ID(),
+						line.getM_Product_ID(),
+						line.getM_AttributeSetInstance_ID(), 0,
+						line.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
 
-						//
-						trxFrom = new MTransaction (getCtx(),
-								line.getAD_Org_ID(),
-								MTransaction.MOVEMENTTYPE_MovementFrom,
-								line.getM_Locator_ID(),
-								line.getM_Product_ID(),
+				//Update Storage
+				final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
+				storageBL.add(getCtx(),
+						warehouseToId.getRepoId(),
+						line.getM_LocatorTo_ID(),
+						line.getM_Product_ID(),
+						line.getM_AttributeSetInstanceTo_ID(), 0,
+						line.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
 
-								// #gh489: M_Storage is a legacy and currently doesn't really work.
-								// In this case, its use of M_AttributeSetInstance_ID (which is forwarded from storage to 'ma') introduces a coupling between random documents.
-								// this coupling is a big problem, so we don't forward the ASI-ID to the M_Transaction
-								0, // ma.getM_AttributeSetInstance_ID(),
-								ma.getMovementQty().negate(),
-								getMovementDate(),
-								get_TrxName());
-						trxFrom.setM_MovementLine_ID(line.getM_MovementLine_ID());
-						if (!trxFrom.save())
-						{
-							m_processMsg = "Transaction From not inserted (MA)";
-							return IDocument.STATUS_Invalid;
-						}
-						//
-						final MTransaction trxTo = new MTransaction (getCtx(),
-								line.getAD_Org_ID(),
-								MTransaction.MOVEMENTTYPE_MovementTo,
-								line.getM_LocatorTo_ID(),
-								line.getM_Product_ID(),
-
-								// #gh489: see the comment about 'trxFrom'
-								0, // M_AttributeSetInstanceTo_ID,
-								ma.getMovementQty(),
-								getMovementDate(),
-								get_TrxName());
-
-						trxTo.setM_MovementLine_ID(line.getM_MovementLine_ID());
-						if (!trxTo.save())
-						{
-							m_processMsg = "Transaction To not inserted (MA)";
-							return IDocument.STATUS_Invalid;
-						}
-					}
-				}
-				//	Fallback - We have ASI
-				if (trxFrom == null)
-				{
-					//Update Storage
-					final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID());
-					storageBL.add(getCtx(),
-							warehouseId.getRepoId(),
-							line.getM_Locator_ID(),
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstance_ID(), 0,
-							line.getMovementQty().negate(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
-
-					//Update Storage
-					final WarehouseId warehouseToId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_LocatorTo_ID());
-					storageBL.add(getCtx(),
-							warehouseToId.getRepoId(),
-							line.getM_LocatorTo_ID(),
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstanceTo_ID(), 0,
-							line.getMovementQty(), BigDecimal.ZERO ,  BigDecimal.ZERO , get_TrxName());
-
-					//
-					trxFrom = new MTransaction (getCtx(),
-							line.getAD_Org_ID(),
-							MTransaction.MOVEMENTTYPE_MovementFrom,
-							line.getM_Locator_ID(),
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstance_ID(),
-							line.getMovementQty().negate(),
-							getMovementDate(),
-							get_TrxName());
-					trxFrom.setM_MovementLine_ID(line.getM_MovementLine_ID());
-					if (!trxFrom.save())
-					{
-						m_processMsg = "Transaction From not inserted";
-						return IDocument.STATUS_Invalid;
-					}
-					//
-					MTransaction trxTo = new MTransaction (getCtx(),
-							line.getAD_Org_ID(),
-							MTransaction.MOVEMENTTYPE_MovementTo,
-							line.getM_LocatorTo_ID(),
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstanceTo_ID(),
-							line.getMovementQty(),
-							getMovementDate(),
-							get_TrxName());
-					trxTo.setM_MovementLine_ID(line.getM_MovementLine_ID());
-					if (!trxTo.save())
-					{
-						m_processMsg = "Transaction To not inserted";
-						return IDocument.STATUS_Invalid;
-					}
-				}	//	Fallback
+				//
+				final MTransaction trxFrom = new MTransaction (getCtx(),
+						line.getAD_Org_ID(),
+						MTransaction.MOVEMENTTYPE_MovementFrom,
+						line.getM_Locator_ID(),
+						line.getM_Product_ID(),
+						line.getM_AttributeSetInstance_ID(),
+						line.getMovementQty().negate(),
+						getMovementDate(),
+						get_TrxName());
+				trxFrom.setM_MovementLine_ID(line.getM_MovementLine_ID());
+				InterfaceWrapperHelper.save(trxFrom);
+				//
+				final MTransaction trxTo = new MTransaction (getCtx(),
+						line.getAD_Org_ID(),
+						MTransaction.MOVEMENTTYPE_MovementTo,
+						line.getM_LocatorTo_ID(),
+						line.getM_Product_ID(),
+						line.getM_AttributeSetInstanceTo_ID(),
+						line.getMovementQty(),
+						getMovementDate(),
+						get_TrxName());
+				trxTo.setM_MovementLine_ID(line.getM_MovementLine_ID());
+				InterfaceWrapperHelper.save(trxTo);
 			} // product stock
 		}	//	for all lines
 		//	User Validation
@@ -597,33 +491,6 @@ public class MMovement extends X_M_Movement implements IDocument
 			}
 		}
 	}
-
-	/**
-	 * 	Check Material Policy
-	 * 	Sets line ASI
-	 */
-	private void checkMaterialPolicy(final MMovementLine line)
-	{
-		final int no = MMovementLineMA.deleteMovementMA(getM_Movement_ID(), get_TrxName());
-		if (no > 0)
-		{
-			log.debug("Deleted old #{}", no);
-		}
-
-		//	Attribute Set Instance: generate a new ASI if not already set
-		if (line.getM_AttributeSetInstance_ID() == 0)
-		{
-			// NOTE: don't try to check M_Stoarge records and fetch ASIs to allocate on because:
-			// * it's totally performance killer (see task 1161)
-			// * we already applied the same approach on M_InOut (see task 09939)
-			// * we are going to remove M_AttributeSetInstance_ID from M_Storage anyways
-
-			final MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
-			final MAttributeSetInstance asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
-			line.setM_AttributeSetInstance(asi);
-			InterfaceWrapperHelper.save(line);
-		}
-	}	//	checkMaterialPolicy
 
 	/**
 	 * 	Void Document.
