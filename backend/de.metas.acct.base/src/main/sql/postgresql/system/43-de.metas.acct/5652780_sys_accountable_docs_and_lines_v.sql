@@ -292,3 +292,8 @@ WHERE TRUE
   AND count_inout > 0
 ORDER BY t.count_movement DESC;
 */
+
+
+
+
+
