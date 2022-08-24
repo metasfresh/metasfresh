@@ -65,9 +65,8 @@ public class M_Picking_Candidate_StepDef
 
 			final I_M_Picking_Candidate pickingCandidate = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 					.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
-					.orderBy(I_M_Picking_Candidate.COLUMNNAME_Created)
 					.create()
-					.first(I_M_Picking_Candidate.class);
+					.firstOnly(I_M_Picking_Candidate.class);
 
 			assertThat(pickingCandidate).isNotNull();
 			assertThat(pickingCandidate.getQtyPicked()).isEqualTo(qtyPicked);

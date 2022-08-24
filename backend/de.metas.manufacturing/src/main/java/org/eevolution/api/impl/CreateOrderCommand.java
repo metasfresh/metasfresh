@@ -159,10 +159,6 @@ final class CreateOrderCommand
 
 		ppOrderRecord.setIsPickingOrder(productPlanning != null && productPlanning.isPickingOrder());
 
-		if (request.getWorkflowId() != null)
-		{
-			ppOrderRecord.setAD_Workflow_ID(request.getWorkflowId().getRepoId());
-		}
 
 		//
 		// Save the manufacturing order

@@ -31,10 +31,10 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -44,7 +44,6 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.workflow.WorkflowId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -86,7 +85,6 @@ public class PP_Order_StepDef
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOM_StepDefData productBOMTable;
@@ -172,9 +170,9 @@ public class PP_Order_StepDef
 
 			final Boolean completeDocument = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "completeDocument", false);
 
-			final Integer workflowId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_AD_Workflow_ID);
+			final String productPlanningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Product_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final PPOrderCreateRequest ppOrderCreateRequest = PPOrderCreateRequest.builder()
+			final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
 					.docBaseType(docBaseType)
 					.clientAndOrgId(clientAndOrgId)
 					.plantId(resourceId)
@@ -184,11 +182,15 @@ public class PP_Order_StepDef
 					.dateOrdered(dateOrdered)
 					.datePromised(datePromised)
 					.dateStartSchedule(dateStartSchedule)
-					.completeDocument(completeDocument)
-					.workflowId(workflowId != null ? WorkflowId.ofRepoId(workflowId) : null)
-					.build();
+					.completeDocument(completeDocument);
 
-			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest);
+			if (Check.isNotBlank(productPlanningIdentifier))
+			{
+				final I_PP_Product_Planning productPlanning = productPlanningTable.get(productPlanningIdentifier);
+				ppOrderCreateRequest.productPlanningId(ProductPlanningId.ofRepoId(productPlanning.getPP_Product_Planning_ID()));
+			}
+
+			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
 
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -239,9 +241,8 @@ public class PP_Order_StepDef
 			final I_PP_Order_Qty orderQty = queryBL.createQueryBuilder(I_PP_Order_Qty.class)
 					.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
 					.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-					.orderBy(I_PP_Order_Qty.COLUMNNAME_Created)
 					.create()
-					.first();
+					.firstOnly(I_PP_Order_Qty.class);
 
 			assertThat(orderQty).isNotNull();
 			assertThat(orderQty.getQty()).isEqualTo(movementQty);

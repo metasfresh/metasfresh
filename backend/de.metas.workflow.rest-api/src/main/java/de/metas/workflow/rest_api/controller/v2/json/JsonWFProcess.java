@@ -33,14 +33,12 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @Builder
-@Jacksonized
 public class JsonWFProcess
 {
 	@NonNull String id;

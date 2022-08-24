@@ -28,12 +28,10 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @Builder
-@Jacksonized
 public class JsonWFProcessHeaderProperty
 {
 	String caption;

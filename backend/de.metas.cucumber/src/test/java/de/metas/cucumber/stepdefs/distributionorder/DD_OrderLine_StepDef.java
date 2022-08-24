@@ -60,24 +60,23 @@ import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
 public class DD_OrderLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
+	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final M_Product_StepDefData productTable;
 	private final DD_Order_StepDefData ddOrderTable;
 	private final DD_OrderLine_StepDefData ddOrderLineTable;
 	private final M_Locator_StepDefData locatorTable;
-	private final DD_Order_MoveSchedule_StepDefData moveScheduleTable;
 
 	public DD_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final DD_Order_StepDefData ddOrderTable,
 			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
-			@NonNull final M_Locator_StepDefData locatorTable,
-			@NonNull final DD_Order_MoveSchedule_StepDefData moveScheduleTable)
+			@NonNull final M_Locator_StepDefData locatorTable)
 	{
 		this.productTable = productTable;
 		this.ddOrderTable = ddOrderTable;
 		this.ddOrderLineTable = ddOrderLineTable;
 		this.locatorTable = locatorTable;
-		this.moveScheduleTable = moveScheduleTable;
 	}
 
 	@Given("metasfresh contains DD_OrderLines:")
@@ -114,14 +113,14 @@ public class DD_OrderLine_StepDef
 
 			saveRecord(orderLine);
 
-			final IHUDocumentHandler handler = Services.get(IHUDocumentHandlerFactory.class).createHandler(I_DD_OrderLine.Table_Name);
+			final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_DD_OrderLine.Table_Name);
 			handler.applyChangesFor(orderLine);
 
 			final IHUPackingAware packingAware = new DDOrderLineHUPackingAware(InterfaceWrapperHelper.loadOrNew(OrderLineId.ofRepoId(orderLine.getDD_OrderLine_ID()), de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine.class));
-			Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
+			huPackingAwareBL.setQtyTU(packingAware);
 
 			final QtyTU qtyPacks = QtyTU.ofBigDecimal(packingAware.getQtyTU());
-			Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks.toInt());
+			huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyPacks.toInt());
 
 			saveRecord(orderLine);
 

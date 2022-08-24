@@ -1,5 +1,6 @@
 package de.metas.manufacturing.workflows_api;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
@@ -42,6 +43,7 @@ import java.util.function.UnaryOperator;
 @Component
 public class ManufacturingMobileApplication implements WorkflowBasedMobileApplication
 {
+	@VisibleForTesting
 	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("mfg");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");

@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.movement;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.distributionorder.DD_OrderLine_StepDefData;
 import de.metas.util.Services;
@@ -30,9 +31,11 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_DD_OrderLine;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -43,28 +46,38 @@ public class M_Movement_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final DD_OrderLine_StepDefData ddOrderLineTable;
+	private final M_Locator_StepDefData locatorTable;
 
-	public M_Movement_StepDef(@NonNull final DD_OrderLine_StepDefData ddOrderLineTable)
+	public M_Movement_StepDef(
+			@NonNull final DD_OrderLine_StepDefData ddOrderLineTable,
+			@NonNull final M_Locator_StepDefData locatorTable)
 	{
 		this.ddOrderLineTable = ddOrderLineTable;
+		this.locatorTable = locatorTable;
 	}
 
-	@And("validate I_M_Movement exist for distribution order")
-	public void validate_movement_and_HU_after_distribution_workflow(@NonNull final DataTable dataTable)
+	@And("validate I_M_MovementLine for distribution order line")
+	public void validate_movement_line(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps();
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_DD_OrderLine orderLine = ddOrderLineTable.get(orderLineIdentifier);
 
-			final I_M_Movement movement = queryBL.createQueryBuilder(I_M_Movement.class)
-					.addEqualsFilter(I_M_Movement.COLUMNNAME_DD_Order_ID, orderLine.getDD_Order_ID())
-					.orderBy(I_M_Movement.COLUMN_Created)
-					.create()
-					.first();
+			final String locatorToIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_MovementLine.COLUMNNAME_M_LocatorTo_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Locator toLocator = locatorTable.get(locatorToIdentifier);
 
-			assertThat(movement).isNotNull();
+			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_MovementLine.COLUMNNAME_MovementQty);
+
+			final I_M_MovementLine movementLine = queryBL.createQueryBuilder(I_M_MovementLine.class)
+					.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID, orderLine.getDD_Order_ID())
+					.addEqualsFilter(I_M_MovementLine.COLUMNNAME_M_LocatorTo_ID, toLocator.getM_Locator_ID())
+					.create()
+					.firstOnly(I_M_MovementLine.class);
+
+			assertThat(movementLine).isNotNull();
+			assertThat(movementLine.getMovementQty()).isEqualTo(movementQty);
 		}
 	}
 

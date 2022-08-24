@@ -136,17 +136,13 @@ public class DD_Order_StepDef
 		}
 	}
 
-	@And("^the dd_order identified by (.*) is (reactivated|completed)$")
+	@And("^the dd_order identified by (.*) is (completed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_DD_Order order = ddOrderTable.get(orderIdentifier);
 
 		switch (StepDefDocAction.valueOf(action))
 		{
-			case reactivated:
-				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
-				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
-				break;
 			case completed:
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);

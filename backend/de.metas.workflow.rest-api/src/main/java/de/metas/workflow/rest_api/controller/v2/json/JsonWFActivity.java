@@ -24,7 +24,6 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.WFActivity;
@@ -32,14 +31,12 @@ import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import java.util.Map;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-@Builder(toBuilder = true)
-@Jacksonized
+@Builder
 public class JsonWFActivity
 {
 	@NonNull String activityId;
@@ -48,7 +45,6 @@ public class JsonWFActivity
 
 	WFActivityStatus status;
 
-	@JsonProperty
 	@Builder.Default
 	@NonNull Map<String, Object> componentProps = ImmutableMap.of();
 

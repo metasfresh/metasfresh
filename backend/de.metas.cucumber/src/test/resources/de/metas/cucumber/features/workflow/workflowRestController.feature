@@ -148,9 +148,10 @@ Feature: workflow rest controller tests
     And validate DD_Order_MoveSchedule
       | DD_OrderLine_ID.Identifier | QtyPicked |
       | distributionOrderLine      | 1         |
-    And validate I_M_Movement exist for distribution order
-      | DD_OrderLine_ID.Identifier |
-      | distributionOrderLine      |
+    And validate I_M_MovementLine for distribution order line
+      | DD_OrderLine_ID.Identifier | MovementQty | M_LocatorTo_ID.Identifier           |
+      | distributionOrderLine      | 1           | distributionTransitWarehouseLocator |
+      | distributionOrderLine      | 1           | distributionToWarehouseLocator      |
     And M_HU are validated:
       | M_HU_ID.Identifier            | HUStatus | IsActive | OPT.M_Locator_ID.Identifier    |
       | workflowProductHUDistribution | A        | Y        | distributionToWarehouseLocator |
@@ -202,9 +203,13 @@ Feature: workflow rest controller tests
 
     And the PP_Product_BOM identified by manufacturingBOM is completed
 
+    And metasfresh contains PP_Product_Plannings
+      | Identifier                   | OPT.AD_Workflow_ID | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | manufacturingProductPlanning | 540114             | manufacturingProduct    | manufacturingBOMVersion                  | false        |
+
     And create PP_Order:
-      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.AD_Workflow_ID |
-      | manufacturingOrder     | MOP         | manufacturingProduct    | 1          | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | 540114             |
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | manufacturingOrder     | MOP         | manufacturingProduct    | 1          | testResource             | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | 2022-03-31T23:59:00.00Z | Y                | manufacturingProductPlanning          |
 
     And after not more than 30s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier       | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
