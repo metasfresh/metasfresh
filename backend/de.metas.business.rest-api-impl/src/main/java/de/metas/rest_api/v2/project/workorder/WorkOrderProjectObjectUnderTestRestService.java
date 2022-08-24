@@ -296,6 +296,7 @@ public class WorkOrderProjectObjectUnderTestRestService
 			{
 				throw new AdempiereException("C_Project_WO_ObjectUnderTest_ID is already placed below another project!")
 						.appendParametersToMessage()
+						.setParameter("Request-ProjectId", requestProjectId)
 						.setParameter("C_Project_WO_ObjectUnderTest_ID", objectUnderTestIdentifier.asMetasfreshId().getValue());
 			}
 			else if (objectUnderTestIdentifier.isExternalId())

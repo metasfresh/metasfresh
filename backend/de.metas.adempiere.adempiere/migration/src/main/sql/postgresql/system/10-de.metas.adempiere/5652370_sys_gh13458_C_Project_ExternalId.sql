@@ -37,3 +37,16 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 CREATE UNIQUE INDEX C_Project_ExternalID_UC ON C_Project (ExternalId,ExternalId) WHERE IsActive='Y'
 ;
 
+-- 2022-08-24T13:25:39.209Z
+UPDATE AD_Index_Column SET AD_Column_ID=1350,Updated=TO_TIMESTAMP('2022-08-24 15:25:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=541264
+;
+
+-- 2022-08-24T13:25:41.938Z
+DROP INDEX IF EXISTS c_project_externalid_uc
+;
+
+-- 2022-08-24T13:25:41.948Z
+CREATE UNIQUE INDEX C_Project_ExternalID_UC ON C_Project (ExternalId,AD_Org_ID) WHERE IsActive='Y'
+;
+
+
