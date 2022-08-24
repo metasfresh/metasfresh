@@ -138,7 +138,8 @@ public class WorkOrderProjectRestService
 
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
 
-		final Optional<WOProject> existingWOProjectOpt = getExistingWOProject(request.mapProjectIdentifier(IdentifierString::of), orgId);
+		final IdentifierString projectIdentifier = request.mapProjectIdentifier(IdentifierString::of);
+		final Optional<WOProject> existingWOProjectOpt = getExistingWOProject(projectIdentifier, orgId);
 
 		if (existingWOProjectOpt.isPresent() && !woProjectSyncAdvise.getIfExists().isUpdate())
 		{
@@ -249,20 +250,13 @@ public class WorkOrderProjectRestService
 
 		if (!projectType.getProjectCategory().isWorkOrder())
 		{
-			throw new AdempiereException("Given C_Project_ID is not a work order project!")
+			throw new AdempiereException("Given C_ProjectType_ID=" + ProjectTypeId.toRepoId(projectTypeId) + " is not a work order project!")
 					.appendParametersToMessage()
 					.setParameter("ProjectCategory", projectType.getProjectCategory());
 		}
 
-		final IdentifierString projectIdentifier = request.mapProjectIdentifier(IdentifierString::of);
-
-		if (projectIdentifier.isExternalId() && !projectIdentifier.asExternalId().getValue().equals(request.getProjectReferenceExt()))
-		{
-			throw new AdempiereException("WorkOrderProject.Identifier doesn't match with WorkOrderProject.ProjectReferenceExt")
-					.appendParametersToMessage()
-					.setParameter("WorkOrderProject.Identifier", projectIdentifier.getRawIdentifierString())
-					.setParameter("WorkOrderProject.ExternalId", request.getExternalId());
-		}
+		// Note: we can have one ext-<ExternalId>, but update the project to another one. 
+		// So the identifier's externalId might differ from the request's actual externalId
 	}
 
 	@NonNull

@@ -7,7 +7,7 @@ Feature: WorkOrder Project API Test
 
   @from:cucumber
   Scenario: Persist WorkOrder Project with associated steps, resources and objectsUnderTest using API
-  1st we insert a wo project setting all available fields in API
+  1st we insert a WO project setting all available fields in API
   _Then we retrieve the inserted project to validate all fields
 
   2nd we update the created project setting all available fields in API
@@ -22,7 +22,7 @@ Feature: WorkOrder Project API Test
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
     """
 {
-  "identifier": "ext-woReferenceExt",
+  "identifier": "ext-woExternalId",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",
@@ -38,6 +38,7 @@ Feature: WorkOrder Project API Test
   "dateFinish": "2022-06-08",
   "bpartnerId": 2156423,
   "projectReferenceExt": "woReferenceExt",
+  "externalId": "woExternalId",
   "projectParentId": 210001,
   "orgCode": "001",
   "isActive": true,
@@ -122,6 +123,7 @@ Feature: WorkOrder Project API Test
     "dateFinish": "2022-06-08",
     "bpartnerId": 2156423,
     "projectReferenceExt": "woReferenceExt",
+    "externalId": "woExternalId",
     "projectParentId": 210001,
     "orgCode": "001",
     "isActive": true,
@@ -189,7 +191,7 @@ Feature: WorkOrder Project API Test
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
   """
 {
-  "identifier": "ext-woReferenceExt",
+  "identifier": "ext-woExternalId",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",
@@ -281,6 +283,7 @@ Feature: WorkOrder Project API Test
     "dateFinish": "2022-06-16",
     "bpartnerId": 2156425,
     "projectReferenceExt": "woReferenceExt",
+    "externalId": "woExternalId",
     "projectParentId": 3000001,
     "orgCode": "001",
     "isActive": true,
@@ -349,7 +352,7 @@ Feature: WorkOrder Project API Test
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
   """
 {
-  "identifier": "ext-woReferenceExt",
+  "identifier": "ext-woExternalId",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",
@@ -379,6 +382,7 @@ Feature: WorkOrder Project API Test
     "dateFinish": "2022-06-16",
     "bpartnerId": 2156425,
     "projectReferenceExt": "woReferenceExt",
+    "externalId": "woExternalId",
     "projectParentId": 3000002,
     "orgCode": "001",
     "isActive": true,
@@ -445,7 +449,7 @@ Feature: WorkOrder Project API Test
     Given a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
     """
 {
-  "identifier": "ext-woReferenceExt2",
+  "identifier": "ext-woExternalId2",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",
@@ -483,6 +487,7 @@ Feature: WorkOrder Project API Test
         "dateFinish": null,
         "bpartnerId": null,
         "projectReferenceExt": "woReferenceExt2",
+        "externalId": "woExternalId2",
         "projectParentId": null,
         "orgCode": "001",
         "isActive": true,
@@ -503,7 +508,7 @@ Feature: WorkOrder Project API Test
     Given a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
     """
 {
-  "identifier": "ext-woReferenceExt3",
+  "identifier": "ext-woExternalId3",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",
@@ -564,6 +569,7 @@ Feature: WorkOrder Project API Test
         "dateFinish": null,
         "bpartnerId": null,
         "projectReferenceExt": "woReferenceExt3",
+        "externalId": "woExternalId3",
         "projectParentId": null,
         "orgCode": "001",
         "isActive": true,
@@ -630,7 +636,7 @@ Feature: WorkOrder Project API Test
     Given a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
     """
 {
-  "identifier": "ext-woReferenceExt4",
+  "identifier": "ext-woExternalId4",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",
@@ -691,6 +697,7 @@ Feature: WorkOrder Project API Test
         "dateFinish": null,
         "bpartnerId": null,
         "projectReferenceExt": "woReferenceExt4",
+        "externalId": "woExternalId4",
         "projectParentId": null,
         "orgCode": "001",
         "isActive": true,
@@ -752,10 +759,13 @@ Feature: WorkOrder Project API Test
 }
   """
 
+    # Now we try to create another project with externalId woExternalId5 - which is new - 
+    # but include in the request the step with externalID 296952 which we already added as part of project woExternalId4 
+    # => this shall fail
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '422' status code
     """
 {
-  "identifier": "ext-woReferenceExt5",
+  "identifier": "ext-woExternalId5",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",
@@ -793,10 +803,13 @@ Feature: WorkOrder Project API Test
       | ExceptionMessage                                                   |
       | WOProjectStep.ExternalId already stored under a different project! |
 
+    # Now we again try to create another project with externalId woExternalId5 - which is new - 
+    # but include in the request the object under test with externalID 296952 which we already added as part of project woExternalId4 
+    # => this shall fail
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '422' status code
     """
 {
-  "identifier": "ext-woReferenceExt5",
+  "identifier": "ext-woExternalId5",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",
@@ -837,7 +850,7 @@ Feature: WorkOrder Project API Test
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '422' status code
     """
 {
-  "identifier": "ext-woReferenceExt5",
+  "identifier": "ext-woExternalId5",
   "projectTypeId": 540009,
   "syncAdvise": {
     "ifNotExists": "CREATE",

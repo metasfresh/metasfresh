@@ -244,7 +244,7 @@ public class WorkOrderProjectObjectUnderTestRestService
 	{
 		final ImmutableMap.Builder<IdentifierString, CreateWOProjectObjectUnderTestRequest> itemsToCreate = ImmutableMap.builder();
 
-		final Set<IdentifierString> identifiesToCreate = getIdentifiersToCreate(orgId, objectIdentifiersMatchedForUpdate, requestItems.values());
+		final Set<IdentifierString> identifiesToCreate = getIdentifiersToCreate(orgId, objectIdentifiersMatchedForUpdate, requestItems.values(), projectId);
 
 		if (syncAdvise.getIfNotExists().isFail() && !identifiesToCreate.isEmpty())
 		{
@@ -271,11 +271,15 @@ public class WorkOrderProjectObjectUnderTestRestService
 		return itemsToCreate.build();
 	}
 
+	/**
+	 * @param requestProjectId see {@link #validateAreNotStoredUnderDifferentProject(Set, OrgId, ProjectId)} 
+	 */
 	@NonNull
 	private Set<IdentifierString> getIdentifiersToCreate(
 			@NonNull final OrgId orgId,
 			@NonNull final Set<IdentifierString> objectIdentifiersMatchedForUpdate,
-			@NonNull final Collection<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems)
+			@NonNull final Collection<JsonWorkOrderObjectUnderTestUpsertItemRequest> requestItems,
+			@NonNull final ProjectId requestProjectId)
 	{
 		final ImmutableSet.Builder<IdentifierString> externalIdsToInsertCollector = ImmutableSet.builder();
 
@@ -291,6 +295,7 @@ public class WorkOrderProjectObjectUnderTestRestService
 			if (objectUnderTestIdentifier.isMetasfreshId())
 			{
 				throw new AdempiereException("C_Project_WO_ObjectUnderTest_ID is already placed below another project!")
+						.appendParametersToMessage()
 						.setParameter("C_Project_WO_ObjectUnderTest_ID", objectUnderTestIdentifier.asMetasfreshId().getValue());
 			}
 			else if (objectUnderTestIdentifier.isExternalId())
@@ -305,12 +310,20 @@ public class WorkOrderProjectObjectUnderTestRestService
 
 		final Set<IdentifierString> externalIdsToCreate = externalIdsToInsertCollector.build();
 
-		validateAreNotStoredUnderDifferentProject(externalIdsToCreate, orgId);
+		validateAreNotStoredUnderDifferentProject(externalIdsToCreate, orgId, requestProjectId);
 
 		return externalIdsToCreate;
 	}
 
-	private void validateAreNotStoredUnderDifferentProject(@NonNull final Set<IdentifierString> externalIdsToCreate, @NonNull final OrgId orgId)
+	/**
+	 * Checks if the objectUnderTest - as identified by its externalId - is already stored below a C_Project that is different from the one specified in our overall JSON request-body which the step is a part of.
+	 * 
+	 * @param requestProjectId there for information in case the method throws an exception
+	 */
+	private void validateAreNotStoredUnderDifferentProject(
+			@NonNull final Set<IdentifierString> externalIdsToCreate, 
+			@NonNull final OrgId orgId,
+			@NonNull final ProjectId requestProjectId)
 	{
 		if (externalIdsToCreate.isEmpty())
 		{
@@ -338,8 +351,10 @@ public class WorkOrderProjectObjectUnderTestRestService
 					.collect(Collectors.joining(","));
 
 			throw new AdempiereException("WOProjectUnderTest.ExternalId already stored under a different project!")
+					.appendParametersToMessage()
 					.setParameter("ExternalIds", StringUtils.join(rawExternalIds, ", "))
-					.setParameter("ProjectIds", projectIds);
+					.setParameter("Request-ProjectId", requestProjectId)
+					.setParameter("Already stored under projectIds", projectIds);
 		}
 	}
 
