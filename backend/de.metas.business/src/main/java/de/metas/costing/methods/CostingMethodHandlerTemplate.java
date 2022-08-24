@@ -211,14 +211,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				? newCostPrice.multiply(qty).roundToPrecisionIfNeeded(precision)
 				: newCostPrice.roundToPrecisionIfNeeded(precision);
 
-		//
-		// Inbound
 		if (costDetail.isInboundTrx())
 		{
 			currentCost.addWeightedAverage(newCostAmount, qty, utils.getQuantityUOMConverter());
 		}
-		//
-		// Outbound
 		else
 		{
 			currentCost.addToCurrentQtyAndCumulate(qty, newCostAmount, utils.getQuantityUOMConverter());
