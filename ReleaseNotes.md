@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13487](https://github.com/metasfresh/metasfresh/issues/13487) [React] - Infinite loop for /dropdown call
   * [#13458](https://github.com/metasfresh/metasfresh/issues/13458) Load Budget Project JSONs into metasfresh
   * [#13431](https://github.com/metasfresh/metasfresh/pull/13431) Set-up Github webhooks for syncing issues 
   * [#13442](https://github.com/metasfresh/metasfresh/issues/13442) Option to set the base language if same as the previous one #13442
