@@ -32,7 +32,7 @@ Feature: Budget Project API Test
 
 """
 {
-    "projectIdentifier" : "ext-testReferenceExt",
+    "projectIdentifier" : "ext-testExternalId1",
     "orgCode" : "001",
     "value" : "testValue",
     "name" : "testName",
@@ -85,6 +85,7 @@ Feature: Budget Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
+    # note that we expect the response to contain "externalId": "testExternalId1", because that was the indetifier in our insert.
     And validate budget project 'GET' response
   """
   {
@@ -101,6 +102,7 @@ Feature: Budget Project API Test
         "projectParentId": 2000000,
         "projectTypeId": 540005,
         "projectReferenceExt": "testReferenceExt",
+        "externalId": "testExternalId1",
         "bpartnerId": 2156423,
         "salesRepId": 100,
         "dateContract": "2021-05-13",
@@ -135,7 +137,7 @@ Feature: Budget Project API Test
 
 """
 {
-    "projectIdentifier" : "ext-testReferenceExt",
+    "projectIdentifier" : "ext-testExternalId1",
     "orgCode" : "001",
     "value" : "testValue_2",
     "name" : "testName_2",
@@ -196,8 +198,9 @@ Feature: Budget Project API Test
         "projectParentId": 3000000,
         "projectTypeId": 540005,
         "projectReferenceExt": "testReferenceExt",
+        "externalId": "testExternalId1",
         "bpartnerId": 2156425,
-        "salesRepId": 100,
+        "salesRepId": 2188223,
         "dateContract": "2021-05-15",
         "dateFinish": "2021-05-16",
         "extendedProps": {},
@@ -232,7 +235,7 @@ Feature: Budget Project API Test
 
 """
 {
-    "projectIdentifier" : "ext-testReferenceExt",
+    "projectIdentifier" : "ext-testExternalId1",
     "orgCode" : "001",
     "bpartnerId" : 2156423,
     "projectTypeId" : 540005,
@@ -265,8 +268,9 @@ Feature: Budget Project API Test
         "projectParentId": 3000000,
         "projectTypeId": 540005,
         "projectReferenceExt": "testReferenceExt",
+        "externalId": "testExternalId1",
         "bpartnerId": 2156423,
-        "salesRepId": 100,
+        "salesRepId": 2188223,
         "dateContract": "2021-05-15",
         "dateFinish": "2021-05-16",
         "extendedProps": {

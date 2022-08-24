@@ -131,10 +131,7 @@ public class C_Project_StepDef
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyIsoCode));
 
-		final I_C_Project projectRecord = CoalesceUtil.coalesceSuppliersNotNull(
-				() -> InterfaceWrapperHelper.load(projectId, I_C_Project.class),
-				() -> InterfaceWrapperHelper.newInstance(I_C_Project.class)
-		);
+		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
 		projectRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());
 		projectRecord.setC_Project_ID(projectId);

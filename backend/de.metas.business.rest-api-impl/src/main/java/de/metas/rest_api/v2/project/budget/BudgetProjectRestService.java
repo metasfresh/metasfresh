@@ -50,6 +50,7 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
@@ -245,7 +246,12 @@ public class BudgetProjectRestService
 			return budgetProjectRepository.getOptionalById(existingProjectId);
 		}
 
-		return budgetProjectRepository.getOptionalBy(BudgetProjectJsonConverter.getProjectQueryFromIdentifier(orgId, projectIdentifier));
+		final List<BudgetProject> projectList = budgetProjectRepository.getBy(BudgetProjectJsonConverter.getProjectQueryFromIdentifier(orgId, projectIdentifier));
+		if (projectList.isEmpty())
+		{
+			return Optional.empty();
+		}
+		return Optional.of(CollectionUtils.singleElement(projectList));
 	}
 
 	private void validateJsonBudgetProjectUpsertRequest(@NonNull final JsonBudgetProjectUpsertRequest request)
