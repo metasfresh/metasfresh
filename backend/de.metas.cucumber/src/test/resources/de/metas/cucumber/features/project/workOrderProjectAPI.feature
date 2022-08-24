@@ -1,4 +1,5 @@
 @from:cucumber
+@dev:runThisOne
 Feature: WorkOrder Project API Test
 
   Background:
@@ -106,6 +107,7 @@ Feature: WorkOrder Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
+    # note that the requestId is not validated against
     And validate work order project 'GET' response
   """
   {
@@ -266,6 +268,7 @@ Feature: WorkOrder Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
+    # note that the requestId is not validated against
     And validate work order project 'GET' response
   """
 {
@@ -365,6 +368,7 @@ Feature: WorkOrder Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
+    # note that the requestId is not validated against
     And validate work order project 'GET' response
   """
 {
@@ -470,6 +474,7 @@ Feature: WorkOrder Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
+    # note that the requestId is not validated against
     And validate work order project 'GET' response
   """
 {
@@ -552,6 +557,7 @@ Feature: WorkOrder Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
+    # note that the requestId is not validated against
     And validate work order project 'GET' response
   """
 {
@@ -680,10 +686,11 @@ Feature: WorkOrder Project API Test
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
+    # note that the requestId is not validated against
     And validate work order project 'GET' response
   """
 {
-    "requestId": 1000005,
+    "requestId": 12345,
     "endpointResponse": {
         "projectId": 1000002,
         "value": "nextDocNo",
@@ -936,6 +943,7 @@ Feature: WorkOrder Project API Test
 }
 """
 
+    # note that the requestId is not validated against
     And validate work order project 'JsonWorkOrderProjectResponses' response
   """
 {
