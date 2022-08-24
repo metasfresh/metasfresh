@@ -1,13 +1,39 @@
 @echo off
 
+rmdir /S /Q docker-builds\metadata
+mkdir docker-builds\metadata
+
 set "mfversion=local"
 set "mfregistry=metasfresh"
 set /P version=<docker-builds/version.info
+for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date}"') do (set buildtime=%%g)
 for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date -Format """"yyMMddHHmm""""}"') do (set buildnr=%%g)
+
+(
+	echo build.name=local windows
+	echo build.system=%ComputerName%
+	echo build.time=%buildtime%
+	echo build.user=%USERNAME%
+	echo build.version=%version%-%mfversion%.%buildnr%
+	echo build.number=%buildnr%
+) > docker-builds/metadata/build-info.properties
+
+(
+	echo git.remote.origin.url=https\://github.com/metasfresh/metasfresh.git
+	echo git.branch=n/a
+	echo git.commit.id=n/a
+	echo git.commit.message=n/a
+) > docker-builds/metadata/git.properties
 
 echo.
 echo --------------------------
-echo building %version%-%mfversion%.%buildnr%
+echo declaring metadata
+echo --------------------------
+echo.
+type docker-builds\metadata\build-info.properties
+echo.
+type docker-builds\metadata\git.properties
+echo.
 @echo on
 
 
