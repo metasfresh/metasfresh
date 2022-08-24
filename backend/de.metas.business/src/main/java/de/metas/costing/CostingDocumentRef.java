@@ -160,15 +160,11 @@ public class CostingDocumentRef
 		this.outboundTrx = outboundTrx;
 	}
 
-	public boolean isTableName(final String expectedTableName)
-	{
-		return Objects.equals(tableName, expectedTableName);
-	}
+	public boolean isTableName(final String expectedTableName) {return Objects.equals(tableName, expectedTableName);}
 
-	public boolean isInventoryLine()
-	{
-		return isTableName(TABLE_NAME_M_InventoryLine);
-	}
+	public boolean isInventoryLine() {return isTableName(TABLE_NAME_M_InventoryLine);}
+
+	public boolean isCostRevaluationLine() {return isTableName(TABLE_NAME_M_CostRevaluationLine);}
 
 	public PPCostCollectorId getCostCollectorId()
 	{

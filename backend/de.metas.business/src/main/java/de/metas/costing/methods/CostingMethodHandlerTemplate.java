@@ -198,6 +198,12 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			@NonNull final CostDetail costDetail,
 			@NonNull final CurrentCost currentCost)
 	{
+		if (costDetail.getDocumentRef().isCostRevaluationLine())
+		{
+			throw new AdempiereException("Evaluating another revaluation is not supported")
+					.setParameter("costDetail", costDetail);
+		}
+
 		final CurrencyPrecision precision = currentCost.getPrecision();
 
 		final Quantity qty = costDetail.getQty();
