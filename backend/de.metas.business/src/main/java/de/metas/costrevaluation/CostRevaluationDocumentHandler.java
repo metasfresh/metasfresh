@@ -93,6 +93,9 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 			throw new AdempiereException("@NoLines@");
 		}
 
+		// Make sure all lines are evaluated
+		costRevaluationService.createDetails(costRevaluationId);
+
 		costRevaluation.setDocAction(IDocument.ACTION_None);
 		return IDocument.STATUS_Completed;
 	}

@@ -89,6 +89,13 @@ public class CostRevaluationRepository
 				existingRecord = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
 				existingRecord.setM_CostRevaluation_ID(costRevaluationId.getRepoId());
 				existingRecord.setAD_Org_ID(key.getClientAndOrgId().getOrgId().getRepoId());
+				existingRecord.setIsRevaluated(false);
+			}
+
+			// Skip evaluated lines
+			if (existingRecord.isRevaluated())
+			{
+				continue;
 			}
 
 			updateRecordFrom(existingRecord, currentCost);
@@ -192,6 +199,7 @@ public class CostRevaluationRepository
 				.currentQty(Quantitys.create(record.getCurrentQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.currentCostPrice(CostAmount.of(record.getCurrentCostPrice(), currencyId))
 				.newCostPrice(CostAmount.of(record.getNewCostPrice(), currencyId))
+				.isRevaluated(record.isRevaluated())
 				.deltaAmountToBook(CostAmount.of(record.getDeltaAmt(), currencyId))
 				.build();
 	}
@@ -308,6 +316,7 @@ public class CostRevaluationRepository
 	public void save(@NonNull final CostRevaluationLine line)
 	{
 		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(line.getId(), I_M_CostRevaluationLine.class);
+		record.setIsRevaluated(line.isRevaluated());
 		record.setDeltaAmt(line.getDeltaAmountToBook().toBigDecimal());
 		InterfaceWrapperHelper.save(record);
 	}

@@ -40,6 +40,7 @@ public class CostRevaluationLine
 	@NonNull CostAmount currentCostPrice;
 	@NonNull CostAmount newCostPrice;
 
+	boolean isRevaluated;
 	@NonNull CostAmount deltaAmountToBook;
 
 	@Builder(toBuilder = true)
@@ -49,6 +50,7 @@ public class CostRevaluationLine
 			@NonNull final Quantity currentQty,
 			@NonNull final CostAmount currentCostPrice,
 			@NonNull final CostAmount newCostPrice,
+			boolean isRevaluated,
 			@NonNull final CostAmount deltaAmountToBook)
 	{
 		CostAmount.assertCurrencyMatching(currentCostPrice, newCostPrice, deltaAmountToBook);
@@ -58,11 +60,16 @@ public class CostRevaluationLine
 		this.currentQty = currentQty;
 		this.currentCostPrice = currentCostPrice;
 		this.newCostPrice = newCostPrice;
+
+		this.isRevaluated = isRevaluated;
 		this.deltaAmountToBook = deltaAmountToBook;
 	}
 
-	public CostRevaluationLine withDeltaAmountToBook(@NonNull CostAmount deltaAmountToBook)
+	public CostRevaluationLine markingAsEvaluated(@NonNull CostAmount deltaAmountToBook)
 	{
-		return toBuilder().deltaAmountToBook(deltaAmountToBook).build();
+		return toBuilder()
+				.isRevaluated(true)
+				.deltaAmountToBook(deltaAmountToBook)
+				.build();
 	}
 }
