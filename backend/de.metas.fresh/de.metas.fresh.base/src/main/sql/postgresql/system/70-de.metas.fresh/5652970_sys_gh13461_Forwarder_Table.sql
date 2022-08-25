@@ -1,6 +1,6 @@
 -- Table: C_BPartner_Forwarder
 -- 2022-08-24T14:09:58.953Z
-INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,AD_Window_ID,CopyColumnsFromTable,Created,CreatedBy,Description,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TechnicalNote,TooltipType,Updated,UpdatedBy) VALUES ('3',0,0,0,542208,541584,'N',TO_TIMESTAMP('2022-08-24 15:09:54','YYYY-MM-DD HH24:MI:SS'),100,'Define forwarder relations for the business partner','D','N','Y','N','Y','Y','N','N','N','N','N',0,'Forwarder','NP','L','C_BPartner_Forwarder','','DTI',TO_TIMESTAMP('2022-08-24 15:09:54','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,AD_Window_ID,CopyColumnsFromTable,Created,CreatedBy,Description,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TechnicalNote,TooltipType,Updated,UpdatedBy) VALUES ('3',0,0,0,542208,123,'N',TO_TIMESTAMP('2022-08-24 15:09:54','YYYY-MM-DD HH24:MI:SS'),100,'Define forwarder relations for the business partner','D','N','Y','N','Y','Y','N','N','N','N','N',0,'Forwarder','NP','L','C_BPartner_Forwarder','','DTI',TO_TIMESTAMP('2022-08-24 15:09:54','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-08-24T14:09:59.113Z
