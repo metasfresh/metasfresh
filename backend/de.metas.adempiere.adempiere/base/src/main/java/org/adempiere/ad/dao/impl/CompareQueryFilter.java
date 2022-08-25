@@ -33,6 +33,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.compiere.Adempiere;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -207,12 +208,12 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
-	protected final Object getModelValue(T model, final Object operand)
+	@Nullable
+	protected final Object getModelValue(final T model, final Object operand)
 	{
 		if (operand instanceof ModelColumnNameValue<?>)
 		{
-			@SuppressWarnings("unchecked")
-			final ModelColumnNameValue<T> modelValue = (ModelColumnNameValue<T>)operand;
+			@SuppressWarnings("unchecked") final ModelColumnNameValue<T> modelValue = (ModelColumnNameValue<T>)operand;
 
 			return modelValue.getValue(model);
 		}
@@ -222,7 +223,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 	}
 
-	private static int compareValues(final Object value1, final Object value2)
+	private static int compareValues(@Nullable final Object value1, @Nullable final Object value2)
 	{
 		if (Objects.equals(value1, value2))
 		{
@@ -250,8 +251,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final Object value2Norm = normalizeValue(value2);
 		try
 		{
-			@SuppressWarnings("unchecked")
-			final Comparable<Object> value1Cmp = (Comparable<Object>)value1Norm;
+			@SuppressWarnings("unchecked") final Comparable<Object> value1Cmp = (Comparable<Object>)value1Norm;
 			return value1Cmp.compareTo(value2Norm);
 		}
 		catch (final Exception ex)
