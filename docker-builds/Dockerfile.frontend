@@ -8,19 +8,21 @@ ENV TZ=Europe/Berlin
 
 WORKDIR /app 
 
-COPY frontend/package.json frontend/yarn.lock .
+# we copy frontend/yarn.lock* to achieve a copy-if-exists like effect: https://stackoverflow.com/questions/31528384/conditional-copy-add-in-dockerfile
+COPY frontend/package.json frontend/yarn.lock* .
 RUN yarn install
 
 COPY frontend/ .
 RUN yarn lint
-# disabled tests: RUN yarn test --ci --runInBand
+RUN yarn test --ci --runInBand || touch junit.xml
+
 ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN webpack --config webpack.docker.js
 
 
-# FROM alpine as testresults
-# WORKDIR /results
-# COPY --from=build /app/junit.xml .
+FROM alpine as testresults
+WORKDIR /results
+COPY --from=build /app/junit.xml .
 
 
 FROM nginx:1.21.6 as runtime
