@@ -425,7 +425,7 @@ public class WorkOrderProjectStepRestService
 	{
 		final ImmutableMap.Builder<IdentifierString, CreateWOProjectStepRequest> itemsToCreate = ImmutableMap.builder();
 
-		final Set<IdentifierString> identifiesToCreate = getIdentifiersToCreate(orgId, stepIdentifiersMatchedForUpdate, requestItems.values());
+		final Set<IdentifierString> identifiesToCreate = getIdentifiersToCreate(orgId, stepIdentifiersMatchedForUpdate, requestItems.values(), projectId);
 
 		if (syncAdvise.getIfNotExists().isFail() && !identifiesToCreate.isEmpty())
 		{
@@ -452,11 +452,15 @@ public class WorkOrderProjectStepRestService
 		return itemsToCreate.build();
 	}
 
+	/**
+	 * @param requestProjectId see {@link #validateAreNotStoredUnderDifferentProject(Set, OrgId, ProjectId)}.
+	 */
 	@NonNull
 	private Set<IdentifierString> getIdentifiersToCreate(
 			@NonNull final OrgId orgId,
 			@NonNull final Set<IdentifierString> stepIdentifiersMatchedForUpdate,
-			@NonNull final Collection<JsonWorkOrderStepUpsertItemRequest> requestItems)
+			@NonNull final Collection<JsonWorkOrderStepUpsertItemRequest> requestItems,
+			@NonNull final ProjectId requestProjectId)
 	{
 		final ImmutableSet.Builder<IdentifierString> externalIdsToInsertCollector = ImmutableSet.builder();
 
@@ -486,12 +490,20 @@ public class WorkOrderProjectStepRestService
 
 		final Set<IdentifierString> externalIdsToCreate = externalIdsToInsertCollector.build();
 
-		validateAreNotStoredUnderDifferentProject(externalIdsToCreate, orgId);
+		validateAreNotStoredUnderDifferentProject(externalIdsToCreate, orgId, requestProjectId);
 
 		return externalIdsToCreate;
 	}
 
-	private void validateAreNotStoredUnderDifferentProject(@NonNull final Set<IdentifierString> externalIdsToCreate, @NonNull final OrgId orgId)
+	/**
+	 * Checks if the testStep - as identified by its externalId - is already stored below a C_Project that is different from the one specified in our overall JSON request-body which the step is a part of.
+	 *
+	 * @param requestProjectId there for information in case the method throws an exception
+	 */
+	private void validateAreNotStoredUnderDifferentProject(
+			@NonNull final Set<IdentifierString> externalIdsToCreate, 
+			@NonNull final OrgId orgId,
+			@NonNull final ProjectId requestProjectId)
 	{
 		if (externalIdsToCreate.isEmpty())
 		{
@@ -519,8 +531,10 @@ public class WorkOrderProjectStepRestService
 					.collect(Collectors.joining(","));
 
 			throw new AdempiereException("WOProjectStep.ExternalId already stored under a different project!")
+					.appendParametersToMessage()
 					.setParameter("ExternalIds", StringUtils.join(rawExternalIds, ", "))
-					.setParameter("ProjectIds", projectIds);
+					.setParameter("Request-ProjectId", requestProjectId)
+					.setParameter("Already stored under projectIds", projectIds);
 		}
 	}
 

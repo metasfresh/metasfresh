@@ -29,6 +29,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -46,6 +47,9 @@ public class WOProject
 	@NonNull
 	OrgId orgId;
 
+	@Nullable
+	ExternalId externalId;
+	
 	@NonNull
 	CurrencyId currencyId;
 

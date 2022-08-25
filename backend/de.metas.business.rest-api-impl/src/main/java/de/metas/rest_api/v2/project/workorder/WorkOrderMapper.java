@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.project.workorder;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertRequest;
 import de.metas.currency.CurrencyCode;
@@ -37,10 +38,12 @@ import de.metas.project.ProjectTypeId;
 import de.metas.project.service.ProjectService;
 import de.metas.project.workorder.data.CreateWOProjectRequest;
 import de.metas.project.workorder.data.WOProject;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.project.ValidateProjectHelper;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.MissingPropertyException;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
@@ -114,6 +117,11 @@ public class WorkOrderMapper
 			woProjectBuilder.projectReferenceExt(request.getProjectReferenceExt());
 		}
 
+		if(request.isExternalIdSet())
+		{
+			woProjectBuilder.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(request.getExternalId())));
+		}
+		
 		if (request.isDateContractSet())
 		{
 			woProjectBuilder.dateContract(TimeUtil.asInstant(request.getDateContract(), zoneId));
@@ -188,7 +196,7 @@ public class WorkOrderMapper
 
 		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
-		return CreateWOProjectRequest.builder()
+		final CreateWOProjectRequest.CreateWOProjectRequestBuilder createWOProjectRequestBuilder = CreateWOProjectRequest.builder()
 				.orgId(orgId)
 				.currencyId(currencyId)
 				.name(projectName)
@@ -198,6 +206,7 @@ public class WorkOrderMapper
 				.priceListVersionId(priceListVersionId)
 				.description(request.getDescription())
 				.projectReferenceExt(request.getProjectReferenceExt())
+				.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(request.getExternalId())))
 				.dateContract(TimeUtil.asInstant(request.getDateContract(), zoneId))
 				.dateFinish(TimeUtil.asInstant(request.getDateFinish(), zoneId))
 				.dateOfProvisionByBPartner(TimeUtil.asInstant(request.getDateOfProvisionByBPartner(), zoneId))
@@ -208,8 +217,26 @@ public class WorkOrderMapper
 				.woProjectCreatedDate(TimeUtil.asInstant(request.getWoProjectCreatedDate(), zoneId))
 				.salesRepId(JsonMetasfreshId.mapToOrNull(request.getSalesRepId(), UserId::ofRepoId))
 				.bPartnerId(JsonMetasfreshId.mapToOrNull(request.getBpartnerId(), BPartnerId::ofRepoId))
-				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId))
-				.build();
+				.projectParentId(JsonMetasfreshId.mapToOrNull(request.getProjectParentId(), ProjectId::ofRepoId));
+
+		if (request.getExternalId() == null) // if no externalId was given for the new project, then see if it was implied by the identifier
+		{
+			final IdentifierString projectIdentifier = request.mapProjectIdentifier(IdentifierString::of);
+			if(projectIdentifier.isExternalId())
+			{
+				createWOProjectRequestBuilder.externalId(projectIdentifier.asExternalId());
+			}
+		}
+		if(Check.isBlank(request.getValue())) // if no value was given for the new project, then see if it was implied by the identifier
+		{
+			final IdentifierString projectIdentifier = request.mapProjectIdentifier(IdentifierString::of);
+			if(projectIdentifier.isValue())
+			{
+				createWOProjectRequestBuilder.value(projectIdentifier.asValue());
+			}
+		}
+		
+		return createWOProjectRequestBuilder.build();
 	}
 
 	@NonNull
