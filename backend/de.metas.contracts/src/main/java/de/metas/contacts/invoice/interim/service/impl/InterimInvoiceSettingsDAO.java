@@ -26,8 +26,14 @@ import de.metas.calendar.CalendarId;
 import de.metas.contacts.invoice.interim.InterimInvoiceSettings;
 import de.metas.contacts.invoice.interim.InterimInvoiceSettingsId;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceSettingsDAO;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Interim_Invoice_Settings;
 
@@ -35,6 +41,8 @@ import javax.annotation.Nullable;
 
 public class InterimInvoiceSettingsDAO implements IInterimInvoiceSettingsDAO
 {
+	IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	@Nullable
 	public InterimInvoiceSettings getById(final @NonNull InterimInvoiceSettingsId id)
@@ -50,5 +58,23 @@ public class InterimInvoiceSettingsDAO implements IInterimInvoiceSettingsDAO
 				.harvestingCalendarId(CalendarId.ofRepoId(settings.getC_Harvesting_Calendar_ID()))
 				.withholdingProductId(ProductId.ofRepoId(settings.getM_Product_Witholding_ID()))
 				.build();
+	}
+
+	@Override
+	@Nullable
+	public InterimInvoiceSettings getForTerm(final @NonNull FlatrateTermId id)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, id)
+				.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE.getCode())
+				.andCollect(I_C_Flatrate_Conditions.COLUMNNAME_C_Interim_Invoice_Settings_ID, I_C_Interim_Invoice_Settings.class)
+				.orderByDescending(I_C_Interim_Invoice_Settings.COLUMN_Created)
+				.create()
+				.firstOptional()
+				.map(this::fromDB)
+				.orElse(null);
 	}
 }

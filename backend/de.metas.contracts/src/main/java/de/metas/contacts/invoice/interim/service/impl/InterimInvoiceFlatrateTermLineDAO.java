@@ -77,7 +77,7 @@ public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrat
 	}
 
 	@Override
-	public void setInvoiceLineToLines(@NonNull final InvoiceCandidateId invoiceCandidateId, final InterimInvoiceFlatrateTermId id)
+	public void setInvoiceLineToLines(@NonNull final InvoiceCandidateId invoiceCandidateId, @NonNull final InterimInvoiceFlatrateTermId id)
 	{
 		final ImmutableMap<Integer, I_C_InvoiceLine> inOutLineToInvoiceLineMap = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
 				.stream()

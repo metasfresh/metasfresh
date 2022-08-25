@@ -24,10 +24,16 @@ package de.metas.contacts.invoice.interim.service;
 
 import de.metas.contacts.invoice.interim.InterimInvoiceSettings;
 import de.metas.contacts.invoice.interim.InterimInvoiceSettingsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public interface IInterimInvoiceSettingsDAO extends ISingletonService
 {
 	InterimInvoiceSettings getById(@NonNull final InterimInvoiceSettingsId id);
+
+	@Nullable
+	InterimInvoiceSettings getForTerm(@NonNull FlatrateTermId id);
 }

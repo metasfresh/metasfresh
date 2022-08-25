@@ -32,7 +32,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -52,6 +51,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.stream.Stream;
 
 /**
  * This repo is about {@link I_C_InterimInvoice_FlatrateTerm}.
@@ -61,7 +61,6 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	@Nullable
 	@Override
@@ -86,38 +85,52 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 	}
 
 	@Override
-	@Nullable
-	public InterimInvoiceFlatrateTerm retrieveBy(final InterimInvoiceFlatrateTermQuery query)
+	public Stream<InterimInvoiceFlatrateTerm> retrieveBy(final InterimInvoiceFlatrateTermQuery query)
 	{
-		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+		final IQueryBuilder<I_C_Flatrate_Term> flatrateTermQueryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, query.getBpartnerId());
+
 		final Timestamp dateOn = query.getDateOn();
 		if (dateOn != null)
 		{
-			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateOn);
-			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, dateOn);
+			flatrateTermQueryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateOn);
+			flatrateTermQueryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, dateOn);
 		}
+
 		final Timestamp startDate = query.getStartDate();
 		if (startDate != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, startDate);
+			flatrateTermQueryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, startDate);
 		}
+
 		final Timestamp endDate = query.getEndDate();
 		if (endDate != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, endDate);
+			flatrateTermQueryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, endDate);
 		}
-		return queryBuilder.andCollectChildren(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Flatrate_Term_ID, I_C_InterimInvoice_FlatrateTerm.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_OrderLine_ID, query.getOrderLineId())
+
+		final FlatrateTermId flatrateTermId = query.getFlatrateTermId();
+		if (flatrateTermId != null)
+		{
+			flatrateTermQueryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId);
+		}
+
+		final IQueryBuilder<I_C_InterimInvoice_FlatrateTerm> interimInvoiceFlatrateTermQueryBuilder = flatrateTermQueryBuilder.andCollectChildren(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_Flatrate_Term_ID, I_C_InterimInvoice_FlatrateTerm.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getOrderLineId() != null)
+		{
+			interimInvoiceFlatrateTermQueryBuilder.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_OrderLine_ID, query.getOrderLineId());
+		}
+
+		return interimInvoiceFlatrateTermQueryBuilder
 				.addEqualsFilter(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_M_Product_ID, query.getProductId())
 
 				.orderByDescending(I_C_InterimInvoice_FlatrateTerm.COLUMNNAME_C_InterimInvoice_FlatrateTerm_ID)
 				.create()
-				.firstOptional(I_C_InterimInvoice_FlatrateTerm.class)
-				.map(this::fromDbObject)
-				.orElse(null);
+				.stream()
+				.map(this::fromDbObject);
 	}
 
 	/**
@@ -142,7 +155,9 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 				.bpartnerId(bpartnerId)
 				.dateOn(inOut.getMovementDate())
 				.orderLineId(orderLineId)
-				.build());
+				.build())
+				.findFirst()
+				.orElse(null);
 	}
 
 	@Nullable
@@ -188,6 +203,11 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 	 */
 	public boolean isInterimInvoiceStillUsable(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm)
 	{
+		if (interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId() == null && interimInvoiceFlatrateTerm.getWithholdingInvoiceCandidateId() == null)
+		{
+			return true;
+		}
+
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId(), interimInvoiceFlatrateTerm.getWithholdingInvoiceCandidateId())

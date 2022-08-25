@@ -1,8 +1,9 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Flatrate_Term
  *  @author metasfresh (generated) 
@@ -596,8 +597,8 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -606,8 +607,8 @@ public interface I_C_Flatrate_Term
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1001,7 +1002,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_MasterDocumentNo = "MasterDocumentNo";
 
 	/**
-	 * Set Master End Date.
+	 * Set Contract End Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1010,7 +1011,7 @@ public interface I_C_Flatrate_Term
 	void setMasterEndDate (@Nullable java.sql.Timestamp MasterEndDate);
 
 	/**
-	 * Get Master End Date.
+	 * Get Contract End Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1022,7 +1023,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_MasterEndDate = "MasterEndDate";
 
 	/**
-	 * Set Master Start Date.
+	 * Set Contract Start Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1031,7 +1032,7 @@ public interface I_C_Flatrate_Term
 	void setMasterStartDate (@Nullable java.sql.Timestamp MasterStartDate);
 
 	/**
-	 * Get Master Start Date.
+	 * Get Contract Start Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1093,7 +1094,7 @@ public interface I_C_Flatrate_Term
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1103,7 +1104,7 @@ public interface I_C_Flatrate_Term
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1267,7 +1268,7 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Anfangsdatum.
+	 * Set Start Date.
 	 * First effective day (inclusive)
 	 *
 	 * <br>Type: Date

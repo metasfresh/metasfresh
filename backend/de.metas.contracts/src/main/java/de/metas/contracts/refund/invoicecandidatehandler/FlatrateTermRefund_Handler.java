@@ -1,19 +1,6 @@
 package de.metas.contracts.refund.invoicecandidatehandler;
 
-import static java.math.BigDecimal.ONE;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.compiere.util.TimeUtil.asLocalDate;
-import static org.compiere.util.TimeUtil.asTimestamp;
-
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.function.Consumer;
-
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
@@ -27,6 +14,17 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.function.Consumer;
+
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.compiere.util.TimeUtil.asLocalDate;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 /*
  * #%L
@@ -74,17 +72,6 @@ public class FlatrateTermRefund_Handler
 	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
 		return false;
-	}
-
-	/**
-	 * Does nothing
-	 */
-	@Override
-	public void setSpecificInvoiceCandidateValues(
-			@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final I_C_Flatrate_Term term)
-	{
-		// nothing to do
 	}
 
 	/**

@@ -32,13 +32,15 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
 
+import java.util.stream.Stream;
+
 public interface IInterimInvoiceFlatrateTermDAO extends ISingletonService
 {
 	InterimInvoiceFlatrateTerm getById(@NonNull final InterimInvoiceFlatrateTermId id);
 
 	InterimInvoiceFlatrateTerm save(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm);
 
-	InterimInvoiceFlatrateTerm retrieveBy(InterimInvoiceFlatrateTermQuery query);
+	Stream<InterimInvoiceFlatrateTerm> retrieveBy(InterimInvoiceFlatrateTermQuery query);
 
 	InterimInvoiceFlatrateTerm getInterimInvoiceOverviewForInOutLine(@NonNull final I_M_InOutLine inOutLine);
 

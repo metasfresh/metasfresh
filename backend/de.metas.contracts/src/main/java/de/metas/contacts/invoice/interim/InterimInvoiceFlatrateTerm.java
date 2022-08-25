@@ -44,9 +44,9 @@ public class InterimInvoiceFlatrateTerm
 	InterimInvoiceFlatrateTermId id;
 	@NonNull FlatrateTermId flatrateTermId;
 	@NonNull OrderLineId orderLineId;
-	@NonNull
+	@Nullable
 	InvoiceCandidateId withholdingInvoiceCandidateId;
-	@NonNull
+	@Nullable
 	InvoiceCandidateId interimInvoiceCandidateId;
 	@NonNull
 	UomId uomId;

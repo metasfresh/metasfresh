@@ -24,6 +24,7 @@ package de.metas.contacts.invoice.interim;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -39,8 +40,9 @@ public class InterimInvoiceFlatrateTermQuery
 {
 	@NonNull BPartnerId bpartnerId;
 	@NonNull ProductId productId;
-	@NonNull OrderLineId orderLineId;
+	@Nullable OrderLineId orderLineId;
 	@Nullable ConditionsId conditionsId;
+	@Nullable FlatrateTermId flatrateTermId;
 	@Nullable Timestamp startDate;
 	@Nullable Timestamp endDate;
 	@Nullable Timestamp dateOn;

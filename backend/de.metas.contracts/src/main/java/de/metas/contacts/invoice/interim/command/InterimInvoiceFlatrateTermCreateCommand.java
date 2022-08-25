@@ -40,15 +40,9 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.process.FlatrateTermCreator;
-import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
@@ -64,15 +58,12 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -80,14 +71,11 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
 public class InterimInvoiceFlatrateTermCreateCommand
 {
-	public static final AdMessageKey MSG_PricingSystemsDoNotMatch = AdMessageKey.of("de.metas.contacts.invoice.interim.PricingSystemsDoNotMatch");
-
 	private static final Logger logger = LogManager.getLogger(InterimInvoiceFlatrateTermCreateCommand.class);
 
 	@NonNull
@@ -115,15 +103,13 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IInterimInvoiceSettingsDAO interimInvoiceSettingsDAO = Services.get(IInterimInvoiceSettingsDAO.class);
-	private final IInterimInvoiceFlatrateTermDAO interimInvoiceOverviewDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
-	private final IInterimInvoiceFlatrateTermLineDAO interimInvoiceOverviewLineDAO = Services.get(IInterimInvoiceFlatrateTermLineDAO.class);
-	private final IInterimInvoiceFlatrateTermBL interimInvoiceOverviewBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
+	private final IInterimInvoiceFlatrateTermDAO interimInvoiceFlatrateTermDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
+	private final IInterimInvoiceFlatrateTermLineDAO interimInvoiceFlatrateTermLineDAO = Services.get(IInterimInvoiceFlatrateTermLineDAO.class);
+	private final IInterimInvoiceFlatrateTermBL interimInvoiceFlatrateTermBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	@Builder
 	public InterimInvoiceFlatrateTermCreateCommand(@NonNull final Properties ctx,
@@ -141,8 +127,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		this.orderLineId = orderLineId;
 		this.orderLine = orderLineRepository.getById(orderLineId);
 		this.bpartnerId = CoalesceUtil.coalesceSuppliersNotNull(
-						() -> bpartnerId,
-						() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getBill_BPartner_ID()));
+				() -> bpartnerId,
+				() -> BPartnerId.ofRepoId(orderDAO.getById(orderLine.getOrderId()).getBill_BPartner_ID()));
 		this.productId = CoalesceUtil.coalesceNotNull(productId, orderLine.getProductId());
 		this.conditions = flatrateDAO.getConditionsById(conditionsId);
 		this.interimInvoiceSettings = interimInvoiceSettingsDAO.getById(InterimInvoiceSettingsId.ofRepoId(conditions.getC_Interim_Invoice_Settings_ID()));
@@ -158,16 +144,16 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	{
 		final I_C_Flatrate_Term flatrateTerm = getOrCreateFlatrateTerm();
 
-		final I_C_Invoice_Candidate existingIC = getInvoiceCandidateForOrderLine();
+		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = getOrCreateInterimInvoiceOverview(flatrateTerm);
 
-		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = getOrCreateInterimInvoiceOverview(flatrateTerm, existingIC);
+		updateQtyDeliveredSoFar(interimInvoiceFlatrateTerm);
 
-		updateDeliveredSoFarQty(interimInvoiceFlatrateTerm);
+		invoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
 
 		return interimInvoiceFlatrateTerm;
 	}
 
-	private void updateDeliveredSoFarQty(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm)
+	private void updateQtyDeliveredSoFar(@NonNull final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm)
 	{
 		final Collection<InOutAndLineId> existingInOuts = getUnassignedInOutLinesForOrderLineId();
 
@@ -177,42 +163,22 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		}
 		else
 		{
-			existingInOuts.forEach(inOutLine -> interimInvoiceOverviewLineDAO.createInterimInvoiceLine(interimInvoiceFlatrateTerm, inOutLine));
-			interimInvoiceOverviewBL.updateQuantities(interimInvoiceFlatrateTerm);
+			existingInOuts.forEach(inOutLine -> interimInvoiceFlatrateTermLineDAO.createInterimInvoiceLine(interimInvoiceFlatrateTerm, inOutLine));
+			interimInvoiceFlatrateTermBL.updateQuantities(interimInvoiceFlatrateTerm);
 		}
 	}
 
-	private InterimInvoiceFlatrateTerm getOrCreateInterimInvoiceOverview(final I_C_Flatrate_Term flatrateTerm, final I_C_Invoice_Candidate existingIC)
+	private InterimInvoiceFlatrateTerm getOrCreateInterimInvoiceOverview(final I_C_Flatrate_Term flatrateTerm)
 	{
-		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceOverviewDAO.getInterimInvoiceForFlatrateTermAndOrderLineId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()), orderLineId);
-		if (interimInvoiceFlatrateTerm != null && interimInvoiceOverviewDAO.isInterimInvoiceStillUsable(interimInvoiceFlatrateTerm))
+		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceFlatrateTermDAO.getInterimInvoiceForFlatrateTermAndOrderLineId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()), orderLineId);
+		if (interimInvoiceFlatrateTerm != null && interimInvoiceFlatrateTermDAO.isInterimInvoiceStillUsable(interimInvoiceFlatrateTerm))
 		{
 			return interimInvoiceFlatrateTerm;
 		}
 		else
 		{
-			final I_C_Invoice_Candidate withholdingIC = createWithholdingIC(flatrateTerm, existingIC);
-			final InvoiceCandidateId withholdingICId = InvoiceCandidateId.ofRepoId(withholdingIC.getC_Invoice_Candidate_ID());
-			final I_C_Invoice_Candidate interimIC = createInterimIC(flatrateTerm, existingIC);
-			final InvoiceCandidateId interimICId = InvoiceCandidateId.ofRepoId(interimIC.getC_Invoice_Candidate_ID());
-
-			return createInterimInvoiceOverview(flatrateTerm, withholdingICId, interimICId);
+			return createInterimInvoiceOverview(flatrateTerm);
 		}
-	}
-
-	@NonNull
-	private I_C_Invoice_Candidate getInvoiceCandidateForOrderLine()
-	{
-		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
-
-		if (invoiceCandidates.size() > 1)
-		{
-			//should not happen
-			throw new AdempiereException("More than one invoice candidate found for orderLineId=" + orderLineId);
-		}
-		return invoiceCandidates.stream()
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No invoice candidate found for orderLineId=" + orderLineId));
 	}
 
 	@NonNull
@@ -252,7 +218,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.orElseThrow(() -> new AdempiereException("No flatrate term created"));
 	}
 
-	private InterimInvoiceFlatrateTerm createInterimInvoiceOverview(@NonNull final I_C_Flatrate_Term flatrateTerm, @NonNull final InvoiceCandidateId witholdingICId, @NonNull final InvoiceCandidateId interimICId)
+	private InterimInvoiceFlatrateTerm createInterimInvoiceOverview(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		final I_C_Order order = orderDAO.getById(orderLine.getOrderId());
 
@@ -269,53 +235,9 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.priceActual(BigDecimal.ZERO)
 				.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()))
 
-				.withholdingInvoiceCandidateId(witholdingICId)
-				.interimInvoiceCandidateId(interimICId)
 				.build();
 
-		return interimInvoiceOverviewDAO.save(interimInvoiceFlatrateTerm);
-	}
-
-	private I_C_Invoice_Candidate createWithholdingIC(final I_C_Flatrate_Term flatrateTerm, final I_C_Invoice_Candidate existingIC)
-	{
-		final I_C_Invoice_Candidate withholdingIC = copyInvoiceCandidate(flatrateTerm, existingIC);
-
-		withholdingIC.setM_Product_ID(interimInvoiceSettings.getWithholdingProductId().getRepoId());
-		invoiceCandDAO.save(withholdingIC);
-		return withholdingIC;
-	}
-
-	private I_C_Invoice_Candidate copyInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm, final I_C_Invoice_Candidate existingIC)
-	{
-		final I_C_Invoice_Candidate copiedIC = InterfaceWrapperHelper.copy()
-				.setFrom(existingIC)
-				.copyToNew(I_C_Invoice_Candidate.class);
-		final I_C_ILCandHandler handlerRecord = invoiceCandidateHandlerDAO.retrieveForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class);
-		copiedIC.setC_ILCandHandler_ID(handlerRecord.getC_ILCandHandler_ID());
-		copiedIC.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
-		copiedIC.setRecord_ID(flatrateTerm.getC_Flatrate_Term_ID());
-		copiedIC.setAD_Table_ID(tableDAO.retrieveTableId(I_C_Flatrate_Term.Table_Name));
-		copiedIC.setQtyInvoiced(BigDecimal.ZERO);
-		copiedIC.setQtyToInvoice_Override(null);
-		copiedIC.setQtyInvoicedInUOM(BigDecimal.ZERO);
-		copiedIC.setQtyDelivered(BigDecimal.ZERO);
-		copiedIC.setQtyToInvoice(BigDecimal.ZERO);
-		copiedIC.setQtyToInvoiceInUOM(BigDecimal.ZERO);
-		copiedIC.setQtyOrdered(BigDecimal.ZERO);
-		copiedIC.setQtyEntered(BigDecimal.ZERO);
-		copiedIC.setQtyDeliveredInUOM(BigDecimal.ZERO);
-		copiedIC.setC_OrderLine_ID(0);
-		copiedIC.setC_Order_ID(0);
-		return copiedIC;
-	}
-
-	private I_C_Invoice_Candidate createInterimIC(final I_C_Flatrate_Term flatrateTerm, final I_C_Invoice_Candidate existingIC)
-	{
-		final I_C_Invoice_Candidate interimIC = copyInvoiceCandidate(flatrateTerm, existingIC);
-
-		interimIC.setIsInterimInvoice(true);
-		invoiceCandDAO.save(interimIC);
-		return interimIC;
+		return interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm);
 	}
 
 	private Collection<InOutAndLineId> getUnassignedInOutLinesForOrderLineId()
