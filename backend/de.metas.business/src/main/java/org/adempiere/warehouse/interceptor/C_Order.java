@@ -40,6 +40,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
@@ -77,15 +78,37 @@ public class C_Order
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
-		final DocumentLocation billToAddress = getBillingDocumentForExternalBPartner(warehouseId, orgId)
-				.orElseGet(() -> getBillingDocumentForBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID())));
+		final Optional<DocumentLocation> externalBPartnerBillToAddress = getBillingLocationDocumentForExternalBPartner(warehouseId, orgId);
 
-		OrderDocumentLocationAdapterFactory.billLocationAdapter(order)
-				.setFrom(billToAddress);
+		if (!externalBPartnerBillToAddress.isPresent())
+		{
+			final I_C_Order oldOrder = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
+
+			//dev-note: check if old warehouse was owned by an external partner and reset location
+			if (oldOrder != null && oldOrder.getM_Warehouse_ID() > 0)
+			{
+				final I_M_Warehouse oldWarehouse = warehouseBL.getById(WarehouseId.ofRepoId(oldOrder.getM_Warehouse_ID()));
+
+				if (oldWarehouse.isBPartnerInvoicesWithVendors())
+				{
+					final DocumentLocation bpartnerBillToLocation = getBillingDocumentForBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
+
+					OrderDocumentLocationAdapterFactory.billLocationAdapter(order)
+							.setFrom(bpartnerBillToLocation);
+				}
+			}
+		}
+		else
+		{
+			OrderDocumentLocationAdapterFactory.billLocationAdapter(order)
+					.setFrom(externalBPartnerBillToAddress.get());
+
+			order.setIsDropShip(false);
+		}
 	}
 
 	@NonNull
-	private Optional<DocumentLocation> getBillingDocumentForExternalBPartner(@NonNull final WarehouseId warehouseId, @NonNull final OrgId orgId)
+	private Optional<DocumentLocation> getBillingLocationDocumentForExternalBPartner(@NonNull final WarehouseId warehouseId, @NonNull final OrgId orgId)
 	{
 		final I_M_Warehouse warehousesRecord = warehouseBL.getById(warehouseId);
 

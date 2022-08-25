@@ -199,3 +199,224 @@ UPDATE AD_Column SET ColumnSQL='(case when (SELECT NOT EXISTS(SELECT 1 from ad_o
 UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-08-24 19:00:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=612204
 ;
 
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T15:29:52.813Z
+UPDATE AD_Element_Trl SET Description='',Updated=TO_TIMESTAMP('2022-08-25 18:29:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='en_US'
+;
+
+-- 2022-08-25T15:29:52.841Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'en_US')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T15:30:44.106Z
+UPDATE AD_Element_Trl SET Description='',Updated=TO_TIMESTAMP('2022-08-25 18:30:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='fr_CH'
+;
+
+-- 2022-08-25T15:30:44.108Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'fr_CH')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T15:45:31.476Z
+UPDATE AD_Element_Trl SET Description='', Help='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.',Updated=TO_TIMESTAMP('2022-08-25 18:45:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='de_CH'
+;
+
+-- 2022-08-25T15:45:31.477Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'de_CH')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T15:45:38.909Z
+UPDATE AD_Element_Trl SET Help='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.',Updated=TO_TIMESTAMP('2022-08-25 18:45:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='de_DE'
+;
+
+-- 2022-08-25T15:45:38.912Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'de_DE')
+;
+
+-- 2022-08-25T15:45:38.917Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581377,'de_DE')
+;
+
+-- 2022-08-25T15:45:38.918Z
+UPDATE AD_Column SET ColumnName='BPartnerInvoicesWithVendors', Name='Rechnet mit Lieferanten ab', Description='', Help='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE AD_Element_ID=581377
+;
+
+-- 2022-08-25T15:45:38.920Z
+UPDATE AD_Process_Para SET ColumnName='BPartnerInvoicesWithVendors', Name='Rechnet mit Lieferanten ab', Description='', Help='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.', AD_Element_ID=581377 WHERE UPPER(ColumnName)='BPARTNERINVOICESWITHVENDORS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-08-25T15:45:38.922Z
+UPDATE AD_Process_Para SET ColumnName='BPartnerInvoicesWithVendors', Name='Rechnet mit Lieferanten ab', Description='', Help='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE AD_Element_ID=581377 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-08-25T15:45:38.922Z
+UPDATE AD_Field SET Name='Rechnet mit Lieferanten ab', Description='', Help='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581377) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581377)
+;
+
+-- 2022-08-25T15:45:38.976Z
+UPDATE AD_Tab SET Name='Rechnet mit Lieferanten ab', Description='', Help='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.', CommitWarning = NULL WHERE AD_Element_ID = 581377
+;
+
+-- 2022-08-25T15:45:38.977Z
+UPDATE AD_WINDOW SET Name='Rechnet mit Lieferanten ab', Description='', Help='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE AD_Element_ID = 581377
+;
+
+-- 2022-08-25T15:45:38.978Z
+UPDATE AD_Menu SET   Name = 'Rechnet mit Lieferanten ab', Description = '', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581377
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T15:51:19.457Z
+UPDATE AD_Element_Trl SET Description='Wenn gesetzt ', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.',Updated=TO_TIMESTAMP('2022-08-25 18:51:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='de_DE'
+;
+
+-- 2022-08-25T15:51:19.460Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'de_DE')
+;
+
+-- 2022-08-25T15:51:19.465Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581377,'de_DE')
+;
+
+-- 2022-08-25T15:51:19.467Z
+UPDATE AD_Column SET ColumnName='BPartnerInvoicesWithVendors', Name='Rechnet mit Lieferanten ab', Description='Wenn gesetzt ', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE AD_Element_ID=581377
+;
+
+-- 2022-08-25T15:51:19.468Z
+UPDATE AD_Process_Para SET ColumnName='BPartnerInvoicesWithVendors', Name='Rechnet mit Lieferanten ab', Description='Wenn gesetzt ', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.', AD_Element_ID=581377 WHERE UPPER(ColumnName)='BPARTNERINVOICESWITHVENDORS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-08-25T15:51:19.470Z
+UPDATE AD_Process_Para SET ColumnName='BPartnerInvoicesWithVendors', Name='Rechnet mit Lieferanten ab', Description='Wenn gesetzt ', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE AD_Element_ID=581377 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-08-25T15:51:19.470Z
+UPDATE AD_Field SET Name='Rechnet mit Lieferanten ab', Description='Wenn gesetzt ', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581377) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581377)
+;
+
+-- 2022-08-25T15:51:19.481Z
+UPDATE AD_Tab SET Name='Rechnet mit Lieferanten ab', Description='Wenn gesetzt ', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.', CommitWarning = NULL WHERE AD_Element_ID = 581377
+;
+
+-- 2022-08-25T15:51:19.481Z
+UPDATE AD_WINDOW SET Name='Rechnet mit Lieferanten ab', Description='Wenn gesetzt ', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE AD_Element_ID = 581377
+;
+
+-- 2022-08-25T15:51:19.482Z
+UPDATE AD_Menu SET   Name = 'Rechnet mit Lieferanten ab', Description = 'Wenn gesetzt ', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581377
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T15:51:28.648Z
+UPDATE AD_Element_Trl SET Description='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.',Updated=TO_TIMESTAMP('2022-08-25 18:51:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='de_DE'
+;
+
+-- 2022-08-25T15:51:28.649Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'de_DE')
+;
+
+-- 2022-08-25T15:51:28.656Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581377,'de_DE')
+;
+
+-- 2022-08-25T15:51:28.657Z
+UPDATE AD_Column SET ColumnName='BPartnerInvoicesWithVendors', Name='Rechnet mit Lieferanten ab', Description='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE AD_Element_ID=581377
+;
+
+
+-- 2022-08-25T15:51:28.659Z
+UPDATE AD_Field SET Name='Rechnet mit Lieferanten ab', Description='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.', Help='Wenn Y  und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.
+Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581377) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581377)
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T15:51:50.776Z
+UPDATE AD_Element_Trl SET Description='Wenn gesetzt und das Lager zu einem externen Geschäftspartner gehört, wird davon ausgegangen, dass dieser Partner mit den Lieferanten, die an dieses Lager liefern, direkt abrechnet.Wenn dieses Lager in einer Bestellung ausgewählt wird, wird folglich der Lagerpartner und nicht der eigentliche Lieferant als Rechnungspartner der Bestellung festgelegt.',Updated=TO_TIMESTAMP('2022-08-25 18:51:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='de_CH'
+;
+
+-- 2022-08-25T15:51:50.777Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'de_CH')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T16:08:28.205Z
+UPDATE AD_Element_Trl SET Description='If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order''s bill-partner.',Updated=TO_TIMESTAMP('2022-08-25 19:08:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='en_US'
+;
+
+-- 2022-08-25T16:08:28.207Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'en_US')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T16:08:53.247Z
+UPDATE AD_Element_Trl SET Description='',Updated=TO_TIMESTAMP('2022-08-25 19:08:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='nl_NL'
+;
+
+-- 2022-08-25T16:08:53.247Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'nl_NL')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T16:09:21.005Z
+UPDATE AD_Element_Trl SET Description='If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order''s bill-partner.',Updated=TO_TIMESTAMP('2022-08-25 19:09:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='fr_CH'
+;
+
+-- 2022-08-25T16:09:21.005Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'fr_CH')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T16:09:23.700Z
+UPDATE AD_Element_Trl SET Description='If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order''s bill-partner.',Updated=TO_TIMESTAMP('2022-08-25 19:09:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='nl_NL'
+;
+
+-- 2022-08-25T16:09:23.701Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'nl_NL')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T16:22:26.675Z
+UPDATE AD_Element_Trl SET Help='If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order''s bill-partner.
+',Updated=TO_TIMESTAMP('2022-08-25 19:22:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='en_US'
+;
+
+-- 2022-08-25T16:22:26.676Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'en_US')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T16:22:37.638Z
+UPDATE AD_Element_Trl SET Help='If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order''s bill-partner.',Updated=TO_TIMESTAMP('2022-08-25 19:22:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='fr_CH'
+;
+
+-- 2022-08-25T16:22:37.639Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'fr_CH')
+;
+
+-- Element: BPartnerInvoicesWithVendors
+-- 2022-08-25T16:22:47.420Z
+UPDATE AD_Element_Trl SET Help='If ticked and the warehouse belongs to a third-party business-partner, then this partner is assumed to settle accounts with vendors that deliver to this warehouse. As a consequence, when this warehouse is selected in a purchase order, the warehouse-partner and not the actual vendor is set to be the order''s bill-partner.',Updated=TO_TIMESTAMP('2022-08-25 19:22:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581377 AND AD_Language='nl_NL'
+;
+
+-- 2022-08-25T16:22:47.421Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581377,'nl_NL')
+;
+

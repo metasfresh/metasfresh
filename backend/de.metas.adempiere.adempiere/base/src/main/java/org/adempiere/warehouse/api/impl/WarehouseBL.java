@@ -262,6 +262,7 @@ public class WarehouseBL implements IWarehouseBL
 
 		final BPartnerLocationId warehouseBPartnerLocationId = BPartnerLocationId.ofRepoId(warehouseRecord.getC_BPartner_ID(), warehouseRecord.getC_BPartner_Location_ID());
 
+		// prefer the warehouse's C_BPartner_Location_ID, but if it's not a billTolocation, then fall back to another bill-location of the bpartner
 		final I_C_BPartner_Location billToLocation = Optional.ofNullable(bpartnerDAO.getBPartnerLocationByIdInTrx(warehouseBPartnerLocationId))
 				.filter(I_C_BPartner_Location::isBillTo)
 				.orElseGet(() -> bpartnerDAO.retrieveCurrentBillLocationOrNull(warehouseBPartnerLocationId.getBpartnerId()));
