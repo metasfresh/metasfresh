@@ -10,6 +10,7 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,6 +42,7 @@ import java.util.Set;
 
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
+	private static final AdMessageKey MSG_RevaluatingAnotherRevaluationIsNotSupported = AdMessageKey.of("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
 	protected final CostingMethodHandlerUtils utils;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
@@ -200,7 +202,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	{
 		if (costDetail.getDocumentRef().isCostRevaluationLine())
 		{
-			throw new AdempiereException("Evaluating another revaluation is not supported")
+			throw new AdempiereException(MSG_RevaluatingAnotherRevaluationIsNotSupported)
 					.setParameter("costDetail", costDetail);
 		}
 
