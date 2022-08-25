@@ -7,16 +7,29 @@ jobs:
     outputs:
       tag-floating: ${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
+      build-info-properties: ${{ steps.build-info-properties.outputs.content }}
+      git-properties: ${{ steps.git-properties.outputs.content }}
     steps:
-      - name: print-vars
-        run: env
-      # - name: print-github-context
-        # run: echo '${{ toJSON(github) }}'
+      - uses: actions/checkout@v3
       - name: sanitize-ref-name
         id: sanitize
-        run: 'echo "::set-output name=refname::$(echo $GITHUB_REF_NAME | sed -r ''s/([^a-zA-Z0-9.]+)/-/g'' | sed -r ''s/(^-|-$)//g'')"'
-      - name: print-sanitizef-ref-name
-        run: echo ${{ steps.sanitize.outputs.refname }}
+        run: |
+          echo "::set-output name=refname::$(echo '${{ github.ref_name }}' | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')"          
+      - name: define-build-info-properties
+        id: build-info-properties
+        run: |
+          echo "::set-output name=content::build.name=github actions\nbuild.system=${{ runner.name }}\nbuild.time=$(date)\nbuild.user=${{ github.actor }}\nbuild.version=$(cat docker-builds/version.info)-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}"
+      - name: define-git-properties
+        id: git-properties
+        run: |
+          echo "::set-output name=content::git.remote.origin.url=${{ github.repositoryUrl }}\ngit.branch=${{ github.event.ref }}\ngit.commit.id=${{ github.event.head_commit.id }}\ngit.commit.message=${{ github.event.head_commit.message }}"
+      - name: print-vars
+        run: env
+      - name: print-info
+        run: |
+          echo -e "[sanitized refname]\n${{ steps.sanitize.outputs.refname }}\n"
+          echo -e "[build-info.properties]\n${{ steps.build-info-properties.outputs.content }}\n"
+          echo -e "[git-properties]\n${{ steps.git-properties.outputs.content }}\n"
 
   java:
     runs-on: ubuntu-latest
@@ -81,21 +94,21 @@ jobs:
           -t metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           -t metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: build-mobile
-        run: |
-          docker buildx build \
-          -f docker-builds/Dockerfile.mobile \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
-          .
+      # - name: build-mobile
+        # run: |
+          # docker buildx build \
+          # -f docker-builds/Dockerfile.mobile \
+          # --cache-to type=inline \
+          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          # -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          # -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
+          # .
       - name: push-images
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
         run: |
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
           docker logout
       - name: extract-test-results
         run: |
@@ -117,7 +130,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: prepare
-        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
+        run: |
+          echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
+          echo -e ${{ needs.init.outputs.build-info-properties }} > docker-builds/metadata/build-info.properties
+          echo -e ${{ needs.init.outputs.git-properties }} > docker-builds/metadata/git.properties
       - name: build-api
         run: |
           docker buildx build \
@@ -210,16 +226,16 @@ jobs:
           -t metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           -t metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: build-mobile-compat
-        run: |
-          docker buildx build \
-          -f docker-builds/Dockerfile.mobile.compat \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
-          .
+      # - name: build-mobile-compat
+        # run: |
+          # docker buildx build \
+          # -f docker-builds/Dockerfile.mobile.compat \
+          # --cache-to type=inline \
+          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          # --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          # -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          # -t metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          # .
       - name: build-frontend-compat
         run: |
           docker buildx build \
@@ -231,13 +247,13 @@ jobs:
           -t metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: push-images
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
         run: |
           docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
           docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat

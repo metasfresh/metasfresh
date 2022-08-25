@@ -3,9 +3,15 @@ FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
 FROM openjdk:8-jdk-oraclelinux7
 
+RUN yum -y update && yum -y install zip && yum -y clean all && rm -rf /var/cache
+
 WORKDIR /opt/metasfresh/metasfresh-webui-api
 
 COPY --from=backend /backend/metasfresh-webui-api/target/docker/metasfresh-webui-api.jar .
 COPY --from=backend /backend/metasfresh-webui-api/target/docker/configs/metasfresh.properties .
+
+COPY docker-builds/metadata/build-info.properties META-INF/
+COPY docker-builds/metadata/git.properties BOOT-INF/classes/
+RUN zip -g metasfresh-webui-api.jar META-INF/build-info.properties BOOT-INF/classes/git.properties
 
 CMD ["java", "-jar", "/opt/metasfresh/metasfresh-webui-api/metasfresh-webui-api.jar"]
