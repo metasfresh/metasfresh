@@ -19,6 +19,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
+import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -87,9 +88,9 @@ public class AD_Column
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_IsSelectionColumn })
 	public void onIsSelectionColumn(final I_AD_Column column)
 	{
-		if (MColumn.isSuggestSelectionColumn(column.getColumnName(), true))
+		if (column.isSelectionColumn() && Check.isBlank(column.getFilterOperator()))
 		{
-			column.setIsSelectionColumn(true);
+			column.setFilterOperator(X_AD_Column.FILTEROPERATOR_EqualsOrLike);
 		}
 	}
 
