@@ -6,7 +6,6 @@ import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.impexp.AccountImportProcess;
@@ -49,7 +48,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Properties;
 
 /**
@@ -58,8 +57,7 @@ import java.util.Properties;
 @Component
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
-	private static final transient Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
-	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+	private static final Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
@@ -178,7 +176,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			try
 			{
 				final OrgId adOrgId = OrgId.ofRepoId(adOrgRepoId);
-				final LocalDate date = Env.getLocalDate(ctx);
+				final Instant date = Env.getDate(ctx).toInstant();
 				final CurrencyConversionTypeId conversionTypeId = currenciesRepo.getDefaultConversionTypeId(adClientId, adOrgId, date);
 				Env.setContext(ctx, CTXNAME_C_ConversionType_ID, conversionTypeId.getRepoId());
 			}

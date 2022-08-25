@@ -1,8 +1,6 @@
 package de.metas.shipping.api.impl;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
-
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
@@ -10,6 +8,8 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
 {
@@ -46,7 +46,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	@Override
 	public void setC_DocType(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		final String docBaseType = de.metas.shipping.util.Constants.C_DocType_DocBaseType_ShipperTransportation;
+		final DocBaseType docBaseType = DocBaseType.ShipperTransportation;
 		final int adClientId = shipperTransportation.getAD_Client_ID();
 		final int adOrgId = shipperTransportation.getAD_Org_ID();
 

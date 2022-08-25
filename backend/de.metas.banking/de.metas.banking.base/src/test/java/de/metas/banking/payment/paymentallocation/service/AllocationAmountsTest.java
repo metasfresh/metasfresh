@@ -101,7 +101,7 @@ public class AllocationAmountsTest
 
 			assertThatThrownBy(builder::build)
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("All given Money instances shall have the same currency");
+					.hasMessageStartingWith("All given Money(s) shall have the same currency");
 		}
 	}
 
@@ -116,7 +116,8 @@ public class AllocationAmountsTest
 				.build();
 
 		assertThat(amounts.add(amounts))
-				.isEqualToComparingFieldByField(AllocationAmounts.builder()
+				.usingRecursiveComparison()
+				.isEqualTo(AllocationAmounts.builder()
 						.payAmt(euro(2))
 						.discountAmt(euro(4))
 						.writeOffAmt(euro(6))
@@ -135,7 +136,8 @@ public class AllocationAmountsTest
 				.build();
 
 		assertThat(amounts.subtract(amounts))
-				.isEqualToComparingFieldByField(AllocationAmounts.zero(euroCurrencyId));
+				.usingRecursiveComparison()
+				.isEqualTo(AllocationAmounts.zero(euroCurrencyId));
 	}
 
 	@Test
@@ -149,7 +151,8 @@ public class AllocationAmountsTest
 				.build();
 
 		assertThat(amounts.negate())
-				.isEqualToComparingFieldByField(AllocationAmounts.builder()
+				.usingRecursiveComparison()
+				.isEqualTo(AllocationAmounts.builder()
 						.payAmt(euro(-1))
 						.discountAmt(euro(-2))
 						.writeOffAmt(euro(-3))

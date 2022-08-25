@@ -267,13 +267,6 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public LocalDate getParameter_ToAsLocalDate(final String parameterName)
-	{
-		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
-		return processInfoParameter != null ? processInfoParameter.getParameter_ToAsLocalDate() : null;
-	}
-
-	@Override
 	public ZonedDateTime getParameter_ToAsZonedDateTime(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);

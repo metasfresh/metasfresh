@@ -111,7 +111,6 @@ public class OrgId implements RepoIdAware
 		return orgId != null ? orgId.getRepoId() : ANY.repoId;
 	}
 
-
 	@Override
 	@JsonValue
 	public int getRepoId()
@@ -131,6 +130,9 @@ public class OrgId implements RepoIdAware
 	{
 		return !isAny();
 	}
+
+	@Nullable
+	public OrgId asRegularOrNull() {return isRegular() ? this : null;}
 
 	public static boolean equals(@Nullable final OrgId id1, @Nullable final OrgId id2)
 	{

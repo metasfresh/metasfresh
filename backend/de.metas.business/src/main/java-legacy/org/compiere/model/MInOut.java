@@ -26,9 +26,11 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -2472,7 +2474,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
 
 		//
 		// Make sure it's not a reversal or reversed document.
@@ -2619,9 +2621,9 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getMovementDate());
+		return InstantAndOrgId.ofTimestamp(getMovementDate(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

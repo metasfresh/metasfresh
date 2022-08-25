@@ -87,12 +87,6 @@ public interface IInvoiceBL extends ISingletonService
 
 	String getSummary(I_C_Invoice invoice);
 
-	default boolean isVendorInvoice(final String docBaseType)
-	{
-		return X_C_DocType.DOCBASETYPE_APInvoice.equals(docBaseType)
-				|| X_C_DocType.DOCBASETYPE_APCreditMemo.equals(docBaseType);
-	}
-
 	/**
 	 * @param invoice the invoice to check
 	 * @return true if the given invoice is an Invoice (API or ARI)

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Range;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -11,8 +12,10 @@ import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.AggregatedCostPrice;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
@@ -24,6 +27,9 @@ import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.CostsRevaluationRequest;
+import de.metas.costing.CostsRevaluationResult;
+import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
@@ -38,7 +44,6 @@ import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -50,6 +55,7 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -204,10 +210,10 @@ public class CostingService implements ICostingService
 		}
 
 		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				request.getDate(),
-				request.getCurrencyConversionTypeId(),
-				request.getClientId(),
-				request.getOrgId())
+						request.getDate(),
+						request.getCurrencyConversionTypeId(),
+						request.getClientId(),
+						request.getOrgId())
 				.withPrecision(acctSchema.getCosting().getCostingPrecision());
 
 		final CurrencyConversionResult amtConversionResult = currencyConversionBL.convert(
@@ -326,7 +332,7 @@ public class CostingService implements ICostingService
 		return costElementsRepo.getMaterialCostingMethods(clientId);
 	}
 
-	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod)
+	private Set<CostingMethodHandler> getCostingMethodHandlers(@NonNull final CostingMethod costingMethod)
 	{
 		final Set<CostingMethodHandler> costingMethodHandlers = this.costingMethodHandlers.get(costingMethod);
 		if (costingMethodHandlers.isEmpty())
@@ -337,12 +343,12 @@ public class CostingService implements ICostingService
 		return costingMethodHandlers;
 	}
 
-	private Set<CostingMethodHandler> getCostingMethodHandlers(
-			final CostingMethod costingMethod,
-			final CostingDocumentRef documentRef)
+	private ImmutableSet<CostingMethodHandler> getCostingMethodHandlers(
+			@NonNull final CostingMethod costingMethod,
+			@NonNull final CostingDocumentRef documentRef)
 	{
 		final Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
-		final Set<CostingMethodHandler> costingMethodHandlers = allCostingMethodHandlers
+		final ImmutableSet<CostingMethodHandler> costingMethodHandlers = allCostingMethodHandlers
 				.stream()
 				.filter(handler -> isHandledBy(handler, documentRef))
 				.collect(ImmutableSet.toImmutableSet());
@@ -353,28 +359,41 @@ public class CostingService implements ICostingService
 		return costingMethodHandlers;
 	}
 
-	private boolean isHandledBy(
-			final CostingMethodHandler handler,
-			final CostingDocumentRef documentRef)
+	private CostingMethodHandler getSingleCostingMethodHandler(
+			@NonNull final CostingMethod costingMethod,
+			@NonNull final CostingDocumentRef documentRef)
 	{
-		final Set<String> handledTableNames = handler.getHandledTableNames();
-		return handledTableNames.contains(CostingMethodHandler.ANY)
-				|| handledTableNames.contains(documentRef.getTableName());
+		CostingMethodHandler eligibleHandler = null;
+		final Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
+		for (final CostingMethodHandler handler : allCostingMethodHandlers)
+		{
+			if (isHandledBy(handler, documentRef))
+			{
+				if (eligibleHandler == null)
+				{
+					eligibleHandler = handler;
+				}
+				else
+				{
+					throw new AdempiereException("More than one eligible handlers found for " + costingMethod + " and " + documentRef + ": " + eligibleHandler + ", " + handler);
+				}
+			}
+		}
+
+		if (eligibleHandler == null)
+		{
+			throw new AdempiereException("No eligible handler found for " + costingMethod + " and " + documentRef);
+		}
+
+		return eligibleHandler;
 	}
 
-	@Override
-	public Optional<CostAmount> calculateSeedCosts(
-			final CostSegment costSegment,
-			final CostingMethod costingMethod,
-			final OrderLineId orderLineId)
+	private static boolean isHandledBy(
+			@NonNull final CostingMethodHandler handler,
+			@NonNull final CostingDocumentRef documentRef)
 	{
-		return getCostingMethodHandlers(costingMethod)
-				.stream()
-				.map(handler -> handler.calculateSeedCosts(costSegment, orderLineId))
-				.filter(Objects::nonNull)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.reduce(CostAmount::add);
+		final Set<String> handledTableNames = handler.getHandledTableNames();
+		return handledTableNames.contains(documentRef.getTableName());
 	}
 
 	@Override
@@ -390,7 +409,7 @@ public class CostingService implements ICostingService
 				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId())
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						costDetail -> costDetail.getCostElementId(),
+						CostDetail::getCostElementId,
 						costDetail -> costDetail));
 
 		final ArrayList<CostDetailCreateResult> costDetailCreateResults = new ArrayList<>();
@@ -502,5 +521,60 @@ public class CostingService implements ICostingService
 		}
 
 		return result;
+	}
+
+	@Override
+	public CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request)
+	{
+		final CostSegmentAndElement costSegmentAndElement = request.getCostSegmentAndElement();
+		final Instant evaluationStartDate = request.getEvaluationStartDate();
+		final CostAmount newCostPrice = request.getNewCostPrice();
+
+		//
+		// Fetch cost details for our cost segment, starting from evaluation start date
+		final ImmutableList<CostDetail> costDetails = costDetailsService.stream(
+						CostDetailQuery.builderFrom(costSegmentAndElement)
+								.dateAcctRage(Range.atLeast(evaluationStartDate))
+								.orderBy(CostDetailQuery.OrderBy.DATE_ACCT_ASC)
+								.orderBy(CostDetailQuery.OrderBy.ID_ASC)
+								.build())
+				.collect(ImmutableList.toImmutableList());
+
+		//
+		// Restore current costs at the time before evaluation date
+		final CostsRevaluationResult.CostsRevaluationResultBuilder result = CostsRevaluationResult.builder();
+		final CurrentCost currentCost = currentCostsRepo.getOrCreate(costSegmentAndElement);
+		if (!costDetails.isEmpty())
+		{
+			final CostDetail firstCostDetail = costDetails.get(0);
+			currentCost.setFrom(firstCostDetail.getPreviousAmounts());
+		}
+		//
+		final CostsRevaluationResult.CurrentCostBeforeEvaluation currentCostBeforeEvaluation = CostsRevaluationResult.CurrentCostBeforeEvaluation.builder()
+				.qty(currentCost.getCurrentQty())
+				.costPriceOld(currentCost.getCostPrice().getOwnCostPrice())
+				.costPriceNew(newCostPrice)
+				.build();
+		currentCost.setOwnCostPrice(newCostPrice);
+		result.currentCostBeforeEvaluation(currentCostBeforeEvaluation);
+
+		//
+		// Iterate all cost details, calculate adjustments and update the current costs
+		final CostingMethod costingMethod = costElementsRepo.getById(costSegmentAndElement.getCostElementId()).getCostingMethod();
+		for (final CostDetail costDetail : costDetails)
+		{
+			final CostingMethodHandler handler = getSingleCostingMethodHandler(costingMethod, costDetail.getDocumentRef());
+			final CostDetailAdjustment costDetailAdjustment = handler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
+			result.costDetailAdjustment(costDetailAdjustment);
+		}
+
+		//
+		result.currentCostAfterEvaluation(CostsRevaluationResult.CurrentCostAfterEvaluation.builder()
+				.qty(currentCost.getCurrentQty())
+				.costPriceComputed(currentCost.getCostPrice().getOwnCostPrice())
+				.build());
+
+		//
+		return result.build();
 	}
 }

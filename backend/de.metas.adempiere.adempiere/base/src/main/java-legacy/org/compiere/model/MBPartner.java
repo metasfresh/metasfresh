@@ -70,16 +70,17 @@ public class MBPartner extends X_C_BPartner
 	 *            value
 	 * @return BPartner or null
 	 */
-	public static MBPartner get(final Properties ctx, final String Value)
+	@Deprecated
+	public static I_C_BPartner get(final Properties ctx, final String Value)
 	{
 		if (Value == null || Value.length() == 0)
 		{
 			return null;
 		}
 		final String whereClause = "Value=? AND AD_Client_ID=?";
-		final MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause, null).setParameters(
-				new Object[] { Value, Env.getAD_Client_ID(ctx) }).firstOnly();
-		return retValue;
+		return new Query(ctx, MBPartner.Table_Name, whereClause, null)
+				.setParameters(new Object[] { Value, Env.getAD_Client_ID(ctx) })
+				.firstOnly(I_C_BPartner.class);
 	} // get
 
 	public MBPartner(final Properties ctx, final ResultSet rs, final String trxName)

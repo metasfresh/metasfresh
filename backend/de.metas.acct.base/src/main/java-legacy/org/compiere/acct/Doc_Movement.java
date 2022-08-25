@@ -19,6 +19,7 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.compiere.model.I_M_Movement;
 
@@ -49,7 +50,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 {
 	public Doc_Movement(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_MatMovement);
+		super(ctx, DocBaseType.MaterialMovement);
 	}
 
 	@Override

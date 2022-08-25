@@ -1,8 +1,9 @@
 package de.metas.document.engine;
 
+import de.metas.organization.InstantAndOrgId;
+
 import java.io.File;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -37,7 +38,7 @@ public interface DocumentHandler
 	String getSummary(DocumentTableFields docFields);
 	String getDocumentInfo(DocumentTableFields docFields);
 	int getDoc_User_ID(DocumentTableFields docFields);
-	LocalDate getDocumentDate(DocumentTableFields docFields);
+	InstantAndOrgId getDocumentDate(DocumentTableFields docFields);
 	//@formatter:on
 
 	default int getC_Currency_ID(DocumentTableFields docFields)

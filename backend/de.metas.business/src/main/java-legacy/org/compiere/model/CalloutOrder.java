@@ -28,6 +28,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -641,7 +642,7 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-																				   .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																				   .docBaseType(DocBaseType.SalesOrder)
 																				   .defaultDocType(true)
 																				   .adClientId(adClientId)
 																				   .adOrgId(adOrgId)
@@ -652,7 +653,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-																						 .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																						 .docBaseType(DocBaseType.SalesOrder)
 																						 .docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
 																						 .adClientId(adClientId)
 																						 .adOrgId(adOrgId)

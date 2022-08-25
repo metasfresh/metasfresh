@@ -12,6 +12,7 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.document.DocBaseType;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -46,7 +47,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 	public Doc_BankStatement(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_BankStatement);
+		super(ctx, DocBaseType.BankStatement);
 	}
 
 	@Override
@@ -289,7 +290,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// Flag this document as multi-currency to prevent source amounts balancing.
 		// Our source amounts won't be source balanced anymore because the bank transfer is booked in allocation's currency
 		// and the currency gain/loss is booked in accounting currency.
-		setIsMultiCurrency(true);
+		setIsMultiCurrency();
 
 		final AcctSchema as = fact.getAcctSchema();
 		final MAccount account;

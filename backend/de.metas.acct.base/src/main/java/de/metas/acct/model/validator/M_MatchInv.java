@@ -24,6 +24,7 @@ package de.metas.acct.model.validator;
 
 import java.util.Properties;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -128,7 +129,7 @@ public class M_MatchInv
 		if (matchInv.isPosted())
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(matchInv);
-			MPeriod.testPeriodOpen(ctx, matchInv.getDateAcct(), X_C_DocType.DOCBASETYPE_MatchInvoice, matchInv.getAD_Org_ID());
+			MPeriod.testPeriodOpen(ctx, matchInv.getDateAcct(), DocBaseType.MatchInvoice, matchInv.getAD_Org_ID());
 
 			matchInv.setPosted(false);
 			factAcctDAO.deleteForDocumentModel(matchInv);
