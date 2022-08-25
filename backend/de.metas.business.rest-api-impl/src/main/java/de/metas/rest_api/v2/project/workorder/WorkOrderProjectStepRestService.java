@@ -162,7 +162,6 @@ public class WorkOrderProjectStepRestService
 		final Integer seqNo = request.isSeqNoSet()
 				? request.getSeqNo()
 				: woProjectStepRepository.getNextSeqNo(projectId);
-
 		return CreateWOProjectStepRequest.builder()
 				.orgId(orgId)
 				.projectId(projectId)
@@ -171,7 +170,7 @@ public class WorkOrderProjectStepRestService
 				.name(request.getName())
 				.description(request.getDescription())
 				.dateStart(TimeUtil.asInstant(request.getDateStart(), zoneId))
-				.dateEnd(TimeUtil.asInstant(request.getDateEnd(), zoneId))
+				.dateEnd(TimeUtil.asEndOfDayInstant(request.getDateEnd(), zoneId))
 				.woPartialReportDate(TimeUtil.asInstant(request.getWoPartialReportDate(), zoneId))
 				.woPlannedResourceDurationHours(request.getWoPlannedResourceDurationHours())
 				.deliveryDate(TimeUtil.asInstant(request.getDeliveryDate(), zoneId))
