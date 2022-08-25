@@ -132,8 +132,8 @@ jobs:
       - name: prepare
         run: |
           echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
-          echo -e ${{ needs.init.outputs.build-info-properties }} > docker-builds/metadata/build-info.properties
-          echo -e ${{ needs.init.outputs.git-properties }} > docker-builds/metadata/git.properties
+          echo -e "${{ needs.init.outputs.build-info-properties }}" > docker-builds/metadata/build-info.properties
+          echo -e "${{ needs.init.outputs.git-properties }}" > docker-builds/metadata/git.properties
       - name: build-api
         run: |
           docker buildx build \
