@@ -20,6 +20,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -57,6 +58,9 @@ public class Order
 	ZonedDateTime datePromised;
 
 	@NonNull
+	ZonedDateTime dateOrdered;
+
+	@NonNull
 	BPartnerId bpartnerId;
 
 	String bpartnerName;
@@ -75,7 +79,12 @@ public class Order
 
 	@NonNull
 	Currency currency;
-	
+
+	@Nullable
+	Integer incoTermsId;
+
+	@Nullable
+	OrderId refOrderId;
 
 	@NonNull
 	ImmutableList<OrderLine> lines;
@@ -90,4 +99,15 @@ public class Order
 				.findFirst();
 	}
 
+	@NonNull
+	public OrderLine getFirstMatchingOrderLine(@NonNull final ProductId productId)
+	{
+		return getLines()
+				.stream()
+				.filter(line -> line.isMatching(productId))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No line found for productId !")
+						.appendParametersToMessage()
+						.setParameter("productId", productId));
+	}
 }

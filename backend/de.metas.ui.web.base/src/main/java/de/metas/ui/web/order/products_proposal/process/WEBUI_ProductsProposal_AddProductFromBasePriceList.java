@@ -1,13 +1,23 @@
 package de.metas.ui.web.order.products_proposal.process;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.organization.ClientAndOrgId;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowAddRequest;
+import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_UOM;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -33,6 +43,12 @@ import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
 
 public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends ProductsProposalViewBasedProcess
 {
+	@NonNull
+	private final OrderProductProposalsService orderProductProposalsService = SpringContextHolder.instance.getBean(OrderProductProposalsService.class);
+	@NonNull
+	private final LookupDataSource incoTermsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_Incoterms.Table_Name);
+	private final LookupDataSource uomLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -66,14 +82,36 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 
 	private ProductsProposalRowAddRequest toProductsProposalRowAddRequest(final ProductsProposalRow row)
 	{
-		return ProductsProposalRowAddRequest.builder()
+		final ProductId productId = row.getProductId();
+		final Optional<Order> lastQuotation = orderProductProposalsService.getLastQuotation(ClientAndOrgId.ofClientAndOrg(getClientID(), getOrgId()),
+																							row.getBPartnerId(),
+																							productId);
+
+		final ProductsProposalRowAddRequest.ProductsProposalRowAddRequestBuilder productsProposalRowAddRequestBuilder = ProductsProposalRowAddRequest.builder()
 				.product(row.getProduct())
 				.asiDescription(row.getAsiDescription())
 				.priceListPrice(row.getPrice().getUserEnteredPrice())
 				.lastShipmentDays(row.getLastShipmentDays())
 				.copiedFromProductPriceId(row.getProductPriceId())
 				.packingMaterialId(row.getPackingMaterialId())
-				.packingDescription(row.getPackingDescription())
+				.packingDescription(row.getPackingDescription());
+
+		lastQuotation.ifPresent((quotation) -> setQuotationInfo(quotation, productsProposalRowAddRequestBuilder, productId));
+
+		return productsProposalRowAddRequestBuilder
 				.build();
+	}
+
+	private void setQuotationInfo(
+			@NonNull final Order quotation,
+			@NonNull final ProductsProposalRowAddRequest.ProductsProposalRowAddRequestBuilder productsProposalRowAddRequestBuilder,
+			@NonNull final ProductId productId)
+	{
+		productsProposalRowAddRequestBuilder.lastQuotationDate(quotation.getDateOrdered().toLocalDate())
+				// todo dm: conversion needed
+				.lastQuotationPrice(quotation.getFirstMatchingOrderLine(productId).getPriceEntered())
+				.lastQuotationPriceUOM(uomLookup.findById(quotation.getFirstMatchingOrderLine(productId).getUomId()))
+				.incoterms(incoTermsLookup.findById(quotation.getIncoTermsId()))
+				.quotationOrdered(quotation.getRefOrderId() != null);
 	}
 }

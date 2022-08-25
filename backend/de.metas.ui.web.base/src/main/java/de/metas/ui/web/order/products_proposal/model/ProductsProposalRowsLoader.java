@@ -40,6 +40,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
@@ -50,6 +51,7 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderProperties.ViewHeaderPropertiesBuilder;
 import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
@@ -66,6 +68,8 @@ import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -80,6 +84,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -95,10 +100,13 @@ public final class ProductsProposalRowsLoader
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final OrderProductProposalsService orderProductProposalsService;
 	private final IHUPIItemProductBL packingMaterialsService = Services.get(IHUPIItemProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final CampaignPriceProvider campaignPriceProvider;
 	private final LookupDataSource productLookup;
+	private final LookupDataSource incoTermsLookup;
+	private final LookupDataSource uomLookup;
 	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
 
 	private final ImmutableSet<PriceListVersionId> priceListVersionIds;
@@ -114,6 +122,7 @@ public final class ProductsProposalRowsLoader
 	@Builder
 	private ProductsProposalRowsLoader(
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
+			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
 			//
 			@NonNull @Singular final ImmutableSet<PriceListVersionId> priceListVersionIds,
@@ -126,8 +135,11 @@ public final class ProductsProposalRowsLoader
 		Check.assumeNotEmpty(priceListVersionIds, "priceListVersionIds is not empty");
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		this.orderProductProposalsService = orderProductProposalsService;
 		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
 		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
+		incoTermsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_Incoterms.Table_Name);
+		uomLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
 
 		this.priceListVersionIds = priceListVersionIds;
 
@@ -206,10 +218,11 @@ public final class ProductsProposalRowsLoader
 	{
 		return priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
-				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord))
+				.map(this::toProductsProposalRowOrNull)
 				.filter(Objects::nonNull);
 	}
 
+	@Nullable
 	private ProductsProposalRow toProductsProposalRowOrNull(@NonNull final I_M_ProductPrice record)
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
@@ -224,7 +237,11 @@ public final class ProductsProposalRowsLoader
 				? packingMaterialsService.getDisplayName(packingMaterialId)
 				: TranslatableStrings.empty();
 
-		return ProductsProposalRow.builder()
+		final Optional<Order> lastQuotation = orderProductProposalsService.getLastQuotation(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()),
+																							bpartnerId,
+																							productId);
+
+		final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder = ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
 				.packingMaterialId(packingMaterialId)
@@ -234,7 +251,11 @@ public final class ProductsProposalRowsLoader
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
 				.seqNo(record.getSeqNo())
-				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
+				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()));
+
+		lastQuotation.ifPresent((quotation) -> setQuotationInfo(quotation, rowBuilder, record, productId));
+
+		return rowBuilder
 				.build()
 				//
 				.withExistingOrderLine(order);
@@ -309,5 +330,18 @@ public final class ProductsProposalRowsLoader
 		{
 			return stats.getLastReceiptInDays();
 		}
+	}
+
+	private void setQuotationInfo(
+			@NonNull final Order quotation,
+			@NonNull final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder,
+			@NonNull final I_M_ProductPrice record,
+			@NonNull final ProductId productId)
+	{
+		rowBuilder.lastQuotationDate(quotation.getDateOrdered().toLocalDate())
+				.lastQuotationPrice(orderProductProposalsService.extractLastQuotationPriceInPriceListCurrency(quotation, record))
+				.lastQuotationUOM(uomLookup.findById(quotation.getFirstMatchingOrderLine(productId).getUomId()))
+				.incoterms(incoTermsLookup.findById(quotation.getIncoTermsId()))
+				.quotationOrdered(quotation.getRefOrderId() != null);
 	}
 }

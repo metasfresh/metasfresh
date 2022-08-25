@@ -1,6 +1,7 @@
 package org.adempiere.ad.window.api;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import lombok.NonNull;
@@ -8,7 +9,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.window.api.impl.ADWindowDAO;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -38,6 +38,8 @@ public interface IADWindowDAO extends ISingletonService
 	String retrieveInternalWindowName(AdWindowId adWindowId);
 
 	AdWindowId getWindowIdByInternalName(String internalName);
+
+	Optional<AdWindowId> getOverridingWindowId(AdWindowId adWindowId);
 
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
 

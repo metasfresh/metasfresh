@@ -5,8 +5,10 @@ import java.math.BigDecimal;
 import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -56,6 +58,12 @@ public class OrderLine
 	@NonNull
 	BigDecimal qtyEnteredCU;
 
+	@NonNull
+	CurrencyId currencyId;
+
+	@NonNull
+	UomId uomId;
+
 	int qtyEnteredTU;
 
 	String description;
@@ -70,4 +78,8 @@ public class OrderLine
 						HUPIItemProductId.nullToVirtual(packingMaterialId));
 	}
 
+	boolean isMatching(@NonNull final ProductId productId)
+	{
+		return ProductId.equals(this.productId, productId);
+	}
 }
