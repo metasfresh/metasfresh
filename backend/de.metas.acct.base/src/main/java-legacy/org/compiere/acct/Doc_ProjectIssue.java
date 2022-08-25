@@ -22,6 +22,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
+import de.metas.document.DocBaseType;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -61,7 +62,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 	public Doc_ProjectIssue(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_ProjectIssue);
+		super(ctx, DocBaseType.ProjectIssue);
 	}
 
 	/** Pseudo Line */

@@ -22,6 +22,7 @@
 
 package de.metas.costrevaluation.callout;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -72,7 +73,7 @@ public class M_CostRevaluation implements ITabCallout
 	private void setDocTypeId(final I_M_CostRevaluation costRevaluation)
 	{
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_CostRevaluation)
+				.docBaseType(DocBaseType.CostRevaluation)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(costRevaluation.getAD_Client_ID())
 				.adOrgId(costRevaluation.getAD_Org_ID())

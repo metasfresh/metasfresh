@@ -5,6 +5,7 @@ import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -68,7 +69,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
@@ -360,7 +360,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Document Type
 		{
 			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+					.docBaseType(DocBaseType.MaterialDelivery)
 					.adClientId(shipmentSchedule.getAD_Client_ID())
 					.adOrgId(shipmentSchedule.getAD_Org_ID())
 					.build();

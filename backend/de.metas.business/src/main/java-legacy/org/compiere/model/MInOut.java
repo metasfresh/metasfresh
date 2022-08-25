@@ -16,6 +16,42 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
+import de.metas.document.location.DocumentLocation;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.ProductASIMandatoryException;
+import org.adempiere.misc.service.IPOService;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.apache.commons.collections4.comparators.ComparatorChain;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import de.metas.report.StandardDocumentReportType;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -2513,7 +2549,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
 
 		//
 		// Make sure it's not a reversal or reversed document.

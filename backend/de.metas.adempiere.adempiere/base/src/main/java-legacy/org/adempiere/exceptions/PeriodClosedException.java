@@ -13,11 +13,11 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
-import java.sql.Timestamp;
-
+import de.metas.document.DocBaseType;
 import org.compiere.model.MRefList;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+
+import java.sql.Timestamp;
 
 /**
  * Period Closed Exception.
@@ -40,10 +40,10 @@ public class PeriodClosedException extends AdempiereException
 	/**
 	 * 
 	 */
-	public PeriodClosedException(Timestamp dateAcct, String docBaseType)
+	public PeriodClosedException(Timestamp dateAcct, DocBaseType docBaseType)
 	{
 		super("@PeriodClosed@ @Date@="+dateAcct+", @DocBaseType@="
-				+MRefList.getListName(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType)
+				+MRefList.getListName(Env.getCtx(), DocBaseType.AD_REFERENCE_ID, docBaseType.getCode())
 		);
 	}
 }

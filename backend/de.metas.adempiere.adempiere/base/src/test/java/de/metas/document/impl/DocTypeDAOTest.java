@@ -22,6 +22,7 @@
 
 package de.metas.document.impl;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.organization.OrgId;
@@ -64,7 +65,7 @@ class DocTypeDAOTest
 		final DocTypeId docTypeId = new DocTypeDAO().createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
 				.ctx(ctx)
 				.name("Inventory DocType for " + org2Id)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
 				.docSubType(null)
 				.adOrgId(org2Id.getRepoId())
 				.build());

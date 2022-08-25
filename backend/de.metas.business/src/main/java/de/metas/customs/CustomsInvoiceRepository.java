@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Customs_Invoice_Line;
@@ -87,7 +88,7 @@ public class CustomsInvoiceRepository
 	public DocTypeId retrieveCustomsInvoiceDocTypeId()
 	{
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_CustomsInvoice)
+				.docBaseType(DocBaseType.CustomsInvoice)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(Env.getClientId().getRepoId())
 				.adOrgId(Env.getOrgId().getRepoId())

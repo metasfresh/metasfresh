@@ -25,7 +25,6 @@ package org.adempiere.util.api;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @SuppressWarnings("unused")
@@ -52,9 +51,6 @@ public interface IRangeAwareParams extends IParams
 
 	@Nullable
 	Timestamp getParameter_ToAsTimestamp(String parameterName);
-
-	@Nullable
-	LocalDate getParameter_ToAsLocalDate(String parameterName);
 
 	@Nullable
 	ZonedDateTime getParameter_ToAsZonedDateTime(String parameterName);

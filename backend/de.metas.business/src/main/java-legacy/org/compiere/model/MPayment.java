@@ -33,6 +33,7 @@ import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -767,7 +768,7 @@ public final class MPayment extends X_C_Payment
 
 		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(isReceipt ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment)
+				.docBaseType(isReceipt ? DocBaseType.ARReceipt : DocBaseType.APPayment)
 				.adClientId(getAD_Client_ID())
 				.adOrgId(getAD_Org_ID())
 				.build());
@@ -1133,7 +1134,7 @@ public final class MPayment extends X_C_Payment
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(),
-				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
+				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocStatus.Invalid.getCode();
@@ -1880,7 +1881,7 @@ public final class MPayment extends X_C_Payment
 		// Std Period open?
 		Timestamp dateAcct = getDateAcct();
 		if (!MPeriod.isOpen(getCtx(), dateAcct,
-				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
+				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
 		{
 			dateAcct = new Timestamp(System.currentTimeMillis());
 		}
