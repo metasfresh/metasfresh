@@ -1,6 +1,6 @@
 ARG REFNAME=local
 FROM metasfresh/metas-api:$REFNAME as api
 
-RUN yum update -y && yum -y install nc && yum -y clean all && rm -rf /var/cache
+RUN apt-get -y update && apt-get -y install netcat && rm -rf /var/lib/apt/lists/*
 
 RUN mv /opt/metasfresh/metasfresh-webui-api /opt/metasfresh-webui-api
