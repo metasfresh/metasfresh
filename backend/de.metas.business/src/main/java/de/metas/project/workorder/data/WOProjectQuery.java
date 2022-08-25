@@ -39,23 +39,23 @@ public class WOProjectQuery
 {
 	OrgId orgId;
 	String value;
-	ExternalId externalProjectReference;
+	ExternalId externalId;
 	String externalProjectReferencePattern;
 
 	@Builder
 	public WOProjectQuery(
 			@NonNull final OrgId orgId,
 			@Nullable final String value,
-			@Nullable final ExternalId externalProjectReference,
+			@Nullable final ExternalId externalId,
 			@Nullable final String externalProjectReferencePattern)
 	{
 		this.orgId = orgId;
 		
 		this.value = value;
-		this.externalProjectReference = externalProjectReference;
+		this.externalId = externalId;
 		this.externalProjectReferencePattern = externalProjectReferencePattern;
 
-		final boolean missingFilterOptions = Stream.of(value, externalProjectReference, externalProjectReferencePattern)
+		final boolean missingFilterOptions = Stream.of(value, externalId, externalProjectReferencePattern)
 				.filter(Objects::nonNull)
 				.count() == 0;
 

@@ -322,4 +322,9 @@ public class IdentifierString
 	{
 		return Type.EXTERNAL_ID.equals(type);
 	}
+
+	public boolean isValue()
+	{
+		return Type.VALUE.equals(type);
+	}
 }

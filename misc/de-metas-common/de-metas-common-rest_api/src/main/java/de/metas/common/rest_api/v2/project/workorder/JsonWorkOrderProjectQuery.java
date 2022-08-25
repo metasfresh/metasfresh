@@ -35,6 +35,9 @@ public class JsonWorkOrderProjectQuery
 	@NonNull
 	String orgCode;
 
+	/**
+	 * Queries for a substring of `C_Project_Reference_Ext` (using `LIKE` and `%...%`) 
+	 */
 	@NonNull
 	String projectReferenceExtPattern;
 }
