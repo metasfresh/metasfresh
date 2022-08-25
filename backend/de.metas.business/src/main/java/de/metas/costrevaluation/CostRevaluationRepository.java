@@ -15,6 +15,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
@@ -53,14 +54,21 @@ public class CostRevaluationRepository
 		{
 			throw new AdempiereException("No record found for " + costRevaluationId);
 		}
+		return fromRecord(record);
+	}
+
+	public static CostRevaluation fromRecord(@NonNull final I_M_CostRevaluation record)
+	{
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 
 		return CostRevaluation.builder()
-				.costRevaluationId(costRevaluationId)
-				.acctSchemaId(AcctSchemaId.ofRepoId(record.getM_CostElement_ID()))
+				.costRevaluationId(CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID()))
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.orgId(orgId)
 				.evaluationStartDate(record.getEvaluationStartDate().toInstant())
+				.dateAcct(InstantAndOrgId.ofTimestamp(record.getDateAcct(), orgId))
 				.docStatus(DocStatus.ofCode(record.getDocStatus()))
 				.build();
 	}
@@ -81,6 +89,13 @@ public class CostRevaluationRepository
 				existingRecord = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
 				existingRecord.setM_CostRevaluation_ID(costRevaluationId.getRepoId());
 				existingRecord.setAD_Org_ID(key.getClientAndOrgId().getOrgId().getRepoId());
+				existingRecord.setIsRevaluated(false);
+			}
+
+			// Skip evaluated lines
+			if (existingRecord.isRevaluated())
+			{
+				continue;
 			}
 
 			updateRecordFrom(existingRecord, currentCost);
@@ -140,14 +155,17 @@ public class CostRevaluationRepository
 
 		final CostPrice costPrice = from.getCostPrice();
 		record.setCurrentCostPrice(costPrice.getOwnCostPrice().getValue());
-		record.setNewCostPrice(costPrice.getOwnCostPrice().getValue());
+		if (record.getM_CostRevaluationLine_ID() <= 0)
+		{
+			record.setNewCostPrice(costPrice.getOwnCostPrice().getValue());
+		}
 		record.setC_Currency_ID(costPrice.getCurrencyId().getRepoId());
 
 		record.setC_UOM_ID(costPrice.getUomId().getRepoId());
 		record.setCurrentQty(from.getCurrentQty().toBigDecimal());
 	}
 
-	private Stream<I_M_CostRevaluationLine> streamAllLineRecordsByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
+	public Stream<I_M_CostRevaluationLine> streamAllLineRecordsByCostRevaluationId(@NonNull final CostRevaluationId costRevaluationId)
 	{
 		return queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
 				.addEqualsFilter(I_M_CostRevaluationLine.COLUMN_M_CostRevaluation_ID, costRevaluationId)
@@ -171,7 +189,7 @@ public class CostRevaluationRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static CostRevaluationLine fromRecord(@NonNull final I_M_CostRevaluationLine record)
+	public static CostRevaluationLine fromRecord(@NonNull final I_M_CostRevaluationLine record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
@@ -181,6 +199,7 @@ public class CostRevaluationRepository
 				.currentQty(Quantitys.create(record.getCurrentQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.currentCostPrice(CostAmount.of(record.getCurrentCostPrice(), currencyId))
 				.newCostPrice(CostAmount.of(record.getNewCostPrice(), currencyId))
+				.isRevaluated(record.isRevaluated())
 				.deltaAmountToBook(CostAmount.of(record.getDeltaAmt(), currencyId))
 				.build();
 	}
@@ -297,6 +316,7 @@ public class CostRevaluationRepository
 	public void save(@NonNull final CostRevaluationLine line)
 	{
 		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(line.getId(), I_M_CostRevaluationLine.class);
+		record.setIsRevaluated(line.isRevaluated());
 		record.setDeltaAmt(line.getDeltaAmountToBook().toBigDecimal());
 		InterfaceWrapperHelper.save(record);
 	}

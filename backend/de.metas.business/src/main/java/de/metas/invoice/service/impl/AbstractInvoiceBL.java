@@ -25,6 +25,7 @@ import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
@@ -246,14 +247,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		//
 		// decide on which C_DocType to use for the credit memo
-		final String docBaseType;
+		final DocBaseType docBaseType;
 		if (invoice.isSOTrx())
 		{
-			docBaseType = X_C_DocType.DOCBASETYPE_ARCreditMemo;
+			docBaseType = DocBaseType.ARCreditMemo;
 		}
 		else
 		{
-			docBaseType = X_C_DocType.DOCBASETYPE_APCreditMemo;
+			docBaseType = DocBaseType.APCreditMemo;
 		}
 		//
 		// TODO: What happens when we have multiple DocTypes per DocBaseType and nothing was selected by the user?
@@ -783,7 +784,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
-			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType.getDocBaseType());
+			final boolean isSOTrx = docBaseType.getDocBaseType().isSOTrx();
 			invoice.setIsSOTrx(isSOTrx);
 			return true;
 		}
@@ -1622,9 +1623,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final de.metas.adempiere.model.I_C_Invoice adjustmentCharge(final org.compiere.model.I_C_Invoice invoice, final String docSubType)
 	{
-		final String docbasetype = X_C_DocType.DOCBASETYPE_ARInvoice;
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docbasetype)
+				.docBaseType(DocBaseType.ARInvoice)
 				.docSubType(docSubType)
 				.adClientId(invoice.getAD_Client_ID())
 				.adOrgId(invoice.getAD_Org_ID())

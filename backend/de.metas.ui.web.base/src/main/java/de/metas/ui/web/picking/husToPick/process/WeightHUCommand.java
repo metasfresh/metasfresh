@@ -3,6 +3,7 @@ package de.metas.ui.web.picking.husToPick.process;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.X_C_DocType;
@@ -125,7 +126,7 @@ class WeightHUCommand
 			@NonNull final OrgId orgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
 				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())

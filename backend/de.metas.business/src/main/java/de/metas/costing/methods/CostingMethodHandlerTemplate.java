@@ -6,6 +6,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
@@ -49,6 +50,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			.add(CostingDocumentRef.TABLE_NAME_M_InventoryLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_MovementLine)
 			.add(CostingDocumentRef.TABLE_NAME_C_ProjectIssue)
+			.add(CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine)
 			.build();
 
 	protected CostingMethodHandlerTemplate(@NonNull final CostingMethodHandlerUtils utils)
@@ -113,6 +115,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		{
 			return createCostForProjectIssue(request);
 		}
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine))
+		{
+			return createCostRevaluationLine(request);
+		}
 		else
 		{
 			throw new AdempiereException("Unknown documentRef: " + documentRef);
@@ -157,6 +163,34 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		throw new UnsupportedOperationException();
 	}
 
+	protected CostDetailCreateResult createCostRevaluationLine(@NonNull final CostDetailCreateRequest request)
+	{
+		if (!request.getQty().isZero())
+		{
+			throw new AdempiereException("Cost revaluation requests shall have Qty=0");
+		}
+
+		final CostAmount explicitCostPrice = request.getExplicitCostPrice();
+		if (explicitCostPrice == null)
+		{
+			throw new AdempiereException("Cost revaluation requests shall have explicit cost price set");
+		}
+
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+
+		currentCosts.setOwnCostPrice(explicitCostPrice);
+		currentCosts.addCumulatedAmt(request.getAmt());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
+				previousCosts);
+
+		utils.saveCurrentCost(currentCosts);
+
+		return result;
+	}
+
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
 
 	@Override
@@ -164,6 +198,12 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			@NonNull final CostDetail costDetail,
 			@NonNull final CurrentCost currentCost)
 	{
+		if (costDetail.getDocumentRef().isCostRevaluationLine())
+		{
+			throw new AdempiereException("Evaluating another revaluation is not supported")
+					.setParameter("costDetail", costDetail);
+		}
+
 		final CurrencyPrecision precision = currentCost.getPrecision();
 
 		final Quantity qty = costDetail.getQty();
@@ -177,14 +217,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				? newCostPrice.multiply(qty).roundToPrecisionIfNeeded(precision)
 				: newCostPrice.roundToPrecisionIfNeeded(precision);
 
-		//
-		// Inbound
 		if (costDetail.isInboundTrx())
 		{
 			currentCost.addWeightedAverage(newCostAmount, qty, utils.getQuantityUOMConverter());
 		}
-		//
-		// Outbound
 		else
 		{
 			currentCost.addToCurrentQtyAndCumulate(qty, newCostAmount, utils.getQuantityUOMConverter());

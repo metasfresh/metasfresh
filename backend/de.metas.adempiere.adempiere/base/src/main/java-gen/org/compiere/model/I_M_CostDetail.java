@@ -52,7 +52,7 @@ public interface I_M_CostDetail
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Betrag.
+	 * Set Amount.
 	 * Amount
 	 *
 	 * <br>Type: Amount
@@ -62,7 +62,7 @@ public interface I_M_CostDetail
 	void setAmt (BigDecimal Amt);
 
 	/**
-	 * Get Betrag.
+	 * Get Amount.
 	 * Amount
 	 *
 	 * <br>Type: Amount
@@ -176,7 +176,7 @@ public interface I_M_CostDetail
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Projekt-Problem.
+	 * Set Project Issue.
 	 * Project Issues (Material, Labor)
 	 *
 	 * <br>Type: Search
@@ -186,7 +186,7 @@ public interface I_M_CostDetail
 	void setC_ProjectIssue_ID (int C_ProjectIssue_ID);
 
 	/**
-	 * Get Projekt-Problem.
+	 * Get Project Issue.
 	 * Project Issues (Material, Labor)
 	 *
 	 * <br>Type: Search
@@ -436,7 +436,7 @@ public interface I_M_CostDetail
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Kosten-Detail.
+	 * Set Cost Detail.
 	 * Cost Detail Information
 	 *
 	 * <br>Type: ID
@@ -446,7 +446,7 @@ public interface I_M_CostDetail
 	void setM_CostDetail_ID (int M_CostDetail_ID);
 
 	/**
-	 * Get Kosten-Detail.
+	 * Get Cost Detail.
 	 * Cost Detail Information
 	 *
 	 * <br>Type: ID
@@ -484,6 +484,56 @@ public interface I_M_CostDetail
 
 	ModelColumn<I_M_CostDetail, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_M_CostDetail.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
 	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
+
+	/**
+	 * Set Cost Revaluation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostRevaluation_ID (int M_CostRevaluation_ID);
+
+	/**
+	 * Get Cost Revaluation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostRevaluation_ID();
+
+	@Nullable org.compiere.model.I_M_CostRevaluation getM_CostRevaluation();
+
+	void setM_CostRevaluation(@Nullable org.compiere.model.I_M_CostRevaluation M_CostRevaluation);
+
+	ModelColumn<I_M_CostDetail, org.compiere.model.I_M_CostRevaluation> COLUMN_M_CostRevaluation_ID = new ModelColumn<>(I_M_CostDetail.class, "M_CostRevaluation_ID", org.compiere.model.I_M_CostRevaluation.class);
+	String COLUMNNAME_M_CostRevaluation_ID = "M_CostRevaluation_ID";
+
+	/**
+	 * Set Cost Revaluation Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_CostRevaluationLine_ID (int M_CostRevaluationLine_ID);
+
+	/**
+	 * Get Cost Revaluation Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_CostRevaluationLine_ID();
+
+	@Nullable org.compiere.model.I_M_CostRevaluationLine getM_CostRevaluationLine();
+
+	void setM_CostRevaluationLine(@Nullable org.compiere.model.I_M_CostRevaluationLine M_CostRevaluationLine);
+
+	ModelColumn<I_M_CostDetail, org.compiere.model.I_M_CostRevaluationLine> COLUMN_M_CostRevaluationLine_ID = new ModelColumn<>(I_M_CostDetail.class, "M_CostRevaluationLine_ID", org.compiere.model.I_M_CostRevaluationLine.class);
+	String COLUMNNAME_M_CostRevaluationLine_ID = "M_CostRevaluationLine_ID";
 
 	/**
 	 * Set Receipt Line.
@@ -540,7 +590,7 @@ public interface I_M_CostDetail
 	String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
 
 	/**
-	 * Set Abgleich Rechnung.
+	 * Set Match Invoice.
 	 * Match Shipment/Receipt to Invoice
 	 *
 	 * <br>Type: Search
@@ -550,7 +600,7 @@ public interface I_M_CostDetail
 	void setM_MatchInv_ID (int M_MatchInv_ID);
 
 	/**
-	 * Get Abgleich Rechnung.
+	 * Get Match Invoice.
 	 * Match Shipment/Receipt to Invoice
 	 *
 	 * <br>Type: Search
@@ -567,7 +617,7 @@ public interface I_M_CostDetail
 	String COLUMNNAME_M_MatchInv_ID = "M_MatchInv_ID";
 
 	/**
-	 * Set Abgleich Bestellung.
+	 * Set Match PO.
 	 * Match Purchase Order to Shipment/Receipt and Invoice
 	 *
 	 * <br>Type: Search
@@ -577,7 +627,7 @@ public interface I_M_CostDetail
 	void setM_MatchPO_ID (int M_MatchPO_ID);
 
 	/**
-	 * Get Abgleich Bestellung.
+	 * Get Match PO.
 	 * Match Purchase Order to Shipment/Receipt and Invoice
 	 *
 	 * <br>Type: Search
@@ -594,7 +644,7 @@ public interface I_M_CostDetail
 	String COLUMNNAME_M_MatchPO_ID = "M_MatchPO_ID";
 
 	/**
-	 * Set Warenbewegungs- Position.
+	 * Set Move Line.
 	 * Inventory Move document Line
 	 *
 	 * <br>Type: Search
@@ -604,7 +654,7 @@ public interface I_M_CostDetail
 	void setM_MovementLine_ID (int M_MovementLine_ID);
 
 	/**
-	 * Get Warenbewegungs- Position.
+	 * Get Move Line.
 	 * Inventory Move document Line
 	 *
 	 * <br>Type: Search

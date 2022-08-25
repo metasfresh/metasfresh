@@ -2,6 +2,7 @@ package de.metas.distribution.ddorder.material_dispo;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -27,7 +28,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -187,7 +187,7 @@ public class DDOrderProducer
 		final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
 
 		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+				.docBaseType(DocBaseType.DistributionOrder)
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());

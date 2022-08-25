@@ -65,10 +65,9 @@ import de.metas.util.Services;
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
  * @version 1.0, October 14th 2005
  *
- * @author Teo Sarca, http://www.arhipac.ro
+ * @author Teo Sarca, <a href="http://www.arhipac.ro">...</a>
  * @author Cristi Pup, http://www.arhipac.ro
  *         <li>BF [ 2854937 ] CRP calculate wrong DateFinishSchedule
- *         https://sourceforge.net/tracker/?func=detail&atid=934929&aid=2854937&group_id=176962
  */
 public class CRPReasoner
 {
@@ -108,12 +107,6 @@ public class CRPReasoner
 		return resourcesRepo.getResourceTypeByResourceId(resourceId);
 	}
 
-	protected final boolean isAvailable(final ResourceId resourceId, final LocalDateTime dateTime)
-	{
-		final ResourceType resourceType = getResourceType(resourceId);
-		return resourceType.isDayAvailable(TimeUtil.asLocalDate(dateTime)) && !MResourceUnAvailable.isUnAvailable(resourceId.getRepoId(), dateTime);
-	}
-
 	protected final boolean isAvailable(final I_S_Resource resource, final LocalDateTime dateTime)
 	{
 		final ResourceType resourceType = getResourceType(resource);
@@ -128,10 +121,6 @@ public class CRPReasoner
 	/**
 	 * Get Next/Previous Available Date
 	 *
-	 * @param resourceType
-	 * @param dateTime
-	 * @param isScheduleBackward
-	 * @return
 	 */
 	private LocalDateTime getAvailableDate(final ResourceType resourceType, final LocalDateTime dateTime, final boolean isScheduleBackward)
 	{
@@ -141,7 +130,7 @@ public class CRPReasoner
 		int daysAdded = 0;
 		if (!resourceType.isDayAvailable(date.toLocalDate()))
 		{
-			date = date.plusDays(1 * direction);
+			date = date.plusDays(direction);
 			daysAdded++;
 			if (daysAdded >= 7)
 			{
@@ -155,7 +144,6 @@ public class CRPReasoner
 
 	/**
 	 * @param r resource
-	 * @param dateTime
 	 * @return next available date
 	 */
 	public LocalDateTime getAvailableDate(final I_S_Resource r, final LocalDateTime dateTime, final boolean isScheduleBackward)
@@ -197,7 +185,7 @@ public class CRPReasoner
 				final MResourceUnAvailable rua = rs.next();
 				if (rua.isUnAvailable(date))
 				{
-					date = date.plusDays(1 * direction);
+					date = date.plusDays(direction);
 				}
 				date = getAvailableDate(resourceType, date, isScheduleBackward);
 			}

@@ -2,6 +2,7 @@ package de.metas.acct.doc;
 
 import org.compiere.acct.Doc_AllocationHdr;
 import org.compiere.acct.Doc_Cash;
+import org.compiere.acct.Doc_CostRevaluation;
 import org.compiere.acct.Doc_GLJournal;
 import org.compiere.acct.Doc_InOut;
 import org.compiere.acct.Doc_Inventory;
@@ -20,6 +21,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_GL_Journal;
+import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
@@ -69,6 +71,7 @@ public class StandardAcctDocProvider extends AcctDocProviderTemplate
 			.put(I_C_Payment.Table_Name, Doc_Payment::new)
 			.put(I_C_ProjectIssue.Table_Name, Doc_ProjectIssue::new)
 			.put(I_M_Requisition.Table_Name, Doc_Requisition::new)
+			.put(I_M_CostRevaluation.Table_Name, Doc_CostRevaluation::new)
 			.build();
 
 	public StandardAcctDocProvider()

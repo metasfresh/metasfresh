@@ -27,6 +27,7 @@ import de.metas.acct.doc.PostingException;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -78,7 +79,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 	public Doc_AllocationHdr(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_Allocation);
+		super(ctx, DocBaseType.PaymentAllocation);
 	}   // Doc_Allocation
 
 	@Override
@@ -995,7 +996,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Flag this document as multi-currency to prevent source amounts balancing.
 		// Our source amounts won't be source balanced anymore because the Invoice/Discount/WriteOff/PaymentSelect are booked in allocation's currency
 		// and the currency gain/loss is booked in accounting currency.
-		setIsMultiCurrency(true);
+		setIsMultiCurrency();
 
 		// Build up the description for the new line
 		final StringBuilder description = new StringBuilder();

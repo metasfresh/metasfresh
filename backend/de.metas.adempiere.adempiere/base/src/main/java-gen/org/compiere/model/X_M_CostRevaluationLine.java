@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_CostRevaluationLine extends org.compiere.model.PO implements I_M_CostRevaluationLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1676349746L;
+	private static final long serialVersionUID = -1469726466L;
 
     /** Standard Constructor */
     public X_M_CostRevaluationLine (final Properties ctx, final int M_CostRevaluationLine_ID, @Nullable final String trxName)
@@ -152,6 +152,18 @@ public class X_M_CostRevaluationLine extends org.compiere.model.PO implements I_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DeltaAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setIsRevaluated (final boolean IsRevaluated)
+	{
+		set_Value (COLUMNNAME_IsRevaluated, IsRevaluated);
+	}
+
+	@Override
+	public boolean isRevaluated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRevaluated);
 	}
 
 	@Override

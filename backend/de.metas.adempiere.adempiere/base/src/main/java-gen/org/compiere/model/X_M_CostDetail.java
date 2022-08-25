@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDetail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 63216899L;
+	private static final long serialVersionUID = 1761612431L;
 
     /** Standard Constructor */
     public X_M_CostDetail (final Properties ctx, final int M_CostDetail_ID, @Nullable final String trxName)
@@ -327,6 +327,60 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	public int getM_CostElement_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_CostRevaluation getM_CostRevaluation()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostRevaluation_ID, org.compiere.model.I_M_CostRevaluation.class);
+	}
+
+	@Override
+	public void setM_CostRevaluation(final org.compiere.model.I_M_CostRevaluation M_CostRevaluation)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostRevaluation_ID, org.compiere.model.I_M_CostRevaluation.class, M_CostRevaluation);
+	}
+
+	@Override
+	public void setM_CostRevaluation_ID (final int M_CostRevaluation_ID)
+	{
+		if (M_CostRevaluation_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_CostRevaluation_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_CostRevaluation_ID, M_CostRevaluation_ID);
+	}
+
+	@Override
+	public int getM_CostRevaluation_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostRevaluation_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_CostRevaluationLine getM_CostRevaluationLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostRevaluationLine_ID, org.compiere.model.I_M_CostRevaluationLine.class);
+	}
+
+	@Override
+	public void setM_CostRevaluationLine(final org.compiere.model.I_M_CostRevaluationLine M_CostRevaluationLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostRevaluationLine_ID, org.compiere.model.I_M_CostRevaluationLine.class, M_CostRevaluationLine);
+	}
+
+	@Override
+	public void setM_CostRevaluationLine_ID (final int M_CostRevaluationLine_ID)
+	{
+		if (M_CostRevaluationLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_CostRevaluationLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_CostRevaluationLine_ID, M_CostRevaluationLine_ID);
+	}
+
+	@Override
+	public int getM_CostRevaluationLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostRevaluationLine_ID);
 	}
 
 	@Override

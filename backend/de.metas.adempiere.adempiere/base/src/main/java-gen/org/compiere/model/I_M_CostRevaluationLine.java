@@ -263,6 +263,27 @@ public interface I_M_CostRevaluationLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Revaluated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRevaluated (boolean IsRevaluated);
+
+	/**
+	 * Get Revaluated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRevaluated();
+
+	ModelColumn<I_M_CostRevaluationLine, Object> COLUMN_IsRevaluated = new ModelColumn<>(I_M_CostRevaluationLine.class, "IsRevaluated", null);
+	String COLUMNNAME_IsRevaluated = "IsRevaluated";
+
+	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *

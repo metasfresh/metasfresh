@@ -1,6 +1,7 @@
 package de.metas.ui.web.picking.husToPick.process;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.handlingunits.HUItemType;
@@ -49,7 +50,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -143,7 +143,7 @@ public class WeightHUCommandTest
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
 				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
 				.name("inventory")
 				.build());

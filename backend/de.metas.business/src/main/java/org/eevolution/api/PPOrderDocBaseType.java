@@ -22,36 +22,43 @@
 
 package org.eevolution.api;
 
+import de.metas.document.DocBaseType;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
-import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 
-@AllArgsConstructor
 public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 {
-	MANUFACTURING_ORDER(X_C_DocType.DOCBASETYPE_ManufacturingOrder),
-	QUALITY_ORDER(X_C_DocType.DOCBASETYPE_QualityOrder),
-	MAINTENANCE_ORDER(X_C_DocType.DOCBASETYPE_MaintenanceOrder),
-	REPAIR_ORDER(X_C_DocType.DOCBASETYPE_ServiceRepairOrder);
+	MANUFACTURING_ORDER(DocBaseType.ManufacturingOrder),
+	QUALITY_ORDER(DocBaseType.QualityOrder),
+	MAINTENANCE_ORDER(DocBaseType.MaintenanceOrder),
+	REPAIR_ORDER(DocBaseType.ServiceRepairOrder);
 
-	@Getter
-	private final String code;
+	private final DocBaseType docBaseType;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<PPOrderDocBaseType> index = ReferenceListAwareEnums.index(values());
 
+	PPOrderDocBaseType(@NonNull final DocBaseType docBaseType)
+	{
+		this.docBaseType = docBaseType;
+	}
+
 	@Nullable
-	public static PPOrderDocBaseType ofNullableCode(@Nullable final String code) { return index.ofNullableCode(code); }
+	public static PPOrderDocBaseType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
-	public static PPOrderDocBaseType ofCode(@NonNull final String code) { return index.ofCode(code); }
+	public static PPOrderDocBaseType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-	public boolean isManufacturingOrder() { return MANUFACTURING_ORDER.equals(this); }
+	public static PPOrderDocBaseType ofDocBaseType(@NonNull final DocBaseType docBaseType) {return ofCode(docBaseType.getCode());}
 
-	public boolean isQualityOrder() { return QUALITY_ORDER.equals(this); }
+	public DocBaseType toDocBaseType() {return docBaseType;}
 
-	public boolean isRepairOrder() { return REPAIR_ORDER.equals(this); }
+	public String getCode() {return docBaseType.getCode();}
+
+	public boolean isManufacturingOrder() {return MANUFACTURING_ORDER.equals(this);}
+
+	public boolean isQualityOrder() {return QUALITY_ORDER.equals(this);}
+
+	public boolean isRepairOrder() {return REPAIR_ORDER.equals(this);}
 }

@@ -36,7 +36,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -1349,6 +1349,12 @@ public class TimeUtil
 		return timestamp;
 	}
 
+	@Deprecated
+	public static Timestamp asTimestamp(final LocalDateAndOrgId localDateAndOrgId)
+	{
+		throw new AdempiereException("Converting from LocalDateAndOrgId to Timestamp without knowing the org timezone is not possible");
+	}
+
 	/**
 	 * @return date as timestamp or null if the date is null
 	 */
@@ -1392,7 +1398,7 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate
-				.atStartOfDay(coalesce(timezone, SystemTime.zoneId()))
+				.atStartOfDay(coalesceNotNull(timezone, SystemTime.zoneId()))
 				.toInstant();
 		return Timestamp.from(instant);
 	}
@@ -1411,7 +1417,7 @@ public class TimeUtil
 			@Nullable final ZoneId timezone)
 	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
-		final ZoneId timezoneEff = coalesce(timezone, SystemTime.zoneId());
+		final ZoneId timezoneEff = coalesceNotNull(timezone, SystemTime.zoneId());
 
 		final Instant instant;
 		if (localTime == null)
@@ -1650,6 +1656,31 @@ public class TimeUtil
 				: null;
 	}
 
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final java.util.Date date)
+	{
+		return date != null
+				? date.toInstant().atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Instant instant)
+	{
+		return instant != null
+				? instant.atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
+	public static LocalDate asLocalDate(@Nullable XMLGregorianCalendar calendar)
+	{
+		return calendar != null
+				? calendar.toGregorianCalendar().toInstant().atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{
@@ -1665,7 +1696,7 @@ public class TimeUtil
 		{
 			return LocalDate.parse(obj.toString());
 		}
-		else if(obj instanceof LocalDateAndOrgId)
+		else if (obj instanceof LocalDateAndOrgId)
 		{
 			return ((LocalDateAndOrgId)obj).toLocalDate();
 		}
@@ -1929,6 +1960,15 @@ public class TimeUtil
 		return LocalDateAndOrgId.ofLocalDate(localDate, orgId).toInstant(orgDAO::getTimeZone);
 	}
 
+	@SuppressWarnings("unused")
+	@Deprecated
+	public static Instant asInstant(
+			@Nullable final LocalDateAndOrgId localDateAndOrgId,
+			@NonNull final ZoneId zoneId)
+	{
+		throw new AdempiereException("Converting from localDateAndOrgId without knowing the Org's TimeZone is not possible");
+	}
+
 	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,
@@ -1985,7 +2025,7 @@ public class TimeUtil
 			final long millis = (Long)obj;
 			return Instant.ofEpochMilli(millis);
 		}
-		else if(obj instanceof InstantAndOrgId)
+		else if (obj instanceof InstantAndOrgId)
 		{
 			return ((InstantAndOrgId)obj).toInstant();
 		}

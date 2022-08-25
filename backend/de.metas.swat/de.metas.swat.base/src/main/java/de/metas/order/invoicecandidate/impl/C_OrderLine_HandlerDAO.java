@@ -25,6 +25,7 @@ package de.metas.order.invoicecandidate.impl;
 
 import java.util.Properties;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -87,7 +88,7 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 			docTypeFilter.setJoinOr();
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterSO = queryBL.createCompositeQueryFilter(I_C_DocType.class);
-			docTypeFilterSO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_SalesOrder);
+			docTypeFilterSO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, DocBaseType.SalesOrder);
 			docTypeFilterSO.addFilter(NotQueryFilter.of(new InArrayQueryFilter<>(
 					I_C_DocType.COLUMNNAME_DocSubType,
 					X_C_DocType.DOCSUBTYPE_Proposal,

@@ -99,10 +99,20 @@ public class CostRevaluationService
 
 	public void createDetails(@NonNull final CostRevaluationId costRevaluationId)
 	{
-		costRevaluationRepository.deleteDetailsByRevaluationId(costRevaluationId);
-
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
-		for (final CostRevaluationLine line : costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId))
+		final ImmutableList<CostRevaluationLine> linesToRevaluate = costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId)
+				.stream()
+				.filter(line -> !line.isRevaluated())
+				.collect(ImmutableList.toImmutableList());
+		if (linesToRevaluate.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<CostRevaluationLineId> lineIds = linesToRevaluate.stream().map(CostRevaluationLine::getId).collect(ImmutableSet.toImmutableSet());
+		costRevaluationRepository.deleteDetailsByLineIds(lineIds);
+
+		for (final CostRevaluationLine line : linesToRevaluate)
 		{
 			createDetails(costRevaluation, line);
 		}
@@ -110,6 +120,11 @@ public class CostRevaluationService
 
 	private void createDetails(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
 	{
+		if (line.isRevaluated())
+		{
+			throw new AdempiereException("Line already revaluated: " + line.getId());
+		}
+
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
@@ -207,6 +222,6 @@ public class CostRevaluationService
 			}
 		}
 
-		costRevaluationRepository.save(line.withDeltaAmountToBook(deltaAmountTotal));
+		costRevaluationRepository.save(line.markingAsEvaluated(deltaAmountTotal));
 	}
 }
