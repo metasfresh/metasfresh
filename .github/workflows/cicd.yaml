@@ -352,4 +352,4 @@ jobs:
     steps:
       - name: dispatching-redeploy
         run: |
-          curl -X "POST" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -d '{"event_type":"redeploy","client_payload":{"tag":"${{ needs.init.outputs.tag-floating }}"}}' https://api.github.com/repos/metasfresh/mf15-kubernetes/dispatches
+          curl --fail-with-body -X "POST" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -d '{"event_type":"redeploy","client_payload":{"tag":"${{ needs.init.outputs.tag-floating }}"}}' https://api.github.com/repos/metasfresh/mf15-kubernetes/dispatches
