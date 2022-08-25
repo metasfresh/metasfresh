@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsert;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsertItem;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.R_Status_StepDefData;
