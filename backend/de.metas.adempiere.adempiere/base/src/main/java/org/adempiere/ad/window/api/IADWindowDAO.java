@@ -1,5 +1,6 @@
 package org.adempiere.ad.window.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
@@ -8,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -104,4 +106,6 @@ public interface IADWindowDAO extends ISingletonService
 	List<I_AD_Tab_Callout> retrieveTabCallouts(AdTabId tabId);
 
 	AdTabId copyTabToWindow(I_AD_Tab sourceTab, AdWindowId targetWindowId);
+
+	ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(AdTableId adTableId);
 }
