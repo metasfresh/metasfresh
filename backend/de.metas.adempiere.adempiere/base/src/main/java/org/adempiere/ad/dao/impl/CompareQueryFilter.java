@@ -284,7 +284,16 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
+			assertValueIsSQLConvertibleIfJUnitMode(value);
 			return value;
+		}
+	}
+
+	private static void assertValueIsSQLConvertibleIfJUnitMode(@Nullable final Object value)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			DB.TO_SQL(value); // expect to throw exception if not convertible
 		}
 	}
 
