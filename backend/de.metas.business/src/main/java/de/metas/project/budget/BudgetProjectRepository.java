@@ -34,7 +34,7 @@ import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -45,6 +45,7 @@ import org.compiere.model.I_C_ProjectType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -59,7 +60,7 @@ public class BudgetProjectRepository
 	@NonNull
 	public Optional<BudgetProject> getOptionalById(@NonNull final ProjectId projectId)
 	{
-		return fromRecord(getRecordByIdNotNull(projectId));
+		return Optional.ofNullable(fromRecord(getRecordByIdNotNull(projectId)));
 	}
 
 	@NonNull
@@ -77,52 +78,52 @@ public class BudgetProjectRepository
 				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectIds)
 				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
 				.stream()
-				.map(record -> fromRecord(record).orElse(null))
+				.map(record -> fromRecord(record))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@NonNull
-	public static Optional<BudgetProject> fromRecord(final I_C_Project record)
+	@Nullable
+	public static BudgetProject fromRecord(@NonNull final I_C_Project record)
 	{
 		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory());
 		if (!projectCategory.isBudget())
 		{
 			//throw new AdempiereException("Project " + record + " is not budget project");
-			return Optional.empty();
+			return null;
 		}
 
 		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(record.getC_ProjectType_ID());
 		if (projectTypeId == null)
 		{
-			return Optional.empty();
+			return null;
 		}
 
 		final OrgId projectOrgId = OrgId.ofRepoId(record.getAD_Org_ID());
 		final ProjectId projectId = ProjectId.ofRepoId(record.getC_Project_ID());
 
-		return Optional.of(
-				BudgetProject.builder()
-						.projectId(projectId)
-						.name(record.getName())
-						.orgId(projectOrgId)
-						.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
-						.value(record.getValue())
-						.isActive(record.isActive())
-						.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(record.getM_PriceList_Version_ID()))
-						.description(record.getDescription())
-						.projectParentId(ProjectId.ofRepoIdOrNull(record.getC_Project_Parent_ID()))
-						.projectTypeId(projectTypeId)
-						.projectReferenceExt(record.getC_Project_Reference_Ext())
-						.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
-						.salesRepId(UserId.ofIntegerOrNull(record.getSalesRep_ID()))
-						.dateContract(TimeUtil.asLocalDate(record.getDateContract(), projectOrgId))
-						.dateFinish(TimeUtil.asLocalDate(record.getDateFinish(), projectOrgId))
-						.build());
+		return BudgetProject.builder()
+				.projectId(projectId)
+				.name(record.getName())
+				.orgId(projectOrgId)
+				.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
+				.value(record.getValue())
+				.externalId(ExternalId.ofOrNull(record.getExternalId()))
+				.isActive(record.isActive())
+				.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(record.getM_PriceList_Version_ID()))
+				.description(record.getDescription())
+				.projectParentId(ProjectId.ofRepoIdOrNull(record.getC_Project_Parent_ID()))
+				.projectTypeId(projectTypeId)
+				.projectReferenceExt(record.getC_Project_Reference_Ext())
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+				.salesRepId(UserId.ofIntegerOrNull(record.getSalesRep_ID()))
+				.dateContract(TimeUtil.asLocalDate(record.getDateContract(), projectOrgId))
+				.dateFinish(TimeUtil.asLocalDate(record.getDateFinish(), projectOrgId))
+				.build();
 	}
 
 	@NonNull
-	public Optional<BudgetProject> getOptionalBy(@NonNull final BudgetProjectQuery query)
+	public ImmutableList<BudgetProject> getBy(@NonNull final BudgetProjectQuery query)
 	{
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
@@ -134,18 +135,22 @@ public class BudgetProjectRepository
 		{
 			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_Value, query.getValue().trim());
 		}
-		if (query.getExternalProjectReference() != null)
+		if (EmptyUtil.isNotBlank(query.getExternalProjectReference()))
 		{
-			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, query.getExternalProjectReference().getValue());
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, query.getExternalProjectReference());
+		}
+		if (query.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_ExternalId, ExternalId.toValue(query.getExternalId()));
 		}
 
-		final List<I_C_Project> projectRecords = queryBuilder.create().list();
-		if (projectRecords.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		return fromRecord(CollectionUtils.singleElement(projectRecords));
+		return queryBuilder
+				.create()
+				.list()
+				.stream()
+				.map(BudgetProjectRepository::fromRecord)
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -155,6 +160,7 @@ public class BudgetProjectRepository
 
 		projectRecord.setName(budgetProject.getName());
 		projectRecord.setValue(budgetProject.getValue());
+		projectRecord.setExternalId(ExternalId.toValue(budgetProject.getExternalId()));
 		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(budgetProject.getProjectTypeId()));
 		projectRecord.setIsActive(budgetProject.isActive());
 		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(budgetProject.getCurrencyId()));
@@ -170,7 +176,7 @@ public class BudgetProjectRepository
 
 		InterfaceWrapperHelper.saveRecord(projectRecord);
 
-		return fromRecord(projectRecord)
+		return Optional.ofNullable(fromRecord(projectRecord))
 				.orElseThrow(() -> new AdempiereException("BudgetProject has not been successfully saved!"));
 	}
 
@@ -184,6 +190,7 @@ public class BudgetProjectRepository
 
 		projectRecord.setName(request.getName());
 		projectRecord.setValue(request.getValue());
+		projectRecord.setExternalId(ExternalId.toValue(request.getExternalId()));
 		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(request.getProjectTypeId()));
 		projectRecord.setR_StatusCategory_ID(projectType.getR_StatusCategory_ID());
 		projectRecord.setIsActive(request.isActive());
@@ -200,7 +207,7 @@ public class BudgetProjectRepository
 
 		InterfaceWrapperHelper.saveRecord(projectRecord);
 
-		return fromRecord(projectRecord)
+		return Optional.ofNullable(fromRecord(projectRecord))
 				.orElseThrow(() -> new AdempiereException("BudgetProject has not been successfully saved!"));
 	}
 

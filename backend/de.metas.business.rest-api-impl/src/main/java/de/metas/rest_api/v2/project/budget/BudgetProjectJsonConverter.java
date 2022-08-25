@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.project.budget;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectUpsertRequest;
 import de.metas.currency.Currency;
@@ -45,6 +46,8 @@ import de.metas.rest_api.v2.project.ValidateProjectHelper;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import lombok.NonNull;
@@ -52,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -161,10 +165,11 @@ public class BudgetProjectJsonConverter
 
 		ValidateProjectHelper.assertCurrencyIdsMatch(currencyId, priceListVersionId, priceListDAO::getPriceListByPriceListVersionId);
 
-		return CreateBudgetProjectRequest.builder()
+		final CreateBudgetProjectRequest.CreateBudgetProjectRequestBuilder builder = CreateBudgetProjectRequest.builder()
 				.orgId(orgId)
 				.projectTypeId(projectTypeId)
 				.value(projectValue)
+				.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(request.getExternalId())))
 				.name(projectName)
 				.currencyId(currencyId)
 				.priceListVersionId(priceListVersionId)
@@ -175,8 +180,26 @@ public class BudgetProjectJsonConverter
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getBpartnerId())))
 				.salesRepId(UserId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getSalesRepId())))
 				.dateContract(request.getDateContract())
-				.dateFinish(request.getDateFinish())
-				.build();
+				.dateFinish(request.getDateFinish());
+
+		if (request.getExternalId() == null) // if no externalId was given for the new project, then see if it was implied by the identifier
+		{
+			final IdentifierString projectIdentifier = IdentifierString.of(request.getProjectIdentifier());
+			if(projectIdentifier.isExternalId())
+			{
+				builder.externalId(projectIdentifier.asExternalId());
+			}
+		}
+		if(Check.isBlank(request.getValue())) // if no value was given for the new project, then see if it was implied by the identifier
+		{
+			final IdentifierString projectIdentifier = IdentifierString.of(request.getProjectIdentifier());
+			if(projectIdentifier.isValue())
+			{
+				builder.value(projectIdentifier.asValue());
+			}
+		}
+		
+		return builder.build();
 	}
 
 	@NonNull
@@ -192,7 +215,7 @@ public class BudgetProjectJsonConverter
 				projectQueryBuilder.value(identifier.asValue());
 				break;
 			case EXTERNAL_ID:
-				projectQueryBuilder.externalProjectReference(identifier.asExternalId());
+				projectQueryBuilder.externalId(identifier.asExternalId());
 				break;
 			default:
 				throw new InvalidIdentifierException(identifier.getRawIdentifierString());
@@ -295,10 +318,14 @@ public class BudgetProjectJsonConverter
 			return ProjectId.ofRepoId(MetasfreshId.toValue(identifierString.asMetasfreshId()));
 		}
 
-		return budgetProjectRepository.getOptionalBy(getProjectQueryFromIdentifier(orgId, identifierString))
-				.map(BudgetProject::getProjectId)
-				.orElseThrow(() -> new AdempiereException("No Budget Project could be found for identifier!")
-						.appendParametersToMessage()
-						.setParameter("projectParentIdentifier", identifierString.getRawIdentifierString()));
+		final List<BudgetProject> projectList = budgetProjectRepository.getBy(getProjectQueryFromIdentifier(orgId, identifierString));
+		if (projectList.isEmpty())
+		{
+			throw new AdempiereException("No Budget Project could be found for identifier!")
+					.appendParametersToMessage()
+					.setParameter("projectParentIdentifier", identifierString.getRawIdentifierString());
+		}
+		return CollectionUtils.singleElement(projectList).getProjectId();
+				
 	}
 }

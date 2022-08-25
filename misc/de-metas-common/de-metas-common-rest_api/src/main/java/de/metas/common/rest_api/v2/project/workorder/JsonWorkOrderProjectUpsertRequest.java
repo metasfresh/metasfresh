@@ -24,6 +24,7 @@ package de.metas.common.rest_api.v2.project.workorder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
@@ -104,11 +105,17 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean bpartnerIdSet;
 
+	@ApiModelProperty("Translates to `C_Project.C_Project_Reference_Ext`.")
 	String projectReferenceExt;
 
 	@ApiModelProperty(hidden = true)
 	boolean projectReferenceExtSet;
 
+	JsonExternalId externalId;
+
+	@ApiModelProperty(hidden = true)
+	boolean externalIdSet;
+	
 	JsonMetasfreshId projectParentId;
 
 	@ApiModelProperty(hidden = true)
@@ -220,6 +227,12 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.projectReferenceExtSet = true;
 	}
 
+	public void setExternalId(final JsonExternalId externalId)
+	{
+		this.externalId = externalId;
+		this.externalIdSet = true;
+	}
+		
 	public void setProjectParentId(final JsonMetasfreshId projectParentId)
 	{
 		this.projectParentId = projectParentId;

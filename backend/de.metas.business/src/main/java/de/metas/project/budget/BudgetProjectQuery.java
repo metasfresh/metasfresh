@@ -37,18 +37,24 @@ public class BudgetProjectQuery
 {
 	OrgId orgId;
 	String value;
-	ExternalId externalProjectReference;
+	ExternalId externalId;
+	String externalProjectReference;
 
 	@Builder
 	public BudgetProjectQuery(
 			@NonNull final OrgId orgId,
 			@Nullable final String value,
-			@Nullable final ExternalId externalProjectReference)
+			@Nullable final ExternalId externalId,
+			@Nullable final String externalProjectReference)
 	{
 		this.orgId = orgId;
 
 		this.value = value;
+		this.externalId = externalId;
 		this.externalProjectReference = externalProjectReference;
-		Check.errorIf(EmptyUtil.isBlank(value) && externalProjectReference == null, "At least one of value or externalProjectReference need to be specified");
+		Check.errorIf(EmptyUtil.isBlank(value)
+							  && externalId == null
+							  && externalProjectReference == null, 
+					  "At least one of value, externalId or externalProjectReference need to be specified");
 	}
 }

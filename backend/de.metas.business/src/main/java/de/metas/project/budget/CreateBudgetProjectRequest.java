@@ -29,6 +29,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,6 +50,9 @@ public class CreateBudgetProjectRequest
 	@NonNull
 	CurrencyId currencyId;
 
+	@Nullable
+	ExternalId externalId;
+	
 	@NonNull
 	ProjectTypeId projectTypeId;
 

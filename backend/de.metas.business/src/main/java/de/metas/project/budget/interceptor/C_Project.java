@@ -35,6 +35,8 @@ import org.compiere.model.I_C_Project;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @Interceptor(I_C_Project.class)
 public class C_Project
@@ -56,7 +58,7 @@ public class C_Project
 
 		if (InterfaceWrapperHelper.isValueChanged(record, I_C_Project.COLUMNNAME_AD_Org_ID, I_C_Project.COLUMNNAME_C_Currency_ID))
 		{
-			final BudgetProject project = BudgetProjectRepository.fromRecord(record)
+			final BudgetProject project = Optional.ofNullable(BudgetProjectRepository.fromRecord(record))
 					.orElseThrow(() -> new AdempiereException("Not a valid budget project"));
 
 			budgetProjectResourceRepository.updateAllByProjectId(project.getProjectId(), project.getOrgId(), project.getCurrencyId());
