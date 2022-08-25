@@ -1,6 +1,7 @@
 package org.adempiere.ad.dao;
 
 import com.google.common.collect.Range;
+import de.metas.util.InSetPredicate;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
@@ -121,13 +122,13 @@ public interface ICompositeQueryFilterProxy<T, RT>
 		return addFilter(filter);
 	}
 
-	default RT addNotEqualsFilter(final String columnName, final Object value)
+	default RT addNotEqualsFilter(final String columnName, @Nullable final Object value)
 	{
 		final NotEqualsQueryFilter<T> filter = NotEqualsQueryFilter.of(columnName, value);
 		return addFilter(filter);
 	}
 
-	default RT addNotEqualsFilter(final ModelColumn<T, ?> column, final Object value)
+	default RT addNotEqualsFilter(final ModelColumn<T, ?> column, @Nullable final Object value)
 	{
 		final String columnName = column.getColumnName();
 		return addNotEqualsFilter(columnName, value);
@@ -311,6 +312,12 @@ public interface ICompositeQueryFilterProxy<T, RT>
 		filter.setDefaultReturnWhenEmpty(false);
 		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);
 		return addFilter(notFilter);
+	}
+
+	default <V> RT addInArrayFilter(@NonNull final String columnName, @NonNull final InSetPredicate<V> values)
+	{
+		addFilter(InArrayQueryFilter.ofInSetPredicate(columnName, values));
+		return self();
 	}
 
 	default RT addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier)
