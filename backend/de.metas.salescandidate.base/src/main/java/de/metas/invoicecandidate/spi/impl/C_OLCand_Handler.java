@@ -143,7 +143,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setRecord_ID(olcRecord.getC_OLCand_ID());
 
 		ic.setPOReference(olcRecord.getPOReference());
-
 		// product
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olcRecord);
 		ic.setM_Product_ID(ProductId.toRepoId(productId));
@@ -218,6 +217,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setExternalLineId(olcRecord.getExternalLineId());
 		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());
 		ic.setC_Async_Batch_ID(olcRecord.getC_Async_Batch_ID());
+
+		ic.setAD_InputDataSource_ID(olcRecord.getAD_InputDataSource_ID());
 
 		olcRecord.setProcessed(true);
 		saveRecord(olcRecord);

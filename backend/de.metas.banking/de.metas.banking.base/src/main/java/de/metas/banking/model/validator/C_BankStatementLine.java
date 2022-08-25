@@ -124,7 +124,7 @@ public class C_BankStatementLine
 					+ " SET StatementDifference=(SELECT COALESCE(SUM(StmtAmt),0) FROM C_BankStatementLine bsl "
 					+ "WHERE bsl.C_BankStatement_ID=bs.C_BankStatement_ID AND bsl.IsActive='Y') "
 					+ "WHERE C_BankStatement_ID=?";
-			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 		}
 
 		// EndingBalance
@@ -132,7 +132,7 @@ public class C_BankStatementLine
 			final String sql = "UPDATE C_BankStatement bs"
 					+ " SET EndingBalance=BeginningBalance+StatementDifference "
 					+ "WHERE C_BankStatement_ID=?";
-			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
@@ -142,6 +142,6 @@ public class C_BankStatementLine
 		final String sql = "UPDATE C_BankStatement bs"
 				+ " SET IsReconciled=(CASE WHEN (SELECT COUNT(1) FROM C_BankStatementLine bsl WHERE bsl.C_BankStatement_ID = bs.C_BankStatement_ID AND bsl.IsReconciled = 'N') = 0 THEN 'Y' ELSE 'N' END)"
 				+ " WHERE C_BankStatement_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

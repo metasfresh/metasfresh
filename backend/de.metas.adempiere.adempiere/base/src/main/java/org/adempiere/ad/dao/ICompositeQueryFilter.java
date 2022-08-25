@@ -22,28 +22,14 @@
 
 package org.adempiere.ad.dao;
 
-import de.metas.util.InSetPredicate;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
-import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.dao.impl.InSubQueryFilter;
-import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
-import org.adempiere.model.ModelColumn;
-import org.compiere.model.IQuery;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 @SuppressWarnings("UnusedReturnValue")
-public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
+public interface ICompositeQueryFilter<T>
+		extends
+		IQueryFilter<T>,
+		ICompositeQueryFilterProxy<T, ICompositeQueryFilter<T>>
 {
 	/**
 	 * Creates a copy of this object.
@@ -84,220 +70,35 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	boolean isJoinOr();
 
-	IInSubQueryFilterClause<T, ICompositeQueryFilter<T>> addInSubQueryFilter();
-
-	/**
-	 * Add a {@link InSubQueryFilter}
-	 *
-	 * @return this
-	 */
-	<ST> ICompositeQueryFilter<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
-
-	/**
-	 * Add a NOT-{@link InSubQueryFilter}.
-	 *
-	 */
-	<ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
-
-	<ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery);
-
-	<ST> ICompositeQueryFilter<T> addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
-
-	/**
-	 * Add a {@link InSubQueryFilter}
-	 *
-	 * @return this
-	 */
-	<ST> ICompositeQueryFilter<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given collection.
-	 * If no values were provided the record is accepted.
-	 */
-	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(String columnName, Collection<V> values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given collection.
-	 * If no values were provided the record is rejected.
-	 */
-	<V> ICompositeQueryFilter<T> addInArrayFilter(String columnName, Collection<V> values);
-
-	<V extends RepoIdAware> ICompositeQueryFilter<T> addInArrayFilter(String columnName, InSetPredicate<V> values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given collection.
-	 * If no values were provided the record is accepted.
-	 *
-	 * @param values may also be {@link RepoIdAware}s
-	 */
-	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, Collection<V> values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given collection.
-	 * If no values were provided the record is rejected.
-	 */
-	<V> ICompositeQueryFilter<T> addInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
-
-	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
-	 *
-	 * @return this
-	 */
-	<V> ICompositeQueryFilter<T> addNotInArrayFilter(ModelColumn<T, ?> column, Collection<V> values);
-
-	/**
-	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
-	 *
-	 * @return this
-	 * @deprecated  dev note: if the target column (i.e. column identified by @param columnName) has value null the query won't match
-	 */
-	@Deprecated
-	<V> ICompositeQueryFilter<T> addNotInArrayFilter(String columnName, Collection<V> values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given array.
-	 * If no values were provided the record is accepted.
-	 */
-	@SuppressWarnings("unchecked")
-	@Deprecated
-	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(String columnName, V... values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given array.
-	 * If no values were provided the record is rejected.
-	 */
-	@SuppressWarnings("unchecked")
-	<V> ICompositeQueryFilter<T> addInArrayFilter(String columnName, V... values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given array.
-	 * If no values were provided the record is accepted.
-	 */
-	@SuppressWarnings("unchecked")
-	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, V... values);
-
-	/**
-	 * Filters those rows for whom the columnName's value is in given array.
-	 * If no values were provided the record is rejected.
-	 */
-	@SuppressWarnings("unchecked")
-	<V> ICompositeQueryFilter<T> addInArrayFilter(ModelColumn<T, ?> column, V... values);
-
-	/**
-	 * Add a {@link ActiveRecordQueryFilter}
-	 *
-	 * @return this
-	 */
-	ICompositeQueryFilter<T> addOnlyActiveRecordsFilter();
-
-	/**
-	 * Accept only those records which have AD_Client_ID same as the "#AD_Client_ID" from given context.
-	 *
-	 * @return this
-	 */
-	ICompositeQueryFilter<T> addOnlyContextClient(Properties ctx);
-
-	/**
-	 * Accept only those records which have AD_Client_ID same as the "#AD_Client_ID" from given context or System client.
-	 *
-	 * @return this
-	 */
-	ICompositeQueryFilter<T> addOnlyContextClientOrSystem(Properties ctx);
-
-	/**
-	 * Add a {@link CompareQueryFilter}
-	 *
-	 * @return this
-	 */
-	ICompositeQueryFilter<T> addCompareFilter(String columnName, CompareQueryFilter.Operator operator, @Nullable Object value);
-
-	ICompositeQueryFilter<T> addCompareFilter(ModelColumn<T, ?> column, CompareQueryFilter.Operator operator, @Nullable Object value);
-
-	ICompositeQueryFilter<T> addCompareFilter(String columnName, Operator operator, Object value, IQueryFilterModifier modifier);
-
-	ICompositeQueryFilter<T> addCompareFilter(ModelColumn<T, ?> column, Operator operator, Object value, IQueryFilterModifier modifier);
-
-	/**
-	 * Add a {@link EqualsQueryFilter}
-	 *
-	 * @return this
-	 */
-	ICompositeQueryFilter<T> addEqualsFilter(String columnName, @Nullable Object value);
-
-	ICompositeQueryFilter<T> addEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
-
-	/**
-	 * Add a {@link EqualsQueryFilter}
-	 */
-	ICompositeQueryFilter<T> addEqualsFilter(String columnName, Object value, IQueryFilterModifier modifier);
-
-	ICompositeQueryFilter<T> addEqualsFilter(ModelColumn<T, ?> column, Object value, IQueryFilterModifier modifier);
-
-	/**
-	 * Adds a filter for substrings. That filter creates SQL such as <code>columnName LIKE '%substring%'</code>.<br>
-	 * The string to filter by may contain {@code _} and {@code %}. Starting and trailing '%' are supplemented if missing.
-	 *
-	 * Note: if you don't want the starting and trailing '%' to be supplemented, check out {@link #addCompareFilter(String, Operator, Object)}
-	 *
-	 * @param ignoreCase if <code>true</code> the filter will use <code>ILIKE</code> instead of <code>LIKE</code>
-	 */
-	ICompositeQueryFilter<T> addStringLikeFilter(String columnName, String substring, boolean ignoreCase);
-
-	/**
-	 * See {@link #addStringLikeFilter(String, String, boolean)}
-	 */
-	ICompositeQueryFilter<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
-
-	ICompositeQueryFilter<T> addCoalesceEqualsFilter(Object value, String... columnNames);
-
-	/**
-	 * Add a {@link NotEqualsQueryFilter}.
-	 * As with all {@link CompareQueryFilter}s: if the filter is about an {@code _ID}, then also {@link RepoIdAware} is supported.
-	 */
-	ICompositeQueryFilter<T> addNotEqualsFilter(String columnName, @Nullable Object value);
-
-	ICompositeQueryFilter<T> addNotEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
-
-	ICompositeQueryFilter<T> addNotNull(ModelColumn<T, ?> column);
-
-	ICompositeQueryFilter<T> addNotNull(String columnName);
+	// IInSubQueryFilterClause<T, ICompositeQueryFilter<T>> addInSubQueryFilter();
+	//
+	// <ST> ICompositeQueryFilter<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
+	//
+	// <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
+	//
+	// <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery);
+	//
+	// <ST> ICompositeQueryFilter<T> addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
+	//
+	// /**
+	//  * Add a {@link InSubQueryFilter}
+	//  *
+	//  * @return this
+	//  */
+	// <ST> ICompositeQueryFilter<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by OR.
-	 *
 	 */
 	ICompositeQueryFilter<T> setJoinOr();
 
 	/**
 	 * Calling this method means that <b>all</b> filters (not just subsequent ones) added to this composite are joined by AND.
-	 *
 	 */
 	ICompositeQueryFilter<T> setJoinAnd();
 
-	/**
-	 * Add a group of filters
-	 */
 	ICompositeQueryFilter<T> addFilters(List<IQueryFilter<T>> filters);
 
-	/**
-	 * Unboxes and adds the filters contained in the <code>compositeFilter</code>.
-	 * If it could not be unboxed (e.g. because JOIN method does not match) the composite filter is added as is.
-	 * Note that by "unboxing" we mean getting the filters included in the given {@code compositeFilter} and adding them to this instance directly, rather than adding the given {@code compositeFilter} itself.
-	 */
-	ICompositeQueryFilter<T> addFiltersUnboxed(ICompositeQueryFilter<T> compositeFilter);
-
-	/**
-	 * Add a single filter
-	 *
-	 * @return this
-	 */
-	ICompositeQueryFilter<T> addFilter(IQueryFilter<T> filter);
-
-	/**
-	 * Remove filter
-	 *
-	 * @return this
-	 */
 	ICompositeQueryFilter<T> removeFilter(IQueryFilter<T> filter);
 
 	/**
@@ -340,7 +141,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	List<Object> getSqlFiltersParams(Properties ctx);
 
 	/**
-	 * Gets a query filter which behaves like {@link #getNonSqlFilters()} list.
+	 * Gets an query filter which behaves like {@link #getNonSqlFilters()} list.
 	 * <p>
 	 * If there are no nonSQL filters, this method will return null.
 	 *
@@ -350,7 +151,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Gets an query filter which behaves like {@link #getSqlFilters()} list.
-	 *
 	 */
 	ISqlQueryFilter asPartialSqlQueryFilter();
 
@@ -363,36 +163,5 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	ISqlQueryFilter asSqlQueryFilter() throws IllegalStateException;
 
-	ICompositeQueryFilter<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier);
-
-	ICompositeQueryFilter<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier);
-
-	ICompositeQueryFilter<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo);
-
-	ICompositeQueryFilter<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo);
-
-	ICompositeQueryFilter<T> addEndsWithQueryFilter(String columnName, String endsWithString);
-
-	ICompositeQueryFilter<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
-
-	/**
-	 * Creates, appends and returns new composite filter.
-	 *
-	 * @return created composite filter
-	 */
-	ICompositeQueryFilter<T> addCompositeQueryFilter();
-
 	ICompositeQueryFilter<T> allowSqlFilters(boolean allowSqlFilters);
-
-	ICompositeQueryFilter<T> addIntervalIntersection(
-			@NonNull String lowerBoundColumnName,
-			@NonNull String upperBoundColumnName,
-			@Nullable ZonedDateTime lowerBoundValue,
-			@Nullable ZonedDateTime upperBoundValue);
-
-	ICompositeQueryFilter<T> addIntervalIntersection(
-			@NonNull String lowerBoundColumnName,
-			@NonNull String upperBoundColumnName,
-			@Nullable Instant lowerBoundValue,
-			@Nullable Instant upperBoundValue);
 }

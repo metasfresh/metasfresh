@@ -16,6 +16,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
+import java.time.Instant;
+
 /*
  * #%L
  * de.metas.business
@@ -63,6 +65,8 @@ public class CostDetail
 
 	String description;
 
+	Instant dateAcct;
+
 	@Builder
 	private CostDetail(
 			final CostDetailId id,
@@ -77,7 +81,8 @@ public class CostDetail
 			final boolean changingCosts,
 			final CostDetailPreviousAmounts previousAmounts,
 			@NonNull final CostingDocumentRef documentRef,
-			@Nullable final String description)
+			@Nullable final String description,
+			@NonNull Instant dateAcct)
 	{
 		this.id = id;
 		this.clientId = clientId;
@@ -92,6 +97,7 @@ public class CostDetail
 		this.previousAmounts = previousAmounts;
 		this.documentRef = documentRef;
 		this.description = description;
+		this.dateAcct = dateAcct;
 
 		if (this.previousAmounts != null
 				&& !CurrencyId.equals(this.previousAmounts.getCurrencyId(), amt.getCurrencyId()))

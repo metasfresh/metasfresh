@@ -40,7 +40,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
     // resolve the version property ${metasfresh-common.version} in the pom.xml
     final String commonPropertyParam = "-Dproperty=metasfresh-common.version -DnewVersion=LATEST"
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DallowDowngrade=true ${commonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
+    sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DallowDowngrade=true ${commonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
     // build and install
     // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property

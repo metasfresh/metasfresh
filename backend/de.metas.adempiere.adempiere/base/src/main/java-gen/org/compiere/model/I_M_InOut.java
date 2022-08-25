@@ -31,6 +31,27 @@ public interface I_M_InOut
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_M_InOut.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -1092,7 +1113,7 @@ public interface I_M_InOut
 	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Streckengeschäft.
+	 * Set Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -1102,7 +1123,7 @@ public interface I_M_InOut
 	void setIsDropShip (boolean IsDropShip);
 
 	/**
-	 * Get Streckengeschäft.
+	 * Get Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -1383,6 +1404,31 @@ public interface I_M_InOut
 
 	ModelColumn<I_M_InOut, org.compiere.model.I_M_RMA> COLUMN_M_RMA_ID = new ModelColumn<>(I_M_InOut.class, "M_RMA_ID", org.compiere.model.I_M_RMA.class);
 	String COLUMNNAME_M_RMA_ID = "M_RMA_ID";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_M_InOut, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_InOut.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Shipper.

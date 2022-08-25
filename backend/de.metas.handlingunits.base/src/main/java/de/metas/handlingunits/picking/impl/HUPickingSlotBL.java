@@ -174,7 +174,7 @@ public class HUPickingSlotBL
 	private LocatorId getLocatorId(final I_M_PickingSlot pickingSlot)
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(pickingSlot.getM_Warehouse_ID());
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 	}
 
 	@Override

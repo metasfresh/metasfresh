@@ -43,14 +43,14 @@ public class ProductAcctDAO implements IProductAcctDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
-	private final CCache<ProductIdAndAcctSchemaId, Optional<I_M_Product_Acct>> productAcctRecords = CCache.<ProductIdAndAcctSchemaId, Optional<I_M_Product_Acct>> builder()
+	private final CCache<ProductIdAndAcctSchemaId, Optional<I_M_Product_Acct>> productAcctRecords = CCache.<ProductIdAndAcctSchemaId, Optional<I_M_Product_Acct>>builder()
 			.cacheMapType(CacheMapType.LRU)
 			.initialCapacity(100)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.additionalTableNameToResetFor(I_M_Product_Acct.Table_Name)
 			.build();
 
-	private final CCache<Integer, ProductCategoryAccountsCollection> productCategoryAcctCollectionCache = CCache.<Integer, ProductCategoryAccountsCollection> builder()
+	private final CCache<Integer, ProductCategoryAccountsCollection> productCategoryAcctCollectionCache = CCache.<Integer, ProductCategoryAccountsCollection>builder()
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.additionalTableNameToResetFor(I_M_Product_Category_Acct.Table_Name)
@@ -125,7 +125,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 
 	private ProductCategoryAccountsCollection retrieveProductCategoryAccountsCollection()
 	{
-		final POInfo poInfo = POInfo.getPOInfo(I_M_Product_Category_Acct.Table_Name);
+		final POInfo poInfo = POInfo.getPOInfoNotNull(I_M_Product_Category_Acct.Table_Name);
 		final ImmutableSet<String> acctColumnNames = poInfo.getColumnNames()
 				.stream()
 				.filter(columnName -> poInfo.getColumnDisplayType(columnName) == DisplayType.Account)
@@ -155,7 +155,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 		return ProductCategoryAccounts.builder()
 				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.costingLevel(CostingLevel.forNullableCode(record.getCostingLevel()))
+				.costingLevel(CostingLevel.ofNullableCode(record.getCostingLevel()))
 				.costingMethod(CostingMethod.ofNullableCode(record.getCostingMethod()))
 				.accountIdsByColumnName(accountIds)
 				.build();
@@ -190,19 +190,15 @@ public class ProductAcctDAO implements IProductAcctDAO
 	@Value(staticConstructor = "of")
 	private static class ProductIdAndAcctSchemaId
 	{
-		@NonNull
-		ProductId productId;
-		@NonNull
-		AcctSchemaId acctSchemaId;
+		@NonNull ProductId productId;
+		@NonNull AcctSchemaId acctSchemaId;
 	}
 
 	@Value(staticConstructor = "of")
 	private static class ProductCategoryIdAndAcctSchemaId
 	{
-		@NonNull
-		ProductCategoryId productCategoryId;
-		@NonNull
-		AcctSchemaId acctSchemaId;
+		@NonNull ProductCategoryId productCategoryId;
+		@NonNull AcctSchemaId acctSchemaId;
 	}
 
 	@EqualsAndHashCode

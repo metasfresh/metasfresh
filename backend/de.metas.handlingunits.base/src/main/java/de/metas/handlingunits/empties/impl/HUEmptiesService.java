@@ -1,5 +1,6 @@
 package de.metas.handlingunits.empties.impl;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.empties.EmptiesMovementProducer;
 import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
@@ -10,6 +11,8 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -25,11 +28,13 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.compiere.util.Env.getCtx;
 
 /*
  * #%L
@@ -55,6 +60,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HUEmptiesService implements IHUEmptiesService
 {
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
 	@Override
 	public I_M_Warehouse getEmptiesWarehouse(@NonNull final I_M_Warehouse warehouse)
 	{
@@ -88,7 +95,8 @@ public class HUEmptiesService implements IHUEmptiesService
 	public I_M_Locator getEmptiesLocator(final I_M_Warehouse warehouse)
 	{
 		final I_M_Warehouse emptiesWarehouse = getEmptiesWarehouse(warehouse);
-		return InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse), I_M_Locator.class);
+		final I_M_Locator emptiesLocator = InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(emptiesWarehouse), I_M_Locator.class);
+		return emptiesLocator;
 	}
 
 	@Override
@@ -139,4 +147,22 @@ public class HUEmptiesService implements IHUEmptiesService
 		return new EmptiesInOutProducer(ctx);
 	}
 
+	@Override
+	@Nullable
+	public I_M_InOut createDraftEmptiesInOutFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final String movementType)
+	{
+		//
+		// Create a draft "empties inout" without any line;
+		// Lines will be created manually by the user.
+		return  newReturnsInOutProducer(getCtx())
+				.setMovementType(movementType)
+				.setMovementDate(SystemTime.asDayTimestamp())
+				.setC_BPartner(receiptScheduleBL.getC_BPartner_Effective(receiptSchedule))
+				.setC_BPartner_Location(receiptScheduleBL.getC_BPartner_Location_Effective(receiptSchedule))
+				.setM_Warehouse(receiptScheduleBL.getM_Warehouse_Effective(receiptSchedule))
+				.setC_Order(receiptSchedule.getC_Order())
+				//
+				.dontComplete()
+				.create();
+	}
 }

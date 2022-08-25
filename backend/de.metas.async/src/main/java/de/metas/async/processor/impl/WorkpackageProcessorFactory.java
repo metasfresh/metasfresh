@@ -44,8 +44,6 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 
 	private final WorkpackageProcessorBlackList blacklist = new WorkpackageProcessorBlackList();
 
-	private final QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
-
 	public WorkpackageProcessorFactory()
 	{
 		super();
@@ -62,7 +60,7 @@ class WorkpackageProcessorFactory implements IWorkpackageProcessorFactory, IMBea
 		final QueuePackageProcessor queuePackageProcessor;
 		try
 		{
-			queuePackageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(QueuePackageProcessorId.ofRepoId(packageProcessorId));
+			queuePackageProcessor = QueueProcessorDescriptorRepository.getInstance().getPackageProcessor(QueuePackageProcessorId.ofRepoId(packageProcessorId));
 		}
 		catch (final ConfigurationException e)
 		{

@@ -35,6 +35,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -135,10 +136,10 @@ public class CustomerTradeMarginService
 
 		final IEditablePricingContext salesRepPricingCtx =
 				pricingBL.createInitialContext(salesRepOrgId,
-											   request.getProductId(),
-											   request.getSalesRepId(),
-											   request.getQty(),
-											   request.getSoTrx())
+								request.getProductId(),
+								request.getSalesRepId(),
+								request.getQty(),
+								request.getSoTrx())
 						.setPricingSystemId(pricingSystemId)
 						.setCountryId(countryId)
 						.setPriceListId(priceListId)
@@ -155,17 +156,17 @@ public class CustomerTradeMarginService
 		updatePricingResultToMatchUOM(salesRepPriceResult, request.getQty().getUomId());
 
 		final Money salesRepNetUnitPriceWithoutTax = deductTaxes(salesRepOrgId,
-													   salesRepShipToLocation,
-													   request,
-													   salesRepPriceResult);
+				salesRepShipToLocation,
+				request,
+				salesRepPriceResult);
 
 		final Money salesRepNetUnitPrice = convertToCustomerCurrency(salesRepOrgId, request, salesRepNetUnitPriceWithoutTax);
 
 		return Optional.of(ProductPrice.builder()
-								   .money(salesRepNetUnitPrice)
-								   .productId(salesRepPriceResult.getProductId())
-								   .uomId(salesRepPriceResult.getPriceUomId())
-								   .build());
+				.money(salesRepNetUnitPrice)
+				.productId(salesRepPriceResult.getProductId())
+				.uomId(salesRepPriceResult.getPriceUomId())
+				.build());
 	}
 
 	@NonNull
@@ -176,10 +177,10 @@ public class CustomerTradeMarginService
 			@NonNull final IPricingResult salesRepPricingResult)
 	{
 		final BPartnerLocationId salesRepBillToLocationId = BPartnerLocationId.ofRepoId(salesRepBillToLocation.getC_BPartner_ID(),
-																						salesRepBillToLocation.getC_BPartner_Location_ID());
+				salesRepBillToLocation.getC_BPartner_Location_ID());
 
 		final BPartnerLocationAndCaptureId salesRepBillToLocationAndCapture = BPartnerLocationAndCaptureId.of(salesRepBillToLocationId,
-																											  LocationId.ofRepoId(salesRepBillToLocation.getC_Location_ID()));
+				LocationId.ofRepoId(salesRepBillToLocation.getC_Location_ID()));
 
 		final TaxId taxId = taxBL.getTaxNotNull(
 				null,
@@ -207,10 +208,10 @@ public class CustomerTradeMarginService
 			@NonNull final ComputeSalesRepPriceRequest request,
 			@NonNull final Money salesRepUnitPrice)
 	{
-		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(request.getCommissionDate(),
-																											   ConversionTypeMethod.Spot,
-																											   Env.getClientId(),
-																											   salesRepOrgId);
+		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
+				LocalDateAndOrgId.ofLocalDate(request.getCommissionDate(), salesRepOrgId),
+				ConversionTypeMethod.Spot,
+				Env.getClientId());
 
 		return moneyService.convertMoneyToCurrency(salesRepUnitPrice, request.getCustomerCurrencyId(), currencyConversionContext);
 	}

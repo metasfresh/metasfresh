@@ -31,7 +31,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -65,7 +65,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class CostDetailRepository implements ICostDetailRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Override
 	public CostDetail create(@NonNull final CostDetail.CostDetailBuilder costDetailBuilder)
@@ -102,6 +102,8 @@ public class CostDetailRepository implements ICostDetailRepository
 		updateRecordFromDocumentRef(record, cd.getDocumentRef());
 
 		record.setDescription(cd.getDescription());
+
+		record.setDateAcct(Timestamp.from(cd.getDateAcct()));
 
 		record.setProcessed(true); // TODO: get rid of Processed flag, or always set it!
 		saveRecord(record);
@@ -165,21 +167,16 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
-	public Optional<CostDetail> getCostDetail(@NonNull final CostDetailQuery query)
+	public Optional<CostDetail> firstOnly(@NonNull final CostDetailQuery query)
 	{
-		final I_M_CostDetail record = createQueryBuilder(query)
-				.create()
-				.firstOnly(I_M_CostDetail.class);
-
-		return record != null
-				? Optional.of(toCostDetail(record))
-				: Optional.empty();
+		return toSqlQuery(query)
+				.firstOnlyOptional()
+				.map(this::toCostDetail);
 	}
 
-	private IQueryBuilder<I_M_CostDetail> createQueryBuilder(@NonNull final CostDetailQuery query)
+	private IQueryBuilder<I_M_CostDetail> toSqlQuery(@NonNull final CostDetailQuery query)
 	{
-		final IQueryBuilder<I_M_CostDetail> queryBuilder = queryBL.createQueryBuilder(I_M_CostDetail.class)
-				.orderBy(I_M_CostDetail.COLUMN_M_CostDetail_ID);
+		final IQueryBuilder<I_M_CostDetail> queryBuilder = queryBL.createQueryBuilder(I_M_CostDetail.class);
 
 		boolean someFiltersApplied = false;
 
@@ -214,7 +211,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		// Product
 		if (query.getProductId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_M_Product_ID, query.getProductId());
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_Product_ID, query.getProductId());
 			someFiltersApplied = true;
 		}
 
@@ -228,12 +225,12 @@ public class CostDetailRepository implements ICostDetailRepository
 		// Client/Org
 		if (query.getClientId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_AD_Client_ID, query.getClientId());
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_AD_Client_ID, query.getClientId());
 			someFiltersApplied = true;
 		}
 		if (query.getOrgId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_AD_Org_ID, query.getOrgId());
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_AD_Org_ID, query.getOrgId());
 			someFiltersApplied = true;
 		}
 
@@ -244,10 +241,33 @@ public class CostDetailRepository implements ICostDetailRepository
 			someFiltersApplied = true;
 		}
 
+		if (query.getDateAcctRage() != null)
+		{
+			queryBuilder.addInRange(I_M_CostDetail.COLUMNNAME_DateAcct, query.getDateAcctRage());
+			someFiltersApplied = true;
+		}
+
 		// Fail if no filters were applied. Else we would fetch the whole database.
 		if (!someFiltersApplied)
 		{
 			throw new AdempiereException("Invalid query. No filters were applied: " + query);
+		}
+
+		//
+		// ORDER BYs
+		if (!query.getOrderBys().isEmpty())
+		{
+			for (final CostDetailQuery.OrderBy orderBy : query.getOrderBys())
+			{
+				if (orderBy.isAscending())
+				{
+					queryBuilder.orderBy(orderBy.getColumnName());
+				}
+				else
+				{
+					queryBuilder.orderByDescending(orderBy.getColumnName());
+				}
+			}
 		}
 
 		//
@@ -259,7 +279,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
 
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
-		final I_C_UOM productUOM = uomsRepo.getById(record.getC_UOM_ID());
+		final I_C_UOM productUOM = uomDAO.getById(record.getC_UOM_ID());
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 		final CostAmount amt = CostAmount.of(record.getAmt(), currencyId);
@@ -288,6 +308,7 @@ public class CostDetailRepository implements ICostDetailRepository
 						.build())
 				.documentRef(extractDocumentRef(record))
 				.description(record.getDescription())
+				.dateAcct(record.getDateAcct().toInstant())
 				.build();
 	}
 
@@ -341,53 +362,26 @@ public class CostDetailRepository implements ICostDetailRepository
 		}
 	}
 
-	@Override
-	public List<CostDetail> getAllForDocument(@NonNull final CostingDocumentRef documentRef)
-	{
-		return listOrderedById(CostDetailQuery.builder()
-				.documentRef(documentRef)
-				.build());
-	}
 
 	@Override
-	public List<CostDetail> getAllForDocumentAndAcctSchemaId(
-			@NonNull final CostingDocumentRef documentRef,
-			@NonNull final AcctSchemaId acctSchemaId)
+	public boolean hasCostDetailsByProductId(@NonNull final ProductId productId)
 	{
-		return listOrderedById(CostDetailQuery.builder()
-				.documentRef(documentRef)
-				.acctSchemaId(acctSchemaId)
-				.build());
-	}
-
-	@Override
-	public boolean hasCostDetailsForProductId(@NonNull final ProductId productId)
-	{
-		final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
-				.productId(productId)
-				.build();
-		return createQueryBuilder(costDetailQuery)
-				.create()
+		return toSqlQuery(CostDetailQuery.builder().productId(productId).build())
 				.anyMatch();
 	}
 
 	@Override
-	public Stream<CostDetail> streamOrderedById(@NonNull final CostDetailQuery query)
+	public Stream<CostDetail> stream(@NonNull final CostDetailQuery query)
 	{
-		return createQueryBuilder(query)
-				.clearOrderBys()
-				.orderBy(I_M_CostDetail.COLUMN_M_CostDetail_ID)
-				.create()
+		return toSqlQuery(query)
 				.iterateAndStream()
 				.map(this::toCostDetail);
 	}
 
-	private List<CostDetail> listOrderedById(@NonNull final CostDetailQuery query)
+	@Override
+	public ImmutableList<CostDetail> list(@NonNull final CostDetailQuery query)
 	{
-		return createQueryBuilder(query)
-				.clearOrderBys()
-				.orderBy(I_M_CostDetail.COLUMN_M_CostDetail_ID)
-				.create()
+		return toSqlQuery(query)
 				.stream()
 				.map(this::toCostDetail)
 				.collect(ImmutableList.toImmutableList());

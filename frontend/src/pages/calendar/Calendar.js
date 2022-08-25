@@ -131,7 +131,7 @@ const Calendar = ({
             selectedSimulationId={simulationId}
             onOpenDropdown={() => calendarData.loadSimulationsFromAPI()}
             onSelect={(simulation) => {
-              notifyParamsChanged({ simulationId: simulation?.simulationId });
+              calendarData.setSimulationId(simulation?.simulationId);
             }}
             onNew={() => {
               api

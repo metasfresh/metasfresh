@@ -363,6 +363,15 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public ImmutableSet<ProductAndCategoryId> retrieveProductAndCategoryIdsByProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		return getByIds(productIds)
+				.stream()
+				.map(product -> ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -552,7 +561,7 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public void updateProduct(@NonNull final UpdateProductRequest request)
 	{
-		final I_M_Product product = getByIdInTrx(request.getProductId());
+		final I_M_Product product = load(request.getProductId(), I_M_Product.class); // in-trx
 
 		if (request.getIsBOM() != null)
 		{
@@ -686,5 +695,18 @@ public class ProductDAO implements IProductDAO
 				.orderBy(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
 				.create()
 				.firstId(ProductCategoryId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.adempiere.model.I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
+				.orderBy(I_M_Product.COLUMNNAME_Value)
+				.create()
+				.listIds(ProductId::ofRepoId);
 	}
 }

@@ -437,6 +437,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
+	public int countICIOLAssociations(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		// count all I_C_InvoiceCandidate_InOutLine regardless of I_M_InOut status
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
+	}
+
 	private boolean isInOutCompletedOrClosed(@NonNull final I_C_InvoiceCandidate_InOutLine iciol)
 	{
 		final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
@@ -444,6 +455,18 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 	}
 
+	@Override
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID)
+				.create()
+				.list(I_C_InvoiceCandidate_InOutLine.class);
+	}
+	
 	@Override
 	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(final I_M_InOutLine inOutLine)
 	{
@@ -997,6 +1020,19 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return new InvoiceCandRecomputeTagger(this);
 	}
 
+	@NonNull
+	@Override
+	public ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, ic)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private IQueryBuilder<I_C_Invoice_Candidate_Recompute> retrieveInvoiceCandidatesRecomputeFor(
 			@NonNull final InvoiceCandRecomputeTagger tagRequest)
 	{
@@ -1535,9 +1571,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			DB.close(rs, pstmt);
 		}
 
-		// Conversion date to be used on currency conversion
-		final LocalDate dateConv = SystemTime.asLocalDate();
-
 		BigDecimal result = BigDecimal.ZERO;
 		for (final CurrencyId currencyId : currencyId2conversion2Amt.keySet())
 		{
@@ -1550,7 +1583,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						amt,
 						currencyId,    // CurFrom_ID,
 						targetCurrencyId, // CurTo_ID,
-						dateConv, // ConvDate,
+						SystemTime.asInstant(), // ConvDate,
 						conversionTypeId,
 						ClientId.ofRepoId(adClientId),
 						orgId);
@@ -1584,7 +1617,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		};
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-		DB.executeUpdateEx(sql, sqlParams, trxName);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, trxName);
 	}
 
 	@Override

@@ -159,14 +159,26 @@ public class StepDefUtil
 	{
 		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
 
-		while (deadLineMillis > System.currentTimeMillis())
+		try
 		{
-			Thread.sleep(checkingIntervalMs);
-			final Optional<T> workerResult = worker.get();
-			if (workerResult.isPresent())
+			while (deadLineMillis > System.currentTimeMillis())
 			{
-				return workerResult.get();
+				Thread.sleep(checkingIntervalMs);
+				final Optional<T> workerResult = worker.get();
+				if (workerResult.isPresent())
+				{
+					return workerResult.get();
+				}
 			}
+		}
+		catch (final Exception e)
+		{
+			if (logContext != null)
+			{
+				logContext.run();
+			}
+
+			throw e;
 		}
 
 		if (logContext != null)
@@ -175,7 +187,6 @@ public class StepDefUtil
 		}
 		Assertions.fail("the given spllier didn't succeed within the " + maxWaitSeconds + "second timeout");
 		return null;
-
 	}
 
 	public <T> T tryAndWaitForItem(
@@ -217,5 +228,10 @@ public class StepDefUtil
 		{
 			throw e;
 		}
+	}
+
+	public List<String> splitByColon(@NonNull final String s)
+	{
+		return Arrays.asList(s.split(":"));
 	}
 }

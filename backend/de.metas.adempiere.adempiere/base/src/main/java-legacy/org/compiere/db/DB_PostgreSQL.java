@@ -821,7 +821,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		// New Sequence
 		if (!hasSequence(dbSequenceName, trxName))
 		{
-			no = DB.executeUpdate("CREATE SEQUENCE " + dbSequenceName.toUpperCase()
+			no = DB.executeUpdateAndSaveErrorOnFail("CREATE SEQUENCE " + dbSequenceName.toUpperCase()
 					+ " INCREMENT " + increment
 					+ " MINVALUE " + minvalue
 					+ " MAXVALUE " + maxvalue
@@ -831,7 +831,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		// Already existing sequence => ALTER
 		else
 		{
-			no = DB.executeUpdate("ALTER SEQUENCE " + dbSequenceName.toUpperCase()
+			no = DB.executeUpdateAndSaveErrorOnFail("ALTER SEQUENCE " + dbSequenceName.toUpperCase()
 					+ " INCREMENT " + increment
 					+ " MINVALUE " + minvalue
 					+ " MAXVALUE " + maxvalue
@@ -864,7 +864,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		}
 
 		// NOTE: we are not using parameters because this command will be logged in migration scripts.
-		DB.executeUpdateEx("ALTER SEQUENCE " + dbSequenceNameOld + " RENAME TO " + dbSequenceNameNew, trxName);
+		DB.executeUpdateAndThrowExceptionOnFail("ALTER SEQUENCE " + dbSequenceNameOld + " RENAME TO " + dbSequenceNameNew, trxName);
 	}
 
 	@Override

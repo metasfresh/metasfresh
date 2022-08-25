@@ -41,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.X_C_Project;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -115,6 +116,9 @@ public class WorkOrderProjectRepository
 	@NonNull
 	public WOProject create(@NonNull final CreateWOProjectRequest createWOProjectRequest)
 	{
+		// i guess using interfacewrapperhelper like this is OK within the repository?
+		final I_C_ProjectType projectType = InterfaceWrapperHelper.loadOutOfTrx(createWOProjectRequest.getProjectTypeId(), I_C_ProjectType.class);
+
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(createWOProjectRequest.getOrgId()));
@@ -124,6 +128,8 @@ public class WorkOrderProjectRepository
 		projectRecord.setValue(createWOProjectRequest.getValue());
 		projectRecord.setPOReference(createWOProjectRequest.getPoReference());
 		projectRecord.setDescription(createWOProjectRequest.getDescription());
+
+		projectRecord.setR_StatusCategory_ID(projectType.getR_StatusCategory_ID());
 
 		projectRecord.setProjectCategory(X_C_Project.PROJECTCATEGORY_WorkOrderJob);
 		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectTypeId().getRepoId());

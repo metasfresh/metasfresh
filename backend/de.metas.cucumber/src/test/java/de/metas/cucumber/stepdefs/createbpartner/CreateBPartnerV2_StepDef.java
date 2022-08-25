@@ -83,6 +83,7 @@ public class CreateBPartnerV2_StepDef
 			final String url = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Url");
 			final String group = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Group");
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
+			final String pricingSystemId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_PricingSystem_ID);
 
 			// persisted value
 			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
@@ -104,6 +105,12 @@ public class CreateBPartnerV2_StepDef
 			if (Check.isNotBlank(parentId))
 			{
 				assertThat(persistedBPartner.getParentId().getValue()).isEqualTo(Integer.parseInt(parentId));
+			}
+
+			if (Check.isNotBlank(pricingSystemId))
+			{
+				assertThat(persistedBPartner.getPricingSystemId()).isNotNull();
+				assertThat(persistedBPartner.getPricingSystemId().getValue()).isEqualTo(Integer.parseInt(pricingSystemId));
 			}
 
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(persistedBPartner.getMetasfreshId().getValue());

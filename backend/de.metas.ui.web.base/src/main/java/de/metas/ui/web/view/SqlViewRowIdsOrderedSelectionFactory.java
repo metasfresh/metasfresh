@@ -2,6 +2,8 @@ package de.metas.ui.web.view;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -65,6 +67,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	private static final Logger logger = LogManager.getLogger(SqlViewRowIdsOrderedSelectionFactory.class);
 	private final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
 
+	private static final AdMessageKey MSG_PleaseFilterFirst_Text = AdMessageKey.of("webui.view.emptyReason.pleaseFilterFirst.text");
+	private static final AdMessageKey MSG_PleaseFilterFirst_Hint = AdMessageKey.of("webui.view.emptyReason.pleaseFilterFirst.hint");
+
 	private final SqlViewBinding viewBinding;
 
 	private SqlViewRowIdsOrderedSelectionFactory(@NonNull final SqlViewBinding viewBinding)
@@ -103,13 +108,26 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 				.buildSqlCreateSelectionFrom(viewEvalCtx, viewId, filters, orderBys, queryLimit, context);
 		logger.trace("Creating selection using {}", sqlCreates);
 
+		if (!context.isQueryIfNoFilters() && !sqlCreates.isAnyFilterApplied())
+		{
+			return ViewRowIdsOrderedSelection.builder()
+					.viewId(viewId)
+					.size(0)
+					.orderBys(orderBys)
+					.queryLimit(queryLimit)
+					.emptyReason(EmptyReason.of(
+							TranslatableStrings.adMessage(MSG_PleaseFilterFirst_Text),
+							TranslatableStrings.adMessage(MSG_PleaseFilterFirst_Hint)))
+					.build();
+		}
+
 		//
 		// Create selection lines if any => insert into T_WEBUI_ViewSelectionLine
 		if (sqlCreates.getSqlCreateSelectionLines() != null)
 		{
 			final SqlAndParams sqlCreateSelectionLines = sqlCreates.getSqlCreateSelectionLines();
 			final Stopwatch stopwatch = Stopwatch.createStarted();
-			final long linesCount = DB.executeUpdateEx(sqlCreateSelectionLines.getSql(), sqlCreateSelectionLines.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			final long linesCount = DB.executeUpdateAndThrowExceptionOnFail(sqlCreateSelectionLines.getSql(), sqlCreateSelectionLines.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			logger.trace("Created selection lines {}, linesCount={}, duration={}", viewId, linesCount, stopwatch);
 		}
 
@@ -119,7 +137,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		{
 			final SqlAndParams sqlCreateSelection = sqlCreates.getSqlCreateSelection();
 			final Stopwatch stopwatch = Stopwatch.createStarted();
-			rowsCount = DB.executeUpdateEx(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			rowsCount = DB.executeUpdateAndThrowExceptionOnFail(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			logger.trace("Created selection {}, rowsCount={}, duration={}", viewId, rowsCount, stopwatch);
 		}
 
@@ -166,12 +184,12 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			}
 
 			final SqlAndParams sqlCreateSelectionLines = viewQueryBuilder.buildSqlCreateSelectionLinesFromSelectionLines(newViewId, fromSelectionId);
-			final int linesCount = DB.executeUpdateEx(sqlCreateSelectionLines.getSql(), sqlCreateSelectionLines.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			final int linesCount = DB.executeUpdateAndThrowExceptionOnFail(sqlCreateSelectionLines.getSql(), sqlCreateSelectionLines.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 
 			if (linesCount > 0)
 			{
 				final SqlAndParams sqlCreateSelection = viewQueryBuilder.buildSqlCreateSelectionFromSelectionLines(viewEvalCtx, newViewId, orderBys);
-				rowsCount = DB.executeUpdateEx(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+				rowsCount = DB.executeUpdateAndThrowExceptionOnFail(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			}
 			else
 			{
@@ -181,7 +199,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		else
 		{
 			final SqlAndParams sqlCreateSelection = viewQueryBuilder.buildSqlCreateSelectionFromSelection(viewEvalCtx, newViewId, fromSelectionId, filters, orderBys, filterConverterCtx);
-			rowsCount = DB.executeUpdateEx(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			rowsCount = DB.executeUpdateAndThrowExceptionOnFail(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 		}
 
 		return ViewRowIdsOrderedSelection.builder()
@@ -213,7 +231,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		for (final DocumentId rowId : rowIds.toSet())
 		{
 			final SqlAndParams sqlAdd = newSqlViewSelectionQueryBuilder().buildSqlAddRowIdsFromSelection(selectionId, rowId);
-			final int added = DB.executeUpdateEx(sqlAdd.getSql(), sqlAdd.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			final int added = DB.executeUpdateAndThrowExceptionOnFail(sqlAdd.getSql(), sqlAdd.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			if (added <= 0)
 			{
 				continue;
@@ -248,12 +266,12 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// Delete
 		{
 			final SqlAndParams sqlDelete = newSqlViewSelectionQueryBuilder().buildSqlDeleteRowIdsFromSelection(selection.getSelectionId(), rowIds);
-			if(sqlDelete == null)
+			if (sqlDelete == null)
 			{
 				return selection;
 			}
 
-			final int deleted = DB.executeUpdateEx(sqlDelete.getSql(), sqlDelete.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			final int deleted = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete.getSql(), sqlDelete.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			if (deleted <= 0)
 			{
 				// nothing changed
@@ -269,11 +287,11 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		return selection.withSize(size);
 	}
 
-	private final int retrieveSize(final String selectionId)
+	private int retrieveSize(final String selectionId)
 	{
 		final SqlAndParams sqlCount = newSqlViewSelectionQueryBuilder().buildSqlRetrieveSize(selectionId);
 		final int size = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount.getSql(), sqlCount.getSqlParams());
-		return size <= 0 ? 0 : size;
+		return Math.max(size, 0);
 	}
 
 	@Override
@@ -302,14 +320,14 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// Delete selection lines
 		{
 			final SqlAndParams sql = viewQueryBuilder.buildSqlDeleteSelectionLines(selectionIds);
-			final int countDeleted = DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			final int countDeleted = DB.executeUpdateAndThrowExceptionOnFail(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			logger.trace("Delete {} selection lines for {}", countDeleted, selectionIds);
 		}
 
 		// Delete selection rows
 		{
 			final SqlAndParams sql = viewQueryBuilder.buildSqlDeleteSelection(selectionIds);
-			final int countDeleted = DB.executeUpdateEx(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			final int countDeleted = DB.executeUpdateAndThrowExceptionOnFail(sql.getSql(), sql.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 			logger.trace("Delete {} selection rows for {}", countDeleted, selectionIds);
 		}
 	}

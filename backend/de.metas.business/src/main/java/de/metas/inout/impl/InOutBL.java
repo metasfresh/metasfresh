@@ -7,12 +7,16 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
@@ -57,6 +61,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.X_M_InOut;
 import org.compiere.model.X_R_Request;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -335,7 +340,7 @@ public class InOutBL implements IInOutBL
 		line.setM_InOut(inout);
 
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(inout.getM_Warehouse_ID(), I_M_Warehouse.class);
-		final I_M_Locator locator = warehouseBL.getDefaultLocator(warehouse);
+		final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(warehouse);
 		if (locator != null)
 		{
 			line.setM_Locator_ID(locator.getM_Locator_ID());
@@ -619,7 +624,6 @@ public class InOutBL implements IInOutBL
 			return null;
 		}
 		return bpartnerDAO.getContactLocationEmail(contactId);
-
 	}
 
 	@Override
@@ -630,5 +634,43 @@ public class InOutBL implements IInOutBL
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		return Objects.requireNonNull(TimeUtil.asLocalDate(inOut.getMovementDate(), timeZone));
+	}
+
+	@Override
+	public void updateDescriptionAndDescriptionBottomFromDocType(@NonNull final I_M_InOut inOut)
+	{
+
+		final I_C_DocType docType = docTypeDAO.getById(inOut.getC_DocType_ID());
+		if (docType == null)
+		{
+			return;
+		}
+
+		if (!docType.isCopyDescriptionToDocument())
+		{
+			return;
+		}
+
+		final I_C_BPartner bPartner = getBPartnerOrNull(inOut);
+
+		final String adLanguage = CoalesceUtil.coalesce(
+				bPartner == null ? null : bPartner.getAD_Language(),
+				Env.getAD_Language());
+
+		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
+		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
+		final ITranslatableString documentNote = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_DocumentNote, docType.getDocumentNote());
+
+		inOut.setDescription(description.translate(adLanguage));
+		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+	}
+
+	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(inOut.getC_BPartner_ID());
+
+		return bPartnerId != null
+				? bpartnerDAO.getById(bPartnerId, I_C_BPartner.class)
+				: null;
 	}
 }

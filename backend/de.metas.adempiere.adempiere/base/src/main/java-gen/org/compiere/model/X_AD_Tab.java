@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1869693003L;
+	private static final long serialVersionUID = -275252737L;
 
     /** Standard Constructor */
     public X_AD_Tab (final Properties ctx, final int AD_Tab_ID, @Nullable final String trxName)
@@ -454,6 +454,18 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
+	public void setIsAutodetectDefaultDateFilter (final boolean IsAutodetectDefaultDateFilter)
+	{
+		set_Value (COLUMNNAME_IsAutodetectDefaultDateFilter, IsAutodetectDefaultDateFilter);
+	}
+
+	@Override
+	public boolean isAutodetectDefaultDateFilter() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutodetectDefaultDateFilter);
+	}
+
+	@Override
 	public void setIsCheckParentsChanged (final boolean IsCheckParentsChanged)
 	{
 		set_Value (COLUMNNAME_IsCheckParentsChanged, IsCheckParentsChanged);
@@ -499,6 +511,18 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public boolean isInsertRecord() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInsertRecord);
+	}
+
+	@Override
+	public void setIsQueryIfNoFilters (final boolean IsQueryIfNoFilters)
+	{
+		set_Value (COLUMNNAME_IsQueryIfNoFilters, IsQueryIfNoFilters);
+	}
+
+	@Override
+	public boolean isQueryIfNoFilters() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsQueryIfNoFilters);
 	}
 
 	@Override

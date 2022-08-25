@@ -1,28 +1,5 @@
 package de.metas.pricing.service;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_ProductPrice;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -41,6 +18,23 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_ProductPrice;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -268,42 +262,7 @@ public class ProductPrices
 			logger.info("Registered main product matcher: {}", matcher);
 		}
 	}
-
-	@Nullable public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
-			@Nullable final I_M_PriceList_Version startPriceListVersion,
-			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper,
-			@NonNull final ZonedDateTime priceDate)
-	{
-		if (startPriceListVersion == null)
-		{
-			return null;
-		}
-
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-
-		final Set<Integer> checkedPriceListVersionIds = new HashSet<>();
-
-		I_M_PriceList_Version currentPriceListVersion = startPriceListVersion;
-		while (currentPriceListVersion != null)
-		{
-			// Stop here if the price list version was already considered
-			if (!checkedPriceListVersionIds.add(currentPriceListVersion.getM_PriceList_Version_ID()))
-			{
-				return null;
-			}
-
-			final T productPrice = productPriceMapper.apply(currentPriceListVersion);
-			if (productPrice != null)
-			{
-				return productPrice;
-			}
-
-			currentPriceListVersion = priceListsRepo.getBasePriceListVersionForPricingCalculationOrNull(currentPriceListVersion, priceDate);
-		}
-
-		return null;
-	}
-
+	
 	/**
 	 * @deprecated Please use {@link IPriceListDAO#addProductPrice(AddProductPriceRequest)}. If doesn't fit, extend it ;)
 	 */

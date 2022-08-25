@@ -122,6 +122,12 @@ public class JsonResponseProject
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String projectCategory;
 
+	@ApiModelProperty(value = "This translates to `C_Project.R_StatusCategory_ID`.")
+	@NonNull
+	@JsonProperty("requestStatusCategoryId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonMetasfreshId requestStatusCategoryId;
+
 	@ApiModelProperty(value = "This translates to `C_Project.R_Project_Status_ID`.")
 	@Nullable
 	@JsonProperty("projectStatusId")

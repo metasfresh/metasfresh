@@ -479,7 +479,7 @@ public class DebugRestController
 		final String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
 				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(viewId.getViewId())
 				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1 + "=" + DB.buildSqlList(rowIds.toIntSet());
-		final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_None);
+		final int countDeleted = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_None);
 
 		//
 		// Clear view's cache

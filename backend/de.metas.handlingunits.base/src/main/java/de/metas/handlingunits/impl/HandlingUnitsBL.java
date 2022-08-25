@@ -104,6 +104,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -654,6 +655,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				Check.errorIf(maxDepth <= 0, "We navigated more than {} levels deep to get the top level of hu={}. It seems like a data error", maxDepth, hu);
 			}
 		}
+		
+		husResult.sort(Comparator.comparing(I_M_HU::getM_HU_ID)); // make sure that our result is in defined ordering
+		
 		return husResult;
 	}
 
@@ -1092,11 +1096,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
-			@NonNull HuPackingInstructionsId packingInstructionsId,
-			@Nullable String huUnitType,
-			@Nullable BPartnerId bpartnerId)
+			@NonNull final HuPackingInstructionsId packingInstructionsId,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
+	}
+
+	@Override
+	public I_M_HU_PI_Item getPackingInstructionItemById(final HuPackingInstructionsItemId piItemId)
+	{
+		return handlingUnitsRepo.getPackingInstructionItemById(piItemId);
 	}
 
 	@Override

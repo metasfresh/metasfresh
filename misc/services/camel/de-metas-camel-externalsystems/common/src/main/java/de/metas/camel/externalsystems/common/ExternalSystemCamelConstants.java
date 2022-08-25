@@ -44,6 +44,8 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_PP_ORDER_ID = "PP_ORDER_ID";
 	public static final String HEADER_PRODUCT_IDENTIFIER = "productIdentifier";
 
+	public static final String MF_API_BASE_URL_PROPERTY = "metasfresh.api.baseurl";
+
 	public static final String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
 	public static final String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";

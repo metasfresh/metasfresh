@@ -112,7 +112,7 @@ public class InOutProducer implements IInOutProducer
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
 	private static final String DYNATTR_HeaderAggregationKey = InOutProducer.class.getName() + "#HeaderAggregationKey";
-	
+
 	private ITrxItemProcessorContext processorCtx;
 
 	private final InOutGenerateResult result;
@@ -224,8 +224,8 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	private void unsetHeaderProjectIdIfDiverging(
-			final @NonNull I_M_InOut receipt, 
-			final @NonNull I_M_InOutLine receiptLine, 
+			final @NonNull I_M_InOut receipt,
+			final @NonNull I_M_InOutLine receiptLine,
 			final @NonNull I_M_ReceiptSchedule rs)
 	{
 		if (receiptLine.getC_Project_ID() > 0
@@ -254,6 +254,8 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
+	 * @param previousReceiptSchedule
+	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
@@ -465,6 +467,7 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setIsSOTrx(false);
 
 			// this is the doctype of the sched's source record (e.g. "Bestellung")
+			// receiptHeader.setC_DocType_ID(rs.getC_DocType_ID());
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
@@ -522,9 +525,10 @@ public class InOutProducer implements IInOutProducer
 		final I_C_Order order = rs.getC_Order();
 
 		final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-		if(order!=null && propagateToMInOut)
+		if (order != null && propagateToMInOut)
 		{
 			receiptHeader.setEMail(order.getEMail());
+			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 		}
 		if (order != null && order.isDropShip())
 		{
@@ -587,7 +591,7 @@ public class InOutProducer implements IInOutProducer
 		// Line Warehouse & Locator
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
-			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+			final LocatorId locatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
 			line.setM_Locator_ID(locatorId.getRepoId());
 		}
 

@@ -1,9 +1,8 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
@@ -145,6 +144,31 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
+	 * Set Interim Invoice Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Interim_Invoice_Settings_ID (int C_Interim_Invoice_Settings_ID);
+
+	/**
+	 * Get Interim Invoice Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Interim_Invoice_Settings_ID();
+
+	@Nullable org.compiere.model.I_C_Interim_Invoice_Settings getC_Interim_Invoice_Settings();
+
+	void setC_Interim_Invoice_Settings(@Nullable org.compiere.model.I_C_Interim_Invoice_Settings C_Interim_Invoice_Settings);
+
+	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Interim_Invoice_Settings> COLUMN_C_Interim_Invoice_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Interim_Invoice_Settings_ID", org.compiere.model.I_C_Interim_Invoice_Settings.class);
+	String COLUMNNAME_C_Interim_Invoice_Settings_ID = "C_Interim_Invoice_Settings_ID";
+
+	/**
 	 * Set Hierarchy commission settings.
 	 *
 	 * <br>Type: TableDir
@@ -279,6 +303,31 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
 
 	/**
+	 * Set Prefinancing Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Prefinancing_Settings_ID (int C_Prefinancing_Settings_ID);
+
+	/**
+	 * Get Prefinancing Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Prefinancing_Settings_ID();
+
+	@Nullable org.compiere.model.I_C_Prefinancing_Settings getC_Prefinancing_Settings();
+
+	void setC_Prefinancing_Settings(@Nullable org.compiere.model.I_C_Prefinancing_Settings C_Prefinancing_Settings);
+
+	ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_Prefinancing_Settings> COLUMN_C_Prefinancing_Settings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Prefinancing_Settings_ID", org.compiere.model.I_C_Prefinancing_Settings.class);
+	String COLUMNNAME_C_Prefinancing_Settings_ID = "C_Prefinancing_Settings_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -302,7 +351,7 @@ public interface I_C_Flatrate_Conditions
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-	
+
 	/**
 	 * Set Description.
 	 *

@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -233,7 +234,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
 	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/3809
+	 * task https://github.com/metasfresh/metasfresh/issues/3809
 	 */
 	void updateMissingPaymentTermIds(PInstanceId selectionId);
 
@@ -272,13 +273,20 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
 	 * </ul>
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1566
+	 * task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
+
 	/**
+	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
 	 *
-	 * @param inOutLine
+	 * @task https://github.com/metasfresh/metasfresh/issues/13376
+	 */
+	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
+
+	/**
 	 * @return also returns inactive records (intended use is for deletion)
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(I_M_InOutLine inOutLine);
@@ -288,7 +296,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code>.
 	 *
-	 * @param inOutLine
 	 * @see #retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine)
 	 */
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(I_M_InOutLine inOutLine);
@@ -399,4 +406,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
 }

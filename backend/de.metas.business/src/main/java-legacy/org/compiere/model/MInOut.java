@@ -51,6 +51,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.product.IProductBL;
@@ -81,13 +82,11 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -417,6 +416,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			setEMail(order.getEMail());
 		}
+
+		setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+
 		// Drop shipment
 		// metas start: cg: 01717
 		if (order.isSOTrx())
@@ -516,6 +518,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser1_ID(invoice.getUser1_ID());
 		setUser2_ID(invoice.getUser2_ID());
 		setEMail(invoice.getEMail());
+		setAD_InputDataSource_ID(invoice.getAD_InputDataSource_ID());
 
 		// metas
 		copyAdditionalCols(order);
@@ -861,7 +864,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final String sql = "UPDATE M_InOutLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE M_InOut_ID=" + getM_InOut_ID();
-		final int noLine = DB.executeUpdate(sql, get_TrxName());
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		m_lines = null;
 		log.debug("{} - Lines={}", processed, noLine);
 	} // setProcessed
@@ -1127,7 +1130,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM M_InOut o WHERE ol.M_InOut_ID=o.M_InOut_ID) "
 					+ "WHERE M_InOut_ID=" + getC_Order_ID();
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Lines -> #{}", no);
 		}
 		return true;
@@ -1522,7 +1525,7 @@ public class MInOut extends X_M_InOut implements IDocument
 							storageBL.addAsync(
 									getCtx(),
 									warehouseId.getRepoId(),
-									Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+									Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
 									sLine.getM_Product_ID(),
 									ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 									BigDecimal.ZERO, reservedDiff, orderedDiff, get_TrxName());
@@ -1569,7 +1572,7 @@ public class MInOut extends X_M_InOut implements IDocument
 						storageBL.addAsync(
 								getCtx(),
 								warehouseId.getRepoId(),
-								Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+								Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
 								sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
@@ -2657,9 +2660,9 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getMovementDate());
+		return InstantAndOrgId.ofTimestamp(getMovementDate(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

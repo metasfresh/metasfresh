@@ -219,7 +219,8 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryRecord);
 
-		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory"), inventoryRecord);
+ 		final String inventoryIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory");
+		inventoryTable.put(inventoryIdentifier, inventoryRecord);
 	}
 
 	private void addNewInventoryLine(@NonNull final Map<String, String> tableRow)
@@ -237,7 +238,7 @@ public class M_Inventory_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-		inventoryLine.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
+		inventoryLine.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
 		inventoryLine.setM_Product_ID(productId);
 
 		inventoryLine.setQtyCount(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyCount"));

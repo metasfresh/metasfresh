@@ -74,12 +74,6 @@ public interface IPaymentDAO extends ISingletonService
 	BigDecimal getInvoiceOpenAmount(I_C_Payment payment, boolean creditMemoAdjusted);
 
 	/**
-	 * Return a list of active, processed lines in {@link I_C_PaySelection}
-	 */
-	@Deprecated
-	List<I_C_PaySelectionLine> getProcessedLines(I_C_PaySelection paySelection);
-
-	/**
 	 * retrieve payment allocations for specific payment
 	 */
 	List<I_C_AllocationLine> retrieveAllocationLines(I_C_Payment payment);

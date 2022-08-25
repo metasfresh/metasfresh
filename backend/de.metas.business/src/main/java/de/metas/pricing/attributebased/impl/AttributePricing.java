@@ -1,7 +1,6 @@
 package de.metas.pricing.attributebased.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
@@ -38,7 +37,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -51,7 +49,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class AttributePricing implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(AttributePricing.class);
-	
+
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
@@ -139,7 +137,7 @@ public class AttributePricing implements IPricingRule
 		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
 		if (productPriceSettings == null)
 		{
-			logger.trace("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
 			return;
 		}
 
@@ -224,7 +222,7 @@ public class AttributePricing implements IPricingRule
 	 *
 	 * @return product price attribute if exists and it's valid
 	 */
-	private static Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
+	private Optional<I_M_ProductPrice> retrieveProductPriceAttributeIfValid(final IPricingContext pricingCtx, final int productPriceId)
 	{
 		if (productPriceId <= 0)
 		{
@@ -242,7 +240,7 @@ public class AttributePricing implements IPricingRule
 		// Make sure the product price attribute is still active.
 		if (!productPrice.isActive())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - Return empty because M_ProductPrice_ID={} is not active", productPriceId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("retrieveProductPriceAttributeIfValid - Return empty because M_ProductPrice_ID={} is not active: {}", productPriceId);
 			return Optional.empty();
 		}
 
@@ -280,16 +278,12 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> ProductPrices.newQuery(priceListVersion)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersion)
 						.setProductId(pricingCtx.getProductId())
 						.onlyValidPrices(true)
 						.matching(_defaultMatchers)
 						.strictlyMatchingAttributes(attributeSetInstance)
-						.firstMatching(),
-
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
+						.firstMatching();
 
 		if (productPrice == null)
 		{

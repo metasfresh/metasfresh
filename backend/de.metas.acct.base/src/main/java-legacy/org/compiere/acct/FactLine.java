@@ -1,27 +1,5 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_RevenueRecognition_Plan;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_M_Movement;
-import org.compiere.model.MAccount;
-import org.compiere.model.X_Fact_Acct;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -43,18 +21,36 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_RevenueRecognition_Plan;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.MAccount;
+import org.compiere.model.X_Fact_Acct;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Accounting Fact Entry.
@@ -64,13 +60,12 @@ import javax.annotation.Nullable;
  * <p>
  * Contributor(s):
  * Chris Farley: Fix Bug [ 1657372 ] M_MatchInv records can not be balanced
- * https://sourceforge.net/forum/message.php?msg_id=4151117
  * Carlos Ruiz - globalqss: Add setAmtAcct method rounded by Currency
  * Armen Rizal, Goodwill Consulting
  * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs Bayu Sistematika -
  * <li>BF [ 2213252 ] Matching Inv-Receipt generated unproperly value for src
  * amt Teo Sarca
- * <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
+ * <li>FR [ 2819081 ] FactLine.getDocLine should be public
  */
 public final class FactLine extends X_Fact_Acct
 {
@@ -276,7 +271,7 @@ public final class FactLine extends X_Fact_Acct
 				}
 				if (userElementString != null)
 				{
-					set_Value (userElementStringColumnname, userElementString);
+					set_Value(userElementStringColumnname, userElementString);
 				}
 			}
 		}
@@ -469,7 +464,7 @@ public final class FactLine extends X_Fact_Acct
 	 * @param doc     document
 	 * @param docLine doc line
 	 */
-	protected void setDocumentInfo(final Doc<?> doc, final DocLine<?> docLine)
+	void setDocumentInfo(final Doc<?> doc, final DocLine<?> docLine)
 	{
 		m_doc = doc;
 		m_docLine = docLine;
@@ -485,17 +480,23 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		// Date Trx
-		setDateTrx(m_doc.getDateDoc());
-		if (m_docLine != null && m_docLine.getDateDoc() != null)
+		if (m_docLine != null)
 		{
-			setDateTrx(m_docLine.getDateDoc());
+			setDateTrx(m_docLine.getDateDocAsTimestamp());
+		}
+		else
+		{
+			setDateTrx(m_doc.getDateDocAsTimestamp());
 		}
 
 		// Date Acct
-		setDateAcct(m_doc.getDateAcct());
-		if (m_docLine != null && m_docLine.getDateAcct() != null)
+		if (m_docLine != null)
 		{
-			setDateAcct(m_docLine.getDateAcct());
+			setDateAcct(m_docLine.getDateAcctAsTimestamp());
+		}
+		else
+		{
+			setDateAcct(m_doc.getDateAcctAsTimestamp());
 		}
 
 		// Period
@@ -672,16 +673,6 @@ public final class FactLine extends X_Fact_Acct
 	private void setC_LocFrom_ID(final LocationId locationFromId)
 	{
 		super.setC_LocFrom_ID(LocationId.toRepoId(locationFromId));
-	}
-
-	private void setDateTrx(final LocalDate dateTrx)
-	{
-		super.setDateTrx(TimeUtil.asTimestamp(dateTrx));
-	}
-
-	private void setDateAcct(final LocalDate dateAcct)
-	{
-		super.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 	}
 
 	public Doc<?> getDoc()
@@ -1005,10 +996,6 @@ public final class FactLine extends X_Fact_Acct
 		final boolean negative = deltaAmount.compareTo(BigDecimal.ZERO) < 0;
 		final boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
 
-		log.debug(deltaAmount.toString()
-						  + "; Old-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr()
-						  + "; Negative=" + negative + "; AdjustDr=" + adjustDr);
-
 		if (adjustDr)
 		{
 			if (negative)
@@ -1028,8 +1015,6 @@ public final class FactLine extends X_Fact_Acct
 		{
 			setAmtAcctCr(getAmtAcctCr().add(deltaAmount));
 		}
-
-		log.debug("New-AcctDr=" + getAmtAcctDr() + ",AcctCr=" + getAmtAcctCr());
 	}    // currencyCorrect
 
 	/**
@@ -1089,29 +1074,28 @@ public final class FactLine extends X_Fact_Acct
 		}
 
 		// Get Conversion Type from Line or Header
+		LocalDateAndOrgId convDate;
 		CurrencyConversionTypeId conversionTypeId = null;
-		OrgId orgId = OrgId.ANY;
 		if (m_docLine != null)            // get from line
 		{
+			convDate = m_docLine.getDateAcct();
 			conversionTypeId = m_docLine.getCurrencyConversionTypeId();
-			orgId = m_docLine.getOrgId();
 		}
+		else
+		{
+			convDate = m_doc.getDateAcct();
+		}
+
 		if (conversionTypeId == null)    // get from header
 		{
-			Check.assumeNotNull(m_doc, "m_doc not null");
 			conversionTypeId = m_doc.getCurrencyConversionTypeId();
-			if (orgId == null || orgId.isAny())
-			{
-				orgId = m_doc.getOrgId();
-			}
 		}
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		return currencyConversionBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(getDateAcct()),
+				convDate,
 				conversionTypeId,
-				m_doc.getClientId(),
-				orgId);
+				m_doc.getClientId());
 	}
 
 	/**
@@ -1497,13 +1481,13 @@ public final class FactLine extends X_Fact_Acct
 			// end Bayu Sistematika
 			//
 			log.debug(new StringBuilder("(Table=").append(AD_Table_ID)
-							  .append(",Record_ID=").append(Record_ID)
-							  .append(",Line=").append(Record_ID)
-							  .append(", Account=").append(m_acct)
-							  .append(",dr=").append(dr).append(",cr=").append(cr)
-							  .append(") - DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
-							  .append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
-							  .toString());
+					.append(",Record_ID=").append(Record_ID)
+					.append(",Line=").append(Record_ID)
+					.append(", Account=").append(m_acct)
+					.append(",dr=").append(dr).append(",cr=").append(cr)
+					.append(") - DR=").append(getAmtSourceDr()).append("|").append(getAmtAcctDr())
+					.append(", CR=").append(getAmtSourceCr()).append("|").append(getAmtAcctCr())
+					.toString());
 			// Dimensions
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
@@ -1533,11 +1517,11 @@ public final class FactLine extends X_Fact_Acct
 			if (log.isInfoEnabled())
 			{
 				log.info(new StringBuilder("Not Found (try later) ")
-								 .append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
-								 .append(", AD_Table_ID=").append(AD_Table_ID)
-								 .append(",Record_ID=").append(Record_ID)
-								 .append(",Line_ID=").append(Line_ID)
-								 .append(", Account_ID=").append(m_acct.getAccount_ID()).toString());
+						.append(",C_AcctSchema_ID=").append(getC_AcctSchema_ID())
+						.append(", AD_Table_ID=").append(AD_Table_ID)
+						.append(",Record_ID=").append(Record_ID)
+						.append(",Line_ID=").append(Line_ID)
+						.append(", Account_ID=").append(m_acct.getAccount_ID()).toString());
 			}
 
 			return false; // not updated
@@ -1568,11 +1552,11 @@ public final class FactLine extends X_Fact_Acct
 
 		final IVATCodeDAO vatCodeDAO = Services.get(IVATCodeDAO.class);
 		final VATCode vatCode = vatCodeDAO.findVATCode(VATCodeMatchingRequest.builder()
-															   .setC_AcctSchema_ID(getC_AcctSchema_ID())
-															   .setC_Tax_ID(taxId)
-															   .setIsSOTrx(isSOTrx)
-															   .setDate(getDateAcct())
-															   .build());
+				.setC_AcctSchema_ID(getC_AcctSchema_ID())
+				.setC_Tax_ID(taxId)
+				.setIsSOTrx(isSOTrx)
+				.setDate(getDateAcct())
+				.build());
 
 		setVATCode(vatCode.getCode());
 	}

@@ -245,7 +245,7 @@ public class Charge
     {
         StringBuffer sql = createUpdateAccountSql(charge, account);
         //
-        int noAffectedRows = DB.executeUpdate(sql.toString(), null);
+        int noAffectedRows = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), null);
         if (noAffectedRows != 1)
         {
             log.error("Update #" + noAffectedRows + "\n" + sql.toString());

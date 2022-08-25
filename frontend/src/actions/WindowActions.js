@@ -46,7 +46,11 @@ import {
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { preFormatPostDATA, toggleFullScreen } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
+import {
+  getScope,
+  parseToDisplay,
+  getInvalidDataItem,
+} from '../utils/documentListHelper';
 
 import {
   formatParentUrl,
@@ -855,7 +859,11 @@ export function patch(
         response.data.documents instanceof Array
           ? response.data.documents
           : response.data;
-      const dataItem = data[0];
+
+      const invalidDataItem = getInvalidDataItem(data);
+
+      const dataItem = invalidDataItem === null ? data[0] : invalidDataItem;
+
       const includedTabsInfo =
         dataItem && dataItem.includedTabsInfo
           ? dataItem.includedTabsInfo

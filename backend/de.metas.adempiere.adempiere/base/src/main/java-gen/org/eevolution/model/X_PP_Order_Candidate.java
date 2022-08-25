@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -277326544L;
+	private static final long serialVersionUID = 329777100L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -120,7 +120,7 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public boolean isSimulated() 
+	public boolean isSimulated()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
 	}
@@ -150,6 +150,21 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getM_AttributeSetInstance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1)
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
 
 	@Override
@@ -305,6 +320,19 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public void setQtyProcessed_OnDate (final @Nullable BigDecimal QtyProcessed_OnDate)
+	{
+		set_Value (COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
+	}
+
+	@Override
+	public BigDecimal getQtyProcessed_OnDate()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyToProcess (final @Nullable BigDecimal QtyToProcess)
 	{
 		set_Value (COLUMNNAME_QtyToProcess, QtyToProcess);
@@ -315,6 +343,18 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToProcess);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo()
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override

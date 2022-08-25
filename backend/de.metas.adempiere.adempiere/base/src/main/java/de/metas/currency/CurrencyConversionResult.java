@@ -22,19 +22,17 @@ package de.metas.currency;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /**
  * The result of a currency conversion.
@@ -46,26 +44,17 @@ import lombok.Value;
 @Builder
 public class CurrencyConversionResult
 {
-	@NonNull
-	private BigDecimal amount;
-	@NonNull
-	private CurrencyId currencyId;
+	@NonNull BigDecimal amount;
+	@NonNull CurrencyId currencyId;
 
-	@NonNull
-	private BigDecimal sourceAmount;
-	@NonNull
-	private CurrencyId sourceCurrencyId;
+	@NonNull BigDecimal sourceAmount;
+	@NonNull CurrencyId sourceCurrencyId;
 
 	// NOTE: it might be null when sourceAmount is ZERO and API decided to not fetch the conversionRate because it's pointless
-	@Nullable
-	private BigDecimal conversionRateOrNull;
+	@Nullable BigDecimal conversionRateOrNull;
 
-	@NonNull
-	private LocalDate conversionDate;
-	@NonNull
-	private CurrencyConversionTypeId conversionTypeId;
-	@NonNull
-	private ClientId clientId;
-	@NonNull
-	private OrgId orgId;
+	@NonNull Instant conversionDate;
+	@NonNull CurrencyConversionTypeId conversionTypeId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 }

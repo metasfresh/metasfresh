@@ -25,9 +25,9 @@ package de.metas.camel.externalsystems.shopware6.order.query;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.OperatorType;
+import de.metas.camel.externalsystems.shopware6.api.model.QueryType;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -36,68 +36,43 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_ORDER_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_ORDER_NUMBER;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
+import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildEqualsJsonQuery;
+import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildUpdatedAfterJsonQueries;
 
 @UtilityClass
 public class OrderQueryHelper
 {
 	@NonNull
 	@VisibleForTesting
-	public static JsonQuery buildEqualsJsonQuery(@NonNull final String key, @NonNull final String value)
-	{
-		return JsonQuery.builder()
-				.field(key)
-				.queryType(JsonQuery.QueryType.EQUALS)
-				.value(value)
-				.build();
-	}
-
-	@NonNull
-	@VisibleForTesting
 	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter, @NonNull final PageAndLimit pageAndLimitValues)
 	{
-		final HashMap<String, String> parameters = new HashMap<>();
-		parameters.put(PARAMETERS_DATE_GTE, updatedAfter);
-
 		return MultiQueryRequest.builder()
-				.filter(MultiJsonFilter.builder()
-								.operatorType(MultiJsonFilter.OperatorType.OR)
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_UPDATED_AT)
-												   .queryType(JsonQuery.QueryType.RANGE)
-												   .parameters(parameters)
-												   .build())
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_CREATED_AT)
-												   .queryType(JsonQuery.QueryType.RANGE)
-												   .parameters(parameters)
-												   .build())
-								.build())
+				.filter(buildUpdatedAfterJsonQueries(updatedAfter))
 				.limit(pageAndLimitValues.getLimit())
 				.page(pageAndLimitValues.getPageIndex())
 				.build();
 	}
 
 	@NonNull
-	public Shopware6QueryRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request, @NonNull final PageAndLimit pageAndLimitValues)
+	public MultiQueryRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request, @NonNull final PageAndLimit pageAndLimitValues)
 	{
 		final List<JsonQuery> queries = buildLookUpSpecificOrderQuery(request);
 
 		if (!Check.isEmpty(queries))
 		{
 			return MultiQueryRequest.builder()
-					.filter(MultiJsonFilter.builder()
-									.operatorType(MultiJsonFilter.OperatorType.AND)
+					.filter(JsonQuery.builder()
+									.queryType(QueryType.MULTI)
+									.operatorType(OperatorType.AND)
 									.jsonQueries(queries)
 									.build())
+					.limit(pageAndLimitValues.getLimit())
+					.page(pageAndLimitValues.getPageIndex())
 					.build();
 		}
 		else
@@ -112,6 +87,7 @@ public class OrderQueryHelper
 			return buildUpdatedAfterQueryRequest(updatedAfter, pageAndLimitValues);
 		}
 	}
+
 	public boolean shouldIgnoreNextImportTimestamp(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		final String orderId = externalSystemRequest.getParameters().get(ExternalSystemConstants.PARAM_ORDER_ID);

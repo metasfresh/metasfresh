@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -54,7 +55,7 @@ public interface IInOutDAO extends ISingletonService
 	@Nullable
 	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
-	I_M_InOutLine getLineById(InOutLineId inoutLineId);
+	I_M_InOutLine getLineByIdInTrx(InOutLineId inoutLineId);
 
 	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
 
@@ -109,7 +110,9 @@ public interface IInOutDAO extends ISingletonService
 
 	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
 
-	<T extends I_M_InOutLine> T getLineById(InOutLineId inoutLineId, Class<T> modelClass);
+	<T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
+
+	<T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
 
 	@NonNull
 	ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId);
@@ -129,4 +132,6 @@ public interface IInOutDAO extends ISingletonService
 	List<I_M_InOutLine> retrieveShipmentLinesForOrderId(Set<OrderId> orderIds);
 
 	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
+
+	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
 }

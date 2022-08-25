@@ -45,4 +45,7 @@ public class ProjectType
 
 	@Nullable
 	DocSequenceId docSequenceId;
+
+	@NonNull
+	RequestStatusCategoryId requestStatusCategoryId;
 }

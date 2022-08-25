@@ -73,7 +73,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
-import de.metas.ui.web.window.descriptor.sql.ColumnSql;
+import org.adempiere.ad.column.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
