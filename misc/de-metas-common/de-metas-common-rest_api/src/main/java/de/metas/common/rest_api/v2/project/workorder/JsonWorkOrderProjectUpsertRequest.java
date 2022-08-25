@@ -22,17 +22,22 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PROJECT_IDENTIFIER_DOC;
 
@@ -45,28 +50,35 @@ public class JsonWorkOrderProjectUpsertRequest
 			required = true,
 			value = PROJECT_IDENTIFIER_DOC) //
 	@Setter
-	String projectIdentifier;
+	String identifier;
+
+	@ApiModelProperty(required = true)
+	@Setter
+	JsonMetasfreshId projectTypeId;
+
+	@ApiModelProperty(required = true)
+	@Setter
+	SyncAdvise syncAdvise;
 
 	String value;
+
 	@ApiModelProperty(hidden = true)
 	boolean valueSet;
 
 	String name;
+
 	@ApiModelProperty(hidden = true)
 	boolean nameSet;
-
-	@ApiModelProperty(required = true)
-	JsonMetasfreshId projectTypeId;
 
 	JsonMetasfreshId priceListVersionId;
 
 	@ApiModelProperty(hidden = true)
 	boolean priceListVersionIdSet;
 
-	JsonMetasfreshId currencyId;
+	String currencyCode;
 
 	@ApiModelProperty(hidden = true)
-	boolean currencyIdSet;
+	boolean currencyCodeSet;
 
 	JsonMetasfreshId salesRepId;
 
@@ -88,16 +100,22 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	boolean dateFinishSet;
 
-	JsonMetasfreshId businessPartnerId;
+	JsonMetasfreshId bpartnerId;
 
 	@ApiModelProperty(hidden = true)
-	boolean businessPartnerIdSet;
+	boolean bpartnerIdSet;
 
+	@ApiModelProperty("Translates to `C_Project.C_Project_Reference_Ext`.")
 	String projectReferenceExt;
 
 	@ApiModelProperty(hidden = true)
 	boolean projectReferenceExtSet;
 
+	JsonExternalId externalId;
+
+	@ApiModelProperty(hidden = true)
+	boolean externalIdSet;
+	
 	JsonMetasfreshId projectParentId;
 
 	@ApiModelProperty(hidden = true)
@@ -106,19 +124,14 @@ public class JsonWorkOrderProjectUpsertRequest
 	@ApiModelProperty(required = true)
 	String orgCode;
 
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
+	@ApiModelProperty(hidden = true)
+	boolean orgCodeSet;
+
+	@ApiModelProperty(value = "If not specified but required (e.g. because a new project is created), then `true` is assumed")
 	Boolean isActive;
 
 	@ApiModelProperty(hidden = true)
 	boolean activeSet;
-
-	@ApiModelProperty(required = true)
-	SyncAdvise syncAdvise;
-
-	List<JsonWorkOrderStepUpsertRequest> steps = new ArrayList<>();
-
-	@ApiModelProperty(hidden = true)
-	boolean stepsSet;
 
 	String bpartnerDepartment;
 
@@ -126,20 +139,33 @@ public class JsonWorkOrderProjectUpsertRequest
 	boolean bpartnerDepartmentSet;
 
 	private String woOwner;
+
 	@ApiModelProperty(hidden = true)
 	private boolean woOwnerSet;
 
 	private String poReference;
+
 	@ApiModelProperty(hidden = true)
 	private boolean poReferenceSet;
 
 	private LocalDate bpartnerTargetDate;
+
 	@ApiModelProperty(hidden = true)
 	private boolean bpartnerTargetDateSet;
 
 	private LocalDate woProjectCreatedDate;
+
 	@ApiModelProperty(hidden = true)
 	private boolean woProjectCreatedDateSet;
+
+	private LocalDate dateOfProvisionByBPartner;
+
+	@ApiModelProperty(hidden = true)
+	private boolean dateOfProvisionByBPartnerSet;
+
+	private List<JsonWorkOrderStepUpsertItemRequest> steps = ImmutableList.of();
+
+	private List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest = ImmutableList.of();
 
 	public void setValue(final String value)
 	{
@@ -153,26 +179,22 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.nameSet = true;
 	}
 
-	public void setProjectTypeId(final JsonMetasfreshId projectTypeId)
-	{
-		this.projectTypeId = projectTypeId;
-	}
-
 	public void setPriceListVersionId(final JsonMetasfreshId priceListVersionId)
 	{
 		this.priceListVersionId = priceListVersionId;
 		this.priceListVersionIdSet = true;
 	}
 
-	public void setCurrencyId(final JsonMetasfreshId currencyId)
+	public void setCurrencyCode(final String currencyCode)
 	{
-		this.currencyId = currencyId;
-		this.currencyIdSet = true;
+		this.currencyCode = currencyCode;
+		this.currencyCodeSet = true;
 	}
 
 	public void setSalesRepId(final JsonMetasfreshId salesRepId)
 	{
 		this.salesRepId = salesRepId;
+		this.salesRepIdSet = true;
 	}
 
 	public void setDescription(final String description)
@@ -193,10 +215,10 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.dateFinishSet = true;
 	}
 
-	public void setbPartnerId(final JsonMetasfreshId businessPartnerId)
+	public void setBpartnerId(final JsonMetasfreshId bpartnerId)
 	{
-		this.businessPartnerId = businessPartnerId;
-		this.businessPartnerIdSet = true;
+		this.bpartnerId = bpartnerId;
+		this.bpartnerIdSet = true;
 	}
 
 	public void setProjectReferenceExt(final String projectReferenceExt)
@@ -205,6 +227,12 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.projectReferenceExtSet = true;
 	}
 
+	public void setExternalId(final JsonExternalId externalId)
+	{
+		this.externalId = externalId;
+		this.externalIdSet = true;
+	}
+		
 	public void setProjectParentId(final JsonMetasfreshId projectParentId)
 	{
 		this.projectParentId = projectParentId;
@@ -214,6 +242,7 @@ public class JsonWorkOrderProjectUpsertRequest
 	public void setOrgCode(final String orgCode)
 	{
 		this.orgCode = orgCode;
+		this.orgCodeSet = true;
 	}
 
 	public void setIsActive(final Boolean active)
@@ -222,15 +251,9 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.activeSet = true;
 	}
 
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
+	public void setSteps(final List<JsonWorkOrderStepUpsertItemRequest> steps)
 	{
-		this.syncAdvise = syncAdvise;
-	}
-
-	public void setSteps(final List<JsonWorkOrderStepUpsertRequest> steps)
-	{
-		this.steps = steps;
-		this.stepsSet = true;
+		this.steps = CoalesceUtil.coalesceNotNull(steps, ImmutableList.of());
 	}
 
 	public void setBpartnerDepartment(final String bpartnerDepartment)
@@ -245,21 +268,39 @@ public class JsonWorkOrderProjectUpsertRequest
 		this.woOwnerSet = true;
 	}
 
-	public void setPOReference(final String poReference)
+	public void setPoReference(final String poReference)
 	{
 		this.poReference = poReference;
 		this.poReferenceSet = true;
 	}
 
-	public void setBPartnerTargetDate(final LocalDate bpartnerTargetDate)
+	public void setBpartnerTargetDate(final LocalDate bpartnerTargetDate)
 	{
 		this.bpartnerTargetDate = bpartnerTargetDate;
 		this.bpartnerTargetDateSet = true;
 	}
 
-	public void setWOProjectCreatedDate(final LocalDate woProjectCreatedDate)
+	public void setWoProjectCreatedDate(final LocalDate woProjectCreatedDate)
 	{
 		this.woProjectCreatedDate = woProjectCreatedDate;
 		this.woProjectCreatedDateSet = true;
+	}
+
+	public void setDateOfProvisionByBPartner(final LocalDate dateOfProvisionByBPartner)
+	{
+		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
+		this.dateOfProvisionByBPartnerSet = true;
+	}
+
+	public void setObjectsUnderTest(final List<JsonWorkOrderObjectUnderTestUpsertItemRequest> objectsUnderTest)
+	{
+		this.objectsUnderTest = CoalesceUtil.coalesceNotNull(objectsUnderTest, ImmutableList.of());
+	}
+
+	@JsonIgnore
+	@NonNull
+	public <T> T mapProjectIdentifier(@NonNull final Function<String,T> mappingFunction)
+	{
+		return mappingFunction.apply(identifier);
 	}
 }

@@ -29,38 +29,40 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.util.List;
+import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class WOProject
 {
-	@Nullable
-	@Getter
+	@NonNull
 	ProjectId projectId;
 
 	@NonNull
 	OrgId orgId;
 
 	@Nullable
+	ExternalId externalId;
+	
+	@NonNull
 	CurrencyId currencyId;
 
-	@Nullable
+	@NonNull
 	String name;
 
-	@Nullable
+	@NonNull
 	String value;
 
-	@Nullable
+	@NonNull
+	ProjectTypeId projectTypeId;
+
+	@NonNull
 	Boolean isActive;
 
 	@Nullable
@@ -73,9 +75,6 @@ public class WOProject
 	ProjectId projectParentId;
 
 	@Nullable
-	ProjectTypeId projectTypeId;
-
-	@Nullable
 	String projectReferenceExt;
 
 	@Nullable
@@ -85,41 +84,26 @@ public class WOProject
 	UserId salesRepId;
 
 	@Nullable
-	LocalDate dateContract;
+	Instant dateContract;
 
 	@Nullable
-	LocalDate dateFinish;
+	Instant dateFinish;
 
-	@Singular
-	List<WOProjectStep> projectSteps;
+	@Nullable
+	Instant dateOfProvisionByBPartner;
 
-	@NonNull
-	public ProjectId getProjectIdNonNull()
-	{
-		if (projectId == null)
-		{
-			throw new AdempiereException("WOProjectStepId cannot be null at this stage!");
-		}
-		return projectId;
-	}
+	@Nullable
+	String bpartnerDepartment;
 
-	@NonNull
-	public String getNameNonNull()
-	{
-		if (name == null)
-		{
-			throw new AdempiereException("WOProject Name property cannot be null at this stage!");
-		}
-		return name;
-	}
+	@Nullable
+	String woOwner;
 
-	@NonNull
-	public String getValueNonNull()
-	{
-		if (value == null)
-		{
-			throw new AdempiereException("WOProject Value property cannot be null at this stage!");
-		}
-		return value;
-	}
+	@Nullable
+	String poReference;
+
+	@Nullable
+	Instant bpartnerTargetDate;
+
+	@Nullable
+	Instant woProjectCreatedDate;
 }

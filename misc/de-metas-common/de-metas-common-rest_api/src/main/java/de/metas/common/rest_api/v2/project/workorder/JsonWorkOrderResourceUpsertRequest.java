@@ -22,94 +22,42 @@
 
 package de.metas.common.rest_api.v2.project.workorder;
 
-import de.metas.common.rest_api.common.JsonExternalId;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import javax.annotation.Nullable;
+import java.util.List;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
-@Getter
-@ToString
-@EqualsAndHashCode
+@Value
+@ApiModel
 public class JsonWorkOrderResourceUpsertRequest
 {
-	@ApiModelProperty(position = 10,
-			value = RESOURCE_IDENTIFIER_DOC + "\n"
-					+ "Note that `C_Project_WO_Resource.S_Reource_ID` is needed for the calendar view!") //
-	@Setter
-	String resourceIdentifier;
+	@ApiModelProperty(position = 10, value = "Corresponding to `C_Project_WO_Resource.C_Project_ID`", required = true)
+	JsonMetasfreshId projectId;
 
-	@ApiModelProperty(hidden = true)
-	boolean resourceIdentifierSet;
+	@ApiModelProperty(position = 20, value = "Corresponding to `C_Project_WO_Resource.C_WO_Project_Step_ID`", required = true)
+	JsonMetasfreshId stepId;
 
-	@ApiModelProperty(required = true)
-	@Setter
-	LocalDate assignDateFrom;
+	@ApiModelProperty(position = 30, required = true)
+	List<JsonWorkOrderResourceUpsertItemRequest> requestItems;
 
-	@ApiModelProperty(required = true)
-	@Setter
-	LocalDate assignDateTo;
-
-	@ApiModelProperty(value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
-	Boolean isActive;
-
-	@ApiModelProperty(hidden = true)
-	boolean activeSet;
-
-	Boolean isAllDay;
-	@ApiModelProperty(hidden = true)
-	boolean allDaySet;
-
-	BigDecimal duration;
-	@ApiModelProperty(hidden = true)
-	boolean durationSet;
-
-	// TODO: turn into enum
-	String durationUnit;
-	@ApiModelProperty(hidden = true)
-	boolean durationUnitSet;
-
-	String testFacilityGroupName;
-	@ApiModelProperty(hidden = true)
-	boolean testFacilityGroupNameSet;
-
-	@Setter
-	@ApiModelProperty(required = true)
-	JsonExternalId externalId;
-
-	public void setActive(final Boolean active)
+	@Builder
+	@Jacksonized
+	public JsonWorkOrderResourceUpsertRequest(
+			@NonNull final JsonMetasfreshId projectId,
+			@NonNull final JsonMetasfreshId stepId,
+			@Nullable final List<JsonWorkOrderResourceUpsertItemRequest> requestItems)
 	{
-		isActive = active;
-		this.activeSet = true;
-	}
-
-	public void setAllDay(final Boolean allDay)
-	{
-		this.isAllDay = allDay;
-		this.allDaySet = true;
-	}
-
-	public void setDuration(final BigDecimal duration)
-	{
-		this.duration = duration;
-		this.durationSet = true;
-	}
-
-	public void setDurationUnit(final String durationUnit)
-	{
-		this.durationUnit = durationUnit;
-		this.durationUnitSet = true;
-	}
-
-	public void setTestFacilityGroupName(final String testFacilityGroupName)
-	{
-		this.testFacilityGroupName = testFacilityGroupName;
-		this.testFacilityGroupNameSet = true;
+		this.projectId = projectId;
+		this.stepId = stepId;
+		this.requestItems = coalesce(requestItems, ImmutableList.of());
 	}
 }

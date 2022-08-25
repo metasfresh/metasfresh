@@ -99,7 +99,7 @@ public interface I_C_Project
 	/**
 	 * Set Target date of business-partner.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -108,7 +108,7 @@ public interface I_C_Project
 	/**
 	 * Get Target date of business-partner.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -350,7 +350,7 @@ public interface I_C_Project
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -360,12 +360,13 @@ public interface I_C_Project
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_Project_ID();
 
+	ModelColumn<I_C_Project, Object> COLUMN_C_Project_ID = new ModelColumn<>(I_C_Project.class, "C_Project_ID", null);
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
@@ -490,7 +491,7 @@ public interface I_C_Project
 	 * Set Date of Contract.
 	 * The (planned) effective date of this document.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -500,7 +501,7 @@ public interface I_C_Project
 	 * Get Date of Contract.
 	 * The (planned) effective date of this document.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -513,7 +514,7 @@ public interface I_C_Project
 	 * Set Date planned finished.
 	 * Finish or (planned) completion date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -523,7 +524,7 @@ public interface I_C_Project
 	 * Get Date planned finished.
 	 * Finish or (planned) completion date
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -536,7 +537,7 @@ public interface I_C_Project
 	 * Set Date of provision.
 	 * Provision date planned by the business partner for the required resources.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -546,7 +547,7 @@ public interface I_C_Project
 	 * Get Date of provision.
 	 * Provision date planned by the business partner for the required resources.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -575,6 +576,27 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_Description = new ModelColumn<>(I_C_Project.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
+
+	ModelColumn<I_C_Project, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_Project.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set Generate To.
@@ -644,7 +666,7 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_InvoicedQty = new ModelColumn<>(I_C_Project.class, "InvoicedQty", null);
 	String COLUMNNAME_InvoicedQty = "InvoicedQty";
-
+	
 	/**
 	 * Set Active.
 	 * The record is active in the system
@@ -1078,7 +1100,7 @@ public interface I_C_Project
 	 * Set Account manager.
 	 * Sales Representative or Company Agent
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1088,7 +1110,7 @@ public interface I_C_Project
 	 * Get Account manager.
 	 * Sales Representative or Company Agent
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1189,7 +1211,7 @@ public interface I_C_Project
 	 * Set Project created.
 	 * Date on which the test project was created.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1199,7 +1221,7 @@ public interface I_C_Project
 	 * Get Project created.
 	 * Date on which the test project was created.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

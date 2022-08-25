@@ -29,14 +29,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.*;
 
 public class JsonWorkOrderProjectRequestTest
@@ -47,47 +45,73 @@ public class JsonWorkOrderProjectRequestTest
 			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 			.enable(MapperFeature.USE_ANNOTATIONS);
 
-	@BeforeClass	
-	public static void beforeAll()
-	{
-		start();
-	}
-
 	@Test
 	public void serializeDeserialize() throws IOException
 	{
 		final JsonWorkOrderProjectUpsertRequest woProjectRequest = new JsonWorkOrderProjectUpsertRequest();
-		woProjectRequest.setbPartnerId(JsonMetasfreshId.of(123456));
-		woProjectRequest.setProjectParentId(JsonMetasfreshId.of(123456));
-		woProjectRequest.setProjectTypeId(JsonMetasfreshId.of(123456));
-		woProjectRequest.setCurrencyId(JsonMetasfreshId.of(123456));
-		woProjectRequest.setPriceListVersionId(JsonMetasfreshId.of(123456));
-		woProjectRequest.setSalesRepId(JsonMetasfreshId.of(123456));
+		woProjectRequest.setBpartnerId(JsonMetasfreshId.of(1));
+		woProjectRequest.setProjectParentId(JsonMetasfreshId.of(2));
+		woProjectRequest.setProjectTypeId(JsonMetasfreshId.of(3));
+		woProjectRequest.setCurrencyCode("currencyCode");
+		woProjectRequest.setPriceListVersionId(JsonMetasfreshId.of(5));
+		woProjectRequest.setSalesRepId(JsonMetasfreshId.of(6));
 		woProjectRequest.setIsActive(true);
 		woProjectRequest.setDescription("Test WO Project Description");
-		woProjectRequest.setDateContract(LocalDate.now());
-		woProjectRequest.setDateFinish(LocalDate.now());
+		woProjectRequest.setDateContract(LocalDate.parse("2022-07-01"));
+		woProjectRequest.setDateFinish(LocalDate.parse("2022-07-20"));
 		woProjectRequest.setProjectReferenceExt("WOProjectTestRefExt");
 		woProjectRequest.setName("Test WO Project");
 		woProjectRequest.setValue("Test WO Project");
 		woProjectRequest.setOrgCode("ORG");
 		woProjectRequest.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+		woProjectRequest.setDateOfProvisionByBPartner(LocalDate.parse("2022-07-22"));
+		woProjectRequest.setWoOwner("woOwner");
+		woProjectRequest.setIdentifier("ext-252525");
 
-		final JsonWorkOrderStepUpsertRequest woProjectStep = new JsonWorkOrderStepUpsertRequest();
-		woProjectStep.setSeqNo(123456);
+		final JsonWorkOrderStepUpsertItemRequest woProjectStep = new JsonWorkOrderStepUpsertItemRequest();
+		woProjectStep.setIdentifier("ext-1111");
 		woProjectStep.setName("Test WO Project Step");
 		woProjectStep.setDescription("Test WO Project Step Description");
-		woProjectStep.setDateEnd(LocalDate.now());
-		woProjectStep.setDateStart(LocalDate.now());
+		woProjectStep.setSeqNo(10);
+		woProjectStep.setDateStart(LocalDate.parse("2022-07-03"));
+		woProjectStep.setDateEnd(LocalDate.parse("2022-07-22"));
+		woProjectStep.setWoPartialReportDate(LocalDate.parse("2022-07-10"));
+		woProjectStep.setWoPlannedResourceDurationHours(3);
+		woProjectStep.setDeliveryDate(LocalDate.parse("2022-08-05"));
+		woProjectStep.setWoTargetStartDate(LocalDate.parse("2022-07-05"));
+		woProjectStep.setWoTargetEndDate(LocalDate.parse("2022-07-31"));
+		woProjectStep.setWoPlannedPersonDurationHours(20);
+		woProjectStep.setWoStepStatus(JsonWOStepStatus.CANCELED);
+		woProjectStep.setWoFindingsReleasedDate(LocalDate.parse("2022-08-03"));
+		woProjectStep.setWoFindingsCreatedDate(LocalDate.parse("2022-08-01"));
+		woProjectStep.setExternalId("1111");
 
 		woProjectRequest.setSteps(ImmutableList.of(woProjectStep));
-		
-		final JsonWorkOrderResourceUpsertRequest woProjectResource = new JsonWorkOrderResourceUpsertRequest();
+
+		final JsonWorkOrderResourceUpsertItemRequest woProjectResource = new JsonWorkOrderResourceUpsertItemRequest();
 		woProjectResource.setResourceIdentifier("int-resourceIdentifier");
 		woProjectResource.setAssignDateFrom(LocalDate.parse("2022-07-15"));
 		woProjectResource.setAssignDateTo(LocalDate.parse("2022-07-16"));
+		woProjectResource.setActive(true);
+		woProjectResource.setIsAllDay(false);
+		woProjectResource.setDuration(BigDecimal.TEN);
+		woProjectResource.setDurationUnit(JsonDurationUnit.Month);
+		woProjectResource.setTestFacilityGroupName("testFacilityGroupName");
+		woProjectResource.setExternalId("1111");
 
-		woProjectStep.setResourceRequests(ImmutableList.of(woProjectResource));
+		woProjectStep.setResources(ImmutableList.of(woProjectResource));
+
+		final JsonWorkOrderObjectUnderTestUpsertItemRequest woObjectUnderTest = new JsonWorkOrderObjectUnderTestUpsertItemRequest();
+		woObjectUnderTest.setNumberOfObjectsUnderTest(10);
+		woObjectUnderTest.setWoDeliveryNote("woDeliveryNote");
+		woObjectUnderTest.setWoManufacturer("woManufacturer");
+		woObjectUnderTest.setWoObjectType("woObjectType");
+		woObjectUnderTest.setWoObjectName("woObjectName");
+		woObjectUnderTest.setWoObjectWhereabouts("woObjectWhereabouts");
+		woObjectUnderTest.setExternalId("3333");
+		woObjectUnderTest.setIdentifier("ext-3333");
+
+		woProjectRequest.setObjectsUnderTest(ImmutableList.of(woObjectUnderTest));
 
 		final String string = mapper.writeValueAsString(woProjectRequest);
 		assertThat(string).isNotEmpty();
@@ -95,6 +119,5 @@ public class JsonWorkOrderProjectRequestTest
 		final JsonWorkOrderProjectUpsertRequest result = mapper.readValue(string, JsonWorkOrderProjectUpsertRequest.class);
 
 		assertThat(result).isEqualTo(woProjectRequest);
-		expect(result).toMatchSnapshot();
 	}
 }

@@ -51,8 +51,9 @@ import de.metas.project.budget.CreateBudgetProjectResourceRequest;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.resource.ResourceGroupId;
+import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.v2.project.resource.ResourceRestService;
+import de.metas.rest_api.v2.project.resource.ResourceIdentifierUtil;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -86,16 +87,16 @@ public class BudgetProjectResourceRestService
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final ResourceRestService resourceRestService;
+	private final ResourceService resourceService;
 	private final BudgetProjectResourceRepository budgetProjectResourceRepository;
 	private final BudgetProjectRepository budgetProjectRepository;
 
 	public BudgetProjectResourceRestService(
-			@NonNull final ResourceRestService resourceRestService,
+			@NonNull final ResourceService resourceService,
 			@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository,
 			@NonNull final BudgetProjectRepository budgetProjectRepository)
 	{
-		this.resourceRestService = resourceRestService;
+		this.resourceService = resourceService;
 		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
 		this.budgetProjectRepository = budgetProjectRepository;
 	}
@@ -143,6 +144,13 @@ public class BudgetProjectResourceRestService
 	@NonNull
 	private JsonResponseBudgetProjectResourceUpsert upsertBudgetProjectResourcesWithinTrx(@NonNull final JsonRequestBudgetProjectResourceUpsert request)
 	{
+		if (Check.isEmpty(request.getRequestItems()))
+		{
+			return JsonResponseBudgetProjectResourceUpsert.builder()
+					.responseItems(ImmutableList.of())
+					.build();
+		}
+
 		validateJsonRequestBudgetProjectResourceUpsert(request);
 
 		final SyncAdvise syncAdvise = request.getSyncAdvise();
@@ -180,7 +188,7 @@ public class BudgetProjectResourceRestService
 				.map(JsonRequestBudgetProjectResourceUpsertItem::getResourceIdentifier)
 				.map(IdentifierString::of)
 				.collect(Collectors.toMap(Function.identity(),
-										  identifierString -> resourceRestService.resolveResourceIdentifier(budgetProject.getOrgId(), identifierString)));
+										  identifierString ->  ResourceIdentifierUtil.resolveResourceIdentifier(budgetProject.getOrgId(), identifierString, resourceService)));
 	}
 
 	@NonNull
@@ -263,7 +271,7 @@ public class BudgetProjectResourceRestService
 		final ProjectId projectId = budgetProject.getProjectId();
 		final CurrencyId budgetProjectCurrencyId = budgetProject.getCurrencyId();
 
-		final ResourceId resourceId = resourceRestService.resolveResourceIdentifier(orgId, IdentifierString.of(request.getResourceIdentifier()));
+		final ResourceId resourceId = ResourceIdentifierUtil.resolveResourceIdentifier(orgId, IdentifierString.of(request.getResourceIdentifier()), resourceService);
 		final Money plannedAmount = getPlannedAmount(request, null, budgetProjectCurrencyId);
 		final UomId durationUOMId = getDurationUOMId(request, null);
 		final Money pricePerDurationUnit = getPricePerDurationUnit(request, budgetProjectCurrencyId, null);

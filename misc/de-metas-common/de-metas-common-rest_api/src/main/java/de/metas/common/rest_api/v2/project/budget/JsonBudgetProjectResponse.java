@@ -24,6 +24,7 @@ package de.metas.common.rest_api.v2.project.budget;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -35,6 +36,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Value
 public class JsonBudgetProjectResponse
@@ -50,6 +52,9 @@ public class JsonBudgetProjectResponse
 	@NonNull
 	String orgCode;
 
+	@ApiModelProperty("This translates to `C_Project.External`.")
+	JsonExternalId externalId;
+	
 	@ApiModelProperty(required = true, value = "This translates to `C_Project.C_Currency_ID.Iso_Code`.")
 	@NonNull
 	String currencyCode;
@@ -113,6 +118,9 @@ public class JsonBudgetProjectResponse
 	LocalDate dateFinish;
 
 	@NonNull
+	Map<String, Object> extendedProps;
+
+	@NonNull
 	List<JsonBudgetProjectResourceResponse> projectResources;
 
 	@Builder
@@ -120,6 +128,7 @@ public class JsonBudgetProjectResponse
 	public JsonBudgetProjectResponse(
 			@NonNull final JsonMetasfreshId projectId,
 			@NonNull final String orgCode,
+			@Nullable final JsonExternalId externalId, 
 			@NonNull final String currencyCode,
 			@NonNull final String name,
 			@NonNull final String value,
@@ -133,10 +142,12 @@ public class JsonBudgetProjectResponse
 			@Nullable final JsonMetasfreshId salesRepId,
 			@Nullable final LocalDate dateContract,
 			@Nullable final LocalDate dateFinish,
+			@NonNull final Map<String, Object> extendedProps,
 			@NonNull @Singular final List<JsonBudgetProjectResourceResponse> projectResources)
 	{
 		this.projectId = projectId;
 		this.orgCode = orgCode;
+		this.externalId = externalId;
 		this.currencyCode = currencyCode;
 		this.name = name;
 		this.value = value;
@@ -150,6 +161,7 @@ public class JsonBudgetProjectResponse
 		this.salesRepId = salesRepId;
 		this.dateContract = dateContract;
 		this.dateFinish = dateFinish;
+		this.extendedProps = extendedProps;
 		this.projectResources = projectResources;
 	}
 }

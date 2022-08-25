@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.project.budget;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.project.budget.JsonBudgetProjectUpsertRequest;
 import de.metas.currency.Currency;
@@ -35,18 +36,27 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.budget.BudgetProject;
+import de.metas.project.budget.BudgetProjectQuery;
+import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.CreateBudgetProjectRequest;
 import de.metas.project.service.ProjectService;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.project.ValidateProjectHelper;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_PriceList;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BudgetProjectJsonConverter
@@ -54,10 +64,14 @@ public class BudgetProjectJsonConverter
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final ProjectService projectService;
+	private final BudgetProjectRepository budgetProjectRepository;
 
-	public BudgetProjectJsonConverter(@NonNull final ProjectService projectService)
+	public BudgetProjectJsonConverter(
+			@NonNull final ProjectService projectService,
+			@NonNull final BudgetProjectRepository budgetProjectRepository)
 	{
 		this.projectService = projectService;
+		this.budgetProjectRepository = budgetProjectRepository;
 	}
 
 	@NonNull
@@ -71,7 +85,7 @@ public class BudgetProjectJsonConverter
 		final CurrencyId currencyId = getCurrencyId(request, existingBudgetProject);
 		final PriceListVersionId priceListVersionId = getPriceListVersionId(request, existingBudgetProject);
 
-		assertCurrencyIdsMatch(currencyId, priceListVersionId);
+		ValidateProjectHelper.assertCurrencyIdsMatch(currencyId, priceListVersionId, priceListDAO::getPriceListByPriceListVersionId);
 
 		final BudgetProject.BudgetProjectBuilder budgetProjectBuilder = existingBudgetProject.toBuilder()
 				.projectTypeId(projectTypeId)
@@ -99,9 +113,9 @@ public class BudgetProjectJsonConverter
 			budgetProjectBuilder.projectReferenceExt(request.getProjectReferenceExt());
 		}
 
-		if (request.isProjectParentIdSet())
+		if (request.isProjectParentIdentifierSet())
 		{
-			budgetProjectBuilder.projectParentId(ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectParentId())));
+			budgetProjectBuilder.projectParentId(getProjectParentId(request, orgId).orElse(null));
 		}
 
 		if (request.isBpartnerIdSet())
@@ -147,40 +161,67 @@ public class BudgetProjectJsonConverter
 		final String projectName = getName(request, projectValue);
 		final CurrencyId currencyId = currencyBL.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getCurrencyCode())).getId();
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getPriceListVersionId()));
+		final ProjectId projectParentId = getProjectParentId(request, orgId).orElse(null);
 
-		assertCurrencyIdsMatch(currencyId, priceListVersionId);
+		ValidateProjectHelper.assertCurrencyIdsMatch(currencyId, priceListVersionId, priceListDAO::getPriceListByPriceListVersionId);
 
-		return CreateBudgetProjectRequest.builder()
+		final CreateBudgetProjectRequest.CreateBudgetProjectRequestBuilder builder = CreateBudgetProjectRequest.builder()
 				.orgId(orgId)
 				.projectTypeId(projectTypeId)
 				.value(projectValue)
+				.externalId(ExternalId.ofOrNull(JsonExternalId.toValue(request.getExternalId())))
 				.name(projectName)
 				.currencyId(currencyId)
 				.priceListVersionId(priceListVersionId)
 				.isActive(request.getActive())
 				.description(request.getDescription())
-				.projectParentId(ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectParentId())))
+				.projectParentId(projectParentId)
 				.projectReferenceExt(request.getProjectReferenceExt())
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getBpartnerId())))
 				.salesRepId(UserId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getSalesRepId())))
 				.dateContract(request.getDateContract())
-				.dateFinish(request.getDateFinish())
-				.build();
+				.dateFinish(request.getDateFinish());
+
+		if (request.getExternalId() == null) // if no externalId was given for the new project, then see if it was implied by the identifier
+		{
+			final IdentifierString projectIdentifier = IdentifierString.of(request.getProjectIdentifier());
+			if(projectIdentifier.isExternalId())
+			{
+				builder.externalId(projectIdentifier.asExternalId());
+			}
+		}
+		if(Check.isBlank(request.getValue())) // if no value was given for the new project, then see if it was implied by the identifier
+		{
+			final IdentifierString projectIdentifier = IdentifierString.of(request.getProjectIdentifier());
+			if(projectIdentifier.isValue())
+			{
+				builder.value(projectIdentifier.asValue());
+			}
+		}
+		
+		return builder.build();
 	}
 
 	@NonNull
-	private String getName(
-			@NonNull final JsonBudgetProjectUpsertRequest request,
-			@NonNull final String updatedProjectValue)
+	public static BudgetProjectQuery getProjectQueryFromIdentifier(
+			@NonNull final OrgId orgId,
+			@NonNull final IdentifierString identifier)
 	{
-		if (request.isNameSet())
+		final BudgetProjectQuery.BudgetProjectQueryBuilder projectQueryBuilder = BudgetProjectQuery.builder().orgId(orgId);
+
+		switch (identifier.getType())
 		{
-			return request.getName();
+			case VALUE:
+				projectQueryBuilder.value(identifier.asValue());
+				break;
+			case EXTERNAL_ID:
+				projectQueryBuilder.externalId(identifier.asExternalId());
+				break;
+			default:
+				throw new InvalidIdentifierException(identifier.getRawIdentifierString());
 		}
-		else
-		{
-			return updatedProjectValue;
-		}
+
+		return projectQueryBuilder.build();
 	}
 
 	@NonNull
@@ -225,7 +266,7 @@ public class BudgetProjectJsonConverter
 	}
 
 	@Nullable
-	private PriceListVersionId getPriceListVersionId(
+	private static PriceListVersionId getPriceListVersionId(
 			@NonNull final JsonBudgetProjectUpsertRequest request,
 			@NonNull final BudgetProject existingBudgetProject)
 	{
@@ -239,30 +280,52 @@ public class BudgetProjectJsonConverter
 		}
 	}
 
-	private void assertCurrencyIdsMatch(
-			@NonNull final CurrencyId currencyId,
-			@Nullable final PriceListVersionId priceListVersionId)
+	@NonNull
+	private static String getName(
+			@NonNull final JsonBudgetProjectUpsertRequest request,
+			@NonNull final String updatedProjectValue)
 	{
-		if (priceListVersionId == null)
+		if (request.isNameSet())
 		{
-			return;
+			return request.getName();
+		}
+		else
+		{
+			return updatedProjectValue;
+		}
+	}
+
+	@NonNull
+	private Optional<ProjectId> getProjectParentId(
+			@NonNull final JsonBudgetProjectUpsertRequest request,
+			@NonNull final OrgId orgId)
+	{
+		final IdentifierString identifierString = IdentifierString.ofOrNull(request.getProjectParentIdentifier());
+
+		if (identifierString == null)
+		{
+			return Optional.empty();
 		}
 
-		final I_M_PriceList priceListRecord = priceListDAO.getPriceListByPriceListVersionId(priceListVersionId);
+		return Optional.of(resolveBudgetProjectIdentifier(identifierString, orgId));
+	}
 
-		if (priceListRecord == null)
+	@NonNull
+	private ProjectId resolveBudgetProjectIdentifier(@NonNull final IdentifierString identifierString, @NonNull final OrgId orgId)
+	{
+		if (identifierString.isMetasfreshId())
 		{
-			return;
+			return ProjectId.ofRepoId(MetasfreshId.toValue(identifierString.asMetasfreshId()));
 		}
 
-		final CurrencyId priceListCurrencyId = CurrencyId.ofRepoId(priceListRecord.getC_Currency_ID());
-
-		if (currencyId.getRepoId() != priceListCurrencyId.getRepoId())
+		final List<BudgetProject> projectList = budgetProjectRepository.getBy(getProjectQueryFromIdentifier(orgId, identifierString));
+		if (projectList.isEmpty())
 		{
-			throw new AdempiereException("Currency of the budget project does not match the currency of the price list!")
+			throw new AdempiereException("No Budget Project could be found for identifier!")
 					.appendParametersToMessage()
-					.setParameter("Project.CurrencyId", currencyId)
-					.setParameter("PriceList.CurrencyId", priceListCurrencyId);
+					.setParameter("projectParentIdentifier", identifierString.getRawIdentifierString());
 		}
+		return CollectionUtils.singleElement(projectList).getProjectId();
+				
 	}
 }
