@@ -3,7 +3,7 @@ FROM metasfresh/metas-mvn-backend:$REFNAME as backend
 
 FROM openjdk:8-jdk-oraclelinux7
 
-RUN yum update && yum install -y zip && yum -y clean all && rm -rf /var/cache
+RUN yum -y update && yum -y install zip && yum -y clean all && rm -rf /var/cache
 
 WORKDIR /opt/metasfresh
 

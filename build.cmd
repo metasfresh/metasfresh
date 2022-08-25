@@ -1,8 +1,5 @@
 @echo off
 
-rmdir /S /Q docker-builds\metadata
-mkdir docker-builds\metadata
-
 set "mfversion=local"
 set "mfregistry=metasfresh"
 set /P version=<docker-builds/version.info
@@ -47,6 +44,7 @@ docker build -f docker-builds/Dockerfile.backend -t %mfregistry%/metas-mvn-backe
 docker build -f docker-builds/Dockerfile.camel -t %mfregistry%/metas-mvn-camel:%mfversion% . || @goto error
 
 docker build -f docker-builds/Dockerfile.junit -t %mfregistry%/metas-junit:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.junit -t %mfregistry%/metas-camel-junit:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.cucumber -t %mfregistry%/metas-cucumber:%mfversion% . || @goto error
 
 
@@ -59,7 +57,7 @@ docker build -f docker-builds/Dockerfile.backend.api -t %mfregistry%/metas-api:%
 docker build -f docker-builds/Dockerfile.backend.app -t %mfregistry%/metas-app:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.camel.externalsystems -t %mfregistry%/metas-externalsystems:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.frontend -t %mfregistry%/metas-frontend:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.mobile -t %mfregistry%/metas-mobile:%mfversion% . || @goto error
+@REM docker build -f docker-builds/Dockerfile.mobile -t %mfregistry%/metas-mobile:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.db-standalone -t %mfregistry%/metas-db:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.db-preloaded -t %mfregistry%/metas-db:%mfversion%-preloaded . || @goto error
 
@@ -70,7 +68,7 @@ docker build -f docker-builds/Dockerfile.db-preloaded -t %mfregistry%/metas-db:%
 @echo --------------------------
 docker build -f docker-builds/Dockerfile.backend.api.compat -t %mfregistry%/metas-api:%mfversion%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.backend.app.compat --build-arg VERSION=%version%-%mfversion%.%buildnr% -t %mfregistry%/metas-app:%mfversion%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.mobile.compat -t %mfregistry%/metas-mobile:%mfversion%-compat . || @goto error
+@REM docker build -f docker-builds/Dockerfile.mobile.compat -t %mfregistry%/metas-mobile:%mfversion%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.frontend.compat -t %mfregistry%/metas-frontend:%mfversion%-compat . || @goto error
 
 @REM ----- for a rainy day -----
