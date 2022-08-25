@@ -23,6 +23,7 @@ package de.metas.calendar.standard.impl;
  */
 
 import de.metas.calendar.standard.IPeriodBL;
+import de.metas.document.DocBaseType;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,7 +50,7 @@ public class PeriodBL implements IPeriodBL
 	private static final Logger s_log = LogManager.getLogger(PeriodBL.class);
 
 	@Override
-	public boolean isOpen(Properties ctx, Timestamp DateAcct, String DocBaseType, int AD_Org_ID)
+	public boolean isOpen(final Properties ctx, final Timestamp DateAcct, final DocBaseType DocBaseType, final int AD_Org_ID)
 	{
 		if (DateAcct == null)
 		{
@@ -61,13 +62,13 @@ public class PeriodBL implements IPeriodBL
 			s_log.warn("No DocBaseType");
 			return false;
 		}
-		MPeriod period = MPeriod.get(ctx, DateAcct, AD_Org_ID);
+		final MPeriod period = MPeriod.get(ctx, DateAcct, AD_Org_ID);
 		if (period == null)
 		{
 			s_log.warn("No Period for " + DateAcct + " (" + DocBaseType + ")");
 			return false;
 		}
-		boolean open = period.isOpen(DocBaseType, DateAcct, AD_Org_ID);
+		final boolean open = period.isOpen(DocBaseType, DateAcct, AD_Org_ID);
 		if (!open)
 		{
 			s_log.warn(period.getName() + ": Not open for " + DocBaseType + " (" + DateAcct + ")");
@@ -76,7 +77,7 @@ public class PeriodBL implements IPeriodBL
 	}
 
 	@Override
-	public void testPeriodOpen(Properties ctx, Timestamp dateAcct, String docBaseType, int AD_Org_ID) throws PeriodClosedException
+	public void testPeriodOpen(final Properties ctx, final Timestamp dateAcct, final DocBaseType docBaseType, final int AD_Org_ID) throws PeriodClosedException
 	{
 		if (!isOpen(ctx, dateAcct, docBaseType, AD_Org_ID))
 		{
@@ -122,7 +123,7 @@ public class PeriodBL implements IPeriodBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(period);
 
 		final Set<String> docBaseTypesConsidered = new HashSet<>();
-		for (MDocType docType : MDocType.getOfClient(ctx))
+		for (final MDocType docType : MDocType.getOfClient(ctx))
 		{
 			final String docBaseType = docType.getDocBaseType();
 			if (!docBaseTypesConsidered.add(docBaseType))

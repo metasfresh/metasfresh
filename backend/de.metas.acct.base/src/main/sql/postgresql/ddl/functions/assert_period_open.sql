@@ -16,7 +16,6 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".assert_period_open(
 AS
 $BODY$
 DECLARE
-    v_C_Calendar_ID        numeric;
     v_C_Period_ID          numeric;
     v_C_AcctSchema_ID      numeric;
     v_acctSchema           c_acctschema%rowtype;
@@ -32,7 +31,7 @@ BEGIN
     --
     v_C_Period_ID := getC_Period_ID_by_Date(p_DateAcct, p_AD_Client_ID, p_AD_Org_ID);
     IF (v_C_Period_ID IS NULL OR v_C_Period_ID <= 0) THEN
-        RAISE EXCEPTION 'No standard C_Period_ID found for p_DateAcct=%, C_Calendar_ID=%, AD_Client_ID=%', p_DateAcct, v_C_Calendar_ID, p_AD_Client_ID;
+        RAISE EXCEPTION 'No standard C_Period_ID found for p_DateAcct=%, AD_Client_ID=%', p_DateAcct, p_AD_Client_ID;
     END IF;
 
     --
