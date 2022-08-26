@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.order.products_proposal.service;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
@@ -29,15 +30,13 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
-import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
-import de.metas.order.GetOrdersQuery;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import lombok.NonNull;
@@ -45,22 +44,21 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +82,7 @@ public class OrderProductProposalsServiceTest
 	private UomId uomId;
 
 	private OrderProductProposalsService orderProductProposalsService;
+	private PricingTestHelper pricingTestHelper;
 
 	@BeforeEach
 	public void beforeEach()
@@ -91,25 +90,11 @@ public class OrderProductProposalsServiceTest
 		AdempiereTestHelper.get().init();
 
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
-
 		orderProductProposalsService = new OrderProductProposalsService(currencyRepository, new MoneyService(currencyRepository));
 
-		final CountryId countryId = BusinessTestHelper.createCountry("DE");
-		final PricingSystemId pricingSystemId = createPricingSystem();
+		pricingTestHelper = new PricingTestHelper();
 
-		uomId = UomId.ofRepoId(BusinessTestHelper.createUomEach().getC_UOM_ID());
-		orgId = OrgId.ANY;
-		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.USD);
-		priceListId = createPriceList(pricingSystemId, countryId, currencyId);
-		priceListVersionId = createPriceListVersion(priceListId);
-		docTypeId = createDocType();
-		bPartnerId = createBPartner();
-		productId = createProduct();
-		clientId = Env.getClientId();
-
-		createProductPrice(priceListVersionId, productId, uomId);
-		createQuotation(PREVIOUS_TIMESTAMP);
-		createQuotation(EXPECTED_TIMESTAMP);
+		prepareContext();
 	}
 
 	@Test
@@ -124,27 +109,13 @@ public class OrderProductProposalsServiceTest
 	@Test
 	public void getOrdersByQuery()
 	{
-		final List<Order> orders = orderProductProposalsService.getOrdersByQuery(buildOrderQuery(bPartnerId, productId, docTypeId));
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(clientId, orgId);
+		final List<Order> orders = orderProductProposalsService.getOrdersByQuery(clientAndOrgId, bPartnerId, ImmutableSet.of(productId));
 
 		assertThat(orders).isNotNull();
 		assertThat(orders.size()).isEqualTo(2);
 		assertThat(orders.get(0).getDateOrdered().toLocalDateTime()).isEqualTo(EXPECTED_TIMESTAMP.toLocalDateTime());
 		assertThat(orders.get(1).getDateOrdered().toLocalDateTime()).isEqualTo(PREVIOUS_TIMESTAMP.toLocalDateTime());
-	}
-
-	@NonNull
-	private GetOrdersQuery buildOrderQuery(
-			@NonNull final BPartnerId bPartnerId,
-			@NonNull final ProductId productId,
-			@NonNull final DocTypeId quotationDocTypeId)
-	{
-		return GetOrdersQuery.builder()
-				.docTypeTargetId(quotationDocTypeId)
-				.bPartnerId(bPartnerId)
-				.productId(productId)
-				.docStatus(DocStatus.Completed)
-				.descSortByDateOrdered(true)
-				.build();
 	}
 
 	private void createProductPrice(
@@ -159,51 +130,34 @@ public class OrderProductProposalsServiceTest
 		saveRecord(productPrice);
 	}
 
-	@NonNull
-	private PriceListVersionId createPriceListVersion(final PriceListId priceListId)
+	private void prepareContext()
 	{
-		final I_M_PriceList_Version priceListVersion = newInstance(I_M_PriceList_Version.class);
-		priceListVersion.setM_PriceList_ID(priceListId.getRepoId());
-		priceListVersion.setValidFrom(TimeUtil.asTimestamp(LocalDate.parse("1970-01-01")));
-		saveRecord(priceListVersion);
+		final I_C_UOM uom = BusinessTestHelper.createUomEach();
+		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
 
-		return PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
-	}
+		orgId = OrgId.ANY;
+		clientId = Env.getClientId();
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.USD);
 
-	@NonNull
-	private PriceListId createPriceList(
-			@NonNull final PricingSystemId pricingSystemId,
-			@NonNull final CountryId countryId,
-			@NonNull final CurrencyId currencyId)
-	{
-		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
-		priceList.setM_PricingSystem_ID(pricingSystemId.getRepoId());
-		priceList.setC_Country_ID(countryId.getRepoId());
-		priceList.setC_Currency_ID(currencyId.getRepoId());
-		priceList.setPricePrecision(2);
-		saveRecord(priceList);
+		final I_C_Country country = pricingTestHelper.createCountry("DE", currencyId.getRepoId());
+		final I_M_PricingSystem pricingSystem = pricingTestHelper.createPricingSystem();
 
-		return PriceListId.ofRepoId(priceList.getM_PriceList_ID());
-	}
+		final I_M_PriceList priceList = pricingTestHelper.createPriceList(pricingSystem, country);
+		priceListId = PriceListId.ofRepoId(priceList.getM_PriceList_ID());
 
-	@NonNull
-	private PricingSystemId createPricingSystem()
-	{
-		final I_M_PricingSystem pricingSystem = newInstance(I_M_PricingSystem.class);
-		saveRecord(pricingSystem);
+		final I_M_PriceList_Version priceListVersion = pricingTestHelper.createPriceListVersion(priceList);
+		priceListVersionId = PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
 
-		return PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
-	}
+		docTypeId = createDocType();
 
-	@NonNull
-	private ProductId createProduct()
-	{
-		final I_M_Product productRecord = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-		productRecord.setName("productTest_1");
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test");
+		bPartnerId = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());
 
-		saveRecord(productRecord);
+		productId = BusinessTestHelper.createProductId("productTest_1", uom);
 
-		return ProductId.ofRepoId(productRecord.getM_Product_ID());
+		createProductPrice(priceListVersionId, productId, uomId);
+		createQuotation(PREVIOUS_TIMESTAMP);
+		createQuotation(EXPECTED_TIMESTAMP);
 	}
 
 	@NonNull
@@ -216,18 +170,6 @@ public class OrderProductProposalsServiceTest
 		saveRecord(docTypeRecord);
 
 		return DocTypeId.ofRepoId(docTypeRecord.getC_DocType_ID());
-	}
-
-	@NonNull
-	private BPartnerId createBPartner()
-	{
-		final I_C_BPartner partnerRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		partnerRecord.setName("test");
-		partnerRecord.setAD_Org_ID(orgId.getRepoId());
-
-		saveRecord(partnerRecord);
-
-		return BPartnerId.ofRepoId(partnerRecord.getC_BPartner_ID());
 	}
 
 	private void createQuotation(@NonNull final Timestamp timestamp)

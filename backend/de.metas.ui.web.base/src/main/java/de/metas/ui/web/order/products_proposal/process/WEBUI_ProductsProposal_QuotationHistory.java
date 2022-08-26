@@ -24,8 +24,8 @@ package de.metas.ui.web.order.products_proposal.process;
 
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
-import de.metas.ui.web.order.products_proposal.view.QuotationHistoryProductsProposalViewFactory;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
+import de.metas.ui.web.order.products_proposal.view.QuotationHistoryProductsProposalViewFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -52,8 +52,8 @@ public class WEBUI_ProductsProposal_QuotationHistory extends ProductsProposalVie
 		final ProductsProposalView view = getView();
 		final List<ProductsProposalRow> selectedRows = getSelectedRows();
 
-		final ProductsProposalView otherSalesPricesView = quotationHistoryProductsProposalViewFactory.createView(view, selectedRows);
-		afterCloseOpenView(otherSalesPricesView.getViewId());
+		final ProductsProposalView quotationHistoryView = quotationHistoryProductsProposalViewFactory.createView(view, selectedRows);
+		afterCloseOpenView(quotationHistoryView.getViewId());
 
 		return MSG_OK;
 	}

@@ -341,8 +341,10 @@ public final class ProductsProposalRowsLoader
 	{
 		final ProductPrice quotationPrice = orderProductProposalsService.getQuotationPrice(quotation, productId, currentProductProposalPrice.getCurrencyCode());
 
+		final Amount quotationAmount = Amount.of(quotationPrice.toBigDecimal(), currentProductProposalPrice.getCurrencyCode());
+
 		rowBuilder.lastQuotationDate(quotation.getDateOrdered().toLocalDate())
-				.lastQuotationPrice(quotationPrice.toBigDecimal())
+				.lastQuotationPrice(quotationAmount)
 				.lastQuotationUOM(uomLookup.findById(quotationPrice.getUomId()))
 				.incoterms(incoTermsLookup.findById(quotation.getIncoTermsId()))
 				.quotationOrdered(quotation.getRefOrderId() != null);

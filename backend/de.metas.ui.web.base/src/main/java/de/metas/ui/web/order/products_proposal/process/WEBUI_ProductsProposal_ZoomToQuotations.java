@@ -49,11 +49,9 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static de.metas.document.engine.IDocument.STATUS_Completed;
@@ -146,9 +144,8 @@ public class WEBUI_ProductsProposal_ZoomToQuotations extends ProductsProposalVie
 	{
 		final AdWindowId salesWindowId = windowDAO.getWindowIdByInternalName(WINDOW_SalesOrder_InternalName);
 
-		final Optional<AdWindowId> customSalesWindowId = windowDAO.getOverridingWindowId(salesWindowId);
-
-		return customSalesWindowId.orElse(salesWindowId);
+		return windowDAO.getOverridingWindowId(salesWindowId)
+				.orElse(salesWindowId);
 	}
 
 	@NonNull
@@ -179,6 +176,6 @@ public class WEBUI_ProductsProposal_ZoomToQuotations extends ProductsProposalVie
 				.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, STATUS_Completed)
 				.addInSubQueryFilter(I_C_Order.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, query);
 
-		return SqlAndParams.of(orderIQueryFilter.getSqlFiltersWhereClause(), orderIQueryFilter.getSqlFiltersParams(Env.getCtx()));
+		return SqlAndParams.of(orderIQueryFilter.getSqlFiltersWhereClause(), orderIQueryFilter.getSqlFiltersParams(getCtx()));
 	}
 }

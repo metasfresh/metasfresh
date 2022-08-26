@@ -132,7 +132,7 @@ public class ProductsProposalRow implements IViewRow
 
 	public static final String FIELD_LastQuotationPrice = "lastQuotationPrice";
 	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_LastQuotationPrice, captionKey = "LastQuotationPrice", widgetType = DocumentFieldWidgetType.Amount)
-	private final BigDecimal lastQuotationPrice;
+	private final Amount lastQuotationPrice;
 
 	public static final String FIELD_LastQuotationUOM = "lastQuotationUOM";
 	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_LastQuotationUOM, captionKey = "LastQuotationUOM", widgetType = DocumentFieldWidgetType.Lookup)
@@ -184,7 +184,7 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final LocalDate offerDate,
 			@Nullable final LookupValue incoterms,
 			@Nullable final LocalDate lastQuotationDate,
-			@Nullable final BigDecimal lastQuotationPrice,
+			@Nullable final Amount lastQuotationPrice,
 			@Nullable final LookupValue lastQuotationUOM,
 			@Nullable final Boolean quotationOrdered,
 			final int seqNo,
@@ -288,9 +288,12 @@ public class ProductsProposalRow implements IViewRow
 		return getProduct().getIdAs(ProductId::ofRepoId);
 	}
 
+	@Nullable
 	public BPartnerId getBPartnerId()
 	{
-		return getBpartner().getIdAs(BPartnerId::ofRepoId);
+		return Optional.ofNullable(getBpartner())
+				.map(lookupValue -> lookupValue.getIdAs(BPartnerId::ofRepoId))
+				.orElse(null);
 	}
 
 	public String getProductName()

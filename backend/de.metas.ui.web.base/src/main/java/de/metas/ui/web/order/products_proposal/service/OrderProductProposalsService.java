@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ConversionTypeMethod;
@@ -46,6 +47,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -120,9 +122,14 @@ public class OrderProductProposalsService
 	}
 
 	@NonNull
-	public List<Order> getOrdersByQuery(@NonNull final GetOrdersQuery query)
+	public List<Order> getOrdersByQuery(
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final Set<ProductId> productIdSet)
 	{
-		return ordersRepo.getOrdersByQuery(query)
+		final DocTypeId quotationDocTypeId = getQuotationDocTypeId(clientAndOrgId);
+
+		return ordersRepo.getOrdersByQuery(buildOrderQuery(bPartnerId, productIdSet, quotationDocTypeId))
 				.stream()
 				.map(this::toOrder)
 				.collect(ImmutableList.toImmutableList());
@@ -136,7 +143,7 @@ public class OrderProductProposalsService
 	{
 		final DocTypeId quotationDocTypeId = getQuotationDocTypeId(clientAndOrgId);
 
-		return retrieveFirstByQuery(buildOrderQuery(bPartnerId, productId, quotationDocTypeId));
+		return retrieveFirstByQuery(buildOrderQuery(bPartnerId, ImmutableSet.of(productId), quotationDocTypeId));
 	}
 
 	@NonNull
@@ -231,13 +238,13 @@ public class OrderProductProposalsService
 	@NonNull
 	private static GetOrdersQuery buildOrderQuery(
 			@NonNull final BPartnerId bPartnerId,
-			@NonNull final ProductId productId,
+			@NonNull final Set<ProductId> productIds,
 			@NonNull final DocTypeId quotationDocTypeId)
 	{
 		return GetOrdersQuery.builder()
 				.docTypeTargetId(quotationDocTypeId)
 				.bPartnerId(bPartnerId)
-				.productId(productId)
+				.productIds(productIds)
 				.docStatus(DocStatus.Completed)
 				.descSortByDateOrdered(true)
 				.build();

@@ -1,6 +1,8 @@
 package de.metas.ui.web.order.products_proposal.process;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
@@ -18,7 +20,9 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -72,16 +76,21 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 	private void addSelectedRowsToInitialView()
 	{
 		final ProductsProposalView initialView = getInitialView();
+		final BPartnerId bPartnerId = initialView.getBpartnerId().orElse(null);
+		final ClientAndOrgId clientAndOrgId = initialView.getOrderClientAndOrg().orElseGet(() -> ClientAndOrgId.ofClientAndOrg(getClientID(), getOrgId()));
 
 		final List<ProductsProposalRowAddRequest> addRequests = getSelectedRows()
 				.stream()
-				.map(this::toProductsProposalRowAddRequest)
+				.map(row -> toProductsProposalRowAddRequest(row, bPartnerId, clientAndOrgId))
 				.collect(ImmutableList.toImmutableList());
 
 		initialView.addOrUpdateRows(addRequests);
 	}
 
-	private ProductsProposalRowAddRequest toProductsProposalRowAddRequest(final ProductsProposalRow row)
+	private ProductsProposalRowAddRequest toProductsProposalRowAddRequest(
+			@NonNull final ProductsProposalRow row,
+			@Nullable final BPartnerId bPartnerId,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final ProductProposalPrice currentProductProposalPrice = row.getPrice();
 
@@ -94,9 +103,8 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 				.packingMaterialId(row.getPackingMaterialId())
 				.packingDescription(row.getPackingDescription());
 
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(getClientID(), getOrgId());
-
-		orderProductProposalsService.getLastQuotation(clientAndOrgId, row.getBPartnerId(), row.getProductId())
+		Optional.ofNullable(bPartnerId)
+				.flatMap(bpId -> orderProductProposalsService.getLastQuotation(clientAndOrgId, bpId, row.getProductId()))
 				.ifPresent((lastQuotation) -> setQuotationInfo(lastQuotation, productsProposalRowAddRequestBuilder, row.getProductId(), currentProductProposalPrice));
 
 		return productsProposalRowAddRequestBuilder
@@ -111,8 +119,11 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 	{
 		final ProductPrice quotationPrice = orderProductProposalsService.getQuotationPrice(quotation, productId, currentProductProposalPrice.getCurrencyCode());
 
-		productsProposalRowAddRequestBuilder.lastQuotationDate(quotation.getDateOrdered().toLocalDate())
-				.lastQuotationPrice(quotationPrice.toBigDecimal())
+		final Amount quotationAmount = Amount.of(quotationPrice.toBigDecimal(), currentProductProposalPrice.getCurrencyCode());
+
+		productsProposalRowAddRequestBuilder
+				.lastQuotationDate(quotation.getDateOrdered().toLocalDate())
+				.lastQuotationPrice(quotationAmount)
 				.lastQuotationPriceUOM(uomLookup.findById(quotationPrice.getUomId()))
 				.incoterms(incoTermsLookup.findById(quotation.getIncoTermsId()))
 				.quotationOrdered(quotation.getRefOrderId() != null);

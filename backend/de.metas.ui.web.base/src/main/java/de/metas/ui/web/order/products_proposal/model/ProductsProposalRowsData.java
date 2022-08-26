@@ -268,7 +268,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.lastQuotationDate(request.getLastQuotationDate())
 				.lastQuotationPrice(request.getLastQuotationPrice())
 				.incoterms(request.getIncoterms())
-				.quotationOrdered(request.isQuotationOrdered())
+				.quotationOrdered(request.getQuotationOrdered())
 				.lastQuotationUOM(request.getLastQuotationPriceUOM())
 				.build()
 				.withExistingOrderLine(order.orElse(null));

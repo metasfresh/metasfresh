@@ -29,12 +29,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.DocStatus;
 import de.metas.lang.SOTrx;
-import de.metas.order.GetOrdersQuery;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.model.ProductProposalPrice;
@@ -60,12 +57,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 @ViewFactory(windowId = QuotationHistoryProductsProposalViewFactory.WINDOW_ID_STRING)
 public class QuotationHistoryProductsProposalViewFactory extends ProductsProposalViewFactoryTemplate
@@ -139,37 +134,13 @@ public class QuotationHistoryProductsProposalViewFactory extends ProductsProposa
 				.map(ProductsProposalRow::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final GetOrdersQuery query = buildOrderQuery(parentView, selectedProductIds);
-		return orderProductProposalsService.getOrdersByQuery(query);
-	}
-
-	@NonNull
-	private GetOrdersQuery buildOrderQuery(
-			@NonNull final ProductsProposalView parentView,
-			@NonNull final Set<ProductId> selectedProductIds)
-	{
 		final BPartnerId selectedBPartnerId = parentView.getBpartnerId()
 				.orElseThrow(() -> new AdempiereException("BPartner cannot be missing at this stage!"));
 
-		return GetOrdersQuery.builder()
-				.bPartnerId(selectedBPartnerId)
-				.docTypeTargetId(getQuotationDocTypeId())
-				.docStatus(DocStatus.Completed)
-				.productIds(selectedProductIds)
-				.descSortByDateOrdered(true)
-				.build();
-	}
+		final ClientAndOrgId clientAndOrgId = parentView.getOrderClientAndOrg()
+				.orElseGet(() -> ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getOrgId().getRepoId()));
 
-	@NonNull
-	private DocTypeId getQuotationDocTypeId()
-	{
-		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_Proposal)
-				.adClientId(Env.getAD_Client_ID())
-				.build();
-
-		return docTypeDAO.getDocTypeId(docTypeQuery);
+		return orderProductProposalsService.getOrdersByQuery(clientAndOrgId, selectedBPartnerId, selectedProductIds);
 	}
 
 	@Override

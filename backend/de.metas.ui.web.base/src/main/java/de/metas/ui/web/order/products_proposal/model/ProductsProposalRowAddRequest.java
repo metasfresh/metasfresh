@@ -12,7 +12,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /*
@@ -67,7 +66,7 @@ public class ProductsProposalRowAddRequest
 	LocalDate lastQuotationDate;
 
 	@Nullable
-	BigDecimal lastQuotationPrice;
+	Amount lastQuotationPrice;
 
 	@Nullable
 	LookupValue lastQuotationPriceUOM;
@@ -75,7 +74,8 @@ public class ProductsProposalRowAddRequest
 	@Nullable
 	LookupValue incoterms;
 
-	boolean quotationOrdered;
+	@Nullable
+	Boolean quotationOrdered;
 
 	public ProductId getProductId()
 	{
