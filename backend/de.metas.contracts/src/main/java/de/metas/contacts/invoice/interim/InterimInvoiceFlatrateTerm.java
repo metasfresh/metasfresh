@@ -26,15 +26,16 @@ import de.metas.calendar.CalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Value
 @Builder(toBuilder = true)
@@ -57,11 +58,11 @@ public class InterimInvoiceFlatrateTerm
 	@Nullable
 	CalendarId calendarId;
 	@Nullable
-	BigDecimal qtyOrdered;
+	Quantity qtyOrdered;
 	@Nullable
-	BigDecimal qtyDelivered;
+	Quantity qtyDelivered;
 	@Nullable
-	BigDecimal qtyInvoiced;
+	Quantity qtyInvoiced;
 	@Nullable
-	BigDecimal priceActual;
+	Money priceActual;
 }

@@ -34,8 +34,11 @@ import de.metas.inout.InOutId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -222,6 +225,8 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 
 	private InterimInvoiceFlatrateTerm fromDbObject(@NonNull final I_C_InterimInvoice_FlatrateTerm dbObject)
 	{
+		final UomId uomId = UomId.ofRepoId(dbObject.getC_UOM_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(dbObject.getC_Currency_ID());
 		return InterimInvoiceFlatrateTerm.builder()
 				.id(InterimInvoiceFlatrateTermId.ofRepoId(dbObject.getC_InterimInvoice_FlatrateTerm_ID()))
 				.flatrateTermId(FlatrateTermId.ofRepoId(dbObject.getC_Flatrate_Term_ID()))
@@ -229,11 +234,12 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 				.withholdingInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_Invoice_Candidate_Withholding_ID()))
 				.interimInvoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(dbObject.getC_Interim_Invoice_Candidate_ID()))
 				.productId(ProductId.ofRepoId(dbObject.getM_Product_ID()))
-				.uomId(UomId.ofRepoIdOrNull(dbObject.getC_UOM_ID()))
-				.currencyId(CurrencyId.ofRepoIdOrNull(dbObject.getC_Currency_ID()))
-				.qtyOrdered(dbObject.getQtyOrdered())
-				.qtyDelivered(dbObject.getQtyDeliveredInUOM())
-				.qtyInvoiced(dbObject.getQtyInvoiced())
+				.uomId(uomId)
+				.currencyId(currencyId)
+				.qtyOrdered(Quantitys.create(dbObject.getQtyOrdered(), uomId))
+				.qtyDelivered(Quantitys.create(dbObject.getQtyDeliveredInUOM(), uomId))
+				.qtyInvoiced(Quantitys.create(dbObject.getQtyInvoiced(), uomId))
+				.priceActual(Money.ofOrNull(dbObject.getPriceActual(), currencyId))
 				.build();
 	}
 
@@ -247,9 +253,10 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 		dbObject.setM_Product_ID(ProductId.toRepoId(object.getProductId()));
 		dbObject.setC_UOM_ID(UomId.toRepoId(object.getUomId()));
 		dbObject.setC_Currency_ID(CurrencyId.toRepoId(object.getCurrencyId()));
-		dbObject.setQtyOrdered(object.getQtyOrdered());
-		dbObject.setQtyDeliveredInUOM(object.getQtyDelivered());
-		dbObject.setQtyInvoiced(object.getQtyInvoiced());
+		dbObject.setQtyOrdered(Quantity.toBigDecimal(object.getQtyOrdered()));
+		dbObject.setQtyDeliveredInUOM(Quantity.toBigDecimal(object.getQtyDelivered()));
+		dbObject.setQtyInvoiced(Quantity.toBigDecimal(object.getQtyInvoiced()));
+		dbObject.setPriceActual(Money.toBigDecimalOrZero(object.getPriceActual()));
 		return dbObject;
 	}
 

@@ -35,7 +35,7 @@ import lombok.NonNull;
 
 import java.sql.Timestamp;
 
-public class Create_InterimInvoice_Flatrate_Term extends JavaProcess implements IProcessPrecondition
+public class C_Flatrate_Term_CreateInterimContract extends JavaProcess implements IProcessPrecondition
 {
 	@Param(mandatory = true, parameterName = "C_Flatrate_Conditions_ID")
 	private int p_C_Flatrate_Conditions_ID;

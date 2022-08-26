@@ -36,6 +36,7 @@ import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidate
 import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -160,7 +161,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 		invoiceCandidate.setIsInterimInvoice(true);
 
 		final DocTypeId interimInvoiceDocTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
+				.docBaseType(DocBaseType.APInvoice)
 				.docSubType(X_C_DocType.DOCSUBTYPE_InterimInvoice)
 				.adClientId(term.getAD_Client_ID())
 				.adOrgId(term.getAD_Org_ID())
@@ -180,7 +181,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 		invoiceCandidate.setM_Product_ID(interimInvoiceSettings.getWithholdingProductId().getRepoId());
 
 		final DocTypeId interimInvoiceDocTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
+				.docBaseType(DocBaseType.APInvoice)
 				.docSubType(X_C_DocType.DOCSUBTYPE_Withholding)
 				.adClientId(term.getAD_Client_ID())
 				.adOrgId(term.getAD_Org_ID())

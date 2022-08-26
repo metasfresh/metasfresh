@@ -45,12 +45,15 @@ import de.metas.inout.InOutAndLineId;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -223,17 +226,19 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		final I_C_Order order = orderDAO.getById(orderLine.getOrderId());
 
 		final UomId productUomId = UomId.ofRepoId(product.getC_UOM_ID());
+		final Quantity zeroQty = Quantitys.createZero(productUomId);
+		final CurrencyId currencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
 		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = InterimInvoiceFlatrateTerm.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.calendarId(interimInvoiceSettings.getHarvestingCalendarId())
 				.orderLineId(orderLineId)
-				.qtyOrdered(uomConversionBL.convertQuantityTo(orderLine.getOrderedQty(), productId, productUomId).toBigDecimal())
-				.qtyDelivered(BigDecimal.ZERO)
-				.qtyInvoiced(BigDecimal.ZERO)
+				.qtyOrdered(uomConversionBL.convertQuantityTo(orderLine.getOrderedQty(), productId, productUomId))
+				.qtyDelivered(zeroQty)
+				.qtyInvoiced(zeroQty)
 				.productId(productId)
 				.uomId(productUomId)
-				.priceActual(BigDecimal.ZERO)
-				.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()))
+				.priceActual(Money.of(BigDecimal.ZERO, currencyId))
+				.currencyId(currencyId)
 
 				.build();
 

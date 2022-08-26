@@ -88,7 +88,7 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 	{
 		final Quantity qtyDelivered = getQtyDelivered(interimInvoiceFlatrateTerm);
 		interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm.toBuilder()
-				.qtyDelivered(qtyDelivered.toBigDecimal())
+				.qtyDelivered(qtyDelivered)
 				.build());
 
 		final InvoiceCandidateId interimInvoiceCandidateId = interimInvoiceFlatrateTerm.getInterimInvoiceCandidateId();
@@ -139,7 +139,7 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 			return;
 		}
 		interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm.toBuilder()
-				.qtyInvoiced(invoiceCand.getQtyInvoiced())
+				.qtyInvoiced(Quantitys.create(invoiceCand.getQtyInvoiced(), interimInvoiceFlatrateTerm.getUomId()))
 				.build());
 		interimInvoiceFlatrateTermLineDAO.setInvoiceLineToLines(InvoiceCandidateIds.ofRecord(invoiceCand), interimInvoiceFlatrateTerm.getId());
 	}
