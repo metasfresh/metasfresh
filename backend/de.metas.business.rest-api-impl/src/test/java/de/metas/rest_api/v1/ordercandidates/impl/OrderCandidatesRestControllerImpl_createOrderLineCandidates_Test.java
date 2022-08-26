@@ -32,6 +32,7 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
@@ -229,11 +230,9 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 			testMasterdata.createSalesRep("SalesRep");
 
-			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
-					X_C_DocType.DOCSUBTYPE_StandardOrder));
+			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_StandardOrder));
 
-			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
-					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+			testMasterdata.createDocType(DocBaseAndSubType.of(DocBaseType.SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder));
 
 			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
 		}

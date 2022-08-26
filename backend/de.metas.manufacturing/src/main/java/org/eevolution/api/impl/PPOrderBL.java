@@ -45,7 +45,6 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
@@ -300,7 +299,7 @@ public class PPOrderBL implements IPPOrderBL
 			@Nullable final String docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType.getCode())
+				.docBaseType(docBaseType.toDocBaseType())
 				.docSubType(docSubType)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())

@@ -9,26 +9,35 @@ import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costrevaluation.CostRevaluationLineId;
+import de.metas.invoice.MatchInvId;
 import de.metas.money.CurrencyId;
+import de.metas.order.MatchPOId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -154,6 +163,42 @@ class CostDetailRepositoryTest
 							.orderBy(CostDetailQuery.OrderBy.ID_DESC)
 							.build())
 			).containsExactly(cd_E1_20220615, cd_E1_20220614, cd_E1_20220613);
+		}
+	}
+
+	private static Stream<Arguments> sampleCostingDocumentRefs()
+	{
+		return Stream.of(
+				Arguments.of(CostingDocumentRef.ofMatchPOId(MatchPOId.ofRepoId(123))),
+				Arguments.of(CostingDocumentRef.ofMatchInvoiceId(MatchInvId.ofRepoId(123))),
+				Arguments.of(CostingDocumentRef.ofReceiptLineId(123)),
+				Arguments.of(CostingDocumentRef.ofShipmentLineId(123)),
+				Arguments.of(CostingDocumentRef.ofInventoryLineId(123)),
+				Arguments.of(CostingDocumentRef.ofInventoryLineId(123)),
+				Arguments.of(CostingDocumentRef.ofOutboundMovementLineId(123)),
+				Arguments.of(CostingDocumentRef.ofInboundMovementLineId(123)),
+				Arguments.of(CostingDocumentRef.ofProjectIssueId(123)),
+				Arguments.of(CostingDocumentRef.ofCostCollectorId(123)),
+				Arguments.of(CostingDocumentRef.ofCostRevaluationLineId(CostRevaluationLineId.ofRepoId(123, 456)))
+		);
+	}
+
+	@Nested
+	class updateRecordFromDocumentRef_extractDocumentRef
+	{
+		@ParameterizedTest
+		@MethodSource("de.metas.costing.impl.CostDetailRepositoryTest#sampleCostingDocumentRefs")
+		void test(CostingDocumentRef costingDocumentRef)
+		{
+			final I_M_CostDetail costDetail = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
+			CostDetailRepository.updateRecordFromDocumentRef(costDetail, costingDocumentRef);
+			if (costingDocumentRef.getOutboundTrx() != null)
+			{
+				costDetail.setIsSOTrx(costingDocumentRef.getOutboundTrx());
+			}
+
+			final CostingDocumentRef costingDocumentRef2 = CostDetailRepository.extractDocumentRef(costDetail);
+			assertThat(costingDocumentRef2).isEqualTo(costingDocumentRef);
 		}
 	}
 }

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
@@ -62,7 +63,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 	public Doc_MatchPO(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_MatMatchPO);
+		super(ctx, DocBaseType.MatchPO);
 	}
 
 	@Override

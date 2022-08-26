@@ -114,7 +114,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	@Override
 	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(cc.getPP_Order_BOMLine_ID());

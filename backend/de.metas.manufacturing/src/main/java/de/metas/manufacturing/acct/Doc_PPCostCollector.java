@@ -31,6 +31,7 @@ import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -70,7 +71,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 	public Doc_PPCostCollector(final AcctDocContext ctx)
 	{
-		super(ctx, X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
+		super(ctx, DocBaseType.ManufacturingCostCollector);
 	}
 
 	@Override

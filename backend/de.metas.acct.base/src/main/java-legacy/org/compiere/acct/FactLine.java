@@ -18,6 +18,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.DocStatus;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -518,8 +520,10 @@ public final class FactLine extends X_Fact_Acct
 		// Document infos
 		setDocumentNo(m_doc.getDocumentNo());
 		setC_DocType_ID(m_doc.getC_DocType_ID());
-		setDocBaseType(m_doc.getDocumentType());
-		setDocStatus(m_doc.getDocStatus());
+		setDocBaseType(m_doc.getDocBaseType().getCode());
+
+		final DocStatus docStatus = m_doc.getDocStatus();
+		setDocStatus(docStatus != null ? docStatus.getCode() : null);
 
 		// Description
 		final StringBuilder description = new StringBuilder(m_doc.getDocumentNo());
@@ -1154,7 +1158,7 @@ public final class FactLine extends X_Fact_Acct
 		// Prio 3 - get from doc - if not GL
 		if (m_doc != null && super.getAD_Org_ID() <= 0)
 		{
-			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
+			if (DocBaseType.GLJournal.equals(m_doc.getDocBaseType()))
 			{
 				setAD_Org_ID(m_acct.getAD_Org_ID()); // inter-company GL
 			}
@@ -1166,7 +1170,7 @@ public final class FactLine extends X_Fact_Acct
 		// Prio 4 - get from account - if not GL
 		if (m_doc != null && super.getAD_Org_ID() == 0)
 		{
-			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
+			if (DocBaseType.GLJournal.equals(m_doc.getDocBaseType()))
 			{
 				setAD_Org_ID(m_doc.getOrgId());
 			}
@@ -1313,7 +1317,7 @@ public final class FactLine extends X_Fact_Acct
 
 			//
 			// Revenue Recognition for AR Invoices
-			if (m_doc.getDocumentType().equals(Doc.DOCTYPE_ARInvoice)
+			if (DocBaseType.ARInvoice.equals(m_doc.getDocBaseType())
 					&& m_docLine != null
 					&& m_docLine.getC_RevenueRecognition_ID() > 0)
 			{

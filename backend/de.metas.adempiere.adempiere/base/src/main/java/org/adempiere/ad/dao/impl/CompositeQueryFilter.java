@@ -404,8 +404,6 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, IC
 
 		// recompile needed
 		this._compiled = false;
-
-		return;
 	}
 
 	@Override
