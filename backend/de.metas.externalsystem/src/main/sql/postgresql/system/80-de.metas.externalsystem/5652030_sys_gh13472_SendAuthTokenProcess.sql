@@ -38,8 +38,18 @@ UPDATE AD_Process_Trl SET Description='Prozess, der verwendet wird, um ein frisc
 UPDATE AD_Process_Trl SET Description='Prozess, der verwendet wird, um ein frisches Metasfresh REST-API Autorisierungs-Token für die Camel external-system suite bereitzustellen. Normalerweise sollte der Prozess nur ausgeführt werden, wenn die beteiligten Systemkonfigurationen aktualisiert werden.',Updated=TO_TIMESTAMP('2022-08-21 12:00:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=585099
 ;
 
+-- 2022-08-26T13:57:58.933Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581395,0,TO_TIMESTAMP('2022-08-26 16:57:58','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','Externe Systeme authentifizieren','Externe Systeme authentifizieren',TO_TIMESTAMP('2022-08-26 16:57:58','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-08-26T13:57:58.967Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581395 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+
 -- 2022-08-21T09:01:59.484Z
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,Description,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('P',0,541993,0,585099,TO_TIMESTAMP('2022-08-21 12:01:59','YYYY-MM-DD HH24:MI:SS'),100,'Prozess, der verwendet wird, um ein frisches Metasfresh REST-API Autorisierungs-Token für die Camel external-system suite bereitzustellen. Normalerweise sollte der Prozess nur ausgeführt werden, wenn die beteiligten Systemkonfigurationen aktualisiert werden.','de.metas.externalsystem','SendAuthTokenProcess','Y','N','N','N','N','Externe Systeme authentifizieren',TO_TIMESTAMP('2022-08-21 12:01:59','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Menu (AD_Element_ID, Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,Description,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy)
+VALUES (581395, 'P',0,541993,0,585099,TO_TIMESTAMP('2022-08-21 12:01:59','YYYY-MM-DD HH24:MI:SS'),100,'Prozess, der verwendet wird, um ein frisches Metasfresh REST-API Autorisierungs-Token für die Camel external-system suite bereitzustellen. Normalerweise sollte der Prozess nur ausgeführt werden, wenn die beteiligten Systemkonfigurationen aktualisiert werden.','de.metas.externalsystem','SendAuthTokenProcess','Y','N','N','N','N','Externe Systeme authentifizieren',TO_TIMESTAMP('2022-08-21 12:01:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-08-21T09:01:59.491Z
