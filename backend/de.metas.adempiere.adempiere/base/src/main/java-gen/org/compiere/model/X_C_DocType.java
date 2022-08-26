@@ -271,8 +271,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	/** Remittance Advice = RMA */
 	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
-	/** BOM & Formula = BOM */
-	public static final String DOCBASETYPE_BOMFormula = "BOM";
+	/** Bill Of Material Version = BOM */
+	public static final String DOCBASETYPE_BillOfMaterialVersion = "BOM";
 	/** Cost Revaluation = CRD */
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	@Override
