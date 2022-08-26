@@ -72,10 +72,10 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 
 public class InterimInvoiceFlatrateTermCreateCommand
@@ -89,7 +89,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final ProductId productId;
 	@NonNull
 	private final Instant dateFrom;
-	@NonNull
+	@Nullable
 	private final Instant dateTo;
 	@NonNull
 	private final OrderLineId orderLineId;
@@ -118,7 +118,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 			@NonNull final ConditionsId conditionsId,
 			@Nullable final ProductId productId,
 			@NonNull final Instant dateFrom,
-			@NonNull final Instant dateTo,
+			@Nullable final Instant dateTo,
 			@NonNull final OrderLineId orderLineId)
 	{
 
@@ -194,8 +194,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	{
 		return flatrateDAO.retrieveTerms(bpartner, conditions)
 				.stream()
-				.filter(term -> dateFrom.equals(term.getStartDate()))
-				.filter(term -> dateTo.equals(term.getEndDate()))
+				.filter(term -> Objects.equals(dateFrom, TimeUtil.asInstant(term.getStartDate())))
+				.filter(term -> Objects.equals(dateTo, TimeUtil.asInstant(term.getEndDate())))
 				.findFirst();
 	}
 
@@ -234,7 +234,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.qtyInvoiced(zeroQty)
 				.productId(productId)
 				.uomId(productUomId)
-				.priceActual(Money.of(BigDecimal.ZERO, currencyId))
+				.priceActual(Money.zero(currencyId))
 				.currencyId(currencyId)
 
 				.build();

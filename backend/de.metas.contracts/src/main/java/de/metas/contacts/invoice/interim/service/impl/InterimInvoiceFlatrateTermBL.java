@@ -45,6 +45,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -62,6 +63,7 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 	private final IInterimInvoiceFlatrateTermLineDAO interimInvoiceFlatrateTermLineDAO = Services.get(IInterimInvoiceFlatrateTermLineDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private static final Logger logger = LogManager.getLogger(InterimInvoiceFlatrateTermBL.class);
 
@@ -69,6 +71,7 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 	public void updateInterimInvoiceFlatrateTermForInOutLine(@NonNull final I_M_InOutLine inOutLine)
 	{
 		InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceFlatrateTermDAO.getInterimInvoiceOverviewForInOutLine(inOutLine);
+		// note that if we have an InterimInvoiceFlatrateTerm, it means that there is also a completed C_Flatrate_Term in the back
 		if (interimInvoiceFlatrateTerm == null)
 		{
 			//inOutLine is not part of a contract
@@ -160,9 +163,11 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 		updateQuantities(interimInvoiceFlatrateTerm);
 	}
 
-	private void setICQtyies(final I_C_Invoice_Candidate invoiceCandidate, final Quantity qtyToInvoice)
+	private void setICQtyies(final I_C_Invoice_Candidate invoiceCandidate, final Quantity quantity)
 	{
-		final BigDecimal qtyDeliveredInICUOM = qtyToInvoice.toBigDecimal();
+		final UomId uomToId = UomId.ofRepoId(invoiceCandidate.getC_UOM_ID());
+		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
+		final BigDecimal qtyDeliveredInICUOM = uomConversionBL.convertQuantityTo(quantity, productId, uomToId).toBigDecimal();
 		invoiceCandidate.setQtyOrdered(qtyDeliveredInICUOM);
 		invoiceCandidate.setQtyEntered(qtyDeliveredInICUOM);
 		invoiceCandidate.setQtyDelivered(qtyDeliveredInICUOM);
@@ -183,7 +188,7 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 				.conditionsId(ConditionsId.ofRepoId(flatrateTerm.getC_Flatrate_Conditions_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()))
 				.dateFrom(TimeUtil.asInstantNonNull(flatrateTerm.getStartDate()))
-				.dateTo(TimeUtil.asInstantNonNull(flatrateTerm.getEndDate()))
+				.dateTo(TimeUtil.asInstant(flatrateTerm.getEndDate()))
 				.build()
 				.execute();
 	}
