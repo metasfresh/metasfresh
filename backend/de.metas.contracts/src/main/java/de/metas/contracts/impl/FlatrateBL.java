@@ -2180,4 +2180,5 @@ public class FlatrateBL implements IFlatrateBL
 				.create()
 				.anyMatch();
 	}
+
 }
