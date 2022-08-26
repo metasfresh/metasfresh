@@ -2,6 +2,7 @@ package de.metas.costrevaluation.interceptor;
 
 import de.metas.costrevaluation.CostRevaluationId;
 import de.metas.costrevaluation.CostRevaluationService;
+import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 class M_CostRevaluation
 {
+	private static final AdMessageKey MSG_DeleteLinesFirstError = AdMessageKey.of("M_CostRevaluation.DeleteLinesFirstError");
 	private final CostRevaluationService costRevaluationService;
 
 	M_CostRevaluation(@NonNull final CostRevaluationService costRevaluationService)
@@ -34,7 +36,7 @@ class M_CostRevaluation
 				&& costRevaluationService.hasActiveLines(CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID()))
 		)
 		{
-			throw new AdempiereException("Delete the lines first");
+			throw new AdempiereException(MSG_DeleteLinesFirstError);
 		}
 	}
 
