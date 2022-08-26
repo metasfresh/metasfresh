@@ -1,7 +1,6 @@
 package de.metas.contracts.interceptor;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.util.Services;
@@ -15,7 +14,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class M_InOutLine
 {
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IInterimInvoiceFlatrateTermBL interimInvoiceBL = Services.get(IInterimInvoiceFlatrateTermBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void updateFLatrateDataEntryQtyAdd(final I_M_InOutLine doc)
@@ -26,7 +24,7 @@ public class M_InOutLine
 		}
 
 		flatrateBL.updateFlatrateDataEntryQty(
-				loadOutOfTrx(doc.getM_Product_ID(),I_M_Product.class),
+				loadOutOfTrx(doc.getM_Product_ID(), I_M_Product.class),
 				doc.getMovementQty(),
 				doc, // inOutLine
 				false); // subtract = false
@@ -40,19 +38,9 @@ public class M_InOutLine
 			return; // nothing to do/avoid NPE
 		}
 		flatrateBL.updateFlatrateDataEntryQty(
-				loadOutOfTrx(doc.getM_Product_ID(),I_M_Product.class),
+				loadOutOfTrx(doc.getM_Product_ID(), I_M_Product.class),
 				doc.getMovementQty(),
 				doc, // inOutLine
 				true); // subtract = true
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, ifColumnsChanged = { org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty })
-	public void verifyIfPartOfInterimContract(final org.compiere.model.I_M_InOutLine inOutLine)
-	{
-		if (inOutLine.getC_OrderLine_ID() <= 0)
-		{
-			return;
-		}
-		interimInvoiceBL.updateInterimInvoiceFlatrateTermForInOutLine(inOutLine);
 	}
 }

@@ -27,14 +27,14 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_InOut;
 
 /**
   * Note: this BL is not about flartate-terms, but about {@link org.compiere.model.I_C_InterimInvoice_FlatrateTerm}s.
   */
 public interface IInterimInvoiceFlatrateTermBL extends ISingletonService
 {
-	void updateInterimInvoiceFlatrateTermForInOutLine(I_M_InOutLine inOutLine);
+	void updateInterimInvoiceFlatrateTermForInOut(I_M_InOut inOutLine);
 
 	void updateQuantities(@NonNull InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm);
 

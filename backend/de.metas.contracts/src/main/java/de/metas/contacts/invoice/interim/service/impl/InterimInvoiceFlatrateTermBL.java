@@ -50,6 +50,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -68,7 +69,13 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 	private static final Logger logger = LogManager.getLogger(InterimInvoiceFlatrateTermBL.class);
 
 	@Override
-	public void updateInterimInvoiceFlatrateTermForInOutLine(@NonNull final I_M_InOutLine inOutLine)
+	public void updateInterimInvoiceFlatrateTermForInOut(@NonNull final I_M_InOut inOut)
+	{
+		inOutDAO.retrieveLines(inOut)
+				.forEach(this::updateInterimInvoiceFlatrateTermForInOutLine);
+	}
+
+	private void updateInterimInvoiceFlatrateTermForInOutLine(@NonNull final I_M_InOutLine inOutLine)
 	{
 		InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = interimInvoiceFlatrateTermDAO.getInterimInvoiceOverviewForInOutLine(inOutLine);
 		// note that if we have an InterimInvoiceFlatrateTerm, it means that there is also a completed C_Flatrate_Term in the back
