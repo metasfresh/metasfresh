@@ -79,6 +79,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	private final OrderProductProposalsService orderProductProposalsService;
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final CampaignPriceService campaignPriceService;

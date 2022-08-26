@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
@@ -14,7 +15,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -31,17 +31,16 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -80,6 +79,7 @@ public class OrderProductProposalsService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IBPartnerBL bpartnersService = Services.get(IBPartnerBL.class);
+
 	private final CurrencyRepository currencyRepo;
 	private final MoneyService moneyService;
 
@@ -92,23 +92,23 @@ public class OrderProductProposalsService
 	}
 
 	@NonNull
-	public BigDecimal extractLastQuotationPriceInPriceListCurrency(
+	public ProductPrice getQuotationPrice(
 			@NonNull final Order quotation,
-			@NonNull final I_M_ProductPrice productPriceRecord)
+			@NonNull final ProductId productId,
+			@NonNull final CurrencyCode currencyCode)
 	{
-		final ProductId productId = ProductId.ofRepoId(productPriceRecord.getM_Product_ID());
 		final OrderLine orderLine = quotation.getFirstMatchingOrderLine(productId);
 
-		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(productPriceRecord.getM_PriceList_Version_ID());
-		final I_M_PriceList priceList = priceListsRepo.getPriceListByPriceListVersionId(priceListVersionId);
-		final CurrencyId priceListCurrencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
-
-		final Money priceEntered = Money.of(orderLine.getPriceEntered(), orderLine.getCurrencyId());
+		final Money quotationPriceEntered = Money.of(orderLine.getPriceEntered(), orderLine.getCurrencyId());
 
 		final Money priceEnteredInPriceListCurrency = moneyService
-				.convertMoneyToCurrency(priceEntered, priceListCurrencyId, getCurrencyConversionContext(productPriceRecord));
+				.convertMoneyToCurrency(quotationPriceEntered, currencyCode, getCurrencyConversionContext(quotation.getClientAndOrgId()));
 
-		return priceEnteredInPriceListCurrency.toBigDecimal();
+		return ProductPrice.builder()
+				.productId(productId)
+				.money(priceEnteredInPriceListCurrency)
+				.uomId(Optional.ofNullable(orderLine.getPriceUomId()).orElse(orderLine.getUomId()))
+				.build();
 	}
 
 	@NonNull
@@ -170,6 +170,7 @@ public class OrderProductProposalsService
 		final String bpartnerName = bpartnersService.getBPartnerName(bpartnerId);
 
 		return Order.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID()))
 				.orderId(orderId)
 				.soTrx(SOTrx.ofBoolean(orderRecord.isSOTrx()))
 				.datePromised(datePromised)
@@ -205,6 +206,7 @@ public class OrderProductProposalsService
 				.qtyEnteredTU(record.getQtyEnteredTU().intValue())
 				.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
 				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.description(record.getDescription())
 				.build();
 	}
@@ -217,13 +219,13 @@ public class OrderProductProposalsService
 	}
 
 	@NonNull
-	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final I_M_ProductPrice productPriceRecord)
+	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final LocalDate conversionDate = LocalDate.now();
 		return currencyConversionBL.createCurrencyConversionContext(conversionDate,
 																	ConversionTypeMethod.Spot,
-																	ClientId.ofRepoId(productPriceRecord.getAD_Client_ID()),
-																	OrgId.ofRepoId(productPriceRecord.getAD_Org_ID()));
+																	clientAndOrgId.getClientId(),
+																	clientAndOrgId.getOrgId());
 	}
 
 	@NonNull

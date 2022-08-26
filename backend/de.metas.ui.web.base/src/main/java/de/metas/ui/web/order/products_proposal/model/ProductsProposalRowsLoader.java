@@ -48,6 +48,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.service.Order;
@@ -84,7 +85,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -237,9 +237,7 @@ public final class ProductsProposalRowsLoader
 				? packingMaterialsService.getDisplayName(packingMaterialId)
 				: TranslatableStrings.empty();
 
-		final Optional<Order> lastQuotation = orderProductProposalsService.getLastQuotation(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()),
-																							bpartnerId,
-																							productId);
+		final ProductProposalPrice currentProductProposalPrice = extractProductProposalPrice(record);
 
 		final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder = ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
@@ -247,13 +245,16 @@ public final class ProductsProposalRowsLoader
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
-				.price(extractProductProposalPrice(record))
+				.price(currentProductProposalPrice)
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
 				.seqNo(record.getSeqNo())
 				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()));
 
-		lastQuotation.ifPresent((quotation) -> setQuotationInfo(quotation, rowBuilder, record, productId));
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID());
+
+		orderProductProposalsService.getLastQuotation(clientAndOrgId, bpartnerId, productId)
+				.ifPresent((lastQuotation) -> setQuotationInfo(lastQuotation, rowBuilder, productId, currentProductProposalPrice));
 
 		return rowBuilder
 				.build()
@@ -335,12 +336,14 @@ public final class ProductsProposalRowsLoader
 	private void setQuotationInfo(
 			@NonNull final Order quotation,
 			@NonNull final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder,
-			@NonNull final I_M_ProductPrice record,
-			@NonNull final ProductId productId)
+			@NonNull final ProductId productId,
+			@NonNull final ProductProposalPrice currentProductProposalPrice)
 	{
+		final ProductPrice quotationPrice = orderProductProposalsService.getQuotationPrice(quotation, productId, currentProductProposalPrice.getCurrencyCode());
+
 		rowBuilder.lastQuotationDate(quotation.getDateOrdered().toLocalDate())
-				.lastQuotationPrice(orderProductProposalsService.extractLastQuotationPriceInPriceListCurrency(quotation, record))
-				.lastQuotationUOM(uomLookup.findById(quotation.getFirstMatchingOrderLine(productId).getUomId()))
+				.lastQuotationPrice(quotationPrice.toBigDecimal())
+				.lastQuotationUOM(uomLookup.findById(quotationPrice.getUomId()))
 				.incoterms(incoTermsLookup.findById(quotation.getIncoTermsId()))
 				.quotationOrdered(quotation.getRefOrderId() != null);
 	}

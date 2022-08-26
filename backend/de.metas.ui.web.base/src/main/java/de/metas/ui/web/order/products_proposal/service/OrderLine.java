@@ -1,9 +1,5 @@
 package de.metas.ui.web.order.products_proposal.service;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
@@ -12,6 +8,9 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -63,6 +62,9 @@ public class OrderLine
 
 	@NonNull
 	UomId uomId;
+
+	@Nullable
+	UomId priceUomId;
 
 	int qtyEnteredTU;
 

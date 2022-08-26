@@ -81,6 +81,7 @@ public class OrderProductProposalsServiceTest
 	private PriceListVersionId priceListVersionId;
 	private DocTypeId docTypeId;
 	private CurrencyId currencyId;
+	private UomId uomId;
 
 	private OrderProductProposalsService orderProductProposalsService;
 
@@ -94,10 +95,10 @@ public class OrderProductProposalsServiceTest
 		orderProductProposalsService = new OrderProductProposalsService(currencyRepository, new MoneyService(currencyRepository));
 
 		final CountryId countryId = BusinessTestHelper.createCountry("DE");
-		final UomId uomId = UomId.ofRepoId(BusinessTestHelper.createUomEach().getC_UOM_ID());
 		final PricingSystemId pricingSystemId = createPricingSystem();
 
-		orgId = OrgId.ofRepoId(Env.CTXVALUE_AD_Org_ID_System);
+		uomId = UomId.ofRepoId(BusinessTestHelper.createUomEach().getC_UOM_ID());
+		orgId = OrgId.ANY;
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.USD);
 		priceListId = createPriceList(pricingSystemId, countryId, currencyId);
 		priceListVersionId = createPriceListVersion(priceListId);
@@ -169,7 +170,7 @@ public class OrderProductProposalsServiceTest
 		return PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
 	}
 
-	@SuppressWarnings("SameParameterValue")
+	@NonNull
 	private PriceListId createPriceList(
 			@NonNull final PricingSystemId pricingSystemId,
 			@NonNull final CountryId countryId,
@@ -245,7 +246,7 @@ public class OrderProductProposalsServiceTest
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
 		orderLineRecord.setM_Product_ID(productId.getRepoId());
 		orderLineRecord.setC_Order_ID(orderRecord.getC_Order_ID());
-		orderLineRecord.setC_UOM_ID(UomId.EACH.getRepoId());
+		orderLineRecord.setC_UOM_ID(uomId.getRepoId());
 		orderLineRecord.setM_PriceList_Version_ID(priceListVersionId.getRepoId());
 		orderLineRecord.setC_Currency_ID(currencyId.getRepoId());
 

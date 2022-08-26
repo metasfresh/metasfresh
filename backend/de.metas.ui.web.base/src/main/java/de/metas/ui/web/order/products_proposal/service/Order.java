@@ -1,18 +1,13 @@
 package de.metas.ui.web.order.products_proposal.service;
 
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -21,6 +16,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /*
  * #%L
@@ -48,6 +47,9 @@ import org.adempiere.exceptions.AdempiereException;
 @Builder
 public class Order
 {
+	@NonNull
+	ClientAndOrgId clientAndOrgId;
+
 	@NonNull
 	OrderId orderId;
 

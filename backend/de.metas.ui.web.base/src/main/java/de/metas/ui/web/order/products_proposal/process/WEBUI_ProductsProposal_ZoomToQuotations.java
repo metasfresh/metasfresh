@@ -25,6 +25,7 @@ package de.metas.ui.web.order.products_proposal.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.i18n.IMsgBL;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
@@ -67,6 +68,7 @@ public class WEBUI_ProductsProposal_ZoomToQuotations extends ProductsProposalVie
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public static final String WINDOW_SalesOrder_InternalName = "C_Order_Sales";
 	private static final String QUOTATION_IDS_BY_PRODUCTS_AND_BPARTNER = "quotationIdsByProductsAndBPartner";
@@ -126,6 +128,7 @@ public class WEBUI_ProductsProposal_ZoomToQuotations extends ProductsProposalVie
 	{
 		final DocumentFilter filter = DocumentFilter.builder()
 				.setFilterId(QUOTATION_IDS_BY_PRODUCTS_AND_BPARTNER)
+				.setCaption(msgBL.getTranslatableMsgText("Default"))
 				.addParameter(getDocumentFilterParamOrderIds(selectedProductIds, selectedBPartnerId))
 				.build();
 
