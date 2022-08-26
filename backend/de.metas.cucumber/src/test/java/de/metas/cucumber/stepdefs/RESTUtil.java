@@ -66,8 +66,8 @@ import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.Env;
-import org.springframework.http.MediaType;
 import org.slf4j.Logger;
+import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -195,12 +195,19 @@ public class RESTUtil
 			@NonNull final String userAuthToken,
 			@Nullable final Map<String, String> additionalHeaders)
 	{
-		request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
 
-		if (additionalHeaders != null)
+		if( additionalHeaders == null )
 		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		}
+		else
+		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE,
+							  CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON_VALUE));
+			request.addHeader(HttpHeaders.ACCEPT,
+							  CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.ACCEPT), MediaType.APPLICATION_JSON_VALUE));
 			additionalHeaders.forEach(request::addHeader);
 		}
 	}

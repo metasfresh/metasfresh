@@ -18,14 +18,14 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.util.Optional;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -124,15 +124,13 @@ public class ManualCandidateService
 
 		final BPartner bpartner = bpartnerComp.getBpartner();
 
-		final InvoiceRule partnerInvoiceRule = newIC.getSoTrx().isSales() ?
-				bpartner.getCustomerInvoiceRule() :
-				bpartner.getVendorInvoiceRule();
+		final InvoiceRule newICInvoiceRule = Optional.ofNullable(newIC.getInvoiceRule())
+				.orElseGet(() -> newIC.getSoTrx().isSales() ?
+						bpartner.getCustomerInvoiceRule() :
+						bpartner.getVendorInvoiceRule());
 
-		final InvoiceRule invoiceRule = coalesce(
-				partnerInvoiceRule,
-				InvoiceRule.Immediate);
-
-		candidate.invoiceRule(invoiceRule);
+		candidate.invoiceRule(coalesceNotNull(newICInvoiceRule, InvoiceRule.Immediate));
+		candidate.recordReference(newIC.getRecordReference());
 
 		return candidate.build();
 
