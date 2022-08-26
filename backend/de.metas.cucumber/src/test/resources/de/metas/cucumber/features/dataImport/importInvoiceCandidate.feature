@@ -20,7 +20,6 @@ Feature: Import Invoice Candidates via DataImportRestController
       | Accept       | */*        |
 
   @from:cucumber
-  @runThisOne
   Scenario: Import content received as a semicolon separated string (all values set) as an Invoice Candidate
     Given metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_Products:
@@ -65,7 +64,6 @@ Feature: Import Invoice Candidates via DataImportRestController
       | invoiceCandidate_1                | invoice_1               |
 
   @from:cucumber
-  @runThisOne
   Scenario: Import content received as a semicolon separated string (only mandatory values are set - the system will compute the default ones) as an Invoice Candidate
     Given metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
@@ -103,7 +101,6 @@ Feature: Import Invoice Candidates via DataImportRestController
 
 
   @from:cucumber
-  @runThisOne
   Scenario: Import content received as a semicolon separated string - received values for billBPartner and product - don't reference any existing records; received pair of DocBaseType&DocSubType doesn't reference any existing C_DocType
     Given metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
@@ -132,7 +129,6 @@ Feature: Import Invoice Candidates via DataImportRestController
 
 
   @from:cucumber
-  @runThisOne
   Scenario: Import content received as a semicolon separated string - received BillLocation_ID & BillUser_ID couldn't be found for the provided BPartner
     Given metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
