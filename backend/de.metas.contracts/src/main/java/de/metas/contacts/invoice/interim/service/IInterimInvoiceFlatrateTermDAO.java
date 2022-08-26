@@ -34,6 +34,9 @@ import org.compiere.model.I_M_InOutLine;
 
 import java.util.stream.Stream;
 
+/**
+  * Note: this DAO is not about flartate-terms, but about {@link org.compiere.model.I_C_InterimInvoice_FlatrateTerm}s.
+  */
 public interface IInterimInvoiceFlatrateTermDAO extends ISingletonService
 {
 	InterimInvoiceFlatrateTerm getById(@NonNull final InterimInvoiceFlatrateTermId id);
