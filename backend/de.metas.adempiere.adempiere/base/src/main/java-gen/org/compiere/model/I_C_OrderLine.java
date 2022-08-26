@@ -2673,4 +2673,17 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_OrderLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	default boolean isFallbackToBasePriceListPrices()
+	{
+		// TODO add column to DB and generate model
+		throw new UnsupportedOperationException();
+	}
+
+	default void setFallbackToBasePriceListPrices(final boolean FallbackToBasePriceListPrices)
+	{
+		// TODO add column to DB and generate model
+		throw new UnsupportedOperationException();
+	}
+
 }

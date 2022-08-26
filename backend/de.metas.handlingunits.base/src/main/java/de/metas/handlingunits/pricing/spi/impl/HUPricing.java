@@ -1,7 +1,6 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
@@ -21,7 +20,6 @@ import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -36,7 +34,7 @@ import java.util.Optional;
  */
 public class HUPricing extends AttributePricing
 {
-	private static final transient Logger logger = LogManager.getLogger(HUPricing.class);
+	private static final Logger logger = LogManager.getLogger(HUPricing.class);
 
 	private static final String HUPIItemProductMatcher_NAME = "M_HU_PI_Item_Product_Matcher";
 	public static final IProductPriceQueryMatcher HUPIItemProductMatcher_None = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.isNull(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID));
@@ -82,9 +80,20 @@ public class HUPricing extends AttributePricing
 			return Optional.empty();
 		}
 
+		final I_M_ProductPrice productPrice;
 		final ProductId productId = pricingCtx.getProductId();
-		final I_M_ProductPrice productPrice = findMatchingProductPriceOrNull(ctxPriceListVersion, productId, attributeSetInstance, packingMaterialId);
-
+		if (pricingCtx.isFallbackToBasePriceListPrices())
+		{
+			productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+					ctxPriceListVersion,
+					priceListVersion -> findMatchingProductPriceInPriceListVersion(priceListVersion, productId, attributeSetInstance, packingMaterialId),
+					pricingCtx.getPriceDateAsZonedDateTime(orgDAO::getTimeZone));
+		}
+		else
+		{
+			productPrice = findMatchingProductPriceInPriceListVersion(ctxPriceListVersion, productId, attributeSetInstance, packingMaterialId);
+		}
+		//
 		if (productPrice == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute- return empty because no product attribute pricing found: {}", pricingCtx);
@@ -94,7 +103,8 @@ public class HUPricing extends AttributePricing
 		return Optional.of(productPrice);
 	}
 
-	private static I_M_ProductPrice findMatchingProductPriceOrNull(
+	@Nullable
+	private static I_M_ProductPrice findMatchingProductPriceInPriceListVersion(
 			@NonNull final I_M_PriceList_Version plv,
 			@NonNull final ProductId productId,
 			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
@@ -176,10 +186,10 @@ public class HUPricing extends AttributePricing
 		//
 		// Get the default product price attribute, if any
 		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersion)
-						.setProductId(pricingCtx.getProductId())
-						.onlyAttributePricing()
-						.onlyValidPrices(true)
-						.retrieveDefault(I_M_ProductPrice.class);
+				.setProductId(pricingCtx.getProductId())
+				.onlyAttributePricing()
+				.onlyValidPrices(true)
+				.retrieveDefault(I_M_ProductPrice.class);
 		if (defaultPrice == null)
 		{
 			return null;
@@ -236,13 +246,13 @@ public class HUPricing extends AttributePricing
 		if (InterfaceWrapperHelper.hasModelColumnName(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID))
 		{
 			final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID);
-			return valueOverrideOrValue == null ? null : HUPIItemProductId.ofRepoIdOrNull(valueOverrideOrValue.intValue());
+			return valueOverrideOrValue == null ? null : HUPIItemProductId.ofRepoIdOrNull(valueOverrideOrValue);
 		}
 
 		return null;
 	}
 
-	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final HUPIItemProductId packingMaterialId)
+	static IProductPriceQueryMatcher createHUPIItemProductMatcher(final HUPIItemProductId packingMaterialId)
 	{
 		if (packingMaterialId == null)
 		{

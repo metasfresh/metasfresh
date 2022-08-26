@@ -79,6 +79,9 @@ class PricingContext implements IEditablePricingContext
 	@Getter
 	private PricingConditionsBreak forcePricingConditionsBreak;
 
+	@Getter
+	private boolean fallbackToBasePriceListPrices;
+
 	final private Map<String, Object> properties = new HashMap<>();
 
 	@Override
@@ -107,6 +110,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.manualPriceEnabled = manualPriceEnabled;
 		pricingCtxNew.failIfNotCalculated = failIfNotCalculated;
 		pricingCtxNew.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
+		pricingCtxNew.fallbackToBasePriceListPrices = fallbackToBasePriceListPrices;
 		pricingCtxNew.properties.putAll(properties);
 
 		return pricingCtxNew;
@@ -460,5 +464,12 @@ class PricingContext implements IEditablePricingContext
 		}
 
 		return Quantitys.create(ctxQty, ctxUomId);
+	}
+
+	@Override
+	public IEditablePricingContext setFallbackToBasePriceListPrices(final boolean fallbackToBasePriceListPrices)
+	{
+		this.fallbackToBasePriceListPrices = fallbackToBasePriceListPrices;
+		return this;
 	}
 }

@@ -38,8 +38,11 @@ import org.compiere.model.I_M_PriceList_Version;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 public interface IPricingContext extends IContextAware
 {
@@ -55,17 +58,25 @@ public interface IPricingContext extends IContextAware
 
 	PriceListVersionId getPriceListVersionId();
 
-	/** @return price list version or null */
+	/**
+	 * @return price list version or null
+	 */
 	I_M_PriceList_Version getM_PriceList_Version();
 
 	/**
 	 * Gets pricing evaluation date.
-	 *
+	 * <p>
 	 * In case no pricing evaluation date was set while the pricing context was build, "now" will be returned.
 	 *
 	 * @return pricing evaluation date; never returns null.
 	 */
 	LocalDate getPriceDate();
+
+	default ZonedDateTime getPriceDateAsZonedDateTime(Function<OrgId, ZoneId> orgIdMapper)
+	{
+		final ZoneId zoneId = orgIdMapper.apply(getOrgId());
+		return getPriceDate().atStartOfDay(zoneId);
+	}
 
 	UomId getUomId();
 
@@ -114,7 +125,7 @@ public interface IPricingContext extends IContextAware
 	 * Specifies if the pricing engine shall calculate a price or not.
 	 *
 	 * @return returns the context value or <code>null</code> if unspecified. In this case the pricing engine shall check if the references object&model has a <code>IsManualPrice</code> field to go
-	 *         with.
+	 * with.
 	 */
 	OptionalBoolean getManualPriceEnabled();
 
@@ -125,4 +136,6 @@ public interface IPricingContext extends IContextAware
 	boolean isSkipCheckingPriceListSOTrxFlag();
 
 	Quantity getQuantity();
+
+	boolean isFallbackToBasePriceListPrices();
 }

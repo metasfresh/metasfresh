@@ -376,6 +376,8 @@ final class OrderLinePriceCalculator
 		//
 		pricingCtx.setForcePricingConditionsBreak(getPricingConditionsBreakFromRequest());
 
+		pricingCtx.setFallbackToBasePriceListPrices(orderLine.isFallbackToBasePriceListPrices());
+
 		return pricingCtx;
 	}
 

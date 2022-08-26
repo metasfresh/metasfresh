@@ -147,6 +147,7 @@ public final class OrderLinesFromProductProposalsProducer
 		// IMPORTANT: manual price is always true because we want to make sure the price the sales guy saw in proposals list is the price which gets into order line
 		newOrderLineRecord.setIsManualPrice(true);
 		newOrderLineRecord.setPriceEntered(price.getUserEnteredPriceValue());
+		newOrderLineRecord.setFallbackToBasePriceListPrices(true);
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(newOrderLineRecord)
 				.resultUOM(ResultUOM.PRICE_UOM)

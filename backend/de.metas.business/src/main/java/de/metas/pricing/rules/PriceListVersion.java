@@ -32,8 +32,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.util.function.Function;
 
 /**
  * Calculate Price using Price List Version
@@ -65,9 +64,19 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 			return;
 		}
 
-		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(),
-				ctxPriceListVersion);
-
+		final I_M_ProductPrice productPrice;
+		if (pricingCtx.isFallbackToBasePriceListPrices())
+		{
+			productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+					ctxPriceListVersion,
+					priceListVersion -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, pricingCtx.getProductId()),
+					pricingCtx.getPriceDateAsZonedDateTime(orgDAO::getTimeZone));
+		}
+		else
+		{
+			productPrice = ProductPrices.retrieveMainProductPriceOrNull(ctxPriceListVersion, pricingCtx.getProductId());
+		}
+		//
 		if (productPrice == null)
 		{
 			logger.trace("Not found (PLV)");
@@ -125,13 +134,6 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		return priceList.isEnforcePriceLimit()
 				? BooleanWithReason.trueBecause(reason)
 				: BooleanWithReason.falseBecause(reason);
-	}
-
-	@Nullable
-	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
-			final I_M_PriceList_Version ctxPriceListVersion)
-	{
-		return ProductPrices.retrieveMainProductPriceOrNull(ctxPriceListVersion, productId);
 	}
 
 	private I_M_PriceList_Version getOrLoadPriceListVersion(

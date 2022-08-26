@@ -6,6 +6,7 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IPackingMaterialAware;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -28,6 +29,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -54,6 +56,7 @@ public class AttributePricing implements IPricingRule
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
+	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
 
@@ -114,7 +117,8 @@ public class AttributePricing implements IPricingRule
 	{
 		// Get the product price attribute to use
 		// NOTE: at this point it shall not be null because we just validate it in "applies".
-		final I_M_ProductPrice productPrice = getProductPriceAttribute(pricingCtx).get();
+		final I_M_ProductPrice productPrice = getProductPriceAttribute(pricingCtx)
+				.orElseThrow(() -> new AdempiereException("No product price found for " + pricingCtx));
 
 		setResultForProductPriceAttribute(pricingCtx, result, productPrice);
 	}
@@ -175,7 +179,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Gets the {@link I_M_ProductPrice} to be used for setting the prices.
-	 *
+	 * <p>
 	 * It checks if the referenced object from the given {@code pricingCtx} references a {@link I_M_ProductPrice} and explicitly demands a particular product price attribute.
 	 * If that's the case, if returns that product price (if valid!).
 	 * If that's not the case it tries to search for the best matching one, if any.
@@ -277,13 +281,20 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersion)
-						.setProductId(pricingCtx.getProductId())
-						.onlyValidPrices(true)
-						.matching(_defaultMatchers)
-						.strictlyMatchingAttributes(attributeSetInstance)
-						.firstMatching();
-
+		final I_M_ProductPrice productPrice;
+		final ProductId productId = pricingCtx.getProductId();
+		if (pricingCtx.isFallbackToBasePriceListPrices())
+		{
+			productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+					ctxPriceListVersion,
+					priceListVersion -> findMatchingProductPriceInPriceListVersion(priceListVersion, productId, attributeSetInstance),
+					pricingCtx.getPriceDateAsZonedDateTime(orgDAO::getTimeZone));
+		}
+		else
+		{
+			productPrice = findMatchingProductPriceInPriceListVersion(ctxPriceListVersion, productId, attributeSetInstance);
+		}
+		//
 		if (productPrice == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - Return empty because no product price found: {}", pricingCtx);
@@ -293,16 +304,28 @@ public class AttributePricing implements IPricingRule
 		return Optional.of(productPrice);
 	}
 
+	private I_M_ProductPrice findMatchingProductPriceInPriceListVersion(
+			final @NonNull I_M_PriceList_Version priceListVersion,
+			final @NonNull ProductId productId,
+			final @NonNull I_M_AttributeSetInstance attributeSetInstance)
+	{
+		return ProductPrices.newQuery(priceListVersion)
+				.setProductId(productId)
+				.onlyValidPrices(true)
+				.matching(_defaultMatchers)
+				.strictlyMatchingAttributes(attributeSetInstance)
+				.firstMatching();
+	}
+
 	/**
 	 * Extracts an ASI from the given {@code pricingCtx}.
 	 *
-	 * @return
-	 *         <ul>
-	 *         <li>ASI
-	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
-	 *         or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
-	 *         or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
-	 *         </ul>
+	 * @return <ul>
+	 * <li>ASI
+	 * <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
+	 * or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
+	 * or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
+	 * </ul>
 	 */
 	@Nullable
 	protected static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)

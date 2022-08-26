@@ -110,4 +110,6 @@ public interface IEditablePricingContext extends IPricingContext
 	IEditablePricingContext setFailIfNotCalculated();
 
 	IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag);
+
+	IEditablePricingContext setFallbackToBasePriceListPrices(boolean fallbackToBasePriceListPrices);
 }
