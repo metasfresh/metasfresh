@@ -20,6 +20,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +141,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	{
 		if (HandlerTools.isCancelledContract(term))
 		{
-			return null;
+			return Collections.emptyList();
 		}
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
