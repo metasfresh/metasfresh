@@ -1,6 +1,6 @@
 -- 2022-08-25T20:30:32.230Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,148,543293,TO_TIMESTAMP('2022-08-25 23:30:32','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Vorenthaltung',TO_TIMESTAMP('2022-08-25 23:30:32','YYYY-MM-DD HH24:MI:SS'),100,'WH','Withholding')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,148,543293,TO_TIMESTAMP('2022-08-25 23:30:32','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Einbehalt',TO_TIMESTAMP('2022-08-25 23:30:32','YYYY-MM-DD HH24:MI:SS'),100,'WH','Withholding')
 ;
 
 -- 2022-08-25T20:30:32.232Z
@@ -15,7 +15,7 @@ UPDATE AD_Val_Rule SET Code='(''@DocBaseType@''=''ARI'' AND AD_Ref_List.ValueNam
 
 -- 2022-08-25T20:38:15.394Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,1000012,541059,TO_TIMESTAMP('2022-08-25 23:38:15','YYYY-MM-DD HH24:MI:SS'),100,'API',555719,'WH',0,'de.metas.swat',1000006,'N','N','Y','Y','N','Y','N','Y','N','Y','N','N','N','N','N','N','N','Vorenthaltung','Vorenthaltung',TO_TIMESTAMP('2022-08-25 23:38:15','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,1000012,541059,TO_TIMESTAMP('2022-08-25 23:38:15','YYYY-MM-DD HH24:MI:SS'),100,'API',555719,'WH',0,'de.metas.swat',1000006,'N','N','Y','Y','N','Y','N','Y','N','Y','N','N','N','N','N','N','N','Einbehalt','Einbehalt',TO_TIMESTAMP('2022-08-25 23:38:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-08-25T20:38:15.397Z

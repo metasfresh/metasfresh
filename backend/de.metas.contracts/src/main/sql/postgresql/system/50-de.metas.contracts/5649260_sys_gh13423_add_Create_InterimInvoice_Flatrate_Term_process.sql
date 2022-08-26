@@ -1,6 +1,6 @@
 -- 2022-08-03T09:43:05.245Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585083,'Y','de.metas.contacts.invoice.interim.process.C_Flatrate_Term_CreateInterimContract','N',TO_TIMESTAMP('2022-08-03 12:43:04','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','Y','N','N','N','Y','Y',0,'Create Interim Invoice','json','N','N','xls','Java',TO_TIMESTAMP('2022-08-03 12:43:04','YYYY-MM-DD HH24:MI:SS'),100,'C_Flatrate_Term_CreateInterimContract')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585083,'Y','de.metas.contacts.invoice.interim.process.C_Flatrate_Term_CreateInterimContract','N',TO_TIMESTAMP('2022-08-03 12:43:04','YYYY-MM-DD HH24:MI:SS'),100,'Erstellt einen Vertrag, der die Erstellung von Akontozahlungen für die erhaltenen Mengen ermöglicht.','D','Y','N','N','N','Y','N','N','N','Y','Y',0,'Vertrag für Zwischenzahlungen erstellen','json','N','N','xls','Java',TO_TIMESTAMP('2022-08-03 12:43:04','YYYY-MM-DD HH24:MI:SS'),100,'C_Flatrate_Term_CreateInterimContract')
 ;
 
 -- 2022-08-03T09:43:05.248Z
@@ -138,19 +138,9 @@ DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542281
 UPDATE AD_Val_Rule SET Code='C_Flatrate_Conditions.Type_Conditions = ''InterimInvoice'' AND EXISTS(SELECT 1 FROM c_order o WHERE o.m_pricingsystem_id = C_Flatrate_Conditions.m_pricingsystem_id AND o.c_order_id = @C_Order_ID/-1@)', Name='C_FlatrateConditions_InterimInvoice for Order pricesystem',Updated=TO_TIMESTAMP('2022-08-11 19:43:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540591
 ;
 
--- 2022-08-12T09:43:45.325Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Name='Create interim contract',Updated=TO_TIMESTAMP('2022-08-12 12:43:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585083
-;
-
 -- 2022-08-12T09:44:04.356Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Create a contract which allows interim invoices to be created for the partial quantities received', Name='Create interim contract',Updated=TO_TIMESTAMP('2022-08-12 12:44:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585083
-;
-
--- 2022-08-12T09:44:06.403Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Description='Create a contract which allows interim invoices to be created for the partial quantities received',Updated=TO_TIMESTAMP('2022-08-12 12:44:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585083
+UPDATE AD_Process_Trl SET Description='Creates a contract that allows creating on-account payments for the received quantities.', Name='Create contract for interim payments',Updated=TO_TIMESTAMP('2022-08-12 12:44:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585083
 ;
 
 -- 2022-08-12T09:44:16.983Z
