@@ -61,6 +61,7 @@ import java.util.List;
  */
 public interface IInvoiceCandidateHandler
 {
+
 	/** Which action shall be performed when an invoice candidate invalidation was requested */
 	enum OnInvalidateForModelAction
 	{
@@ -260,6 +261,14 @@ public interface IInvoiceCandidateHandler
 
 		ic.setC_InvoiceSchedule_ID(bpartnerDAO.getById(ic.getBill_BPartner_ID()).getC_InvoiceSchedule_ID());
 		invoiceCandBL.set_DateToInvoice_DefaultImpl(ic);
+	}
+
+	/**
+	 * So that a handler is given the chance to do additional logic once the invoice candidates have been persisted.
+	 */
+	default void postSave(@NonNull final InvoiceCandidateGenerateResult result)
+	{
+		//do nothing
 	}
 
 	/**
