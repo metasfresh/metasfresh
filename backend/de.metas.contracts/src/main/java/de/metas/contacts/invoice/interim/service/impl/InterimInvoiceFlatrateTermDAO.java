@@ -49,11 +49,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.stream.Stream;
 
 /**
@@ -94,20 +95,20 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, query.getBpartnerId());
 
-		final Timestamp dateOn = query.getDateOn();
+		final Instant dateOn = query.getDateOn();
 		if (dateOn != null)
 		{
 			flatrateTermQueryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateOn);
 			flatrateTermQueryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, dateOn);
 		}
 
-		final Timestamp startDate = query.getStartDate();
+		final Instant startDate = query.getStartDate();
 		if (startDate != null)
 		{
 			flatrateTermQueryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, startDate);
 		}
 
-		final Timestamp endDate = query.getEndDate();
+		final Instant endDate = query.getEndDate();
 		if (endDate != null)
 		{
 			flatrateTermQueryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, endDate);
@@ -156,7 +157,7 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 		return retrieveBy(InterimInvoiceFlatrateTermQuery.builder()
 				.productId(productId)
 				.bpartnerId(bpartnerId)
-				.dateOn(inOut.getMovementDate())
+				.dateOn(TimeUtil.asInstant(inOut.getMovementDate()))
 				.orderLineId(orderLineId)
 				.build())
 				.findFirst()

@@ -18,6 +18,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -177,7 +178,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
-		ic.setDateOrdered(handler.calculateDateOrdered(ic));
+		ic.setDateOrdered(TimeUtil.asTimestamp(handler.calculateDateOrdered(ic)));
 
 		final Quantity calculateQtyOrdered = handler.calculateQtyEntered(ic);
 

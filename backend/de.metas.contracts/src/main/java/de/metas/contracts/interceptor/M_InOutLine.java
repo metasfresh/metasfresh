@@ -46,7 +46,7 @@ public class M_InOutLine
 				true); // subtract = true
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, ifColumnsChanged = { org.compiere.model.I_M_InOutLine.COLUMNNAME_MovementQty })
 	public void verifyIfPartOfInterimContract(final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		if (inOutLine.getC_OrderLine_ID() <= 0)

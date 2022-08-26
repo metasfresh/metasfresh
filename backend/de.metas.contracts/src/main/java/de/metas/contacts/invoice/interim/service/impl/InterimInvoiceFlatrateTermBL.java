@@ -49,8 +49,8 @@ import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -178,13 +178,12 @@ public class InterimInvoiceFlatrateTermBL implements IInterimInvoiceFlatrateTerm
 		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(interimInvoiceFlatrateTerm.getFlatrateTermId());
 
 		return InterimInvoiceFlatrateTermCreateCommand.builder()
-				.ctx(InterfaceWrapperHelper.getContextAware(inOutLine).getCtx())
 				.productId(ProductId.ofRepoId(inOutLine.getM_Product_ID()))
 				.orderLineId(OrderLineId.ofRepoId(inOutLine.getC_OrderLine_ID()))
 				.conditionsId(ConditionsId.ofRepoId(flatrateTerm.getC_Flatrate_Conditions_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()))
-				.dateFrom(flatrateTerm.getStartDate())
-				.dateTo(flatrateTerm.getEndDate())
+				.dateFrom(TimeUtil.asInstantNonNull(flatrateTerm.getStartDate()))
+				.dateTo(TimeUtil.asInstantNonNull(flatrateTerm.getEndDate()))
 				.build()
 				.execute();
 	}

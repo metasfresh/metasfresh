@@ -25,6 +25,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -65,21 +66,21 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 
 	Quantity calculateQtyEntered(I_C_Invoice_Candidate invoiceCandidateRecord);
 
-	default Timestamp calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	default Instant calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(invoiceCandidateRecord);
 
-		final Timestamp dateOrdered;
+		final Instant dateOrdered;
 		final boolean termHasAPredecessor = Services.get(IContractsDAO.class).termHasAPredecessor(term);
 		if (!termHasAPredecessor)
 		{
-			dateOrdered = term.getStartDate();
+			dateOrdered = TimeUtil.asInstant(term.getStartDate());
 		}
 		// If the term was extended (meaning that there is a predecessor term),
 		// C_Invoice_Candidate.DateOrdered should rather be the StartDate minus TermOfNoticeDuration/TermOfNoticeUnit
 		else
 		{
-			final Timestamp firstDayOfNewTerm = getExtentionDateOfNewTerm(term);
+			final Instant firstDayOfNewTerm = getExtentionDateOfNewTerm(term);
 			dateOrdered = firstDayOfNewTerm;
 		}
 		return dateOrdered;
@@ -89,7 +90,7 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	 * For the given <code>term</code> and its <code>C_Flatrate_Transition</code> record, this method returns the term's start date minus the period specified by <code>TermOfNoticeDuration</code> and
 	 * <code>TermOfNoticeUnit</code>.
 	 */
-	default Timestamp getExtentionDateOfNewTerm(@NonNull final I_C_Flatrate_Term term)
+	default Instant getExtentionDateOfNewTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		final Timestamp startDateOfTerm = term.getStartDate();
 
@@ -117,7 +118,7 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 			minimumDateToStart = null; // code won't be reached
 		}
 
-		return minimumDateToStart;
+		return TimeUtil.asInstantNonNull(minimumDateToStart);
 	}
 
 	default PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)

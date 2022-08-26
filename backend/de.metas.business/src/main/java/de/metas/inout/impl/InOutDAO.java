@@ -459,13 +459,13 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public Collection<InOutAndLineId> retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(@NonNull final OrderLineId orderLine, @Nullable final Object contextProvider)
+	public Collection<InOutAndLineId> retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(@NonNull final OrderLineId orderLine)
 	{
 		final IQuery<I_C_InterimInvoice_FlatrateTerm_Line> inOutsUsedForInterimInvoice = queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm_Line.class)
 				.addOnlyActiveRecordsFilter()
 				.create();
 
-		return queryBL.createQueryBuilder(I_M_InOutLine.class, contextProvider)
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine)
 				.addNotInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_M_InOutLine_ID, inOutsUsedForInterimInvoice)

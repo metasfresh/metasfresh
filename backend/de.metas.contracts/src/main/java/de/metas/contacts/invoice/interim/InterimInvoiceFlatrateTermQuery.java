@@ -32,7 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -43,7 +43,7 @@ public class InterimInvoiceFlatrateTermQuery
 	@Nullable OrderLineId orderLineId;
 	@Nullable ConditionsId conditionsId;
 	@Nullable FlatrateTermId flatrateTermId;
-	@Nullable Timestamp startDate;
-	@Nullable Timestamp endDate;
-	@Nullable Timestamp dateOn;
+	@Nullable Instant startDate;
+	@Nullable Instant endDate;
+	@Nullable Instant dateOn;
 }

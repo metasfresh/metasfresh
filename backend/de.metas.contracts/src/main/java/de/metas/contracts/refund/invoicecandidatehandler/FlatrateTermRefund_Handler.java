@@ -16,8 +16,9 @@ import de.metas.uom.UomId;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
@@ -114,8 +115,8 @@ public class FlatrateTermRefund_Handler
 
 	/** Just return the record's current date */
 	@Override
-	public Timestamp calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public Instant calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-		return invoiceCandidateRecord.getDateOrdered();
+		return TimeUtil.asInstantNonNull(invoiceCandidateRecord.getDateOrdered());
 	}
 }

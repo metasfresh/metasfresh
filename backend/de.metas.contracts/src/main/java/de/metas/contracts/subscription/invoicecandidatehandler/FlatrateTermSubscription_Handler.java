@@ -10,15 +10,13 @@ import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
@@ -70,9 +68,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final UomId uomId = HandlerTools.retrieveUomId(icRecord);
 
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(icRecord);
-		return new Quantity(
-				term.getPlannedQtyPerUnit(),
-				loadOutOfTrx(uomId, I_C_UOM.class));
+		return Quantitys.create(term.getPlannedQtyPerUnit(),uomId);
 	}
 
 }

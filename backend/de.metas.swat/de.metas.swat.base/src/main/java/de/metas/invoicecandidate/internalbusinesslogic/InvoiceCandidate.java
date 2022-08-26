@@ -2,6 +2,7 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.ToInvoiceExclOverride.InvoicedQtys;
 import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData.ToInvoiceDataBuilder;
@@ -29,7 +30,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
@@ -127,7 +127,7 @@ public class InvoiceCandidate
 
 		this.qualityDiscountOverride = qualityDiscountOverride;
 		this.qtyToInvoiceOverrideInStockUom = qtyToInvoiceOverrideInStockUom;
-		this.isInterimIC = isInterimIC != null ? isInterimIC : false;
+		this.isInterimIC = CoalesceUtil.coalesce(isInterimIC, false);
 
 		validate();
 	}

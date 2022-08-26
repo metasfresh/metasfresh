@@ -202,8 +202,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
-		icRecord.setC_Tax_ID(orderLine.getC_Tax_ID());
-
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
@@ -359,12 +357,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final org.compiere.model.I_C_OrderLine orderLine = icRecord.getC_OrderLine();
-
-		if (orderLine.getM_Product_ID() != icRecord.getM_Product_ID() || icRecord.isInterimInvoice())
-		{
-			return;
-		}
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
@@ -376,7 +368,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (qtysDelivered.getStockQty().isZero())
 		{
-
+			final org.compiere.model.I_C_OrderLine orderLine = icRecord.getC_OrderLine();
 			if (orderLine.getQtyDelivered().signum() > 0)
 			{
 				// fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments

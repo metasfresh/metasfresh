@@ -58,6 +58,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -117,8 +118,8 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 						.productId(productId)
 						.bpartnerId(bpartnerId)
 						.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
-						.startDate(flatrateTerm.getStartDate())
-						.endDate(flatrateTerm.getEndDate())
+						.startDate(TimeUtil.asInstantNonNull(flatrateTerm.getStartDate()))
+						.endDate(TimeUtil.asInstantNonNull(flatrateTerm.getEndDate()))
 						.build())
 				.collect(Collectors.toList());
 

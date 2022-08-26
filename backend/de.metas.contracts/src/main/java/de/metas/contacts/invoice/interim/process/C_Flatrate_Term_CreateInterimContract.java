@@ -32,6 +32,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
 
@@ -68,11 +69,10 @@ public class C_Flatrate_Term_CreateInterimContract extends JavaProcess implement
 	protected String doIt() throws Exception
 	{
 		InterimInvoiceFlatrateTermCreateCommand.builder()
-				.ctx(getCtx())
 				.conditionsId(ConditionsId.ofRepoId(p_C_Flatrate_Conditions_ID))
 				.orderLineId(OrderLineId.ofRepoId(getRecord_ID()))
-				.dateFrom(p_DateFrom)
-				.dateTo(p_DateTo)
+				.dateFrom(TimeUtil.asInstantNonNull(p_DateFrom))
+				.dateTo(TimeUtil.asInstantNonNull(p_DateTo))
 				.build()
 				.execute();
 

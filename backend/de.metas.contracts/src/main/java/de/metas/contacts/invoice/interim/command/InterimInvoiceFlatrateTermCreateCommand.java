@@ -63,35 +63,34 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.Properties;
 
 public class InterimInvoiceFlatrateTermCreateCommand
 {
 	private static final Logger logger = LogManager.getLogger(InterimInvoiceFlatrateTermCreateCommand.class);
 
 	@NonNull
-	private final Properties ctx;
-	@NonNull
 	private final BPartnerId bpartnerId;
 
 	@NonNull
 	private final ProductId productId;
 	@NonNull
-	private final Timestamp dateFrom;
+	private final Instant dateFrom;
 	@NonNull
-	private final Timestamp dateTo;
+	private final Instant dateTo;
 	@NonNull
 	private final OrderLineId orderLineId;
 
@@ -115,15 +114,13 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	@Builder
-	public InterimInvoiceFlatrateTermCreateCommand(@NonNull final Properties ctx,
-			@Nullable final BPartnerId bpartnerId,
+	public InterimInvoiceFlatrateTermCreateCommand(@Nullable final BPartnerId bpartnerId,
 			@NonNull final ConditionsId conditionsId,
 			@Nullable final ProductId productId,
-			@NonNull final Timestamp dateFrom,
-			@NonNull final Timestamp dateTo,
+			@NonNull final Instant dateFrom,
+			@NonNull final Instant dateTo,
 			@NonNull final OrderLineId orderLineId)
 	{
-		this.ctx = ctx;
 
 		this.dateFrom = dateFrom;
 		this.dateTo = dateTo;
@@ -209,10 +206,10 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.bPartners(Collections.singleton(bpartner))
 				.orgId(orderLine.getOrgId())
 				.conditions(conditions)
-				.ctx(ctx)
+				.ctx(InterfaceWrapperHelper.getCtx(bpartner))
 				.product(product)
-				.startDate(dateFrom)
-				.endDate(dateTo)
+				.startDate(TimeUtil.asTimestamp(dateFrom))
+				.endDate(TimeUtil.asTimestamp(dateTo))
 				.isCompleteDocument(true)
 				.build()
 				.createTermsForBPartners()
@@ -247,7 +244,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 
 	private Collection<InOutAndLineId> getUnassignedInOutLinesForOrderLineId()
 	{
-		return inOutDAO.retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(orderLineId, product);
+		return inOutDAO.retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(orderLineId);
 	}
 
 }
