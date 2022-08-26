@@ -220,10 +220,7 @@ public class C_Invoice_Candidate
 			}
 		}
 
-		if (invoiceCand.isInterimInvoice())
-		{
-			interimInvoiceFlatrateTermBL.updateInvoicedQtyForPartialPayment(invoiceCand);
-		}
+		interimInvoiceFlatrateTermBL.updateInvoicedQtyForPartialPayment(invoiceCand);
 
 	}
 

@@ -22,7 +22,6 @@
 
 package de.metas.contacts.invoice.interim.service.impl;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTerm;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermId;
 import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermLine;
@@ -45,7 +44,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
@@ -79,21 +77,14 @@ public class InterimInvoiceFlatrateTermLineDAO implements IInterimInvoiceFlatrat
 	@Override
 	public void setInvoiceLineToLines(@NonNull final InvoiceCandidateId invoiceCandidateId, @NonNull final InterimInvoiceFlatrateTermId id)
 	{
-		final ImmutableMap<Integer, I_C_InvoiceLine> inOutLineToInvoiceLineMap = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
+		invoiceCandDAO.retrieveIlForIc(invoiceCandidateId)
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(I_C_InvoiceLine::getM_InOutLine_ID, Function.identity()));
-		getByInterimInvoiceFlatrateTermId(id)
-				.forEach(line -> setInvoiceLineToLine(line, inOutLineToInvoiceLineMap));
+				.findFirst()
+				.ifPresent((invoiceLine) -> getByInterimInvoiceFlatrateTermId(id).forEach(line -> setInvoiceLineToLine(line, invoiceLine)));
 	}
 
-	private void setInvoiceLineToLine(final InterimInvoiceFlatrateTermLine line, final ImmutableMap<Integer, I_C_InvoiceLine> inOutLineToInvoiceLineMap)
+	private void setInvoiceLineToLine(final InterimInvoiceFlatrateTermLine line, final I_C_InvoiceLine invoiceLine)
 	{
-		final InOutLineId inOutLineId = line.getInOutAndLineId().getInOutLineId();
-		if (!inOutLineToInvoiceLineMap.containsKey(inOutLineId.getRepoId()))
-		{
-			return;
-		}
-		final I_C_InvoiceLine invoiceLine = inOutLineToInvoiceLineMap.get(inOutLineId.getRepoId());
 		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
 
 		save(line.toBuilder()
