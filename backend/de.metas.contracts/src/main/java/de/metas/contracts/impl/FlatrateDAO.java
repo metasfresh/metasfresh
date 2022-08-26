@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -56,7 +55,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -83,7 +81,6 @@ import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -1039,6 +1036,21 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
 				.create()
 				.list(I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public boolean hasOverlappingTerms(@NonNull final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, flatrateTermOverlapCriteria.getBPartnerId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateTermOverlapCriteria.getConditionsId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, flatrateTermOverlapCriteria.getOrgId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, flatrateTermOverlapCriteria.getProductId())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate,Operator.LESS_OR_EQUAL,flatrateTermOverlapCriteria.getDatePromised())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate,Operator.GREATER_OR_EQUAL, flatrateTermOverlapCriteria.getDatePromised())
+				.create()
+				.anyMatch();
 	}
 
 	@Override
