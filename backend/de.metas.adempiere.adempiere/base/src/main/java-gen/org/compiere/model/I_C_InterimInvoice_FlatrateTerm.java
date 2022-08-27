@@ -8,7 +8,7 @@ import org.adempiere.model.ModelColumn;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_InterimInvoice_FlatrateTerm 
+public interface I_C_InterimInvoice_FlatrateTerm
 {
 
 	String Table_Name = "C_InterimInvoice_FlatrateTerm";

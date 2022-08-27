@@ -64,6 +64,7 @@ import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesA
  */
 public interface IInvoiceCandidateHandler
 {
+
 	/**
 	 * Which action shall be performed when an invoice candidate invalidation was requested
 	 */
@@ -93,7 +94,7 @@ public interface IInvoiceCandidateHandler
 			return this != DONT;
 		}
 	}
-	
+
 	/**
 	 * @return which action shall be performed when an invoice candidate invalidation was requested.
 	 * default: {@link OnInvalidateForModelAction#REVALIDATE}.
@@ -106,7 +107,7 @@ public interface IInvoiceCandidateHandler
 	/**
 	 * Checks if this handler, <b>in general</b>, can create invoice candidates automatically. Returns {@link CandidatesAutoCreateMode#CREATE_CANDIDATES} by default.
 	 * <p>
-	 * <b>The handler gives a "general" response on startup-time!</b> 
+	 * <b>The handler gives a "general" response on startup-time!</b>
 	 * When the business logic has to create individual invoice candidates, it will call {@link #getSpecificCandidatesAutoCreateMode(Object)}.
 	 *
 	 * @return what shall be done for {@link #getSourceTable()}. This default impl returns {@link CandidatesAutoCreateMode#CREATE_CANDIDATES}.
@@ -117,8 +118,8 @@ public interface IInvoiceCandidateHandler
 	}
 
 	/**
-	 * Checks if this handler, <b>in particular</b>, can create invoice candidates for the given {@code model}. 
-	 * 
+	 * Checks if this handler, <b>in particular</b>, can create invoice candidates for the given {@code model}.
+	 *
 	 * Invoice candidate handlers usually need to implement this method,
 	 * because they need to make sure that the given {@code model} does not have an invoice candidate yet, before they can return {@code true}.
 	 * <p>
@@ -127,7 +128,7 @@ public interface IInvoiceCandidateHandler
 	 * @return whether the invoice candidates shall be automatically generated for the given particular model.
 	 */
 	CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(Object model);
-	
+
 	/**
 	 * Returns {@code AFTER_COMPLETE} by default.
 	 *
@@ -144,7 +145,7 @@ public interface IInvoiceCandidateHandler
 	 * @param limit advises how many models shall be retrieved. Note that this is an advise which could be respected or not by current implementations.
 	 */
 	Iterator<?> retrieveAllModelsWithMissingCandidates(@NonNull QueryLimit limit);
-	
+
 	/**
 	 * Called by API to expand an initial invoice candidate generate request.
 	 * <p>
@@ -280,6 +281,14 @@ public interface IInvoiceCandidateHandler
 
 		ic.setC_InvoiceSchedule_ID(bpartnerDAO.getById(ic.getBill_BPartner_ID()).getC_InvoiceSchedule_ID());
 		invoiceCandBL.set_DateToInvoice_DefaultImpl(ic);
+	}
+
+	/**
+	 * So that a handler is given the chance to do additional logic once the invoice candidates have been persisted.
+	 */
+	default void postSave(@NonNull final InvoiceCandidateGenerateResult result)
+	{
+		//do nothing
 	}
 
 	/**
