@@ -22,7 +22,7 @@
 
 package de.metas.contacts.invoice.interim.service.impl;
 
-import de.metas.calendar.CalendarId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.contacts.invoice.interim.InterimInvoiceSettings;
 import de.metas.contacts.invoice.interim.InterimInvoiceSettingsId;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceSettingsDAO;

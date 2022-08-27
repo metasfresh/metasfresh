@@ -56,6 +56,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -83,7 +84,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	}
 
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final QueryLimit limit)
 	{
 		return contractsDAO.createInterimInvoiceSearchCriteria(null)
 				.iterate(I_C_Flatrate_Term.class);
@@ -144,10 +145,11 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	}
 
 	@Override
-	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
-		return contractsDAO.createInterimInvoiceSearchCriteria(flatrateTerm)
-				.anyMatch();
+		return contractsDAO.createInterimInvoiceSearchCriteria(flatrateTerm).anyMatch()
+				? IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES
+				: IInvoiceCandidateHandler.CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
