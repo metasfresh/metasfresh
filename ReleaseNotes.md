@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13423](https://github.com/metasfresh/metasfresh/issues/13423) Partial payment overview (aka Interim Invoice): the proces
   * [#13466](https://github.com/metasfresh/metasfresh/issues/13466) Purchase call orders 
   * [#13487](https://github.com/metasfresh/metasfresh/issues/13487) [React] - Infinite loop for /dropdown call
   * [#13458](https://github.com/metasfresh/metasfresh/issues/13458) Load Budget Project JSONs into metasfresh
