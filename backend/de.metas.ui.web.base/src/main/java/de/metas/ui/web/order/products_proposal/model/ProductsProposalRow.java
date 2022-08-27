@@ -102,6 +102,10 @@ public class ProductsProposalRow implements IViewRow
 	@ViewColumn(seqNo = 70, fieldName = FIELD_IsCampaignPrice, captionKey = "IsCampaignPrice", widgetType = DocumentFieldWidgetType.YesNo)
 	private final boolean isCampaignPrice;
 
+	/**
+	 * This and the following fields with {@link Displayed#FALSE} can be activated programatically via sysconfig; 
+	 * see {@link de.metas.ui.web.order.products_proposal.view.OrderProductsProposalViewFactory#createViewLayout(ProductsProposalViewFactoryTemplate.ViewLayoutKey)}.
+	 */
 	public static final String FIELD_BPartner = "bpartner";
 	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_BPartner, captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup)
 	@Getter
