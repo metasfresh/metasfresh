@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
@@ -23,6 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
@@ -96,6 +98,7 @@ public class InvoiceCandidate
 
 	@Builder(toBuilder = true)
 	@JsonCreator
+	@Jacksonized
 	private InvoiceCandidate(
 			@JsonProperty("id") @NonNull final InvoiceCandidateId id,
 			@JsonProperty("soTrx") @NonNull final SOTrx soTrx,
