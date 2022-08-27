@@ -118,6 +118,17 @@ public class MoneyService
 	@NonNull
 	public Money convertMoneyToCurrency(
 			@NonNull final Money money,
+			@NonNull final CurrencyCode currencyCode,
+			@NonNull final CurrencyConversionContext context)
+	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+
+		return convertMoneyToCurrency(money, currencyId, context);
+	}
+
+	@NonNull
+	public Money convertMoneyToCurrency(
+			@NonNull final Money money,
 			@NonNull final CurrencyId targetCurrencyId,
 			@NonNull final CurrencyConversionContext context)
 	{

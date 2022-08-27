@@ -372,7 +372,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.NEW_TAB)
 						.build();
 			}
 

@@ -111,6 +111,20 @@ public class ADWindowDAO implements IADWindowDAO
 		return windowIdsByInternalName.getOrLoad(internalName, this::retrieveWindowIdByInternalName);
 	}
 
+	@Override
+	@NonNull
+	public Optional<AdWindowId> getOverridingWindowId(@NonNull final AdWindowId overridesWindowId)
+	{
+		final AdWindowId windowId = queryBL
+				.createQueryBuilderOutOfTrx(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Window.COLUMNNAME_Overrides_Window_ID, overridesWindowId)
+				.create()
+				.firstId(AdWindowId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(windowId);
+	}
+
 	private AdWindowId retrieveWindowIdByInternalName(@NonNull final String internalName)
 	{
 		Check.assumeNotEmpty(internalName, "internalName is not empty");
@@ -652,7 +666,7 @@ public class ADWindowDAO implements IADWindowDAO
 			return sourceUIElements.getLabels_Tab_ID() > 0 && sourceUIElements.getLabels_Tab().isActive();
 		}
 
-		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
 		{
 			return sourceUIElements.getInline_Tab_ID() > 0 && sourceUIElements.getInline_Tab().isActive();
 		}

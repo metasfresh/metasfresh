@@ -1,6 +1,7 @@
 package org.adempiere.ad.window.api;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
@@ -40,6 +41,8 @@ public interface IADWindowDAO extends ISingletonService
 	String retrieveInternalWindowName(AdWindowId adWindowId);
 
 	AdWindowId getWindowIdByInternalName(String internalName);
+
+	Optional<AdWindowId> getOverridingWindowId(AdWindowId adWindowId);
 
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
 
