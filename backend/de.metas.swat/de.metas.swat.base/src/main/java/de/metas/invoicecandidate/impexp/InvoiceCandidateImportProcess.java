@@ -25,15 +25,14 @@ package de.metas.invoicecandidate.impexp;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
+import de.metas.invoicecandidate.model.X_I_Invoice_Candidate;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_I_Invoice_Candidate;
-import org.compiere.model.X_I_Invoice_Candidate;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Properties;
 
 public class InvoiceCandidateImportProcess extends SimpleImportProcessTemplate<I_I_Invoice_Candidate>
@@ -65,7 +64,7 @@ public class InvoiceCandidateImportProcess extends SimpleImportProcessTemplate<I
 	}
 
 	@Override
-	protected I_I_Invoice_Candidate retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	protected I_I_Invoice_Candidate retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Invoice_Candidate(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}

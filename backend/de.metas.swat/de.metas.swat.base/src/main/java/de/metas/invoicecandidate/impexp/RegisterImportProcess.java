@@ -23,8 +23,8 @@
 package de.metas.invoicecandidate.impexp;
 
 import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.util.Services;
-import org.compiere.model.I_I_Invoice_Candidate;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration

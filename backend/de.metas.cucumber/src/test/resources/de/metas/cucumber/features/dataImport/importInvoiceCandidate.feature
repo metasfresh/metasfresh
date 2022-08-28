@@ -3,24 +3,25 @@ Feature: Import Invoice Candidates via DataImportRestController
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has date and time 2022-08-30T13:30:13+01:00[Europe/Berlin]
     And  metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_PricingSystems
-      | Identifier | Name              | Value                     | OPT.IsActive |
-      | ps_1       | PricingSystemName | PricingPricingSystemValue | true         |
+      | Identifier | Name              | Value     | OPT.IsActive |
+      | ps_1       | PricingSystemName | ps_280822 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | PriceListName | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name      | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | pl_280822 | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
-      | plv_1      | pl_1                      | PriceListVersionName | 2022-08-01 |
+      | Identifier | M_PriceList_ID.Identifier | ValidFrom  |
+      | plv_1      | pl_1                      | 2022-08-01 |
     And add HTTP header
       | Key          | Value      |
       | Content-Type | text/plain |
       | Accept       | */*        |
 
   @from:cucumber
-  Scenario: Import content received as a semicolon separated string (all values set) as an Invoice Candidate
+  Scenario: Import sales I_Invoice_Candidate from csv - setting all available fields
     Given metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
@@ -49,13 +50,16 @@ Feature: Import Invoice Candidates via DataImportRestController
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | UOM                 | PCE      |
-    And after not more than 30s I_Invoice_Candidate is found:
+    And after not more than 30s I_Invoice_Candidate is found: searching by product value
       | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | I_IsImported |
       | Product_Value_25_08_2022_1 | iInvoiceCandidate_1               | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | 3                | UOM                     | Y       | docType                     | 2022-08-26             | DescriptionTest | PORef           | D               | Y            |
     And validate invoice candidates by record reference:
       | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.DateOrdered | OPT.QtyOrdered | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | InvoiceRule |
       | I_Invoice_Candidate | iInvoiceCandidate_1               | invoiceCandidate_1                | billBpartner_1              | billBPLocation_1            | billBPUser_1                | product_1                   | 2022-08-25      | 5              | 3                | UOM                     | true    | docType                     | 2022-08-26             | DescriptionTest | PORef           | D           |
 
+    And after not more than 30s C_Invoice_Candidate matches:
+      | C_Invoice_Candidate.Identifier | OPT.QtyToInvoice |
+      | invoiceCandidate_1             | 3                |
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCandidate_1                |
@@ -64,7 +68,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | invoiceCandidate_1                | invoice_1               |
 
   @from:cucumber
-  Scenario: Import content received as a semicolon separated string (only mandatory values are set - the system will compute the default ones) as an Invoice Candidate
+  Scenario: Import sales I_Invoice_Candidate from csv - setting only mandatory fields, system will compute the rest
     Given metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
       | product_2  | Product_25_08_2022_2 | Product_Value_25_08_2022_2 |
@@ -92,7 +96,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And load C_UOM for product:
       | C_UOM_ID.Identifier | M_Product_ID.Identifier |
       | UOM_2               | product_2               |
-    And after not more than 30s I_Invoice_Candidate is found:
+    And after not more than 30s I_Invoice_Candidate is found: searching by product value
       | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | OPT.InvoiceRule | I_IsImported |
       | Product_Value_25_08_2022_2 | iInvoiceCandidate_2               | billBpartner_2              | billBPLocation_2            | billBPUser_2            | product_2               | 2          | 0                | Y       | docType                     | UOM_2                   | I               | Y            |
     And validate invoice candidates by record reference:
@@ -101,7 +105,11 @@ Feature: Import Invoice Candidates via DataImportRestController
 
 
   @from:cucumber
-  Scenario: Import content received as a semicolon separated string - received values for billBPartner and product - don't reference any existing records; received pair of DocBaseType&DocSubType doesn't reference any existing C_DocType
+  Scenario: Import sales I_Invoice_Candidate from csv - error scenario
+  _Given billBPartner and product values that don't match any records
+  _And DocBaseType + DocSubType don't reference any existing C_DocType
+  _When importing the record
+  _Then processing errors are saved in I_ErrorMsg column
     Given metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
       | product_3  | Product_25_08_2022_3 | Product_Value_25_08_2022_3 |
@@ -118,18 +126,21 @@ Feature: Import Invoice Candidates via DataImportRestController
       | AD_User_ID.Identifier | Name                  | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
       | billBPUser_3          | BillBPartnerContact_3 | billBpartner_3               | billBPLocation_3                      |
     And store DataImport string requestBody in context
-      | OPT.Bill_BPartner_Value | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | OPT.M_Product_Value | QtyOrdered | IsSOTrx | OPT.DocBaseType | OPT.DocSubType |
-      | testBPartnerValue       | billBPLocation_3            | billBPUser_3            | testProductValue    | 2          | true    | ARI             | VI             |
+      | OPT.Bill_BPartner_Value       | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | OPT.M_Product_Value                | QtyOrdered | IsSOTrx | OPT.DocBaseType | OPT.DocSubType |
+      | someNonExistingBPValue_280822 | billBPLocation_3            | billBPUser_3            | someNonExistingProductValue_280822 | 2          | true    | ARI             | VI             |
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate' receives a 'POST' request with the payload from context and responds with '400' status code
 
-    And after not more than 30s I_Invoice_Candidate is found:
-      | M_Product_Value  | I_Invoice_Candidate_ID.Identifier | I_IsImported | OPT.I_ErrorMsg                                                                                                                                                                 |
-      | testProductValue | iInvoiceCandidate_3               | E            | ERR = Mandatory C_Invoice_Candidate.Bill_BPartner_ID is missing!, ERR = M_Product_ID is missing!, ERR = C_DocType_ID not found for provided pair ( DocBaseType, DocSubType )!, |
+    And after not more than 30s I_Invoice_Candidate is found: searching by product value
+      | M_Product_Value                    | I_Invoice_Candidate_ID.Identifier | I_IsImported | OPT.I_ErrorMsg                                                                                                                                                                 |
+      | someNonExistingProductValue_280822 | iInvoiceCandidate_3               | E            | ERR = Mandatory C_Invoice_Candidate.Bill_BPartner_ID is missing!, ERR = M_Product_ID is missing!, ERR = C_DocType_ID not found for provided pair ( DocBaseType, DocSubType )!, |
 
 
   @from:cucumber
-  Scenario: Import content received as a semicolon separated string - received BillLocation_ID & BillUser_ID couldn't be found for the provided BPartner
+  Scenario: Import sales I_Invoice_Candidate from csv - error scenario
+  _Given BillLocation_ID and BillUser_ID registered under a different BPartner
+  _When importing the record
+  _Then processing errors are saved in I_ErrorMsg column
     Given metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
       | product_4  | Product_25_08_2022_4 | Product_Value_25_08_2022_4 |
@@ -154,6 +165,6 @@ Feature: Import Invoice Candidates via DataImportRestController
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate' receives a 'POST' request with the payload from context and responds with '400' status code
 
-    And after not more than 30s I_Invoice_Candidate is found:
+    And after not more than 30s I_Invoice_Candidate is found: searching by product value
       | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | I_IsImported | OPT.I_ErrorMsg                                                                                                                |
       | Product_Value_25_08_2022_4 | iInvoiceCandidate_4               | E            | ERR = Provided Bill_Location_ID not found for Bill_BPartner_ID!, ERR = Provided Bill_User_ID not found for Bill_BPartner_ID!, |

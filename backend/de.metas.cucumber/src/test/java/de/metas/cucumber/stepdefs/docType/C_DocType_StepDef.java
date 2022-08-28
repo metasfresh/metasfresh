@@ -55,12 +55,16 @@ public class C_DocType_StepDef
 		{
 			final String docBaseType = DataTableUtil.extractStringForColumnName(row, I_C_DocType.COLUMNNAME_DocBaseType);
 			final String docSubType = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_DocType.COLUMNNAME_DocSubType);
-			final Boolean isDefault = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_DocType.COLUMNNAME_IsDefault, false);
+			final Boolean isDefault = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_DocType.COLUMNNAME_IsDefault, null);
 
 			final IQueryBuilder<I_C_DocType> queryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType)
-					.addEqualsFilter(I_C_DocType.COLUMNNAME_IsDefault, isDefault);
+					.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
+
+			if (isDefault != null)
+			{
+				queryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_IsDefault, isDefault);
+			}
 
 			if (Check.isNotBlank(docSubType))
 			{

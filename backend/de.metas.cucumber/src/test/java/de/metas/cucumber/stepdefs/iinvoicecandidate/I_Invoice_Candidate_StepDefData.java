@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.iinvoicecandidate;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_I_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 
 public class I_Invoice_Candidate_StepDefData extends StepDefData<I_I_Invoice_Candidate>
 {

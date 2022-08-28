@@ -3,7 +3,6 @@ package de.metas.invoicecandidate.externallyreferenced;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
@@ -47,7 +46,7 @@ import java.util.List;
  */
 
 /**
- * A "manual" IC is not programatically created but imported into the system. Are not part of the {@link IInvoiceCandidateHandler} "ecosystem"
+ * A "manual" IC is not programmatically created but imported into the system.
  */
 @Value
 @Builder

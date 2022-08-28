@@ -22,7 +22,7 @@
 
 package de.metas.invoicecandidate.process;
 
-import org.compiere.model.I_I_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import org.compiere.process.AbstractImportJavaProcess;
 
 public class ImportInvoiceCandidate extends AbstractImportJavaProcess<I_I_Invoice_Candidate>

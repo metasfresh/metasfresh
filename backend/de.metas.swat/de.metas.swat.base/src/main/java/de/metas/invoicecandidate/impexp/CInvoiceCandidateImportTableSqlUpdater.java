@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.impexp;
 
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -33,34 +34,33 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_I_Invoice_Candidate;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_Org_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_User_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_DocType_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_UOM_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_DocBaseType;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_DocSubType;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_I_ErrorMsg;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_InvoiceRule;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_IsActive;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_IsSOTrx;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_Value;
 import static org.compiere.model.I_AD_User_NotificationGroup.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_UOM.COLUMNNAME_IsDefault;
 import static org.compiere.model.I_C_UOM.COLUMNNAME_X12DE355;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_AD_Org_ID;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_User_ID;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_C_DocType_ID;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_C_UOM_ID;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_DocBaseType;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_DocSubType;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_I_ErrorMsg;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_InvoiceRule;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_IsActive;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_IsSOTrx;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_Value;
 
 @UtilityClass
 public class CInvoiceCandidateImportTableSqlUpdater

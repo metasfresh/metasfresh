@@ -31,6 +31,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
@@ -43,19 +44,19 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_I_Invoice_Candidate;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 public class ImportInvoiceCandidatesService
 {
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ManualCandidateService manualCandidateService;
@@ -80,56 +81,62 @@ public class ImportInvoiceCandidatesService
 	@NonNull
 	private NewManualInvoiceCandidate createManualInvoiceCand(@NonNull final I_I_Invoice_Candidate record)
 	{
-		final BPartnerInfo bPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(BPartnerId.ofRepoId(record.getBill_BPartner_ID()))
-				.contactId(BPartnerContactId.ofRepoId(record.getBill_BPartner_ID(), record.getBill_User_ID()))
-				.bpartnerLocationId(BPartnerLocationId.ofRepoId(record.getBill_BPartner_ID(), record.getBill_Location_ID()))
-				.build();
-
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
-
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
-		final StockQtyAndUOMQty qtyOrdered = StockQtyAndUOMQtys.createConvert(
-				Quantitys.create(record.getQtyOrdered(), uomId),
+
+		final Function<BigDecimal, StockQtyAndUOMQty> createQtyInStockAndUOM = (qty) -> StockQtyAndUOMQtys.createConvert(
+				Quantitys.create(qty, uomId),
 				productId,
 				uomId);
 
-		final StockQtyAndUOMQty qtyDelivered = record.getQtyDelivered() != null
-				? StockQtyAndUOMQtys.createConvert(
-				Quantitys.create(record.getQtyDelivered(), uomId),
-				productId,
-				uomId)
-				: null;
+		final StockQtyAndUOMQty qtyOrdered = createQtyInStockAndUOM.apply(record.getQtyOrdered());
 
-		final NewManualInvoiceCandidate.NewManualInvoiceCandidateBuilder candidate = NewManualInvoiceCandidate.builder();
+		final StockQtyAndUOMQty qtyDelivered = Optional.ofNullable(record.getQtyDelivered())
+				.map(createQtyInStockAndUOM)
+				.orElse(null);
 
-		final int adTableId = tableDAO.retrieveAdTableId(I_I_Invoice_Candidate.Table_Name).getRepoId();
-		final int recordId = record.getI_Invoice_Candidate_ID();
+		final TableRecordReference recordReference = TableRecordReference.of(record);
 
-		final TableRecordReference recordReference = TableRecordReference.of(adTableId, recordId);
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 
-		final ZoneId orgZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
-		final LocalDate dateOrdered = record.getDateOrdered() == null
-				? LocalDate.now()
-				: TimeUtil.asLocalDate(record.getDateOrdered(),orgZoneId);
+		final LocalDate dateOrdered = Optional.ofNullable(record.getDateOrdered())
+				.map(date -> TimeUtil.asLocalDate(date,orgZoneId))
+				.orElseGet(() -> LocalDate.now(orgZoneId));
 
-		return candidate
-				.dateOrdered(dateOrdered)
-				.billPartnerInfo(bPartnerInfo)
+		return NewManualInvoiceCandidate.builder()
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
+				.poReference(record.getPOReference())
+				.lineDescription(record.getDescription())
+
+				.dateOrdered(dateOrdered)
+				.presetDateInvoiced(TimeUtil.asLocalDate(record.getPresetDateInvoiced(), orgZoneId))
+
+				.orgId(orgId)
+				.billPartnerInfo(getBPartnerInfo(record))
+				.invoiceRule(InvoiceRule.ofNullableCode(record.getInvoiceRule()))
+				.invoiceDocTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
+
+				.productId(productId)
 				.invoicingUomId(uomId)
 				.qtyOrdered(qtyOrdered)
 				.qtyDelivered(qtyDelivered)
-				.productId(productId)
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.invoiceRule(InvoiceRule.ofNullableCode(record.getInvoiceRule()))
-				.presetDateInvoiced(TimeUtil.asLocalDate(record.getPresetDateInvoiced(), orgZoneId))
-				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
-				.poReference(record.getPOReference())
-				.lineDescription(record.getDescription())
+
 				.recordReference(recordReference)
-				.invoiceDocTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
+				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
+				.build();
+	}
+
+	@NonNull
+	private static BPartnerInfo getBPartnerInfo(@NonNull final I_I_Invoice_Candidate invoiceCandidateToImport)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceCandidateToImport.getBill_BPartner_ID());
+
+		return BPartnerInfo.builder()
+				.bpartnerId(bPartnerId)
+				.contactId(BPartnerContactId.ofRepoId(bPartnerId, invoiceCandidateToImport.getBill_User_ID()))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bPartnerId, invoiceCandidateToImport.getBill_Location_ID()))
 				.build();
 	}
 }

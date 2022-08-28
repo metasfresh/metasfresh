@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -35,7 +36,6 @@ import lombok.NonNull;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_I_Invoice_Candidate;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
