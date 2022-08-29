@@ -73,7 +73,7 @@ public interface IADWindowDAO extends ISingletonService
 	@Nullable
 	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
-	void copyWindow(@NonNull WindowCopyRequest request);
+	WindowCopyResult copyWindow(@NonNull WindowCopyRequest request);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
