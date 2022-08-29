@@ -9,6 +9,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -42,6 +43,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -150,7 +152,7 @@ public class OrderProductProposalsService
 	public DocTypeId getQuotationDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(X_C_DocType.DOCSUBTYPE_Proposal)
 				.adClientId(clientAndOrgId.getClientId().getRepoId())
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
@@ -228,7 +230,7 @@ public class OrderProductProposalsService
 	@NonNull
 	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final LocalDate conversionDate = LocalDate.now();
+		final Instant conversionDate = Instant.now();
 		return currencyConversionBL.createCurrencyConversionContext(conversionDate,
 																	ConversionTypeMethod.Spot,
 																	clientAndOrgId.getClientId(),
