@@ -590,6 +590,18 @@ public class X_I_Invoice_Candidate extends org.compiere.model.PO implements I_I_
 	}
 
 	@Override
+	public void setOrgCode (final java.lang.String OrgCode)
+	{
+		set_Value (COLUMNNAME_OrgCode, OrgCode);
+	}
+
+	@Override
+	public java.lang.String getOrgCode()
+	{
+		return get_ValueAsString(COLUMNNAME_OrgCode);
+	}
+
+	@Override
 	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);

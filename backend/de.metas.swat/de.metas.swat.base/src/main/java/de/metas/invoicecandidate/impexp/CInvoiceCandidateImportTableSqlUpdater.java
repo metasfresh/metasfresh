@@ -29,6 +29,7 @@ import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -40,6 +41,7 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_Client_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_Org_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value;
@@ -55,6 +57,7 @@ import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_I
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_Value;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_OrgCode;
 import static org.compiere.model.I_AD_User_NotificationGroup.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
@@ -69,6 +72,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 
 	public void updateInvoiceCandImportTable(@NonNull final ImportRecordsSelection selection)
 	{
+		dbUpdateOrg(selection);
 		dbUpdateProducts(selection);
 		dbUpdateBPartners(selection);
 		dbUpdateUOM(selection);
@@ -91,8 +95,10 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		final String sqlProductId = "SELECT p." + COLUMNNAME_M_Product_ID
 				+ " FROM " + I_M_Product.Table_Name + " p"
 				+ " WHERE p." + COLUMNNAME_Value + " = i." + COLUMNNAME_M_Product_Value
-				+ " AND p." + COLUMNNAME_AD_Org_ID + " = i." + COLUMNNAME_AD_Org_ID
-				+ " AND p." + COLUMNNAME_IsActive + "='Y'";
+				+ " AND p." + COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " AND p." + COLUMNNAME_IsActive + "='Y'"
+				+ " ORDER BY p." + COLUMNNAME_AD_Org_ID + " DESC"
+				+ " LIMIT 1";
 
 		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
 				+ " SET " + COLUMNNAME_M_Product_ID + " = (" + sqlProductId + ")"
@@ -108,13 +114,29 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		final String sqlBPartnerId = "SELECT " + COLUMNNAME_C_BPartner_ID
 				+ " FROM " + I_C_BPartner.Table_Name + " bp"
 				+ " WHERE bp." + COLUMNNAME_Value + " = i." + COLUMNNAME_Bill_BPartner_Value
-				+ " AND bp." + COLUMNNAME_AD_Org_ID + " = i." + COLUMNNAME_AD_Org_ID
-				+ " AND bp." + COLUMNNAME_IsActive + "='Y'";
+				+ " AND bp." + COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " AND bp." + COLUMNNAME_IsActive + "= 'Y'"
+				+ " ORDER BY bp." + COLUMNNAME_AD_Org_ID + " DESC"
+				+ " LIMIT 1";
 
 		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
 				+ " SET " + COLUMNNAME_Bill_BPartner_ID + " = (" + sqlBPartnerId + ")"
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ " AND i." + COLUMNNAME_Bill_BPartner_ID + " IS NULL "
+				+ selection.toSqlWhereClause("i");
+
+		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private static void dbUpdateOrg(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_AD_Org_ID + " = o." + COLUMNNAME_AD_Org_ID
+				+ " FROM " + I_AD_Org.Table_Name + " o "
+				+ " WHERE o." + COLUMNNAME_Value + " = i." + COLUMNNAME_OrgCode
+				+ " AND o." + COLUMNNAME_AD_Client_ID + " = i." + COLUMNNAME_AD_Client_ID
+				+ " AND o." + COLUMNNAME_IsActive + " = 'Y'"
+				+ " AND i." + COLUMNNAME_I_IsImported + "<> 'Y'"
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
@@ -157,7 +179,8 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " 		ELSE '" + X_C_DocType.DOCBASETYPE_APInvoice + "' "
 				+ " 	END"
 				+ " AND defaultDocType." + COLUMNNAME_DocSubType + " IS NULL "
-				+ " ORDER BY defaultDocType." + COLUMNNAME_IsDefault + " DESC "
+				+ " AND defaultDocType." + COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " ORDER BY defaultDocType." + COLUMNNAME_AD_Org_ID + ", defaultDocType." + COLUMNNAME_IsDefault + " DESC "
 				+ " LIMIT 1";
 
 		final String sqlCustomDocType = "SELECT customDocType." + COLUMNNAME_C_DocType_ID
@@ -165,7 +188,8 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " WHERE customDocType." + COLUMNNAME_IsSOTrx + " = i." + COLUMNNAME_IsSOTrx
 				+ " AND customDocType." + COLUMNNAME_DocBaseType + " = i." + COLUMNNAME_DocBaseType
 				+ " AND COALESCE(customDocType." + COLUMNNAME_DocSubType + ",'') = COALESCE(i." + COLUMNNAME_DocSubType + ",'') "
-				+ " ORDER BY customDocType." + COLUMNNAME_IsDefault + " DESC "
+				+ " AND customDocType." + COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " ORDER BY customDocType." + COLUMNNAME_AD_Org_ID + ", customDocType." + COLUMNNAME_IsDefault + " DESC "
 				+ " LIMIT 1";
 
 		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
@@ -220,6 +244,10 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		//
 		// No C_DocType
 		updateErrorMessage(selection, COLUMNNAME_C_DocType_ID, COLUMNNAME_C_DocType_ID + " not found for provided pair ( " + COLUMNNAME_DocBaseType + ", " + COLUMNNAME_DocSubType + " )!");
+
+		//
+		// No AD_Org
+		updateOrgErrorMessage(selection);
 	}
 
 	private void updateErrorMessage(
@@ -276,6 +304,26 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		if (no != 0)
 		{
 			logger.warn("No " + COLUMNNAME_Bill_User_ID + " = {}", no);
+		}
+	}
+
+	private void updateOrgErrorMessage(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sqlOrgIdForProvidedOrgCode = "SELECT " + COLUMNNAME_AD_Org_ID
+				+ " FROM " + I_AD_Org.Table_Name + " o"
+				+ " WHERE o." + COLUMNNAME_Value + " = i." + COLUMNNAME_OrgCode
+				+ " AND o." + COLUMNNAME_IsActive + "= 'Y'";
+
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Provided " + COLUMNNAME_OrgCode + " does not match " + COLUMNNAME_AD_Org_ID + "!" + ", '"
+				+ " WHERE i." + COLUMNNAME_AD_Org_ID + " NOT IN ( " + sqlOrgIdForProvidedOrgCode + " ) "
+				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ selection.toSqlWhereClause("i");
+
+		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("No " + COLUMNNAME_AD_Org_ID + " = {}", no);
 		}
 	}
 }

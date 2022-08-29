@@ -4,7 +4,7 @@ Feature: Import Invoice Candidates via DataImportRestController
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And metasfresh has date and time 2022-08-30T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-08-30T13:30:13+03:00[Europe/Athens]
     And  metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value     | OPT.IsActive |
@@ -19,6 +19,12 @@ Feature: Import Invoice Candidates via DataImportRestController
       | Key          | Value      |
       | Content-Type | text/plain |
       | Accept       | */*        |
+    And load AD_ImpFormat:
+      | AD_ImpFormat_ID.Identifier | Name                     |
+      | importFormat               | Import Invoice Candidate |
+    And load AD_Org from AD_ImpFormat config:
+      | AD_Org_ID.Identifier | AD_ImpFormat_ID.Identifier | OrgCode.ImportRowFieldName |
+      | importFormatOrg      | importFormat               | Org Suchschlüssel          |
 
   @from:cucumber
   Scenario: Import sales I_Invoice_Candidate from csv - setting all available fields
@@ -51,15 +57,18 @@ Feature: Import Invoice Candidates via DataImportRestController
       | C_UOM_ID.Identifier | X12DE355 |
       | UOM                 | PCE      |
     And after not more than 30s I_Invoice_Candidate is found: searching by product value
-      | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | I_IsImported |
-      | Product_Value_25_08_2022_1 | iInvoiceCandidate_1               | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | 3                | UOM                     | Y       | docType                     | 2022-08-26             | DescriptionTest | PORef           | D               | Y            |
+      | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | OPT.DateOrdered | QtyOrdered | AD_Org_ID.Identifier | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | OPT.InvoiceRule | I_IsImported |
+      | Product_Value_25_08_2022_1 | iInvoiceCandidate_1               | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | importFormatOrg      | 3                | UOM                     | Y       | docType                     | 2022-08-26             | DescriptionTest | PORef           | D               | Y            |
     And validate invoice candidates by record reference:
-      | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.DateOrdered | OPT.QtyOrdered | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | InvoiceRule |
-      | I_Invoice_Candidate | iInvoiceCandidate_1               | invoiceCandidate_1                | billBpartner_1              | billBPLocation_1            | billBPUser_1                | product_1                   | 2022-08-25      | 5              | 3                | UOM                     | true    | docType                     | 2022-08-26             | DescriptionTest | PORef           | D           |
-
+      | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.DateOrdered | OPT.QtyOrdered | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | InvoiceRule |
+      | I_Invoice_Candidate | iInvoiceCandidate_1               | invoiceCandidate_1                | billBpartner_1              | billBPLocation_1            | importFormatOrg      | billBPUser_1                | product_1                   | 2022-08-25      | 5              | 3                | UOM                     | true    | docType                     | 2022-08-26             | DescriptionTest | PORef           | D           |
+    # note: updating to invoicing rule immediate in order to verify the invoice creation step
+    And update C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
+      | invoiceCandidate_1                | I                        |
     And after not more than 30s C_Invoice_Candidate matches:
-      | C_Invoice_Candidate.Identifier | OPT.QtyToInvoice |
-      | invoiceCandidate_1             | 3                |
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
+      | invoiceCandidate_1                | 5                |
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCandidate_1                |
@@ -97,11 +106,11 @@ Feature: Import Invoice Candidates via DataImportRestController
       | C_UOM_ID.Identifier | M_Product_ID.Identifier |
       | UOM_2               | product_2               |
     And after not more than 30s I_Invoice_Candidate is found: searching by product value
-      | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | OPT.InvoiceRule | I_IsImported |
-      | Product_Value_25_08_2022_2 | iInvoiceCandidate_2               | billBpartner_2              | billBPLocation_2            | billBPUser_2            | product_2               | 2          | 0                | Y       | docType                     | UOM_2                   | I               | Y            |
+      | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | AD_Org_ID.Identifier | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | OPT.InvoiceRule | I_IsImported |
+      | Product_Value_25_08_2022_2 | iInvoiceCandidate_2               | billBpartner_2              | billBPLocation_2            | billBPUser_2            | product_2               | 2          | importFormatOrg      | 0                | Y       | docType                     | UOM_2                   | I               | Y            |
     And validate invoice candidates by record reference:
-      | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | InvoiceRule |
-      | I_Invoice_Candidate | iInvoiceCandidate_2               | invoiceCandidate_2                | billBpartner_2              | billBPLocation_2            | billBPUser_2                | product_2                   | 2              | 0                | true    | docType                     | UOM_2                   | I           |
+      | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | InvoiceRule |
+      | I_Invoice_Candidate | iInvoiceCandidate_2               | invoiceCandidate_2                | billBpartner_2              | billBPLocation_2            | importFormatOrg      | billBPUser_2                | product_2                   | 2              | 0                | true    | docType                     | UOM_2                   | I           |
 
 
   @from:cucumber
@@ -131,7 +140,7 @@ Feature: Import Invoice Candidates via DataImportRestController
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate' receives a 'POST' request with the payload from context and responds with '400' status code
 
-    And after not more than 30s I_Invoice_Candidate is found: searching by product value
+    Then after not more than 30s I_Invoice_Candidate is found: searching by product value
       | M_Product_Value                    | I_Invoice_Candidate_ID.Identifier | I_IsImported | OPT.I_ErrorMsg                                                                                                                                                                 |
       | someNonExistingProductValue_280822 | iInvoiceCandidate_3               | E            | ERR = Mandatory C_Invoice_Candidate.Bill_BPartner_ID is missing!, ERR = M_Product_ID is missing!, ERR = C_DocType_ID not found for provided pair ( DocBaseType, DocSubType )!, |
 
@@ -165,6 +174,6 @@ Feature: Import Invoice Candidates via DataImportRestController
 
     When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate' receives a 'POST' request with the payload from context and responds with '400' status code
 
-    And after not more than 30s I_Invoice_Candidate is found: searching by product value
+    Then after not more than 30s I_Invoice_Candidate is found: searching by product value
       | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | I_IsImported | OPT.I_ErrorMsg                                                                                                                |
       | Product_Value_25_08_2022_4 | iInvoiceCandidate_4               | E            | ERR = Provided Bill_Location_ID not found for Bill_BPartner_ID!, ERR = Provided Bill_User_ID not found for Bill_BPartner_ID!, |

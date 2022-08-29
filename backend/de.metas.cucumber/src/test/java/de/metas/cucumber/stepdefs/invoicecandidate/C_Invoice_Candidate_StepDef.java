@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
@@ -76,6 +77,7 @@ import org.adempiere.util.logging.LogbackLoggable;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -155,6 +157,7 @@ public class C_Invoice_Candidate_StepDef
 	private final AD_User_StepDefData contactTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final C_UOM_StepDefData uomTable;
+	private final AD_Org_StepDefData orgTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -168,7 +171,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final I_Invoice_Candidate_StepDefData iInvoiceCandidateTable,
 			@NonNull final AD_User_StepDefData contactTable,
 			@NonNull final C_DocType_StepDefData docTypeTable,
-			@NonNull final C_UOM_StepDefData uomTable)
+			@NonNull final C_UOM_StepDefData uomTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -182,6 +186,7 @@ public class C_Invoice_Candidate_StepDef
 		this.contactTable = contactTable;
 		this.docTypeTable = docTypeTable;
 		this.uomTable = uomTable;
+		this.orgTable = orgTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -229,6 +234,12 @@ public class C_Invoice_Candidate_StepDef
 			if (qtyToInvoiceOverride != null)
 			{
 				invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
+			}
+
+			final String invoiceRuleOverride = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceRule_Override);
+			if (Check.isNotBlank(invoiceRuleOverride))
+			{
+				invoiceCandidate.setInvoiceRule_Override(invoiceRuleOverride);
 			}
 
 			InterfaceWrapperHelper.saveRecord(invoiceCandidate);
@@ -1025,6 +1036,11 @@ public class C_Invoice_Candidate_StepDef
 		final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(billBPartnerLocationIdentifier);
 		assertThat(bPartnerLocation).isNotNull();
 		assertThat(invoiceCandidate.getBill_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
+
+		final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_AD_Org org = orgTable.get(orgIdentifier);
+		assertThat(org).isNotNull();
+		assertThat(invoiceCandidate.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
 
 		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_InvoiceRule);
 		assertThat(invoiceCandidate.getInvoiceRule()).isEqualTo(invoiceRule);

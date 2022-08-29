@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.organization.IOrgDAO;
@@ -40,6 +41,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -68,6 +70,7 @@ public class I_Invoice_Candidate_StepDef
 	private final AD_User_StepDefData contactTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final C_UOM_StepDefData uomTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -79,7 +82,8 @@ public class I_Invoice_Candidate_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final AD_User_StepDefData contactTable,
 			@NonNull final C_DocType_StepDefData docTypeTable,
-			@NonNull final C_UOM_StepDefData uomTable)
+			@NonNull final C_UOM_StepDefData uomTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.iInvoiceCandidateTable = iInvoiceCandidateTable;
 		this.bpartnerTable = bpartnerTable;
@@ -88,6 +92,7 @@ public class I_Invoice_Candidate_StepDef
 		this.contactTable = contactTable;
 		this.docTypeTable = docTypeTable;
 		this.uomTable = uomTable;
+		this.orgTable = orgTable;
 	}
 
 	@And("^after not more than (.*)s I_Invoice_Candidate is found: searching by product value$")
@@ -152,6 +157,11 @@ public class I_Invoice_Candidate_StepDef
 		final I_AD_User contact = contactTable.get(billBPartnerContactIdentifier);
 		assertThat(contact).isNotNull();
 		assertThat(invoiceCandidate.getBill_User_ID()).isEqualTo(contact.getAD_User_ID());
+
+		final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_AD_Org org = orgTable.get(orgIdentifier);
+		assertThat(org).isNotNull();
+		assertThat(invoiceCandidate.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
 
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_QtyOrdered);
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_QtyDelivered);

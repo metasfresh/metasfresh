@@ -628,6 +628,27 @@ public interface I_I_Invoice_Candidate
 	String COLUMNNAME_M_Product_Value = "M_Product_Value";
 
 	/**
+	 * Set Org Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setOrgCode (java.lang.String OrgCode);
+
+	/**
+	 * Get Org Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getOrgCode();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_OrgCode = new ModelColumn<>(I_I_Invoice_Candidate.class, "OrgCode", null);
+	String COLUMNNAME_OrgCode = "OrgCode";
+
+	/**
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
