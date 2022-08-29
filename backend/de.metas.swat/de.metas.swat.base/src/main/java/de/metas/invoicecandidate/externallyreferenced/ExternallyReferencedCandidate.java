@@ -136,6 +136,9 @@ public class ExternallyReferencedCandidate
 
 	private List<InvoiceDetailItem> invoiceDetailItems;
 
+	/**
+	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
+	 */
 	@Nullable
 	private final TableRecordReference recordReference;
 
