@@ -1,5 +1,6 @@
 package org.adempiere.ad.window.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
@@ -108,6 +109,20 @@ public class ADWindowDAO implements IADWindowDAO
 	public AdWindowId getWindowIdByInternalName(@NonNull final String internalName)
 	{
 		return windowIdsByInternalName.getOrLoad(internalName, this::retrieveWindowIdByInternalName);
+	}
+
+	@Override
+	@NonNull
+	public Optional<AdWindowId> getOverridingWindowId(@NonNull final AdWindowId overridesWindowId)
+	{
+		final AdWindowId windowId = queryBL
+				.createQueryBuilderOutOfTrx(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Window.COLUMNNAME_Overrides_Window_ID, overridesWindowId)
+				.create()
+				.firstId(AdWindowId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(windowId);
 	}
 
 	private AdWindowId retrieveWindowIdByInternalName(@NonNull final String internalName)
@@ -651,7 +666,7 @@ public class ADWindowDAO implements IADWindowDAO
 			return sourceUIElements.getLabels_Tab_ID() > 0 && sourceUIElements.getLabels_Tab().isActive();
 		}
 
-		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
 		{
 			return sourceUIElements.getInline_Tab_ID() > 0 && sourceUIElements.getInline_Tab().isActive();
 		}
@@ -1234,5 +1249,15 @@ public class ADWindowDAO implements IADWindowDAO
 			default:
 				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
 		}
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(final AdTableId adTableId)
+	{
+		final List<AdWindowId> adWindowIds = queryBL.createQueryBuilder(I_AD_Tab.class)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, adTableId)
+				.create()
+				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
+		return ImmutableSet.copyOf(adWindowIds);
 	}
 }

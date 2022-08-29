@@ -116,6 +116,10 @@ public interface IOrderDAO extends ISingletonService
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 
+	List<I_C_Order> getOrdersByQuery(GetOrdersQuery query);
+
+	Optional<I_C_Order> retrieveFirstByQuery(GetOrdersQuery query);
+
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 
 	void save(org.compiere.model.I_C_Order order);

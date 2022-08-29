@@ -91,6 +91,13 @@ public final class DocumentFilterParam
 		return new Builder();
 	}
 
+	@NonNull
+	public static DocumentFilterParam of(@NonNull final SqlAndParams sqlWhereClause)
+	{
+		final boolean joinAnd = true;
+		return new DocumentFilterParam(joinAnd, sqlWhereClause);
+	}
+
 	public static DocumentFilterParam ofSqlWhereClause(final String sqlWhereClause)
 	{
 		return ofSqlWhereClause(true, sqlWhereClause);

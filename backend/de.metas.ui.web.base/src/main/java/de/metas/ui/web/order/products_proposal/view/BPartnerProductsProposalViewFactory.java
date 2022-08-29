@@ -18,6 +18,7 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_BPartner_ProductsProposal_Launcher;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -61,13 +62,16 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final OrderProductProposalsService orderProductProposalsService;
 
 	protected BPartnerProductsProposalViewFactory(
-			@NonNull final BPartnerProductStatsService bpartnerProductStatsService)
+			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
+			@NonNull final OrderProductProposalsService orderProductProposalsService)
 	{
 		super(WINDOW_ID);
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		this.orderProductProposalsService = orderProductProposalsService;
 	}
 
 	@Override
@@ -126,6 +130,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 
 		return ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
+				.orderProductProposalsService(orderProductProposalsService)
 				.priceListVersionIds(priceListVersionIds)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)
