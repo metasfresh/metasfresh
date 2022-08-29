@@ -24,6 +24,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @implNote Please consider using {@link ADWindowService} when possible. Also consider proxying your DAO methods there.
+ */
 public interface IADWindowDAO extends ISingletonService
 {
 
@@ -36,6 +39,7 @@ public interface IADWindowDAO extends ISingletonService
 
 	String retrieveInternalWindowName(AdWindowId adWindowId);
 
+	@NonNull
 	AdWindowId getWindowIdByInternalName(String internalName);
 
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
@@ -69,7 +73,7 @@ public interface IADWindowDAO extends ISingletonService
 	@Nullable
 	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
-	void copyWindow(@NonNull WindowCopyRequest request);
+	WindowCopyResult copyWindow(@NonNull WindowCopyRequest request);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 

@@ -29,6 +29,9 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.window.api.WindowCopyResult;
+import org.adempiere.ad.window.api.WindowCopyResult.TabCopyResult;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -45,6 +48,8 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -60,7 +65,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 public class ADProcessDAO implements IADProcessDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
 
@@ -606,5 +611,51 @@ public class ADProcessDAO implements IADProcessDAO
 	public void save(final I_AD_Process process)
 	{
 		InterfaceWrapperHelper.save(process);
+	}
+
+	@Override
+	public void copyWindowRelatedProcesses(final WindowCopyResult windowCopyResult)
+	{
+		final ImmutableMap<AdTabId, AdTabId> targetTabIdsBySourceTabId = windowCopyResult.getTabs()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						TabCopyResult::getSourceTabId,
+						TabCopyResult::getTargetTabId
+				));
+
+		final HashSet<AdTabId> tabIdsToFilter = new HashSet<>();
+		tabIdsToFilter.add(null);
+		tabIdsToFilter.addAll(targetTabIdsBySourceTabId.keySet());
+
+		final List<I_AD_Table_Process> sourceRecords = queryBL.createQueryBuilder(I_AD_Table_Process.class)
+				.addEqualsFilter(I_AD_Table_Process.COLUMN_AD_Window_ID, windowCopyResult.getSourceWindowId())
+				.addInArrayFilter(I_AD_Table_Process.COLUMN_AD_Tab_ID, tabIdsToFilter)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		for (final I_AD_Table_Process sourceRecord : sourceRecords)
+		{
+			final AdTabId sourceTabId = AdTabId.ofRepoIdOrNull(sourceRecord.getAD_Tab_ID());
+			final AdTabId targetTabId = sourceTabId != null
+					? targetTabIdsBySourceTabId.get(sourceTabId)
+					: null;
+			if (sourceTabId != null && targetTabId == null)
+			{
+				// shall not happen
+				throw new AdempiereException("No target tab provided for source tab " + sourceTabId)
+						.appendParametersToMessage()
+						.setParameter("windowCopyResult", windowCopyResult);
+			}
+
+			final I_AD_Table_Process targetRecord = InterfaceWrapperHelper.copy()
+					.setFrom(sourceRecord)
+					.setSkipCalculatedColumns(true)
+					.copyToNew(I_AD_Table_Process.class);
+			targetRecord.setAD_Window_ID(windowCopyResult.getTargetWindowId().getRepoId());
+			targetRecord.setAD_Tab_ID(AdTabId.toRepoId(targetTabId));
+			targetRecord.setEntityType(windowCopyResult.getTargetEntityType());
+			InterfaceWrapperHelper.save(targetRecord);
+		}
 	}
 }

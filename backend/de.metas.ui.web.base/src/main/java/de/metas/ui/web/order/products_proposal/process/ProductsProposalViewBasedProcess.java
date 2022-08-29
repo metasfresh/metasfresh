@@ -12,6 +12,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -109,4 +110,11 @@ public abstract class ProductsProposalViewBasedProcess extends ViewBasedProcessT
 				.build());
 	}
 
+	protected final void afterCloseOpenViewInNewTab(@NonNull final ViewId viewId)
+	{
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
+											   .viewId(viewId.toJson())
+											   .target(ViewOpenTarget.NewBrowserTab)
+											   .build());
+	}
 }
