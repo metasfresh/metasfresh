@@ -14,6 +14,7 @@ public class WindowCopyResult
 {
 	@NonNull AdWindowId sourceWindowId;
 	@NonNull AdWindowId targetWindowId;
+	@NonNull String targetEntityType;
 
 	@NonNull @Singular ImmutableList<TabCopyResult> tabs;
 

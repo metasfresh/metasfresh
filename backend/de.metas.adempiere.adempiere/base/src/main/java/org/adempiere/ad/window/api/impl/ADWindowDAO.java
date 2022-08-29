@@ -379,19 +379,23 @@ public class ADWindowDAO implements IADWindowDAO
 
 		logger.debug("Copying from: {} to: {}", sourceWindow, targetWindow);
 
+		final String targetEntityType = targetWindow.getEntityType();
+
 		copy()
 				.setSkipCalculatedColumns(true)
-				// skip it because other wise the MV will fill the name from the AD_Element of the original window and unique name constraint will be broken
+				// skip it because otherwise the MV will fill the name from the AD_Element of the original window and unique name constraint will be broken
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_AD_Element_ID)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Description)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Help)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_EntityType)
 				.setFrom(sourceWindow)
 				.setTo(targetWindow)
 				.copy();
 
 		targetWindow.setOverrides_Window_ID(request.isCustomizationWindow() ? sourceWindowId.getRepoId() : -1);
+		targetWindow.setEntityType(targetEntityType);
 
 		save(targetWindow);
 
@@ -400,6 +404,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return WindowCopyResult.builder()
 				.sourceWindowId(sourceWindowId)
 				.targetWindowId(targetWindowId)
+				.targetEntityType(targetEntityType)
 				.tabs(tabsCopyResult)
 				.build();
 	}

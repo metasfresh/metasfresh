@@ -654,6 +654,7 @@ public class ADProcessDAO implements IADProcessDAO
 					.copyToNew(I_AD_Table_Process.class);
 			targetRecord.setAD_Window_ID(windowCopyResult.getTargetWindowId().getRepoId());
 			targetRecord.setAD_Tab_ID(AdTabId.toRepoId(targetTabId));
+			targetRecord.setEntityType(windowCopyResult.getTargetEntityType());
 			InterfaceWrapperHelper.save(targetRecord);
 		}
 	}
