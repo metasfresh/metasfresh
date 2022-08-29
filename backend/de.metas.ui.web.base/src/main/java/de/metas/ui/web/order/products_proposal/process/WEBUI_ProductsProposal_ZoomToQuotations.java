@@ -45,11 +45,11 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.ad.window.api.ADWindowService;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Set;
@@ -58,14 +58,11 @@ import static de.metas.document.engine.IDocument.STATUS_Completed;
 
 public class WEBUI_ProductsProposal_ZoomToQuotations extends ProductsProposalViewBasedProcess
 {
-	@Autowired
-	private IViewsRepository viewsRepo;
-
-	@Autowired
-	private OrderProductProposalsService orderProductProposalsService;
+	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	private final OrderProductProposalsService orderProductProposalsService = SpringContextHolder.instance.getBean(OrderProductProposalsService.class);
+	private final ADWindowService adWindowService = SpringContextHolder.instance.getBean(ADWindowService.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public static final String WINDOW_SalesOrder_InternalName = "C_Order_Sales";
@@ -142,10 +139,7 @@ public class WEBUI_ProductsProposal_ZoomToQuotations extends ProductsProposalVie
 	@NonNull
 	private AdWindowId getQuotationWindowId()
 	{
-		final AdWindowId salesWindowId = windowDAO.getWindowIdByInternalName(WINDOW_SalesOrder_InternalName);
-
-		return windowDAO.getOverridingWindowId(salesWindowId)
-				.orElse(salesWindowId);
+		return adWindowService.getEffectiveWindowIdByInternalName(WINDOW_SalesOrder_InternalName);
 	}
 
 	@NonNull
