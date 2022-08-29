@@ -22,6 +22,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.ad.window.api.UIElementGroupId;
 import org.adempiere.ad.window.api.WindowCopyRequest;
+import org.adempiere.ad.window.api.WindowCopyResult;
+import org.adempiere.ad.window.api.WindowCopyResult.TabCopyResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -367,7 +369,7 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public void copyWindow(@NonNull final WindowCopyRequest request)
+	public WindowCopyResult copyWindow(@NonNull final WindowCopyRequest request)
 	{
 		final AdWindowId targetWindowId = request.getTargetWindowId();
 		final AdWindowId sourceWindowId = request.getSourceWindowId();
@@ -393,7 +395,13 @@ public class ADWindowDAO implements IADWindowDAO
 
 		save(targetWindow);
 
-		copyTabs(targetWindow, sourceWindow);
+		final List<TabCopyResult> tabsCopyResult = copyTabs(targetWindow, sourceWindow);
+
+		return WindowCopyResult.builder()
+				.sourceWindowId(sourceWindowId)
+				.targetWindowId(targetWindowId)
+				.tabs(tabsCopyResult)
+				.build();
 	}
 
 	private void copyWindowTrl(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
@@ -639,7 +647,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 		for (final I_AD_UI_Element sourceUIElement : sourceUIElements)
 		{
-			if(isValidSourceUIElement(sourceUIElement))
+			if (isValidSourceUIElement(sourceUIElement))
 			{
 				final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
 				copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
@@ -649,7 +657,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private boolean isValidSourceUIElement(final I_AD_UI_Element sourceUIElements)
 	{
-		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
 		{
 			return sourceUIElements.getLabels_Tab_ID() > 0 && sourceUIElements.getLabels_Tab().isActive();
 		}
@@ -889,7 +897,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return AdTabId.ofRepoId(targetTab.getAD_Tab_ID());
 	}
 
-	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
+	private List<TabCopyResult> copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
 	{
 		final AdWindowId targetWindowId = AdWindowId.ofRepoId(targetWindow.getAD_Window_ID());
 		final Map<AdTableId, I_AD_Tab> existingTargetTabs = retrieveTabsQuery(targetWindowId)
@@ -901,6 +909,7 @@ public class ADWindowDAO implements IADWindowDAO
 		final CopyContext copyCtx = new CopyContext();
 
 		final ArrayList<ImmutablePair<I_AD_Tab, I_AD_Tab>> sourceAndTargetTabs = new ArrayList<>();
+		final ArrayList<TabCopyResult> result = new ArrayList<>();
 
 		for (final I_AD_Tab sourceTab : sourceTabs)
 		{
@@ -909,6 +918,10 @@ public class ADWindowDAO implements IADWindowDAO
 			final I_AD_Tab targetTab = copyTab_SkipUISections(copyCtx, targetWindow, existingTargetTab, sourceTab);
 
 			sourceAndTargetTabs.add(ImmutablePair.of(sourceTab, targetTab));
+			result.add(TabCopyResult.builder()
+					.sourceTabId(AdTabId.ofRepoId(sourceTab.getAD_Tab_ID()))
+					.targetTabId(AdTabId.ofRepoId(targetTab.getAD_Tab_ID()))
+					.build());
 		}
 
 		for (final ImmutablePair<I_AD_Tab, I_AD_Tab> sourceAndTargetTab : sourceAndTargetTabs)
@@ -918,6 +931,8 @@ public class ADWindowDAO implements IADWindowDAO
 
 			copyUISections(copyCtx, targetTab, sourceTab);
 		}
+
+		return result;
 	}
 
 	private I_AD_Tab copyTab_SkipUISections(
