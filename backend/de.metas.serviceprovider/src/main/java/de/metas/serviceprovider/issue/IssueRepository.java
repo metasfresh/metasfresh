@@ -250,6 +250,7 @@ public class IssueRepository
 				.deliveredDate(TimeUtil.asLocalDate(record.getDeliveredDate()))
 				.processedTimestamp(TimeUtil.asInstant(record.getProcessedDate()))
 				.costCenterActivityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.externallyUpdatedAt(TimeUtil.asInstant(record.getExternallyUpdatedAt()))
 				.build();
 	}
 
@@ -299,6 +300,8 @@ public class IssueRepository
 		record.setIssueURL(issueEntity.getExternalIssueURL());
 
 		record.setC_Activity_ID(ActivityId.toRepoId(issueEntity.getCostCenterActivityId()));
+
+		record.setExternallyUpdatedAt(TimeUtil.asTimestamp(issueEntity.getExternallyUpdatedAt()));
 
 		return record;
 	}

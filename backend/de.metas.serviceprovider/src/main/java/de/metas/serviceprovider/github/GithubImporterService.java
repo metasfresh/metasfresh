@@ -46,6 +46,7 @@ import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.external.project.GetExternalProjectRequest;
+import de.metas.serviceprovider.github.config.GithubConfigRepository;
 import de.metas.serviceprovider.github.label.LabelService;
 import de.metas.serviceprovider.github.label.ProcessedLabel;
 import de.metas.serviceprovider.github.link.GithubIssueLink;
@@ -74,16 +75,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
 import static de.metas.serviceprovider.github.GithubImporterConstants.HOUR_UOM_ID;
 import static de.metas.serviceprovider.github.GithubImporterConstants.LABEL_DATE_FORMAT;
+import static de.metas.serviceprovider.github.config.GithubConfigName.IMPORT_TIMEOUT;
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 
 @Service
 public class GithubImporterService implements IssueImporter
 {
+	private final static int IMPORT_TIMEOUT_DEFAULT_MINUTES = 5;
+
 	private static final Logger log = LogManager.getLogger(GithubImporterService.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
@@ -94,6 +99,7 @@ public class GithubImporterService implements IssueImporter
 	private final IssueRepository issueRepository;
 	private final ExternalProjectRepository externalProjectRepository;
 	private final LabelService labelService;
+	private final GithubConfigRepository githubConfigRepository;
 
 	public GithubImporterService(
 			final ImportQueue<ImportIssueInfo> importIssuesQueue,
@@ -101,7 +107,8 @@ public class GithubImporterService implements IssueImporter
 			final ExternalReferenceRepository externalReferenceRepository,
 			final IssueRepository issueRepository,
 			final ExternalProjectRepository externalProjectRepository,
-			final LabelService labelService)
+			final LabelService labelService,
+			final GithubConfigRepository githubConfigRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.githubClient = githubClient;
@@ -109,6 +116,7 @@ public class GithubImporterService implements IssueImporter
 		this.issueRepository = issueRepository;
 		this.externalProjectRepository = externalProjectRepository;
 		this.labelService = labelService;
+		this.githubConfigRepository = githubConfigRepository;
 	}
 
 	public void start(@NonNull final ImmutableList<ImportIssuesRequest> requestList)
@@ -237,7 +245,8 @@ public class GithubImporterService implements IssueImporter
 				.description(issue.getBody())
 				.orgId(importIssuesRequest.getOrgId())
 				.projectId(importIssuesRequest.getProjectId())
-				.effortUomId(HOUR_UOM_ID);
+				.effortUomId(HOUR_UOM_ID)
+				.updatedAt(issue.getUpdatedAt());
 
 		if (issue.getGithubMilestone() != null)
 		{
@@ -429,7 +438,16 @@ public class GithubImporterService implements IssueImporter
 
 	private void acquireLock()
 	{
-		final boolean lockAcquired = lock.tryLock();
+		final boolean lockAcquired;
+		final Integer timoutInMinutes = getImportTimeout();
+		try
+		{
+			lockAcquired = lock.tryLock(timoutInMinutes, TimeUnit.MINUTES);
+		}
+		catch (final InterruptedException e)
+		{
+			throw new AdempiereException("Couldn't obtain lock to import issue after more than " + timoutInMinutes + " minutes!");
+		}
 
 		if (!lockAcquired)
 		{
@@ -507,5 +525,13 @@ public class GithubImporterService implements IssueImporter
 		{
 			importIssueInfoBuilder.deliveryPlatform(Joiner.on(",").join(deliveryPlatformList));
 		}
+	}
+
+	@NonNull
+	private Integer getImportTimeout()
+	{
+		return Optional.of(githubConfigRepository.getConfigByNameAndOrg(IMPORT_TIMEOUT, OrgId.ANY))
+				.map(Integer::parseInt)
+				.orElseGet(() -> IMPORT_TIMEOUT_DEFAULT_MINUTES);
 	}
 }

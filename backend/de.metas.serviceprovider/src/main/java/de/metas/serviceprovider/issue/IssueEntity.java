@@ -139,6 +139,9 @@ public class IssueEntity
 	private Instant processedTimestamp;
 
 	@Nullable
+	private Instant externallyUpdatedAt;
+
+	@Nullable
 	private ActivityId costCenterActivityId;
 
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)

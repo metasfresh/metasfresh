@@ -25,6 +25,7 @@ package de.metas.serviceprovider.issue.importer;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.activity.repository.ActivityRepository;
 import de.metas.activity.repository.CreateActivityRequest;
 import de.metas.activity.repository.GetSingleActivityQuery;
@@ -102,18 +103,19 @@ public class IssueImporterService
 		this.activityRepository = activityRepository;
 	}
 
-	public void importIssues(
+	@NonNull
+	public ImmutableSet<IssueId> importIssues(
 			@NonNull final ImmutableList<ImportIssuesRequest> requestList,
 			@NonNull final IssueImporter issueImporter)
 	{
 		final CompletableFuture<Void> completableFuture =
 				CompletableFuture.runAsync(() -> issueImporter.start(requestList));
 
+		final ArrayList<IssueId> importedIdsCollector = new ArrayList<>();
+
 		while (!completableFuture.isDone() || !importIssuesQueue.isEmpty())
 		{
 			final ImmutableList<ImportIssueInfo> issueInfos = importIssuesQueue.drainAll();
-
-			final ArrayList<IssueId> importedIdsCollector = new ArrayList<>();
 
 			issueInfos.forEach(issue -> trxManager.runInNewTrx(() -> importIssue(issue, importedIdsCollector)));
 
@@ -124,6 +126,8 @@ public class IssueImporterService
 		{
 			extractAndPropagateAdempiereException(completableFuture);
 		}
+
+		return ImmutableSet.copyOf(importedIdsCollector);
 	}
 
 	@VisibleForTesting
@@ -259,6 +263,7 @@ public class IssueImporterService
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.deliveredDate(importIssueInfo.getDeliveredDate())
 				.costCenterActivityId(determineCostCenter(importIssueInfo))
+				.externallyUpdatedAt(importIssueInfo.getUpdatedAt())
 				.build();
 	}
 
@@ -299,6 +304,7 @@ public class IssueImporterService
 				.deliveredDate(importIssueInfo.getDeliveredDate())
 				.budgetedEffort(importIssueInfo.getBudget())
 				.costCenterActivityId(determineCostCenter(importIssueInfo))
+				.externallyUpdatedAt(importIssueInfo.getUpdatedAt())
 				.build();
 
 		mergedIssueEntity.setEstimatedEffortIfNotSet(importIssueInfo.getEstimation());

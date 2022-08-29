@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.serviceprovider.issue;
+package de.metas.serviceprovider.github;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
@@ -34,12 +34,11 @@ import de.metas.serviceprovider.external.label.LabelCollection;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
-import de.metas.serviceprovider.github.GithubImporterConstants;
-import de.metas.serviceprovider.github.GithubImporterService;
-import de.metas.serviceprovider.github.GithubService;
 import de.metas.serviceprovider.github.config.GithubConfigRepository;
-import de.metas.serviceprovider.issue.importer.IssueImporterService;
-import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.github.service.GithubIssueService;
+import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.issue.IssueRepository;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -57,9 +56,7 @@ public class EffortIssueCreator
 	private final ExternalProjectRepository externalProjectRepository;
 	private final GithubConfigRepository githubConfigRepository;
 	private final GithubClient githubClient;
-	private final GithubService githubService;
-	private final IssueImporterService issueImporterService;
-	private final GithubImporterService githubImporterService;
+	private final GithubIssueService githubIssueService;
 
 	public EffortIssueCreator(
 			@NonNull final IssueRepository issueRepository,
@@ -67,18 +64,14 @@ public class EffortIssueCreator
 			@NonNull final ExternalProjectRepository externalProjectRepository,
 			@NonNull final GithubConfigRepository githubConfigRepository,
 			@NonNull final GithubClient githubClient,
-			@NonNull final GithubService githubService,
-			@NonNull final IssueImporterService issueImporterService,
-			@NonNull final GithubImporterService githubImporterService)
+			@NonNull final GithubIssueService githubIssueService)
 	{
 		this.issueRepository = issueRepository;
 		this.issueLabelService = issueLabelService;
 		this.externalProjectRepository = externalProjectRepository;
 		this.githubConfigRepository = githubConfigRepository;
 		this.githubClient = githubClient;
-		this.githubService = githubService;
-		this.issueImporterService = issueImporterService;
-		this.githubImporterService = githubImporterService;
+		this.githubIssueService = githubIssueService;
 	}
 
 	public void createFromBudgetIssue(@NonNull final IssueId budgetIssueId) throws JsonProcessingException
@@ -92,49 +85,26 @@ public class EffortIssueCreator
 					.setParameter("S_Issue_ID", budgetIssueId.getRepoId());
 		}
 
-		final ExternalProjectReference effortExternalProjectReference = getEffortExternalProjectReference(budgetIssue.getExternalProjectReferenceId());
+		final Issue githubEffortIssue = createGithubEffortIssue(budgetIssue);
 
-		final Issue githubEffortIssue = createGithubEffortIssue(effortExternalProjectReference, budgetIssue);
-
-		importGithubEffortIssue(effortExternalProjectReference, String.valueOf(githubEffortIssue.getNumber()));
+		githubIssueService.importByURL(budgetIssue.getOrgId(), githubEffortIssue.getHtmlUrl());
 	}
 
 	@NonNull
-	private Issue createGithubEffortIssue(
-			@NonNull final ExternalProjectReference externalProjectReference,
-			@NonNull final IssueEntity budgetIssue) throws JsonProcessingException
+	private Issue createGithubEffortIssue(@NonNull final IssueEntity budgetIssue) throws JsonProcessingException
 	{
+		final ExternalProjectReference effortExternalProjectReference = getEffortExternalProjectReference(budgetIssue.getExternalProjectReferenceId());
+
 		final CreateIssueRequest createEffortIssueRequest = CreateIssueRequest.builder()
-				.repositoryName(externalProjectReference.getExternalProjectReference())
-				.repositoryOwner(externalProjectReference.getProjectOwner())
-				.oAuthToken(getGithubAuthToken(externalProjectReference.getOrgId()))
+				.repositoryName(effortExternalProjectReference.getExternalProjectReference())
+				.repositoryOwner(effortExternalProjectReference.getProjectOwner())
+				.oAuthToken(getGithubAuthToken(effortExternalProjectReference.getOrgId()))
 				.title(budgetIssue.getName())
 				.body(budgetIssue.getExternalIssueURL())
 				.labels(getLabels(budgetIssue))
 				.build();
 
 		return githubClient.createIssue(createEffortIssueRequest);
-	}
-
-	private void importGithubEffortIssue(
-			@NonNull final ExternalProjectReference externalProjectReference,
-			@NonNull final String issueNumber)
-	{
-		final OrgId orgId = externalProjectReference.getOrgId();
-
-		final ImportIssuesRequest importEffortIssuesRequest = ImportIssuesRequest.builder()
-				.oAuthToken(getGithubAuthToken(orgId))
-				.externalProjectReferenceId(externalProjectReference.getExternalProjectReferenceId())
-				.repoId(externalProjectReference.getExternalProjectReference())
-				.repoOwner(externalProjectReference.getProjectOwner())
-				.externalProjectType(externalProjectReference.getExternalProjectType())
-				.orgId(orgId)
-				.githubIssueLinkMatcher(githubService.getDefaultLinkMatcher())
-				.issueNoList(ImmutableList.of(issueNumber))
-				.projectId(externalProjectReference.getProjectId())
-				.build();
-
-		issueImporterService.importIssues(ImmutableList.of(importEffortIssuesRequest), githubImporterService);
 	}
 
 	@NonNull

@@ -27,7 +27,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.serviceprovider.issue.EffortIssueCreator;
+import de.metas.serviceprovider.github.EffortIssueCreator;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.util.Loggables;
 import lombok.NonNull;

@@ -67,6 +67,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,6 +136,8 @@ class IssueImporterServiceTest
 
 			InterfaceWrapperHelper.save(mockCostCenterActivityRecord);
 
+			final Instant updatedAt = Instant.parse("2022-08-24T13:24:05Z");
+
 			initialImportIssueInfo = ImportIssueInfo.builder()
 					.status(Status.PENDING)
 					.orgId(OrgId.ofRepoId(1))
@@ -146,6 +149,7 @@ class IssueImporterServiceTest
 					.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, "1"))
 					.issueLabels(ImmutableList.of())
 					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(mockExternalProjectReference.getS_ExternalProjectReference_ID()))
+					.updatedAt(updatedAt)
 					.build();
 
 			expectedIssue = IssueEntity.builder()
@@ -167,6 +171,7 @@ class IssueImporterServiceTest
 					.externalIssueNo(new BigDecimal("11111"))
 					.costCenterActivityId(ActivityId.ofRepoId(mockCostCenterActivityRecord.getC_Activity_ID()))
 					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(mockExternalProjectReference.getS_ExternalProjectReference_ID()))
+					.externallyUpdatedAt(updatedAt)
 					.build();
 		}
 

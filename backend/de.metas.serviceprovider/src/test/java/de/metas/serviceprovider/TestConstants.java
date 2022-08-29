@@ -30,7 +30,6 @@ import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.milestone.MilestoneId;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 
 import java.time.Instant;
@@ -75,6 +74,7 @@ public interface TestConstants
 	String MOCK_EFFORT_1_30 = "1:30";
 	String MOCK_EFFORT_1_00 = "1:00";
 	String MOCK_EFFORT_2_30 = "2:30";
+	Instant MOCK_UPDATED_AT = Instant.parse("2022-08-24T13:24:05Z");
 
 	int MOCK_RECORD_ID = 1;
 	ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE = ExternalProjectReferenceId.ofRepoId(2);
@@ -85,5 +85,6 @@ public interface TestConstants
 	UserId MOCK_USER_ID = UserId.ofRepoId(1);
 	IssueId MOCK_ISSUE_ID = IssueId.ofRepoId(1);
 	String MOCK_GH_TASK_ID = "gh:" + MOCK_ISSUE_ID.getRepoId();
+	String MOCK_GH_URL = "https://github.com/" + MOCK_EXTERNAL_REFERENCE  + "/" + MOCK_EXTERNAL_PROJECT_OWNER+ "/issues/" + MOCK_ISSUE_ID.getRepoId();
 	String MOCK_EV_TASK_ID = "ev:" + MOCK_ISSUE_ID.getRepoId();
 }

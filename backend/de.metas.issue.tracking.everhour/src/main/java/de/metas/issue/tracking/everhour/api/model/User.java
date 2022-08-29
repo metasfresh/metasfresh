@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.everhour
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,20 @@
  * #L%
  */
 
-package de.metas.serviceprovider.everhour;
+package de.metas.issue.tracking.everhour.api.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-public interface EverhourImportConstants
+@Value
+@Builder
+@Jacksonized
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class User
 {
-	int PROCESSING_DATE_INTERVAL_SIZE = 7;
-
-	@AllArgsConstructor
-	@Getter enum EverhourImporterSysConfig
-	{
-		ACCESS_TOKEN("de.metas.issue.tracking.everhour.accessToken"),
-		BPARTNER_USER_IMPORT("de.metas.serviceprovider.everhour.bpartnerUserImport");
-
-		private final String name;
-	}
+	Integer id;
+	String name;
+	String email;
 }

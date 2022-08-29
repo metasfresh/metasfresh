@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 515892489L;
+	private static final long serialVersionUID = 980948824L;
 
     /** Standard Constructor */
     public X_S_Issue (final Properties ctx, final int S_Issue_ID, @Nullable final String trxName)
@@ -191,6 +191,18 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ExternalIssueNo);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setExternallyUpdatedAt (final @Nullable java.sql.Timestamp ExternallyUpdatedAt)
+	{
+		set_Value (COLUMNNAME_ExternallyUpdatedAt, ExternallyUpdatedAt);
+	}
+
+	@Override
+	public java.sql.Timestamp getExternallyUpdatedAt() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ExternallyUpdatedAt);
 	}
 
 	@Override

@@ -342,6 +342,27 @@ public interface I_S_Issue
 	String COLUMNNAME_ExternalIssueNo = "ExternalIssueNo";
 
 	/**
+	 * Set Externally updated at.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternallyUpdatedAt (@Nullable java.sql.Timestamp ExternallyUpdatedAt);
+
+	/**
+	 * Get Externally updated at.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getExternallyUpdatedAt();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_ExternallyUpdatedAt = new ModelColumn<>(I_S_Issue.class, "ExternallyUpdatedAt", null);
+	String COLUMNNAME_ExternallyUpdatedAt = "ExternallyUpdatedAt";
+
+	/**
 	 * Set hasInternalEffortIssue.
 	 *
 	 * <br>Type: YesNo

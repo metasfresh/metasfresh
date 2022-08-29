@@ -20,50 +20,31 @@
  * #L%
  */
 
-package de.metas.serviceprovider.github.controller;
+package de.metas.serviceprovider.everhour.user;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import lombok.AllArgsConstructor;
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Language;
+import de.metas.issue.tracking.everhour.api.model.User;
+import de.metas.organization.OrgId;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Map;
+
 @Value
-public class SyncGithubIssueRequest
+@Builder
+public class ImportUsersRequest
 {
-	public static SyncGithubIssueRequest from(@NonNull final JsonNode githubPayload)
-	{
-		return SyncGithubIssueRequest.builder()
-				.url(githubPayload.at("/issue/html_url").asText())
-				.action(githubPayload.at("/action").asText())
-				.build();
-	}
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
-	String url;
+	BPartnerId bpartnerId;
 
 	@NonNull
-	String action;
+	Language bpartnerLanguage;
 
-	@Builder
-	private SyncGithubIssueRequest(@NonNull final String url, @NonNull final String action)
-	{
-		this.url = url;
-		this.action = action;
-	}
-
-	public boolean isSyncRequired()
-	{
-		return action.equals(Action.OPENED.getCode());
-	}
-
-	@AllArgsConstructor
-	@Getter
-	public enum Action
-	{
-		OPENED("opened");
-
-		String code;
-	}
+	@NonNull
+	Map<Integer, User> id2User;
 }

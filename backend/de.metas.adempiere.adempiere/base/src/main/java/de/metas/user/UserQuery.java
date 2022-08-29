@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,20 @@
  * #L%
  */
 
-package de.metas.serviceprovider.everhour;
+package de.metas.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public interface EverhourImportConstants
+@Value
+@Builder
+public class UserQuery
 {
-	int PROCESSING_DATE_INTERVAL_SIZE = 7;
+	@NonNull
+	OrgId orgId;
 
-	@AllArgsConstructor
-	@Getter enum EverhourImporterSysConfig
-	{
-		ACCESS_TOKEN("de.metas.issue.tracking.everhour.accessToken"),
-		BPARTNER_USER_IMPORT("de.metas.serviceprovider.everhour.bpartnerUserImport");
-
-		private final String name;
-	}
+	@NonNull
+	String email;
 }
