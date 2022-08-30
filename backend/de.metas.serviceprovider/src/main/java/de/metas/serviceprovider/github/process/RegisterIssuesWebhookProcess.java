@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.process;
+package de.metas.serviceprovider.github.process;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -54,7 +54,11 @@ public class RegisterIssuesWebhookProcess extends JavaProcess implements IProces
 	@Override
 	protected String doIt() throws Exception
 	{
-		githubService.createSyncIssuesWebhook(ExternalProjectReferenceId.ofRepoId(getRecord_ID()));
+		final ExternalProjectReferenceId externalProjectReferenceId = ExternalProjectReferenceId.ofRepoId(getRecord_ID());
+
+		addLog("Invoking RegisterIssuesWebhookProcess for ExternalProjectReferenceId: {}", externalProjectReferenceId);
+
+		githubService.createSyncIssuesWebhook(externalProjectReferenceId);
 
 		return MSG_OK;
 	}

@@ -48,6 +48,7 @@ import static de.metas.serviceprovider.TestConstants.MOCK_NAME;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_SEARCH_KEY;
+import static de.metas.serviceprovider.TestConstants.MOCK_UPDATED_AT;
 import static de.metas.serviceprovider.TestConstants.MOCK_USER_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
 
@@ -111,6 +112,7 @@ public class IssueTestHelper
 				.status(Status.IN_PROGRESS)
 				.externalIssueNo(BigDecimal.valueOf(MOCK_EXTERNAL_ISSUE_NO))
 				.externalIssueURL(MOCK_EXTERNAL_URL)
+				.externallyUpdatedAt(MOCK_UPDATED_AT)
 				.build();
 	}
 }

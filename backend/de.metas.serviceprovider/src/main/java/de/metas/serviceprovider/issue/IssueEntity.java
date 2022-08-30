@@ -24,6 +24,7 @@ package de.metas.serviceprovider.issue;
 
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -136,6 +137,12 @@ public class IssueEntity
 
 	@Nullable
 	private Instant processedTimestamp;
+
+	@Nullable
+	private Instant externallyUpdatedAt;
+
+	@Nullable
+	private ActivityId costCenterActivityId;
 
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{

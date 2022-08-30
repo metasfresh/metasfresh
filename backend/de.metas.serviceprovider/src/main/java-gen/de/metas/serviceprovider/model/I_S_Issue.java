@@ -1,8 +1,9 @@
 package de.metas.serviceprovider.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for S_Issue
  *  @author metasfresh (generated) 
@@ -118,6 +119,28 @@ public interface I_S_Issue
 
 	ModelColumn<I_S_Issue, Object> COLUMN_BudgetedEffort = new ModelColumn<>(I_S_Issue.class, "BudgetedEffort", null);
 	String COLUMNNAME_BudgetedEffort = "BudgetedEffort";
+
+	/**
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
 	 * Set Project.
@@ -317,6 +340,27 @@ public interface I_S_Issue
 
 	ModelColumn<I_S_Issue, Object> COLUMN_ExternalIssueNo = new ModelColumn<>(I_S_Issue.class, "ExternalIssueNo", null);
 	String COLUMNNAME_ExternalIssueNo = "ExternalIssueNo";
+
+	/**
+	 * Set Externally updated at.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternallyUpdatedAt (@Nullable java.sql.Timestamp ExternallyUpdatedAt);
+
+	/**
+	 * Get Externally updated at.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getExternallyUpdatedAt();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_ExternallyUpdatedAt = new ModelColumn<>(I_S_Issue.class, "ExternallyUpdatedAt", null);
+	String COLUMNNAME_ExternallyUpdatedAt = "ExternallyUpdatedAt";
 
 	/**
 	 * Set hasInternalEffortIssue.

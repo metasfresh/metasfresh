@@ -24,7 +24,7 @@ package de.metas.serviceprovider.github;
 
 public interface GithubConstants
 {
-	final String X_HUB_SIGNATURE_256_HEADER = "x-hub-signature-256";
+	String X_HUB_SIGNATURE_256_HEADER = "x-hub-signature-256";
 
-	final String SHA_256_PREFIX = "sha256=";
+	String SHA_256_PREFIX = "sha256=";
 }

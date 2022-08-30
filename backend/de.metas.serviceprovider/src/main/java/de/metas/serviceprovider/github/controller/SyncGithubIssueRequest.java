@@ -35,35 +35,21 @@ public class SyncGithubIssueRequest
 	public static SyncGithubIssueRequest from(@NonNull final JsonNode githubPayload)
 	{
 		return SyncGithubIssueRequest.builder()
-				.owner(githubPayload.at("/repository/owner/login").asText())
-				.repositoryName(githubPayload.at("/repository/name").asText())
-				.issueNumber(githubPayload.at("/issue/number").asText())
+				.url(githubPayload.at("/issue/html_url").asText())
 				.action(githubPayload.at("/action").asText())
 				.build();
 	}
 
 	@NonNull
-	String repositoryName;
-
-	@NonNull
-	String owner;
-
-	@NonNull
-	String issueNumber;
+	String url;
 
 	@NonNull
 	String action;
 
 	@Builder
-	private SyncGithubIssueRequest(
-			@NonNull final String repositoryName,
-			@NonNull final String owner,
-			@NonNull final String issueNumber,
-			@NonNull final String action)
+	private SyncGithubIssueRequest(@NonNull final String url, @NonNull final String action)
 	{
-		this.repositoryName = repositoryName;
-		this.owner = owner;
-		this.issueNumber = issueNumber;
+		this.url = url;
 		this.action = action;
 	}
 

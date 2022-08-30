@@ -23,16 +23,19 @@
 package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.activity.repository.ActivityRepository;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
+import de.metas.serviceprovider.external.label.IssueLabelService;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
@@ -43,18 +46,20 @@ import de.metas.serviceprovider.issue.IssueType;
 import de.metas.serviceprovider.issue.Status;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.milestone.MilestoneRepository;
+import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.serviceprovider.model.I_S_Issue;
+import de.metas.serviceprovider.model.X_S_ExternalProjectReference;
 import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Assertions;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -62,6 +67,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +85,6 @@ class IssueImporterServiceTest
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 
@@ -97,8 +102,8 @@ class IssueImporterServiceTest
 				issueRepository,
 				externalReferenceRepository,
 				trxManager,
-				adReferenceDAO,
-				new IssueLabelRepository(queryBL)
+				new IssueLabelService(new IssueLabelRepository(queryBL)),
+				new ActivityRepository()
 		);
 	}
 
@@ -112,18 +117,39 @@ class IssueImporterServiceTest
 		@BeforeEach
 		void beforeEach()
 		{
+			final I_S_ExternalProjectReference mockExternalProjectReference = InterfaceWrapperHelper.newInstance(I_S_ExternalProjectReference.class);
+			mockExternalProjectReference.setAD_Org_ID(1);
+			mockExternalProjectReference.setExternalReference("ExternalReference");
+			mockExternalProjectReference.setExternalProjectOwner("ExternalProjectOwner");
+			mockExternalProjectReference.setExternalSystem(X_S_ExternalProjectReference.EXTERNALSYSTEM_Github);
+			mockExternalProjectReference.setProjectType(X_S_ExternalProjectReference.PROJECTTYPE_Budget);
+
+			InterfaceWrapperHelper.save(mockExternalProjectReference);
+
 			final I_C_UOM mockUOMRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 			InterfaceWrapperHelper.saveRecord(mockUOMRecord);
 
+			final I_C_Activity mockCostCenterActivityRecord = InterfaceWrapperHelper.newInstance(I_C_Activity.class);
+			mockCostCenterActivityRecord.setAD_Org_ID(1);
+			mockCostCenterActivityRecord.setName("test issue");
+			mockCostCenterActivityRecord.setValue("ExternalReference_11111");
+
+			InterfaceWrapperHelper.save(mockCostCenterActivityRecord);
+
+			final Instant updatedAt = Instant.parse("2022-08-24T13:24:05Z");
+
 			initialImportIssueInfo = ImportIssueInfo.builder()
-					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
 					.status(Status.PENDING)
 					.orgId(OrgId.ofRepoId(1))
 					.externalProjectType(ExternalProjectType.BUDGET)
 					.effortUomId(UomId.ofRepoId(mockUOMRecord.getC_UOM_ID()))
+					.repositoryName("ExternalReference")
 					.name("test issue")
+					.externalIssueNo(11111)
 					.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, "1"))
 					.issueLabels(ImmutableList.of())
+					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(mockExternalProjectReference.getS_ExternalProjectReference_ID()))
+					.updatedAt(updatedAt)
 					.build();
 
 			expectedIssue = IssueEntity.builder()
@@ -138,12 +164,14 @@ class IssueImporterServiceTest
 					.aggregatedEffort(Effort.ZERO)
 					.invoicableChildEffort(Quantity.zero(mockUOMRecord))
 					.name("test issue")
-					.searchKey("test issue")
+					.searchKey("11111 test issue")
 					.type(IssueType.EXTERNAL)
 					.isEffortIssue(false)
 					.processed(false)
-					.externalIssueNo(new BigDecimal("0"))
-					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
+					.externalIssueNo(new BigDecimal("11111"))
+					.costCenterActivityId(ActivityId.ofRepoId(mockCostCenterActivityRecord.getC_Activity_ID()))
+					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(mockExternalProjectReference.getS_ExternalProjectReference_ID()))
+					.externallyUpdatedAt(updatedAt)
 					.build();
 		}
 
