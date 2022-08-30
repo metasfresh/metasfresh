@@ -241,8 +241,7 @@ class FiltersItem extends PureComponent {
 
       // update values for active filters, as we then bubble them up to use
       // this data in PATCH request updating them on the server
-      const updateActive =
-        active || (!active && parameter.defaultValue) ? true : false;
+      const updateActive = !!(active || (!active && parameter.defaultValue));
 
       if (updateActive) {
         updatedParameters[parameterName] = {
@@ -636,46 +635,30 @@ class FiltersItem extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {func} applyFilters
- * @prop {func} [clearFilters]
- * @prop {*} [filterWrapper]
- * @prop {string} [panelCaption]
- * @prop {array} [active]
- * @prop {*} data
- * @prop {*} notValidFields
- * @prop {*} isActive
- * @prop {*} windowType
- * @prop {*} onShow
- * @prop {*} onHide
- * @prop {*} viewId
- * @prop {*} outsideClick
- * @prop {*} closeFilterMenu
- * @prop {*} captionValue
- * @prop {*} openedFilter
- * @prop {*} returnBackToDropdown
- * @prop {func} openFilterBox
- * @prop {func} closeFilterBox
- */
 FiltersItem.propTypes = {
-  applyFilters: PropTypes.func.isRequired,
-  clearFilters: PropTypes.func,
-  filtersWrapper: PropTypes.any,
+  filtersWrapper: PropTypes.object,
   panelCaption: PropTypes.string,
   active: PropTypes.array,
-  data: PropTypes.any,
+  data: PropTypes.object,
   notValidFields: PropTypes.any,
-  isActive: PropTypes.any,
-  windowType: PropTypes.any,
-  onShow: PropTypes.any,
-  onHide: PropTypes.any,
-  viewId: PropTypes.any,
-  outsideClick: PropTypes.any,
-  closeFilterMenu: PropTypes.any,
-  captionValue: PropTypes.any,
-  openedFilter: PropTypes.any,
-  returnBackToDropdown: PropTypes.any,
+  isActive: PropTypes.bool,
+  windowType: PropTypes.string,
+  viewId: PropTypes.string,
+  captionValue: PropTypes.string,
+  openedFilter: PropTypes.bool,
+
+  //
+  // Callbacks and other functions:
+  applyFilters: PropTypes.func.isRequired,
+  clearFilters: PropTypes.func,
+  onShow: PropTypes.func,
+  onHide: PropTypes.func,
+  closeFilterMenu: PropTypes.func,
+  outsideClick: PropTypes.func,
+  returnBackToDropdown: PropTypes.func,
+
+  //
+  // mapDispatchToProps:
   openFilterBox: PropTypes.func.isRequired,
   closeFilterBox: PropTypes.func.isRequired,
 };
