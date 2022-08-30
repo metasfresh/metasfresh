@@ -134,15 +134,6 @@ export class RawLookup extends Component {
     }
   };
 
-  clearState = () => {
-    this.setState({
-      list: [],
-      isInputEmpty: true,
-      selected: null,
-      loading: false,
-    });
-  };
-
   handleSelect = (select, mouse) => {
     const {
       onChange,
