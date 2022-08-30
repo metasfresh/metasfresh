@@ -95,12 +95,12 @@ public class I_Invoice_Candidate_StepDef
 		this.orgTable = orgTable;
 	}
 
-	@And("^after not more than (.*)s I_Invoice_Candidate is found: searching by product value$")
-	public void validate_I_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	@And("I_Invoice_Candidate is found: searching by product value")
+	public void validate_I_Invoice_Candidate(@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			validateCreatedIInvoiceCandidate(timeoutSec, row);
+			validateCreatedIInvoiceCandidate(row);
 		}
 	}
 
@@ -110,20 +110,19 @@ public class I_Invoice_Candidate_StepDef
 		DB.executeUpdateEx("DELETE FROM I_Invoice_Candidate cascade", ITrx.TRXNAME_None);
 	}
 
-	private void validateCreatedIInvoiceCandidate(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
+	private void validateCreatedIInvoiceCandidate(@NonNull final Map<String, String> row) throws InterruptedException
 	{
 		final String isImported = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_I_IsImported);
 		final String productValue = DataTableUtil.extractStringForColumnName(row, I_I_Invoice_Candidate.COLUMNNAME_M_Product_Value);
 
-		final Supplier<Optional<I_I_Invoice_Candidate>> getImportInvoiceCandidateRecord = () -> queryBL.createQueryBuilder(I_I_Invoice_Candidate.class)
+		final I_I_Invoice_Candidate invoiceCandidate = queryBL.createQueryBuilder(I_I_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_I_Invoice_Candidate.COLUMNNAME_I_IsImported, isImported)
 				.addEqualsFilter(I_I_Invoice_Candidate.COLUMNNAME_M_Product_Value, productValue)
 				.orderByDescending(I_I_Invoice_Candidate.COLUMNNAME_Created)
 				.create()
-				.firstOptional(I_I_Invoice_Candidate.class);
-
-		final I_I_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, getImportInvoiceCandidateRecord);
+				.firstOptional(I_I_Invoice_Candidate.class)
+				.orElse(null);
 
 		assertThat(invoiceCandidate).isNotNull();
 
