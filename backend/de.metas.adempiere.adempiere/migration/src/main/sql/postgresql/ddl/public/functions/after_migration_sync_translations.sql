@@ -16,6 +16,3 @@ BEGIN
 END;
 $$
 ;
-
-ALTER FUNCTION after_migration_sync_translations() OWNER TO metasfresh
-;
