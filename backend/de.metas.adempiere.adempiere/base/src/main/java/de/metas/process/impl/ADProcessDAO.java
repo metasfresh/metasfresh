@@ -66,7 +66,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 public class ADProcessDAO implements IADProcessDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
 
