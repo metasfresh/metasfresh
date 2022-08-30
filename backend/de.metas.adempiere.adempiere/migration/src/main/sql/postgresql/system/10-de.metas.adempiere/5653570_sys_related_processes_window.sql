@@ -22,7 +22,10 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541608
 -- Tab: Table Process(541608,D) -> Table Process
 -- Table: AD_Table_Process
 -- 2022-08-29T10:27:57.337Z
-INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryIfNoFilters,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,54444,0,546608,53304,541608,'Y',TO_TIMESTAMP('2022-08-29 13:27:57','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','AD_Table_Process','Y','N','Y','Y','N','N','N','Y','Y','Y','N','N','N','Y','Y','N','N','N',0,'Table Process','N',10,0,TO_TIMESTAMP('2022-08-29 13:27:57','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,
+                    IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
+VALUES (0,54444,0,546608,53304,541608,'Y',TO_TIMESTAMP('2022-08-29 13:27:57','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','A','AD_Table_Process','Y','N','Y','Y','N','N','N','Y',
+        'Y','N','N','N','Y','Y','N','N','N',0,'Table Process','N',10,0,TO_TIMESTAMP('2022-08-29 13:27:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-08-29T10:27:57.338Z
