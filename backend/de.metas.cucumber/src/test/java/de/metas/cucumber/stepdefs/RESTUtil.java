@@ -22,11 +22,11 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
-
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
@@ -150,7 +150,6 @@ public class RESTUtil
 
 		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		response.getEntity().writeTo(stream);
-		final String content;
 
 		final String endpointPath = apiRequest.getEndpointPath();
 
@@ -158,24 +157,31 @@ public class RESTUtil
 		{
 			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
-			final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
+			try
+			{
+				final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
 
-			content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
+				final String content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
 
-			apiResponseBuilder.requestId(jsonApiResponse.getRequestId());
+				apiResponseBuilder
+						.requestId(jsonApiResponse.getRequestId())
+						.content(content);
 
-			logDetails(jsonApiResponse);
+				logDetails(jsonApiResponse.getRequestId());
+			}
+			catch (final JsonParseException jsonParseException)
+			{
+				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+			}
 		}
 		else
 		{
-			content = stream.toString(StandardCharsets.UTF_8.name());
+			apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 		}
 
 		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
-		return apiResponseBuilder
-				.content(content)
-				.build();
+		return apiResponseBuilder.build();
 	}
 
 	private void setHeaders(
@@ -183,12 +189,20 @@ public class RESTUtil
 			@NonNull final String userAuthToken,
 			@Nullable final Map<String, String> additionalHeaders)
 	{
-		request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
 
-		if (additionalHeaders != null)
+		if (additionalHeaders == null)
 		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		}
+		else
+		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE,
+							  CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON_VALUE));
+			request.addHeader(HttpHeaders.ACCEPT,
+							  CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.ACCEPT), MediaType.APPLICATION_JSON_VALUE));
+
 			additionalHeaders.forEach(request::addHeader);
 		}
 	}
@@ -282,10 +296,8 @@ public class RESTUtil
 		return request;
 	}
 
-	private void logDetails(@NonNull final JsonApiResponse apiResponse)
+	private void logDetails(@NonNull final JsonMetasfreshId id)
 	{
-		final JsonMetasfreshId id = apiResponse.getRequestId();
-
 		final ApiRequestAuditId apiRequestAuditId = ApiRequestAuditId.ofRepoId(id.getValue());
 
 		final I_API_Request_Audit apiRequestAuditRecord = InterfaceWrapperHelper.load(apiRequestAuditId, I_API_Request_Audit.class);
@@ -310,7 +322,7 @@ public class RESTUtil
 		apiReqLogs.forEach(log -> {
 			if (EmptyUtil.isNotBlank(log.getLogmessage()))
 			{
-				logger.info("*** API_Request_Audit_ID : {} - API_Request_Audit_Log_ID -> {}\n Log message -> {}", 
+				logger.info("*** API_Request_Audit_ID : {} - API_Request_Audit_Log_ID -> {}\n Log message -> {}",
 							apiRequestAuditId.getRepoId(), log.getAPI_Request_Audit_Log_ID(), log.getLogmessage());
 			}
 		});

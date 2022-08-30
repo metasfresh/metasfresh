@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.context;
+package de.metas.cucumber.stepdefs.invoicecandidate;
 
-import de.metas.cucumber.stepdefs.APIResponse;
-import lombok.Data;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
-import java.util.Map;
-
-@Data
-public class TestContext
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class C_Invoice_Candidate_StepDefData extends StepDefData<I_C_Invoice_Candidate>
 {
-	private APIResponse apiResponse;
-	private String requestPayload;
-	private Map<String,String> httpHeaders;
-	private String endpointPath;
+	public C_Invoice_Candidate_StepDefData()
+	{
+		super(I_C_Invoice_Candidate.class);
+	}
 }

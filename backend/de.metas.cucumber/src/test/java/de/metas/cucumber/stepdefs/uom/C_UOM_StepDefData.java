@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.context;
+package de.metas.cucumber.stepdefs.uom;
 
-import de.metas.cucumber.stepdefs.APIResponse;
-import lombok.Data;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_C_UOM;
 
-import java.util.Map;
-
-@Data
-public class TestContext
+public class C_UOM_StepDefData extends StepDefData<I_C_UOM>
 {
-	private APIResponse apiResponse;
-	private String requestPayload;
-	private Map<String,String> httpHeaders;
-	private String endpointPath;
+	public C_UOM_StepDefData()
+	{
+		super(I_C_UOM.class);
+	}
 }

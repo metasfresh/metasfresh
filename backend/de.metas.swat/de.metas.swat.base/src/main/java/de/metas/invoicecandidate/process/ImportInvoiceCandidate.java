@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.context;
+package de.metas.invoicecandidate.process;
 
-import de.metas.cucumber.stepdefs.APIResponse;
-import lombok.Data;
+import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
+import org.compiere.process.AbstractImportJavaProcess;
 
-import java.util.Map;
-
-@Data
-public class TestContext
+public class ImportInvoiceCandidate extends AbstractImportJavaProcess<I_I_Invoice_Candidate>
 {
-	private APIResponse apiResponse;
-	private String requestPayload;
-	private Map<String,String> httpHeaders;
-	private String endpointPath;
+	public ImportInvoiceCandidate()
+	{
+		super(I_I_Invoice_Candidate.class);
+	}
 }
