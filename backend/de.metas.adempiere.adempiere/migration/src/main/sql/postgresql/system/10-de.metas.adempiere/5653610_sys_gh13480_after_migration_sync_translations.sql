@@ -6,7 +6,7 @@ $$
 DECLARE
     count_updated NUMERIC;
 BEGIN
-    PERFORM update_TRL_Tables_On_AD_Element_TRL_Update(NULL, NULL);
+    PERFORM update_TRL_Tables_On_AD_Element_TRL_Update();
 
     RAISE NOTICE 'Synchronized translations';
 
