@@ -531,3 +531,14 @@ UPDATE AD_Element_Trl SET Name='Current Product Costs', PrintName='Current Produ
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543226,'nl_NL') 
 ;
 
+
+
+-- Update the AD_Window_TRL entries that are not based on AD_Element_TRL entries.
+
+
+UPDATE AD_Window_TRL wt SET name = w.name
+FROM AD_Window w
+WHERE wt.ad_window_id = w.ad_window_id
+and not exists (select 1 from ad_element_trl et
+    where et.ad_element_id=w.ad_element_id
+    and et.ad_language = wt.ad_language);
