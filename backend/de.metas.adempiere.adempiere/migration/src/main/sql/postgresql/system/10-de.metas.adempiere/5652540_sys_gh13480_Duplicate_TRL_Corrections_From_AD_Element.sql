@@ -519,3 +519,15 @@ UPDATE AD_Element_Trl SET Name='Kontenrahmen', PrintName='Kontenrahmen',Updated=
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574111,'nl_NL') 
 ;
 
+
+
+
+-- Element: M_Cost_ID
+-- 2022-08-30T08:41:32.094Z
+UPDATE AD_Element_Trl SET Name='Current Product Costs', PrintName='Current Product Costs',Updated=TO_TIMESTAMP('2022-08-30 11:41:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543226 AND AD_Language='nl_NL'
+;
+
+-- 2022-08-30T08:41:32.097Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543226,'nl_NL') 
+;
+
