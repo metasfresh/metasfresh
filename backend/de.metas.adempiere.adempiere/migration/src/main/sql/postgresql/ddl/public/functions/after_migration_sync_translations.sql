@@ -19,5 +19,3 @@ $$
 
 ALTER FUNCTION after_migration_sync_translations() OWNER TO metasfresh
 ;
-
-select count(1), ad_client_id from c_doctype group by ad_client_id
