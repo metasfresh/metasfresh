@@ -1,5 +1,6 @@
 package de.metas.costing.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
@@ -11,6 +12,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -112,13 +114,13 @@ public class CostDetailRepository implements ICostDetailRepository
 		return cd.withId(id);
 	}
 
-	private static void updateRecordFromDocumentRef(
-			final I_M_CostDetail record,
-			final CostingDocumentRef documentRef)
+	@VisibleForTesting
+	static void updateRecordFromDocumentRef(
+			@NonNull final I_M_CostDetail record,
+			@NonNull final CostingDocumentRef documentRef)
 	{
 		final String tableName = documentRef.getTableName();
-		final int recordId = documentRef.getRecordId();
-		// final Boolean soTrx = documentRef.getOutboundTrx();
+		final int recordId = documentRef.getId().getRepoId();
 		if (CostingDocumentRef.TABLE_NAME_M_MatchInv.equals(tableName))
 		{
 			record.setM_MatchInv_ID(recordId);
@@ -130,7 +132,6 @@ public class CostDetailRepository implements ICostDetailRepository
 		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(tableName))
 		{
 			record.setM_InOutLine_ID(recordId);
-			// record.setIsSOTrx(soTrx);
 		}
 		else if (CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(tableName))
 		{
@@ -139,7 +140,6 @@ public class CostDetailRepository implements ICostDetailRepository
 		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(tableName))
 		{
 			record.setM_MovementLine_ID(recordId);
-			// record.setIsSOTrx(soTrx);
 		}
 		else if (CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(tableName))
 		{
@@ -148,6 +148,12 @@ public class CostDetailRepository implements ICostDetailRepository
 		else if (CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(tableName))
 		{
 			record.setPP_Cost_Collector_ID(recordId);
+		}
+		else if (CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine.equals(tableName))
+		{
+			final CostRevaluationLineId costRevaluationLineId = documentRef.getId(CostRevaluationLineId.class);
+			record.setM_CostRevaluation_ID(costRevaluationLineId.getCostRevaluationId().getRepoId());
+			record.setM_CostRevaluationLine_ID(costRevaluationLineId.getRepoId());
 		}
 		else
 		{
@@ -198,7 +204,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CostingDocumentRef documentRef = query.getDocumentRef();
 		if (documentRef != null)
 		{
-			queryBuilder.addEqualsFilter(documentRef.getCostDetailColumnName(), documentRef.getRecordId());
+			queryBuilder.addEqualsFilter(documentRef.getCostDetailColumnName(), documentRef.getId());
 			someFiltersApplied = true;
 
 			// IsSOTrx
@@ -312,7 +318,8 @@ public class CostDetailRepository implements ICostDetailRepository
 				.build();
 	}
 
-	private static CostingDocumentRef extractDocumentRef(final I_M_CostDetail record)
+	@VisibleForTesting
+	static CostingDocumentRef extractDocumentRef(final I_M_CostDetail record)
 	{
 		if (record.getM_MatchPO_ID() > 0)
 		{
@@ -356,12 +363,15 @@ public class CostDetailRepository implements ICostDetailRepository
 		{
 			return CostingDocumentRef.ofCostCollectorId(record.getPP_Cost_Collector_ID());
 		}
+		else if (record.getM_CostRevaluationLine_ID() > 0)
+		{
+			return CostingDocumentRef.ofCostRevaluationLineId(CostRevaluationLineId.ofRepoId(record.getM_CostRevaluation_ID(), record.getM_CostRevaluationLine_ID()));
+		}
 		else
 		{
 			throw new AdempiereException("Cannot determine " + CostingDocumentRef.class + " for " + record);
 		}
 	}
-
 
 	@Override
 	public boolean hasCostDetailsByProductId(@NonNull final ProductId productId)

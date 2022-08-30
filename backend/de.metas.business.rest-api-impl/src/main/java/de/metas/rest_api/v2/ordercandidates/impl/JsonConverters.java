@@ -16,6 +16,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -174,8 +175,9 @@ public class JsonConverters
 			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
 		}
 
-		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+		final DocBaseType docBaseType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocBaseType)
+				.map(DocBaseType::ofCode)
 				.orElse(null);
 
 		final String subType = Optional.ofNullable(request.getInvoiceDocType())

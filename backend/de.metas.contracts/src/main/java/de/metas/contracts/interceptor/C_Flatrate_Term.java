@@ -42,6 +42,7 @@ import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.UpdateContractOrderStatus;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -153,7 +154,7 @@ public class C_Flatrate_Term
 
 			final Optional<org.compiere.model.I_C_DocType> existingDocType = docTypeDAO
 					.retrieveDocType(DocTypeQuery.builder()
-							.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+							.docBaseType(DocBaseType.CustomerContract)
 							.docSubType(docSubType)
 							.adClientId(org.getAD_Client_ID())
 							.adOrgId(org.getAD_Org_ID())
@@ -172,7 +173,7 @@ public class C_Flatrate_Term
 					.entityType(Contracts_Constants.ENTITY_TYPE)
 					.name(name)
 					.printName(name)
-					.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+					.docBaseType(DocBaseType.CustomerContract)
 					.docSubType(docSubType)
 					.isSOTrx(true)
 					.newDocNoSequenceStartNo(10000)
@@ -272,8 +273,6 @@ public class C_Flatrate_Term
 
 	/**
 	 * If the term that is deleted was the last term, remove the "processed"-flag from the term's data record.
-	 *
-	 * @param term
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void updateFlatrateData(final I_C_Flatrate_Term term)

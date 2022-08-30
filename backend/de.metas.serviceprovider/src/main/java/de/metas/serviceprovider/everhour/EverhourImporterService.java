@@ -121,7 +121,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					.map(interval -> buildGetTeamTimeRecordsRequest(request.getAuthToken(), interval))
 					.map(everhourClient::getTeamTimeRecords)
 					.flatMap(List::stream)
-					.filter(timeBooking -> TimeBookingTask.TimeBookingTaskId.of(timeBooking.getTask().getId()).isGithubTask())
+					.filter(timeBooking -> timeBooking.getTask() != null && TimeBookingTask.TimeBookingTaskId.of(timeBooking.getTask().getId()).isGithubTask())
 					.forEach(timeBooking -> importTimeBooking(timeBooking, request.getOrgId()));
 		}
 		catch (final Exception e)

@@ -22,6 +22,7 @@
 
 package de.metas.common.rest_api.v2.project.budget;
 
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
@@ -119,6 +120,11 @@ public class JsonBudgetProjectUpsertRequest
 	@ApiModelProperty(hidden = true)
 	private boolean projectReferenceExtSet;
 
+	JsonExternalId externalId;
+
+	@ApiModelProperty(hidden = true)
+	boolean externalIdSet;
+	
 	@ApiModelProperty(position = 140, value = "Corresponding to `C_Project.C_Project_Parent_ID`")
 	private String projectParentIdentifier;
 
@@ -167,6 +173,12 @@ public class JsonBudgetProjectUpsertRequest
 		this.currencyCodeSet = true;
 	}
 
+	public void setSalesRepId(final JsonMetasfreshId salesRepId)
+	{
+		this.salesRepId = salesRepId;
+		this.salesRepIdSet = true;
+	}
+	
 	public void setDescription(final String description)
 	{
 		this.description = description;
@@ -197,6 +209,12 @@ public class JsonBudgetProjectUpsertRequest
 		this.projectReferenceExtSet = true;
 	}
 
+	public void setExternalId(final JsonExternalId externalId)
+	{
+		this.externalId = externalId;
+		this.externalIdSet = true;
+	}
+	
 	public void setProjectParentIdentifier(final String projectParentIdentifier)
 	{
 		this.projectParentIdentifier = projectParentIdentifier;

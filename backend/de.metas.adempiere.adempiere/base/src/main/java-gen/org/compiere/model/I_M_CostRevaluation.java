@@ -306,6 +306,49 @@ public interface I_M_CostRevaluation
 	String COLUMNNAME_M_CostRevaluation_ID = "M_CostRevaluation_ID";
 
 	/**
+	 * Set Posting status.
+	 * Posting status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPosted (boolean Posted);
+
+	/**
+	 * Get Posting status.
+	 * Posting status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPosted();
+
+	ModelColumn<I_M_CostRevaluation, Object> COLUMN_Posted = new ModelColumn<>(I_M_CostRevaluation.class, "Posted", null);
+	String COLUMNNAME_Posted = "Posted";
+
+	/**
+	 * Set Posting Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPostingError_Issue_ID (int PostingError_Issue_ID);
+
+	/**
+	 * Get Posting Error.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPostingError_Issue_ID();
+
+	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo

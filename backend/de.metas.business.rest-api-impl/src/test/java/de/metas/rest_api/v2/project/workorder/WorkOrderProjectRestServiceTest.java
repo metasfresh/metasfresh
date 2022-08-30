@@ -580,11 +580,13 @@ class WorkOrderProjectRestServiceTest
 	void updateWOProject()
 	{
 		final String projectName = "projectName";
+		final String projectExternalId = "444443";
 		final String externalReference = "444444";
 
 		final I_C_Project project = createProjectRecord()
 				.name(projectName)
 				.projectTypeId(ProjectTypeId.ofRepoId(projectType.getC_ProjectType_ID()))
+				.externalId(projectExternalId)
 				.externalReference(externalReference)
 				.projectCategory(PROJECTCATEGORY_WorkOrderJob)
 				.active(true)
@@ -622,7 +624,7 @@ class WorkOrderProjectRestServiceTest
 				.build();
 
 		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
-		projectRequest.setIdentifier("ext-" + project.getC_Project_Reference_Ext());
+		projectRequest.setIdentifier("ext-" + project.getExternalId());
 		projectRequest.setProjectReferenceExt(project.getC_Project_Reference_Ext());
 		projectRequest.setName("newProjectName");
 		projectRequest.setIsActive(false);
@@ -663,7 +665,7 @@ class WorkOrderProjectRestServiceTest
 		final JsonWorkOrderProjectUpsertResponse responseBody = workOrderProjectRestService.upsertWOProject(projectRequest);
 		assertThat(responseBody).isNotNull();
 		assertThat(responseBody.getMetasfreshId()).isEqualTo(JsonMetasfreshId.of(project.getC_Project_ID()));
-		assertThat(responseBody.getIdentifier()).isEqualTo("ext-" + externalReference);
+		assertThat(responseBody.getIdentifier()).isEqualTo("ext-" + projectExternalId);
 		assertThat(responseBody.getSyncOutcome()).isEqualTo(JsonResponseUpsertItem.SyncOutcome.UPDATED);
 
 		//validate project
@@ -713,12 +715,14 @@ class WorkOrderProjectRestServiceTest
 	void updateWOProject_doNothing()
 	{
 		final String projectName = "projectName";
+		final String projectExternalId = "88887";
 		final String externalReference = "88888";
 
 		final I_C_Project project = createProjectRecord()
 				.name(projectName)
 				.projectTypeId(ProjectTypeId.ofRepoId(projectType.getC_ProjectType_ID()))
 				.externalReference(externalReference)
+				.externalId(projectExternalId)
 				.active(true)
 				.projectCategory(PROJECTCATEGORY_WorkOrderJob)
 				.build();
@@ -755,7 +759,7 @@ class WorkOrderProjectRestServiceTest
 				.build();
 
 		final JsonWorkOrderProjectUpsertRequest projectRequest = new JsonWorkOrderProjectUpsertRequest();
-		projectRequest.setIdentifier("ext-" + project.getC_Project_Reference_Ext());
+		projectRequest.setIdentifier("ext-" + project.getExternalId());
 		projectRequest.setProjectReferenceExt(project.getC_Project_Reference_Ext());
 		projectRequest.setName("newProjectName");
 		projectRequest.setIsActive(false);
@@ -780,7 +784,7 @@ class WorkOrderProjectRestServiceTest
 		final JsonWorkOrderProjectUpsertResponse responseBody = workOrderProjectRestService.upsertWOProject(projectRequest);
 		assertThat(responseBody).isNotNull();
 		assertThat(responseBody.getMetasfreshId()).isEqualTo(JsonMetasfreshId.of(project.getC_Project_ID()));
-		assertThat(responseBody.getIdentifier()).isEqualTo("ext-" + externalReference);
+		assertThat(responseBody.getIdentifier()).isEqualTo("ext-" + projectExternalId);
 		assertThat(responseBody.getSyncOutcome()).isEqualTo(JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE);
 		assertThat(responseBody.getSteps()).isNull();
 		assertThat(responseBody.getObjectsUnderTest()).isNull();
@@ -806,6 +810,7 @@ class WorkOrderProjectRestServiceTest
 			@NonNull final String name,
 			@NonNull final ProjectTypeId projectTypeId,
 			@Nullable final String externalReference,
+			@Nullable final String externalId,
 			@Nullable final Boolean active,
 			@Nullable final String projectCategory)
 	{
@@ -823,6 +828,8 @@ class WorkOrderProjectRestServiceTest
 		final Boolean isActive = CoalesceUtil.coalesceNotNull(active, Boolean.TRUE);
 		project.setIsActive(isActive);
 
+		project.setExternalId(externalId);
+		
 		InterfaceWrapperHelper.save(project);
 
 		return project;

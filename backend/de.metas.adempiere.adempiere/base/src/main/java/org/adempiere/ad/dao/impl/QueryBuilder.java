@@ -22,6 +22,7 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -99,6 +100,24 @@ import java.util.Properties;
 		this.contextClientQueryFilter = from.contextClientQueryFilter != null ? from.contextClientQueryFilter.copy() : null;
 
 		this.options = from.options == null ? null : new HashMap<>(from.options);
+
+		this.contextClientQueryFilter = (ContextClientQueryFilter<T>)this.filters.getFilters()
+				.stream()
+				.filter(ContextClientQueryFilter.class::isInstance)
+				.map(ContextClientQueryFilter.class::cast)
+				.findAny()
+				.orElse(null);
+	}
+
+	/**
+	 * @implNote toString() which includes the generated SQL, convenient for debugging and hovering on variables
+	 */
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(create().toString()) // shows the generated SQL
+				.toString();
 	}
 
 	@Override
@@ -332,48 +351,6 @@ import java.util.Properties;
 		}
 		return ImmutableMap.copyOf(options);
 	}
-
-	// @Override
-	// public <ST> IQueryBuilder<T> addInSubQueryFilter(final String columnName, final String subQueryColumnName, final IQuery<ST> subQuery)
-	// {
-	// 	filters.addInSubQueryFilter(columnName, subQueryColumnName, subQuery);
-	// 	return this;
-	// }
-	//
-	// @Override
-	// public <ST> IQueryBuilder<T> addNotInSubQueryFilter(final String columnName, final String subQueryColumnName, final IQuery<ST> subQuery)
-	// {
-	// 	filters.addNotInSubQueryFilter(columnName, subQueryColumnName, subQuery);
-	// 	return this;
-	// }
-	//
-	// @Override
-	// public <ST> IQueryBuilder<T> addInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery)
-	// {
-	// 	final String columnName = column.getColumnName();
-	// 	final String subQueryColumnName = subQueryColumn.getColumnName();
-	// 	return addInSubQueryFilter(columnName, subQueryColumnName, subQuery);
-	// }
-	//
-	// @Override
-	// public <ST> IQueryBuilder<T> addNotInSubQueryFilter(final ModelColumn<T, ?> column, final ModelColumn<ST, ?> subQueryColumn, final IQuery<ST> subQuery)
-	// {
-	// 	filters.addNotInSubQueryFilter(column, subQueryColumn, subQuery);
-	// 	return this;
-	// }
-	//
-	// @Override
-	// public IInSubQueryFilterClause<T, IQueryBuilder<T>> addInSubQueryFilter()
-	// {
-	// 	return new InSubQueryFilterClause<>(getModelTableName(), this, this::filter);
-	// }
-	//
-	// @Override
-	// public <ST> IQueryBuilder<T> addInSubQueryFilter(final String columnName, final IQueryFilterModifier modifier, final String subQueryColumnName, final IQuery<ST> subQuery)
-	// {
-	// 	filters.addInSubQueryFilter(columnName, modifier, subQueryColumnName, subQuery);
-	// 	return this;
-	// }
 
 	@Override
 	@Deprecated

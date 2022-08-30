@@ -24,6 +24,7 @@ package de.metas.common.rest_api.v2.project.budget;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -51,6 +52,9 @@ public class JsonBudgetProjectResponse
 	@NonNull
 	String orgCode;
 
+	@ApiModelProperty("This translates to `C_Project.External`.")
+	JsonExternalId externalId;
+	
 	@ApiModelProperty(required = true, value = "This translates to `C_Project.C_Currency_ID.Iso_Code`.")
 	@NonNull
 	String currencyCode;
@@ -124,6 +128,7 @@ public class JsonBudgetProjectResponse
 	public JsonBudgetProjectResponse(
 			@NonNull final JsonMetasfreshId projectId,
 			@NonNull final String orgCode,
+			@Nullable final JsonExternalId externalId, 
 			@NonNull final String currencyCode,
 			@NonNull final String name,
 			@NonNull final String value,
@@ -142,6 +147,7 @@ public class JsonBudgetProjectResponse
 	{
 		this.projectId = projectId;
 		this.orgCode = orgCode;
+		this.externalId = externalId;
 		this.currencyCode = currencyCode;
 		this.name = name;
 		this.value = value;

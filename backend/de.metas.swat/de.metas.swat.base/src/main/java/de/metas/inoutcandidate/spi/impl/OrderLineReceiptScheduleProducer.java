@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.spi.impl;
 
 import com.google.common.base.MoreObjects;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -37,7 +38,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
@@ -139,10 +139,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// BPartner & Location
 		receiptSchedule.setC_BPartner_ID(line.getC_BPartner_ID());
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
-		
+
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
-		
+
 		receiptSchedule.setC_Project_ID(line.getC_Project_ID()); // C_OrderLine.C_Project_ID is set from order via model interceptor
 
 		//
@@ -392,9 +392,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	 * <li>order's C_DocType.C_DocType_Shipment_ID if set
 	 * <li>standard Material Receipt document type
 	 * </ul>
-	 *
-	 * @param orderLine
-	 * @return
 	 */
 	private int retrieveReceiptDocTypeId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
@@ -425,7 +422,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		//
 		// Fallback: get standard Material Receipt document type
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(orderLine.getAD_Client_ID())
 				.adOrgId(orderLine.getAD_Org_ID())

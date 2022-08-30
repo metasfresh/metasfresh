@@ -10,6 +10,7 @@ import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
@@ -273,7 +274,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		final Fact fact = new Fact(this, as, postingType);
 
 		// GLJ
-		if (getDocumentType().equals(DOCTYPE_GLJournal))
+		if (DocBaseType.GLJournal.equals(getDocBaseType()))
 		{
 			// account DR CR
 			for (final DocLine_GLJournal line : getDocLines())
@@ -305,7 +306,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		{
 			throw newPostingException()
 					.setAcctSchema(as)
-					.setDetailMessage("DocumentType unknown: " + getDocumentType());
+					.setDetailMessage("DocumentType unknown: " + getDocBaseType());
 		}
 		//
 		facts.add(fact);

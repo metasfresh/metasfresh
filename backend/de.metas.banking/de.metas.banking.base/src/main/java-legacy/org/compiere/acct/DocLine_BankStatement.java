@@ -8,6 +8,7 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.document.DocBaseType;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -83,7 +84,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		//
 		// Period
 		final MPeriod period = MPeriod.get(Env.getCtx(), line.getDateAcct(), line.getAD_Org_ID());
-		if (period != null && period.isOpen(Doc.DOCTYPE_BankStatement, line.getDateAcct(), line.getAD_Org_ID()))
+		if (period != null && period.isOpen(DocBaseType.BankStatement, line.getDateAcct(), line.getAD_Org_ID()))
 		{
 			setC_Period_ID(period.getC_Period_ID());
 		}

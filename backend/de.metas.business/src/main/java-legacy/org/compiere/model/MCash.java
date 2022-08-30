@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -408,7 +409,7 @@ public class MCash extends X_C_Cash implements IDocument
 		}
 
 		// Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getDateAcct(), MDocType.DOCBASETYPE_CashJournal, getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.CashJournal, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -679,7 +680,7 @@ public class MCash extends X_C_Cash implements IDocument
 		}
 
 		// Can we delete posting
-		if (!MPeriod.isOpen(getCtx(), this.getDateAcct(), X_C_DocType.DOCBASETYPE_CashJournal, getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), this.getDateAcct(), DocBaseType.CashJournal, getAD_Org_ID()))
 		{
 			throw new IllegalStateException("@PeriodClosed@");
 		}

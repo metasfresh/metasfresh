@@ -63,6 +63,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -174,8 +175,6 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -1548,7 +1547,7 @@ public class FlatrateBL implements IFlatrateBL
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.adClientId(term.getAD_Client_ID())
 				.adOrgId(term.getAD_Org_ID())
-				.docBaseType(de.metas.contracts.flatrate.interfaces.I_C_DocType.DocBaseType_CustomerContract)
+				.docBaseType(DocBaseType.CustomerContract)
 				.docSubType(subType)
 				.build();
 
@@ -1680,6 +1679,7 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, bPartner);
 		newTerm.setC_Flatrate_Conditions(conditions);
 		newTerm.setC_UOM_ID(conditions.getC_UOM_ID());
+		newTerm.setM_PricingSystem_ID(conditions.getM_PricingSystem_ID());
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
@@ -2181,4 +2181,5 @@ public class FlatrateBL implements IFlatrateBL
 				.create()
 				.anyMatch();
 	}
+
 }

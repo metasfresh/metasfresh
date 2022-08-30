@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Flatrate_Term
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1718911885L;
+	private static final long serialVersionUID = 1338107896L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (final Properties ctx, final int C_Flatrate_Term_ID, @Nullable final String trxName)
@@ -427,21 +427,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public int getC_OrderLine_TermChange_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_TermChange_ID);
-	}
-
-	@Override
-	public void setC_RfQResponseLine_ID (final int C_RfQResponseLine_ID)
-	{
-		if (C_RfQResponseLine_ID < 1) 
-			set_Value (COLUMNNAME_C_RfQResponseLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_RfQResponseLine_ID, C_RfQResponseLine_ID);
-	}
-
-	@Override
-	public int getC_RfQResponseLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_RfQResponseLine_ID);
 	}
 
 	@Override
@@ -984,21 +969,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public void setPMM_Product_ID (final int PMM_Product_ID)
-	{
-		if (PMM_Product_ID < 1) 
-			set_Value (COLUMNNAME_PMM_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_PMM_Product_ID, PMM_Product_ID);
-	}
-
-	@Override
-	public int getPMM_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PMM_Product_ID);
-	}
-
-	@Override
 	public void setPrepareClosing (final @Nullable java.lang.String PrepareClosing)
 	{
 		set_Value (COLUMNNAME_PrepareClosing, PrepareClosing);
@@ -1045,19 +1015,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
-	}
-
-	@Override
-	public void setQtyPlanned_NextYear (final BigDecimal QtyPlanned_NextYear)
-	{
-		set_Value (COLUMNNAME_QtyPlanned_NextYear, QtyPlanned_NextYear);
-	}
-
-	@Override
-	public BigDecimal getQtyPlanned_NextYear() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPlanned_NextYear);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1145,24 +1102,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TERMINATIONREASON_IncorrectlyRecorded = "Err";
 	/** OrgChange = Os */
 	public static final String TERMINATIONREASON_OrgChange = "Os";
-	/** DoubleEntry = De */
-	public static final String TERMINATIONREASON_DoubleEntry = "De";
-	/** PoliticalReasons = Po */
-	public static final String TERMINATIONREASON_PoliticalReasons = "Po";
-	/** RealEstateSold = Iv */
-	public static final String TERMINATIONREASON_RealEstateSold = "Iv";
-	/** AddressUnknown = Ua */
-	public static final String TERMINATIONREASON_AddressUnknown = "Ua";
-	/** Deceased = Ve */
-	public static final String TERMINATIONREASON_Deceased = "Ve";
-	/** NotPaid = Ng */
-	public static final String TERMINATIONREASON_NotPaid = "Ng";
-	/** Complaint = Re */
-	public static final String TERMINATIONREASON_Complaint = "Re";
-	/** DueToAge = Al */
-	public static final String TERMINATIONREASON_DueToAge = "Al";
-	/** Termination = Ku */
-	public static final String TERMINATIONREASON_Termination = "Ku";
 	@Override
 	public void setTerminationReason (final @Nullable java.lang.String TerminationReason)
 	{
@@ -1200,8 +1139,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String TYPE_CONDITIONS_MarginCommission = "MarginCommission";
 	/** Mediated commission = MediatedCommission */
 	public static final String TYPE_CONDITIONS_MediatedCommission = "MediatedCommission";
+	/** LicenseFee = LicenseFee */
+	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
 	/** CallOrder = CallOrder */
 	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
+	/** InterimInvoice = InterimInvoice */
+	public static final String TYPE_CONDITIONS_InterimInvoice = "InterimInvoice";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{

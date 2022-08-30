@@ -15,6 +15,7 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.MatchInvId;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.ProductPrice;
@@ -83,7 +84,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity qty = request.getQty();
 		final UomId qtyUOMId = qty.getUomId();
 
-		final int matchInvId = request.getDocumentRef().getRecordId();
+		final MatchInvId matchInvId = request.getDocumentRef().getId(MatchInvId.class);
 		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
 				.map(price -> utils.convertToUOM(price, qtyUOMId))
 				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request))
@@ -104,7 +105,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity qty = request.getQty();
 		final UomId qtyUOMId = qty.getUomId();
 
-		final InOutLineId receiptInOutLineId = InOutLineId.ofRepoId(request.getDocumentRef().getRecordId());
+		final InOutLineId receiptInOutLineId = request.getDocumentRef().getId(InOutLineId.class);
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
 				.map(price -> utils.convertToUOM(price, qtyUOMId))
 				.map(CostAmount::ofProductPrice)
@@ -320,7 +321,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		utils.saveCurrentCost(currentCosts);
 	}
 
-	private Optional<ProductPrice> getPOCostPriceForMatchInv(final int matchInvId)
+	private Optional<ProductPrice> getPOCostPriceForMatchInv(@NonNull final MatchInvId matchInvId)
 	{
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
 		return Optional.of(matchInv)
