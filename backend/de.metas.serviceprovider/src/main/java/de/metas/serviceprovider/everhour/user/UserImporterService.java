@@ -76,7 +76,7 @@ public class UserImporterService
 	}
 
 	@NonNull
-	public UserId resolveUser(@NonNull final OrgId orgId, @NonNull final Integer everhourUserId)
+	public UserId resolveUser(@NonNull final OrgId orgId, @NonNull final EverhourUserId everhourUserId)
 	{
 		final UserId userRecordId = getUserFromExternalReference(orgId, everhourUserId).orElse(null);
 
@@ -87,7 +87,7 @@ public class UserImporterService
 
 		final ImportUsersRequest importUsersRequest = retrieveEverhourUsers(orgId);
 
-		final Map<Integer, UserId> externalId2UserId = importEverhourUsers(importUsersRequest);
+		final Map<EverhourUserId, UserId> externalId2UserId = importEverhourUsers(importUsersRequest);
 
 		return externalId2UserId.get(everhourUserId);
 	}
@@ -102,31 +102,32 @@ public class UserImporterService
 
 		final String apiKey = getEverhourApiKey();
 
-		final Map<Integer, User> externalId2everhourUser = everhourClient.getUsers(apiKey)
+		final Map<EverhourUserId, User> id2User = everhourClient.getUsers(apiKey)
 				.stream()
-				.collect(Collectors.toMap(User::getId, Function.identity()));
+				.collect(Collectors.toMap(user -> EverhourUserId.ofId(user.getId()),
+										  Function.identity()));
 
 		return ImportUsersRequest.builder()
 				.orgId(orgId)
 				.bpartnerId(bPartnerId)
 				.bpartnerLanguage(bpartnerLanguage)
-				.id2User(externalId2everhourUser)
+				.id2User(id2User)
 				.build();
 	}
 
 	@NonNull
-	private Map<Integer, UserId> importEverhourUsers(@NonNull final ImportUsersRequest importUsersRequest)
+	private Map<EverhourUserId, UserId> importEverhourUsers(@NonNull final ImportUsersRequest importUsersRequest)
 	{
-		final ImmutableMap.Builder<Integer, UserId> externalId2UserId = ImmutableMap.builder();
+		final ImmutableMap.Builder<EverhourUserId, UserId> externalId2UserId = ImmutableMap.builder();
 
-		for (final Map.Entry<Integer, User> externalId2everhourUser : importUsersRequest.getId2User().entrySet())
+		for (final Map.Entry<EverhourUserId, User> id2User : importUsersRequest.getId2User().entrySet())
 		{
-			final Integer externalId = externalId2everhourUser.getKey();
+			final EverhourUserId everhourUserId = id2User.getKey();
 
-			final UserId metasfreshUserId = getUserFromExternalReference(importUsersRequest.getOrgId(), externalId)
-					.orElseGet(() -> importUser(importUsersRequest, externalId));
+			final UserId metasfreshUserId = getUserFromExternalReference(importUsersRequest.getOrgId(), everhourUserId)
+					.orElseGet(() -> importUser(importUsersRequest, everhourUserId));
 
-			externalId2UserId.put(externalId, metasfreshUserId);
+			externalId2UserId.put(everhourUserId, metasfreshUserId);
 		}
 
 		return externalId2UserId.build();
@@ -135,12 +136,12 @@ public class UserImporterService
 	@NonNull
 	private UserId importUser(
 			@NonNull final ImportUsersRequest importUsersRequest,
-			@NonNull final Integer everhourUserId)
+			@NonNull final EverhourUserId everhourUserId)
 	{
 		final UserId userId = getExistingUserByEmail(importUsersRequest, everhourUserId)
 				.orElseGet(() -> createUser(importUsersRequest, everhourUserId));
 
-		final ExternalId userExternalId = ExternalId.of(ExternalSystem.EVERHOUR, String.valueOf(everhourUserId));
+		final ExternalId userExternalId = ExternalId.of(ExternalSystem.EVERHOUR, String.valueOf(everhourUserId.getId()));
 
 		insertUserExternalRef(userId, userExternalId, importUsersRequest.getOrgId());
 
@@ -150,12 +151,12 @@ public class UserImporterService
 	@NonNull
 	private Optional<UserId> getUserFromExternalReference(
 			@NonNull final OrgId orgId,
-			@NonNull final Integer everhourUserId)
+			@NonNull final EverhourUserId everhourUserId)
 	{
 		final ExternalReferenceQuery query = ExternalReferenceQuery.builder()
 				.orgId(orgId)
 				.externalSystem(ExternalSystem.EVERHOUR)
-				.externalReference(String.valueOf(everhourUserId))
+				.externalReference(String.valueOf(everhourUserId.getId()))
 				.externalReferenceType(ExternalUserReferenceType.USER_ID)
 				.build();
 
@@ -165,7 +166,7 @@ public class UserImporterService
 
 	private Optional<UserId> getExistingUserByEmail(
 			@NonNull final ImportUsersRequest importUsersRequest,
-			@NonNull final Integer everhourUserId)
+			@NonNull final EverhourUserId everhourUserId)
 	{
 		final User everhourUser = importUsersRequest.getId2User().get(everhourUserId);
 
@@ -189,7 +190,7 @@ public class UserImporterService
 	@NonNull
 	private UserId createUser(
 			@NonNull final ImportUsersRequest importUsersRequest,
-			@NonNull final Integer everhourUserId)
+			@NonNull final EverhourUserId everhourUserId)
 	{
 		final User everhourUser = importUsersRequest.getId2User().get(everhourUserId);
 

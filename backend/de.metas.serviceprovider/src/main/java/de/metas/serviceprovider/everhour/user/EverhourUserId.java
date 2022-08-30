@@ -22,29 +22,23 @@
 
 package de.metas.serviceprovider.everhour.user;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.Language;
-import de.metas.issue.tracking.everhour.api.model.User;
-import de.metas.organization.OrgId;
-import lombok.Builder;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Map;
-
 @Value
-@Builder
-public class ImportUsersRequest
+public class EverhourUserId
 {
-	@NonNull
-	OrgId orgId;
+	int id;
 
 	@NonNull
-	BPartnerId bpartnerId;
+	public static EverhourUserId ofId(final int id)
+	{
+		return new EverhourUserId(id);
+	}
 
-	@NonNull
-	Language bpartnerLanguage;
-
-	@NonNull
-	Map<EverhourUserId, User> id2User;
+	private EverhourUserId(final int id)
+	{
+		this.id = Check.assumeGreaterThanZero(id, "EverhourUserId");
+	}
 }

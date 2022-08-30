@@ -69,6 +69,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -81,13 +82,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
 import static de.metas.serviceprovider.github.GithubImporterConstants.HOUR_UOM_ID;
 import static de.metas.serviceprovider.github.GithubImporterConstants.LABEL_DATE_FORMAT;
-import static de.metas.serviceprovider.github.config.GithubConfigName.IMPORT_TIMEOUT;
+import static de.metas.serviceprovider.github.config.GithubConfigName.IMPORT_TIMEOUT_MINUTES;
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 
 @Service
 public class GithubImporterService implements IssueImporter
 {
-	private final static int IMPORT_TIMEOUT_DEFAULT_MINUTES = 5;
+	private final static Duration IMPORT_TIMEOUT_MINUTES_DEFAULT = Duration.ofMinutes(5);
 
 	private static final Logger log = LogManager.getLogger(GithubImporterService.class);
 
@@ -439,10 +440,10 @@ public class GithubImporterService implements IssueImporter
 	private void acquireLock()
 	{
 		final boolean lockAcquired;
-		final Integer timoutInMinutes = getImportTimeout();
+		final Duration timoutInMinutes = getImportTimeout();
 		try
 		{
-			lockAcquired = lock.tryLock(timoutInMinutes, TimeUnit.MINUTES);
+			lockAcquired = lock.tryLock(timoutInMinutes.toMinutes(), TimeUnit.MINUTES);
 		}
 		catch (final InterruptedException e)
 		{
@@ -528,10 +529,11 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	@NonNull
-	private Integer getImportTimeout()
+	private Duration getImportTimeout()
 	{
-		return Optional.of(githubConfigRepository.getConfigByNameAndOrg(IMPORT_TIMEOUT, OrgId.ANY))
+		return Optional.of(githubConfigRepository.getConfigByNameAndOrg(IMPORT_TIMEOUT_MINUTES, OrgId.ANY))
 				.map(Integer::parseInt)
-				.orElseGet(() -> IMPORT_TIMEOUT_DEFAULT_MINUTES);
+				.map(Duration::ofMinutes)
+				.orElseGet(() -> IMPORT_TIMEOUT_MINUTES_DEFAULT);
 	}
 }

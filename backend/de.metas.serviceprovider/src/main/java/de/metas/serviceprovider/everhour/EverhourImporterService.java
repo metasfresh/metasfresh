@@ -38,6 +38,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.everhour.task.TimeBookingTask;
+import de.metas.serviceprovider.everhour.user.EverhourUserId;
 import de.metas.serviceprovider.everhour.user.UserImporterService;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
@@ -152,7 +153,8 @@ public class EverhourImporterService implements TimeBookingsImporter
 							.setParameter("taskId", timeBookingTask.getId())
 							.setParameter("taskUrl", timeBookingTask.getUrl()));
 
-			final UserId userId = userImporterService.resolveUser(orgId, timeRecord.getUserId());
+			final EverhourUserId everhourUserId = EverhourUserId.ofId(timeRecord.getUserId());
+			final UserId userId = userImporterService.resolveUser(orgId, everhourUserId);
 
 			final TimeBookingId timeBookingId = TimeBookingId.ofRepoIdOrNull(
 					externalReferenceRepository.getReferencedRecordIdOrNullBy(

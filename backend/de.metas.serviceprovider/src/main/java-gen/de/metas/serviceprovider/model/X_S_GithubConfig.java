@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_S_GithubConfig extends org.compiere.model.PO implements I_S_GithubConfig, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1133395667L;
+	private static final long serialVersionUID = -1901723277L;
 
     /** Standard Constructor */
     public X_S_GithubConfig (final Properties ctx, final int S_GithubConfig_ID, @Nullable final String trxName)
@@ -59,8 +59,8 @@ public class X_S_GithubConfig extends org.compiere.model.PO implements I_S_Githu
 	public static final String NAME_GithubSecret = "githubSecret";
 	/** Github user = githubUser */
 	public static final String NAME_GithubUser = "githubUser";
-	/** Import Timeout = importTimeout */
-	public static final String NAME_ImportTimeout = "importTimeout";
+	/** Import timeout minutes = importTimeoutMinutes */
+	public static final String NAME_ImportTimeoutMinutes = "importTimeoutMinutes";
 	@Override
 	public void setName (final java.lang.String Name)
 	{

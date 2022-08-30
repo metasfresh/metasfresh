@@ -37,14 +37,12 @@ import static de.metas.serviceprovider.github.link.GithubIssueLinkMatcher.PROJEC
 @UtilityClass
 public class GithubIssueLinkResolver
 {
-	static String ISSUE_LINK_PATTERN = "https://github.com/(?<owner>.+)/(?<project>.+)/issues/(?<issueNo>[0-9]+)";
+	static Pattern ISSUE_LINK_PATTERN = Pattern.compile("https://github.com/(?<owner>.+)/(?<project>.+)/issues/(?<issueNo>[0-9]+)");
 
 	@NonNull
 	public Optional<GithubIssueLink> resolve(@NonNull final String githubLinkCandidate)
 	{
-		final Pattern pattern = Pattern.compile(ISSUE_LINK_PATTERN);
-
-		final Matcher matcher = pattern.matcher(githubLinkCandidate);
+		final Matcher matcher = ISSUE_LINK_PATTERN.matcher(githubLinkCandidate);
 
 		if (matcher.find())
 		{

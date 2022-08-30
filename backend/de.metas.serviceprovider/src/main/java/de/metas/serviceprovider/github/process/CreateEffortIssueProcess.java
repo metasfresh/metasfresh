@@ -22,14 +22,12 @@
 
 package de.metas.serviceprovider.github.process;
 
-import ch.qos.logback.classic.Level;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.serviceprovider.github.EffortIssueCreator;
 import de.metas.serviceprovider.issue.IssueId;
-import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
@@ -58,7 +56,7 @@ public class CreateEffortIssueProcess extends JavaProcess implements IProcessPre
 	{
 		final IssueId issueId = IssueId.ofRepoId(getRecord_ID());
 
-		Loggables.withLogger(log, Level.DEBUG).addLog("Invoking CreateEffortIssueProcess for IssueId: {}", issueId.getRepoId());
+		addLog("Invoking CreateEffortIssueProcess for IssueId: {}", issueId);
 
 		effortIssueCreator.createFromBudgetIssue(issueId);
 

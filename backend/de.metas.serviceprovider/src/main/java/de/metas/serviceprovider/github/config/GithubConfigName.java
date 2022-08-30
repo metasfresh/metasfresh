@@ -38,7 +38,7 @@ public enum GithubConfigName implements ReferenceListAwareEnum
 	LOOK_FOR_PARENT(X_S_GithubConfig.NAME_LookForParent),
 	GITHUB_SECRET(X_S_GithubConfig.NAME_GithubSecret),
 	GITHUB_USER(X_S_GithubConfig.NAME_GithubUser),
-	IMPORT_TIMEOUT(X_S_GithubConfig.NAME_ImportTimeout),
+	IMPORT_TIMEOUT_MINUTES(X_S_GithubConfig.NAME_ImportTimeoutMinutes),
 	;
 
 	@Getter
