@@ -55,6 +55,7 @@ BEGIN
     WHERE ad_language = destination_language;
 
 
+
     FOR table_name IN SELECT UPPER(tablename) FROM ad_table WHERE UPPER(tablename) LIKE UPPER('%_Trl') ORDER BY 1
         LOOP
             base_table := SUBSTRING(table_name, 1, LENGTH(table_name) - 4); -- that means without _TRL. e.g. AD_Window
@@ -71,7 +72,6 @@ BEGIN
                     LOOP
                         BEGIN
                             final_update_query := FORMAT(REPLACE(update_query_template, 'base_table', base_table), base_table_id::varchar, destination_language, query_set_template);
-
                             /*
                                Example: destination language is en_US, one of the updated entries is the AD_Window with the ID 123456. The update query will look like:
 
@@ -85,7 +85,7 @@ BEGIN
                             EXECUTE final_update_query;
 
                             GET DIAGNOSTICS v_count = ROW_COUNT;
-                            RAISE WARNING 'Table %: % rows updated', table_name, v_count;
+                            RAISE WARNING 'Table %, %: % rows updated', table_name,  base_table||'_ID = '||base_table_id, v_count;
 
                         END;
                     END LOOP;
@@ -93,7 +93,7 @@ BEGIN
 
         END LOOP;
 
-    SELECT update_TRL_Tables_On_AD_Element_TRL_Update(NULL,
+    PERFORM update_TRL_Tables_On_AD_Element_TRL_Update(NULL,
                                                       destination_language);
 END;
 $$
