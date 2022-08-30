@@ -1,5 +1,5 @@
 DROP FUNCTION IF EXISTS update_FieldTranslation_From_AD_Name_Element(p_AD_Element_ID numeric,
-                                                                     p_AD_Language character varying)
+                                                                     p_AD_Language   character varying)
 ;
 
 CREATE OR REPLACE FUNCTION update_FieldTranslation_From_AD_Name_Element(
@@ -21,15 +21,16 @@ BEGIN
         Description  = e_trl.Description,
         Help         = e_trl.Help
     FROM AD_Element_Trl_Effective_v e_trl
-          WHERE( p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
-            AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
-            AND f_trl.ad_language = e_trl.ad_language
+    WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
+      AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
+      AND f_trl.ad_language = e_trl.ad_language
 
-            AND EXISTS(SELECT 1 FROM ad_column c
-                                JOIN AD_Field f on c.ad_column_id = f.ad_column_id
-                                WHERE c.ad_element_id = e_trl.ad_element_id
-                                  AND f_trl.ad_field_id = f.ad_field_id
-                AND f.ad_name_id IS NULL);
+      AND EXISTS(SELECT 1
+                 FROM ad_column c
+                          JOIN AD_Field f ON c.ad_column_id = f.ad_column_id
+                 WHERE c.ad_element_id = e_trl.ad_element_id
+                   AND f_trl.ad_field_id = f.ad_field_id
+                   AND f.ad_name_id IS NULL);
     --
     GET DIAGNOSTICS update_count_via_AD_Column = ROW_COUNT;
 
@@ -42,13 +43,14 @@ BEGIN
         Description  = e_trl.Description,
         Help         = e_trl.Help
 
-          FROM AD_Element_Trl_Effective_v e_trl
-    WHERE( p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
+    FROM AD_Element_Trl_Effective_v e_trl
+    WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
       AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
       AND f_trl.ad_language = e_trl.ad_language
-      AND EXISTS(SELECT 1 FROM AD_Field f
-                          WHERE f.ad_name_id = e_trl.ad_element_id
-          AND f.ad_field_id = f_trl.ad_field_id);
+      AND EXISTS(SELECT 1
+                 FROM AD_Field f
+                 WHERE f.ad_name_id = e_trl.ad_element_id
+                   AND f.ad_field_id = f_trl.ad_field_id);
 
     --
     GET DIAGNOSTICS update_count_via_AD_Name = ROW_COUNT;
@@ -64,10 +66,13 @@ BEGIN
         SET Name        = e_trl.Name,
             Description = e_trl.Description
         FROM AD_Element_Trl_Effective_v e_trl
-        WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
+        WHERE f.AD_Name_ID IS NULL
+          AND (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
           AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
-          AND EXISTS (SELECT 1 from AD_Column c WHERE c.ad_element_id = e_trl.ad_element_id
-              AND c.ad_column_id = f.ad_column_id);
+          AND EXISTS(SELECT 1
+                     FROM AD_Column c
+                     WHERE c.ad_element_id = e_trl.ad_element_id
+                       AND c.ad_column_id = f.ad_column_id);
 
         GET DIAGNOSTICS update_count_via_AD_Column = ROW_COUNT;
 
