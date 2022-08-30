@@ -13,32 +13,19 @@ AS
 $BODY$
 
 BEGIN
-    --
-    -- AD_Column_Trl
+
     PERFORM update_Column_Translation_From_AD_Element(p_AD_Element_ID, p_AD_Language);
 
-    --
-    -- AD_Field_TRL
     PERFORM update_FieldTranslation_From_AD_Name_Element(p_AD_Element_ID, p_AD_Language);
 
-    --
-    -- AD_Process_Para_Trl
     PERFORM update_Process_Para_Translation_From_AD_Element(p_AD_Element_ID, p_AD_Language);
 
-    --
-    -- AD_PrintFormatItem_TRL
-
     PERFORM update_PrintFormatItem_Translation_From_AD_Element(p_AD_Element_ID, p_AD_Language);
-    --
-    -- AD_Tab_TRL
+
     PERFORM update_Tab_Translation_From_AD_Element(p_AD_Element_ID, p_AD_Language);
 
-    --
-    -- AD_Window_TRL
     PERFORM update_Window_Translation_From_AD_Element(p_AD_Element_ID, p_AD_Language);
 
-    --
-    -- AD_Menu_TRL
     PERFORM update_Menu_Translation_From_AD_Element(p_AD_Element_ID, p_AD_Language);
 
 END;
