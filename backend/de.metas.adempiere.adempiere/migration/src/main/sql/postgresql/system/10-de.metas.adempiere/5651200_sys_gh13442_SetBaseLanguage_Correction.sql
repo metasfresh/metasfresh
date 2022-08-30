@@ -11,10 +11,17 @@ DECLARE
     table_name            varchar;
     base_table_id         numeric;
     base_table            varchar;
-    query_set_template    text    := '';
+    insert_query_set_template    text    := '';
+    update_query_set_template    text    := '';
+    final_insert_query    text    := '';
     final_update_query    text    := '';
     v_columnname          varchar;
     v_count               integer;
+    insert_query_template varchar := 'INSERT INTO base_table_trl (base_table_id, ad_client_ID, ad_org_id, created, createdBy, updated, updatedBy, isTranslated, isActive, %s) '
+                                         || 'SELECT base_table_id, bt.ad_client_ID, bt.ad_org_id, now(), 100, now(), 100, ''Y'', bt.IsActive, %s '
+                                         || 'FROM base_table bt '
+                                         || 'WHERE bt.base_table_id= %s '
+        || 'AND NOT EXISTS (SELECT 1 FROM base_table_trl btt WHERE btt.base_table_id = %s AND btt.ad_language = ''%s'')';
     update_query_template varchar := 'WITH X AS (SELECT * FROM base_table_trl WHERE base_table_id = %s AND ad_language =  ''%s'') '
                                          || 'UPDATE base_table as target '
                                          || 'SET %s '
@@ -55,23 +62,57 @@ BEGIN
     WHERE ad_language = destination_language;
 
 
-
     FOR table_name IN SELECT UPPER(tablename) FROM ad_table WHERE UPPER(tablename) LIKE UPPER('%_Trl') ORDER BY 1
         LOOP
             base_table := SUBSTRING(table_name, 1, LENGTH(table_name) - 4); -- that means without _TRL. e.g. AD_Window
             BEGIN
-                query_set_template := '';
+                insert_query_set_template := '';
+                update_query_set_template := '';
                 FOR v_columnname IN SELECT columnname FROM ad_column WHERE istranslated = 'Y' AND ad_table_id = get_table_id(base_table) -- e.g. AD_Window.Name
                     LOOP
-                        query_set_template := query_set_template || FORMAT('%s = x.%s ,', v_columnname, v_columnname); -- Name = x.Name , Description = x.Description ,
+                        insert_query_set_template := insert_query_set_template || FORMAT('%s ,', v_columnname); -- Name ,Description ,
+                        update_query_set_template := update_query_set_template || FORMAT('%s = x.%s ,', v_columnname, v_columnname); -- Name = x.Name ,Description = x.Description ,
                     END LOOP;
 
-                query_set_template := SUBSTRING(query_set_template, 1, LENGTH(query_set_template) - 1); -- delete the last "," => Name = x.Name , Description = x.Description
+                insert_query_set_template := insert_query_set_template ; --=> Name ,Description,
+                update_query_set_template := SUBSTRING(update_query_set_template, 1, LENGTH(update_query_set_template) - 1); -- delete the last "," => Name = x.Name ,Description = x.Description
 
                 FOR base_table_id IN EXECUTE 'SELECT ' || base_table || '_ID FROM ' || base_table -- e.g. AD_Window_ID = 123456
                     LOOP
                         BEGIN
-                            final_update_query := FORMAT(REPLACE(update_query_template, 'base_table', base_table), base_table_id::varchar, destination_language, query_set_template);
+
+                            final_insert_query := FORMAT(REPLACE(insert_query_template, 'base_table', base_table),
+                                                         insert_query_set_template || 'ad_language',
+                                                         insert_query_set_template||' '''||  destination_language || ''' ' || 'as AD_Language',
+                                                         base_table_id::varchar,
+                                                         base_table_id::varchar,
+                                                         destination_language);
+                            /*
+                              Example:  destination language is en_US, one of the updated entries is the AD_Window with the ID 123456. The insert query will look like:
+
+                            INSERT INTO AD_Window_Trl (AD_Window_ID, ad_client_ID, ad_org_id, created, createdBy, updated, updatedBy, isTranslated, isActive, Name, Description, Help, AD_Language)
+                            SELECT bt.AD_Window_ID,
+                                   bt.ad_client_ID,
+                                   bt.ad_org_id,
+                                   NOW(),
+                                   100,
+                                   NOW(),
+                                   100,
+                                   'Y',
+                                   bt.isActive,
+                                   Name,
+                                   Description,
+                                   Help,
+                                   'en_US' AS AD_Language
+                            FROM AD_Window bt
+                            WHERE bt.ad_window_id = 123456
+                              AND NOT EXISTS(SELECT 1
+                                             FROM AD_Window_trl btt
+                                             WHERE btt.ad_window_id = 123456
+                                               AND btt.ad_language = 'en_US;
+                           */
+
+                            final_update_query := FORMAT(REPLACE(update_query_template, 'base_table', base_table), base_table_id::varchar, destination_language, update_query_set_template);
                             /*
                                Example: destination language is en_US, one of the updated entries is the AD_Window with the ID 123456. The update query will look like:
 
@@ -82,10 +123,17 @@ BEGIN
                                         WHERE target.AD_Window_id = x.AD_Window_id ;
                                 */
 
+                            EXECUTE final_insert_query;
+
+
+                            GET DIAGNOSTICS v_count = ROW_COUNT;
+                            RAISE WARNING 'Table %, %: % rows inserted', table_name, base_table || '_ID = ' || base_table_id, v_count;
+
+
                             EXECUTE final_update_query;
 
                             GET DIAGNOSTICS v_count = ROW_COUNT;
-                            RAISE WARNING 'Table %, %: % rows updated', table_name,  base_table||'_ID = '||base_table_id, v_count;
+                            RAISE WARNING 'Table %, %: % rows updated', table_name, base_table || '_ID = ' || base_table_id, v_count;
 
                         END;
                     END LOOP;
@@ -104,3 +152,4 @@ COMMENT ON FUNCTION setBaseLanguage(Numeric) IS 'Change/Reset the system base la
 For all the translation tables (ending with _TRL), update the translated columns (AD_Column.IsTranslated = ''Y'') of their corresponding base tables (identical name, without the _TRL suffix), by setting the values from the translations in the destination language.
 Example:  SELECT setBaseLanguage(192);  /*en_US*/ '
 ;
+
