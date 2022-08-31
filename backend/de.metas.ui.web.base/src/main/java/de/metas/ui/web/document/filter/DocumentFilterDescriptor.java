@@ -66,12 +66,14 @@ public final class DocumentFilterDescriptor
 	private final ITranslatableString displayNameTrls;
 
 	/**
-	 * To be displayed outside of the regular filters dropdown list for quicker access.
+	 * To be displayed outside the regular filters dropdown list for quicker access.
 	 */
 	@Getter
 	private final boolean frequentUsed;
 
-	/** How to render it when the filter is inline (i.e. {@link #frequentUsed} is true) */
+	/**
+	 * How to render it when the filter is inline (i.e. {@link #frequentUsed} is true)
+	 */
 	@Getter
 	private final DocumentFilterInlineRenderMode inlineRenderMode;
 
@@ -153,6 +155,11 @@ public final class DocumentFilterDescriptor
 		return parameter;
 	}
 
+	public boolean hasParameter(final String parameterName)
+	{
+		return parametersByName.get(parameterName) != null;
+	}
+
 	public DocumentFilter unwrap(@NonNull final JSONDocumentFilter jsonFilter)
 	{
 		final DocumentFilter.DocumentFilterBuilder filter = DocumentFilter.builder()
@@ -190,11 +197,11 @@ public final class DocumentFilterDescriptor
 			}
 
 			filter.addParameter(DocumentFilterParam.builder()
-										.setFieldName(paramDescriptor.getFieldName())
-										.setOperator(paramDescriptor.getOperator())
-										.setValue(value)
-										.setValueTo(valueTo)
-										.build());
+					.setFieldName(paramDescriptor.getFieldName())
+					.setOperator(paramDescriptor.getOperator())
+					.setValue(value)
+					.setValueTo(valueTo)
+					.build());
 		}
 
 		for (final DocumentFilterParam internalParam : getInternalParameters())
@@ -204,7 +211,6 @@ public final class DocumentFilterDescriptor
 
 		return filter.build();
 	}
-
 
 	//
 	//

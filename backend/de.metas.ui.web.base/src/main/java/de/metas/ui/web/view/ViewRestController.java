@@ -57,14 +57,11 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
 import org.compiere.util.MimeType;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -82,11 +79,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -351,13 +350,16 @@ public class ViewRestController
 		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
-	private Evaluatee createFilterParameterLookupContext(final IView view)
+	private ViewFilterParameterLookupEvaluationCtx createFilterParameterLookupContext(
+			@NonNull final IView view,
+			@Nullable final Map<String, Object> filterParameterValues)
 	{
-		return Evaluatees.mapBuilder()
-				.put(LookupDataSourceContext.PARAM_ViewId, view.getViewId())
-				.put(LookupDataSourceContext.PARAM_ViewSize, view.size())
-				.build()
-				.andComposeWith(userSession.toEvaluatee());
+		return ViewFilterParameterLookupEvaluationCtx.builder()
+				.viewId(view.getViewId())
+				.viewSize(view.size())
+				.userSessionCtx(userSession.toEvaluatee())
+				.parameterValues(filterParameterValues)
+				.build();
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
@@ -398,11 +400,12 @@ public class ViewRestController
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final IView view = viewsRepo.getView(viewId);
-		final Evaluatee ctx = createFilterParameterLookupContext(view);
+		final ViewFilterParameterLookupEvaluationCtx ctx = createFilterParameterLookupContext(view, request.getContext());
+		final String adLanguage = userSession.getAD_Language();
 
 		return view
 				.getFilterParameterTypeahead(filterId, parameterName, request.getQuery(), ctx)
-				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
+				.transform(page -> JSONLookupValuesPage.of(page, adLanguage));
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
@@ -435,7 +438,7 @@ public class ViewRestController
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final IView view = viewsRepo.getView(viewId);
-		final Evaluatee ctx = createFilterParameterLookupContext(view);
+		final ViewFilterParameterLookupEvaluationCtx ctx = createFilterParameterLookupContext(view, request.getContext());
 
 		return view
 				.getFilterParameterDropdown(filterId, parameterName, ctx)
