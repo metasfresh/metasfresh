@@ -25,19 +25,16 @@ package de.metas.cucumber.stepdefs.contract.commission;
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.*;
+import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_PercentOfBasePoints;
+import static de.metas.contracts.commission.model.I_C_CommissionSettingsLine.COLUMNNAME_SeqNo;
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -46,10 +43,10 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_CommissionSettingsLines_StepDef
 {
-	private final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable;
+	private final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable;
 
 	public C_CommissionSettingsLines_StepDef(
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> commissionSettingsTable)
+			@NonNull final C_HierarchyCommissionSettings_StepDefData commissionSettingsTable)
 	{
 		this.commissionSettingsTable = commissionSettingsTable;
 	}

@@ -33,14 +33,16 @@ import org.compiere.model.I_C_Location;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+
 public class C_BPartner_Location_StepDef
 {
-	private final StepDefData<I_C_BPartner> bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_BPartner_StepDefData bPartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 
 	public C_BPartner_Location_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -58,7 +60,7 @@ public class C_BPartner_Location_StepDef
 
 	private void createC_BPartner_Location(@NonNull final Map<String, String> tableRow)
 	{
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
 		final String gln = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_GLN);
 
@@ -74,6 +76,7 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setIsShipTo(true);
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
 
-		bPartnerLocationTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner_Location"), bPartnerLocationRecord);
+		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
+		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
 	}
 }

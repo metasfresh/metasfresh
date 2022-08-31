@@ -174,6 +174,18 @@ public class DataTableUtil
 		}
 	}
 
+	@Nullable
+	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	{
+		return dataTableRow.get(columnName);
+	}
+
+	@Nullable
+	public String nullToken2Null(@NonNull final String value)
+	{
+		return NULL_STRING.equals(value) ? null : value;
+	}
+
 	public Instant extractInstantForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -228,6 +240,19 @@ public class DataTableUtil
 		{
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@Nullable
+	public static Timestamp extractDateTimestampForColumnNameOrNull(final Map<String, String> dataTableRow, final String columnName)
+	{
+		try
+		{
+			return extractDateTimestampForColumnName(dataTableRow, columnName);
+		}
+		catch (final Exception e)
+		{
+			return null;
 		}
 	}
 
@@ -304,7 +329,8 @@ public class DataTableUtil
 		return result;
 	}
 
-	public static boolean extractBooleanForColumnNameOr(
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName,
 			@Nullable final Boolean defaultValue)
