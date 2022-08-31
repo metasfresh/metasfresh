@@ -13,7 +13,6 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
-import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
@@ -24,6 +23,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -75,7 +75,6 @@ public class ExternallyReferencedCandidate
 				.qtyDelivered(newIC.getQtyDelivered())
 				.qtyOrdered(newIC.getQtyOrdered())
 				.soTrx(newIC.getSoTrx())
-				.projectId(newIC.getProjectId())
 				.invoiceDetailItems(newIC.getInvoiceDetailItems());
 	}
 
@@ -131,9 +130,13 @@ public class ExternallyReferencedCandidate
 
 	private String lineDescription;
 
-	private ProjectId projectId;
-
 	private List<InvoiceDetailItem> invoiceDetailItems;
+
+	/**
+	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
+	 */
+	@Nullable
+	private final TableRecordReference recordReference;
 
 	@Builder
 	private ExternallyReferencedCandidate(
@@ -162,7 +165,7 @@ public class ExternallyReferencedCandidate
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
-			@Nullable final ProjectId projectId,
+			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -190,7 +193,7 @@ public class ExternallyReferencedCandidate
 		this.taxId = taxId;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
-		this.projectId = projectId;
+		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 
 		final CurrencyId currencyId = CollectionUtils
