@@ -427,7 +427,7 @@ public class ADTableDAO implements IADTableDAO
 
 		DB.executeUpdateEx(
 				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=? WHERE AD_Element_ID=?",
-				new Object[] { adElementId, newColumnName },
+				new Object[] { newColumnName, adElementId },
 				ITrx.TRXNAME_ThreadInherited);
 	}
 }
