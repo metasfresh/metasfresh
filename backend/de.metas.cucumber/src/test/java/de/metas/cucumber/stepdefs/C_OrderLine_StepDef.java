@@ -67,7 +67,7 @@ public class C_OrderLine_StepDef
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
-	public void metasfresh_contains_c_invoice_candidates(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)

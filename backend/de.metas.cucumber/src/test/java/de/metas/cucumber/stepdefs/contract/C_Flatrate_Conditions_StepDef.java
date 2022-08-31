@@ -22,43 +22,57 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
+import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
-import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.interiminvoice.settings.C_Interim_Invoice_Settings_StepDefData;
 import de.metas.order.InvoiceRule;
 import de.metas.util.Services;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
-import org.compiere.util.Env;
+import org.compiere.model.I_C_Interim_Invoice_Settings;
+import org.compiere.model.I_M_PricingSystem;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Transition_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_InvoiceRule;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMN_Name;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMN_Type_Conditions;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Conditions_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
 	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
+	private final StepDefData<I_M_PricingSystem> pricingSysTable;
+	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable,
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable)
+			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable,
+			@NonNull final StepDefData<I_M_PricingSystem> pricingSysTable,
+			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
 		this.conditionsTable = conditionsTable;
+		this.pricingSysTable = pricingSysTable;
+		this.interimInvoiceSettingsTable = interimInvoiceSettingsTable;
 	}
 
 	@Given("metasfresh contains C_Flatrate_Conditions:")
@@ -72,10 +86,16 @@ public class C_Flatrate_Conditions_StepDef
 
 			final String type = tableRow.get(COLUMNNAME_Type_Conditions);
 			assertThat(type).as(COLUMNNAME_Type_Conditions + " is mandatory").isNotBlank();
-			
-			final I_C_Flatrate_Conditions flatrateConditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
 
-			final String commissionSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_HierarchyCommissionSettings_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Flatrate_Conditions flatrateConditions = CoalesceUtil.coalesceSuppliersNotNull(
+					() -> queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+							.addEqualsFilter(COLUMNNAME_Name, name)
+							.create()
+							.firstOnly(I_C_Flatrate_Conditions.class),
+					() -> InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class)
+			);
+
+			final String commissionSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_HierarchyCommissionSettings_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (EmptyUtil.isNotBlank(commissionSettingsIdentifier))
 			{
 				final I_C_HierarchyCommissionSettings commissionSettings = hierarchyCommissionSettingsTable.get(commissionSettingsIdentifier);
@@ -85,16 +105,54 @@ public class C_Flatrate_Conditions_StepDef
 						.setC_HierarchyCommissionSettings_ID(commissionSettings.getC_HierarchyCommissionSettings_ID());
 			}
 
+			final int flatrateTransitionId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Flatrate_Transition_ID + "." + I_C_Flatrate_Transition.COLUMNNAME_Name))
+					.map(this::extractFlatrateTransitionByName)
+					.map(I_C_Flatrate_Transition::getC_Flatrate_Transition_ID)
+					.orElse(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());
+
+			final InvoiceRule invoiceRule = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule))
+					.map(InvoiceRule::ofCode)
+					.orElse(InvoiceRule.AfterDelivery);
+
 			flatrateConditions.setName(name);
 			flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			flatrateConditions.setType_Conditions(type);
-			flatrateConditions.setC_Flatrate_Transition_ID(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());
-			flatrateConditions.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+			flatrateConditions.setC_Flatrate_Transition_ID(flatrateTransitionId);
+			flatrateConditions.setInvoiceRule(invoiceRule.getCode());
 			flatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Completed);
 			flatrateConditions.setProcessed(true);
+
+			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(pricingSystemIdentifier))
+			{
+				final I_M_PricingSystem pricingSystem = pricingSysTable.get(pricingSystemIdentifier);
+				flatrateConditions.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+			}
+
+			final String onFlatrateTermExtend = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_OnFlatrateTermExtend);
+			if (Check.isNotBlank(onFlatrateTermExtend))
+			{
+				flatrateConditions.setOnFlatrateTermExtend(onFlatrateTermExtend);
+			}
+
+			final String interimInvoiceSettingsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Interim_Invoice_Settings.COLUMNNAME_C_Interim_Invoice_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(interimInvoiceSettingsIdentifier))
+			{
+				final I_C_Interim_Invoice_Settings interimInvoiceSettings = interimInvoiceSettingsTable.get(interimInvoiceSettingsIdentifier);
+				flatrateConditions.setC_Interim_Invoice_Settings_ID(interimInvoiceSettings.getC_Interim_Invoice_Settings_ID());
+			}
+
 			InterfaceWrapperHelper.saveRecord(flatrateConditions);
 
 			conditionsTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_Flatrate_Conditions"), flatrateConditions);
 		}
+	}
+
+	private I_C_Flatrate_Transition extractFlatrateTransitionByName(@NonNull final String name)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Transition.class)
+				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_Name, name)
+				.create()
+				.firstOnlyOrNull(I_C_Flatrate_Transition.class);
 	}
 }

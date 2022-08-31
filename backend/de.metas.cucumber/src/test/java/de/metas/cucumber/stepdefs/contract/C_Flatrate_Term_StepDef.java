@@ -36,8 +36,10 @@ import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -48,6 +50,7 @@ import java.util.Map;
 
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
@@ -60,8 +63,10 @@ public class C_Flatrate_Term_StepDef
 	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
 	private final StepDefData<I_PMM_Product> pmmProductTable;
 	private final StepDefData<I_C_Flatrate_Term> contractTable;
+
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_Flatrate_Term_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
@@ -142,6 +147,29 @@ public class C_Flatrate_Term_StepDef
 			contractTable.put(
 					DataTableUtil.extractRecordIdentifier(tableRow, "C_FlatrateTerm"),
 					contractRecord);
+		}
+	}
+
+	@And("retrieve C_Flatrate_Term:")
+	public void retrieve_C_Flatrate_Term(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String flatrateConditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Conditions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Flatrate_Conditions flatrateConditions = conditionsTable.get(flatrateConditionsIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final I_C_Flatrate_Term flatrateTerm = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+					.addEqualsFilter(COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditions.getC_Flatrate_Conditions_ID())
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.create()
+					.firstOnlyNotNull(I_C_Flatrate_Term.class);
+
+			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Term_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			contractTable.put(flatrateTermIdentifier, flatrateTerm);
 		}
 	}
 }
