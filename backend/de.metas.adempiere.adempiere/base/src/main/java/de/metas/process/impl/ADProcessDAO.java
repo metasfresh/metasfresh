@@ -668,7 +668,7 @@ public class ADProcessDAO implements IADProcessDAO
 		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Process_Para which is using given AD_Element_ID
 		DB.executeUpdateEx(
 				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=? WHERE AD_Element_ID=?",
-				new Object[] { adElementId, newColumnName },
+				new Object[] { newColumnName, adElementId },
 				ITrx.TRXNAME_ThreadInherited);
 	}
 }
