@@ -336,7 +336,7 @@ jobs:
       - name: run-tests
         env:
           refname: ${{ needs.init.outputs.tag-fixed }}
-        timeout-minutes: 60
+        timeout-minutes: 90
         run: |
           mkdir cucumber
           docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:$refname):/compose.yml" . && docker rm tempcopytainer
