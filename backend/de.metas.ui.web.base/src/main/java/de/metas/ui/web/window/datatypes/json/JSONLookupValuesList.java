@@ -56,6 +56,8 @@ import java.util.stream.Stream;
 @EqualsAndHashCode
 public class JSONLookupValuesList
 {
+	public static JSONLookupValuesList empty() {return new JSONLookupValuesList();}
+
 	public static JSONLookupValuesList ofLookupValuesList(
 			@Nullable final LookupValuesList lookupValues,
 			@NonNull final String adLanguage)
@@ -70,7 +72,7 @@ public class JSONLookupValuesList
 	{
 		if (lookupValues == null || lookupValues.isEmpty())
 		{
-			return EMPTY;
+			return empty();
 		}
 
 		final ImmutableList<JSONLookupValue> jsonValuesList = toListOfJSONLookupValues(lookupValues, adLanguage, appendDescriptionToName);
@@ -97,7 +99,7 @@ public class JSONLookupValuesList
 	{
 		if (jsonLookupValues == null || jsonLookupValues.isEmpty())
 		{
-			return EMPTY;
+			return empty();
 		}
 
 		return new JSONLookupValuesList(ImmutableList.copyOf(jsonLookupValues), DebugProperties.EMPTY);
@@ -140,9 +142,6 @@ public class JSONLookupValuesList
 				})
 				.collect(LookupValuesList.collect());
 	}
-
-	@VisibleForTesting
-	static final JSONLookupValuesList EMPTY = new JSONLookupValuesList();
 
 	@JsonProperty("values")
 	private final List<JSONLookupValue> values;
