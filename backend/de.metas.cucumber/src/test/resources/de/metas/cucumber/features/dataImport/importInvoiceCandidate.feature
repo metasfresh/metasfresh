@@ -4,7 +4,7 @@ Feature: Import Invoice Candidates via DataImportRestController
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And metasfresh has date and time 2022-08-30T13:30:13+01:00[Europe/Athens]
+    And metasfresh has date and time 2022-08-30T13:30:13+02:00[Europe/Athens]
     And  metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value     | OPT.IsActive |
