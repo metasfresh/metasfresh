@@ -23,6 +23,9 @@ export function autocompleteRequest({
   tabId,
   viewId,
 }) {
+  // NOTE: following cases are already handled elsewhere:
+  // * view attributes
+
   if (entity === 'documentView' && subentity === 'filter') {
     return getViewFilterParameterTypeahead({
       windowId: docType,

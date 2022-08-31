@@ -23,6 +23,7 @@
 package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -38,6 +39,8 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONCreateViewRequest;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONGetFilterParameterDropdown;
+import de.metas.ui.web.view.json.JSONGetFilterParameterTypeahead;
 import de.metas.ui.web.view.json.JSONGetViewActionsRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewHeaderProperties;
@@ -80,8 +83,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -363,6 +366,7 @@ public class ViewRestController
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
+	@Deprecated
 	public JSONLookupValuesPage getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
@@ -371,6 +375,25 @@ public class ViewRestController
 			, @RequestParam(name = "query") final String query //
 	)
 	{
+		return getFilterParameterTypeahead(
+				windowId,
+				viewIdStr,
+				filterId,
+				parameterName,
+				JSONGetFilterParameterTypeahead.builder()
+						.query(query)
+						.context(ImmutableMap.of())
+						.build());
+	}
+
+	@PostMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
+	public JSONLookupValuesPage getFilterParameterTypeahead(
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@PathVariable(PARAM_FilterId) final String filterId,
+			@PathVariable("parameterName") final String parameterName,
+			@RequestBody final JSONGetFilterParameterTypeahead request)
+	{
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
@@ -378,17 +401,35 @@ public class ViewRestController
 		final Evaluatee ctx = createFilterParameterLookupContext(view);
 
 		return view
-				.getFilterParameterTypeahead(filterId, parameterName, query, ctx)
+				.getFilterParameterTypeahead(filterId, parameterName, request.getQuery(), ctx)
 				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
+	@Deprecated
 	public JSONLookupValuesList getFilterParameterDropdown(
-			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable(PARAM_ViewId) final String viewIdStr //
-			, @PathVariable(PARAM_FilterId) final String filterId //
-			, @PathVariable("parameterName") final String parameterName //
-	)
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@PathVariable(PARAM_FilterId) final String filterId,
+			@PathVariable("parameterName") final String parameterName)
+	{
+		return getFilterParameterDropdown(
+				windowId,
+				viewIdStr,
+				filterId,
+				parameterName,
+				JSONGetFilterParameterDropdown.builder()
+						.context(ImmutableMap.of())
+						.build());
+	}
+
+	@PostMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
+	public JSONLookupValuesList getFilterParameterDropdown(
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@PathVariable(PARAM_FilterId) final String filterId,
+			@PathVariable("parameterName") final String parameterName,
+			@RequestBody final JSONGetFilterParameterDropdown request)
 	{
 		userSession.assertLoggedIn();
 
@@ -531,6 +572,6 @@ public class ViewRestController
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
-		return new ResponseEntity<>(new InputStreamResource(new FileInputStream(tmpFile)), headers, HttpStatus.OK);
+		return new ResponseEntity<>(new InputStreamResource(Files.newInputStream(tmpFile.toPath())), headers, HttpStatus.OK);
 	}
 }

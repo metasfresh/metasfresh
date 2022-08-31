@@ -378,9 +378,13 @@ export const getViewFilterParameterDropdown = ({
   viewId,
   filterId,
   parameterName,
+  context = {},
 }) => {
-  return axios.get(
-    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/dropdown`
+  return axios.post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/dropdown`,
+    {
+      context,
+    }
   );
 };
 
@@ -390,12 +394,13 @@ export const getViewFilterParameterTypeahead = ({
   filterId,
   parameterName,
   query,
+  context = {},
 }) => {
-  return axios.get(
-    `${
-      config.API_URL
-    }/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/typeahead?query=${encodeURIComponent(
-      query
-    )}`
+  return axios.post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/typeahead`,
+    {
+      query: encodeURIComponent(query),
+      context,
+    }
   );
 };

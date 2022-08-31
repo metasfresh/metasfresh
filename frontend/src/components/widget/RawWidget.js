@@ -755,6 +755,8 @@ RawWidget.propTypes = {
   onHide: PropTypes.func,
   dropdownOpenCallback: PropTypes.func,
   closeTableField: PropTypes.func,
+  typeaheadSupplier: PropTypes.func,
+  dropdownValuesSupplier: PropTypes.func,
 };
 RawWidget.defaultProps = {
   tabIndex: 0,

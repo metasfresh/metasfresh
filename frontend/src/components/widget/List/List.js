@@ -90,6 +90,7 @@ class ListWidget extends Component {
       lastProperty,
       disableAutofocus,
       doNotOpenOnFocus,
+      dropdownValuesSupplier,
     } = this.props;
 
     this.setState(
@@ -104,7 +105,20 @@ class ListWidget extends Component {
 
         let request;
 
-        if (viewId && entity === 'window' && !filterWidget) {
+        if (dropdownValuesSupplier) {
+          request = dropdownValuesSupplier({
+            attribute,
+            docId: dataId,
+            docType: windowType,
+            entity,
+            subentity,
+            subentityId,
+            tabId,
+            viewId,
+            propertyName,
+            rowId,
+          });
+        } else if (viewId && entity === 'window' && !filterWidget) {
           request = dropdownModalRequest({
             windowId: windowType,
             fieldName: propertyName,
@@ -366,6 +380,7 @@ ListWidget.propTypes = {
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
+  dropdownValuesSupplier: PropTypes.func,
 
   //
   // mapStateToProps:

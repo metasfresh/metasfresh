@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Moment from 'moment-timezone';
 
-import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
+import { closeFilterBox, openFilterBox } from '../../actions/WindowActions';
 
 import { convertDateToReadable } from '../../utils/dateHelpers';
 import { isFocusableWidgetType } from '../../utils/widgetHelpers';
@@ -18,6 +18,11 @@ import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 import OverlayField from '../app/OverlayField';
 import Tooltips from '../tooltips/Tooltips.js';
 import WidgetWrapper from '../../containers/WidgetWrapper';
+import {
+  getViewFilterParameterDropdown,
+  getViewFilterParameterTypeahead,
+} from '../../api/view';
+import { prepareParameterValueForBackend } from '../../utils/filterHelpers';
 
 /**
  * @file Class based component.
@@ -441,6 +446,71 @@ class FiltersItem extends PureComponent {
   showTooltip = () => this.toggleTooltip(true);
   hideTooltip = () => this.toggleTooltip(false);
 
+  prepareLookupContextFromState = (filterId) => {
+    const { filter } = this.state;
+
+    // shall not happen:
+    if (filter?.filterId !== filterId) {
+      console.warn(
+        'prepareLookupContextFromState: called with wrong filterId',
+        { filterId, filter }
+      );
+      return {};
+    }
+
+    const context = {};
+
+    if (Array.isArray(filter.parameters)) {
+      filter.parameters.forEach((parameter) => {
+        context[parameter.parameterName] = prepareParameterValueForBackend({
+          value: parameter.value,
+          defaultValue: parameter.defaultValue,
+          widgetType: parameter.widgetType,
+        });
+      });
+    }
+
+    return context;
+  };
+
+  typeaheadSupplier = ({
+    docType: windowId,
+    docId: viewId, // NOTE: for some reason docId is the viewId and not the viewId which is undefined
+    subentityId: filterId,
+    propertyName: parameterName,
+    query,
+  }) => {
+    const context = this.prepareLookupContextFromState(filterId);
+    delete context[parameterName];
+
+    return getViewFilterParameterTypeahead({
+      windowId,
+      viewId,
+      filterId,
+      parameterName,
+      query,
+      context,
+    });
+  };
+
+  dropdownValuesSupplier = ({
+    docType: windowId,
+    viewId,
+    subentityId: filterId,
+    propertyName: parameterName,
+  }) => {
+    const context = this.prepareLookupContextFromState(filterId);
+    delete context[parameterName];
+
+    return getViewFilterParameterDropdown({
+      windowId,
+      viewId,
+      filterId,
+      parameterName,
+      context,
+    });
+  };
+
   render() {
     const {
       data,
@@ -569,6 +639,8 @@ class FiltersItem extends PureComponent {
                           onHide,
                           isFilterActive: isActive,
                           updateItems: this.updateItems,
+                          typeaheadSupplier: this.typeaheadSupplier,
+                          dropdownValuesSupplier: this.dropdownValuesSupplier,
                           autoFocus,
                         }}
                       />

@@ -308,6 +308,7 @@ export class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
+      typeaheadSupplier,
     } = this.props;
 
     // -- shape placeholder with the clearValueText in case this exists
@@ -325,7 +326,13 @@ export class RawLookup extends Component {
 
     this.typeaheadQuery = typeaheadParams.query;
 
-    if (entity === 'documentView' && !filterWidget) {
+    if (typeaheadSupplier) {
+      typeaheadRequest = typeaheadSupplier({
+        ...typeaheadParams,
+        subentity,
+        subentityId,
+      });
+    } else if (entity === 'documentView' && !filterWidget) {
       typeaheadRequest = getViewAttributeTypeahead(
         windowType,
         viewId,
@@ -683,12 +690,13 @@ RawLookup.propTypes = {
   advSearchWindowId: PropTypes.string,
 
   //
-  // Callbacks:
+  // Callbacks and other functions:
   dispatch: PropTypes.func.isRequired,
   onDropdownListToggle: PropTypes.func,
   onChange: PropTypes.func,
   enableAutofocus: PropTypes.func,
   updateItems: PropTypes.func,
+  typeaheadSupplier: PropTypes.func,
 
   //
   // mapStateToProps:

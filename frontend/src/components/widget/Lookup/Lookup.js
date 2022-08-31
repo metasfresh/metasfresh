@@ -349,6 +349,7 @@ class Lookup extends Component {
       forwardedRef,
       isFilterActive,
       updateItems,
+      typeaheadSupplier,
     } = this.props;
 
     const {
@@ -503,6 +504,7 @@ class Lookup extends Component {
                     advSearchCaption,
                     advSearchWindowId,
                     updateItems,
+                    typeaheadSupplier,
                   }}
                 />
               );
@@ -623,6 +625,7 @@ Lookup.propTypes = {
   onBlurWidget: PropTypes.func,
   onChange: PropTypes.func,
   updateItems: PropTypes.func,
+  typeaheadSupplier: PropTypes.func,
 
   //
   // onClickOutside HOC:

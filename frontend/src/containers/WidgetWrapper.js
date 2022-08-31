@@ -50,6 +50,7 @@ class WidgetWrapper extends PureComponent {
   }
 
   render() {
+    //console.log('WidgetWrapper.render', { props: this.props });
     const { renderMaster, widgetType } = this.props;
 
     if (widgetType === 'InlineTab') {
@@ -182,6 +183,11 @@ WidgetWrapper.propTypes = {
   supportFieldEdit: PropTypes.bool,
   layoutId: PropTypes.string,
   isModal: PropTypes.bool,
+
+  //
+  // Callbacks and other functions
+  typeaheadSupplier: PropTypes.func,
+  dropdownValuesSupplier: PropTypes.func,
 
   //
   // mapStateToProps:
