@@ -177,7 +177,6 @@ public class M_Element extends X_AD_Element
 		final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
 		final String baseADLanguage = languageDAO.retrieveBaseLanguage();
 
-		elementTranslationBL.updateElementTrlFromElement(adElementId, baseADLanguage);
 		elementTranslationBL.propagateElementTrls(adElementId, baseADLanguage);
 	}
 }
