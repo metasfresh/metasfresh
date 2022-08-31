@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.rest_api.utils.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.comments.ViewRowCommentsSummary;
@@ -403,9 +404,17 @@ public class ViewRestController
 		final ViewFilterParameterLookupEvaluationCtx ctx = createFilterParameterLookupContext(view, request.getContext());
 		final String adLanguage = userSession.getAD_Language();
 
-		return view
-				.getFilterParameterTypeahead(filterId, parameterName, request.getQuery(), ctx)
-				.transform(page -> JSONLookupValuesPage.of(page, adLanguage));
+		try
+		{
+			return view
+					.getFilterParameterTypeahead(filterId, parameterName, request.getQuery(), ctx)
+					.transform(page -> JSONLookupValuesPage.of(page, adLanguage));
+		}
+		catch (final Exception ex)
+		{
+			// NOTE: don't propagate exceptions because some of them are thrown because not all parameters are provided (standard use case)
+			return JSONLookupValuesPage.error(JsonErrors.ofThrowable(ex, adLanguage));
+		}
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
@@ -440,9 +449,18 @@ public class ViewRestController
 		final IView view = viewsRepo.getView(viewId);
 		final ViewFilterParameterLookupEvaluationCtx ctx = createFilterParameterLookupContext(view, request.getContext());
 
-		return view
-				.getFilterParameterDropdown(filterId, parameterName, ctx)
-				.transform(this::toJSONLookupValuesList);
+		try
+		{
+			return view
+					.getFilterParameterDropdown(filterId, parameterName, ctx)
+					.transform(this::toJSONLookupValuesList);
+		}
+		catch (final Exception ex)
+		{
+			// NOTE: don't propagate exceptions because some of them are thrown because not all parameters are provided (standard use case)
+			final String adLanguage = userSession.getAD_Language();
+			return JSONLookupValuesList.error(JsonErrors.ofThrowable(ex, adLanguage));
+		}
 	}
 
 	@Builder(builderMethodName = "newPreconditionsContextBuilder")

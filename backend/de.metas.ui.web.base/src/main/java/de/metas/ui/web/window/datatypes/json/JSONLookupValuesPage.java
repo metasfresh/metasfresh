@@ -24,7 +24,9 @@ package de.metas.ui.web.window.datatypes.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import lombok.Builder;
 import lombok.NonNull;
@@ -47,15 +49,20 @@ public class JSONLookupValuesPage
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isAlwaysDisplayNewBPartner;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable JsonErrorItem error;
+
 	@Builder
 	private JSONLookupValuesPage(
 			@NonNull final ImmutableList<JSONLookupValue> values,
 			@Nullable final Boolean hasMoreResults,
-			@Nullable final Boolean isAlwaysDisplayNewBPartner)
+			@Nullable final Boolean isAlwaysDisplayNewBPartner,
+			@Nullable JsonErrorItem error)
 	{
 		this.values = values;
 		this.hasMoreResults = hasMoreResults;
 		this.isAlwaysDisplayNewBPartner = isAlwaysDisplayNewBPartner;
+		this.error = error;
 	}
 
 	private JSONLookupValuesPage()
@@ -63,6 +70,7 @@ public class JSONLookupValuesPage
 		values = ImmutableList.of();
 		hasMoreResults = false;
 		isAlwaysDisplayNewBPartner = false;
+		error = null;
 	}
 
 	public static JSONLookupValuesPage of(
@@ -89,5 +97,10 @@ public class JSONLookupValuesPage
 					.isAlwaysDisplayNewBPartner(isAlwaysDisplayNewBPartner)
 					.build();
 		}
+	}
+
+	public static JSONLookupValuesPage error(@NonNull final JsonErrorItem error)
+	{
+		return builder().error(error).build();
 	}
 }
