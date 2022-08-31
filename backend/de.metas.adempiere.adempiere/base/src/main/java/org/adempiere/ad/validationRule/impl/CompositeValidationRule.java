@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class CompositeValidationRule implements IValidationRule
 {
-	public static final IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
+	public static IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
 	{
 		return builder()
 				.add(rule1)
@@ -53,7 +53,7 @@ public final class CompositeValidationRule implements IValidationRule
 				.build();
 	}
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -68,7 +68,6 @@ public final class CompositeValidationRule implements IValidationRule
 
 	private CompositeValidationRule(final Builder builder)
 	{
-		super();
 		rules = ImmutableList.copyOf(builder.rules); // at this point, we assume that we have more than one rule
 		immutable = builder.immutable;
 		prefilterWhereClause = builder.buildPrefilterWhereClause();
@@ -149,6 +148,7 @@ public final class CompositeValidationRule implements IValidationRule
 		return dependsOnTableNames;
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private final List<IValidationRule> rules = new ArrayList<>();
