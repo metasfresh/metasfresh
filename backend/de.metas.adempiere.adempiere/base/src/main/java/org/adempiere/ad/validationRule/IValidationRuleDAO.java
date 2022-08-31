@@ -37,18 +37,10 @@ import de.metas.util.ISingletonService;
  */
 public interface IValidationRuleDAO extends ISingletonService
 {
-	I_AD_Val_Rule retriveValRule(int adValRuleId);
+	I_AD_Val_Rule retrieveValRule(AdValRuleId adValRuleId);
 
-	int retrieveValRuleIdByColumnName(String tableName, String columnName);
+	List<I_AD_Val_Rule> retrieveChildValRules(AdValRuleId parentValRuleId);
 
-	/**
-	 * Retrieve child/included validation rules
-	 * 
-	 * @param parentValRuleId
-	 * @return included validation rules
-	 */
-	List<I_AD_Val_Rule> retrieveChildValRules(int parentValRuleId);
-
-	Set<String> retrieveValRuleDependsOnTableNames(int valRuleId);
+	Set<String> retrieveValRuleDependsOnTableNames(AdValRuleId valRuleId);
 
 }

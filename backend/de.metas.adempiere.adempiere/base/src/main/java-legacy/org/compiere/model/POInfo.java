@@ -20,6 +20,7 @@ import lombok.Value;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.POWrapper;
@@ -46,7 +47,6 @@ import java.util.Set;
  * @author Jorg Janke
  * @author Victor Perez, e-Evolution SC
  * <li>[ 2195894 ] Improve performance in PO engine
- * <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335
  */
 public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 {
@@ -398,7 +398,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		final boolean IsAllowLogging = StringUtils.toBoolean(rs.getString(21));
 		final boolean IsLazyLoading = StringUtils.toBoolean(rs.getString(23)); // metas
 		final boolean IsCalculated = StringUtils.toBoolean(rs.getString(24)); // metas
-		final int AD_Val_Rule_ID = rs.getInt(25); // metas
+		final AdValRuleId AD_Val_Rule_ID = AdValRuleId.ofRepoIdOrNull(rs.getInt(25)); // metas
 		final boolean isUseDocumentSequence = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsUseDocSequence)); // metas: 05133
 		final boolean isStaleableColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsStaleable)); // metas: 01537
 		final boolean isSelectionColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
@@ -870,21 +870,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	{
 		final int columnIndex = getColumnIndex(columnName);
 		return getColumnReferenceValueId(columnIndex);
-	}
-
-	public int getColumnValRuleId(final String columnName)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		return getColumnValRuleId(columnIndex);
-	}
-
-	private int getColumnValRuleId(final int columnIndex)
-	{
-		if (columnIndex < 0 || columnIndex >= m_columns.size())
-		{
-			return -1;
-		}
-		return m_columns.get(columnIndex).getAD_Val_Rule_ID();
 	}
 
 	public boolean isColumnUpdateable(final int index)

@@ -44,6 +44,7 @@ import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.JTextComponent;
 
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ADialog;
@@ -136,7 +137,8 @@ public class OrderLineCreate extends CDialog implements VetoableChangeListener {
 					c.get_TableName(),
 					c.getColumnName(),
 					c.getAD_Reference_Value_ID(), c.isParent(),
-					c.getAD_Val_Rule_ID());
+					AdValRuleId.ofRepoIdOrNull(c.getAD_Val_Rule_ID())
+			);
 			fProduct = new VLookup(c.getColumnName(), false, true, false,
 					fProductLookup);
 			fProduct.setEnabled(true);

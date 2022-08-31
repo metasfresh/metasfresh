@@ -52,6 +52,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.NamePairPredicates;
@@ -136,7 +137,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	 */
 	public static LookupDescriptorProvider searchByAD_Val_Rule_ID(
 			final int AD_Reference_Value_ID,
-			final int AD_Val_Rule_ID)
+			final AdValRuleId AD_Val_Rule_ID)
 	{
 		Check.assumeGreaterThanZero(AD_Reference_Value_ID, "AD_Reference_Value_ID");
 
@@ -346,7 +347,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private DocumentFieldWidgetType widgetType;
 		private Integer displayType;
 		private int AD_Reference_Value_ID = -1;
-		private int AD_Val_Rule_ID = -1;
+		private AdValRuleId AD_Val_Rule_ID = null;
 		private LookupScope scope = LookupScope.DocumentField;
 		private Access requiredAccess = null;
 
@@ -389,7 +390,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				@Nullable final String sqlColumnName,
 				final DocumentFieldWidgetType widgetType, final int displayType,
 				final int AD_Reference_Value_ID,
-				final int AD_Val_Rule_ID,
+				final AdValRuleId AD_Val_Rule_ID,
 				final List<IValidationRule> additionalValidationRules)
 		{
 			if (widgetType == DocumentFieldWidgetType.ProcessButton)
@@ -761,7 +762,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return this;
 		}
 
-		public Builder setAD_Val_Rule_ID(final int AD_Val_Rule_ID)
+		public Builder setAD_Val_Rule_ID(final AdValRuleId AD_Val_Rule_ID)
 		{
 			this.AD_Val_Rule_ID = AD_Val_Rule_ID;
 			return this;

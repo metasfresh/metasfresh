@@ -46,6 +46,7 @@ import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -103,9 +104,9 @@ public class LookupDAO implements ILookupDAO
 		private final String TableName;
 		private final int AD_Reference_Value_ID;
 		private final boolean parent;
-		private final int AD_Val_Rule_ID;
+		private final AdValRuleId AD_Val_Rule_ID;
 
-		public ColumnInfo(final String tableName, final String columnName, final int adReferenceValueId, final boolean isParent, final int adValRuleId)
+		public ColumnInfo(final String tableName, final String columnName, final int adReferenceValueId, final boolean isParent, final AdValRuleId adValRuleId)
 		{
 			TableName = tableName;
 			ColumnName = columnName;
@@ -133,7 +134,7 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		@Override
-		public int getAD_Val_Rule_ID()
+		public AdValRuleId getAD_Val_Rule_ID()
 		{
 			return AD_Val_Rule_ID;
 		}
@@ -218,8 +219,8 @@ public class LookupDAO implements ILookupDAO
 			{
 				final String columnName = rs.getString(1);
 				final int AD_Reference_Value_ID = rs.getInt(2);
-				final boolean IsParent = "Y".equals(rs.getString(3));
-				final int AD_Val_Rule_ID = rs.getInt(4);
+				final boolean IsParent = StringUtils.toBoolean(rs.getString(3));
+				final AdValRuleId AD_Val_Rule_ID = AdValRuleId.ofRepoIdOrNull(rs.getInt(4));
 
 				final int tableID = rs.getInt(5);
 
@@ -239,8 +240,6 @@ public class LookupDAO implements ILookupDAO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 
 		return null;
@@ -593,8 +592,6 @@ public class LookupDAO implements ILookupDAO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 
 		// Make sure we have some display columns defined.
@@ -604,19 +601,17 @@ public class LookupDAO implements ILookupDAO
 					+ "\n HINT: please go to Table and columns, and set IsIdentifier=Y on columns which you want to be part of record's display string.");
 		}
 
-		final ILookupDisplayInfo lookupDisplayInfo = new LookupDisplayInfo(
+		return new LookupDisplayInfo(
 				lookupDisplayColumns,
 				ZoomWindow,
 				ZoomWindowPO,
 				isTranslated);
-		return lookupDisplayInfo;
 	}
 
 	@Override
 	public boolean isReferenceOrderByValue(final int adReferenceId)
 	{
-		final boolean isOrderByValue = "Y".equals(DB.getSQLValueString(ITrx.TRXNAME_None, "SELECT IsOrderByValue FROM AD_Reference WHERE AD_Reference_ID = ? ", adReferenceId));
-		return isOrderByValue;
+		return StringUtils.toBoolean(DB.getSQLValueString(ITrx.TRXNAME_None, "SELECT IsOrderByValue FROM AD_Reference WHERE AD_Reference_ID = ? ", adReferenceId));
 	}
 
 	public static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair> implements INamePairIterator
@@ -657,7 +652,7 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		@Override
-		protected PreparedStatement createPreparedStatement() throws SQLException
+		protected PreparedStatement createPreparedStatement()
 		{
 			return DB.prepareStatement(sql, ITrx.TRXNAME_None);
 		}
@@ -689,8 +684,7 @@ public class LookupDAO implements ILookupDAO
 
 		private boolean isActive(final ResultSet rs) throws SQLException
 		{
-			final boolean isActive = DisplayType.toBoolean(rs.getString(MLookupFactory.COLUMNINDEX_IsActive));
-			return isActive;
+			return StringUtils.toBoolean(rs.getString(MLookupFactory.COLUMNINDEX_IsActive));
 		}
 
 		private boolean isDisplayedInUI(final ResultSet rs) throws SQLException
@@ -829,8 +823,7 @@ public class LookupDAO implements ILookupDAO
 			}
 		}
 
-		final String sql = injectWhereClause(lookupInfo.getSqlQuery(), sqlWhereClause);
-		return sql;
+		return injectWhereClause(lookupInfo.getSqlQuery(), sqlWhereClause);
 	}
 
 	private static String injectWhereClause(String sql, final String validation)
@@ -991,8 +984,6 @@ public class LookupDAO implements ILookupDAO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 
 		return directValue;

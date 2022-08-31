@@ -7,6 +7,7 @@ import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
@@ -136,7 +137,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540480) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_Product_And_DateInvoiced"
+						.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540480)) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_Product_And_DateInvoiced"
 						.buildProvider())
 				.setValueClass(LookupValue.IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)

@@ -22,23 +22,12 @@ package org.compiere.apps;
  * #L%
  */
 
-
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.Properties;
-
-import org.adempiere.ad.validationRule.IValidationRule;
+import de.metas.i18n.IMsgBL;
+import de.metas.letters.model.I_AD_BoilerPlate;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.util.Services;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.I_C_BPartner;
@@ -51,11 +40,11 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.letters.model.I_AD_BoilerPlate;
-import de.metas.letters.model.MADBoilerPlate;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
-import de.metas.util.Services;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.Properties;
 
 public class LetterDialog
 		extends CDialog
@@ -130,7 +119,7 @@ public class LetterDialog
 				I_C_BPartner.COLUMNNAME_C_BPartner_ID,
 				0, // AD_Reference_Value_ID,
 				false, // IsParent,
-				IValidationRule.AD_Val_Rule_ID_Null); // ValidationCode
+				(AdValRuleId)null); // ValidationCode
 
 		fBPartner = new VLookup(lookupBPartner.getColumnName(), false, true, false, lookupBPartner);
 

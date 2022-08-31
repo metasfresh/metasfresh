@@ -50,6 +50,7 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_AD_Element;
@@ -94,7 +95,7 @@ import java.util.stream.Stream;
 /* package */ class ADProcessDescriptorsFactory
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDescriptorsFactory.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDescriptorsFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = DefaultValueExpressionsFactory.newInstance();
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -288,7 +289,7 @@ import java.util.stream.Stream;
 					.setCtxColumnName(parameterName)
 					.setDisplayType(adProcessParam.getAD_Reference_ID())
 					.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
-					.setAD_Val_Rule_ID(adProcessParam.getAD_Val_Rule_ID())
+					.setAD_Val_Rule_ID(AdValRuleId.ofRepoIdOrNull(adProcessParam.getAD_Val_Rule_ID()))
 					.setReadOnlyAccess()
 					.buildProvider();
 		}
@@ -493,7 +494,7 @@ import java.util.stream.Stream;
 
 	private static final class ProcessParametersDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
 	{
-		public static final transient ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
+		public static final ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
 
 		private static final DocumentEntityDataBindingDescriptor dataBinding = () -> ADProcessParametersRepository.instance;
 

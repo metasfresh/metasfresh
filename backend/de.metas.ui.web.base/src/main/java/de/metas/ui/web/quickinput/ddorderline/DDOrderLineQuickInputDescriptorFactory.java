@@ -40,6 +40,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.util.DisplayType;
 import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
@@ -55,7 +56,7 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 	private final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout;
 
 	private static final int M_PRODUCT_STOCKED_AD_REFERENCE_ID = 171;
-	private static final int DD_ORDERLINE_M_HU_PI_ITEM_PRODUCT_AD_VAL_RULE_ID = 540299;
+	private static final AdValRuleId DD_ORDERLINE_M_HU_PI_ITEM_PRODUCT_AD_VAL_RULE_ID = AdValRuleId.ofRepoId(540299);
 
 	public DDOrderLineQuickInputDescriptorFactory(final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout)
 	{

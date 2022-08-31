@@ -15,6 +15,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
@@ -149,7 +150,7 @@ public class AD_Column
 						column.getColumnName(), // ctxColumnName
 						column.getAD_Reference_Value_ID(),
 						column.isParent(), // IsParent,
-						column.getAD_Val_Rule_ID() //AD_Val_Rule_ID
+						AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()) //AD_Val_Rule_ID
 				);
 			}
 			catch (final Exception ex)

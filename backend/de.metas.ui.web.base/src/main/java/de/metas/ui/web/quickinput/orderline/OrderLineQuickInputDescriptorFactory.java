@@ -34,6 +34,7 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
@@ -196,7 +197,7 @@ import java.util.Set;
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540365)// FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
+						.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540365))// FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)

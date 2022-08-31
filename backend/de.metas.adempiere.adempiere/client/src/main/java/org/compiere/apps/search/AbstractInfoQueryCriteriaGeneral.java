@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.Lookup;
@@ -109,7 +110,8 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 						columnName,
 						infoColumn.getAD_Reference_Value_ID(),
 						false, // IsParent
-						infoColumn.getAD_Val_Rule_ID());
+						AdValRuleId.ofRepoIdOrNull(infoColumn.getAD_Val_Rule_ID())
+				);
 			}
 			catch (final Exception e)
 			{

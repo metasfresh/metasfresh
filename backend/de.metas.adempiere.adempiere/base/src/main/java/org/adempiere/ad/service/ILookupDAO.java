@@ -26,6 +26,7 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.compiere.model.ILookupDisplayColumn;
@@ -46,7 +47,7 @@ public interface ILookupDAO extends ISingletonService
 {
 	interface IColumnInfo
 	{
-		int getAD_Val_Rule_ID();
+		AdValRuleId getAD_Val_Rule_ID();
 
 		boolean isParent();
 

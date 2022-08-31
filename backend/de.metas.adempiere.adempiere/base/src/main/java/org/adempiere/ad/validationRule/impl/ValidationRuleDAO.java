@@ -30,12 +30,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.I_AD_Val_Rule_Dep;
 import org.compiere.model.I_AD_Val_Rule_Included;
-import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -47,17 +47,19 @@ import de.metas.util.Services;
 
 public class ValidationRuleDAO implements IValidationRuleDAO
 {
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	@Cached(cacheName = I_AD_Val_Rule.Table_Name)
-	public I_AD_Val_Rule retriveValRule(final int adValRuleId)
+	public I_AD_Val_Rule retrieveValRule(final AdValRuleId adValRuleId)
 	{
-		if (adValRuleId <= 0)
+		if (adValRuleId == null)
 		{
 			return null;
 		}
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Val_Rule.class, Env.getCtx(), ITrx.TRXNAME_None)
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_AD_Val_Rule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Val_Rule.COLUMNNAME_AD_Val_Rule_ID, adValRuleId)
 				.create()
@@ -65,21 +67,9 @@ public class ValidationRuleDAO implements IValidationRuleDAO
 	}
 
 	@Override
-	public int retrieveValRuleIdByColumnName(final String tableName, final String columnName)
+	public List<I_AD_Val_Rule> retrieveChildValRules(final AdValRuleId parentValRuleId)
 	{
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		if (poInfo == null)
-		{
-			return -1;
-		}
-
-		return poInfo.getColumnValRuleId(columnName);
-	}
-
-	@Override
-	public List<I_AD_Val_Rule> retrieveChildValRules(final int parentValRuleId)
-	{
-		if (parentValRuleId <= 0)
+		if (parentValRuleId == null)
 		{
 			return ImmutableList.of();
 		}
@@ -87,32 +77,30 @@ public class ValidationRuleDAO implements IValidationRuleDAO
 	}
 
 	@Cached(cacheName = I_AD_Val_Rule.Table_Name)
-	/* package */ List<I_AD_Val_Rule> retrieveChildValRules0(@CacheCtx final Properties ctx, final int adValRuleId, @CacheTrx final String trxName)
+	/* package */ List<I_AD_Val_Rule> retrieveChildValRules0(@CacheCtx final Properties ctx, final AdValRuleId adValRuleId, @CacheTrx final String trxName)
 	{
 		final String whereClause = I_AD_Val_Rule.COLUMNNAME_AD_Val_Rule_ID + " IN (SELECT " + I_AD_Val_Rule_Included.COLUMNNAME_Included_Val_Rule_ID
 				+ " FROM " + I_AD_Val_Rule_Included.Table_Name
 				+ " WHERE " + I_AD_Val_Rule_Included.COLUMNNAME_AD_Val_Rule_ID
 				+ " = ? )";
 
-		final List<I_AD_Val_Rule> includedRules = new TypedSqlQuery<>(ctx, I_AD_Val_Rule.class, whereClause, trxName)
+		return new TypedSqlQuery<>(ctx, I_AD_Val_Rule.class, whereClause, trxName)
 				.setParameters(adValRuleId)
 				.setOnlyActiveRecords(true)
 				.listImmutable(I_AD_Val_Rule.class);
-
-		return includedRules;
 	}
 
 	@Override
 	@Cached(cacheName = I_AD_Val_Rule_Dep.Table_Name)
-	public Set<String> retrieveValRuleDependsOnTableNames(final int valRuleId)
+	public Set<String> retrieveValRuleDependsOnTableNames(final AdValRuleId valRuleId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Val_Rule_Dep.class)
 				.addEqualsFilter(I_AD_Val_Rule_Dep.COLUMN_AD_Val_Rule_ID, valRuleId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(valRuleDep -> valRuleDep.getAD_Table_ID())
+				.map(I_AD_Val_Rule_Dep::getAD_Table_ID)
 				.map(Services.get(IADTableDAO.class)::retrieveTableName)
 				.collect(ImmutableSet.toImmutableSet());
 	}

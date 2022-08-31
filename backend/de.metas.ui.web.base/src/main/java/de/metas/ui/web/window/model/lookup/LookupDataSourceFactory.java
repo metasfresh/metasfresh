@@ -10,6 +10,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class LookupDataSourceFactory
 {
-	public static final transient LookupDataSourceFactory instance = new LookupDataSourceFactory();
+	public static final LookupDataSourceFactory instance = new LookupDataSourceFactory();
 
 	private static final Logger logger = LogManager.getLogger(LookupDataSourceFactory.class);
 
@@ -90,22 +91,13 @@ public final class LookupDataSourceFactory
 		return getLookupDataSource(lookupDescriptor);
 	}
 
-	public LookupDataSource searchByAD_Val_Rule_ID(final int AD_Reference_Value_ID, final int AD_Val_Rule_ID)
-	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
-				.searchByAD_Val_Rule_ID(AD_Reference_Value_ID, AD_Val_Rule_ID)
-				.provide()
-				.get();
-		return getLookupDataSource(lookupDescriptor);
-	}
-
 	public LookupDataSource searchByColumn(@NonNull final String tableName, @NonNull final String columnname)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final I_AD_Column column = adTableDAO.retrieveColumn(tableName, columnname);
 
 		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
-				.searchByAD_Val_Rule_ID(column.getAD_Reference_Value_ID(), column.getAD_Val_Rule_ID())
+				.searchByAD_Val_Rule_ID(column.getAD_Reference_Value_ID(), AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()))
 				.provide()
 				.get();
 

@@ -36,6 +36,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -72,7 +73,7 @@ public class GridFieldVO implements Serializable
 			return getSeqNo(o1) - getSeqNo(o2);
 		}
 
-		private final int getSeqNo(final GridFieldVO field)
+		private int getSeqNo(final GridFieldVO field)
 		{
 			return field == null ? 0 : field.getSeqNo();
 		}
@@ -86,7 +87,7 @@ public class GridFieldVO implements Serializable
 			return getSeqNo(o1) - getSeqNo(o2);
 		}
 
-		private final int getSeqNo(final GridFieldVO field)
+		private int getSeqNo(final GridFieldVO field)
 		{
 			return field == null ? 0 : field.getSeqNoGrid();
 		}
@@ -371,7 +372,7 @@ public class GridFieldVO implements Serializable
 				}
 				else if (columnName.equalsIgnoreCase("AD_Val_Rule_ID"))
 				{
-					vo.AD_Val_Rule_ID = rs.getInt(i);                    // metas: 03271
+					vo.AD_Val_Rule_ID = AdValRuleId.ofRepoIdOrNull(rs.getInt(i));                    // metas: 03271
 				}
 				else if (columnName.equalsIgnoreCase("ColumnSQL"))
 				{
@@ -523,7 +524,7 @@ public class GridFieldVO implements Serializable
 			//
 			vo.AD_Reference_Value_ID = rs.getInt("AD_Reference_Value_ID");
 			vo.autocomplete = "Y".equals(rs.getString("IsAutoComplete"));
-			vo.AD_Val_Rule_ID = rs.getInt("AD_Val_Rule_ID"); // metas: 03271
+			vo.AD_Val_Rule_ID = AdValRuleId.ofRepoIdOrNull(rs.getInt("AD_Val_Rule_ID")); // metas: 03271
 			vo.ReadOnlyLogic = rs.getString("ReadOnlyLogic");
 			vo.DisplayLogic = rs.getString("DisplayLogic");
 
@@ -740,7 +741,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Indicates that the field is hidden from UI
 	 *
-	 * @task 09504
+	 * @implNote task 09504
 	 */
 	private boolean isHiddenFromUI = false;
 	/**
@@ -866,7 +867,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Validation rule
 	 */
-	private int AD_Val_Rule_ID = -1; // metas: 03271
+	private AdValRuleId AD_Val_Rule_ID = null; // metas: 03271
 	/**
 	 * Reference Value
 	 */
@@ -917,7 +918,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Validate Fields and create LookupInfo if required
 	 */
-	private final void initFinish()
+	private void initFinish()
 	{
 		final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 
@@ -968,16 +969,14 @@ public class GridFieldVO implements Serializable
 			this.isDisplayedGrid = false;
 		}
 
-		createLookupInfo(true); // metas : cg: task 02354 // tsa: always create the lookupInfo
+		createLookupInfo(); // metas : cg: task 02354 // tsa: always create the lookupInfo
 	}   // initFinish
 
 	/**
 	 * Create lookup info if the type is lookup and control the creation trough displayed param
-	 *
-	 * @param alwaysCreate always create the lookup info, even if the field is not displayed
 	 */
 	// metas : cg: task 02354
-	private void createLookupInfo(final boolean alwaysCreate)
+	private void createLookupInfo()
 	{
 		// Shall we create the MLookupInfo?
 		if (lookupInfo != null)
@@ -986,8 +985,7 @@ public class GridFieldVO implements Serializable
 		}
 
 		// Create Lookup, if not ID
-		final boolean displayed = this.IsDisplayed || this.isDisplayedGrid;
-		if (DisplayType.isLookup(displayType) && (displayed || alwaysCreate))
+		if (DisplayType.isLookup(displayType))
 		{
 			try
 			{
@@ -1195,7 +1193,7 @@ public class GridFieldVO implements Serializable
 	{
 		if (lookupInfo == null)
 		{
-			createLookupInfo(true);
+			createLookupInfo();
 		}
 		return this.lookupInfo;
 	}
@@ -1514,7 +1512,7 @@ public class GridFieldVO implements Serializable
 		return AD_Reference_Value_ID;
 	}
 
-	public int getAD_Val_Rule_ID()
+	public AdValRuleId getAD_Val_Rule_ID()
 	{
 		return AD_Val_Rule_ID;
 	}

@@ -29,6 +29,7 @@ import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -37,6 +38,7 @@ import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
 import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,7 +69,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_Description;
  * <li>BF [ 1817768 ] Isolate hardcoded table direct columns
  * @author Teo Sarca
  * <li>BF [ 2933367 ] Virtual Column Identifiers are not working
- * https://sourceforge.net/tracker/?func=detail&aid=2933367&group_id=176962&atid=879332
  * @author Carlos Ruiz, GlobalQSS
  * <li>BF [ 2561593 ] Multi-tenant problem with webui
  * @version $Id: MLookupFactory.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
@@ -89,7 +90,7 @@ public class MLookupFactory
 	/**
 	 * Table Reference Cache
 	 */
-	private static CCache<ArrayKey, MLookupInfo> s_cacheRefTable = new CCache<>("AD_Ref_Table", 30, 60);    // 1h
+	private static final CCache<ArrayKey, MLookupInfo> s_cacheRefTable = new CCache<>("AD_Ref_Table", 30, 60);    // 1h
 
 	/**
 	 * Create MLookup
@@ -118,7 +119,7 @@ public class MLookupFactory
 				keyColumnName, // ctxColumnName
 				-1, // AD_Reference_Value_ID
 				false, // IsParent, not relevant
-				-1 // AD_Val_Rule_ID
+				(AdValRuleId)null // AD_Val_Rule_ID
 		);
 
 		final int adColumnId = -1;
@@ -134,7 +135,7 @@ public class MLookupFactory
 				null, // ctxColumnName
 				adReferenceId, // AD_Reference_Value_ID
 				false, // IsParent, not relevant
-				-1 // AD_Val_Rule_ID
+				(AdValRuleId)null // AD_Val_Rule_ID
 		);
 
 		final int adColumnId = -1;
@@ -142,7 +143,7 @@ public class MLookupFactory
 	}
 
 	public static MLookup get(final Properties ctx, final int WindowNo, final int Column_ID, final int AD_Reference_ID, final String ctxTableName, final String ctxColumnName, final int AD_Reference_Value_ID,
-			final boolean IsParent, final int AD_Val_Rule_ID)
+			final boolean IsParent, final AdValRuleId AD_Val_Rule_ID)
 
 			throws AdempiereException
 	{
@@ -220,7 +221,7 @@ public class MLookupFactory
 			final int AD_Reference_Value_ID,
 			final boolean IsParent, final String ValidationCode)
 	{
-		final int adValRuleId = -1;
+		final AdValRuleId adValRuleId = null;
 		final MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, adValRuleId);
 		Check.assumeNotNull(info, "lookupInfo not null for TableName={}, ColumnName={}, AD_Reference_ID={}, AD_Reference_Value_ID={}", ctxTableName, ctxColumnName, AD_Reference_ID, AD_Reference_Value_ID);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).createSQLValidationRule(ValidationCode));
@@ -235,7 +236,7 @@ public class MLookupFactory
 			final String ctxColumnName,
 			final int AD_Reference_Value_ID,
 			final boolean IsParent,
-			final int AD_Val_Rule_ID)
+			final AdValRuleId AD_Val_Rule_ID)
 	{
 		final MLookupInfo info;
 		// List
@@ -314,7 +315,6 @@ public class MLookupFactory
 	/**
 	 * Creates Direct access SQL Query. Similar with regular query but without validation rules, no security and no ORDER BY.
 	 *
-	 * @param info
 	 * @return SELECT Key, Value, DisplayName, IsActive FROM TableName WHERE KeyColumn=?
 	 */
 	private static String createQueryDirect(final MLookupInfo info, final boolean useBaseLanguage)
@@ -340,7 +340,6 @@ public class MLookupFactory
 	/**************************************************************************
 	 * Get Lookup SQL for Lists
 	 *
-	 * @param AD_Reference_Value_ID
 	 * @return SELECT NULL, Value, Name, IsActive, Description, EntityType, FROM AD_Ref_List
 	 */
 	static public MLookupInfo getLookup_List(final int AD_Reference_Value_ID)
@@ -694,13 +693,13 @@ public class MLookupFactory
 		// Order By qualified term or by Name
 		final String sqlOrderBy;
 		{
-			final String OrderByClause = tableRefInfo.getOrderByClause();
-			if (!Check.isEmpty(OrderByClause, true))
+			final String orderByClause = StringUtils.trimBlankToNull(tableRefInfo.getOrderByClause());
+			if (orderByClause != null)
 			{
-				sqlOrderBy = OrderByClause;
-				if (OrderByClause.indexOf('.') == -1)
+				sqlOrderBy = orderByClause;
+				if (orderByClause.indexOf('.') == -1)
 				{
-					s_log.error("getLookup_Table - " + tableName + ": ORDER BY must fully qualified: " + OrderByClause);
+					s_log.error("ORDER BY must fully qualified: {}", tableRefInfo);
 				}
 			}
 			else

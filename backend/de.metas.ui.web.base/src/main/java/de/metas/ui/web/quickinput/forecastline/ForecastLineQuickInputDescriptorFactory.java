@@ -31,6 +31,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.util.DisplayType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +111,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540365) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
+						.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540365)) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)

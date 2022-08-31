@@ -7,6 +7,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -29,7 +30,7 @@ public final class POInfoColumn implements Serializable
 	 */
 	private static final long serialVersionUID = 1667303121090497293L;
 
-	private static final transient Logger logger = LogManager.getLogger(POInfoColumn.class);
+	private static final Logger logger = LogManager.getLogger(POInfoColumn.class);
 
 	public POInfoColumn(
 			final int ad_Column_ID,
@@ -45,7 +46,7 @@ public final class POInfoColumn implements Serializable
 			final boolean isKey,
 			final boolean isParent,
 			final int ad_Reference_Value_ID,
-			final int AD_Val_Rule_ID,
+			final AdValRuleId AD_Val_Rule_ID,
 			final int fieldLength,
 			final String valueMin,
 			final String valueMax,
@@ -99,7 +100,7 @@ public final class POInfoColumn implements Serializable
 		//
 		AD_Reference_Value_ID = ad_Reference_Value_ID;
 		// ValidationCode = validationCode;
-		this.AD_Val_Rule_ID = AD_Val_Rule_ID <= 0 ? -1 : AD_Val_Rule_ID;
+		this.AD_Val_Rule_ID = AD_Val_Rule_ID;
 		//
 		FieldLength = fieldLength;
 		ValueMin = valueMin;
@@ -233,7 +234,7 @@ public final class POInfoColumn implements Serializable
 	 * Validation
 	 */
 	// public String ValidationCode;
-	final int AD_Val_Rule_ID;
+	final AdValRuleId AD_Val_Rule_ID;
 
 	/**
 	 * Field Length
@@ -374,11 +375,6 @@ public final class POInfoColumn implements Serializable
 	public boolean isStaleable()
 	{
 		return IsStaleable;
-	}
-
-	public int getAD_Val_Rule_ID()
-	{
-		return AD_Val_Rule_ID;
 	}
 
 	public boolean isLookup()

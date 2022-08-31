@@ -47,6 +47,7 @@ import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -490,7 +491,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	@Nullable
 	private static ColumnSql extractVirtualColumnSql(final GridFieldVO gridFieldVO, final String contextTableName)
 	{
-		if(gridFieldVO.isVirtualColumn())
+		if (gridFieldVO.isVirtualColumn())
 		{
 			return gridFieldVO.getColumnSql(contextTableName);
 		}
@@ -831,9 +832,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				? labelsSelectorField.getAD_Reference_Value_ID()
 				: labelsValueColumn.getAD_Reference_Value_ID();
 
-		final int valRuleIDToUse = labelsSelectorField.getAD_Val_Rule_ID() > 0
-				? labelsSelectorField.getAD_Val_Rule_ID()
-				: labelsValueColumn.getAD_Val_Rule_ID();
+		final AdValRuleId valRuleIDToUse = AdValRuleId.ofRepoIdOrNull(
+				labelsSelectorField.getAD_Val_Rule_ID() > 0
+						? labelsSelectorField.getAD_Val_Rule_ID()
+						: labelsValueColumn.getAD_Val_Rule_ID()
+		);
 
 		final SqlLookupDescriptor.Builder labelsValuesLookupDescriptorBuilder = SqlLookupDescriptor.builder()
 				.setCtxTableName(labelsTableName)

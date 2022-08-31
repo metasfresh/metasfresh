@@ -23,6 +23,7 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -194,7 +195,7 @@ public class BoardDescriptorRepository
 
 		//
 		// Board document lookup provider
-		final int adValRuleId = boardPO.getAD_Val_Rule_ID();
+		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(boardPO.getAD_Val_Rule_ID());
 		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
 				.setCtxTableName(null)
 				.setCtxColumnName(keyColumnName)
@@ -222,7 +223,7 @@ public class BoardDescriptorRepository
 
 		//
 		// Source document filters: AD_Val_Rule_ID
-		if (adValRuleId > 0)
+		if (adValRuleId != null)
 		{
 			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(
 					tableName, adValRuleId, null // ctx table name
