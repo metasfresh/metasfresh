@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -57,14 +58,14 @@ public class M_ShipmentSchedule_StepDef
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_Order_StepDefData orderTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	public M_ShipmentSchedule_StepDef(
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.orderLineTable = orderLineTable;
 		this.orderTable = orderTable;

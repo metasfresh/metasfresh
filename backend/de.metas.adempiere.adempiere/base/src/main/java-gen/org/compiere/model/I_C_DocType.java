@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_DocType
  *  @author metasfresh (generated) 
@@ -18,6 +19,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Boiler Plate.
+	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -27,6 +29,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Boiler Plate.
+	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -99,6 +102,28 @@ public interface I_C_DocType
 	String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
+	 * Set Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
+
+	/**
+	 * Get Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocTypeDifference_ID();
+
+	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
+
+	/**
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -120,28 +145,6 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_C_DocType_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_ID", null);
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
-	/**
-	 * Set Difference Document.
-	 * Document type for generating in dispute Shipments
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
-
-	/**
-	 * Get Difference Document.
-	 * Document type for generating in dispute Shipments
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DocTypeDifference_ID();
-
-	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
 
 	/**
 	 * Set DocType Invoice.
@@ -304,7 +307,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocBaseType = "DocBaseType";
 
 	/**
-	 * Set Document Sequence.
+	 * Set Nummernfolgen für Belege.
 	 * Document sequence determines the numbering of documents
 	 *
 	 * <br>Type: Table
@@ -314,7 +317,7 @@ public interface I_C_DocType
 	void setDocNoSequence_ID (int DocNoSequence_ID);
 
 	/**
-	 * Get Document Sequence.
+	 * Get Nummernfolgen für Belege.
 	 * Document sequence determines the numbering of documents
 	 *
 	 * <br>Type: Table
@@ -354,7 +357,7 @@ public interface I_C_DocType
 	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
-	 * Set Document Copies.
+	 * Set Kopien.
 	 * Number of copies to be printed
 	 *
 	 * <br>Type: Integer
@@ -364,7 +367,7 @@ public interface I_C_DocType
 	void setDocumentCopies (int DocumentCopies);
 
 	/**
-	 * Get Document Copies.
+	 * Get Kopien.
 	 * Number of copies to be printed
 	 *
 	 * <br>Type: Integer
@@ -377,7 +380,8 @@ public interface I_C_DocType
 	String COLUMNNAME_DocumentCopies = "DocumentCopies";
 
 	/**
-	 * Set Note.
+	 * Set Notiz / Zeilentext.
+	 * Additional information for a Document
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -386,7 +390,8 @@ public interface I_C_DocType
 	void setDocumentNote (@Nullable java.lang.String DocumentNote);
 
 	/**
-	 * Get Note.
+	 * Get Notiz / Zeilentext.
+	 * Additional information for a Document
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -398,8 +403,9 @@ public interface I_C_DocType
 	String COLUMNNAME_DocumentNote = "DocumentNote";
 
 	/**
-	 * Set Entity Type.
-	 * Entity Type
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -408,8 +414,9 @@ public interface I_C_DocType
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entity Type.
-	 * Entity Type
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -700,6 +707,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Overwrite document date on complete.
+	 * Überschreibt das Belegdatum mit dem aktuellen Datum, wenn der Beleg fertig gestellt wird.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -709,6 +717,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Overwrite document date on complete.
+	 * Überschreibt das Belegdatum mit dem aktuellen Datum, wenn der Beleg fertig gestellt wird.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -764,7 +773,7 @@ public interface I_C_DocType
 	String COLUMNNAME_IsPickQAConfirm = "IsPickQAConfirm";
 
 	/**
-	 * Set Ship/Receipt Confirmation.
+	 * Set Bestätigung Versand/Wareneingang.
 	 * Require Ship or Receipt Confirmation before processing
 	 *
 	 * <br>Type: YesNo
@@ -774,7 +783,7 @@ public interface I_C_DocType
 	void setIsShipConfirm (boolean IsShipConfirm);
 
 	/**
-	 * Get Ship/Receipt Confirmation.
+	 * Get Bestätigung Versand/Wareneingang.
 	 * Require Ship or Receipt Confirmation before processing
 	 *
 	 * <br>Type: YesNo
@@ -854,7 +863,8 @@ public interface I_C_DocType
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Print Name.
+	 * Set Drucktext.
+	 * The label text to be printed on a document or correspondence.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -863,7 +873,8 @@ public interface I_C_DocType
 	void setPrintName (java.lang.String PrintName);
 
 	/**
-	 * Get Print Name.
+	 * Get Drucktext.
+	 * The label text to be printed on a document or correspondence.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

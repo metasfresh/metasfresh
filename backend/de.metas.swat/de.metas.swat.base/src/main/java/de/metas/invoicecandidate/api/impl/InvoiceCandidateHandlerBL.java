@@ -348,6 +348,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				// Update generated invoice candidates
 				updateDefaultsAndSave(result);
 
+				handler.postSave(result);
+
 				// Collect candidates (we will invalidate them all together)
 				invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
 			}

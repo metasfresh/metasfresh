@@ -97,7 +97,9 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
     },
     "invoicableQtyBasedOn" : "CatchWeight",
     "invoiceRule" : "AfterDelivery",
-    "priceUomId" : 110000
+    "priceUomId" : 110000,
+    "interimIC" : false,
+    "isInterimIC" : false
   }
 ]
 
@@ -189,6 +191,8 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
     },
     "invoicableQtyBasedOn" : "CatchWeight",
     "invoiceRule" : "AfterDelivery",
-    "priceUomId" : 110000
+    "priceUomId" : 110000,
+    "interimIC" : false,
+    "isInterimIC" : false
   }
 ]

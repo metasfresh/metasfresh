@@ -24,15 +24,14 @@ package de.metas.cucumber.stepdefs.contract.commission;
 
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 
@@ -43,12 +42,12 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_HierarchyCommissionSettings_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
+	private final M_Product_StepDefData productTable;
+	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
 
 	public C_HierarchyCommissionSettings_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable, 
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable)
 	{
 		this.productTable = productTable;
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;

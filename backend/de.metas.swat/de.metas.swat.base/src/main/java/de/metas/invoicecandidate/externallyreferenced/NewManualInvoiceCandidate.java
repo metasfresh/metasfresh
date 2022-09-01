@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -43,15 +44,17 @@ import java.util.List;
  * #L%
  */
 
-/** A "manual" IC does not reference another record (e.g. order line or contract). */
+/**
+ * A "manual" IC is not programmatically created but imported into the system.
+ */
 @Value
 @Builder
 public class NewManualInvoiceCandidate
 {
-	private OrgId orgId;
+	OrgId orgId;
 
-	private ExternalId externalHeaderId;
-	private ExternalId externalLineId;
+	ExternalId externalHeaderId;
+	ExternalId externalLineId;
 
 	String poReference;
 
@@ -60,6 +63,8 @@ public class NewManualInvoiceCandidate
 	ProductId productId;
 
 	InvoiceRule invoiceRuleOverride;
+
+	InvoiceRule invoiceRule;
 
 	SOTrx soTrx;
 
@@ -82,18 +87,21 @@ public class NewManualInvoiceCandidate
 
 	String lineDescription;
 
+	TableRecordReference recordReference;
+
 	List<InvoiceDetailItem> invoiceDetailItems;
 
 	private NewManualInvoiceCandidate(
 			@NonNull final OrgId orgId,
 
-			@NonNull final ExternalId externalHeaderId,
-			@NonNull final ExternalId externalLineId,
+			@Nullable final ExternalId externalHeaderId,
+			@Nullable final ExternalId externalLineId,
 
 			@Nullable final String poReference,
 			@NonNull final BPartnerInfo billPartnerInfo,
 			@NonNull final ProductId productId,
 			@Nullable final InvoiceRule invoiceRuleOverride,
+			@Nullable final InvoiceRule invoiceRule,
 			@NonNull final SOTrx soTrx,
 			@NonNull final LocalDate dateOrdered,
 			@Nullable final LocalDate presetDateInvoiced,
@@ -104,6 +112,7 @@ public class NewManualInvoiceCandidate
 			@Nullable final Percent discountOverride,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
+			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -125,6 +134,8 @@ public class NewManualInvoiceCandidate
 		this.discountOverride = discountOverride;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.recordReference = recordReference;
+		this.invoiceRule = invoiceRule;
 		this.invoiceDetailItems = invoiceDetailItems;
 
 		if (priceEnteredOverride != null)
