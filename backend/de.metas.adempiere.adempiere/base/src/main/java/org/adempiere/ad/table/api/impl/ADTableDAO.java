@@ -148,8 +148,8 @@ public class ADTableDAO implements IADTableDAO
 
 	@Override
 	public IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName,
-																 final String columnName,
-																 @Nullable final String trxName)
+			final String columnName,
+			@Nullable final String trxName)
 	{
 		return queryBL.createQueryBuilder(I_AD_Column.class, Env.getCtx(), trxName)
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, retrieveTableId(tableName))
@@ -423,11 +423,11 @@ public class ADTableDAO implements IADTableDAO
 			@NonNull final AdElementId adElementId,
 			@Nullable final String newColumnName)
 	{
-		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
 
+		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
 		DB.executeUpdateEx(
-				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=? WHERE AD_Element_ID=?",
-				new Object[] { newColumnName, adElementId },
+				// Inline parameters because this sql will be logged into the migration script.
+				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
 	}
 }
