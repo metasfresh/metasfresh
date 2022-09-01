@@ -27,6 +27,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
@@ -188,4 +189,7 @@ public interface IADTableDAO extends ISingletonService
 
 	@NonNull TooltipType getTooltipTypeByTableName(@NonNull String tableName);
 
+	void updateColumnNameByAdElementId(
+			@NonNull AdElementId adElementId,
+			@Nullable String newColumnName);
 }

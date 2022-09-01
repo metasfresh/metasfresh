@@ -5,7 +5,6 @@ import de.metas.logging.LogManager;
 import de.metas.menu.AdMenuId;
 import de.metas.menu.IADMenuDAO;
 import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -24,7 +23,6 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -68,8 +66,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private static final String FUNCTION_Update_AD_Element_Trl_From_AD_Tab_Trl = "update_ad_element_trl_from_ad_tab_trl";
 	private static final String FUNCTION_Update_AD_Element_Trl_From_AD_Window_Trl = "update_ad_element_trl_from_ad_window_trl";
 	private static final String FUNCTION_Update_AD_Element_Trl_From_AD_Menu_Trl = "update_ad_element_trl_from_ad_menu_trl";
-
-	private static final String FUNCTION_Update_ColumnName_From_AD_Element = "update_ColumnName_By_AdElementId";
 
 	@Override
 	public void propagateElementTrls(@NonNull final AdElementId adElementId, @NonNull final String adLanguage)
@@ -157,14 +153,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForApplicationDictionaryEntryTRL(FUNCTION_Update_Menu_Translation_From_AD_Element, adElementId), null);
 	}
 
-	@Override
-	public void updateColumnNameFromElement(final @NonNull AdElementId adElementId, @Nullable final String columnName)
-	{
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
-		DB.executeFunctionCallEx(trxName, addUpdateFunctionCallForColumnName(FUNCTION_Update_ColumnName_From_AD_Element, adElementId, columnName), null);
-	}
-
 	private String addUpdateFunctionCallForApplicationDictionaryEntryTRL(final String functionCall, final AdElementId adElementId)
 	{
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + ") ";
@@ -173,16 +161,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 	private String addUpdateFunctionCallForElementTRL(final String functionCall, final AdElementId adElementId, final RepoIdAware applicationDictionaryEntryId)
 	{
 		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + ", " + applicationDictionaryEntryId.getRepoId() + ") ";
-	}
-
-	/**
-	 * Accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
-	 */
-	private String addUpdateFunctionCallForColumnName(final String functionCall, final AdElementId adElementId, @Nullable final String columnName)
-	{
-		final String columnNameParameter = Check.isBlank(columnName) ? columnName
-				: "'" + columnName + "'";
-		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + adElementId.getRepoId() + ", " + columnNameParameter + ") ";
 	}
 
 	@Override
