@@ -29,6 +29,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class ReferenceId implements RepoIdAware
@@ -57,4 +58,8 @@ public class ReferenceId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static int toRepoId(@Nullable final ReferenceId id) {return id != null ? id.getRepoId() : -1;}
+
+	public static boolean equals(@Nullable ReferenceId id1, @Nullable ReferenceId id2) {return Objects.equals(id1, id2);}
 }

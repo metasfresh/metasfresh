@@ -42,6 +42,7 @@ import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class MLookupInfo implements Serializable, Cloneable
 {
-	private static final transient Logger logger = LogManager.getLogger(MLookupInfo.class);
+	private static final Logger logger = LogManager.getLogger(MLookupInfo.class);
 
 	static final long serialVersionUID = -7958664359250070233L;
 
@@ -78,10 +79,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	private TranslatableParameterizedString fromSqlPart = TranslatableParameterizedString.EMPTY;
 	private String whereClauseSqlPart = null;
 
-	/**
-	 * SQL WHERE part (without WHERE keyword); this SQL includes context variables references
-	 */
-	private String whereClauseDynamicSqlPart = null;
 	private String orderBySqlPart = null;
 
 	/**
@@ -106,8 +103,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	 * Key Flag
 	 */
 	private boolean IsKey = false;
-	private IValidationRule _validationRule = NullValidationRule.instance;
-	private IValidationRule _validationRuleEffective = null; // lazy
+	private final EffectiveValidationRuleSupplier effectiveValidationRuleSupplier = new EffectiveValidationRuleSupplier();
 
 	/**
 	 * WindowNo
@@ -132,17 +128,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	private TooltipType tooltipType;
 
-	/**************************************************************************
-	 * Constructor.
-	 * (called from MLookupFactory)
-	 *
-	 * @param sqlQuery SQL query
-	 * @param tableName table name
-	 * @param keyColumn key column
-	 * @param zoomSO_Window_ID zoom window
-	 * @param zoomPO_Window_ID PO zoom window
-	 * @param zoomQuery zoom query
-	 */
 	/* package */ MLookupInfo(
 			@NonNull final String sqlQuery_BaseLang,
 			@NonNull final String sqlQuery_Trl,
@@ -170,12 +155,8 @@ public final class MLookupInfo implements Serializable, Cloneable
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("MLookupInfo[")
-				.append(KeyColumn)
-				.append("-Direct=").append(sqlQueryDirect)
-				.append("]");
-		return sb.toString();
-	}    // toString
+		return "MLookupInfo[" + KeyColumn + "-Direct=" + sqlQueryDirect + "]";
+	}
 
 	/**
 	 * Clone
@@ -259,27 +240,12 @@ public final class MLookupInfo implements Serializable, Cloneable
 	 */
 	public IValidationRule getValidationRule()
 	{
-		if (_validationRuleEffective == null)
-		{
-			final IValidationRule whereClauseDynamicValidationRule;
-			if (!Check.isEmpty(whereClauseDynamicSqlPart, true))
-			{
-				whereClauseDynamicValidationRule = Services.get(IValidationRuleFactory.class).createSQLValidationRule(whereClauseDynamicSqlPart);
-			}
-			else
-			{
-				whereClauseDynamicValidationRule = NullValidationRule.instance;
-			}
-
-			_validationRuleEffective = CompositeValidationRule.compose(_validationRule, whereClauseDynamicValidationRule);
-		}
-		return _validationRuleEffective;
+		return effectiveValidationRuleSupplier.get();
 	}
 
-	/* package */void setValidationRule(final IValidationRule validationRule)
+	/* package */void setValidationRule(@Nullable final IValidationRule validationRule)
 	{
-		this._validationRule = validationRule == null ? NullValidationRule.instance : validationRule;
-		this._validationRuleEffective = null; // reset
+		this.effectiveValidationRuleSupplier.setValidationRule(validationRule);
 	}
 
 	public String getDisplayColumnSqlAsString()
@@ -295,16 +261,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public String getDisplayColumnSQL(final LanguageInfo languageInfo)
 	{
 		return languageInfo.extractString(displayColumnSQL);
-	}
-
-	public String getDisplayColumnSQL_BaseLang()
-	{
-		return displayColumnSQL.getStringBaseLanguage();
-	}
-
-	public String getDisplayColumnSQL_Trl()
-	{
-		return displayColumnSQL.getStringTrlPattern();
 	}
 
 	/* package */void setDisplayColumnSQL(final String displayColumnSQL_BaseLang, final String displayColumnSQL_Trl)
@@ -386,14 +342,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 		this.selectSqlPart = TranslatableParameterizedString.of(CTXNAME_AD_Language, selectSqlPart_BaseLang, selectSqlPart_Trl);
 	}
 
-	/**
-	 * @return SQL FROM part, with joins to translation tables if needed, without FROM keyword
-	 */
-	public String getFromSqlPartAsString()
-	{
-		return fromSqlPart.translate();
-	}
-
 	public TranslatableParameterizedString getFromSqlPart()
 	{
 		return fromSqlPart;
@@ -402,16 +350,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public String getFromSqlPart(final LanguageInfo languageInfo)
 	{
 		return languageInfo.extractString(fromSqlPart);
-	}
-
-	public String getFromSqlPart_BaseLang()
-	{
-		return fromSqlPart.getStringBaseLanguage();
-	}
-
-	public String getFromSqlPart_Trl()
-	{
-		return fromSqlPart.getStringTrlPattern();
 	}
 
 	/* package */void setFromSqlPart(final String fromSqlPart_BaseLang, final String fromSqlPart_Trl)
@@ -433,10 +371,12 @@ public final class MLookupInfo implements Serializable, Cloneable
 		this.whereClauseSqlPart = whereClauseSqlPart;
 	}
 
-	/* package */void setWhereClauseDynamicSqlPart(String whereClauseDynamicSqlPart)
+	/**
+	 * Sets SQL WHERE part (without WHERE keyword); this SQL includes context variables references
+	 */
+	/* package */void setWhereClauseDynamicSqlPart(@Nullable final String whereClauseDynamicSqlPart)
 	{
-		this.whereClauseDynamicSqlPart = whereClauseDynamicSqlPart;
-		this._validationRuleEffective = null; // reset
+		this.effectiveValidationRuleSupplier.setWhereClauseDynamicSqlPart(whereClauseDynamicSqlPart);
 	}
 
 	/**
@@ -619,5 +559,62 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public TooltipType getTooltipType()
 	{
 		return tooltipType;
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	private static class EffectiveValidationRuleSupplier
+	{
+		private IValidationRule result = null;
+
+		// params:
+		/**
+		 * SQL WHERE part (without WHERE keyword); this SQL includes context variables references
+		 */
+		private String whereClauseDynamicSqlPart = null;
+
+		private IValidationRule validationRule = NullValidationRule.instance;
+
+		public IValidationRule get()
+		{
+			IValidationRule result = this.result;
+			if (result == null)
+			{
+				result = this.result = compute();
+			}
+			return result;
+		}
+
+		private IValidationRule compute()
+		{
+			final IValidationRule whereClauseDynamicValidationRule;
+			if (!Check.isBlank(whereClauseDynamicSqlPart))
+			{
+				final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
+				whereClauseDynamicValidationRule = validationRuleFactory.createSQLValidationRule(whereClauseDynamicSqlPart);
+			}
+			else
+			{
+				whereClauseDynamicValidationRule = NullValidationRule.instance;
+			}
+
+			return CompositeValidationRule.compose(validationRule, whereClauseDynamicValidationRule);
+		}
+
+		void setWhereClauseDynamicSqlPart(final String whereClauseDynamicSqlPart)
+		{
+			this.whereClauseDynamicSqlPart = whereClauseDynamicSqlPart;
+			this.result = null; // reset
+		}
+
+		void setValidationRule(@Nullable final IValidationRule validationRule)
+		{
+			this.validationRule = validationRule == null ? NullValidationRule.instance : validationRule;
+			this.result = null; // reset
+		}
 	}
 }   // MLookupInfo

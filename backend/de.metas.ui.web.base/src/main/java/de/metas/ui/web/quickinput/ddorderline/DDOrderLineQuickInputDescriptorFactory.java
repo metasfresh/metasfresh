@@ -25,6 +25,7 @@ package de.metas.ui.web.quickinput.ddorderline;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
@@ -55,7 +56,7 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 
 	private final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout;
 
-	private static final int M_PRODUCT_STOCKED_AD_REFERENCE_ID = 171;
+	private static final ReferenceId M_PRODUCT_STOCKED_AD_REFERENCE_ID = ReferenceId.ofRepoId(171);
 	private static final AdValRuleId DD_ORDERLINE_M_HU_PI_ITEM_PRODUCT_AD_VAL_RULE_ID = AdValRuleId.ofRepoId(540299);
 
 	public DDOrderLineQuickInputDescriptorFactory(final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout)

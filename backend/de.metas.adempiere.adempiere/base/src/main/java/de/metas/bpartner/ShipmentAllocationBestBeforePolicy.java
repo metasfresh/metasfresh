@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.reflist.ReferenceId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_BPartner;
 
@@ -47,7 +48,7 @@ public enum ShipmentAllocationBestBeforePolicy implements ReferenceListAwareEnum
 
 	Newest_First(X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First);
 
-	public static final int AD_REFERENCE_ID = X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID;
+	public static final ReferenceId AD_REFERENCE_ID = ReferenceId.ofRepoId(X_C_BPartner.SHIPMENTALLOCATION_BESTBEFORE_POLICY_AD_Reference_ID);
 
 	@Getter
 	private final String code;

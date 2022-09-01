@@ -12,6 +12,7 @@ import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.reflist.ReferenceId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
@@ -287,8 +288,8 @@ import java.util.stream.Stream;
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
 					.setCtxTableName(null)
 					.setCtxColumnName(parameterName)
-					.setDisplayType(adProcessParam.getAD_Reference_ID())
-					.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
+					.setDisplayType(ReferenceId.ofRepoId(adProcessParam.getAD_Reference_ID()))
+					.setAD_Reference_Value_ID(ReferenceId.ofRepoIdOrNull(adProcessParam.getAD_Reference_Value_ID()))
 					.setAD_Val_Rule_ID(AdValRuleId.ofRepoIdOrNull(adProcessParam.getAD_Val_Rule_ID()))
 					.setReadOnlyAccess()
 					.buildProvider();
@@ -384,6 +385,7 @@ import java.util.stream.Stream;
 		}
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private static DocumentFieldWidgetType extractWidgetType(
 			final String parameterName,
 			final int adReferenceId,

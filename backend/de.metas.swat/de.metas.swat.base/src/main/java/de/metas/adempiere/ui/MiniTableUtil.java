@@ -23,9 +23,11 @@ package de.metas.adempiere.ui;
  */
 
 
+import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.reflist.ReferenceId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
@@ -171,10 +173,10 @@ public class MiniTableUtil
 		final String tableName = gridField.getGridTab().getTableName();
 		final String header = gridField.getHeader();
 		final int displayType = gridField.getDisplayType();
-		final int referenceId = gridField.getAD_Reference_Value_ID();
+		final ReferenceId referenceId = gridField.getAD_Reference_Value_ID();
 		final String columnName = gridField.getColumnName();
 		final String columnSQL = gridField.getColumnSQL(false);
-		return createColumnInfo(header, tableName, columnName, columnSQL, displayType, referenceId);
+		return createColumnInfo(header, tableName, columnName, columnSQL, displayType, ReferenceId.toRepoId(referenceId));
 	}
 
 }

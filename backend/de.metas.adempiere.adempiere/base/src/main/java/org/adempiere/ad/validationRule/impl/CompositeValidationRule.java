@@ -22,10 +22,10 @@ package org.adempiere.ad.validationRule.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
@@ -33,15 +33,15 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.NamePairPredicates;
 import org.compiere.util.ValueNamePair;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Immutable composite validation rule consist of a collection of child validation rules.
  *
  * @author tsa
- *
  */
 public final class CompositeValidationRule implements IValidationRule
 {
@@ -101,7 +101,7 @@ public final class CompositeValidationRule implements IValidationRule
 	{
 		if (_allParameters == null)
 		{
-			_allParameters = ImmutableSet.<String> builder()
+			_allParameters = ImmutableSet.<String>builder()
 					.addAll(prefilterWhereClause.getParameterNames())
 					.addAll(postQueryPredicates.getParameters())
 					.build();
@@ -192,6 +192,12 @@ public final class CompositeValidationRule implements IValidationRule
 			}
 
 			return builder.build();
+		}
+
+		public Builder addAll(@NonNull final Collection<IValidationRule> rules)
+		{
+			rules.forEach(this::add);
+			return this;
 		}
 
 		public Builder add(final IValidationRule rule)

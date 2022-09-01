@@ -26,6 +26,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.i18n.TranslatableParameterizedString;
+import de.metas.reflist.ReferenceId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.security.permissions.Access;
@@ -118,10 +119,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				.buildProvider();
 	}
 
-	public static LookupDescriptorProvider listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
+	public static LookupDescriptorProvider listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)
 	{
-		Check.assumeGreaterThanZero(AD_Reference_Value_ID, "AD_Reference_Value_ID");
-
 		return builder()
 				.setCtxTableName(null) // tableName
 				.setCtxColumnName(null)
@@ -136,11 +135,9 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	 * @param AD_Val_Rule_ID        may be <= 0
 	 */
 	public static LookupDescriptorProvider searchByAD_Val_Rule_ID(
-			final int AD_Reference_Value_ID,
-			final AdValRuleId AD_Val_Rule_ID)
+			@NonNull final ReferenceId AD_Reference_Value_ID,
+			@Nullable final AdValRuleId AD_Val_Rule_ID)
 	{
-		Check.assumeGreaterThanZero(AD_Reference_Value_ID, "AD_Reference_Value_ID");
-
 		return builder()
 				.setCtxTableName(null) // tableName
 				.setCtxColumnName(null)
@@ -167,8 +164,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	private final ImmutableSet<String> dependsOnFieldNames;
 	private final ImmutableSet<String> dependsOnTableNames;
 	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
-	@NonNull
-	private final TooltipType tooltipType;
+	@NonNull private final TooltipType tooltipType;
 
 	private SqlLookupDescriptor(final Builder builder)
 	{
@@ -198,7 +194,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				.omitNullValues()
 				.add("tableName", tableName)
 				.add("zoomIntoWindowId", zoomIntoWindowId.orElse(null))
-				.add("highVolume", highVolume ? highVolume : null)
+				.add("highVolume", highVolume ? true : null)
 				.add("sqlForFetching", sqlForFetchingExpression.toOneLineString())
 				.add("postQueryPredicate", postQueryPredicate == null || postQueryPredicate == NamePairPredicates.ACCEPT_ALL ? null : postQueryPredicate)
 				.toString();
@@ -340,32 +336,31 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	@ToString(of = { "sqlTableName", "ctxTableName", "ctxColumnName", "widgetType" })
 	public static final class Builder
 	{
+		//
 		// Parameters
 		@Nullable private String ctxColumnName;
 		@Nullable private String ctxTableName;
 
 		private DocumentFieldWidgetType widgetType;
-		private Integer displayType;
-		private int AD_Reference_Value_ID = -1;
+		private ReferenceId displayType;
+		private ReferenceId AD_Reference_Value_ID = null;
 		private AdValRuleId AD_Val_Rule_ID = null;
+		private final ArrayList<IValidationRule> additionalValidationRules = new ArrayList<>();
 		private LookupScope scope = LookupScope.DocumentField;
 		private Access requiredAccess = null;
 
 		//
-		// Built/prepared values
+		// Built/prepared values (i.e. computed on build)
 		private boolean numericKey;
-		private Set<String> dependsOnFieldNames;
-
-		private final List<IValidationRule> validationRules = new ArrayList<>();
-		private IValidationRule validationRuleEffective = NullValidationRule.instance;
+		private ImmutableSet<String> dependsOnFieldNames = null;
+		private IValidationRule validationRuleEffective = null;
 		private String sqlTableName;
 		private SqlForFetchingLookups sqlForFetchingExpression;
 		private SqlForFetchingLookupById sqlForFetchingLookupByIdExpression;
 		private int entityTypeIndex = -1;
 
 		private AdWindowId zoomIntoAdWindowId = null;
-		@NonNull
-		private TooltipType tooltipType = TooltipType.DEFAULT;
+		@NonNull private TooltipType tooltipType = TooltipType.DEFAULT;
 
 		private Builder()
 		{
@@ -373,9 +368,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 		public LookupDescriptorProvider buildProvider()
 		{
-			Check.assumeNotNull(displayType, "Parameter displayType is not null");
-
-			return buildProvider(ctxTableName, ctxColumnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID, validationRules);
+			final ReferenceId displayType = Check.assumeNotNull(this.displayType, "Parameter displayType is not null");
+			return buildProvider(ctxTableName, ctxColumnName, widgetType, displayType.getRepoId(), AD_Reference_Value_ID, AD_Val_Rule_ID, additionalValidationRules);
 		}
 
 		public LookupDescriptor buildForDefaultScope()
@@ -388,9 +382,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private static LookupDescriptorProvider buildProvider(
 				@Nullable final String sqlTableName,
 				@Nullable final String sqlColumnName,
-				final DocumentFieldWidgetType widgetType, final int displayType,
-				final int AD_Reference_Value_ID,
-				final AdValRuleId AD_Val_Rule_ID,
+				final DocumentFieldWidgetType widgetType,
+				final int displayType,
+				@Nullable final ReferenceId AD_Reference_Value_ID,
+				@Nullable final AdValRuleId AD_Val_Rule_ID,
 				final List<IValidationRule> additionalValidationRules)
 		{
 			if (widgetType == DocumentFieldWidgetType.ProcessButton)
@@ -398,7 +393,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				return LookupDescriptorProviders.NULL;
 			}
 			else if (DisplayType.isAnyLookup(displayType)
-					|| DisplayType.Button == displayType && AD_Reference_Value_ID > 0)
+					|| DisplayType.Button == displayType && AD_Reference_Value_ID != null)
 			{
 				return LookupDescriptorProviders.fromMemoizingFunction(scope -> SqlLookupDescriptor.builder()
 						.setCtxTableName(sqlTableName)
@@ -419,8 +414,9 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private SqlLookupDescriptor build()
 		{
 			final boolean IsParent = false;
+			final int displayType = this.displayType.getRepoId();
 
-			if (displayType == DisplayType.PAttribute && AD_Reference_Value_ID <= 0)
+			if (displayType == DisplayType.PAttribute && AD_Reference_Value_ID == null)
 			{
 				numericKey = true;
 				validationRuleEffective = NullValidationRule.instance;
@@ -434,12 +430,17 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 						displayType,
 						ctxTableName,
 						ctxColumnName,
-						AD_Reference_Value_ID,
+						ReferenceId.toRepoId(AD_Reference_Value_ID),
 						IsParent,
 						AD_Val_Rule_ID);
+				if (lookupInfo == null)
+				{
+					// shall not happen
+					throw new AdempiereException("No lookup info for " + ctxTableName + "." + ctxColumnName);
+				}
 
 				numericKey = lookupInfo.isNumericKey();
-				validationRuleEffective = extractValidationRule(lookupInfo);
+				validationRuleEffective = computeEffectiveValidationRule(ctxColumnName, displayType, lookupInfo, additionalValidationRules);
 				dependsOnFieldNames = ImmutableSet.<String>builder()
 						.addAll(validationRuleEffective.getPrefilterWhereClause().getParameterNames())
 						.addAll(validationRuleEffective.getPostQueryFilter().getParameters())
@@ -450,7 +451,11 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return new SqlLookupDescriptor(this);
 		}
 
-		private IValidationRule extractValidationRule(final MLookupInfo lookupInfo)
+		private static IValidationRule computeEffectiveValidationRule(
+				@Nullable final String ctxColumnName,
+				final int displayType,
+				@NonNull final MLookupInfo lookupInfo,
+				@NonNull final List<IValidationRule> additionalValidationRules)
 		{
 			final CompositeValidationRule.Builder validationRuleBuilder = CompositeValidationRule.builder();
 			validationRuleBuilder.add(lookupInfo.getValidationRule());
@@ -464,7 +469,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			}
 
 			// Additional validation rules registered
-			validationRules.forEach(validationRuleBuilder::add);
+			validationRuleBuilder.addAll(additionalValidationRules);
 
 			return validationRuleBuilder.build();
 		}
@@ -750,13 +755,15 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return this;
 		}
 
-		public Builder setDisplayType(final int displayType)
+		public Builder setDisplayType(final int displayType) {return setDisplayType(ReferenceId.ofRepoId(displayType));}
+
+		public Builder setDisplayType(final ReferenceId displayType)
 		{
 			this.displayType = displayType;
 			return this;
 		}
 
-		public Builder setAD_Reference_Value_ID(final int AD_Reference_Value_ID)
+		public Builder setAD_Reference_Value_ID(final ReferenceId AD_Reference_Value_ID)
 		{
 			this.AD_Reference_Value_ID = AD_Reference_Value_ID;
 			return this;
@@ -770,6 +777,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 		private boolean isHighVolume()
 		{
+			final int displayType = this.displayType.getRepoId();
 			return DisplayType.TableDir != displayType && DisplayType.Table != displayType && DisplayType.List != displayType && DisplayType.Button != displayType;
 		}
 
@@ -780,7 +788,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return this;
 		}
 
-		public Optional<WindowId> getZoomIntoWindowId()
+		private Optional<WindowId> getZoomIntoWindowId()
 		{
 			return Optional.ofNullable(WindowId.ofNullable(zoomIntoAdWindowId));
 		}
@@ -820,29 +828,24 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 		public Builder addValidationRule(final IValidationRule validationRule)
 		{
-			validationRules.add(validationRule);
+			additionalValidationRules.add(validationRule);
 			return this;
 		}
 
-		public Builder addValidationRules(final Collection<IValidationRule> validationRules)
+		private Builder addValidationRules(final Collection<IValidationRule> validationRules)
 		{
-			this.validationRules.addAll(validationRules);
+			this.additionalValidationRules.addAll(validationRules);
 			return this;
 		}
 
-		public Set<String> getDependsOnTableNames()
+		private Set<String> getDependsOnTableNames()
 		{
 			return validationRuleEffective.getDependsOnTableNames();
 		}
 
-		public @NonNull TooltipType getTooltipType()
+		private @NonNull TooltipType getTooltipType()
 		{
 			return tooltipType;
-		}
-
-		public void setTooltipType(@NonNull final TooltipType tooltipType)
-		{
-			this.tooltipType = tooltipType;
 		}
 	}
 }

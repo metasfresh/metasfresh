@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.lookup;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.logging.LogManager;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.GuavaCollectors;
@@ -11,6 +12,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
@@ -69,7 +71,7 @@ public final class LookupDataSourceFactory
 		{
 			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.searchInTable(tableName)
 					.provide()
-					.get();
+					.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + tableName));
 			return getLookupDataSource(lookupDescriptor);
 		}
 	}
@@ -78,16 +80,16 @@ public final class LookupDataSourceFactory
 	{
 		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.productAttributes()
 				.provide()
-				.get();
+				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for Product Attributes"));
 		return getLookupDataSource(lookupDescriptor);
 	}
 
-	public LookupDataSource listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
+	public LookupDataSource listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)
 	{
 		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
 				.listByAD_Reference_Value_ID(AD_Reference_Value_ID)
 				.provide()
-				.get();
+				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + AD_Reference_Value_ID));
 		return getLookupDataSource(lookupDescriptor);
 	}
 
@@ -95,11 +97,15 @@ public final class LookupDataSourceFactory
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		final I_AD_Column column = adTableDAO.retrieveColumn(tableName, columnname);
+		final ReferenceId adReferenceValueId = ReferenceId.ofRepoId(column.getAD_Reference_Value_ID());
+		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID());
 
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
-				.searchByAD_Val_Rule_ID(column.getAD_Reference_Value_ID(), AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()))
+		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.searchByAD_Val_Rule_ID(adReferenceValueId, adValRuleId)
 				.provide()
-				.get();
+				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + tableName + "." + columnname)
+						.appendParametersToMessage()
+						.setParameter("adReferenceValueId", adReferenceValueId)
+						.setParameter("adValRuleId", adValRuleId));
 
 		return getLookupDataSource(lookupDescriptor);
 	}
@@ -187,7 +193,7 @@ public final class LookupDataSourceFactory
 			synchronized (lookupDataSources)
 			{
 				final List<LookupDataSource> result = new ArrayList<>(lookupDataSources.size());
-				for (final Iterator<WeakReference<LookupDataSource>> it = lookupDataSources.iterator(); it.hasNext();)
+				for (final Iterator<WeakReference<LookupDataSource>> it = lookupDataSources.iterator(); it.hasNext(); )
 				{
 					final LookupDataSource lookupDataSource = it.next().get();
 					if (lookupDataSource == null)

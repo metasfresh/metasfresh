@@ -362,7 +362,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			}
 			else
 			{
-				final int displayType = gridFieldVO.getDisplayType();
+				final ReferenceId displayType = ReferenceId.ofRepoId(gridFieldVO.getDisplayType());
 				widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
 				final String ctxTableName = tableDAO.retrieveTableName(gridFieldVO.getAD_Table_ID());
 				lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
@@ -624,6 +624,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.showFilterIncrementButtons(gridFieldDefaultFilterInfo.isShowFilterIncrementButtons())
 				.autoFilterInitialValue(autoFilterInitialValue)
 				.showFilterInline(gridFieldDefaultFilterInfo.isShowFilterInline())
+				.adValRuleId(gridFieldDefaultFilterInfo.getAdValRuleId())
 				//
 				.facetFilter(gridFieldDefaultFilterInfo.isFacetFilter())
 				.facetFilterSeqNo(gridFieldDefaultFilterInfo.getFacetFilterSeqNo())
@@ -824,13 +825,17 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		final I_AD_Column labelsValueColumn = labelsSelectorField.getAD_Column();
 		final String labelsValueColumnName = labelsValueColumn.getColumnName();
 
-		final int referenceIDToUse = labelsSelectorField.getAD_Reference_ID() > 0
-				? labelsSelectorField.getAD_Reference_ID()
-				: labelsValueColumn.getAD_Reference_ID();
+		final ReferenceId referenceIDToUse = ReferenceId.ofRepoId(
+				labelsSelectorField.getAD_Reference_ID() > 0
+						? labelsSelectorField.getAD_Reference_ID()
+						: labelsValueColumn.getAD_Reference_ID()
+		);
 
-		final int referenceValueIDToUse = labelsSelectorField.getAD_Reference_Value_ID() > 0
-				? labelsSelectorField.getAD_Reference_Value_ID()
-				: labelsValueColumn.getAD_Reference_Value_ID();
+		final ReferenceId referenceValueIDToUse = ReferenceId.ofRepoIdOrNull(
+				labelsSelectorField.getAD_Reference_Value_ID() > 0
+						? labelsSelectorField.getAD_Reference_Value_ID()
+						: labelsValueColumn.getAD_Reference_Value_ID()
+		);
 
 		final AdValRuleId valRuleIDToUse = AdValRuleId.ofRepoIdOrNull(
 				labelsSelectorField.getAD_Val_Rule_ID() > 0
@@ -842,7 +847,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setCtxTableName(labelsTableName)
 				.setCtxColumnName(labelsValueColumnName)
 				.setDisplayType(referenceIDToUse)
-				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, referenceIDToUse))
+				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, referenceIDToUse.getRepoId()))
 				.setAD_Reference_Value_ID(referenceValueIDToUse)
 				.setAD_Val_Rule_ID(valRuleIDToUse);
 
@@ -860,7 +865,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
 				.labelsLinkColumnName(labelsLinkColumnName)
-				.labelsValueReferenceId(ReferenceId.ofRepoIdOrNull(referenceValueIDToUse))
+				.labelsValueReferenceId(referenceValueIDToUse)
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
 				.build();
@@ -886,6 +891,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.build();
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public final DocumentFieldDescriptor.Builder addInternalVirtualField(
 			final String fieldName //
 			, final DocumentFieldWidgetType widgetType //

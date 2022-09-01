@@ -137,7 +137,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		}
 
 		// Hide simple button fields without a value
-		if (f.getDisplayType() == DisplayType.Button && f.getAD_Reference_Value_ID() <= 0)
+		if (f.getDisplayType() == DisplayType.Button && f.getAD_Reference_Value_ID() == null)
 		{
 			return false;
 		}
@@ -180,7 +180,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 					mField.getAD_Column_ID(), DisplayType.Search);
 		}
-		else if (mField.getAD_Reference_Value_ID() > 0)
+		else if (mField.getAD_Reference_Value_ID() != null)
 		{
 			// Assuming List
 			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,

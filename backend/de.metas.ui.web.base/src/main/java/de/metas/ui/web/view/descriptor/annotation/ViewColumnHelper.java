@@ -517,7 +517,7 @@ public final class ViewColumnHelper
 			}
 		}
 
-		final LookupValue lookupValue = LookupDataSourceFactory.instance.listByAD_Reference_Value_ID(listReferenceId.getRepoId()).findById(code);
+		final LookupValue lookupValue = LookupDataSourceFactory.instance.listByAD_Reference_Value_ID(listReferenceId).findById(code);
 		if (lookupValue == null)
 		{
 			return StringLookupValue.unknown(code.toString());
