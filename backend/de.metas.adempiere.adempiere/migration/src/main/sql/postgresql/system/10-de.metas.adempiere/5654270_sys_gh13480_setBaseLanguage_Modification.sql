@@ -49,7 +49,7 @@ BEGIN
     END IF;
 
     IF (source_language = destination_language) THEN
-        RAISE WARNING '% is already a base language', destination_language;
+        RAISE NOTICE '% is already a base language', destination_language;
         RETURN;
     END IF;
 
@@ -127,13 +127,13 @@ BEGIN
 
 
                             GET DIAGNOSTICS v_count = ROW_COUNT;
-                            RAISE WARNING 'Table %, %: % rows inserted', table_name, base_table || '_ID = ' || base_table_id, v_count;
+                            RAISE NOTICE 'Table %, %: % rows inserted', table_name, base_table || '_ID = ' || base_table_id, v_count;
 
 
                             EXECUTE final_update_query;
 
                             GET DIAGNOSTICS v_count = ROW_COUNT;
-                            RAISE WARNING 'Table %, %: % rows updated', table_name, base_table || '_ID = ' || base_table_id, v_count;
+                            RAISE NOTICE 'Table %, %: % rows updated', table_name, base_table || '_ID = ' || base_table_id, v_count;
 
                         END;
                     END LOOP;
