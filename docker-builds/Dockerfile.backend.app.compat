@@ -11,4 +11,5 @@ ENV VERSION=$VERSION
 RUN touch local_settings.properties && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties && mkdir dist && cp META-INF/build-info.properties dist/
 RUN mv metasfresh-app.jar metasfresh_server.jar
 
-COPY --from=backend /backend/metasfresh-dist/dist/target/dist ./dist/
+COPY --from=backend /backend/metasfresh-dist/dist/target/dist/install dist/install/
+COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql dist/sql/
