@@ -1,5 +1,7 @@
 name: cicd
 on: [push]
+permissions:
+  contents: read
 jobs:
 
   init:
