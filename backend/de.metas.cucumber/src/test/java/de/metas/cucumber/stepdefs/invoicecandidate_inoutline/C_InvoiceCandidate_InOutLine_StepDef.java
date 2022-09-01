@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.invoicecandidate_inoutline;
 
-import de.metas.cucumber.stepdefs.AD_EventLog_Entry_StepDef;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
