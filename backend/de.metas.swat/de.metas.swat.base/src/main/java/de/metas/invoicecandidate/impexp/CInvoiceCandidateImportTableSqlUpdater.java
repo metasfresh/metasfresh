@@ -106,7 +106,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_M_Product_ID + " IS NULL"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static void dbUpdateBPartners(@NonNull final ImportRecordsSelection selection)
@@ -125,7 +125,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_Bill_BPartner_ID + " IS NULL "
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static void dbUpdateOrg(@NonNull final ImportRecordsSelection selection)
@@ -139,7 +139,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_I_IsImported + "<> 'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static void dbUpdateUOM(@NonNull final ImportRecordsSelection selection)
@@ -164,7 +164,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static void dbUpdateDocBaseType(@NonNull final ImportRecordsSelection selection)
@@ -202,7 +202,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static void dbUpdateInvoiceRule(@NonNull final ImportRecordsSelection selection)
@@ -218,7 +218,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
@@ -260,7 +260,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " WHERE " + mandatoryColumnName + " IS NULL "
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause();
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No " + mandatoryColumnName + " = {}", no);
@@ -279,7 +279,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " WHERE i." + COLUMNNAME_Bill_BPartner_ID + " NOT IN ( " + sqlBillBPartnerIdForProvidedBillLocation + " ) "
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 
 		if (no != 0)
 		{
@@ -301,7 +301,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No " + COLUMNNAME_Bill_User_ID + " = {}", no);
@@ -321,7 +321,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.warn("No " + COLUMNNAME_AD_Org_ID + " = {}", no);

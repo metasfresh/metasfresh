@@ -8,6 +8,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.lang.ExternalId;
@@ -89,6 +90,8 @@ public class NewManualInvoiceCandidate
 
 	String lineDescription;
 
+	ProjectId projectId;
+
 	TableRecordReference recordReference;
 
 	List<InvoiceDetailItem> invoiceDetailItems;
@@ -114,6 +117,7 @@ public class NewManualInvoiceCandidate
 			@Nullable final Percent discountOverride,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
+			@Nullable final ProjectId projectId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -136,6 +140,7 @@ public class NewManualInvoiceCandidate
 		this.discountOverride = discountOverride;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.projectId = projectId;
 		this.recordReference = recordReference;
 		this.invoiceRule = invoiceRule;
 		this.invoiceDetailItems = invoiceDetailItems;
