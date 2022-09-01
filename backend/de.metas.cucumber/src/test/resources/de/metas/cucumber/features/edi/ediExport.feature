@@ -31,8 +31,8 @@ Feature: EDI_cctop_invoic_v export format
       | bp_1                             | 2156425                  | 2005577                 | bPartnerProductGTIN | bPartnerProductEANCU |
 
     And update C_BPartner_Location:
-      | C_BPartner_Location_ID.Identifier | OPT.GLN             |
-      | 2205175                           | bPartnerLocationGLN |
+      | C_BPartner_Location_ID.Identifier | OPT.GLN       |
+      | 2205175                           | 1234567890123 |
 
     And update C_Location of the following C_BPartner_Location
       | C_BPartner_Location_ID.Identifier | OPT.Address1 | OPT.Address2 | OPT.Address3 |
@@ -74,7 +74,7 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
-    And generate shipments process is invoked
+    And 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
