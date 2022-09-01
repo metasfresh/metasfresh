@@ -147,14 +147,13 @@ public class M_PriceList_StepDef
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
 		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
-		final PricingSystemId pricingSystemId = priceListDAO.getPricingSystemIdByValueOrNull(value);
-		
 		final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PricingSystem.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final int orgId = Optional.ofNullable(orgIdentifier)
 				.map(orgTable::get)
 				.map(I_AD_Org::getAD_Org_ID)
 				.orElse(ORG_ID.getRepoId());
 
+		final PricingSystemId pricingSystemId = priceListDAO.getPricingSystemIdByValueOrNull(value);
 		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.loadOrNew(pricingSystemId, I_M_PricingSystem.class);
 
 		m_pricingSystem.setName(name);
@@ -300,12 +299,21 @@ public class M_PriceList_StepDef
 
 			final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(productPriceID, I_M_ProductPrice.class);
 
-			final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
-			productPrice.setPriceStd(priceStd);
+			final BigDecimal priceStd = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_PriceStd);
+			if (priceStd != null)
+			{
+				productPrice.setPriceStd(priceStd);
+			}
 
-			final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-			final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-			productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
+			final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+			if (Check.isNotBlank(x12de355Code))
+			{
+				final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+				productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
+			}
+
+			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_ProductPrice.COLUMNNAME_IsActive, true);
+			productPrice.setIsActive(isActive);
 
 			final String invoicableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
 			if (Check.isNotBlank(invoicableQtyBasedOn))
