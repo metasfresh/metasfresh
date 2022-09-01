@@ -262,6 +262,13 @@ import java.util.Map;
 		// Create receipt candidates
 		createAndProcessReceiptCandidatesIfRequested(ppOrderReceiptCandidateCollector.getRequests());
 
+		// Refresh the planning HUs if neeed.
+		// e.g. if processed those  "planning" HUs, will no longer have HUStatus=P but HUStatus=A
+		if (processReceiptCandidates)
+		{
+			InterfaceWrapperHelper.refreshAll(planningHUs);
+		}
+
 		//
 		// Return created HUs
 		return planningHUs;

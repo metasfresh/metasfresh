@@ -292,7 +292,7 @@ public class ReceiveGoodsCommand
 								tu,
 								QtyTU.ONE.toBigDecimal(),
 								Objects.requireNonNull(newLUPIItem),
-								true);
+								false);
 				lu = CollectionUtils.singleElement(createdLUs);
 			}
 			else
