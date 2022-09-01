@@ -1,24 +1,17 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-
+import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.internalbusinesslogic.DeliveredData.DeliveredDataBuilder;
-import de.metas.invoicecandidate.internalbusinesslogic.ShipmentData.ShipmentDataBuilder;
 import de.metas.invoicecandidate.internalbusinesslogic.DeliveredQtyItem.DeliveredQtyItemBuilder;
+import de.metas.invoicecandidate.internalbusinesslogic.ShipmentData.ShipmentDataBuilder;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
@@ -33,6 +26,15 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_M_InOut;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
  * #%L
@@ -59,6 +61,8 @@ import lombok.Value;
 @Value
 public class DeliveredDataLoader
 {
+	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
 	UomId stockUomId;
 
 	UomId icUomId;
@@ -118,7 +122,7 @@ public class DeliveredDataLoader
 		else
 		{
 			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-			icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsExclRE(invoiceCandidateId);
+			icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
 		}
 		if (soTrx.isPurchase())
 		{
@@ -133,13 +137,13 @@ public class DeliveredDataLoader
 
 	private ShipmentData loadShipmentData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
 	{
-		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
+		final ImmutableList<DeliveredQtyItem> deliveredQtyItems = loadDeliveredQtyItems(icIolAssociationRecords);
 
 		final ShipmentDataBuilder result = ShipmentData.builder()
 				.productId(productId)
-				.deliveredQtyItems(shippedQtyItems);
+				.deliveredQtyItems(deliveredQtyItems);
 
-		if (shippedQtyItems.isEmpty())
+		if (deliveredQtyItems.isEmpty())
 		{
 			return result
 					.qtyInStockUom(defaultQtyDelivered.getStockQty())
@@ -155,26 +159,31 @@ public class DeliveredDataLoader
 
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithCatch = new ArrayList<>();
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
-		for (final DeliveredQtyItem shippedQtyItem : shippedQtyItems)
+		for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
 		{
+			if(!deliveredQtyItem.isCompletedOrClosed())
+			{
+				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
+			}
+
 			qtyInStockUom = Quantitys.add(conversionCtx,
 					qtyInStockUom,
-					shippedQtyItem.getQtyInStockUom());
+					deliveredQtyItem.getQtyInStockUom());
 
 			qtyNominal = Quantitys.add(conversionCtx,
 					qtyNominal,
-					coalesce(shippedQtyItem.getQtyOverride(), shippedQtyItem.getQtyNominal()));
+					coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal()));
 
 			final Quantity qtyCatchEffective = coalesce(
-					shippedQtyItem.getQtyOverride(),
-					shippedQtyItem.getQtyCatch());
+					deliveredQtyItem.getQtyOverride(),
+					deliveredQtyItem.getQtyCatch());
 			if (qtyCatchEffective == null)
 			{
-				deliveredQtyItemsWithoutCatch.add(shippedQtyItem);
+				deliveredQtyItemsWithoutCatch.add(deliveredQtyItem);
 			}
 			else
 			{
-				deliveredQtyItemsWithCatch.add(shippedQtyItem);
+				deliveredQtyItemsWithCatch.add(deliveredQtyItem);
 				qtyCatch = Quantitys.add(conversionCtx,
 						qtyCatch,
 						qtyCatchEffective);
@@ -204,7 +213,7 @@ public class DeliveredDataLoader
 					.build();
 		}
 
-		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
+		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadDeliveredQtyItems(icIolAssociationRecords);
 
 		Quantity qtyTotalInStockUom = Quantitys.createZero(stockUomId);
 		Quantity qtyTotalNominal = Quantitys.createZero(icUomId);
@@ -220,6 +229,10 @@ public class DeliveredDataLoader
 
 		for (final DeliveredQtyItem deliveredQtyItem : shippedQtyItems)
 		{
+			if(!deliveredQtyItem.isCompletedOrClosed())
+			{
+				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
+			}
 
 			final Quantity currentQtyInStockUom = deliveredQtyItem.getQtyInStockUom();
 			final Quantity currentQtyNominal = coalesce(deliveredQtyItem.getQtyOverride(), deliveredQtyItem.getQtyNominal());
@@ -261,16 +274,28 @@ public class DeliveredDataLoader
 				.build();
 	}
 
-	private ImmutableList<DeliveredQtyItem> loadshippedQtyItems(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
+	private ImmutableList<DeliveredQtyItem> loadDeliveredQtyItems(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
 	{
 		final Builder<DeliveredQtyItem> result = ImmutableList.builder();
 
 		for (final I_C_InvoiceCandidate_InOutLine icIolAssociationRecord : icIolAssociationRecords)
 		{
-			final I_M_InOutLine inoutLine = create(icIolAssociationRecord.getM_InOutLine(), I_M_InOutLine.class);
+			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(icIolAssociationRecord.getM_InOutLine_ID());
+
+			if(inoutLineId == null)
+			{
+				continue;
+			}
+
+			final I_M_InOutLine inoutLine = inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
+
+			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+
+			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 
 			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
-					.inDispute(inoutLine.isInDispute());
+					.inDispute(inoutLine.isInDispute())
+					.completedOrClosed(inoutCompletedOrClosed);
 
 			final Quantity qtyInStockUom = Quantitys
 					.create(

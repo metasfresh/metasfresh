@@ -476,4 +476,10 @@ public class InOutDAO implements IInOutDAO
 				.collect(ImmutableList.toImmutableList());
 
 	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
+	}
 }
