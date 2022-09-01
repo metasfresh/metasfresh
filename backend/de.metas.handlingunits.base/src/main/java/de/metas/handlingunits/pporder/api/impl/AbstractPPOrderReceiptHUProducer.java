@@ -250,6 +250,13 @@ import java.util.Map;
 		// Create receipt candidates
 		createAndProcessReceiptCandidatesIfRequested(ppOrderReceiptCandidateCollector.getRequests());
 
+		// Refresh the planning HUs if neeed.
+		// e.g. if processed those  "planning" HUs, will no longer have HUStatus=P but HUStatus=A
+		if (processReceiptCandidates)
+		{
+			InterfaceWrapperHelper.refreshAll(planningHUs);
+		}
+
 		//
 		// Return created HUs
 		return planningHUs;
@@ -361,11 +368,11 @@ import java.util.Map;
 		final Object referencedModel = getAllocationRequestReferencedModel();
 
 		return AllocationUtils.createQtyRequest(huContext,
-				productId, // product
-				qtyToReceive, // the quantity to receive
-				date, // transaction date
-				referencedModel, // referenced model
-				true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
+												productId, // product
+												qtyToReceive, // the quantity to receive
+												date, // transaction date
+												referencedModel, // referenced model
+												true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
 		);
 	}
 
@@ -600,7 +607,9 @@ import java.util.Map;
 	//
 	//
 
-	private interface TUSpec {}
+	private interface TUSpec
+	{
+	}
 
 	@Value(staticConstructor = "of")
 	private static class HUPIItemProductTUSpec implements TUSpec
