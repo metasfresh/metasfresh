@@ -50,7 +50,8 @@ public class HUQRCodesRepository
 		return Optional.of(HUQRCodeAssignment.of(id, huId));
 	}
 
-	public void createNew(@NonNull HUQRCode qrCode, @Nullable HuId huId)
+	@NonNull
+	public I_M_HU_QRCode createNew(@NonNull final HUQRCode qrCode, @Nullable final HuId huId)
 	{
 		final GlobalQRCode globalQRCode = qrCode.toGlobalQRCode();
 
@@ -65,9 +66,11 @@ public class HUQRCodesRepository
 		record.setM_HU_ID(HuId.toRepoId(huId));
 
 		InterfaceWrapperHelper.save(record);
+
+		return record;
 	}
 
-	public void assign(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
 		final I_M_HU_QRCode existingRecord = queryByQRCode(qrCode.getId())
 				.create()

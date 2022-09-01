@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.spi.model;
 
 import de.metas.async.AsyncBatchId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -54,16 +55,16 @@ public class DeliveryOrderCreateRequest
 			@NonNull @Singular final Set<Integer> packageIds,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final String shipperGatewayId,
-			@NonNull final LocalTime timeFrom,
-			@NonNull final LocalTime timeTo,
+ 			@Nullable final LocalTime timeFrom,
+			@Nullable final LocalTime timeTo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		this.pickupDate = pickupDate;
 		this.packageIds = Check.assumeNotEmpty(packageIds, "packageIds is not empty");
 		this.shipperTransportationId = shipperTransportationId;
 		this.shipperGatewayId = shipperGatewayId;
-		this.timeFrom = timeFrom;
-		this.timeTo = timeTo;
+		this.timeFrom = CoalesceUtil.coalesceNotNull(timeFrom, LocalTime.MIN);
+		this.timeTo = CoalesceUtil.coalesceNotNull(timeTo, LocalTime.MAX);
 		this.asyncBatchId = asyncBatchId;
 	}
 }

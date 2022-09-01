@@ -63,20 +63,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final C_OLCand_HandlerDAO dao = new C_OLCand_HandlerDAO();
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(@NonNull final Object model)
 	{
 		final I_C_OLCand olCandRecord = create(model, I_C_OLCand.class);
 
-		return isEligibleForInvoiceCandidateCreate(olCandRecord);
+		return isEligibleForInvoiceCandidateCreate(olCandRecord) 
+				? CandidatesAutoCreateMode.CREATE_CANDIDATES 
+				: CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
@@ -86,10 +88,10 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_C_OLCand> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		return dao.retrieveMissingCandidatesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.setLimit(QueryLimit.ofInt(limit))
+				.setLimit(limit)
 				.create()
 				.iterate(I_C_OLCand.class);
 	}
@@ -141,7 +143,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setRecord_ID(olcRecord.getC_OLCand_ID());
 
 		ic.setPOReference(olcRecord.getPOReference());
-
 		// product
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olcRecord);
 		ic.setM_Product_ID(ProductId.toRepoId(productId));
@@ -203,7 +204,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final TaxId taxId = taxBL.getTaxNotNull(
-				ctx,
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olcRecord.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
@@ -217,6 +217,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setExternalLineId(olcRecord.getExternalLineId());
 		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());
 		ic.setC_Async_Batch_ID(olcRecord.getC_Async_Batch_ID());
+
+		ic.setAD_InputDataSource_ID(olcRecord.getAD_InputDataSource_ID());
 
 		olcRecord.setProcessed(true);
 		saveRecord(olcRecord);

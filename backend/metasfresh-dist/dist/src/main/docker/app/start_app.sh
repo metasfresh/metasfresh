@@ -23,6 +23,7 @@ rabbitmq_password=${RABBITMQ_PASSWORD:-$(echo $secret_rabbitmq_password)}
 # elastic search
 es_host=${ES_HOST:-search}
 es_port=${ES_PORT:-9300}
+es_enable=${ES_ENABLE:-UNSET}
 
 # metasfresh-admin
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
@@ -57,6 +58,7 @@ echo_variable_values()
  echo ""
  echo "ES_HOST=${es_host}"
  echo "ES_PORT=${es_port}"
+ echo "ES_ENABLE=${es_enable}"
  echo ""
  echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "APP_HOST=${app_host}"
@@ -93,10 +95,22 @@ run_metasfresh()
 	metasfresh_admin_params=""
  fi
 
+ if [ "$es_enable" != "UNSET" ];
+ then
+ 	metasfresh_es_enable_params="-Delastic_enable=${es_enable}"
+ else 
+	metasfresh_es_enable_params=""
+ fi
+
  # thx to https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
-# MaxRAMFraction=1 doesn't leave any memory for anything else and might cause the OS to kill the java process
-# local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
-local MEMORY_PARAMS="-Xmx1024M"
+ # MaxRAMFraction=1 doesn't leave any memory for anything else and might cause the OS to kill the java process
+ # local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+ local MEMORY_PARAMS="-Xmx1024M"
+
+  # Allow loading jars from /opt/metasfresh/external-lib.
+  # This assumes that the app uses PropertiesLauncher (can be verified by opening the jar e.g. with 7-zip and checking META-INF/MANIFEST.MF)
+  # Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features
+ local external_lib_params="-Dloader.path=/opt/metasfresh/external-lib"
 
  local es_params="-Dmetasfresh.elasticsearch.host=${es_host}:${es_port}"
 
@@ -111,7 +125,9 @@ local MEMORY_PARAMS="-Xmx1024M"
  ${MEMORY_PARAMS} \
  -XX:+HeapDumpOnOutOfMemoryError \
  ${es_params} \
+ ${metasfresh_es_enable_params} \
  ${rabbitmq_params} \
+ ${external_lib_params} \
  ${metasfresh_db_connectionpool_params} \
  ${metasfresh_admin_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh.properties \
@@ -129,8 +145,6 @@ then
 fi
 
 set_properties /opt/metasfresh/metasfresh.properties
-set_properties /opt/metasfresh/local_settings.properties
-set_properties /root/local_settings.properties
 
 run_metasfresh
 

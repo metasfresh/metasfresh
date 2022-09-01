@@ -83,7 +83,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	public void pushBPartnerAndUsers(final I_C_BPartner bpartner)
+	public void pushBPartnerAndUsers(@NonNull final I_C_BPartner bpartner)
 	{
 		if (disabled.get())
 		{
@@ -103,11 +103,6 @@ public class WebuiPush implements IWebuiPush
 // @formatter:on
 
 		final SyncBPartner syncBPartner = syncFactory.createSyncBPartnerWithoutContracts(bpartner);
-		if (syncBPartner == null)
-		{
-			return;
-		}
-
 		final PutBPartnersRequest syncBPartnersRequest = PutBPartnersRequest.of(syncBPartner);
 		agent.syncBPartners(syncBPartnersRequest);
 	}
@@ -140,7 +135,7 @@ public class WebuiPush implements IWebuiPush
 	public void pushBPartnerForContact(final I_AD_User contact)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contact.getC_BPartner_ID());
-		if(bpartnerId == null)
+		if (bpartnerId == null)
 		{
 			return;
 		}
@@ -228,7 +223,9 @@ public class WebuiPush implements IWebuiPush
 		final IAgentSync agent = getAgentSync();
 
 		final String infoMessage = SyncObjectsFactory.newFactory().createSyncInfoMessage();
-		agent.syncInfoMessage(PutInfoMessageRequest.of(infoMessage));
+		agent.syncInfoMessage(PutInfoMessageRequest.builder()
+									  .message(infoMessage)
+									  .build());
 	}
 
 	@Override

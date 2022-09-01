@@ -1,39 +1,19 @@
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.age.AgeAttributesService;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Reservation;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.order.OrderLineId;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOWrapper;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.text.ExtendedReflectionToStringBuilder;
 import org.adempiere.util.text.RecursiveIndentedMultilineToStringStyle;
@@ -42,17 +22,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Reservation;
-import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.order.OrderLineId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class HUQueryBuilderTest
 {

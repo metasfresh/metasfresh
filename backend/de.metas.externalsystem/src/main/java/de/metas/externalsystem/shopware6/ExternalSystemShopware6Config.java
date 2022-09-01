@@ -51,11 +51,11 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	@NonNull
 	List<UOMShopwareMapping> uomShopwareMappingList;
 	@Nullable
-	String bPartnerIdJSONPath;
-	@Nullable
 	String bPartnerLocationIdJSONPath;
 	@Nullable
 	String salesRepJSONPath;
+	@Nullable
+	String emailJSONPath;
 	@Nullable
 	FreightCostConfig freightCostNormalVatConfig;
 	@Nullable
@@ -66,6 +66,14 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	Boolean isActive;
 	@NonNull
 	String value;
+	@NonNull
+	ProductLookup productLookup;
+
+	@Nullable
+	String metasfreshIdJSONPath;
+
+	@Nullable
+	String shopwareIdJSONPath;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -75,14 +83,17 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull String clientSecret,
 			final @NonNull List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList,
 			final @NonNull List<UOMShopwareMapping> uomShopwareMappingList,
-			final @Nullable String bPartnerIdJSONPath,
 			final @Nullable String bPartnerLocationIdJSONPath,
 			final @Nullable String salesRepJSONPath,
+			final @Nullable String emailJSONPath,
 			final @Nullable FreightCostConfig freightCostNormalVatConfig,
 			final @Nullable FreightCostConfig freightCostReducedVatConfig,
 			final @Nullable PriceListId priceListId,
 			final @NonNull Boolean isActive,
-			final @NonNull String value)
+			final @NonNull String value,
+			final @NonNull ProductLookup productLookup,
+			final @Nullable String metasfreshIdJSONPath,
+			final @Nullable String shopwareIdJSONPath)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -91,14 +102,17 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.externalSystemShopware6ConfigMappingList = externalSystemShopware6ConfigMappingList;
 		this.uomShopwareMappingList = uomShopwareMappingList;
 		this.baseUrl = baseUrl;
-		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
 		this.bPartnerLocationIdJSONPath = bPartnerLocationIdJSONPath;
 		this.salesRepJSONPath = salesRepJSONPath;
+		this.emailJSONPath = emailJSONPath;
 		this.freightCostNormalVatConfig = freightCostNormalVatConfig;
 		this.freightCostReducedVatConfig = freightCostReducedVatConfig;
 		this.priceListId = priceListId;
 		this.isActive = isActive;
 		this.value = value;
+		this.productLookup = productLookup;
+		this.metasfreshIdJSONPath = metasfreshIdJSONPath;
+		this.shopwareIdJSONPath = shopwareIdJSONPath;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

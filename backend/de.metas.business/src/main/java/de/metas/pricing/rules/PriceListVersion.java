@@ -97,7 +97,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setProductId(productId);
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
-		result.setDiscountEditable(productPrice.isDiscountEditable());
+		result.setDiscountEditable(result.isDiscountEditable() && productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(priceList.isTaxIncluded());
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));

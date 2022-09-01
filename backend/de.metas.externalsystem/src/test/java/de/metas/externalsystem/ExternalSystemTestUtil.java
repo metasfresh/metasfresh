@@ -26,6 +26,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -93,24 +94,34 @@ public class ExternalSystemTestUtil
 	}
 
 	@NonNull
-	@Builder(builderMethodName = "createLeichMehlConfigBuilder", builderClassName = "leichMehlConfigBuilder")
-	private I_ExternalSystem_Config_LeichMehl createLeichMehlConfig(
-			final int externalSystemParentConfigId,
-			@NonNull final String value,
-			final String ftpHost,
-			final int ftpPort,
-			final String ftpUsername,
-			final String ftpPassword,
-			final String ftpDirectory)
+	@Builder(builderMethodName = "createRabbitMQConfigBuilder", builderClassName = "rabbitMQConfigBuilder")
+	private I_ExternalSystem_Config_RabbitMQ_HTTP createRabbitMQConfig(
+			final int externalSystemConfigId,
+			@Nullable final String value,
+			final boolean isSyncBPartnerToRabbitMQ,
+			final boolean isAutoSendWhenCreatedByUserGroup,
+			final int subjectCreatedByUserGroupId,
+			final boolean isSyncExternalReferencesToRabbitMQ,
+			final int customChildConfigId)
 	{
-		final I_ExternalSystem_Config_LeichMehl childRecord = newInstance(I_ExternalSystem_Config_LeichMehl.class);
-		childRecord.setExternalSystem_Config_ID(externalSystemParentConfigId);
-		childRecord.setExternalSystemValue(value);
-		childRecord.setFTP_Port(ftpPort);
-		childRecord.setFTP_Username(ftpUsername);
-		childRecord.setFTP_Password(ftpPassword);
-		childRecord.setFTP_Hostname(ftpHost);
-		childRecord.setFTP_Directory(ftpDirectory);
+		final int subjectCreatedByUserGroup_ID = CoalesceUtil.coalesceNotNull(subjectCreatedByUserGroupId, 1);
+		final String configValue = CoalesceUtil.coalesceNotNull(value, "notImportant");
+
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+		childRecord.setExternalSystemValue(configValue);
+		childRecord.setRemoteURL("remoteURL");
+		childRecord.setRouting_Key("routingKey");
+		childRecord.setAuthToken("authToken");
+		childRecord.setIsSyncBPartnersToRabbitMQ(isSyncBPartnerToRabbitMQ);
+		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+		childRecord.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
+		childRecord.setSubjectCreatedByUserGroup_ID(subjectCreatedByUserGroup_ID);
+		childRecord.setIsSyncExternalReferencesToRabbitMQ(isSyncExternalReferencesToRabbitMQ);
+
+		if (customChildConfigId > 0)
+		{
+			childRecord.setExternalSystem_Config_RabbitMQ_HTTP_ID(customChildConfigId);
+		}
 
 		saveRecord(childRecord);
 

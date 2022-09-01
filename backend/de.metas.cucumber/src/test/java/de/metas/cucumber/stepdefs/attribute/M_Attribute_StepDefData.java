@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.attribute;
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_M_Attribute;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class M_Attribute_StepDefData extends StepDefData<I_M_Attribute>
 {
+	public M_Attribute_StepDefData()
+	{
+		super(I_M_Attribute.class);
+	}
 }

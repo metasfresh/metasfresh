@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -59,7 +60,20 @@ public class DataTableUtil
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String fallbackPrefix)
 	{
-		return CoalesceUtil.coalesceSuppliers(() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER), () -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+	}
+
+	public String extractRecordIdentifier(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnNamePrefix,
+			@NonNull final String fallbackPrefix)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> dataTableRow.get(columnNamePrefix + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER),
+				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
 	}
 
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
@@ -101,14 +115,29 @@ public class DataTableUtil
 		}
 	}
 
+	public int extractIntOrZeroForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntOrDefaultForColumnName(dataTableRow, columnName, 0);
+	}
+
 	public int extractIntOrMinusOneForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
+		return extractIntOrDefaultForColumnName(dataTableRow, columnName, -1);
+	}
+
+	private int extractIntOrDefaultForColumnName(
+			final @NotNull Map<String, String> dataTableRow,
+			final @NotNull String columnName,
+			final int defaultValue)
+	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		if (EmptyUtil.isBlank(string))
 		{
-			return -1;
+			return defaultValue;
 		}
 		return extractIntForColumnName(dataTableRow, columnName);
 	}
@@ -130,18 +159,6 @@ public class DataTableUtil
 		}
 
 		return dataTableRow.get(columnName);
-	}
-
-	@Nullable
-	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
-	{
-		return dataTableRow.get(columnName);
-	}
-
-	@Nullable
-	public String nullToken2Null(@NonNull final String value)
-	{
-		return NULL_STRING.equals(value) ? null : value;
 	}
 
 	@NonNull
@@ -256,7 +273,6 @@ public class DataTableUtil
 		}
 	}
 
-
 	public BigDecimal extractBigDecimalForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -330,7 +346,8 @@ public class DataTableUtil
 		return result;
 	}
 
-	public static boolean extractBooleanForColumnNameOr(
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOr(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName,
 			@Nullable final Boolean defaultValue)
@@ -357,5 +374,17 @@ public class DataTableUtil
 			return null;
 
 		return value;
+	}
+
+	@Nullable
+	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	{
+		return dataTableRow.get(columnName);
+	}
+
+	@Nullable
+	public String nullToken2Null(@NonNull final String value)
+	{
+		return NULL_STRING.equals(value) ? null : value;
 	}
 }

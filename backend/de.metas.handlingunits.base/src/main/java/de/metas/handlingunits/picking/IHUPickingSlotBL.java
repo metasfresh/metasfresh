@@ -154,7 +154,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 *
 	 * @return matching HUs
 	 */
-	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery query);
+	List<I_M_HU> retrieveAvailableHUsToPick(@NonNull PickingHUsQuery query);
 
 	ImmutableList<HuId> retrieveAvailableHUIdsToPick(PickingHUsQuery query);
 
@@ -191,5 +191,11 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 */
 		@Default
 		boolean onlyTopLevelHUs = true;
+
+		/**
+		 * If {@code true}, then even exclude HUs that are reserved to the given {@code shipmentSchedule}'s order line itself.
+		 */
+		@Default
+		boolean excludeAllReserved = false;
 	}
 }

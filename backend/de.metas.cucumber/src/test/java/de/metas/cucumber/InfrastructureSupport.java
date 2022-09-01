@@ -31,7 +31,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class InfrastructureSupport
 {
@@ -45,7 +45,7 @@ public class InfrastructureSupport
 	 * - it's easier to inspect the local DB. In fact you can start the webapi (not ServerRoot aka app-server) and the frontend, and inspect everything in the UI.
 	 * 
 	 * The drawback is that your DB is probably polluted which might be an additional reason for possible test failures.
-	 * To always run your cucumber-tests on an "unpolluted" DB, you can use templates as follows - <b>see de.metas-cucumber/dev-support!</b>
+	 * To always run your cucumber-tests on an "unpolluted" DB, you can use templates as follows:
 	 * 
 	 * Reset your local infrastructure-DB
 	 * Apply the local migration scripts
@@ -64,7 +64,7 @@ public class InfrastructureSupport
 	 * </pre>
 	 */
 	@Getter
-	private final boolean runAgainstDockerizedDatabase = true;
+	private final boolean runAgainstDockerizedDatabase = false;
 
 	@Getter
 	private String dbHost;
@@ -103,7 +103,7 @@ public class InfrastructureSupport
 		{
 			// this image is from release-branch 2021-09-15. it is failrly old, 
 			// such that our local miration-scripts will be applied and no later scripts from other branches are already in this image 
-			final String fullImageName = "metasfresh/metasfresh-db:5.172.2_380_release";
+			final String fullImageName = "metasfresh/metasfresh-db:5.174.2_461_release";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
 			// the DB needs to be populated

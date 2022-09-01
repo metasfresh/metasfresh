@@ -1,9 +1,9 @@
 package de.metas.invoicecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
-import org.compiere.model.I_M_InOut;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -29,6 +29,27 @@ public interface I_C_Invoice_Candidate
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
 	/**
 	 * Set Statusmeldung.
@@ -495,6 +516,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
 
 	/**
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
 	 * Set Rechnungskandidaten-Controller.
 	 *
 	 * <br>Type: TableDir
@@ -543,30 +585,6 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
 	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
-
-	/**
-	 * Set IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
-
-	/**
-	 * Get IncotermLocation.
-	 * Anzugebender Ort für Handelsklausel
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIncotermLocation();
-
-	ModelColumn<I_M_InOut, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_M_InOut.class, "IncotermLocation", null);
-	String COLUMNNAME_IncotermLocation = "IncotermLocation";
-
 
 	/**
 	 * Set Aggregator.
@@ -935,6 +953,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Shipping_Location_ID (int C_Shipping_Location_ID);
+
+	/**
+	 * Get Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Shipping_Location_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Shipping_Location_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Shipping_Location_ID", null);
+	String COLUMNNAME_C_Shipping_Location_ID = "C_Shipping_Location_ID";
+
+	/**
 	 * Set Steuer eff..
 	 *
 	 * <br>Type: Table
@@ -982,7 +1021,7 @@ public interface I_C_Invoice_Candidate
 	 * Set Steuer abw..
 	 * Abweichender Steuersatz
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -992,7 +1031,7 @@ public interface I_C_Invoice_Candidate
 	 * Get Steuer abw..
 	 * Abweichender Steuersatz
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1092,8 +1131,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Zugesagter Termin.
-	 * Zugesagter Termin für diesen Auftrag
+	 * Set Date Promised.
+	 * Date Order was promised
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1104,8 +1143,8 @@ public interface I_C_Invoice_Candidate
 	void setDatePromised (@Nullable java.sql.Timestamp DatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
-	 * Zugesagter Termin für diesen Auftrag
+	 * Get Date Promised.
+	 * Date Order was promised
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1320,6 +1359,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Discount_Override = "Discount_Override";
 
 	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_EMail = new ModelColumn<>(I_C_Invoice_Candidate.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
+
+	/**
 	 * Set Error Message.
 	 *
 	 * <br>Type: Text
@@ -1383,8 +1443,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
 
 	/**
-	 * Set First ship location.
-	 * BParter location of first shipment/receipt
+	 * Set Ship Location.
+	 * BParter location of primary shipment/receipt
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1393,8 +1453,8 @@ public interface I_C_Invoice_Candidate
 	void setFirst_Ship_BPLocation_ID (int First_Ship_BPLocation_ID);
 
 	/**
-	 * Get First ship location.
-	 * BParter location of first shipment/receipt
+	 * Get Ship Location.
+	 * BParter location of primary shipment/receipt
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1552,6 +1612,29 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_HeaderAggregationKey_Calc = new ModelColumn<>(I_C_Invoice_Candidate.class, "HeaderAggregationKey_Calc", null);
 	String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
+
+	/**
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_Invoice_Candidate.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
 	 * Set Invoicable Quantity per.
@@ -2471,6 +2554,29 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_packingmaterialname = "packingmaterialname";
 
 	/**
+	 * Set Payment Rule.
+	 * How you pay the invoice
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRule (@Nullable java.lang.String PaymentRule);
+
+	/**
+	 * Get Payment Rule.
+	 * How you pay the invoice
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRule();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_Invoice_Candidate.class, "PaymentRule", null);
+	String COLUMNNAME_PaymentRule = "PaymentRule";
+
+	/**
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
@@ -2780,8 +2886,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_ProductType = "ProductType";
 
 	/**
-	 * Set Gelieferte Menge.
-	 * Gelieferte Menge
+	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2790,8 +2895,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyDelivered (@Nullable BigDecimal QtyDelivered);
 
 	/**
-	 * Get Gelieferte Menge.
-	 * Gelieferte Menge
+	 * Get Shipped Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3661,27 +3765,4 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
-
-	/**
-	 * Set Payment Rule.
-	 * How you pay the invoice
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPaymentRule (@Nullable java.lang.String PaymentRule);
-
-	/**
-	 * Get Payment Rule.
-	 * How you pay the invoice
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPaymentRule();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_Invoice_Candidate.class, "PaymentRule", null);
-	String COLUMNNAME_PaymentRule = "PaymentRule";
 }

@@ -1,8 +1,12 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
@@ -16,6 +20,7 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcess
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.product.ProductId;
@@ -27,6 +32,8 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -50,7 +57,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
@@ -123,6 +133,9 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public IHUQueryBuilder createHUsAvailableToIssueQuery(@NonNull final I_PP_Order_BOMLine ppOrderBomLine)
 	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID());
+		final Set<WarehouseId> issueFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
+
 		final AttributeSetInstanceId expectedASI = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderBomLine.getM_AttributeSetInstance_ID());
 
 		final ImmutableAttributeSet storageRelevantAttributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(expectedASI)
@@ -223,5 +236,28 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public void save(final org.eevolution.model.I_PP_Order ppOrder)
 	{
 		ppOrderBL.save(ppOrder);
+	}
+
+	@Override
+	public List<HuId> retrieveAvailableToIssue(final I_PP_Order_BOMLine ppOrderBomLine)
+	{
+		final IHUQueryBuilder huIdsToAvailableToIssueQuery = createHUsAvailableToIssueQuery(ppOrderBomLine);
+
+		return huIdsToAvailableToIssueQuery.createQuery()
+				.listIds()
+				.stream()
+				.map(HuId::ofRepoId)
+				.filter(this::isEligibleHuToIssue)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isEligibleHuToIssue(final HuId huId)
+	{
+		if (SourceHUsService.get().isHuOrAnyParentSourceHu(huId) || !handlingUnitsBL.isHUHierarchyCleared(huId))
+		{
+			return false;
+		}
+
+		return !huStatusBL.isStatusIssued(huId);
 	}
 }

@@ -51,5 +51,7 @@ public interface GRSSignumConstants
 
 	String ROUTE_PROPERTY_PUSH_RAW_MATERIALS_CONTEXT = "PushRawMaterialsRouteContext";
 
+	String HERKUNFT_ATTRIBUTE_CODE = "1000001";
+
 	int CUSTOMER_FLAG = 500;
 }

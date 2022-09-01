@@ -57,4 +57,14 @@ public class CommodityNumberId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static int toRepoId(@Nullable final CommodityNumberId commodityNumberId)
+	{
+		if (commodityNumberId == null)
+		{
+			return -1;
+		}
+
+		return commodityNumberId.getRepoId();
+	}
 }

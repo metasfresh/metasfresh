@@ -34,6 +34,7 @@ import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Value
 public class PutConfirmationToMetasfreshRequest extends RequestToMetasfresh
@@ -43,12 +44,16 @@ public class PutConfirmationToMetasfreshRequest extends RequestToMetasfresh
 		return PutConfirmationToMetasfreshRequest.builder().syncConfirmations(syncConfirmations).build();
 	}
 
+	String eventId;
 	List<SyncConfirmation> syncConfirmations;
 
 	@Builder
 	@JsonCreator
-	private PutConfirmationToMetasfreshRequest(@JsonProperty("syncConfirmations") @Singular final List<SyncConfirmation> syncConfirmations)
+	private PutConfirmationToMetasfreshRequest(
+			@JsonProperty("eventId") final String eventId,
+			@JsonProperty("syncConfirmations") @Singular final List<SyncConfirmation> syncConfirmations)
 	{
+		this.eventId = eventId != null ? eventId : UUID.randomUUID().toString();
 		this.syncConfirmations = new ArrayList<>(syncConfirmations);
 	}
 

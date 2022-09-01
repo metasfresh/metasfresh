@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.edi;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 
 /**
@@ -30,4 +31,11 @@ import org.w3c.dom.Document;
  */
 public class EDI_cctop_invoic_v_StepDefData extends StepDefData<Document>
 {
+	/**
+	 * @param clazz used if this stepdef is about model classes. In that case the record's {@link TableRecordReference} is stored, and the given clazz is then used when the record is loaded again.
+	 */
+	public EDI_cctop_invoic_v_StepDefData(@Nullable final Class<Document> clazz)
+	{
+		super(clazz);
+	}
 }

@@ -29,4 +29,17 @@ public interface IWorkpackageProcessorContextFactory extends ISingletonService
 	 */
 	void setThreadInheritedPriority(String priority);
 
+	/**
+	 * Associate the given {@code asyncBatchId} (or {@code null} with the current thread as the current workpackge async batch Id.
+	 *
+	 * It should only be called from {@code WorkpackageProcessorTask#beforeWorkpackageProcessing()} && {@code WorkpackageProcessorTask#afterWorkpackageProcessed(boolean)} ()}
+	 *
+	 * @return the async batch Id that was formerly associated with the current thread, or {@code null}.
+	 */
+	AsyncBatchId setThreadInheritedWorkpackageAsyncBatch(AsyncBatchId asyncBatch);
+
+	/**
+	 * Get batch id from the inherited thread or {@code null}
+	 */
+	AsyncBatchId getThreadInheritedWorkpackageAsyncBatch();
 }

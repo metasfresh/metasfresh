@@ -305,7 +305,7 @@ public class OrderFastInput extends CalloutEngine
 		// 3834
 		final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(ol.getC_BPartner_ID());
-		Services.get(IBPartnerProductBL.class).assertNotExcludedFromTransaction(SOTrx.ofBooleanNonNull(order.isSOTrx()), productId, partnerId);
+		Services.get(IBPartnerProductBL.class).assertNotExcludedFromTransaction(SOTrx.ofBooleanNotNull(order.isSOTrx()), productId, partnerId);
 
 		//
 		// set the prices before saveEx, because otherwise, priceEntered is

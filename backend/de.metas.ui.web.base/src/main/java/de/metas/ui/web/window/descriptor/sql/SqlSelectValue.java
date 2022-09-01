@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.column.ColumnSql;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /*
@@ -39,20 +41,20 @@ import java.util.Objects;
 @ToString
 public class SqlSelectValue
 {
-	private final String tableNameOrAlias;
-	private final String columnName;
+	@Nullable private final String tableNameOrAlias;
+	@Nullable private final String columnName;
 
 	@Getter
-	private final ColumnSql virtualColumnSql;
+	@Nullable private final ColumnSql virtualColumnSql;
 
 	@Getter
 	private final String columnNameAlias;
 
 	@Builder(toBuilder = true)
 	private SqlSelectValue(
-			final String tableNameOrAlias,
-			final String columnName,
-			final ColumnSql virtualColumnSql,
+			@Nullable final String tableNameOrAlias,
+			@Nullable final String columnName,
+			@Nullable final ColumnSql virtualColumnSql,
 			@NonNull final String columnNameAlias)
 	{
 		this.columnNameAlias = columnNameAlias;

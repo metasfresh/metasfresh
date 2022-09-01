@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.shipmentschedule;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class M_ShipmentSchedule_StepDefData extends StepDefData<I_M_ShipmentSchedule>
 {
+	public M_ShipmentSchedule_StepDefData()
+	{
+		super(I_M_ShipmentSchedule.class);
+	}
 }

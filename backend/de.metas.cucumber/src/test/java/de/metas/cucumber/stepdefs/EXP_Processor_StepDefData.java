@@ -23,10 +23,15 @@
 package de.metas.cucumber.stepdefs;
 
 import org.compiere.model.I_EXP_Processor;
+import org.compiere.model.I_EXP_Processor_Type;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class EXP_Processor_StepDefData extends StepDefData<I_EXP_Processor>
 {
+	public EXP_Processor_StepDefData()
+	{
+		super(I_EXP_Processor.class);
+	}
 }

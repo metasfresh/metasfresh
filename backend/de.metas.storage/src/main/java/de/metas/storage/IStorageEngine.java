@@ -22,12 +22,11 @@ package de.metas.storage;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_AttributeSetInstance;
+
+import java.util.List;
 
 /**
  * Use {@link IStorageEngineService#getStorageEngine()} to get an instance.
@@ -41,12 +40,8 @@ public interface IStorageEngine
 
 	/**
 	 * Retrieve a <b>union</b> of all storage records that match the given {@code storageQueries}
-	 *
-	 * @param context
-	 * @param storageQueries
-	 * @return
 	 */
-	Set<IStorageRecord> retrieveStorageRecords(IContextAware context, Set<IStorageQuery> storageQueries);
+	List<IStorageRecord> retrieveStorageRecords(IContextAware context, List<IStorageQuery> storageQueries);
 
 	IStorageQuery newStorageQuery();
 
@@ -55,9 +50,6 @@ public interface IStorageEngine
 	 *
 	 * TODO: actually this is not the right place for this method but because we lack time and all IAttributeSet implementations are in handlingunits module, I decided to but this here to have a
 	 * quick&dirty way of getting it.
-	 *
-	 * @param asi
-	 * @return attribute set
 	 */
 	IAttributeSet getAttributeSet(I_M_AttributeSetInstance asi);
 

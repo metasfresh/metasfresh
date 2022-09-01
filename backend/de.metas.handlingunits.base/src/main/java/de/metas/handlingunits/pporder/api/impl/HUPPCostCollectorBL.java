@@ -58,7 +58,7 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 		//
 		// Create & process the receipt cost collector
 		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(ppCostCollectorBL.createReceipt(candidate), I_PP_Cost_Collector.class);
-
+		
 		// Assign the HU to cost collector
 		assignHUs(cc, ImmutableList.of(hu));
 
@@ -89,8 +89,7 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 	public List<I_M_HU> getTopLevelHUs(final org.eevolution.model.I_PP_Cost_Collector cc)
 	{
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(cc);
-		return hus;
+		return huAssignmentDAO.retrieveTopLevelHUsForModel(cc);
 	}
 
 	@Override

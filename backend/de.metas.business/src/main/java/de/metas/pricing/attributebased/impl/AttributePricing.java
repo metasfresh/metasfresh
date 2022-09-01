@@ -126,8 +126,8 @@ public class AttributePricing implements IPricingRule
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void setResultForProductPriceAttribute(
-			final IPricingContext pricingCtx,
-			final IPricingResult result,
+			@NonNull final IPricingContext pricingCtx,
+			@NonNull final IPricingResult result,
 			@NonNull final I_M_ProductPrice productPrice)
 	{
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());

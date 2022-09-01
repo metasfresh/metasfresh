@@ -35,7 +35,9 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -59,6 +61,8 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record
 	 */
 	ILUTUProducerAllocationDestination createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration lutuConfiguration);
+
+	I_M_HU_LUTU_Configuration createNewLUTUConfigWithParams(ILUTUConfigurationFactory.CreateLUTUConfigRequest lutuConfigRequest);
 
 	/**
 	 * Creates a copy of given configuration.
@@ -214,6 +218,29 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 		return huPIItemProductId != null
 				? Services.get(IHUPIItemProductDAO.class).getById(huPIItemProductId)
 				: null;
+	}
+
+	@Value
+	@Builder
+	class CreateLUTUConfigRequest
+	{
+		@NonNull
+		I_M_HU_LUTU_Configuration baseLUTUConfiguration;
+
+		@NonNull
+		BigDecimal qtyTU;
+
+		@NonNull
+		BigDecimal qtyCU;
+
+		@NonNull
+		Integer tuHUPIItemProductID;
+
+		@Nullable
+		BigDecimal qtyLU;
+
+		@Nullable
+		Integer luHUPIID;
 	}
 
 }

@@ -23,6 +23,7 @@
 package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -55,6 +56,7 @@ import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -138,6 +140,7 @@ public class OrderBL implements IOrderBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -268,6 +271,7 @@ public class OrderBL implements IOrderBL
 		return retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
 	}
 
+	@Nullable
 	private PriceListId retrievePriceListIdOrNull(
 			final PricingSystemId pricingSystemId,
 			@Nullable final BPartnerLocationAndCaptureId shipToBPLocationId,
@@ -483,11 +487,11 @@ public class OrderBL implements IOrderBL
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
-		if(shipBPartnerId==null || billBPartnerId==null)
+		if(shipBPartnerId == null || billBPartnerId == null)
 		{
-			return Optional.empty(); // orderOrecord is not yet ready
+			return Optional.empty(); // orderRecord is not yet ready
 		}
-		
+
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
 
 		final BPartnerOrderParamsRepository bpartnerOrderParamsRepository = SpringContextHolder.instance.getBean(BPartnerOrderParamsRepository.class);
@@ -616,11 +620,15 @@ public class OrderBL implements IOrderBL
 
 		//
 		// Default Invoice/Payment Rule
-		final String invoiceRule = bp.getInvoiceRule();
+		final InvoiceRule invoiceRule = isSOTrx ?
+				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
+				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
+
 		if (invoiceRule != null)
 		{
-			order.setInvoiceRule(invoiceRule);
+			order.setInvoiceRule(invoiceRule.getCode());
 		}
+
 		final String paymentRule = bp.getPaymentRule();
 		if (paymentRule != null)
 		{
@@ -668,6 +676,7 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setBPLocation(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
 	{
+		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
 				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
 				.type(Type.SHIP_TO)
@@ -840,6 +849,7 @@ public class OrderBL implements IOrderBL
 		}
 	}
 
+	@Nullable
 	@Override
 	public org.compiere.model.I_AD_User getShipToUser(final I_C_Order order)
 	{
@@ -860,6 +870,7 @@ public class OrderBL implements IOrderBL
 				: null;
 	}
 
+	@NonNull
 	@Override
 	public BPartnerLocationAndCaptureId getBillToLocationId(@NonNull final I_C_Order order)
 	{
@@ -890,7 +901,7 @@ public class OrderBL implements IOrderBL
 
 		if (contactIdOrNull == null)
 		{
-			throw new AdempiereException("@Invalid@ @Contact_ID@ for Order " + order.getC_Order_ID())
+			throw new AdempiereException("@NotFound@ @Contact_ID@ for Order " + order.getC_Order_ID())
 					.appendParametersToMessage()
 					.setParameter("getBill_BPartner_ID", order.getBill_BPartner_ID())
 					.setParameter("getBill_Location_ID", order.getBill_Location_ID())
@@ -908,12 +919,28 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Nullable
-	private BPartnerContactId getBillToContactIdOrNull(@NonNull final I_C_Order order)
+	@VisibleForTesting
+	BPartnerContactId getBillToContactIdOrNull(@NonNull final I_C_Order order)
 	{
 		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_User_ID());
-		return billToContactId != null
-				? billToContactId
-				: BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
+		if (billToContactId != null)
+		{
+			return billToContactId; // we are done
+		}
+
+		if (order.getAD_User_ID() <= 0)
+		{
+			return null; // nothing we can fall back to
+		}
+
+		// see if we may return order.getAD_User_ID()
+		if (order.getBill_BPartner_ID() > 0 && order.getBill_BPartner_ID() != order.getC_BPartner_ID())
+		{
+			return null; // we can't return order.getAD_User_ID() as bill contact, because if we return a contact, it needs belong to the bill-partner
+		}
+
+		// we made sure that we may return this as the bill contact
+		return BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
 	}
 
 	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
@@ -1154,6 +1181,41 @@ public class OrderBL implements IOrderBL
 		documentBL.processEx(order, X_C_Order.DOCACTION_Close);
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Order closed for C_Order_ID={}", order.getC_Order_ID());
+	}
+
+	@Override
+	@Nullable
+	public String getLocationEmail(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = orderDAO.getById(orderId);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()));
+
+		final String locationEmail = bpartnerLocation.getEMail();
+		if (!Check.isEmpty(locationEmail))
+		{
+			return locationEmail;
+		}
+
+		final BPartnerContactId orderContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID());
+
+		final String contactLocationEmail = bpartnerDAO.getContactLocationEmail(orderContactId);
+		if (!Check.isEmpty(contactLocationEmail))
+		{
+			return contactLocationEmail;
+		}
+
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+
+		if(bpartnerLocationId == null)
+		{
+			return null;
+		}
+
+		final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(bpartnerLocationId);
+
+		return billLocationRecord.getEMail();
 	}
 
 	@Override

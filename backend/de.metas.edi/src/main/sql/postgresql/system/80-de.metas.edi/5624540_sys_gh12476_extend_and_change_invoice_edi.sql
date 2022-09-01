@@ -218,10 +218,10 @@ SELECT
     il.priceactual,
     il.pricelist,
     ol.invoicableqtybasedon,
-    pp.UPC AS UPC_CU,
-    pp.EAN_CU,
-    p.value,
-    pp.productno AS CustomerProductNo,
+    REGEXP_REPLACE(pp.UPC, '\s+$', '') AS UPC_CU,
+    REGEXP_REPLACE(pp.EAN_CU, '\s+$', '') AS EAN_CU,
+    REGEXP_REPLACE(p.value, '\s+$', '') AS Value,
+    REGEXP_REPLACE(pp.productno, '\s+$', '') AS CustomerProductNo,
     substr(p.name, 1, 35) AS name,
     substr(p.name, 36, 70) AS name2,
     t.rate,
@@ -250,9 +250,9 @@ SELECT
     COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40) AS orderporeference,
     il.c_orderline_id,
     sum(il.taxamtinfo) AS taxamtinfo,
-    pip.GTIN,
-    pip.EAN_TU,
-    pip.UPC AS UPC_TU
+    REGEXP_REPLACE(pip.GTIN, '\s+$', '') AS GTIN,
+    REGEXP_REPLACE(pip.EAN_TU, '\s+$', '') AS EAN_TU,
+    REGEXP_REPLACE(pip.UPC, '\s+$', '') AS UPC_TU
 FROM c_invoiceline il
          LEFT JOIN c_orderline ol ON ol.c_orderline_id = il.c_orderline_id AND ol.isactive = 'Y'
          LEFT JOIN M_HU_PI_Item_Product pip ON ol.M_HU_PI_Item_Product_ID=pip.M_HU_PI_Item_Product_ID

@@ -1,25 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -36,6 +17,24 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionCreatedEventBuilder;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -226,7 +225,7 @@ public class TransactionCreatedHandlerTests
 	public void createCandidate_unrelated_transaction_with_shipmentSchedule()
 	{
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), Instant.now())
-				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, TEN.negate()).build();
+				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
 				.thenReturn(null);
@@ -283,7 +282,6 @@ public class TransactionCreatedHandlerTests
 				.thenReturn(exisitingCandidate);
 
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), date)
-				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, TEN.negate())
 				.transactionId(TRANSACTION_ID)
 				.build();
 

@@ -39,6 +39,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.OrgIdAccessList;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
@@ -88,8 +89,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -103,9 +102,6 @@ import java.util.concurrent.ConcurrentHashMap;
 class UserRolePermissions implements IUserRolePermissions
 {
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissions.class);
-
-	private static final Set<OrgId> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique
-	private static final Set<OrgId> TABLE_ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique;
 
 	private static final AdMessageKey MSG_AccessTableNoView = AdMessageKey.of("AccessTableNoView");
 	private static final AdMessageKey MSG_AccessTableNoUpdate = AdMessageKey.of("AccessTableNoUpdate");
@@ -383,7 +379,8 @@ class UserRolePermissions implements IUserRolePermissions
 		return menuInfo;
 	}
 
-	private Set<OrgId> getOrgAccess(@Nullable final String tableName, final Access access)
+	@Override
+	public OrgIdAccessList getOrgAccess(@Nullable final String tableName, final Access access)
 	{
 		final Optional<Set<OrgId>> orgsWithAccess = tableOrgPermissions.getOrgsWithAccess(tableName, access);
 
@@ -393,18 +390,18 @@ class UserRolePermissions implements IUserRolePermissions
 
 			if (orgIds.contains(OrgId.ANY))
 			{
-				return TABLE_ORGACCESS_ALL;
+				return OrgIdAccessList.TABLE_ALL;
 			}
 
-			return orgIds;
+			return OrgIdAccessList.ofSet(orgIds);
 		}
 
 		if (isAccessAllOrgs())
 		{
-			return ORGACCESS_ALL;
+			return OrgIdAccessList.ALL;
 		}
 
-		return orgPermissions.getOrgAccess(access);
+		return OrgIdAccessList.ofSet(orgPermissions.getOrgAccess(access));
 	}
 
 	@Override
@@ -429,9 +426,9 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public Optional<String> getOrgWhere(@Nullable final String tableName, final Access access)
 	{
-		final Set<OrgId> adOrgIds = getOrgAccess(tableName, access);
+		final OrgIdAccessList adOrgIds = getOrgAccess(tableName, access);
 
-		if (adOrgIds == TABLE_ORGACCESS_ALL || adOrgIds == ORGACCESS_ALL)
+		if (adOrgIds.isAny())
 		{
 			return Optional.empty();
 		}
@@ -483,8 +480,8 @@ class UserRolePermissions implements IUserRolePermissions
 			return true;
 		}
 
-		final Set<OrgId> orgs = getOrgAccess(tableName, access);
-		if (orgs == ORGACCESS_ALL || orgs == TABLE_ORGACCESS_ALL)
+		final OrgIdAccessList orgs = getOrgAccess(tableName, access);
+		if (orgs.isAny())
 		{
 			return true;
 		}

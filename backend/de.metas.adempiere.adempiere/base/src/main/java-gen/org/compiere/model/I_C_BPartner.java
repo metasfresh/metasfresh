@@ -5,16 +5,16 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner 
+public interface I_C_BPartner
 {
 
 	String Table_Name = "C_BPartner";
 
-//	/** AD_Table_ID=291 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=291 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -2538,6 +2538,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_PO_Incoterm = new ModelColumn<>(I_C_BPartner.class, "PO_Incoterm", null);
 	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
+
+	/**
+	 * Set Rechnungsstellung (Kreditoren).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_InvoiceRule (@Nullable java.lang.String PO_InvoiceRule);
+
+	/**
+	 * Get Rechnungsstellung (Kreditoren).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_InvoiceRule();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_InvoiceRule = new ModelColumn<>(I_C_BPartner.class, "PO_InvoiceRule", null);
+	String COLUMNNAME_PO_InvoiceRule = "PO_InvoiceRule";
 
 	/**
 	 * Set Zahlungskondition.

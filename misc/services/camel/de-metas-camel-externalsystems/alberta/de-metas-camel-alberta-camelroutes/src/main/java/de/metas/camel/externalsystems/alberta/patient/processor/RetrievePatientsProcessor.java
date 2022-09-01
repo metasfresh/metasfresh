@@ -74,7 +74,7 @@ public class RetrievePatientsProcessor implements Processor
 		final AlbertaConnectionDetails connectionDetails = routeContext.getAlbertaConnectionDetails();
 
 		final var createdPatients = patientApi
-				.getCreatedPatients(connectionDetails.getApiKey(), connectionDetails.getTenant(), GetPatientsRouteConstants.PatientStatus.CREATED.getValue(), updatedAfter);
+				.getCreatedPatients(connectionDetails.getApiKey(), GetPatientsRouteConstants.PatientStatus.CREATED.getValue(), updatedAfter);
 
 		final List<Patient> patientsToImport = createdPatients == null || createdPatients.isEmpty()
 				? new ArrayList<>()
@@ -87,7 +87,7 @@ public class RetrievePatientsProcessor implements Processor
 				.collect(Collectors.toSet());
 
 		final List<Patient> updatedPatients = patientApi
-				.getCreatedPatients(connectionDetails.getApiKey(), connectionDetails.getTenant(), GetPatientsRouteConstants.PatientStatus.UPDATED.getValue(), updatedAfter);
+				.getCreatedPatients(connectionDetails.getApiKey(), GetPatientsRouteConstants.PatientStatus.UPDATED.getValue(), updatedAfter);
 
 		if (updatedPatients != null && !updatedPatients.isEmpty())
 		{

@@ -15,7 +15,7 @@
     <artifactId>de-metas-camel-edi</artifactId>
     <version>10.0.0</version>
     <properties>
-        <java.version>17</java.version>
+        <java.version>14</java.version>
         <spring-boot.version>2.6.3</spring-boot.version>
         <camel.version>3.14.1</camel.version>
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
@@ -199,7 +199,7 @@
             <artifactId>smooks-fixed-length-cartridge</artifactId>
             <version>${smooks-cartridge.version}</version>
         </dependency>
-        
+
         <dependency>
             <artifactId>commons-logging</artifactId>
             <groupId>commons-logging</groupId>
@@ -255,7 +255,7 @@
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>

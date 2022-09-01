@@ -32,7 +32,6 @@ import org.compiere.util.TimeUtil;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.Year;
 import java.time.YearMonth;
 
 public class FactAcctLogBLTestHelper

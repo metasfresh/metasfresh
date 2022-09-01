@@ -396,8 +396,8 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Vorbelegung Rechnung.
-	 * Rechnungs-Adresse für diesen Geschäftspartner
+	 * Set Invoice Address.
+	 * Business Partner Invoice/Bill Address
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -406,8 +406,8 @@ public interface I_C_BPartner_Location
 	void setIsBillTo (boolean IsBillTo);
 
 	/**
-	 * Get Vorbelegung Rechnung.
-	 * Rechnungs-Adresse für diesen Geschäftspartner
+	 * Get Invoice Address.
+	 * Business Partner Invoice/Bill Address
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -507,6 +507,27 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_ISDN = "ISDN";
 
 	/**
+	 * Set Ephemeral.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEphemeral (boolean IsEphemeral);
+
+	/**
+	 * Get Ephemeral.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEphemeral();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsEphemeral = new ModelColumn<>(I_C_BPartner_Location.class, "IsEphemeral", null);
+	String COLUMNNAME_IsEphemeral = "IsEphemeral";
+
+	/**
 	 * Set Handover Location.
 	 *
 	 * <br>Type: YesNo
@@ -526,6 +547,29 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsHandOverLocation = new ModelColumn<>(I_C_BPartner_Location.class, "IsHandOverLocation", null);
 	String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
+
+	/**
+	 * Set Name editable.
+	 * If unticked, then the address name is maintained by metasfresh
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNameReadWrite (boolean IsNameReadWrite);
+
+	/**
+	 * Get Name editable.
+	 * If unticked, then the address name is maintained by metasfresh
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNameReadWrite();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsNameReadWrite = new ModelColumn<>(I_C_BPartner_Location.class, "IsNameReadWrite", null);
+	String COLUMNNAME_IsNameReadWrite = "IsNameReadWrite";
 
 	/**
 	 * Set Zahlungs-Adresse.
@@ -551,7 +595,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsPayFrom = "IsPayFrom";
 
 	/**
-	 * Set Erstattungs-Adresse.
+	 * Set Remit-To Address.
 	 * Business Partner payment address
 	 *
 	 * <br>Type: YesNo
@@ -561,7 +605,7 @@ public interface I_C_BPartner_Location
 	void setIsRemitTo (boolean IsRemitTo);
 
 	/**
-	 * Get Erstattungs-Adresse.
+	 * Get Remit-To Address.
 	 * Business Partner payment address
 	 *
 	 * <br>Type: YesNo
@@ -574,8 +618,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsRemitTo = "IsRemitTo";
 
 	/**
-	 * Set Lieferstandard.
-	 * Liefer-Adresse für den Geschäftspartner
+	 * Set Replication Lookup Default.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsReplicationLookupDefault (boolean IsReplicationLookupDefault);
+
+	/**
+	 * Get Replication Lookup Default.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isReplicationLookupDefault();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsReplicationLookupDefault = new ModelColumn<>(I_C_BPartner_Location.class, "IsReplicationLookupDefault", null);
+	String COLUMNNAME_IsReplicationLookupDefault = "IsReplicationLookupDefault";
+
+	/**
+	 * Set Ship Address.
+	 * Business Partner Shipment Address
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -584,8 +649,8 @@ public interface I_C_BPartner_Location
 	void setIsShipTo (boolean IsShipTo);
 
 	/**
-	 * Get Lieferstandard.
-	 * Liefer-Adresse für den Geschäftspartner
+	 * Get Ship Address.
+	 * Business Partner Shipment Address
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -728,7 +793,7 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Set Previous Address.
-	 * The address that will be replaced by the current one.
+	 * The address that will be replaced by the current one in open sales candidates, billing candidates and flatrate terms.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -738,7 +803,7 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Get Previous Address.
-	 * The address that will be replaced by the current one.
+	 * The address that will be replaced by the current one in open sales candidates, billing candidates and flatrate terms.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
