@@ -480,6 +480,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		if (query.isDescSortByDateOrdered())
 		{
 			queryBuilder.orderByDescending(I_C_Order.COLUMNNAME_DateOrdered);
+			queryBuilder.orderByDescending(I_C_Order.COLUMNNAME_C_Order_ID);
 		}
 
 		return queryBuilder;
