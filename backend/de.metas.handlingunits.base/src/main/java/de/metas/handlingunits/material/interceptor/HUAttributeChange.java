@@ -1,15 +1,5 @@
 package de.metas.handlingunits.material.interceptor;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.AttributeValueType;
-import org.compiere.util.TimeUtil;
-
 import de.metas.handlingunits.HuId;
 import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.util.Check;
@@ -17,6 +7,15 @@ import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -89,7 +88,10 @@ final class HUAttributeChange
 		else if (AttributeValueType.NUMBER.equals(attributeValueType))
 		{
 			final BigDecimal valueBD = NumberUtils.asBigDecimal(value);
-			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
+
+			return BigDecimal.ZERO.equals(valueBD)
+					? null
+					: AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
 		}
 		else if (AttributeValueType.DATE.equals(attributeValueType))
 		{

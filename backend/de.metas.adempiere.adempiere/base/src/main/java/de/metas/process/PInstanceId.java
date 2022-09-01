@@ -12,6 +12,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -59,12 +61,12 @@ public class PInstanceId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final PInstanceId id)
+	public static int toRepoId(@Nullable final PInstanceId id)
 	{
 		return toRepoIdOr(id, -1);
 	}
 
-	public static int toRepoIdOr(final PInstanceId id, final int defaultValue)
+	public static int toRepoIdOr(@Nullable final PInstanceId id, final int defaultValue)
 	{
 		return id != null ? id.getRepoId() : defaultValue;
 	}

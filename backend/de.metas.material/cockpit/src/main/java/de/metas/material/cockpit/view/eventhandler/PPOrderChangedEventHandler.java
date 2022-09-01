@@ -1,21 +1,6 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
@@ -25,7 +10,20 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -54,7 +52,7 @@ import lombok.NonNull;
 public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderChangedEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
-	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	
 	public PPOrderChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
@@ -62,7 +60,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 	}
 
 	@Override
-	public Collection<Class<? extends PPOrderChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderChangedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PPOrderChangedEvent.class);
 	}
@@ -70,6 +68,8 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 	@Override
 	public void handleEvent(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
 	{
+		updateMainData(ppOrderChangedEvent);
+
 		final List<PPOrderLine> newPPOrderLines = ppOrderChangedEvent.getNewPPOrderLines();
 
 		final OrgId orgId = ppOrderChangedEvent.getEventDescriptor().getOrgId();
@@ -79,17 +79,17 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
-					.productDescriptor(newPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate(), timeZone))
+					.productDescriptor(newPPOrderLine.getPpOrderLineData().getProductDescriptor())
+					.date(TimeUtil.getDay(newPPOrderLine.getPpOrderLineData().getIssueOrReceiveDate(), timeZone))
 					.build();
 
 			final BigDecimal qtyRequiredForProduction = //
-					newPPOrderLine.getQtyRequired()
-							.subtract(newPPOrderLine.getQtyDelivered());
+					newPPOrderLine.getPpOrderLineData().getQtyRequired()
+							.subtract(newPPOrderLine.getPpOrderLineData().getQtyDelivered());
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
-					.requiredForProductionQty(qtyRequiredForProduction)
+					.qtyDemandPPOrder(qtyRequiredForProduction)
 					.build();
 			requests.add(request);
 		}
@@ -109,7 +109,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
-					.requiredForProductionQty(qtyRequiredForProduction)
+					.qtyDemandPPOrder(qtyRequiredForProduction)
 					.build();
 			requests.add(request);
 		}
@@ -129,7 +129,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
-					.requiredForProductionQty(qtyDelta)
+					.qtyDemandPPOrder(qtyDelta)
 					.build();
 			requests.add(request);
 		}
@@ -137,4 +137,24 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 		requests.forEach(dataUpdateRequestHandler::handleDataUpdateRequest);
 	}
 
+	private void updateMainData(@NonNull final PPOrderChangedEvent ppOrderChangedEvent)
+	{
+		final ZoneId orgZoneId = orgDAO.getTimeZone(ppOrderChangedEvent.getEventDescriptor().getOrgId());
+
+		final MainDataRecordIdentifier mainDataRecordIdentifier = MainDataRecordIdentifier.builder()
+				.productDescriptor(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getProductDescriptor())
+				.date(TimeUtil.getDay(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getDatePromised(), orgZoneId))
+				.warehouseId(ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getWarehouseId())
+				.build();
+
+		final BigDecimal newQtyOpen = ppOrderChangedEvent.getPpOrderAfterChanges().getPpOrderData().getQtyOpen();
+		final BigDecimal oldQtyOpen = ppOrderChangedEvent.getOldQtyRequired().subtract(ppOrderChangedEvent.getOldQtyDelivered());
+
+		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
+				.identifier(mainDataRecordIdentifier)
+				.qtySupplyPPOrder(newQtyOpen.subtract(oldQtyOpen))
+				.build();
+
+		dataUpdateRequestHandler.handleDataUpdateRequest(updateMainDataRequest);
+	}
 }

@@ -1,28 +1,13 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- * Contributor(s): Carlos Ruiz - globalqss *
- * Teo Sarca *
- * Trifon Trifonov *
- *****************************************************************************/
 package org.adempiere.util;
 
-import java.io.File;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.persistence.modelgen.ModelClassGenerator;
 import org.adempiere.ad.persistence.modelgen.ModelInterfaceGenerator;
 import org.adempiere.ad.persistence.modelgen.TableAndColumnInfoRepository;
@@ -33,43 +18,30 @@ import org.compiere.util.DB;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  * Generate Model Classes extending PO.
  * Base class for CMP interface - will be extended to create byte code directly
  *
  * @author Jorg Janke
- * @version $Id: GenerateModel.java,v 1.42 2005/05/08 15:16:56 jjanke Exp $
- * 
  * @author Teo Sarca, teo.sarca@gmail.com
- *         <li>BF [ 3020640 ] GenerateModel is failing when we provide a list of tables
- *         https://sourceforge.net/tracker/?func=detail&aid=3020640&group_id=176962&atid=879332
+ * <li>BF [ 3020640 ] GenerateModel is failing when we provide a list of tables
+ * https://sourceforge.net/tracker/?func=detail&aid=3020640&group_id=176962&atid=879332
+ * @version $Id: GenerateModel.java,v 1.42 2005/05/08 15:16:56 jjanke Exp $
  */
 public class GenerateModel
 {
 
-	/** Logger */
-	private static Logger log = LogManager.getLogger(GenerateModel.class);
-
 	/**
-	 * String representation
-	 * 
-	 * @return string representation
+	 * Logger
 	 */
-	@Override
-	public String toString()
-	{
-		final StringBuilder sb = new StringBuilder("GenerateModel[").append("]");
-		return sb.toString();
-	}
+	private static final Logger log = LogManager.getLogger(GenerateModel.class);
 
-	public static final String getModelPackage(int AD_Table_ID)
+	public static String getModelPackage(int AD_Table_ID)
 	{
 		String modelPackage = DB.getSQLValueStringEx(null,
 				"SELECT et.ModelPackage FROM AD_Table t"
@@ -83,7 +55,7 @@ public class GenerateModel
 		return modelPackage;
 	}
 
-	public static final String getModelDirectory(String srcDirectory, String packageName)
+	public static String getModelDirectory(String srcDirectory, String packageName)
 	{
 		File directoryFile;
 		if (Check.isEmpty(srcDirectory, true) || "-".equals(srcDirectory.trim()))
@@ -111,7 +83,7 @@ public class GenerateModel
 
 	/**
 	 * Generates Interfacees and Classes for models
-	 * 
+	 * <p>
 	 * Accepts following paramters
 	 * <ul>
 	 * <li>Parameter 1: Output directory
@@ -120,7 +92,7 @@ public class GenerateModel
 	 * <li>Parameter 4: Table Name (like)
 	 * </ul>
 	 */
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
 		AdempiereToolsHelper.getInstance().startupMinimal();
 
@@ -137,6 +109,8 @@ public class GenerateModel
 		log.info("----------------------------------");
 		final TableAndColumnInfoRepository repository = new TableAndColumnInfoRepository();
 		final String sql = createTableSql(config);
+		log.info("Select SQL: {}", sql);
+
 		int count = 0;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -166,25 +140,17 @@ public class GenerateModel
 				new ModelClassGenerator(repository, tableInfo, directoryFinal, packageNameFinal);
 				count++;
 			}
-		}
-		catch (Exception e)
-		{
-			log.error(sql.toString(), e);
+
+			if (count <= 0)
+			{
+				throw new AdempiereException("No models were generated.");
+			}
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+			log.info("Generated = {}", count);
 		}
-
-		if (count <= 0)
-		{
-			throw new AdempiereException("No models were generated."
-					+ "\n SQL: " + sql);
-		}
-
-		log.info("Generated = {}", count);
 	}
 
 	private static Config getConfig(String[] args)
@@ -223,7 +189,7 @@ public class GenerateModel
 
 		//
 		// Parameter 3: EntityTypes
-		String entityType = "'U','A'";	// User, Application
+		String entityType = "'U','A'";    // User, Application
 		if (args.length > 2)
 		{
 			entityType = args[2];
@@ -236,8 +202,8 @@ public class GenerateModel
 
 		//
 		// Parameter 4: Table Name (like)
-		String tableLike = null;
-		tableLike = "'%'";	// All tables
+		String tableLike;
+		tableLike = "'%'";    // All tables
 		// tableLike = "'AD_OrgInfo', 'AD_Role', 'C_CashLine', 'C_Currency', 'C_Invoice', 'C_Order', 'C_Payment', 'M_InventoryLine', 'M_PriceList', 'M_Product', 'U_POSTerminal'"; // Only specific tables
 		if (args.length > 3)
 		{
@@ -247,61 +213,92 @@ public class GenerateModel
 		return Config.builder()
 				.directory(directory)
 				.packageName(packageName)
-				.entityType(entityType)
-				.tableLike(tableLike)
+				.entityTypePatterns(parseStringPatterns(entityType))
+				.tableNamePatterns(parseStringPatterns(tableLike))
 				.build();
+	}
+
+	private static ImmutableSet<StringPattern> parseStringPatterns(@Nullable final String string)
+	{
+		if (string == null
+				|| string.trim().isEmpty()
+				|| string.trim().equals("-"))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToStream(string)
+				.map(StringPattern::of)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static String toSql(@NonNull final String columnName, ImmutableSet<StringPattern> tableNamePatterns)
+	{
+		if (tableNamePatterns.isEmpty())
+		{
+			return null;
+		}
+
+		final StringBuilder sql = new StringBuilder();
+		for (final StringPattern tableNamePattern : tableNamePatterns)
+		{
+			if (sql.length() > 0)
+			{
+				sql.append(" OR ");
+			}
+
+			sql.append(columnName)
+					.append(tableNamePattern.isWithWildcard() ? " LIKE " : "=")
+					.append(toSqlQuotedString(tableNamePattern.getPattern()));
+		}
+
+		return sql.toString();
+	}
+
+	private static String toSqlQuotedString(@Nullable final String string)
+	{
+		if (string != null
+				&& string.length() > 2
+				&& string.startsWith("'")
+				&& string.endsWith("'"))
+		{
+			return string;
+		}
+		else
+		{
+			return DB.TO_STRING(string);
+		}
 	}
 
 	private static String createTableSql(@NonNull final Config config)
 	{
 		final String packageName = config.getPackageName();
-		final String entityType = config.getEntityType();
-		final String tableLike = config.getTableLike();
 
 		final StringBuilder sql = new StringBuilder();
 		sql.append("SELECT AD_Table_ID FROM AD_Table WHERE IsActive='Y'");
 
-		sql.append("\n AND ("
-				+ "TableName IN ('RV_WarehousePrice','RV_BPartner')"	// special views
-				+ (packageName.equals("org.compiere.model") ? " OR IsView='N' " : " OR 1=1")
-				+ ")");
+		if(packageName.equals("org.compiere.model"))
+		{
+			sql.append("\n AND (IsView='N' OR TableName IN ('RV_WarehousePrice','RV_BPartner')");
+		}
+
 		//
 		// EntityType
-		if (entityType.indexOf("%") >= 0)
+		final String sqlEntityTypeFiter = toSql("EntityType", config.getEntityTypePatterns());
+		if (sqlEntityTypeFiter != null && !sqlEntityTypeFiter.isEmpty())
 		{
-			sql.append("\n AND EntityType LIKE ").append(entityType);
-		}
-		else
-		{
-			sql.append("\n AND EntityType IN (").append(entityType).append(")");
+			sql.append("\n AND (").append(sqlEntityTypeFiter).append(")");
 		}
 
 		//
 		// Table LIKE
-		// (Autodetect if we need to use IN or LIKE clause - teo_sarca [ 3020640 ])
-		final boolean excludeTrlTables;
-		if (tableLike.indexOf(",") == -1)
+		final String sqlTableNameFilter = toSql("TableName", config.getTableNamePatterns());
+		if (sqlTableNameFilter != null && !sqlTableNameFilter.isEmpty())
 		{
-			if (tableLike.indexOf("%") == -1)
-			{
-				sql.append("\n AND TableName=").append(tableLike);
-				excludeTrlTables = false;
-			}
-			else
-			{
-				sql.append("\n AND TableName LIKE ").append(tableLike);
-				excludeTrlTables = true;
-			}
-		}
-		else
-		{
-			sql.append("\n AND TableName IN (").append(tableLike).append(")"); // only specific tables
-			excludeTrlTables = false;
-		}
-		//
-		if (excludeTrlTables)
-		{
-			sql.append("\n AND TableName NOT LIKE '%_Trl' ");
+			sql.append("\n AND (").append(sqlTableNameFilter).append(")");
 		}
 
 		//
@@ -323,9 +320,20 @@ public class GenerateModel
 		String packageName;
 
 		@NonNull
-		String entityType;
+		ImmutableSet<StringPattern> entityTypePatterns;
 
 		@NonNull
-		String tableLike;
+		ImmutableSet<StringPattern> tableNamePatterns;
+	}
+
+	@Value(staticConstructor = "of")
+	private static class StringPattern
+	{
+		@NonNull String pattern;
+
+		public boolean isWithWildcard() {return pattern.contains("%");}
+
+		@Override
+		public String toString() {return isWithWildcard() ? "LIKE " + pattern : pattern;}
 	}
 }

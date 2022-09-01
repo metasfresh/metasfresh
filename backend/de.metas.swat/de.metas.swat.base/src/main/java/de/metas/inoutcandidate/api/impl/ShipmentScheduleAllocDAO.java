@@ -3,7 +3,7 @@ package de.metas.inoutcandidate.api.impl;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -298,7 +298,6 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		logger.debug("Updated {} M_ShipmentSchedule_QtyPicked to Processed={} for intout={}", updated, newProcessedValue, inOut);
 	}
 
-
 	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecords(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
@@ -360,5 +359,20 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		}
 
 		return filter;
+	}
+
+	@NonNull
+	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedOnTheFlyAndNotDelivered(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final Class<T> modelClass)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_IsAnonymousHuPickedOnTheFly, true)
+				.create()
+				.list(modelClass);
 	}
 }

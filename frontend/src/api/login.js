@@ -1,13 +1,22 @@
 import axios from 'axios';
 
 export function loginRequest(username, password) {
-  return axios.post(`${config.API_URL}/login/authenticate`, {
-    username,
-    password,
-  });
+  return axios.post(
+    `${config.API_URL}/login/authenticate`,
+    {
+      username,
+      password,
+    },
+    {
+      validateStatus: () => {
+        // returning true so that we can get the error message
+        return true;
+      },
+    }
+  );
 }
 
-export function localLoginRequest() {
+export function checkLoginRequest() {
   return axios.get(`${config.API_URL}/login/isLoggedIn`);
 }
 
@@ -52,7 +61,12 @@ export function getAvatar(id) {
 }
 
 export function getUserSession() {
-  return axios.get(`${config.API_URL}/userSession`);
+  return axios.get(`${config.API_URL}/userSession`, {
+    validateStatus: (status) => {
+      // returning true so that we can get the error status
+      return (status >= 200 && status < 300) || status === 502;
+    },
+  });
 }
 
 export function resetPasswordRequest(form) {

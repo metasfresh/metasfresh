@@ -26,6 +26,7 @@ import de.metas.Profiles;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.audit.ApiAuditService;
 import de.metas.util.web.security.UserAuthTokenFilter;
+import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
 import de.metas.util.web.security.UserAuthTokenService;
 import lombok.NonNull;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -33,31 +34,40 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import static de.metas.util.web.MetasfreshRestAPIConstants.URL_PATTERN_API_V2;
-
 @Profile(Profiles.PROFILE_App)
 @Configuration
 public class FilterRegistrationConfig
 {
-	@Bean
-	public FilterRegistrationBean<ApiAuditFilter> apiAuditFilter(@NonNull final ApiAuditService apiAuditService)
-	{
-		final FilterRegistrationBean<ApiAuditFilter> registrationBean = new FilterRegistrationBean<>();
+	// NOTE: we are using standard spring CORS filter
+	// @Bean
+	// public FilterRegistrationBean<CORSFilter> corsFilter()
+	// {
+	// 	final FilterRegistrationBean<CORSFilter> registrationBean = new FilterRegistrationBean<>();
+	// 	registrationBean.setFilter(new CORSFilter());
+	// 	registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
+	// 	registrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+	// 	return registrationBean;
+	// }
 
-		registrationBean.setFilter(new ApiAuditFilter(apiAuditService));
-		registrationBean.addUrlPatterns(URL_PATTERN_API_V2);
+	@Bean
+	public FilterRegistrationBean<UserAuthTokenFilter> authFilter(
+			@NonNull final UserAuthTokenService userAuthTokenService,
+			@NonNull final UserAuthTokenFilterConfiguration configuration)
+	{
+		final FilterRegistrationBean<UserAuthTokenFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new UserAuthTokenFilter(userAuthTokenService, configuration));
+		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
 		registrationBean.setOrder(2);
 		return registrationBean;
 	}
 
 	@Bean
-	public FilterRegistrationBean<UserAuthTokenFilter> loggingFilter(@NonNull final UserAuthTokenService userAuthTokenService)
+	public FilterRegistrationBean<ApiAuditFilter> apiAuditFilter(@NonNull final ApiAuditService apiAuditService)
 	{
-		final FilterRegistrationBean<UserAuthTokenFilter> registrationBean = new FilterRegistrationBean<>();
-
-		registrationBean.setFilter(new UserAuthTokenFilter(userAuthTokenService));
-		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
-		registrationBean.setOrder(1);
+		final FilterRegistrationBean<ApiAuditFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new ApiAuditFilter(apiAuditService));
+		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API_V2);
+		registrationBean.setOrder(3);
 		return registrationBean;
 	}
 }

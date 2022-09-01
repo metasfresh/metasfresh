@@ -1,10 +1,21 @@
 package de.metas.pricing.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.location.ICountryAreaBL;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.product.IProductPA;
+import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -13,6 +24,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_CountryArea;
 import org.compiere.model.I_C_CountryArea_Assign;
@@ -26,22 +38,12 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.mockito.Mockito;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.location.ICountryAreaBL;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -73,12 +75,11 @@ public class PricingTestHelper
 	public static final int C_Currency_ID_CHF = 318;
 	public I_C_Country defaultCountry;
 
-	private I_M_PricingSystem defaultPricingSystem;
-	private I_M_PriceList defaultPriceList;
-	private I_M_PriceList_Version defaultPriceListVerion;
+	private final I_M_PricingSystem defaultPricingSystem;
+	private final I_M_PriceList defaultPriceList;
+	private final I_M_PriceList_Version defaultPriceListVerion;
 
-	private I_M_Product defaultProduct;
-	private I_C_UOM defaultUOM;
+	private final I_M_Product defaultProduct;
 
 	public I_M_Attribute attr_Country;
 	public AttributeListValue attr_Country_DE;
@@ -92,6 +93,11 @@ public class PricingTestHelper
 
 	public PricingTestHelper()
 	{
+		final IProductPA productPA = Mockito.mock(IProductPA.class);
+		Services.registerService(IProductPA.class, productPA);
+
+		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+
 		createPricingRules();
 
 		defaultCountry = createCountryWithArea("DE", C_Currency_ID_EUR, ICountryAreaBL.COUNTRYAREAKEY_EU);
@@ -100,7 +106,7 @@ public class PricingTestHelper
 		defaultPriceList = createPriceList(defaultPricingSystem, defaultCountry);
 		defaultPriceListVerion = createPriceListVersion(defaultPriceList);
 		//
-		defaultUOM = newInstance(I_C_UOM.class);
+		final I_C_UOM defaultUOM = newInstance(I_C_UOM.class);
 		saveRecord(defaultUOM);
 		defaultProduct = createProduct("Product1", defaultUOM);
 		//
@@ -118,12 +124,11 @@ public class PricingTestHelper
 	{
 		return ImmutableList.of(
 				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
-				de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice.class.getName(),
 				de.metas.pricing.rules.PriceListVersion.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName());
 	}
 
-	private final void createPricingRules()
+	private void createPricingRules()
 	{
 		final List<String> classnames = getPricingRuleClassnamesToRegister();
 
@@ -141,9 +146,6 @@ public class PricingTestHelper
 		}
 	}
 
-	/**
-	 * @param countryAreaValue if not {@code null}, then a country area is created and the new country is assigned to it.
-	 */
 	public final I_C_Country createCountry(
 			@NonNull final String countryCode,
 			final int currencyId)
@@ -172,7 +174,6 @@ public class PricingTestHelper
 			@NonNull final I_C_Country country,
 			@NonNull final String countryAreaValue)
 	{
-
 		final I_C_CountryArea countryAreaRecord = newInstance(I_C_CountryArea.class);
 		countryAreaRecord.setValue(countryAreaValue);
 		saveRecord(countryAreaRecord);

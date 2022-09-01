@@ -5,7 +5,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.adempiere.modelvalidator.Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -230,6 +229,7 @@ class OLCandOrderFactory
 			OrderDocumentLocationAdapterFactory
 					.deliveryLocationAdapter(order)
 					.setFrom(dropShipBPartner);
+			order.setIsDropShip(true);
 		}
 		else
 		{
@@ -242,6 +242,7 @@ class OLCandOrderFactory
 			OrderDocumentLocationAdapterFactory
 					.handOverLocationAdapter(order)
 					.setFrom(handOverBPartner);
+			order.setIsUseHandOver_Location(true);
 		}
 		else
 		{
@@ -292,6 +293,12 @@ class OLCandOrderFactory
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
+
+		setBPSalesRepIdToOrder(order, candidateOfGroup);
+
+		order.setBPartnerName(candidateOfGroup.getBpartnerName());
+		order.setEMail(candidateOfGroup.getEmail());
+		order.setPhone(candidateOfGroup.getPhone());
 
 		save(order);
 		return order;
@@ -459,10 +466,13 @@ class OLCandOrderFactory
 			currentOrderLine = newOrderLine(candidate);
 		}
 
+		setExternalBPartnerInfo(currentOrderLine, candidate);
+
 		currentOrderLine.setM_Warehouse_ID(WarehouseId.toRepoId(candidate.getWarehouseId()));
 		currentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
 		currentOrderLine.setProductDescription(candidate.getProductDescription()); // 08626: Propagate ProductDescription to C_OrderLine
 		currentOrderLine.setLine(candidate.getLine());
+		currentOrderLine.setExternalId(candidate.getExternalLineId());
 
 		//
 		// Quantity
@@ -470,7 +480,8 @@ class OLCandOrderFactory
 			final Quantity currentQty = Quantitys.create(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
 			final Quantity newQtyEntered = Quantitys.add(UOMConversionContext.of(candidate.getM_Product_ID()), currentQty, candidate.getQty());
 			currentOrderLine.setQtyEntered(newQtyEntered.toBigDecimal());
-			currentOrderLine.setQtyItemCapacity(candidate.getQtyItemCapacity());
+
+			currentOrderLine.setQtyItemCapacity(Quantitys.toBigDecimalOrNull(candidate.getQtyItemCapacityEff()));
 
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(currentOrderLine).toBigDecimal();
 			currentOrderLine.setQtyOrdered(qtyOrdered);
@@ -618,5 +629,46 @@ class OLCandOrderFactory
 	I_C_Order getOrder()
 	{
 		return order;
+	}
+
+	private void setBPSalesRepIdToOrder(@NonNull final I_C_Order order, @NonNull final OLCand olCand)
+	{
+		switch (olCand.getAssignSalesRepRule())
+		{
+			case Candidate:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepId()));
+				break;
+			case BPartner:
+				order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+				break;
+			case CandidateFirst:
+				final int salesRepInt = Optional.ofNullable(olCand.getSalesRepId())
+						.map(BPartnerId::getRepoId)
+						.orElseGet(() -> BPartnerId.toRepoId(olCand.getSalesRepInternalId()));
+
+				order.setC_BPartner_SalesRep_ID(salesRepInt);
+				break;
+			default:
+				throw new AdempiereException("Unsupported SalesRepFrom type")
+						.appendParametersToMessage()
+						.setParameter("salesRepFrom", olCand.getAssignSalesRepRule());
+		}
+	}
+
+	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	{
+		orderLine.setExternalSeqNo(candidate.getLine());
+
+		final I_C_OLCand olCand = candidate.unbox();
+
+		orderLine.setBPartner_QtyItemCapacity(olCand.getQtyItemCapacity());
+
+		final UomId uomId = UomId.ofRepoIdOrNull(olCand.getC_UOM_ID());
+
+		if (uomId != null)
+		{
+			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
+			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+		}
 	}
 }

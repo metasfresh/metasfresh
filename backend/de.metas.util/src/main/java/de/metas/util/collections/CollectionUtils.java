@@ -2,6 +2,7 @@ package de.metas.util.collections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -16,8 +17,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,10 +60,7 @@ public final class CollectionUtils
 	 */
 	public static <ET, CT extends Collection<ET>> String toString(final CT collection, final String separator)
 	{
-		// Use default element string converter
-		final Converter<String, ET> elementStringConverter = null;
-
-		return toString(collection, separator, elementStringConverter);
+		return toString(collection, separator, null);
 	}
 
 	/**
@@ -70,9 +71,10 @@ public final class CollectionUtils
 	 * @param elementStringConverter converter to be used when converting one list element to string
 	 * @return string representation
 	 */
-	public static <ET, CT extends Collection<ET>> String toString(final CT collection,
-																  final String separator,
-																  @Nullable final Converter<String, ET> elementStringConverter)
+	public static <ET, CT extends Collection<ET>> String toString(
+			@Nullable final CT collection,
+			@Nullable final String separator,
+			@Nullable final Converter<String, ET> elementStringConverter)
 	{
 		if (collection == null)
 		{
@@ -125,17 +127,18 @@ public final class CollectionUtils
 		return set;
 	}
 
-	public static <T> Set<T> asSet(@SuppressWarnings("unchecked") final T... arr)
+	@SafeVarargs
+	public static <T> Set<T> asSet(final T... arr)
 	{
 		if (arr == null || arr.length == 0)
 		{
 			return Collections.emptySet();
 		}
 
-		final Set<T> set = new HashSet<>(arr.length);
-		Collections.addAll(set, arr);
+		final HashSet<T> result = new HashSet<>(arr.length);
+		Collections.addAll(result, arr);
 
-		return set;
+		return result;
 	}
 
 	/**
@@ -187,8 +190,7 @@ public final class CollectionUtils
 	@Nullable
 	public static <T> T singleElementOrNull(final Collection<T> collection)
 	{
-		final T defaultValue = null;
-		return singleElementOrDefault(collection, defaultValue);
+		return singleElementOrDefault(collection, null);
 	}
 
 	/**
@@ -196,7 +198,7 @@ public final class CollectionUtils
 	 * <p>
 	 * If the collection has more elements or no element then <code>defaultValue</code> will be returned.
 	 *
-	 * @param defaultValue value to be returned in case there are more then one elements or no element
+	 * @param defaultValue value to be returned in case there are more than one element or no element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
 	@Nullable
@@ -278,27 +280,67 @@ public final class CollectionUtils
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/**
-	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
-	 *
-	 * @param collection      input list (i.e. list to convert)
-	 * @param extractFunction converter to be used to convert elements
-	 * @return list of OutputTypes.
-	 */
-	@Nullable
-	public static <R, T> ImmutableList<R> convert(
-			@Nullable final Collection<T> collection,
-			@NonNull final Function<T, R> extractFunction)
+	public static <R, T> ImmutableList<R> map(
+			@NonNull final ImmutableList<T> collection,
+			@NonNull final Function<T, R> mappingFunction)
 	{
-		if (collection == null)
+		if (collection.isEmpty())
 		{
-			return null;
+			return ImmutableList.of();
 		}
 
-		return collection
-				.stream()
-				.map(extractFunction)
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList.Builder<R> result = ImmutableList.builder();
+		boolean hasChanges = false;
+		for (final T item : collection)
+		{
+			final R changedItem = mappingFunction.apply(item);
+			result.add(changedItem);
+
+			if (!hasChanges && !Objects.equals(item, changedItem))
+			{
+				hasChanges = true;
+			}
+		}
+
+		//noinspection unchecked
+		return hasChanges ? result.build() : (ImmutableList<R>)collection;
+	}
+
+	public static <K, V> ImmutableMap<K, V> mapValue(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final K key,
+			@NonNull final UnaryOperator<V> mappingFunction)
+	{
+		return mapValues(
+				map,
+				(currentKey, currentValue) -> currentKey.equals(key) ? mappingFunction.apply(currentValue) : currentValue);
+	}
+
+	public static <K, V, W> ImmutableMap<K, W> mapValues(
+			@NonNull final ImmutableMap<K, V> map,
+			@NonNull final BiFunction<K, V, W> mappingFunction)
+	{
+		if (map.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<K, W> result = ImmutableMap.builder();
+		boolean hasChanges = false;
+		for (final K key : map.keySet())
+		{
+			final V item = map.get(key);
+			final W changedItem = mappingFunction.apply(key, item);
+			result.put(key, changedItem);
+
+			if (!hasChanges && !Objects.equals(item, changedItem))
+			{
+				hasChanges = true;
+			}
+		}
+
+		//noinspection unchecked
+		return hasChanges ? result.build() : (ImmutableMap<K, W>)map;
 	}
 
 	/**
@@ -361,7 +403,7 @@ public final class CollectionUtils
 			@NonNull final Function<? super V, ? extends K> keyFunction)
 	{
 		// thx to https://reversecoding.net/java-8-list-to-map/
-		final LinkedHashMap<K, V> inventoryLineRecords = stream
+		return stream
 				.collect(Collectors.toMap(
 						keyFunction,
 						Function.identity(),
@@ -369,14 +411,13 @@ public final class CollectionUtils
 							throw new IllegalStateException(String.format("Duplicate key %s", u));
 						},
 						LinkedHashMap::new));
-		return inventoryLineRecords;
 	}
 
 	public static <T> ImmutableList<T> ofCommaSeparatedList(
 			@Nullable final String commaSeparatedStr,
 			@NonNull final Function<String, T> mapper)
 	{
-		if (Check.isBlank(commaSeparatedStr))
+		if (commaSeparatedStr == null || Check.isBlank(commaSeparatedStr))
 		{
 			return ImmutableList.of();
 		}
@@ -391,13 +432,8 @@ public final class CollectionUtils
 	}
 
 	@Nullable
-	public static <T> T emptyOrSingleElement(@Nullable final Collection<T> collection)
+	public static <T> T emptyOrSingleElement(@NonNull final Collection<T> collection)
 	{
-		if (collection == null)
-		{
-			return null;
-		}
-
 		final int size = collection.size();
 		if (size == 0)
 		{
@@ -414,9 +450,36 @@ public final class CollectionUtils
 	}
 
 	@NonNull
-	public static <T> ArrayList<T> mergeLists(@NonNull final ArrayList<T> list1,@NonNull final ArrayList<T> list2)
+	public static <T> ArrayList<T> mergeLists(@NonNull final ArrayList<T> list1, @NonNull final ArrayList<T> list2)
 	{
 		list1.addAll(list2);
 		return list1;
+	}
+
+	public static <T> ImmutableSet<T> difference(@NonNull final ImmutableSet<T> set, @Nullable Collection<T> excludes)
+	{
+		if (set.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		else if (excludes == null || excludes.isEmpty())
+		{
+			return set;
+		}
+		else
+		{
+			final ImmutableSet<T> result = set.stream()
+					.filter(e -> !excludes.contains(e))
+					.collect(ImmutableSet.toImmutableSet());
+
+			if (result.size() == set.size())
+			{
+				return set;
+			}
+			else
+			{
+				return result;
+			}
+		}
 	}
 }

@@ -16,6 +16,7 @@ import org.compiere.model.I_R_Request;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -181,4 +182,8 @@ public interface IInOutBL extends ISingletonService
 	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_M_InOut inOut);
 
 	I_R_Request createRequestFromInOut(I_M_InOut inOut);
+
+	LocalDate retrieveMovementDate(I_M_InOut inOut);
+
+	String getLocationEmail(InOutId ofRepoId);
 }

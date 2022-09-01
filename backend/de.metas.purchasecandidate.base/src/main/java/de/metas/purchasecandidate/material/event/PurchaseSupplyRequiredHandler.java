@@ -1,25 +1,7 @@
 package de.metas.purchasecandidate.material.event;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.Collection;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
@@ -37,6 +19,22 @@ import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -78,7 +76,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 	}
 
 	@Override
-	public Collection<Class<? extends SupplyRequiredEvent>> getHandeledEventType()
+	public Collection<Class<? extends SupplyRequiredEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(SupplyRequiredEvent.class);
 	}
@@ -99,7 +97,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 
 		purchaseOrderAdvisedEventCreator
 				.createPurchaseAdvisedEvent(descriptor, mrpContext)
-				.ifPresent(postMaterialEventService::postEventNow);
+				.ifPresent(postMaterialEventService::postEventAsync);
 	}
 
 	private IMutableMRPContext createMRPContextOrNull(@NonNull final SupplyRequiredDescriptor materialDemandEvent)

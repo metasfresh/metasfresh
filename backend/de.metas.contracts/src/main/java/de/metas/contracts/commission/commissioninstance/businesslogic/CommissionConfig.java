@@ -1,17 +1,15 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import de.metas.contracts.commission.Beneficiary;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.product.ProductId;
 
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
-
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 
 /*
  * #%L
@@ -44,7 +42,7 @@ public interface CommissionConfig
 {
 	CommissionType getCommissionType();
 
-	CommissionContract getContractFor(Beneficiary beneficiary);
+	CommissionContract getContractFor(BPartnerId contractualBPartnerId);
 
 	ProductId getCommissionProductId();
 }

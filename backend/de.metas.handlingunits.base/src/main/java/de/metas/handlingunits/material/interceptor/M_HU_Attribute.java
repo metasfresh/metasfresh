@@ -1,7 +1,13 @@
 package de.metas.handlingunits.material.interceptor;
 
-import java.math.BigDecimal;
-
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -18,12 +24,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -35,12 +37,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,7 +54,10 @@ import lombok.NonNull;
 public class M_HU_Attribute
 {
 	private final IAttributesBL attributesService = Services.get(IAttributesBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUTrxBL huTrxBL=Services.get(IHUTrxBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	private final PostMaterialEventService materialEventService;
 
 	public M_HU_Attribute(@NonNull final PostMaterialEventService materialEventService)
@@ -69,6 +74,14 @@ public class M_HU_Attribute
 	{
 		Check.assume(record.isActive(), "changing IsActive flag to false is not allowed: {}", record);
 
+		if(handlingUnitsBL.isHULoaderInProgress())
+		{
+			// don't fire attribute change events from within the HU loader, because there we don't have *real* HU-attribute-changes.
+			// It's rather e.g. HUs are split and then HU-attributes are updated from the split source.
+			// this MI on the other hand is explicitly about existing HUs where attributes such as the time-until-expiry are changed
+			return;
+		}
+
 		final AttributeId attributeId = AttributeId.ofRepoId(record.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesService.getAttributeById(attributeId);
 		if (!attribute.isStorageRelevant())
@@ -77,9 +90,14 @@ public class M_HU_Attribute
 		}
 
 		final HUAttributeChange change = extractHUAttributeChange(record, attribute);
+		if (Objects.equals(change.getOldAttributeKeyPartOrNull(), change.getNewAttributeKeyPartOrNull()))
+		{
+			return;
+		}
 
 		getOrCreateCollector().collect(change);
 	}
+
 
 	private HUAttributeChangesCollector getOrCreateCollector()
 	{
@@ -136,7 +154,7 @@ public class M_HU_Attribute
 				.attributeValueType(attributeValueType)
 				.valueNew(valueNew)
 				.valueOld(valueOld)
-				.date(TimeUtil.asInstant(record.getUpdated()))
+				.date(TimeUtil.asInstantNonNull(record.getUpdated()))
 				.build();
 	}
 

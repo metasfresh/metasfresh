@@ -1,19 +1,16 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger;
 
-import java.util.Arrays;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.contracts.commission.model.X_C_Commission_Instance;
 import de.metas.order.InvoiceRule;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /*
  * #%L
@@ -42,8 +39,11 @@ public enum CommissionTriggerType implements ReferenceListAwareEnum
 	InvoiceCandidate(X_C_Commission_Instance.COMMISSIONTRIGGER_TYPE_InvoiceCandidate), //
 	SalesInvoice(X_C_Commission_Instance.COMMISSIONTRIGGER_TYPE_CustomerInvoice), //
 	SalesCreditmemo(X_C_Commission_Instance.COMMISSIONTRIGGER_TYPE_CustomerCreditmemo),//
+	MediatedOrder(X_C_Commission_Instance.COMMISSIONTRIGGER_TYPE_MediatedOrder),
 
-	/** Note persisted in DB */
+	/**
+	 * Note persisted in DB
+	 */
 	Plain("Plain");
 
 	@Getter

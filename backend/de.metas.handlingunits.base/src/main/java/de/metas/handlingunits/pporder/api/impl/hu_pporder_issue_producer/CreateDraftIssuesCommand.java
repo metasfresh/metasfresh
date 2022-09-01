@@ -13,10 +13,10 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
@@ -92,7 +92,7 @@ public class CreateDraftIssuesCommand
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
 	private final ImmutableList<I_M_HU> issueFromHUs;
 	private final boolean changeHUStatusToIssued;
-	private final PickingCandidateId pickingCandidateId;
+	private final IssueCandidateGeneratedBy generatedBy;
 
 	//
 	// Status
@@ -108,8 +108,10 @@ public class CreateDraftIssuesCommand
 			@NonNull final Collection<I_M_HU> issueFromHUs,
 			@Nullable final Boolean changeHUStatusToIssued,
 			//
-			@Nullable final PickingCandidateId pickingCandidateId)
+			@Nullable final IssueCandidateGeneratedBy generatedBy)
 	{
+		validateSourceHUs(issueFromHUs);
+
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
 		{
@@ -124,7 +126,7 @@ public class CreateDraftIssuesCommand
 
 		remainingQtyToIssue = fixedQtyToIssue;
 
-		this.pickingCandidateId = pickingCandidateId;
+		this.generatedBy = generatedBy;
 	}
 
 	public List<I_PP_Order_Qty> execute()
@@ -168,9 +170,11 @@ public class CreateDraftIssuesCommand
 			return null;
 		}
 
-		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		final String huStatus = hu.getHUStatus();
+		if (!X_M_HU.HUSTATUS_Active.equals(huStatus) && !X_M_HU.HUSTATUS_Issued.equals(huStatus)
+		)
 		{
-			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus())
+			throw new HUException("HU shall be Active or Issued but it was `" + huStatus + "`")
 					.setParameter("hu", hu);
 		}
 
@@ -220,11 +224,7 @@ public class CreateDraftIssuesCommand
 		}
 		else
 		{
-			huTrxBL.setParentHU(huContext //
-					, null // parentHUItem
-					, hu //
-					, true // destroyOldParentIfEmptyStorage
-			);
+			huTrxBL.extractHUFromParentIfNeeded(huContext, hu);
 		}
 	}
 
@@ -283,7 +283,7 @@ public class CreateDraftIssuesCommand
 																		  //
 																		  .qtyToIssue(qtyToIssue)
 																		  //
-																		  .pickingCandidateId(pickingCandidateId)
+					.generatedBy(generatedBy)
 																		  //
 																		  .build());
 
@@ -343,5 +343,18 @@ public class CreateDraftIssuesCommand
 		}
 
 		return from.getQty();
+	}
+
+	private void validateSourceHUs(@NonNull final Collection<I_M_HU> sourceHUs)
+	{
+		for (final I_M_HU hu : sourceHUs)
+		{
+			if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
+			{
+				throw new AdempiereException("Non 'Cleared' HUs cannot be issued!")
+						.appendParametersToMessage()
+						.setParameter("M_HU_ID", hu.getM_HU_ID());
+			}
+		}
 	}
 }

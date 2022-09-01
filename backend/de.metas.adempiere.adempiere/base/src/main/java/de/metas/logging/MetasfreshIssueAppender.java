@@ -231,13 +231,6 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 			return;
 		}
 
-		// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
-		final ISystemBL systemBL = Services.get(ISystemBL.class);
-		if (!systemBL.isAutoErrorReport())
-		{
-			return;
-		}
-
 		final IErrorManager errorManager = Services.get(IErrorManager.class);
 		errorManager.createIssue(IssueCreateRequest.builder()
 				.summary(event.getMessage())

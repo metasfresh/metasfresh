@@ -10,6 +10,7 @@ import Moment from 'moment-timezone';
 import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
 
 import { convertDateToReadable } from '../../utils/dateHelpers';
+import { isFocusableWidgetType } from '../../utils/widgetHelpers';
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
@@ -457,6 +458,7 @@ class FiltersItem extends PureComponent {
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
+    let autoFocusedField = false;
 
     if (maxWidth) {
       style.width = maxWidth;
@@ -508,7 +510,16 @@ class FiltersItem extends PureComponent {
                 {filter.parameters &&
                   filter.parameters.map((item, index) => {
                     const { widgetType } = item;
+                    let autoFocus = false;
                     item.field = item.parameterName;
+
+                    if (
+                      !autoFocusedField &&
+                      isFocusableWidgetType(widgetType)
+                    ) {
+                      autoFocusedField = true;
+                      autoFocus = true;
+                    }
 
                     return (
                       <WidgetWrapper
@@ -542,7 +553,6 @@ class FiltersItem extends PureComponent {
                             );
                           }
                         }}
-                        widgetType={item.widgetType}
                         fields={[item]}
                         type={item.type}
                         widgetData={[item]}
@@ -555,10 +565,12 @@ class FiltersItem extends PureComponent {
                         {...{
                           viewId,
                           windowType,
+                          widgetType,
                           onShow,
                           onHide,
                           isFilterActive: isActive,
                           updateItems: this.updateItems,
+                          autoFocus,
                         }}
                       />
                     );

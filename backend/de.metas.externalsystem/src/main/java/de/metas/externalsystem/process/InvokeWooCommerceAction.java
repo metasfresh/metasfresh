@@ -22,8 +22,6 @@
 
 package de.metas.externalsystem.process;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.util.EmptyUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
@@ -31,6 +29,7 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
@@ -39,9 +38,13 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class InvokeWooCommerceAction extends InvokeExternalSystemProcess
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
+
+public class InvokeWooCommerceAction extends AlterExternalSystemServiceStatusAction
 {
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
@@ -79,7 +82,11 @@ public class InvokeWooCommerceAction extends InvokeExternalSystemProcess
 					.setParameter("childConfigId", woocommerceConfig.getId());
 		}
 
-		return ImmutableMap.of(ExternalSystemConstants.PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY, woocommerceConfig.getCamelHttpResourceAuthKey());
+		final Map<String, String> parameters = new HashMap<>();
+		parameters.put(PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY, woocommerceConfig.getCamelHttpResourceAuthKey());
+		parameters.put(PARAM_CHILD_CONFIG_VALUE, woocommerceConfig.getValue());
+
+		return parameters;
 	}
 
 	@Override

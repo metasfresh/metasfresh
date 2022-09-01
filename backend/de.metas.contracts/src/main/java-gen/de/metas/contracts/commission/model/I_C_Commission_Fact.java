@@ -6,6 +6,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_Commission_Fact
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_Commission_Fact 
 {
 

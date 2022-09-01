@@ -358,4 +358,11 @@ public class RoleDAO implements IRoleDAO
 				.anyMatch();
 	}
 
+	public void deleteUserRolesByUserId(final UserId userId)
+	{
+		Services.get(IQueryBL.class).createQueryBuilder(I_AD_User_Roles.class)
+				.addEqualsFilter(I_AD_User_Roles.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.delete();
+	}
 }

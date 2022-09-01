@@ -1,3 +1,25 @@
+<!--
+  ~ #%L
+  ~ metasfresh-dist-serverRoot
+  ~ %%
+  ~ Copyright (C) 2022 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -91,6 +113,22 @@
             <artifactId>de.metas.manufacturing.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.workflow</groupId>
+            <artifactId>de.metas.workflow.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.picking</groupId>
+            <artifactId>de.metas.picking.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.distribution</groupId>
+            <artifactId>de.metas.distribution.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -109,6 +147,11 @@
                             <executable>true</executable>
                             <mainClass>${start-class}</mainClass>
 
+                            <!-- layout=ZIP still creates an executable jar, but with org.springframework.boot.loader.PropertiesLauncher
+     That way we can specify external jars which contain additional things like cucumber tests 
+     Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
+                            <layout>ZIP</layout>
+                            
                             <!-- this also provides the super-jar to the successive docker build 
                                 Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
                                 that is activated by the presence of the scr/main/docker folder -->

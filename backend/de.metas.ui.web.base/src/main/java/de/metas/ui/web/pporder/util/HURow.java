@@ -27,8 +27,6 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
 public class HURow

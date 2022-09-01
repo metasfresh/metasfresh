@@ -11,17 +11,20 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.TableRecordMDC;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -50,20 +53,19 @@ import java.util.Properties;
 
 /**
  * Creates {@link I_C_Invoice_Candidate}s for given models.
- *
+ * <p>
  * To schedule an invoice candidates creation for a given model, please use {@link #schedule(Object)}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
 	/**
 	 * Schedule given model (document or table record) to be evaluated and {@link I_C_Invoice_Candidate}s records to be generated for it, asynchronously.
-	 *
+	 * <p>
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
 	 */
-	public static void schedule(final Object model)
+	public static void schedule(@NonNull final Object model)
 	{
 		SCHEDULER.schedule(model);
 	}
@@ -71,7 +73,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	private static final WorkpackagesOnCommitSchedulerTemplate<Object> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<Object>(CreateMissingInvoiceCandidatesWorkpackageProcessor.class)
 	{
 		private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-		private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL =  Services.get(IInvoiceCandidateHandlerBL.class);
+		private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 		@Override
 		protected boolean isEligibleForScheduling(final Object model)
@@ -81,17 +83,16 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			final Properties ctx = extractCtxFromItem(model);
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 			final List<IInvoiceCandidateHandler> handlers = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, tableName);
-			boolean isCreateCandidates = false;
+			CandidatesAutoCreateMode mode = CandidatesAutoCreateMode.DONT;
 			for (final IInvoiceCandidateHandler handler : handlers)
 			{
-				isCreateCandidates = handler.isCreateMissingCandidatesAutomatically(model);
-				if (isCreateCandidates)
+				mode = handler.getSpecificCandidatesAutoCreateMode(model);
+				if (mode.isDoSomething())
 				{
 					break;
 				}
 			}
-
-			return isCreateCandidates;
+			return mode != CandidatesAutoCreateMode.DONT;
 		}
 
 		@Override
@@ -112,12 +113,13 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			return TableRecordReference.of(model);
 		}
 
+		@Nullable
 		@Override
 		protected UserId extractUserInChargeOrNull(final Object model)
 		{
 			final Properties ctx = extractCtxFromItem(model);
 			return Env.getLoggedUserIdIfExists(ctx).orElse(null);
-		};
+		}
 
 		@Override
 		public Optional<AsyncBatchId> extractAsyncBatchFromItem(final WorkpackagesOnCommitSchedulerTemplate<Object>.Collector collector, final Object item)
@@ -137,11 +139,11 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
+			final List<Object> models = queueDAO.retrieveAllItemsSkipMissing(workpackage, Object.class);
 			for (final Object model : models)
 			{
 				try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(model))

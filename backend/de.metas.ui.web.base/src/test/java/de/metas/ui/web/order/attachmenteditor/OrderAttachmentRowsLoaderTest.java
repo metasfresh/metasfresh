@@ -32,7 +32,17 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.listener.TableAttachmentListenerRepository;
 import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.purchasecandidate.DemandGroupReference;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.shipment_candidates_editor.MockedLookupDataSource;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatientRepository;
@@ -42,27 +52,38 @@ import de.metas.vertical.healthcare.alberta.prescription.dao.AlbertaPrescription
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static de.metas.ui.web.order.attachmenteditor.OrderAttachmentRowsLoader.buildRowId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 public class OrderAttachmentRowsLoaderTest
 {
+	private PurchaseCandidateRepository purchaseCandidateRepository;
+
 	private I_C_BPartner bpartnerRecord;
 	private AttachmentEntryRepository attachmentEntryRepository;
 	private final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
@@ -71,12 +92,14 @@ public class OrderAttachmentRowsLoaderTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, 10); // will be in the attachment-entry's CreatedUpdatedInfo
 
 		bpartnerRecord = createPartner("bpartner");
 
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
 		final TableAttachmentListenerService tableAttachmentListenerService = new TableAttachmentListenerService(new TableAttachmentListenerRepository());
 		attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory, tableAttachmentListenerService);
+		purchaseCandidateRepository = Mockito.mock(PurchaseCandidateRepository.class);
 	}
 
 	@Test
@@ -102,13 +125,14 @@ public class OrderAttachmentRowsLoaderTest
 		assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(bpartnerAttachmentEntry.getId(), TableRecordReference.of(bpartnerRecord)));
 		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.FALSE);
 		assertThat(orderAttachmentRow.getPatient().getId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
-		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isEqualTo(salesOrder.getDatePromised());
+		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(bpartnerAttachmentEntry.getFilename());
 		assertThat(orderAttachmentRow.getPayer()).isNull();
 		assertThat(orderAttachmentRow.getPharmacy()).isNull();
 	}
+
 	@Test
-	public void givenAttachmentLinkedToPOAndSOCustomer_whenLoad_thenLoadFromSO()
+	public void givenAttachmentLinkedToPOAndSOCustomer_whenLoad_thenLoadFromSOCustomer()
 	{
 		//given
 		final I_C_Order purchaseOrder = createPurchaseOrder();
@@ -133,12 +157,11 @@ public class OrderAttachmentRowsLoaderTest
 		assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(attachmentEntry.getId(), TableRecordReference.of(bpartnerRecord)));
 		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.TRUE);
 		assertThat(orderAttachmentRow.getPatient().getId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
-		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isEqualTo(salesOrder.getDatePromised());
+		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
 		assertThat(orderAttachmentRow.getFilename()).isEqualTo(attachmentEntry.getFilename());
 		assertThat(orderAttachmentRow.getPayer()).isNull();
 		assertThat(orderAttachmentRow.getPharmacy()).isNull();
 	}
-
 
 	@Test
 	public void givenAttachmentLinkedToSOAndPrescription_whenLoad_thenLoadFromPrescription()
@@ -376,12 +399,43 @@ public class OrderAttachmentRowsLoaderTest
 		assertThat(orderAttachmentRow.getPharmacy()).isNull();
 	}
 
+	@Test
+	public void givenAttachmentLinkedToSOCustomerAndSOLinkedThroughPurchaseCandidate_whenLoad_thenLoadFromSO()
+	{
+		//given
+		final I_C_Order purchaseOrder = createPurchaseOrder();
+		final OrderAndLineId salesOrderAndLineId = createSalesOrder();
+		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate(salesOrderAndLineId);
+
+		when(purchaseCandidateRepository.getAllByPurchaseOrderId(any(OrderId.class))).thenReturn(ImmutableList.of(purchaseCandidate));
+
+		final AttachmentEntry bpartnerAttachmentEntry = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
+
+		//when
+		final OrderAttachmentRowsLoader loader = newOrderAttachmentRowsLoader(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
+		final OrderAttachmentRows orderAttachmentRows = loader.load();
+
+		//then
+		assertThat(orderAttachmentRows.getAllRows().size()).isEqualTo(1);
+
+		final OrderAttachmentRow orderAttachmentRow = orderAttachmentRows.getAllRows().iterator().next();
+
+		assertThat(orderAttachmentRow.getId()).isEqualTo(buildRowId(bpartnerAttachmentEntry.getId(), TableRecordReference.of(bpartnerRecord)));
+		assertThat(orderAttachmentRow.getIsAttachToPurchaseOrder()).isEqualTo(Boolean.FALSE);
+		assertThat(orderAttachmentRow.getPatient().getId()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+		assertThat(TimeUtil.asTimestamp(orderAttachmentRow.getDatePromised())).isNull();
+		assertThat(orderAttachmentRow.getFilename()).isEqualTo(bpartnerAttachmentEntry.getFilename());
+		assertThat(orderAttachmentRow.getPayer()).isNull();
+		assertThat(orderAttachmentRow.getPharmacy()).isNull();
+	}
+
 	private OrderAttachmentRowsLoader newOrderAttachmentRowsLoader(final OrderId orderId)
 	{
 		return OrderAttachmentRowsLoader.builder()
 				.attachmentEntryRepository(attachmentEntryRepository)
 				.albertaPrescriptionRequestDAO(new AlbertaPrescriptionRequestDAO(new AlbertaPatientRepository()))
 				.albertaPatientRepository(new AlbertaPatientRepository())
+				.purchaseCandidateRepository(purchaseCandidateRepository)
 				.patientLookup(MockedLookupDataSource.withNamePrefix("patient"))
 				.payerLookup(MockedLookupDataSource.withNamePrefix("payer"))
 				.pharmacyLookup(MockedLookupDataSource.withNamePrefix("payerPharmacy"))
@@ -421,11 +475,32 @@ public class OrderAttachmentRowsLoaderTest
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, purchaseOrder.getC_Order_ID())
 				.create()
 				.firstOnlyNotNull(I_C_OrderLine.class);
-
-		purchaseOrderLine.setLink_OrderLine_ID(salesOrderLine.getC_OrderLine_ID());
 		save(purchaseOrderLine);
 
+		final I_C_PO_OrderLine_Alloc poOrderLineAlloc = newInstance(I_C_PO_OrderLine_Alloc.class);
+		poOrderLineAlloc.setC_SO_OrderLine(salesOrderLine);
+		poOrderLineAlloc.setC_PO_OrderLine(purchaseOrderLine);
+		save(poOrderLineAlloc);
+
 		return salesOrder;
+	}
+
+	private OrderAndLineId createSalesOrder()
+	{
+		final I_C_Order salesOrder = newInstance(I_C_Order.class);
+		salesOrder.setIsSOTrx(true);
+		salesOrder.setDatePromised(Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 1, 1)));
+		salesOrder.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+
+		save(salesOrder);
+
+		final I_C_OrderLine salesOrderLine = newInstance(I_C_OrderLine.class);
+		salesOrderLine.setC_Order_ID(salesOrder.getC_Order_ID());
+
+		save(salesOrderLine);
+
+		return OrderAndLineId.of(OrderId.ofRepoId(salesOrder.getC_Order_ID()),
+								 OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
 	}
 
 	private I_C_BPartner createPartner(@NonNull final String name)
@@ -490,5 +565,25 @@ public class OrderAttachmentRowsLoaderTest
 				.firstOnlyNotNull(I_C_BPartner_AlbertaPatient.class);
 
 		return BPartnerId.ofRepoIdOrNull(albertaPatient.getC_BPartner_Payer_ID());
+	}
+
+	private PurchaseCandidate createPurchaseCandidate(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final ProductId productId = ProductId.ofRepoId(5);
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoId(6);
+
+		return PurchaseCandidate.builder()
+				.id(PurchaseCandidateId.ofRepoIdOrNull(1))
+				.groupReference(DemandGroupReference.EMPTY)
+				.salesOrderAndLineIdOrNull(orderAndLineId)
+				.orgId(OrgId.ofRepoId(3))
+				.warehouseId(WarehouseId.ofRepoId(4))
+				.productId(productId)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.vendorProductNo(String.valueOf(productId.getRepoId()))
+				.vendorId(BPartnerId.ofRepoId(7))
+				.qtyToPurchase(Quantity.zero(newInstance(I_C_UOM.class)))
+				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
+				.build();
 	}
 }

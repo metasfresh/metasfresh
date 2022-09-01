@@ -415,7 +415,7 @@ class TablePrimaryKeyGenerator
 		final int adTableId = column.getAD_Table_ID();
 
 		queryBL.createQueryBuilder(I_AD_Tab.class, column)
-				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, adTableId)
 				.create()
 				.stream(I_AD_Tab.class)
 				.forEach(tab -> createAD_Field(tab, column));

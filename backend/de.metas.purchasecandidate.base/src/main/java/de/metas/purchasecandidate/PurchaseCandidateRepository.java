@@ -19,6 +19,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -55,6 +56,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -105,6 +107,8 @@ public class PurchaseCandidateRepository
 	private final ReferenceGenerator referenceGenerator;
 
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
+	private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public PurchaseCandidateRepository(
 			@NonNull final PurchaseItemRepository purchaseItemRepository,
@@ -264,7 +268,7 @@ public class PurchaseCandidateRepository
 			existingRecordsById = ImmutableMap.of();
 		}
 
-		try (ILockAutoCloseable lock = doLock && !existingPurchaseCandidateIds.isEmpty() ? lockByIds(existingPurchaseCandidateIds) : null)
+		try (final ILockAutoCloseable lock = doLock && !existingPurchaseCandidateIds.isEmpty() ? lockByIds(existingPurchaseCandidateIds) : null)
 		{
 			for (final PurchaseCandidate purchaseCandidate : purchaseCandidatesToSave)
 			{
@@ -303,8 +307,8 @@ public class PurchaseCandidateRepository
 	 * Note to dev: keep in sync with {@link #toPurchaseCandidate(I_C_PurchaseCandidate)}
 	 */
 	private I_C_PurchaseCandidate createOrUpdateRecord(
-			final PurchaseCandidate purchaseCandidate,
-			final I_C_PurchaseCandidate existingRecord)
+			@NonNull final PurchaseCandidate purchaseCandidate,
+			@Nullable final I_C_PurchaseCandidate existingRecord)
 	{
 		if (existingRecord != null)
 		{
@@ -375,6 +379,8 @@ public class PurchaseCandidateRepository
 		{
 			record.setExternalLineId(purchaseCandidate.getExternalLineId().getValue());
 		}
+		record.setPOReference(purchaseCandidate.getPOReference());
+
 		if (purchaseCandidate.getSource() != null)
 		{
 			record.setSource(purchaseCandidate.getSource().getCode());
@@ -411,6 +417,12 @@ public class PurchaseCandidateRepository
 			record.setC_Currency_ID(purchaseCandidate.getCurrencyId().getRepoId());
 		}
 		record.setExternalPurchaseOrderURL(purchaseCandidate.getExternalPurchaseOrderUrl());
+		record.setIsSimulated(purchaseCandidate.isSimulated());
+
+		if (purchaseCandidate.isSimulated())
+		{
+			record.setProcessed(true);
+		}
 
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
@@ -470,11 +482,11 @@ public class PurchaseCandidateRepository
 	 */
 	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate record)
 	{
-		final ILockManager lockManager = Services.get(ILockManager.class);
-
 		final boolean locked = lockManager.isLocked(record);
 
-		final ZonedDateTime purchaseDatePromised = TimeUtil.asZonedDateTime(record.getPurchaseDatePromised());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
+
+		final ZonedDateTime purchaseDatePromised = TimeUtil.asZonedDateTime(record.getPurchaseDatePromised(), timeZone);
 		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(record.getReminderDate());
 		final Duration reminderTime = purchaseDatePromised != null && dateReminder != null ? Duration.between(purchaseDatePromised, dateReminder) : null;
 
@@ -505,6 +517,8 @@ public class PurchaseCandidateRepository
 				.vendorProductNo(productsRepo.retrieveProductValueByProductId(ProductId.ofRepoId(record.getM_Product_ID())))
 				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
+				.poReference(record.getPOReference())
+
 				.source(PurchaseCandidateSource.ofCodeOrNull(record.getSource()))
 				//
 				.qtyToPurchase(qtyToPurchase)
@@ -594,24 +608,32 @@ public class PurchaseCandidateRepository
 				.addNotNull(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID)
 				.addNotNull(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
 				.create()
-				.listDistinct(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
+				.listDistinct(
+						I_C_PurchaseCandidate.COLUMNNAME_AD_Org_ID,
+						I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID,
+						I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
 				.stream()
-				.map(map -> PurchaseCandidateReminder.builder()
-						.vendorBPartnerId(BPartnerId.ofRepoId(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID), -1)))
-						.notificationTime(TimeUtil.asZonedDateTime(map.get(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)))
-						.build())
+				.map(map -> {
+					final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_AD_Org_ID), 0)));
+					return PurchaseCandidateReminder.builder()
+							.vendorBPartnerId(BPartnerId.ofRepoId(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID), -1)))
+							.notificationTime(TimeUtil.asZonedDateTime(map.get(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate), timeZone))
+							.build();
+				})
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static PurchaseCandidateReminder toPurchaseCandidateReminderOrNull(final I_C_PurchaseCandidate record)
+	public static PurchaseCandidateReminder toPurchaseCandidateReminderOrNull(@NonNull final I_C_PurchaseCandidate record)
 	{
 		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoIdOrNull(record.getVendor_ID());
 		if (vendorBPartnerId == null)
 		{
 			return null;
 		}
+		
+		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()));
 
-		final ZonedDateTime reminderDate = TimeUtil.asZonedDateTime(record.getReminderDate());
+		final ZonedDateTime reminderDate = TimeUtil.asZonedDateTime(record.getReminderDate(), timeZone);
 		if (reminderDate == null)
 		{
 			return null;
@@ -695,4 +717,16 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	public List<PurchaseCandidate> getAllByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderPO_ID, purchaseOrderId.getRepoId())
+				.create()
+				.stream()
+				.map(I_C_PurchaseCandidate_Alloc::getC_PurchaseCandidate_ID)
+				.map(PurchaseCandidateId::ofRepoId)
+				.map(this::getById)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

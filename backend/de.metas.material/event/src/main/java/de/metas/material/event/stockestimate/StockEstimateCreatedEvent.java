@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -52,10 +53,18 @@ public class StockEstimateCreatedEvent extends AbstractStockEstimateEvent
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("freshQtyOnHandId") final int freshQtyOnHandId,
 			@JsonProperty("freshQtyOnHandLineId") final int freshQtyOnHandLineId,
+			@Nullable @JsonProperty("qtyStockEstimateSeqNo") final Integer qtyStockEstimateSeqNo,
 			@NonNull @JsonProperty("eventDate") final Instant eventDate
 	)
 	{
-		super(eventDescriptor, materialDescriptor, date, plantId, freshQtyOnHandId, freshQtyOnHandLineId, eventDate);
+		super(eventDescriptor, 
+			  materialDescriptor, 
+			  date, 
+			  plantId, 
+			  freshQtyOnHandId, 
+			  freshQtyOnHandLineId, 
+			  qtyStockEstimateSeqNo, 
+			  eventDate);
 	}
 
 	@Override

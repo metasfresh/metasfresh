@@ -182,12 +182,13 @@ public class PPOrderChangedEvent implements MaterialEvent
 	{
 		public static DeletedPPOrderLineDescriptor ofPPOrderLine(@NonNull final PPOrderLine ppOrderLine)
 		{
+			final PPOrderLineData ppOrderLineData = ppOrderLine.getPpOrderLineData();
 			return DeletedPPOrderLineDescriptor.builder()
-					.issueOrReceiveDate(ppOrderLine.getIssueOrReceiveDate())
+					.issueOrReceiveDate(ppOrderLineData.getIssueOrReceiveDate())
 					.ppOrderLineId(ppOrderLine.getPpOrderLineId())
-					.productDescriptor(ppOrderLine.getProductDescriptor())
-					.qtyRequired(ppOrderLine.getQtyRequired())
-					.qtyDelivered(ppOrderLine.getQtyDelivered())
+					.productDescriptor(ppOrderLineData.getProductDescriptor())
+					.qtyRequired(ppOrderLineData.getQtyRequired())
+					.qtyDelivered(ppOrderLineData.getQtyDelivered())
 					.build();
 		}
 

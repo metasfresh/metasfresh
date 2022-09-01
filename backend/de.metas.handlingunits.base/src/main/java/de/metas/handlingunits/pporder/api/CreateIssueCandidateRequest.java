@@ -1,20 +1,17 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.warehouse.LocatorId;
-
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.PickingCandidateId;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -60,6 +57,5 @@ public class CreateIssueCandidateRequest
 	@NonNull
 	Quantity qtyToIssue;
 
-	@Nullable
-	PickingCandidateId pickingCandidateId;
+	@Nullable IssueCandidateGeneratedBy generatedBy;
 }

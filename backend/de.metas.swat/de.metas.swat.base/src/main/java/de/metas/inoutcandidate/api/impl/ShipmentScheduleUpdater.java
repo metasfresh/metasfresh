@@ -8,7 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -780,8 +780,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 		final boolean noQtyOverride = sched.getQtyToDeliver_Override().signum() <= 0;
 		final boolean noQtyReserved = sched.getQtyReserved().signum() <= 0;
+		final boolean noQtyPickedAndNotDelivered = sched.getQtyPickList().signum() <= 0;
 
-		sched.setProcessed(noQtyOverride && noQtyReserved);
+		sched.setProcessed(noQtyOverride && noQtyReserved && noQtyPickedAndNotDelivered);
 	}
 
 	private void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)

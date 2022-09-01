@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehouse, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2119619047L;
+	private static final long serialVersionUID = 895356713L;
 
     /** Standard Constructor */
     public X_M_Warehouse (final Properties ctx, final int M_Warehouse_ID, @Nullable final String trxName)

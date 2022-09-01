@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -73,6 +74,8 @@ public class JsonCompositeAlbertaBPartnerTest
 		patient.setIVTherapy(true);
 		patient.setFieldNurseIdentifier("4444444");
 		patient.setDeactivationReason("reason");
+		patient.setClassification("classification");
+		patient.setCareDegree(BigDecimal.valueOf(2.2));
 		patient.setDeactivationDate(LocalDate.parse("2021-05-24"));
 		patient.setDeactivationComment("comment");
 		patient.setCreatedAt(Instant.parse("2019-11-22T00:00:00Z"));

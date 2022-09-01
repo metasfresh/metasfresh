@@ -1,11 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.interceptor;
 
-import java.util.Optional;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentService;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidate;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateFactory;
@@ -16,6 +10,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -83,7 +82,7 @@ public class C_Invoice_CandidateFacadeService
 			}
 
 			logger.debug("ic references a record from AD_Table.TableName={}; -> invoke SalesInvoiceCandidateService", tableName);
-			salesInvoiceCandidateService.syncSalesICToCommissionInstance(salesInvoiceCandidate.get().asCommissionTriggerDocument(), candidateDeleted);
+			salesInvoiceCandidateService.syncTriggerDocumentToCommissionInstance(salesInvoiceCandidate.get().asCommissionTriggerDocument(), candidateDeleted);
 		}
 	}
 }

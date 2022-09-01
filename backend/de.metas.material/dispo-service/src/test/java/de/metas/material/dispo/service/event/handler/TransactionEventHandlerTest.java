@@ -13,6 +13,7 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -71,6 +72,10 @@ public class TransactionEventHandlerTest
 				.date(AFTER_NOW)
 				.build();
 
+		final TransactionCreatedEvent transactionCreatedEvent = TransactionCreatedEvent.builder()
+				.materialDescriptor(materialDescriptor)
+				.build();
+
 		final Candidate candidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(100))
 				.parentId(CandidateId.ofRepoId(200))
@@ -90,7 +95,7 @@ public class TransactionEventHandlerTest
 				.build();
 
 		// invoke the method under test
-		final List<Candidate> result = transactionEventHandler.createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(candidate, transactionDetail);
+		final List<Candidate> result = transactionEventHandler.createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(candidate, transactionDetail, transactionCreatedEvent);
 		assertThat(result).hasSize(2);
 
 		assertThat(result.get(1).getId()).isEqualTo(candidate.getId());

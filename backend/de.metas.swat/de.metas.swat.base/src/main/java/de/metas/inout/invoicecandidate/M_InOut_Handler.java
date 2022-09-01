@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 
@@ -58,22 +60,22 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return true;
+		return CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	/**
 	 * @see M_InOutLine_Handler#getModelForInvoiceCandidateGenerateScheduling(Object)
 	 */
 	@Override
-	public List<InvoiceCandidateGenerateRequest> expandRequest(final InvoiceCandidateGenerateRequest request)
+	public List<InvoiceCandidateGenerateRequest> expandRequest(@NonNull final InvoiceCandidateGenerateRequest request)
 	{
 		final I_M_InOut inout = request.getModel(I_M_InOut.class);
 
@@ -108,7 +110,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_M_InOut> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_M_InOut> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}

@@ -47,7 +47,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector.ServiceModWithSelectorBuilder;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlBank;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlAddress;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.esr.XmlEsr9;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.prolog.XmlSoftware.SoftwareMod;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVat.VatMod;
@@ -72,8 +72,8 @@ import java.util.Base64;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import static de.metas.util.Check.assumeNotNull;
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static de.metas.util.Check.assumeNotNull;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -118,7 +118,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			@NonNull final ExportConfig exportConfig)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
-		this.exportConverter = crossVersionServiceRegistry.getRequestConverterForSimpleVersionName(exportConfig.getXmlVersion());
+		this.exportConverter = crossVersionServiceRegistry.getRequestConverterForSimpleVersionName(exportConfig.getExportXmlVersion());
 		this.exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
 		this.exportFileFromEAN = exportConfig.getFromEAN();
 		this.exportFileViaEAN = exportConfig.getViaEAN();
@@ -130,7 +130,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		final HealthCareInvoiceDocSubType docType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocSubType());
 		if (docType == null)
 		{
-			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false");
+			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false", invoice.getDocSubType());
 			return false;
 		}
 		if (HealthCareInvoiceDocSubType.EA.equals(docType))
@@ -177,8 +177,9 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				final XmlRequest xRequest = importConverter.toCrossVersionRequest(attachment.getDataAsInputStream());
 				final XmlRequest xAugmentedRequest = augmentRequest(xRequest, invoice);
 
+				final XmlRequest xRequestAugmentedByConverter = exportConverter.augmentRequest(xAugmentedRequest, invoice.getBiller().getId());
 				final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-				exportConverter.fromCrossVersionRequest(xAugmentedRequest, outputStream);
+				exportConverter.fromCrossVersionRequest(xRequestAugmentedByConverter, outputStream);
 
 				final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 
@@ -201,7 +202,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			@NonNull final List<InvoiceAttachment> invoiceAttachments)
 	{
 		final Builder<CrossVersionRequestConverter, InvoiceAttachment> //
-		result = ImmutableMultimap.<CrossVersionRequestConverter, InvoiceAttachment> builder();
+		result = ImmutableMultimap.builder();
 
 		for (final InvoiceAttachment attachment : invoiceAttachments)
 		{
@@ -398,7 +399,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				.build();
 	}
 
-	private XmlBank createXmlBank(@NonNull final ESRPaymentInfo paymentInfo)
+	private XmlAddress createXmlBank(@NonNull final ESRPaymentInfo paymentInfo)
 	{
 		final XmlCompany xmlCompany = createXmlCompany(paymentInfo.getCompanyName(), paymentInfo.getAddressInfo());
 		final XmlPerson xmlPerson = createXmlPerson(paymentInfo.getPersonInfo(), paymentInfo.getAddressInfo());
@@ -407,7 +408,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		{
 			return null;
 		}
-		return XmlBank.builder()
+		return XmlAddress.builder()
 				.company(xmlCompany)
 				.person(xmlPerson)
 				.build();

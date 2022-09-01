@@ -22,9 +22,11 @@ package org.eevolution.mrp;
  * #L%
  */
 
+import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.MaterialPlanningConfiguration;
+import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.eevolution.LiberoConfiguration;
-import org.eevolution.api.IDDOrderBL;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,10 +36,6 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.document.engine.IDocumentBL;
-import de.metas.material.planning.MaterialPlanningConfiguration;
-import de.metas.util.Services;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
@@ -51,7 +49,6 @@ public abstract class AbstractMRPTestBase
 
 	// services
 	protected IDocumentBL docActionBL = null;
-	protected IDDOrderBL ddOrderBL = null;
 
 	protected boolean dumpDatabaseOnFail = true;
 
@@ -94,7 +91,6 @@ public abstract class AbstractMRPTestBase
 
 		// services
 		docActionBL = Services.get(IDocumentBL.class);
-		ddOrderBL = Services.get(IDDOrderBL.class);
 
 		afterInit();
 	}

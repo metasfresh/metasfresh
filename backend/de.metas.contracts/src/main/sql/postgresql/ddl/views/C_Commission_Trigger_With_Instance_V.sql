@@ -1,4 +1,5 @@
-DROP VIEW IF EXISTS C_Commission_Trigger_With_Instance_V CASCADE;
+DROP VIEW IF EXISTS C_Commission_Trigger_With_Instance_V CASCADE
+;
 ;
 
 CREATE OR REPLACE VIEW C_Commission_Trigger_With_Instance_V AS
@@ -27,7 +28,7 @@ FROM (
                 ci.C_Commission_Instance_ID
          FROM C_Invoice_Candidate ic_rev
                   LEFT JOIN C_Commission_Instance ci ON ic_rev.C_Invoice_Candidate_ID = ci.C_Invoice_Candidate_ID AND ic_rev.isactive = 'Y' AND ic_rev.AD_Client_ID = ci.AD_Client_ID
-         UNION
+         UNION ALL
          SELECT NULL                    AS C_Invoice_Candidate_ID,
                 il_rev.C_InvoiceLine_ID AS C_InvoiceLine_ID,
                 il_rev.AD_Client_ID,
@@ -42,8 +43,8 @@ FROM (
                 i_rev.POReference,
                 il_rev.M_Product_ID,
                 CASE
-                    WHEN dt.DocBaseType='ARI' THEN 'CustomerInvoice'
-                    WHEN dt.DocBaseType='ARC' THEN 'CustomerCreditmemo'
+                    WHEN dt.DocBaseType = 'ARI' THEN 'CustomerInvoice'
+                    WHEN dt.DocBaseType = 'ARC' THEN 'CustomerCreditmemo'
                 END                     AS CommissionTrigger_Type,
                 il_rev.QtyEntered,
                 il_rev.C_UOM_ID,
@@ -57,5 +58,32 @@ FROM (
                   LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i_rev.C_DocType_ID
                   LEFT JOIN C_Commission_Instance ci ON il_rev.C_InvoiceLine_ID = ci.C_InvoiceLine_ID AND il_rev.isactive = 'Y' AND il_rev.AD_Client_ID = ci.AD_Client_ID
          WHERE il_rev.C_OrderLine_ID IS NULL
+         UNION ALL
+         SELECT NULL                  AS C_Invoice_Candidate_ID,
+                NULL                  AS C_InvoiceLine_ID,
+                ol_rev.AD_Client_ID,
+                ol_rev.AD_Org_ID,
+                ol_rev.Created,
+                ol_rev.CreatedBy,
+                ol_rev.Updated,
+                ol_rev.UpdatedBy,
+                ol_rev.IsActive,
+                o_rev.DateAcct        AS CommissionDate,
+                o_rev.IsSOTrx,
+                o_rev.POReference,
+                ol_rev.M_Product_ID,
+                'MediatedOrder'       AS CommissionTrigger_Type,
+                ol_rev.QtyEntered,
+                ol_rev.C_UOM_ID,
+                ol_rev.C_BPartner_ID  AS Bill_BPartner_ID,
+                o_rev.C_Order_ID      AS C_Order_ID,
+                ol_rev.C_OrderLine_ID AS C_OrderLine_ID,
+                NULL                  AS C_Invoice_ID,
+                ci.C_Commission_Instance_ID
+         FROM c_orderline ol_rev
+                  INNER JOIN c_order o_rev ON o_rev.C_Order_ID = ol_rev.C_Order_ID
+                  INNER JOIN C_DocType dt ON dt.C_DocType_ID = o_rev.C_DocType_ID
+                  INNER JOIN C_Commission_Instance ci ON ol_rev.C_OrderLine_ID = ci.C_OrderLine_ID AND ol_rev.isactive = 'Y' AND ol_rev.AD_Client_ID = ci.AD_Client_ID
+         WHERE dt.DocSubType = 'MED' -- mediated order
      ) TRIGGER
 ;

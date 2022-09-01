@@ -69,7 +69,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	}
 
 	@Override
-	public Collection<Class<? extends PPOrderChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderChangedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PPOrderChangedEvent.class);
 	}
@@ -231,12 +231,10 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 		final BigDecimal newCandidateQty = newPlannedQty.max(candidateToUpdate.computeActualQty());
 
-		final Candidate updatedCandidate = candidateToUpdate.toBuilder()
+		return candidateToUpdate.toBuilder()
 				.businessCaseDetail(updatedProductionDetail)
 				.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
 				.build();
-
-		return updatedCandidate;
 	}
 
 }

@@ -1,26 +1,6 @@
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-
-import com.google.common.collect.ImmutableSet;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
@@ -37,8 +17,8 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
@@ -49,6 +29,26 @@ import de.metas.storage.spi.hu.impl.HUStorageRecord;
 import de.metas.storage.spi.hu.impl.HUStorageRecord_HUPart;
 import de.metas.util.Services;
 import lombok.Value;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -468,9 +468,9 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 			final HUStorageRecord_HUPart huPart = new HUStorageRecord_HUPart(vhu, NullAttributeStorage.instance);
 			final HUStorageRecord storageRecord = new HUStorageRecord(huPart, huStorage);
 
-			Mockito.doReturn(ImmutableSet.of(storageRecord))
+			Mockito.doReturn(ImmutableList.of(storageRecord))
 					.when(storageEngine)
-					.retrieveStorageRecords(Matchers.any(IContextAware.class), Matchers.anySetOf(IStorageQuery.class));
+					.retrieveStorageRecords(Matchers.any(IContextAware.class), Matchers.anyListOf(IStorageQuery.class));
 		}
 
 		final List<I_M_HU> result = new HUPickingSlotBL()

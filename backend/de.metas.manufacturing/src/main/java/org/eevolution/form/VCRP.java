@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                        *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
- *****************************************************************************/
-
 package org.eevolution.form;
 
 /*
@@ -38,23 +22,14 @@ package org.eevolution.form;
  * #L%
  */
 
-
-
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Timestamp;
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Hashtable;
-import java.util.Properties;
-
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.ResourceType;
+import de.metas.material.planning.ResourceTypeId;
+import de.metas.product.ResourceId;
+import de.metas.uom.UOMUtil;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -78,7 +53,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.form.crp.CRPDatasetFactory;
 import org.eevolution.form.crp.CRPModel;
 import org.jfree.chart.ChartFactory;
@@ -89,14 +63,17 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
 
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.ResourceType;
-import de.metas.material.planning.ResourceTypeId;
-import de.metas.product.ResourceId;
-import de.metas.uom.UOMUtil;
-import de.metas.util.Services;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Hashtable;
+import java.util.Properties;
 
 
 
@@ -553,7 +530,7 @@ implements FormPanel, ActionListener
  		 gc1.clear(Calendar.SECOND);
  		 gc1.clear(Calendar.MINUTE);
  		 gc1.clear(Calendar.HOUR_OF_DAY);
- 			  	
+
  		 Timestamp date = start;
  		 String namecapacity = Msg.translate(Env.getCtx(), "Capacity");
  		 System.out.println("\n Namecapacity :"+namecapacity);
@@ -594,7 +571,7 @@ implements FormPanel, ActionListener
  		 		String day = new String(new Integer (date.getDate()).toString()); 
                                 System.out.println("r.getS_Resource_ID()" + r.getS_Resource_ID());
                                 System.out.println("Date:"  +  date);
- 		 		long HoursLoad = getLoad(r,date).toHours();
+ 		 		long HoursLoad = getLoad(r,date.toInstant()).toHours();
  		 		Long Hours = new Long(hours); 
 				System.out.println("Summary "+ summary);
 				System.out.println("Hours Load "+ HoursLoad);
@@ -781,10 +758,9 @@ implements FormPanel, ActionListener
  		return dataset;
  	}
 	
-	private Duration getLoad(MResource resource, Timestamp startTS)
+	private Duration getLoad(MResource resource, Instant start)
  	{
 		ResourceId resourceId = resource != null ? ResourceId.ofRepoId(resource.getS_Resource_ID()) : null;
-		final LocalDateTime start = TimeUtil.asLocalDateTime(startTS);
 		model = CRPDatasetFactory.get(start, start, resourceId);
 		return model.calculateLoad(start, resourceId);
 		

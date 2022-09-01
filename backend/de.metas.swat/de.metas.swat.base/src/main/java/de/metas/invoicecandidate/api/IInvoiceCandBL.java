@@ -26,9 +26,12 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.impl.InvoiceCandidateAllocCreateRequest;
 import de.metas.invoicecandidate.api.impl.InvoiceCandidatesAmtSelectionSummary;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -58,9 +61,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IInvoiceCandBL extends ISingletonService
 {
+	void registerVetoer(ModelWithoutInvoiceCandidateVetoer vetoer, String tableName);
+
+	boolean isAllowedToCreateInvoiceCandidateFor(Object model);
+
 	interface IInvoiceGenerateResult
 	{
 		int getInvoiceCount();
@@ -224,7 +232,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
-	I_C_Invoice_Line_Alloc createUpdateIla(I_C_Invoice_Candidate invoiceCand, I_C_InvoiceLine invoiceLine, StockQtyAndUOMQty qtysInvoiced, String note);
+	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
 
@@ -279,7 +287,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param askForDeleteRegeneration error message will append request to the user asking him/her to delete invoice candidate after problem was fixed and wait for its regeneration
 	 */
-	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note, boolean askForDeleteRegeneration);
+	void setError(I_C_Invoice_Candidate ic, String errorMsg, @Nullable I_AD_Note note, boolean askForDeleteRegeneration);
 
 	void setError(I_C_Invoice_Candidate ic, Throwable e);
 
@@ -401,10 +409,19 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 
-	I_C_Invoice voidAndRecreateInvoice(org.compiere.model.I_C_Invoice invoice);
+	Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
 
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
 
 	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
+
+	Quantity getQtyOrderedStockUOM(I_C_Invoice_Candidate ic);
+
+	Quantity getQtyInvoicedStockUOM(I_C_Invoice_Candidate ic);
+
+	/**
+	 * @param useDefaultBillLocationAndContactIfNotOverride if true and not override-location&contact is given, then take the *current* masterdata values instead of the ic's values. This is actually an invoicing-feature.
+	 */
+	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
 }

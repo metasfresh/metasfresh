@@ -1,29 +1,28 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Product;
-import org.springframework.stereotype.Component;
-
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.inoutcandidate.api.IPackagingDAO;
-import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.Packageable;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Product;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -56,6 +55,7 @@ import lombok.NonNull;
 @Component
 public class PackageableRowsRepository
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final Supplier<LookupDataSource> orderLookup;
 	private final Supplier<LookupDataSource> productLookup;
 	private final Supplier<LookupDataSource> bpartnerLookup;
@@ -96,7 +96,7 @@ public class PackageableRowsRepository
 				.order(orderLookup.get().findById(packageable.getSalesOrderId()))
 				.product(productLookup.get().findById(packageable.getProductId()))
 				.bpartner(bpartnerLookup.get().findById(packageable.getCustomerId()))
-				.preparationDate(packageable.getPreparationDate())
+				.preparationDate(packageable.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone))
 				//
 				.qtyOrdered(packageable.getQtyOrdered())
 				.qtyPicked(qtyPickedOrDelivered)

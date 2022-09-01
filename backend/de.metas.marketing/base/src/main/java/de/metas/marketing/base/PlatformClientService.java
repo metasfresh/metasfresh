@@ -39,7 +39,7 @@ public class PlatformClientService
 
 	private final PlatformClientFactoryRegistry platformClientFactoryRegistry;
 
-	private PlatformClientService(
+	public PlatformClientService(
 			@NonNull final PlatformRepository platformRepository,
 			@NonNull final PlatformClientFactoryRegistry platformClientFactoryRegistry)
 	{
@@ -52,14 +52,12 @@ public class PlatformClientService
 		final Platform platform = platformRepository.getById(platformId);
 		final String platformGatewayId = platform.getPlatformGatewayId();
 
-		Check.errorUnless(platformClientFactoryRegistry.hasGatewaySupport(
-				platformGatewayId),
+		Check.errorUnless(platformClientFactoryRegistry.hasGatewaySupport(platformGatewayId),
 				"There is no support for the platformGatewayId={} of this platform; platform={}",
 				platformGatewayId, platform);
 
-		final PlatformClientFactory platformClientFactory = platformClientFactoryRegistry.getPlatformClientFactory(platformGatewayId);
-		final PlatformClient platformClient = platformClientFactory.newClientForPlatformId(platformId);
-
-		return platformClient;
+		return platformClientFactoryRegistry
+				.getPlatformClientFactory(platformGatewayId)
+				.newClientForPlatformId(platformId);
 	}
 }

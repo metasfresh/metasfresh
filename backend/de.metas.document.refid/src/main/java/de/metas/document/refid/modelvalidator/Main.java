@@ -49,7 +49,7 @@ public class Main implements ModelValidator
 	private final List<ReferenceNoGeneratorInstanceValidator> docValidators = new ArrayList<>();
 
 	@Override
-	public void initialize(ModelValidationEngine engine, MClient client)
+	public void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		this.engine = engine;
 		if (client != null)
@@ -81,27 +81,27 @@ public class Main implements ModelValidator
 	}
 
 	@Override
-	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		// nothing
 		return null;
 	}
 
 	@Override
-	public String modelChange(PO po, int type) throws Exception
+	public String modelChange(final PO po, final int type) throws Exception
 	{
 		// nothing
 		return null;
 	}
 
 	@Override
-	public String docValidate(PO po, int timing)
+	public String docValidate(final PO po, final int timing)
 	{
 		// nothing
 		return null;
 	}
 
-	private void registerInstanceValidator(I_C_ReferenceNo_Type type)
+	private void registerInstanceValidator(final I_C_ReferenceNo_Type type)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(type);
 

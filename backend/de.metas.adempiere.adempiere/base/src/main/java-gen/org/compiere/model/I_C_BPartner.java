@@ -5,16 +5,16 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner 
+public interface I_C_BPartner
 {
 
 	String Table_Name = "C_BPartner";
 
-//	/** AD_Table_ID=291 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=291 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -53,8 +53,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
+	 * Set Street & House No..
+	 * Address line 1 for this location
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -65,8 +65,8 @@ public interface I_C_BPartner
 	void setAddress1 (@Nullable java.lang.String Address1);
 
 	/**
-	 * Get Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
+	 * Get Street & House No..
+	 * Address line 1 for this location
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -414,6 +414,56 @@ public interface I_C_BPartner
 	int getC_Greeting_ID();
 
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
+
+	/**
+	 * Set Incoterms (Customer).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_Customer_ID (int C_Incoterms_Customer_ID);
+
+	/**
+	 * Get Incoterms (Customer).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_Customer_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms_Customer();
+
+	void setC_Incoterms_Customer(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms_Customer);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_Customer_ID = new ModelColumn<>(I_C_BPartner.class, "C_Incoterms_Customer_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_Customer_ID = "C_Incoterms_Customer_ID";
+
+	/**
+	 * Set Incoterms (Vendor).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_Vendor_ID (int C_Incoterms_Vendor_ID);
+
+	/**
+	 * Get Incoterms (Vendor).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_Vendor_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms_Vendor();
+
+	void setC_Incoterms_Vendor(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms_Vendor);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_Vendor_ID = new ModelColumn<>(I_C_BPartner.class, "C_Incoterms_Vendor_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_Vendor_ID = "C_Incoterms_Vendor_ID";
 
 	/**
 	 * Set Terminplan Rechnung.
@@ -808,8 +858,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -818,8 +868,8 @@ public interface I_C_BPartner
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1158,6 +1208,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_HaddexControlNr = new ModelColumn<>(I_C_BPartner.class, "HaddexControlNr", null);
 	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
+
+	/**
+	 * Set Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalName (@Nullable java.lang.String InternalName);
+
+	/**
+	 * Get Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalName();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_InternalName = new ModelColumn<>(I_C_BPartner.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
 
 	/**
 	 * Set Druckformat Rechnung.
@@ -1677,7 +1750,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsShippingNotificationEmail = "IsShippingNotificationEmail";
 
 	/**
-	 * Set Zusammenfassungseintrag.
+	 * Set Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -1687,7 +1760,7 @@ public interface I_C_BPartner
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
+	 * Get Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -2358,6 +2431,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_PO_Incoterm = new ModelColumn<>(I_C_BPartner.class, "PO_Incoterm", null);
 	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
+
+	/**
+	 * Set Rechnungsstellung (Kreditoren).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_InvoiceRule (@Nullable java.lang.String PO_InvoiceRule);
+
+	/**
+	 * Get Rechnungsstellung (Kreditoren).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_InvoiceRule();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_InvoiceRule = new ModelColumn<>(I_C_BPartner.class, "PO_InvoiceRule", null);
+	String COLUMNNAME_PO_InvoiceRule = "PO_InvoiceRule";
 
 	/**
 	 * Set Zahlungskondition.

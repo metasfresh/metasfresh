@@ -25,9 +25,13 @@ package de.metas.cucumber.stepdefs.context;
 import de.metas.cucumber.stepdefs.APIResponse;
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 public class TestContext
 {
-	protected APIResponse apiResponse;
-	protected String requestPayload;
+	private APIResponse apiResponse;
+	private String requestPayload;
+	private Map<String,String> httpHeaders;
+	private String endpointPath;
 }

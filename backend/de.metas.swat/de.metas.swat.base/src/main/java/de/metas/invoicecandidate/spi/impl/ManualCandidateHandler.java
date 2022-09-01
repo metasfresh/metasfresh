@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
@@ -53,7 +54,7 @@ import lombok.NonNull;
 public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 {
 	/**
-	 * Not actually a real table name but a marker that is used to pick this manual handler. Please note that {@link #getSourceTable()} returns {@link #MANUAL}.
+	 * Not actually a real table name but a marker that is used to pick this manual handler. Please note that {@link #getSourceTable()} returns this.
 	 */
 	final public static String MANUAL = "ManualCandidateHandler";
 
@@ -61,21 +62,21 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 
 	/** @return {@code false}. */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/** @return {@code false}. */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/** @return empty iterator */
 	@Override
-	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}

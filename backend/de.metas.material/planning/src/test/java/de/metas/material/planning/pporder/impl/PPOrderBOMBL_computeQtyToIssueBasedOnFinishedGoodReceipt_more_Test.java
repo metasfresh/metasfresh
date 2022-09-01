@@ -6,7 +6,6 @@ import de.metas.uom.impl.UOMTestHelper;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.apache.xmlbeans.impl.xb.xmlconfig.Extensionconfig;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentIssueMethod;
@@ -86,7 +85,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 		ppOrderBOMLine.setPP_Order(ppOrder);
 		ppOrderBOMLine.setComponentType(BOMComponentType.Packing.getCode());
 		ppOrderBOMLine.setM_Product_ID(pFolie.getRepoId());
-		ppOrderBOMLine.setC_UOM(uomMm);
+		ppOrderBOMLine.setC_UOM_ID(uomMm.getC_UOM_ID());
 		ppOrderBOMLine.setQtyRequiered(null);
 
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrderBOMLine);
@@ -120,7 +119,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 
 	private void assertQtyToIssueBasedOnFinishedGoodReceived(final String expectedStr)
 	{
-		final BigDecimal actual = ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM(), DraftPPOrderQuantities.NONE).toBigDecimal();
+		final BigDecimal actual = ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, uomMm, DraftPPOrderQuantities.NONE).toBigDecimal();
 		assertThat(actual)
 				.as("qtyToIssue based on finished goods received")
 				.isEqualByComparingTo(expectedStr);
@@ -230,7 +229,7 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 			ppOrderBOMLine.setPP_Order_ID(ppOrder.getPP_Order_ID());
 			ppOrderBOMLine.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived.getCode());
 			ppOrderBOMLine.setIsQtyPercentage(false);
-			ppOrderBOMLine.setC_UOM(uomMm);
+			ppOrderBOMLine.setC_UOM_ID(uomMm.getC_UOM_ID());
 			ppOrderBOMLine.setQtyBOM(new BigDecimal("350"));
 			ppOrderBOMLine.setQtyBatch(null);
 			ppOrderBOMLine.setScrap(new BigDecimal("0")); // 0%

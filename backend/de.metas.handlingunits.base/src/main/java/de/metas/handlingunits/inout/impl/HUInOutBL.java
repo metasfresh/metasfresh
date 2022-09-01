@@ -75,6 +75,7 @@ import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -346,9 +347,9 @@ public class HUInOutBL implements IHUInOutBL
 	public void moveHUsToQualityReturnWarehouse(final List<I_M_HU> husToReturn)
 	{
 		final List<I_M_Warehouse> warehouses = huWarehouseDAO.retrieveQualityReturnWarehouses();
-		final I_M_Warehouse qualityReturnWarehouse = warehouses.get(0);
+		final WarehouseId qualityReturnWarehouseId = WarehouseId.ofRepoId(warehouses.get(0).getM_Warehouse_ID());
 
-		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouse);
+		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouseId);
 	}
 
 	@Override
@@ -443,7 +444,7 @@ public class HUInOutBL implements IHUInOutBL
 			return true;
 		}
 		final ImmutableSet<HuId> topLevelHUs = handlingUnitsBL.getTopLevelHUs(huIds);
-		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(HuId.toRepoIds(topLevelHUs))
+		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(topLevelHUs)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Planning)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNoAttr.getValue())
 				.createQueryBuilder()
@@ -452,11 +453,11 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void validateMandatoryOnShipmentAttributes(final I_M_InOut shipment)
+	public void validateMandatoryOnShipmentAttributes(@NonNull final I_M_InOut shipment)
 	{
 		final List<I_M_InOutLine> inOutLines = retrieveLines(shipment, I_M_InOutLine.class);
 
-		for (I_M_InOutLine line : inOutLines)
+		for (final I_M_InOutLine line : inOutLines)
 		{
 			final AttributeSetInstanceId asiID = AttributeSetInstanceId.ofRepoIdOrNull(line.getM_AttributeSetInstance_ID());
 

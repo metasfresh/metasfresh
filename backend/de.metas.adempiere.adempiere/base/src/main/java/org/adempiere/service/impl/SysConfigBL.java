@@ -246,6 +246,12 @@ public class SysConfigBL implements ISysConfigBL
 	}
 
 	@Override
+	public String getValue(@NonNull final String name, @Nullable final String defaultValue, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return sysConfigDAO.getValue(name, clientAndOrgId).orElse(defaultValue);
+	}
+
+	@Override
 	public <T extends ReferenceListAwareEnum> T getReferenceListAware(final String name, final T defaultValue, final Class<T> type)
 	{
 		final String code = sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM).orElse(null);

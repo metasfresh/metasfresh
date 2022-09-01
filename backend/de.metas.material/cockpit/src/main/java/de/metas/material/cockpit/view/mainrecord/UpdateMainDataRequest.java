@@ -1,18 +1,8 @@
-package de.metas.material.cockpit.view.mainrecord;
-
-import java.math.BigDecimal;
-
-import de.metas.material.cockpit.view.MainDataRecordIdentifier;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +19,18 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.material.cockpit.view.mainrecord;
+
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -51,10 +53,6 @@ public class UpdateMainDataRequest
 	 */
 	@Default
 	BigDecimal orderedSalesQty = BigDecimal.ZERO;
-
-	@Default
-	BigDecimal reservedSalesQty = BigDecimal.ZERO;
-
 	/**
 	 * Quantity ordered from our vendors
 	 */
@@ -62,11 +60,34 @@ public class UpdateMainDataRequest
 	BigDecimal orderedPurchaseQty = BigDecimal.ZERO;
 
 	@Default
-	BigDecimal reservedPurchaseQty = BigDecimal.ZERO;
-
-	@Default
 	BigDecimal offeredQty = BigDecimal.ZERO;
 
 	@Default
-	BigDecimal requiredForProductionQty = BigDecimal.ZERO;
+	BigDecimal qtyDemandPPOrder = BigDecimal.ZERO;
+	@Default
+	BigDecimal qtyDemandSalesOrder = BigDecimal.ZERO;
+	@Default
+	BigDecimal qtyDemandDDOrder = BigDecimal.ZERO;
+
+	@Default
+	BigDecimal qtySupplyPurchaseOrder = BigDecimal.ZERO;
+	@Default
+	BigDecimal qtySupplyDDOrder = BigDecimal.ZERO;
+	@Default
+	BigDecimal qtySupplyPPOrder = BigDecimal.ZERO;
+
+	@Default
+	BigDecimal qtySupplyRequired = BigDecimal.ZERO;
+
+	@Default
+	BigDecimal qtyInventoryCount = BigDecimal.ZERO;
+	@Default
+	Instant qtyInventoryTime = Instant.ofEpochSecond(0);
+
+	@Nullable
+	Integer qtyStockEstimateSeqNo;
+	@Nullable
+	BigDecimal qtyStockEstimateCount;
+	@Nullable
+	Instant qtyStockEstimateTime;
 }

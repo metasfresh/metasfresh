@@ -13,11 +13,13 @@ import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.invoice_gateway.spi.model.InvoiceId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.ESRImportId;
@@ -25,13 +27,13 @@ import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.security.permissions.Access;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,6 +66,8 @@ public class ESRImportDAO implements IESRImportDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
 	 * Used to order lines by <code>LineNo, ESR_ImportLine_ID</code>.
@@ -159,11 +163,11 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public void deleteLines(I_ESR_Import esrImport)
+	public void deleteLines(final I_ESR_Import esrImport)
 	{
 		final List<I_ESR_ImportLine> esrLines = retrieveLines(esrImport);
 
-		for (I_ESR_ImportLine line : esrLines)
+		for (final I_ESR_ImportLine line : esrLines)
 		{
 			InterfaceWrapperHelper.delete(line);
 		}
@@ -317,7 +321,7 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public I_ESR_Import retrieveESRImportForPayment(I_C_Payment payment)
+	public I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment)
 	{
 		return queryBL.createQueryBuilder(I_ESR_ImportLine.class, payment)
 				.addOnlyActiveRecordsFilter()
@@ -380,7 +384,8 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText)
+	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText,
+			final int excludeESRImportLineID)
 	{
 		if (esrImportLineText == null)
 		{
@@ -389,9 +394,15 @@ public class ESRImportDAO implements IESRImportDAO
 
 		final String strippedText = esrImportLineText.trim();
 
-		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+		final IQueryBuilder<I_ESR_ImportLine> esrimportLineIQueryBuilder = queryBL.createQueryBuilder(I_ESR_ImportLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true)
+				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true);
+
+		if (excludeESRImportLineID > 0)
+		{
+			esrimportLineIQueryBuilder.addNotEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, excludeESRImportLineID);
+		}
+		return esrimportLineIQueryBuilder
 				.create()
 				.list(I_ESR_ImportLine.class);
 	}
@@ -418,19 +429,19 @@ public class ESRImportDAO implements IESRImportDAO
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(esrLine.getC_BPartner_ID());
 		final Money trxAmt = extractESRPaymentAmt(esrLine);
 
-		final Set<PaymentId> existentPaymentIds = paymentBL.getPaymentIds(PaymentQuery.builder()
-																				  .limit(QueryLimit.ofInt(1))
-																				  .docStatus(DocStatus.Completed)
-																				  .dateTrx(esrLine.getPaymentDate())
-																				  .bpartnerId(bpartnerId)
-																				  .invoiceId(InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID()))
-																				  .payAmt(trxAmt)
-																				  .build());
+		final Iterator<PaymentId> paymentIdIterator = paymentBL.getPaymentIds(PaymentQuery.builder()
+																					  .docStatus(DocStatus.Completed)
+																					  .dateTrx(esrLine.getPaymentDate())
+																					  .bpartnerId(bpartnerId)
+																					  .payAmt(trxAmt)
+																					  .build())
+				.stream().iterator();
 
-		List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText());
-		while (existentPaymentIds.iterator().hasNext())
+		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText(), esrLine.getESR_ImportLine_ID());
+
+		while (paymentIdIterator.hasNext())
 		{
-			final PaymentId paymentId = existentPaymentIds.iterator().next();
+			final PaymentId paymentId = paymentIdIterator.next();
 			for (final I_ESR_ImportLine line : lines)
 			{
 				if (line.getC_Payment_ID() == paymentId.getRepoId())
@@ -438,7 +449,25 @@ public class ESRImportDAO implements IESRImportDAO
 					return Optional.of(paymentId);
 				}
 			}
-			return Optional.empty();
+
+			if (paymentId.getRepoId() == esrLine.getC_Payment_ID())
+			{
+				// The esr line was already marked as duplicate and this payment was alerady set to it
+				if (X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(esrLine.getESR_Payment_Action()))
+				{
+					return Optional.of(paymentId);
+				}
+
+				// otherwise, it just means that the payment was already set so we don't have to check for duplicates
+				continue;
+			}
+			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID());
+			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+			final I_C_Payment payment = paymentDAO.getById(paymentId);
+			if (paymentBL.isMatchInvoice(payment, invoice))
+			{
+				return Optional.of(paymentId);
+			}
 		}
 
 		return Optional.empty();
@@ -495,10 +524,16 @@ public class ESRImportDAO implements IESRImportDAO
 	{
 		final ImmutableList<I_ESR_ImportFile> esrImportFiles = retrieveActiveESRImportFiles(esrImport);
 
-		boolean isValid = esrImportFiles.stream()
+		final boolean isValid = esrImportFiles.stream()
 				.allMatch(I_ESR_ImportFile::isValid);
 		esrImport.setIsValid(isValid);
 		save(esrImport);
+	}
+
+	@Override
+	public I_ESR_Import getById(final ESRImportId esrImportId)
+	{
+		return load(esrImportId.getRepoId(), I_ESR_Import.class);
 	}
 
 }

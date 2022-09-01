@@ -188,9 +188,9 @@ public class PPOrderBOMBLTest
 
 	private void assertUOM(final I_C_UOM expectedUOM, final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
-		assertThat(ppOrderBOMLine.getC_UOM())
+		assertThat(ppOrderBOMLine.getC_UOM_ID())
 			.as("BOM line's UOM: "+ppOrderBOMLine)
-			.isEqualTo(expectedUOM);
+			.isEqualTo(expectedUOM.getC_UOM_ID());
 	}
 
 	private void testExtractUpdateOrderBOMLineQuantities(final OrderBOMLineQuantities qtys)

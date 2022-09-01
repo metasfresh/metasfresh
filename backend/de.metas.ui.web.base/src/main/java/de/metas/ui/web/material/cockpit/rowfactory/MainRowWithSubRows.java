@@ -1,22 +1,26 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.product.IProductBL;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
+import de.metas.util.Services;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Warehouse;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -44,18 +48,23 @@ import lombok.NonNull;
 @EqualsAndHashCode(of = "productIdAndDate")
 public class MainRowWithSubRows
 {
+	@NonNull
+	private final MainRowBucketId productIdAndDate;
+	@NonNull
+	private final MainRowBucket mainRow = new MainRowBucket();
+	@NonNull
+	private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
+	@NonNull
+	private final Map<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
+	@NonNull
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
 	public static MainRowWithSubRows create(@NonNull final MainRowBucketId productIdAndDate)
 	{
 		return new MainRowWithSubRows(productIdAndDate);
 	}
-
-	private final MainRowBucketId productIdAndDate;
-
-	private final MainRowBucket mainRow = new MainRowBucket();
-
-	private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
-
-	private final Map<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
 
 	private MainRowWithSubRows(@NonNull final MainRowBucketId productIdAndDate)
 	{
@@ -78,11 +87,19 @@ public class MainRowWithSubRows
 			final boolean includePerPlantDetailRows)
 	{
 		boolean addedToAtLeastOneBucket = false;
-		if (cockpitRecord.getQtyOnHandCount().signum() != 0 || cockpitRecord.getPP_Plant_ID() > 0)
+
+		int ppPlantId = 0;
+		if (cockpitRecord.getM_Warehouse_ID() > 0)
+		{
+			final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(cockpitRecord.getM_Warehouse_ID()));
+			ppPlantId = warehouse.getPP_Plant_ID();
+		}
+
+		if (cockpitRecord.getQtyStockEstimateCount().signum() != 0 || ppPlantId > 0)
 		{
 			if (includePerPlantDetailRows)
 			{
-				addCockpitRecordToCounting(cockpitRecord);
+				addCockpitRecordToCounting(cockpitRecord, ppPlantId);
 				addedToAtLeastOneBucket = true;
 			}
 		}
@@ -100,9 +117,9 @@ public class MainRowWithSubRows
 		mainRow.addDataRecord(cockpitRecord);
 	}
 
-	private void addCockpitRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate)
+	private void addCockpitRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate, final int ppPlantId)
 	{
-		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(stockEstimate.getPP_Plant_ID(), CountingSubRowBucket::create);
+		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(ppPlantId, CountingSubRowBucket::create);
 		countingSubRow.addCockpitRecord(stockEstimate);
 	}
 
@@ -196,7 +213,8 @@ public class MainRowWithSubRows
 
 	private void addStockRecordToCounting(@NonNull final I_MD_Stock stockRecord)
 	{
-		final int plantId = stockRecord.getM_Warehouse().getPP_Plant_ID();
+		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()));
+		final int plantId = warehouseRecord.getPP_Plant_ID();
 		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
 		countingSubRow.addStockRecord(stockRecord);
 	}
@@ -218,13 +236,27 @@ public class MainRowWithSubRows
 	public MaterialCockpitRow createMainRowWithSubRows()
 	{
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
+				.productId(productIdAndDate.getProductId())
+				.date(productIdAndDate.getDate())
 				.qtyMaterialentnahme(mainRow.getQtyMaterialentnahme())
-				.qtyRequiredForProduction(mainRow.getQtyRequiredForProduction())
-				.qtyOnHandEstimate(mainRow.getQtyOnHandEstimate())
+				.qtyDemandPPOrder(mainRow.getQtyDemandPPOrder())
+				.qtyStockCurrent(mainRow.getQtyStockCurrent())
 				.qtyOnHandStock(mainRow.getQtyOnHand())
-				.qtyReservedPurchase(mainRow.getQtyReservedPurchase())
-				.qtyAvailableToPromiseEstimate(mainRow.getQtyAvailableToPromiseEstimate())
-				.qtyReservedSale(mainRow.getQtyReservedSale())
+				.qtySupplyPPOrder(mainRow.getQtySupplyPPOrder())
+				.qtySupplyPurchaseOrder(mainRow.getQtySupplyPurchaseOrder())
+				.qtySupplyDDOrder(mainRow.getQtySupplyDDOrder())
+				.qtySupplySum(mainRow.getQtySupplySum())
+				.qtySupplyRequired(mainRow.getQtySupplyRequired())
+				.qtySupplyToSchedule(mainRow.getQtySupplyToSchedule())
+				.qtyExpectedSurplus(mainRow.getQtyExpectedSurplus())
+				.qtyDemandSalesOrder(mainRow.getQtyDemandSalesOrder())
+				.qtyDemandDDOrder(mainRow.getQtyDemandDDOrder())
+				.qtyDemandSum(mainRow.getQtyDemandSum())
+				.qtyInventoryCount(mainRow.getQtyInventoryCount())
+				.qtyInventoryTime(mainRow.getQtyInventoryTime())
+				.qtyStockEstimateCount(mainRow.getQtyStockEstimateCount())
+				.qtyStockEstimateTime(mainRow.getQtyStockEstimateTime())
+				.qtyStockEstimateSeqNo(mainRow.getQtyStockEstimateSeqNo())
 				.pmmQtyPromised(mainRow.getPmmQtyPromised())
 				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
 				.allIncludedStockRecordIds(mainRow.getStockRecordIds());
@@ -232,13 +264,21 @@ public class MainRowWithSubRows
 		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())
 		{
 			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
-			mainRowBuilder.includedRow(subRow);
+			final boolean subRowIsEmpty = subRow.getAllIncludedStockRecordIds().isEmpty() && subRow.getAllIncludedCockpitRecordIds().isEmpty();
+			if (!subRowIsEmpty)
+			{
+				mainRowBuilder.includedRow(subRow);
+			}
 		}
 
 		for (final DimensionGroupSubRowBucket subRowBucket : dimensionGroupSubRows.values())
 		{
 			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
-			mainRowBuilder.includedRow(subRow);
+			final boolean subRowIsEmpty = subRow.getAllIncludedStockRecordIds().isEmpty() && subRow.getAllIncludedCockpitRecordIds().isEmpty();
+			if (!subRowIsEmpty)
+			{
+				mainRowBuilder.includedRow(subRow);
+			}
 		}
 
 		return mainRowBuilder.build();

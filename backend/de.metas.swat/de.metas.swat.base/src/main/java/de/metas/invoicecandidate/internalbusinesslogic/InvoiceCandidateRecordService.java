@@ -1,19 +1,15 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -22,12 +18,27 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
  * #%L
@@ -55,14 +66,16 @@ import lombok.NonNull;
 public class InvoiceCandidateRecordService
 {
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidateRecordService.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final InvoiceCandidateBuilder result = InvoiceCandidate.builder();
 
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
-		final IProductBL productBL = Services.get(IProductBL.class);
 
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
@@ -85,7 +98,7 @@ public class InvoiceCandidateRecordService
 
 		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
 		{
-			final BigDecimal qtyToInvoiceOverrideInStockUom =				//
+			final BigDecimal qtyToInvoiceOverrideInStockUom =                //
 					icRecord.getQtyToInvoice_Override()
 							.subtract(icRecord.getQtyToInvoice_OverrideFulfilled());
 
@@ -115,6 +128,7 @@ public class InvoiceCandidateRecordService
 				.loadOrderedQtys();
 
 		final DeliveredData deliveredData = DeliveredDataLoader.builder()
+				.invoiceCandDAO(invoiceCandDAO)
 				.invoiceCandidateId(invoiceCandidateId)
 				.soTrx(soTrx)
 				.productId(productId)
@@ -143,10 +157,20 @@ public class InvoiceCandidateRecordService
 		{
 			invoicedData = null;
 		}
+
+		final Optional<PickedData> pickedData = loadPickedQtys(productId,
+															   ShipmentScheduleId.ofRepoIdOrNull(icRecord.getM_ShipmentSchedule_ID()),
+															   stockUomId,
+															   icUomId);
+
 		return result
 				.orderedData(orderedData)
 				.deliveredData(deliveredData)
 				.invoicedData(invoicedData)
+				.pickedData(pickedData.orElseGet(() -> {
+					final StockQtyAndUOMQty defaultPickedData = StockQtyAndUOMQtys.create(icRecord.getQtyPicked(), productId, icRecord.getQtyPickedInUOM(), icUomId);
+					return PickedData.of(defaultPickedData);
+				}))
 				.build();
 	}
 
@@ -239,5 +263,51 @@ public class InvoiceCandidateRecordService
 
 		icRecord.setQtyToInvoiceInUOM_Calc(toInvoiceData.getQtysCalc().getUOMQtyNotNull().toBigDecimal());
 		icRecord.setQtyToInvoiceInUOM(toInvoiceData.getQtysEffective().getUOMQtyNotNull().toBigDecimal());
+	}
+
+	@NonNull
+	private Optional<PickedData> loadPickedQtys(
+			@NonNull final ProductId productId,
+			@Nullable final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final UomId stockUomId,
+			@NonNull final UomId icUomId)
+	{
+		if (shipmentScheduleId == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+
+		if (Check.isEmpty(qtyPickedRecords))
+		{
+			return Optional.empty();
+		}
+
+		final Quantity qtyPickedStockUOM = qtyPickedRecords
+				.stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal::add)
+				.map(qtyPickedStockUOMSum -> Quantitys.create(qtyPickedStockUOMSum, stockUomId))
+				.orElseGet(() -> Quantitys.create(BigDecimal.ZERO, stockUomId));
+
+		final Quantity qtyPickedInUOM = Quantitys.create(qtyPickedStockUOM, UOMConversionContext.of(productId), icUomId);
+
+		final Quantity qtyPickedCatch = qtyPickedRecords
+				.stream()
+				.filter(qtyPickedRecord -> qtyPickedRecord.getQtyDeliveredCatch() != null && qtyPickedRecord.getCatch_UOM_ID() > 0)
+				.map(qtyPickedRecord -> Quantitys.create(qtyPickedRecord.getQtyDeliveredCatch(), UomId.ofRepoId(qtyPickedRecord.getCatch_UOM_ID())))
+				.reduce(Quantity::add)
+				.filter(qtyPickedCatchSum -> qtyPickedCatchSum.toBigDecimal().signum() != 0)
+				.orElse(null);
+
+		return Optional.of(PickedData.builder()
+								   .productId(productId)
+								   .qtyPicked(qtyPickedStockUOM)
+								   .qtyPickedInUOM(qtyPickedInUOM)
+								   .qtyCatch(qtyPickedCatch)
+								   .build());
 	}
 }

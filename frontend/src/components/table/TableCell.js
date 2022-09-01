@@ -61,17 +61,22 @@ class TableCell extends PureComponent {
    * @method handleKeyDown
    * @summary Key down function handler
    *
-   * @param {object} e - this is the corresponding event from a text input for example
+   * @param {object} event - this is the corresponding event from a text input for example
    * when you change a value within a table cell by typing something in that specific cell.
    */
-  handleKeyDown = (e) => {
-    const { onKeyDown, property, isReadonly } = this.props;
-
-    if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
+  handleKeyDown = (event) => {
+    if (event.keyCode === 67 && (event.ctrlKey || event.metaKey)) {
       return false; // CMD + C on Mac has to just copy
     }
 
-    onKeyDown(e, property, isReadonly);
+    const { onKeyDown, property, isReadonly, tableCellData } = this.props;
+    onKeyDown &&
+      onKeyDown({
+        event,
+        property,
+        readonly: isReadonly,
+        isAttributeWidget: tableCellData.widgetType === 'ProductAttributes',
+      });
   };
 
   /**
@@ -139,7 +144,7 @@ class TableCell extends PureComponent {
    * have a strict comparison below) it will be true
    */
   clearValue = (reset) => {
-    this.clearWidgetValue = reset == null ? true : false;
+    this.clearWidgetValue = reset == null;
   };
 
   render() {
@@ -237,11 +242,13 @@ class TableCell extends PureComponent {
               rowIndex,
               colIndex,
               isEditable,
+              isEdited,
               supportFieldEdit,
               entity,
               updateHeight,
               updateRow,
             }}
+            suppressChange={isEdited}
             clearValue={this.clearWidgetValue}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}

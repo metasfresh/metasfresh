@@ -1,12 +1,11 @@
 package de.metas.material.cockpit.view;
 
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.IQuery;
-
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.IQuery;
 
 /*
  * #%L
@@ -34,15 +33,15 @@ import lombok.Value;
 public class DetailDataRecordIdentifier
 {
 	public static DetailDataRecordIdentifier createForShipmentSchedule(
-			MainDataRecordIdentifier mainDataRecordIdentifier,
-			int shipmentScheduleId)
+			@NonNull final MainDataRecordIdentifier mainDataRecordIdentifier,
+			final int shipmentScheduleId)
 	{
 		return new DetailDataRecordIdentifier(mainDataRecordIdentifier, shipmentScheduleId, 0);
 	}
 
 	public static DetailDataRecordIdentifier createForReceiptSchedule(
-			MainDataRecordIdentifier mainDataRecordIdentifier,
-			int receiptScheduleId)
+			@NonNull final MainDataRecordIdentifier mainDataRecordIdentifier,
+			final int receiptScheduleId)
 	{
 		return new DetailDataRecordIdentifier(mainDataRecordIdentifier, 0, receiptScheduleId);
 	}

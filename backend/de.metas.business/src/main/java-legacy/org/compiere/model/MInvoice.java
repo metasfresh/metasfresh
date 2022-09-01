@@ -44,6 +44,8 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.IPriceListDAO;
@@ -281,9 +283,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setSalesRep_ID(ship.getSalesRep_ID());
 		setAD_User_ID(ship.getAD_User_ID()); // metas
 
+		setEMail((ship.getEMail()));
+
+		setAD_InputDataSource_ID(ship.getAD_InputDataSource_ID());
+
 		// metas: additional fields
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_C_Order.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(ship, this, C_Invoice_INCOTERMLOCATION);
 		ship.setDescriptionBottom(getDescriptionBottom());
 		poService.copyValue(ship, this, C_Invoice_ISUSE_BPARTNER_ADDRESS);
@@ -358,9 +364,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setUser1_ID(ship.getUser1_ID());
 		setUser2_ID(ship.getUser2_ID());
 
+		setEMail(ship.getEMail());
+
+		setAD_InputDataSource_ID(ship.getAD_InputDataSource_ID());
+
 		// metas
 		final IPOService poService = Services.get(IPOService.class);
-		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_Incoterm);
+		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_C_Incoterms_ID);
 		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_IncotermLocation);
 		poService.copyValue(ship, this, I_M_InOut.COLUMNNAME_DescriptionBottom);
 
@@ -381,6 +391,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setC_ConversionType_ID(order.getC_ConversionType_ID());
 			setPaymentRule(order.getPaymentRule());
 			setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
+			setC_Incoterms_ID(order.getC_Incoterms_ID());
+			setIncotermLocation(order.getIncotermLocation());
+
+			final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+			if(orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID())))
+			{
+				setEMail(order.getEMail());
+			}
 			//
 			final I_C_DocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)
@@ -407,6 +425,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setC_ConversionType_ID(rmaOrder.getC_ConversionType_ID());
 			setPaymentRule(rmaOrder.getPaymentRule());
 			setC_PaymentTerm_ID(rmaOrder.getC_PaymentTerm_ID());
+			setEMail(rmaOrder.getEMail());
 
 			// Retrieves the invoice DocType
 			final I_C_DocType dt = MDocType.get(getCtx(), rma.getC_DocType_ID());
@@ -707,7 +726,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}
 
-		if (Check.isEmpty(getIncoterm()))
+		if (getC_Incoterms_ID() <= 0)
 		{
 			setIncotermLocation("");
 		}

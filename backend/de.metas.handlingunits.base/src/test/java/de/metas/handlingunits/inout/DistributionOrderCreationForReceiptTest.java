@@ -2,6 +2,7 @@ package de.metas.handlingunits.inout;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -13,14 +14,12 @@ import de.metas.interfaces.I_M_Movement;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
@@ -35,7 +34,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -124,17 +123,18 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 		assertThat(distributionOrder).isNotNull();
 
-		List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(distributionOrder);
+		List<I_DD_OrderLine> ddOrderLines = new DDOrderLowLevelDAO().retrieveLines(distributionOrder);
 
 		final I_DD_OrderLine
 
 		ddOrderLine = ddOrderLines.get(0);
 
-		assertThat(ddOrderLine.getM_Locator()).isEqualTo(receiptLocator);
-		assertThat(ddOrderLine.getM_LocatorTo()).isEqualTo(transitLocator);
+		assertThat(ddOrderLine.getM_Locator_ID()).isEqualTo(receiptLocator.getM_Locator_ID());
+		assertThat(ddOrderLine.getM_LocatorTo_ID()).isEqualTo(transitLocator.getM_Locator_ID());
 
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void createDDOrderDocType(final String name)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
@@ -145,7 +145,8 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 
 	}
 
-	private I_PP_Product_Planning createProductPlanning(final int productID, final I_DD_NetworkDistribution nwDist, final String onmaterialreceiptwithdestwarehouse)
+	@SuppressWarnings("SameParameterValue")
+	private void createProductPlanning(final int productID, final I_DD_NetworkDistribution nwDist, final String onMaterialReceiptWithDestWarehouse)
 	{
 		final I_PP_Product_Planning prodPlanning = newInstance(I_PP_Product_Planning.class);
 		prodPlanning.setDD_NetworkDistribution(nwDist);
@@ -155,10 +156,9 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 		prodPlanning.setM_AttributeSetInstance_ID(0);
 		prodPlanning.setAD_Org_ID(0);
 		prodPlanning.setIsAttributeDependant(false);
-		prodPlanning.setOnMaterialReceiptWithDestWarehouse(onmaterialreceiptwithdestwarehouse);
+		prodPlanning.setOnMaterialReceiptWithDestWarehouse(onMaterialReceiptWithDestWarehouse);
 
 		save(prodPlanning);
-		return prodPlanning;
 	}
 
 	private I_DD_NetworkDistribution createNetworkDistributionWithLine(final I_M_Warehouse whSource, final I_M_Warehouse whTarget)
@@ -177,16 +177,16 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 		return networkDistribution;
 	}
 
-	private I_M_ReceiptSchedule_Alloc createRSAlloc(final I_M_InOutLine receiptLine, final I_M_ReceiptSchedule rs)
+	private void createRSAlloc(final I_M_InOutLine receiptLine, final I_M_ReceiptSchedule rs)
 	{
 		final I_M_ReceiptSchedule_Alloc rsa = newInstance(I_M_ReceiptSchedule_Alloc.class);
 		rsa.setM_ReceiptSchedule(rs);
 		rsa.setM_InOutLine(receiptLine);
 		save(rsa);
 
-		return rsa;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_M_ReceiptSchedule createReceiptSchedule(final I_M_Warehouse warehouseDest, final String onMaterialReceiptWithDestWarehouse)
 	{
 		final I_M_ReceiptSchedule rs = newInstance(I_M_ReceiptSchedule.class);
@@ -213,7 +213,9 @@ public class DistributionOrderCreationForReceiptTest extends ReceiptSchedule_War
 		return receipt;
 	}
 
-	private I_M_InOutLine createReceiptLine(final String productName,
+	@SuppressWarnings("SameParameterValue")
+	private I_M_InOutLine createReceiptLine(
+			final String productName,
 			final I_M_Locator locator,
 			final I_M_InOut receipt,
 			final BigDecimal qty,

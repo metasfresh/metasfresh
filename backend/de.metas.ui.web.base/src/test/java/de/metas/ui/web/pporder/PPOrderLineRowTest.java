@@ -108,6 +108,7 @@ public class PPOrderLineRowTest
 		final I_PP_Order_BOMLine ppOrderBomLine = newInstance(I_PP_Order_BOMLine.class);
 		ppOrderBomLine.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived.getCode());
 		ppOrderBomLine.setPP_Order(ppOrder);
+		ppOrderBomLine.setM_Product_ID(createProduct("ComponentProduct").getRepoId());
 		save(ppOrderBomLine);
 
 		final PPOrderLineRow result = PPOrderLineRow.builderForPPOrderBomLine()

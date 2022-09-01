@@ -1,42 +1,13 @@
 package org.eevolution.api.impl;
 
-import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.TimeUtil.asTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.Collection;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
+import de.metas.document.engine.DocStatus;
+import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.order.OrderLineId;
+import de.metas.product.ResourceId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -45,18 +16,24 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
-import com.google.common.collect.HashMultimap;
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import org.eevolution.api.PPOrderId;
-import de.metas.order.OrderLineId;
-import de.metas.product.ResourceId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS_OR_EQUAL;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 public class PPOrderDAO implements IPPOrderDAO
 {
@@ -97,11 +74,13 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public List<I_PP_Order> retrieveManufacturingOrders(@NonNull final ManufacturingOrderQuery query)
 	{
-		final IQueryBuilder<I_PP_Order> queryBuilder = toSqlQueryBuilder(query);
+		return toSqlQueryBuilder(query).create().list();
+	}
 
-		return queryBuilder.orderBy(I_PP_Order.COLUMN_DocumentNo)
-				.create()
-				.list(I_PP_Order.class);
+	@Override
+	public Stream<I_PP_Order> streamManufacturingOrders(@NonNull final ManufacturingOrderQuery query)
+	{
+		return toSqlQueryBuilder(query).create().iterateAndStream();
 	}
 
 	private IQueryBuilder<I_PP_Order> toSqlQueryBuilder(final ManufacturingOrderQuery query)
@@ -121,6 +100,9 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
 		}
 
+		// Responsible
+		query.getResponsibleId().appendFilter(queryBuilder, I_PP_Order.COLUMNNAME_AD_User_Responsible_ID);
+
 		// Only Releases Manufacturing orders
 		if (query.isOnlyCompleted())
 		{
@@ -137,6 +119,11 @@ public class PPOrderDAO implements IPPOrderDAO
 		{
 			queryBuilder.addCompareFilter(I_PP_Order.COLUMN_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
 		}
+
+		//
+		// Order BYs
+		queryBuilder.orderBy(I_PP_Order.COLUMN_DocumentNo);
+		queryBuilder.orderBy(I_PP_Order.COLUMNNAME_PP_Order_ID);
 
 		// Limit
 		if (query.getLimit().isLimited())
@@ -179,8 +166,8 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public void changeOrderScheduling(
 			@NonNull final PPOrderId orderId,
-			@NonNull final LocalDateTime scheduledStartDate,
-			@NonNull final LocalDateTime scheduledFinishDate)
+			@NonNull final Instant scheduledStartDate,
+			@NonNull final Instant scheduledFinishDate)
 	{
 		final I_PP_Order order = getById(orderId);
 		order.setDateStartSchedule(TimeUtil.asTimestamp(scheduledStartDate));
@@ -232,13 +219,34 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public IQueryBuilder<I_PP_Order> createQueryForPPOrderSelection(final IQueryFilter<I_PP_Order> userSelectionFilter)
 	{
-		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL
+		return queryBL
 				.createQueryBuilder(I_PP_Order.class)
 				.filter(userSelectionFilter)
 				.addNotEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, X_PP_Order.DOCSTATUS_Closed)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
+	}
 
-		return queryBuilder;
+	@NonNull
+	@Override
+	public ImmutableList<I_PP_OrderCandidate_PP_Order> getPPOrderAllocations(@NonNull final PPOrderId ppOrderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId.getRepoId())
+				.create()
+				.listImmutable(I_PP_OrderCandidate_PP_Order.class);
+	}
+
+	@NonNull
+	public ImmutableList<I_PP_Order> getByProductBOMId(@NonNull final ProductBOMId productBOMId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
+				.create()
+				.listImmutable(I_PP_Order.class);
 	}
 }

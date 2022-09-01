@@ -10,10 +10,13 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -26,6 +29,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -143,6 +147,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	}
 
 	@Override
+	@NonNull
 	public UomId getRecordOrStockUOMId(@NonNull final I_C_OLCand olCandRecord)
 	{
 		if (olCandRecord.getC_UOM_ID() > 0)
@@ -158,6 +163,17 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 
 		// only if we have nothing else to work with, we go with our internal stock-UOM
 		return productBL.getStockUOMId(ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+	}
+
+	@NonNull
+	@Override
+	public Quantity getQtyItemCapacity_Effective(@NonNull final I_C_OLCand olCandRecord)
+	{
+		final BigDecimal result = olCandRecord.isManualQtyItemCapacity()
+				? olCandRecord.getQtyItemCapacity()
+				: olCandRecord.getQtyItemCapacityInternal();
+		
+		return Quantitys.create(result, ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
 	}
 
 	@Override
@@ -327,6 +343,17 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		final int dropShipContactId = getHandOver_User_Effective_ID(olCandRecord); // TODO add the column & stuff
 
 		return extractDifferentShipToBPartnerInfo(olCandRecord, dropShipLocationId, dropShipContactId);
+	}
+
+	@Nullable
+	@Override
+	public HUPIItemProductId getEffectivePackingInstructions(@NonNull final I_C_OLCand olCand)
+	{
+		if (olCand.getM_HU_PI_Item_Product_Override_ID() > 0)
+		{
+			return HUPIItemProductId.ofRepoId(olCand.getM_HU_PI_Item_Product_Override_ID());
+		}
+		return HUPIItemProductId.ofRepoIdOrNull(olCand.getM_HU_PI_Item_Product_ID());
 	}
 
 	private Optional<BPartnerInfo> extractDifferentShipToBPartnerInfo(

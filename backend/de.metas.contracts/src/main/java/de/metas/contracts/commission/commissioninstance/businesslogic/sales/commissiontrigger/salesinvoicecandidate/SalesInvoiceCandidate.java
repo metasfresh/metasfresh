@@ -1,19 +1,20 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate;
 
-import java.time.Instant;
-import java.time.LocalDate;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.util.lang.Percent;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.Instant;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -60,7 +61,9 @@ public class SalesInvoiceCandidate
 
 	CommissionPoints invoicedCommissionPoints;
 
-	Percent tradedCommissionPercent;
+	Quantity totalQtyInvolved;
+
+	CurrencyId currencyId;
 
 	@Builder
 	private SalesInvoiceCandidate(
@@ -74,7 +77,8 @@ public class SalesInvoiceCandidate
 			@NonNull final CommissionPoints forecastCommissionPoints,
 			@NonNull final CommissionPoints commissionPointsToInvoice,
 			@NonNull final CommissionPoints invoicedCommissionPoints,
-			@NonNull final Percent tradedCommissionPercent)
+			@NonNull final Quantity totalQtyInvolved,
+			@NonNull final CurrencyId currencyId)
 	{
 		this.orgId = orgId;
 		this.id = id;
@@ -84,10 +88,11 @@ public class SalesInvoiceCandidate
 		this.commissionDate = commissionDate;
 		this.updated = updated;
 
-		this.tradedCommissionPercent = tradedCommissionPercent;
 		this.invoicedCommissionPoints = invoicedCommissionPoints;
 		this.commissionPointsToInvoice = commissionPointsToInvoice;
 		this.forecastCommissionPoints = forecastCommissionPoints;
+		this.totalQtyInvolved = totalQtyInvolved;
+		this.currencyId = currencyId;
 	}
 
 	public CommissionTriggerDocument asCommissionTriggerDocument()
@@ -103,8 +108,9 @@ public class SalesInvoiceCandidate
 				.forecastCommissionPoints(forecastCommissionPoints)
 				.commissionPointsToInvoice(commissionPointsToInvoice)
 				.invoicedCommissionPoints(invoicedCommissionPoints)
-				.tradedCommissionPercent(tradedCommissionPercent)
 				.productId(productId)
+				.totalQtyInvolved(totalQtyInvolved)
+				.documentCurrencyId(currencyId)
 				.build();
 	}
 }

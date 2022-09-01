@@ -1,0 +1,16 @@
+{
+  "orgCode": "orgCode",
+  "targets": [
+    {
+      "externalReferenceType": "BPartner",
+      "externalReferenceIdentifier": "100"
+    }
+  ],
+  "attachment": {
+    "fileName": "Attachment.pdf",
+    "data": "file:///basePath/bpartnerValue/directory/Attachment.pdf",
+    "type": "LocalFileURL",
+    "mimeType": null,
+    "tags": null
+  }
+}

@@ -22,9 +22,9 @@ package de.metas.handlingunits.model;
  * #L%
  */
 
-import java.math.BigDecimal;
-
 import com.google.common.annotations.VisibleForTesting;
+
+import java.math.BigDecimal;
 
 public interface I_M_ShipmentSchedule extends
 		de.metas.inoutcandidate.model.I_M_ShipmentSchedule // ,
@@ -90,7 +90,7 @@ public interface I_M_ShipmentSchedule extends
 	// @formatter:off
 	String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
 	void setM_HU_PI_Item_Product_Override_ID(int M_HU_PI_Item_Product_Override_ID);
-	void setM_HU_PI_Item_Product_Override(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override);
+	//void setM_HU_PI_Item_Product_Override(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override);
 	int getM_HU_PI_Item_Product_Override_ID();
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override() throws RuntimeException;
 	// @formatter:on

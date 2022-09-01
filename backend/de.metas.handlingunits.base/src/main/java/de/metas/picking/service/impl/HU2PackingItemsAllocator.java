@@ -16,6 +16,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -25,7 +26,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.picking.api.PickingConfigRepository;
@@ -65,7 +66,7 @@ import java.util.function.Predicate;
  * <p>
  * As a result of an allocation, you shall get:
  * <ul>
- * <li>From {@link #getItemToPack()}'s Qty, the HU's Qtys will be subtracted
+ * <li>From {@link #getPickFromHUs()}s Qty, the HU's Qtys will be subtracted
  * <li>to {@link PackingItemsMap} we will have newly packed items and also current Item to Pack
  * <li>{@link I_M_ShipmentSchedule_QtyPicked} records will be created (shipment schedules are taken from Item to Pack)
  * </ul>
@@ -580,7 +581,7 @@ public class HU2PackingItemsAllocator
 																							 .sourceHU(pickFromVHU)
 																							 .productId(productId)
 																							 .qtyCU(qtyCU)
-																							 .onlyFromUnreservedHUs(true)
+																							 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
 																							 .build()));
 
 		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huReceived);

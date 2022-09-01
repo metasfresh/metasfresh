@@ -127,7 +127,7 @@ class DataEntryRestControllerTest
 
 		final I_AD_Tab tabRecord_1 = newInstance(I_AD_Tab.class);
 		tabRecord_1.setAD_Window_ID(windowId_1.getRepoId());
-		tabRecord_1.setAD_Table(tableRecord_1);
+		tabRecord_1.setAD_Table_ID(tableRecord_1.getAD_Table_ID());
 		saveRecord(tabRecord_1);
 
 		// tab

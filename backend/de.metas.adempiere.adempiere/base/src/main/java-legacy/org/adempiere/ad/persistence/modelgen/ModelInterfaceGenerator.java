@@ -137,6 +137,8 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_AD_WF_ProcessData")
 			.add("org.compiere.model.I_AD_WF_Responsible")
 			//
+			.add("org.compiere.model.I_C_Element")
+			//
 			.build();
 
 	private final TableAndColumnInfoRepository repository;
@@ -511,14 +513,12 @@ public class ModelInterfaceGenerator
 			}
 			fw.flush();
 			fw.close();
-			float size = out.length();
-			size /= 1024;
-			log.info(out.getAbsolutePath() + " - " + size + " kB");
+
+			log.info("Wrote {} ({} bytes)", out.getAbsolutePath(), out.length());
 		}
 		catch (final Exception ex)
 		{
-			log.error(fileName, ex);
-			throw new RuntimeException(ex);
+			throw new RuntimeException("Failed saving " + fileName, ex);
 		}
 	}
 
@@ -588,11 +588,11 @@ public class ModelInterfaceGenerator
 
 	private void addImportClass(@NonNull final DataTypeInfo dataTypeInfo)
 	{
-		if(dataTypeInfo.isJavaCodeFullyQualified())
+		if (dataTypeInfo.isJavaCodeFullyQualified())
 		{
 			return;
 		}
-		if(dataTypeInfo.isPrimitiveType())
+		if (dataTypeInfo.isPrimitiveType())
 		{
 			return;
 		}

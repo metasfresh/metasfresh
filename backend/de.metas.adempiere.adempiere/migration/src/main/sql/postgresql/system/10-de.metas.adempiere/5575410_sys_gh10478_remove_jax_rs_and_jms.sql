@@ -16,6 +16,9 @@ delete from ad_window where entitytype='de.metas.jax.rs';
 delete from ad_entitytype where entitytype='de.metas.jax.rs';
 
 ---
+delete from imp_processorlog where imp_processor_id in (select imp_processor_id from imp_processor where imp_processor_type_id=1000000); -- ActiveMQ
+delete from imp_processorparameter where imp_processor_id in (select imp_processor_id from imp_processor where imp_processor_type_id=1000000); -- ActiveMQ
+delete from imp_processor where imp_processor_type_id=1000000; -- ActiveMQ
 
 delete from imp_processor_type where imp_processor_type_id=1000000; -- ActiveMQ
 delete from ad_entitytype where entitytype='de.metas.jms';

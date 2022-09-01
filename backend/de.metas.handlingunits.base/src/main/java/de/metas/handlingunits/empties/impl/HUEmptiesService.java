@@ -1,11 +1,21 @@
 package de.metas.handlingunits.empties.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.empties.EmptiesMovementProducer;
+import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
+import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
+import de.metas.handlingunits.model.I_DD_NetworkDistribution;
+import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.inout.IInOutDAO;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,21 +28,13 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.springframework.lang.Nullable;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.empties.EmptiesMovementProducer;
-import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
-import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.inout.IInOutDAO;
-import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.compiere.util.Env.getCtx;
 
 /*
  * #%L
@@ -58,6 +60,8 @@ import de.metas.util.Services;
 
 public class HUEmptiesService implements IHUEmptiesService
 {
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
 	@Override
 	public I_M_Warehouse getEmptiesWarehouse(@NonNull final I_M_Warehouse warehouse)
 	{
@@ -81,7 +85,7 @@ public class HUEmptiesService implements IHUEmptiesService
 		if (lines.isEmpty())
 		{   // we did find the empties distribution network, but it contained no line to tell us what the given 'warehouse's empty-warehouse is.
 			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsHUDestroyed@=@Y@): " + warehouse.getName()
-					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution);
+					+ "\n @DD_NetworkDistribution_ID@: " + emptiesNetworkDistribution.getName());
 		}
 
 		return lines.get(0).getM_Warehouse();
@@ -91,8 +95,7 @@ public class HUEmptiesService implements IHUEmptiesService
 	public I_M_Locator getEmptiesLocator(final I_M_Warehouse warehouse)
 	{
 		final I_M_Warehouse emptiesWarehouse = getEmptiesWarehouse(warehouse);
-		final I_M_Locator emptiesLocator = InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse), I_M_Locator.class);
-		return emptiesLocator;
+		return InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse), I_M_Locator.class);
 	}
 
 	@Override
@@ -143,4 +146,22 @@ public class HUEmptiesService implements IHUEmptiesService
 		return new EmptiesInOutProducer(ctx);
 	}
 
+	@Override
+	@Nullable
+	public I_M_InOut createDraftEmptiesInOutFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final String movementType)
+	{
+		//
+		// Create a draft "empties inout" without any line;
+		// Lines will be created manually by the user.
+		return  newReturnsInOutProducer(getCtx())
+				.setMovementType(movementType)
+				.setMovementDate(SystemTime.asDayTimestamp())
+				.setC_BPartner(receiptScheduleBL.getC_BPartner_Effective(receiptSchedule))
+				.setC_BPartner_Location(receiptScheduleBL.getC_BPartner_Location_Effective(receiptSchedule))
+				.setM_Warehouse(receiptScheduleBL.getM_Warehouse_Effective(receiptSchedule))
+				.setC_Order(receiptSchedule.getC_Order())
+				//
+				.dontComplete()
+				.create();
+	}
 }

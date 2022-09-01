@@ -1,20 +1,10 @@
 package de.metas.shipper.gateway.commons.async;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.compiere.util.MimeType;
-
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
@@ -25,8 +15,19 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -54,20 +55,24 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 {
 	public static void enqueueOnTrxCommit(
 			final int deliveryOrderRepoId,
-			@NonNull final String shipperGatewayId)
+			@NonNull final String shipperGatewayId,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0");
 
-		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(DeliveryOrderWorkpackageProcessor.class)
-				.newBlock()
-				.newWorkpackage()
+		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
+		workPackageQueueFactory
+				.getQueueForEnqueuing(DeliveryOrderWorkpackageProcessor.class)
+				.newWorkPackage()
+				.setC_Async_Batch_ID(asyncBatchId)
 				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.bindToThreadInheritedTrx()
 				.parameters()
 				.setParameter(PARAM_DeliveryOrderRepoId, deliveryOrderRepoId)
 				.setParameter(PARAM_ShipperGatewayId, shipperGatewayId)
 				.end()
-				.build();
+				.buildAndEnqueue();
 	}
 
 	private static final String PARAM_DeliveryOrderRepoId = "DeliveryOrderRepoId";
@@ -90,7 +95,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage_NOTUSED, final String localTrxName_NOTUSED)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName_NOTUSED)
 	{
 		final DeliveryOrder draftedDeliveryOrder = retrieveDeliveryOrder();
 
@@ -107,7 +112,9 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		deliveryOrderRepo.save(completedDeliveryOrder);
 
 		final List<PackageLabels> packageLabelsList = client.getPackageLabelsList(completedDeliveryOrder);
-		printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo);
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID());
+
+		printLabels(completedDeliveryOrder, packageLabelsList, deliveryOrderRepo, asyncBatchId);
 
 		return Result.SUCCESS;
 	}
@@ -130,17 +137,21 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	public void printLabels(
 			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<PackageLabels> packageLabels,
-			final DeliveryOrderRepository deliveryOrderRepo)
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
-		packageLabels.stream()
-				.map(PackageLabels::getDefaultPackageLabel)
-				.forEach(packageLabel -> printLabel(deliveryOrder, packageLabel, deliveryOrderRepo));
+		for (final PackageLabels packageLabel : packageLabels)
+		{
+			final PackageLabel defaultPackageLabel = packageLabel.getDefaultPackageLabel();
+			printLabel(deliveryOrder, defaultPackageLabel, deliveryOrderRepo, asyncBatchId);
+		}
 	}
 
 	private void printLabel(
 			final DeliveryOrder deliveryOrder,
 			final PackageLabel packageLabel,
-			final DeliveryOrderRepository deliveryOrderRepo)
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 
@@ -162,6 +173,9 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		archive.setIsReport(false);
 		archive.setIsDirectEnqueue(true);
 		archive.setIsDirectProcessQueueItem(true);
+
+		archive.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
+
 		InterfaceWrapperHelper.save(archive);
 	}
 }

@@ -10,7 +10,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -52,25 +51,19 @@ public class AD_Process
 	public void setClassnameIfTypeJasperReportsSQL(final I_AD_Process process)
 	{
 		final ProcessType type = ProcessType.ofCode(process.getType());
-
 		if (type.isJasper())
 		{
 			process.setClassname(JasperReportStarter.class.getName());
 		}
-		final String JSONPath = process.getJSONPath();
 
-		final boolean requiresJSONPath = type.isJasperJson();
-
-		if ( requiresJSONPath && Check.isEmpty(JSONPath, true))
-		{
-			throw new FillMandatoryException(I_AD_Process.COLUMNNAME_JSONPath);
-		}
+		// NOTE: in case of JSON jasper report, accept JSONPath to be empty.
+		// In that case we expect JSON data will be provided as process parameter (usually programatically)
 	}
 
 	@CalloutMethod(columnNames = I_AD_Process.COLUMNNAME_IsReport)
 	public void setDefaultReportProcessClassName(@NonNull final I_AD_Process processRecord)
 	{
-		if (processRecord.isReport() && Check.isEmpty(processRecord.getClassname(), true))
+		if (processRecord.isReport() && Check.isBlank(processRecord.getClassname()))
 		{
 			processRecord.setClassname(JasperReportStarter.class.getName());
 		}

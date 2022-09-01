@@ -1,6 +1,8 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -17,13 +19,18 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuilder;
 import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 /*
@@ -51,18 +58,71 @@ import java.time.temporal.ChronoUnit;
 public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEvent>
 		implements MaterialEventHandler<T>
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWrite;
 	private final CandidateChangeService candidateChangeHandler;
+	private final DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
+	private final MainDataRequestHandler mainDataRequestHandler;
 
 	public DDOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final CandidateChangeService candidateChangeHandler)
+			@NonNull final CandidateChangeService candidateChangeHandler,
+			@NonNull final DDOrderDetailRequestHandler ddOrderDetailRequestHandler,
+			@NonNull final MainDataRequestHandler mainDataRequestHandler)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateRepositoryRetrieval = candidateRepository;
 		this.candidateRepositoryWrite = candidateRepositoryCommands;
+		this.ddOrderDetailRequestHandler = ddOrderDetailRequestHandler;
+		this.mainDataRequestHandler = mainDataRequestHandler;
+	}
+
+	@NonNull
+	public static WarehouseId computeWarehouseId(
+			@NonNull final AbstractDDOrderEvent ddOrderEvent,
+			@NonNull final CandidateType candidateType)
+	{
+		switch (candidateType)
+		{
+			case DEMAND:
+				return ddOrderEvent.getFromWarehouseId();
+
+			case SUPPLY:
+				return ddOrderEvent.getToWarehouseId();
+
+			default:
+				break;
+		}
+		throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
+				.setParameter("candidateType", candidateType)
+				.setParameter("abstractDDOrderEvent", ddOrderEvent);
+	}
+
+	@NonNull
+	public static Instant computeDate(
+			@NonNull final AbstractDDOrderEvent ddOrderEvent,
+			@NonNull final DDOrderLine ddOrderLine,
+			@NonNull final CandidateType candidateType)
+	{
+		switch (candidateType)
+		{
+			case DEMAND:
+				final Instant datePromised = ddOrderEvent.getDdOrder().getDatePromised();
+				final int durationDays = ddOrderLine.getDurationDays();
+				return datePromised.minus(durationDays, ChronoUnit.DAYS);
+
+			case SUPPLY:
+				return ddOrderEvent.getDdOrder().getDatePromised();
+
+			default:
+				break;
+		}
+		throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
+				.setParameter("candidateType", candidateType)
+				.setParameter("abstractDDOrderEvent", ddOrderEvent);
 	}
 
 	/**
@@ -97,6 +157,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		// these two will also be added to the demand candidate
 		final DemandDetail demanddetail = //
 				DemandDetail.forSupplyRequiredDescriptorOrNull(ddOrderEvent.getSupplyRequiredDescriptor());
+
 		final DistributionDetail distributionDetail = createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine);
 
 		// create or update the supply candidate
@@ -107,7 +168,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.materialDescriptor(supplyMaterialDescriptor)
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
+				.simulated(ddOrder.isSimulated())
 				.build();
+
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 
 		// create  or update the demand candidate
@@ -128,8 +191,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.materialDescriptor(demandMaterialDescriptor)
 				.minMaxDescriptor(ddOrderLine.getFromWarehouseMinMaxDescriptor())
 				.businessCaseDetail(distributionDetail)
-				.additionalDemandDetail(demanddetail)
+				.additionalDemandDetail(demanddetail.withTraceId(ddOrderEvent.getEventDescriptor().getTraceId()))
 				.seqNo(expectedSeqNoForDemandCandidate)
+				.simulated(ddOrder.isSimulated())
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event
@@ -144,6 +208,11 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 			final Candidate parentOfSupplyCandidate = candidateRepositoryRetrieval
 					.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithId.getParentId()));
 			candidateRepositoryWrite.updateCandidateById(parentOfSupplyCandidate.withSeqNo(seqNoOfDemand - 2));
+		}
+
+		if (ddOrderEvent instanceof DDOrderCreatedEvent)
+		{
+			handleMainDataUpdates((DDOrderCreatedEvent)ddOrderEvent, ddOrderLine);
 		}
 
 		return groupId;
@@ -218,49 +287,6 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 	protected abstract Flag extractIsAdviseEvent(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent);
 
-	protected final WarehouseId computeWarehouseId(
-			@NonNull final AbstractDDOrderEvent ddOrderEvent,
-			@NonNull final CandidateType candidateType)
-	{
-		switch (candidateType)
-		{
-			case DEMAND:
-				return ddOrderEvent.getFromWarehouseId();
-
-			case SUPPLY:
-				return ddOrderEvent.getToWarehouseId();
-
-			default:
-				break;
-		}
-		throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
-				.setParameter("candidateType", candidateType)
-				.setParameter("abstractDDOrderEvent", ddOrderEvent);
-	}
-
-	protected final Instant computeDate(
-			@NonNull final AbstractDDOrderEvent ddOrderEvent,
-			@NonNull final DDOrderLine ddOrderLine,
-			@NonNull final CandidateType candidateType)
-	{
-		switch (candidateType)
-		{
-			case DEMAND:
-				final Instant datePromised = ddOrderEvent.getDdOrder().getDatePromised();
-				final int durationDays = ddOrderLine.getDurationDays();
-				return datePromised.minus(durationDays, ChronoUnit.DAYS);
-
-			case SUPPLY:
-				return ddOrderEvent.getDdOrder().getDatePromised();
-
-			default:
-				break;
-		}
-		throw new AdempiereException("Unexpected candidateType").appendParametersToMessage()
-				.setParameter("candidateType", candidateType)
-				.setParameter("abstractDDOrderEvent", ddOrderEvent);
-	}
-
 	private DistributionDetail createCandidateDetailFromDDOrderAndLine(
 			@NonNull final DDOrder ddOrder,
 			@NonNull final DDOrderLine ddOrderLine)
@@ -275,5 +301,26 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.productPlanningId(ddOrder.getProductPlanningId())
 				.shipperId(ddOrder.getShipperId())
 				.build();
+	}
+
+	private void handleMainDataUpdates(@NonNull final DDOrderCreatedEvent ddOrderCreatedEvent, @NonNull final DDOrderLine ddOrderLine)
+	{
+		if (ddOrderCreatedEvent.getDdOrder().isSimulated())
+		{
+			return;
+		}
+
+		final OrgId orgId = ddOrderCreatedEvent.getEventDescriptor().getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		final DDOrderMainDataHandler mainDataUpdater = DDOrderMainDataHandler.builder()
+				.ddOrderDetailRequestHandler(ddOrderDetailRequestHandler)
+				.mainDataRequestHandler(mainDataRequestHandler)
+				.abstractDDOrderEvent(ddOrderCreatedEvent)
+				.ddOrderLine(ddOrderLine)
+				.orgZone(timeZone)
+				.build();
+
+		mainDataUpdater.handleUpdate();
 	}
 }

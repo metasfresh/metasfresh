@@ -22,23 +22,7 @@ package de.metas.edi.process;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.google.common.collect.ImmutableList;
-import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.edi.api.IDesadvBL;
@@ -53,6 +37,20 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Send EDI documents for selected desadv entries.
@@ -62,7 +60,7 @@ import lombok.NonNull;
  */
 public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcessPrecondition
 {
-	private final List<I_EDI_Desadv> desadvsToSkip = new ArrayList<I_EDI_Desadv>();
+	private final List<I_EDI_Desadv> desadvsToSkip = new ArrayList<>();
 
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
@@ -93,11 +91,6 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
 
-		// final I_C_Queue_Block block = queue.enqueueBlock(ctx);
-		final IWorkPackageBlockBuilder builder = queue.newBlock()
-				.setAD_PInstance_Creator_ID(getPinstanceId())
-				.setContext(getCtx());
-
 		// Enqueue selected desadvs as workpackages
 		final Iterator<I_EDI_Desadv> desadvs = createIterator();
 
@@ -108,7 +101,7 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 				.setProcessor(new TrxItemProcessorAdapter<I_EDI_Desadv, Void>()
 				{
 					@Override
-					public void process(final I_EDI_Desadv desadv) throws Exception
+					public void process(final I_EDI_Desadv desadv)
 					{
 						// make sure the desadvs that don't meet the sum percentage requirement won't get enqueued
 						final BigDecimal currentSumPercentage = desadv.getFulfillmentPercent();
@@ -119,13 +112,11 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 						else
 						{
 							// note: in here, the desadv has the item processor's trxName (as of this task)
-							enqueueDesadv0(builder, desadv);
+							enqueueDesadv0(queue, desadv);
 						}
 					}
 				})
 				.process(desadvs);
-
-		builder.build(); // in case every single desadv was skipped, store our empty block now, just for reference and suppord.
 
 		// display the desadvs that didn't meet the sum percentage requirement
 		if (!desadvsToSkip.isEmpty())
@@ -137,15 +128,17 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 	}
 
 	private void enqueueDesadv0(
-			final IWorkPackageBlockBuilder builder,
+			final IWorkPackageQueue queue,
 			final I_EDI_Desadv desadv)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(desadv);
 
-		builder.newWorkpackage()
+		queue
+				.newWorkPackage()
+				.setAD_PInstance_ID(getPinstanceId())
 				.bindToTrxName(trxName)
 				.addElement(desadv)
-				.build();
+				.buildAndEnqueue();
 
 		desadv.setEDI_ExportStatus(X_EDI_Desadv.EDI_EXPORTSTATUS_Enqueued);
 		InterfaceWrapperHelper.save(desadv);

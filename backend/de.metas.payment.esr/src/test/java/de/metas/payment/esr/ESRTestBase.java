@@ -203,6 +203,13 @@ public class ESRTestBase
 			final String esrRenderedAcctNo,
 			@NonNull final CurrencyId currencyId)
 	{
+		// org bp
+		final de.metas.interfaces.I_C_BPartner orgBP = newInstance(de.metas.interfaces.I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(orgId);
+		orgBP.setAD_OrgBP_ID(orgId);
+		save(orgBP);
+
 		final I_C_Bank bank = newInstance(I_C_Bank.class);
 		bank.setName("Test Bank");
 		save(bank);
@@ -215,6 +222,7 @@ public class ESRTestBase
 		account.setAD_User_ID(userId);
 		account.setESR_RenderedAccountNo(esrRenderedAcctNo);
 		account.setC_Currency_ID(currencyId.getRepoId());
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 
 		save(account);
 
