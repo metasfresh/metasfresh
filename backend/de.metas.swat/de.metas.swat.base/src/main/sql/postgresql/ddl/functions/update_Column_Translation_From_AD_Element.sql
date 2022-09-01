@@ -27,7 +27,7 @@ BEGIN
     GET DIAGNOSTICS update_count = ROW_COUNT;
     RAISE NOTICE 'Update % AD_Column_Trl rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;
 
-   -- IF (p_AD_Language IS NULL OR isBaseAD_Language(p_AD_Language) = 'Y') THEN
+    IF (p_AD_Language IS NULL OR isBaseAD_Language(p_AD_Language) = 'Y') THEN
         UPDATE AD_Column c
         SET Name        = e_trl.Name,
             Description = e_trl.Description
@@ -35,12 +35,12 @@ BEGIN
         WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
           AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
           AND c.ad_element_id = e_trl.ad_element_id
-        and isbasead_language(e_trl.ad_language) = 'Y';
+          AND isbasead_language(e_trl.ad_language) = 'Y';
         --
         GET DIAGNOSTICS update_count = ROW_COUNT;
         RAISE NOTICE 'Update % AD_Column rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;
-  --  END IF;
-END;
+    END IF;
+END ;
 $BODY$
     LANGUAGE plpgsql
     VOLATILE

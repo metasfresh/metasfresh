@@ -58,10 +58,7 @@ BEGIN
     RAISE NOTICE 'Updated AD_Field_Trl for AD_Element_ID=%, AD_Language=%: % rows via AD_Column, % rows via AD_Name',
         p_AD_Element_ID, p_AD_Language, update_count_via_AD_Column, update_count_via_AD_Name;
 
-
     IF (p_AD_Language IS NULL OR isBaseAD_Language(p_AD_Language) = 'Y') THEN
-
-
         UPDATE AD_Field f
         SET Name        = e_trl.Name,
             Description = e_trl.Description
@@ -72,7 +69,8 @@ BEGIN
           AND EXISTS(SELECT 1
                      FROM AD_Column c
                      WHERE c.ad_element_id = e_trl.ad_element_id
-                       AND c.ad_column_id = f.ad_column_id);
+                       AND c.ad_column_id = f.ad_column_id)
+          AND isbasead_language(e_trl.ad_language) = 'Y';
 
         GET DIAGNOSTICS update_count_via_AD_Column = ROW_COUNT;
 
@@ -82,7 +80,8 @@ BEGIN
         FROM AD_Element_Trl_Effective_v e_trl
         WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
           AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
-          AND f.ad_Name_id = e_trl.ad_element_id;
+          AND f.ad_Name_id = e_trl.ad_element_id
+          AND isbasead_language(e_trl.ad_language) = 'Y';
         --
         GET DIAGNOSTICS update_count_via_AD_Name = ROW_COUNT;
 
@@ -90,7 +89,6 @@ BEGIN
         RAISE NOTICE 'Updated AD_Field for AD_Element_ID=%, AD_Language=%: % rows via AD_Column, % rows via AD_Name',
             p_AD_Element_ID, p_AD_Language, update_count_via_AD_Column, update_count_via_AD_Name;
     END IF;
-
 
 END;
 $BODY$

@@ -45,7 +45,8 @@ BEGIN
           AND EXISTS(SELECT 1
                      FROM AD_Column c
                      WHERE c.ad_element_id = e_trl.ad_element_id
-                       AND c.ad_column_id = p.ad_column_id);
+                       AND c.ad_column_id = p.ad_column_id)
+          AND isbasead_language(e_trl.ad_language) = 'Y';
 
         --
         GET DIAGNOSTICS update_count = ROW_COUNT;
