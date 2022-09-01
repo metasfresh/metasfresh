@@ -370,6 +370,9 @@ public class M_Product_StepDef
 			productRecord.setGTIN(gtin);
 		}
 
+		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsStocked, true);
+		productRecord.setIsStocked(isStocked);
+
 		saveRecord(productRecord);
 	}
 }
