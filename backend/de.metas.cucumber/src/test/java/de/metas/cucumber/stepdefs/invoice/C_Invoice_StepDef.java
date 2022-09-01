@@ -129,10 +129,10 @@ public class C_Invoice_StepDef
 
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
@@ -262,7 +262,7 @@ public class C_Invoice_StepDef
 	{
 		final Map<String, String> row = table.asMaps().get(0);
 
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
 		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
 
