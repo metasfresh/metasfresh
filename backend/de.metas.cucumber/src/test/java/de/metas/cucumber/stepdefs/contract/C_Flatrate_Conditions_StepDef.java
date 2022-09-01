@@ -32,6 +32,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.contract.commission.C_HierarchyCommissionSettings_StepDefData;
 import de.metas.cucumber.stepdefs.interiminvoice.settings.C_Interim_Invoice_Settings_StepDefData;
 import de.metas.order.InvoiceRule;
 import de.metas.util.Services;
@@ -58,14 +59,14 @@ public class C_Flatrate_Conditions_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable;
-	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
+	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
+	private final C_Flatrate_Conditions_StepDefData conditionsTable;
 	private final StepDefData<I_M_PricingSystem> pricingSysTable;
 	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
 
 	public C_Flatrate_Conditions_StepDef(
-			@NonNull final StepDefData<I_C_HierarchyCommissionSettings> hierarchyCommissionSettingsTable,
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable,
+			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
+			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
 			@NonNull final StepDefData<I_M_PricingSystem> pricingSysTable,
 			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable)
 	{

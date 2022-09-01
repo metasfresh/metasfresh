@@ -58,8 +58,8 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 
 public class M_Product_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 	private final StepDefData<I_AD_Org> orgTable;
 	private final StepDefData<I_M_Product_Category> productCategoryTable;
 
@@ -67,8 +67,8 @@ public class M_Product_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final StepDefData<I_AD_Org> orgTable,
 			@NonNull final StepDefData<I_M_Product_Category> productCategoryTable)
 	{

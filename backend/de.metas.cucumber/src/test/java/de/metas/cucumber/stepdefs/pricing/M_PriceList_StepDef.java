@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.currency.CurrencyCode;
@@ -80,11 +81,12 @@ public class M_PriceList_StepDef
 {
 	private final OrgId defaultOrgId = ORG_ID;
 	private final CurrencyRepository currencyRepository;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
-	private final StepDefData<I_M_PriceList> priceListTable;
-	private final StepDefData<I_M_PriceList_Version> priceListVersionTable;
-	private final StepDefData<I_M_ProductPrice> productPriceTable;
+
+	private final M_Product_StepDefData productTable;
+	private final M_PricingSystem_StepDefData pricingSystemTable;
+	private final M_PriceList_StepDefData priceListTable;
+	private final M_PriceList_Version_StepDefData priceListVersionTable;
+	private final M_ProductPrice_StepDefData productPriceTable;
 	private final StepDefData<I_AD_Org> orgTable;
 	private final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable;
 	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
@@ -97,11 +99,11 @@ public class M_PriceList_StepDef
 
 	public M_PriceList_StepDef(
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable,
-			@NonNull final StepDefData<I_M_PriceList> priceListTable,
-			@NonNull final StepDefData<I_M_PriceList_Version> priceListVersionTable,
-			@NonNull final StepDefData<I_M_ProductPrice> productPriceTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
+			@NonNull final M_PriceList_StepDefData priceListTable,
+			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
+			@NonNull final M_ProductPrice_StepDefData productPriceTable,
 			@NonNull final StepDefData<I_AD_Org> orgTable,
 			@NonNull final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable,
 			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)

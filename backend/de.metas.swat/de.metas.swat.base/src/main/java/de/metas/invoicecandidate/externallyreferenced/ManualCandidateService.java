@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
+import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -23,8 +24,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.util.Optional;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -120,10 +122,13 @@ public class ManualCandidateService
 				newIC.getSoTrx());
 		candidate.taxId(taxId);
 
-		final InvoiceRule invoiceRule = coalesce(
-				bpartnerComp.getBpartner().getInvoiceRule(),
-				InvoiceRule.Immediate);
-		candidate.invoiceRule(invoiceRule);
+		final BPartner bpartner = bpartnerComp.getBpartner();
+
+		final InvoiceRule newICInvoiceRule = Optional.ofNullable(newIC.getInvoiceRule())
+				.orElseGet(bpartner::getInvoiceRule);
+
+		candidate.invoiceRule(coalesceNotNull(newICInvoiceRule, InvoiceRule.Immediate));
+		candidate.recordReference(newIC.getRecordReference());
 
 		return candidate.build();
 

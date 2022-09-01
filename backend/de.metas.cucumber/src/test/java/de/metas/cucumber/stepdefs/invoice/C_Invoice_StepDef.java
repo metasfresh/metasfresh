@@ -24,6 +24,9 @@ package de.metas.cucumber.stepdefs.invoice;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
@@ -65,9 +68,9 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import java.util.Comparator;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,19 +96,19 @@ public class C_Invoice_StepDef
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_Order_StepDefData orderTable;
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
-	private final StepDefData<I_C_Order> orderTable;
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final StepDefData<I_AD_User> userTable;
 
 	public C_Invoice_StepDef(
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final StepDefData<I_AD_User> userTable)
 	{
 		this.invoiceTable = invoiceTable;
@@ -219,7 +222,6 @@ public class C_Invoice_StepDef
 				.orgId(StepDefConstants.ORG_ID)
 				.value(paymentTerm)
 				.build();
-
 		final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
 				.orElse(null);
 

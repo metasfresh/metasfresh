@@ -27,6 +27,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -71,9 +72,9 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final StepDefData<I_C_BPartner> bPartnerTable;
+	private final C_BPartner_StepDefData bPartnerTable;
 	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
+	private final M_PricingSystem_StepDefData pricingSystemTable;
 	private final StepDefData<I_M_DiscountSchema> discountSchemaTable;
 	private final StepDefData<I_AD_Org> orgTable;
 
@@ -81,9 +82,9 @@ public class C_BPartner_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_BPartner_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
 			@NonNull final StepDefData<I_M_DiscountSchema> discountSchemaTable,
 			@NonNull final StepDefData<I_AD_Org> orgTable)
 	{

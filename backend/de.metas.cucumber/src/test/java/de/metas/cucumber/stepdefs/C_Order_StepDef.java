@@ -94,8 +94,8 @@ public class C_Order_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_Order> orderTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_Order_StepDefData orderTable;
 	private final StepDefData<I_AD_Org> orgTable;
 	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
 	private final StepDefData<I_AD_User> userTable;
@@ -103,8 +103,8 @@ public class C_Order_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 
 	public C_Order_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final StepDefData<I_AD_Org> orgTable,
 			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
 			@NonNull final StepDefData<I_AD_User> userTable,

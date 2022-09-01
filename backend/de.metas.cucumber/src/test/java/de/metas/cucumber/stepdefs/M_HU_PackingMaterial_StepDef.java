@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.hu.M_HU_PackingMaterial_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -37,12 +38,12 @@ import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_Nam
 
 public class M_HU_PackingMaterial_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_HU_PackingMaterial> packingMaterial;
+	private final M_Product_StepDefData productTable;
+	private final M_HU_PackingMaterial_StepDefData packingMaterial;
 
 	public M_HU_PackingMaterial_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_M_HU_PackingMaterial> packingMaterial)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_HU_PackingMaterial_StepDefData packingMaterial)
 	{
 		this.productTable = productTable;
 		this.packingMaterial = packingMaterial;

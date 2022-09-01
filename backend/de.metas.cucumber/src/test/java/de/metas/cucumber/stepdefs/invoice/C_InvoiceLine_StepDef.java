@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.invoice;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.uom.IUOMDAO;
@@ -56,17 +57,17 @@ public class C_InvoiceLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final C_Invoice_StepDefData invoiceTable;
 	private final StepDefData<I_C_InvoiceLine> invoiceLineTable;
-	private final StepDefData<I_M_Product> productTable;
+	private final M_Product_StepDefData productTable;
 	private final StepDefData<I_C_Project> projectTable;
 	private final StepDefData<I_C_Tax> taxTable;
 	private final StepDefData<I_C_TaxCategory> taxCategoryTable;
 
 	public C_InvoiceLine_StepDef(
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final StepDefData<I_C_InvoiceLine> invoiceLineTable,
-			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final StepDefData<I_C_Project> projectTable,
 			@NonNull final StepDefData<I_C_Tax> taxTable,
 			@NonNull final StepDefData<I_C_TaxCategory> taxCategoryTable)
