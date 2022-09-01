@@ -22,12 +22,14 @@
 
 package de.metas.cucumber.stepdefs.invoicecandidate_inoutline;
 
+import de.metas.cucumber.stepdefs.AD_EventLog_Entry_StepDef;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,6 +38,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_InOutLine;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -45,6 +48,8 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class C_InvoiceCandidate_InOutLine_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(C_InvoiceCandidate_InOutLine_StepDef.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_InvoiceCandidate_InOutLine_StepDefData invoiceCandInOuLineTable;
@@ -118,9 +123,9 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 		return true;
 	}
 
-	private String logCurrentContext(@NonNull final Integer invoiceCandidateId)
+	private void logCurrentContext(@NonNull final Integer invoiceCandidateId)
 	{
-		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+		final String currentContext = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
 				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
 				.create()
 				.stream()
@@ -129,5 +134,7 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 						+ " , M_InOut_Line_ID: " + inoutLineAllocation.getM_InOutLine_ID()
 						+ " , QtyDelivered: " + inoutLineAllocation.getQtyDelivered() + "]")
 				.collect(Collectors.joining(","));
+
+		logger.error("*** Looking for C_InvoiceCandidate_InOutLine instance. See current context: \n" + currentContext);
 	}
 }
