@@ -1,11 +1,14 @@
 package de.metas.translation.api;
 
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -49,6 +52,11 @@ public interface IElementTranslationBL extends ISingletonService
 	void updateTabTranslationsFromElement(AdElementId adElementId);
 
 	void updateMenuTranslationsFromElement(AdElementId adElementId);
+
+	/**
+	 * Accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
+	 */
+	void updateColumnNameFromElement(@NonNull AdElementId adElementId, @Nullable String columnName);
 
 	void updateElementFromElementTrlIfBaseLanguage(AdElementId adElementId, String adLanguage);
 

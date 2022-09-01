@@ -165,15 +165,16 @@ public class M_Element extends X_AD_Element
 
 	private void updateDependentADEntries()
 	{
+		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
+
 		final AdElementId adElementId = AdElementId.ofRepoId(getAD_Element_ID());
 		if (is_ValueChanged(COLUMNNAME_ColumnName))
 		{
 			final String columnName = getColumnName();
-			Services.get(IADTableDAO.class).updateColumnNameByAdElementId(adElementId, columnName);
-			Services.get(IADProcessDAO.class).updateColumnNameByAdElementId(adElementId, columnName);
+		elementTranslationBL.updateColumnNameFromElement(adElementId, columnName);
 		}
 
-		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
+
 		final ILanguageDAO languageDAO = Services.get(ILanguageDAO.class);
 		final String baseADLanguage = languageDAO.retrieveBaseLanguage();
 
