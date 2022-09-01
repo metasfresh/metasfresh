@@ -95,6 +95,16 @@ public final class Check
 		return mkEx(defaultExClazz, msg);
 	}
 
+	public static RuntimeException mkEx(final String msg, @Nullable final Throwable cause)
+	{
+		final RuntimeException ex = mkEx(msg);
+		if (cause != null)
+		{
+			ex.initCause(cause);
+		}
+		return ex;
+	}
+
 	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
 		final boolean exceptionHasItsOwnHeaderMessage = ExceptionWithOwnHeaderMessage.class.isAssignableFrom(exClazz);
