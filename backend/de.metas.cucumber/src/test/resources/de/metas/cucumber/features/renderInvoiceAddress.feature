@@ -29,7 +29,6 @@ Feature: Render invoice address
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
       | customer_bp_26_02 | customer_bp_26_02 | ps_12                         | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
 
-  @dev:runThisOne
   Scenario: Invoice when business partner location doesn't have BPartnerName
     Given metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
