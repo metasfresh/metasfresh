@@ -24,17 +24,20 @@ package de.metas.cucumber.stepdefs.invoice;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -55,6 +58,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
@@ -68,9 +72,9 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import java.util.Comparator;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,6 +98,7 @@ public class C_Invoice_StepDef
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
@@ -101,7 +106,7 @@ public class C_Invoice_StepDef
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-	private final StepDefData<I_AD_User> userTable;
+	private final AD_User_StepDefData userTable;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -109,7 +114,7 @@ public class C_Invoice_StepDef
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final StepDefData<I_AD_User> userTable)
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceCandTable = invoiceCandTable;
@@ -130,6 +135,37 @@ public class C_Invoice_StepDef
 			final I_C_Invoice invoice = invoiceTable.get(identifier);
 
 			validateInvoice(invoice, row);
+		}
+	}
+
+	@And("^the invoice identified by (.*) is (completed|reversed)$")
+	public void invoice_action(@NonNull final String invoiceIdentifier, @NonNull final String action)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case reversed:
+				invoice.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInvoice.completeIt() won't complete it
+				documentBL.processEx(invoice, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				break;
+			case completed:
+				invoice.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			default:
+				throw new AdempiereException("Unhandled C_Invoice action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
+	@And("^after not more than (.*)s, C_Invoice are found:$")
+	public void wait_until_there_are_invoices(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadInvoice(tableRow));
 		}
 	}
 
@@ -178,15 +214,6 @@ public class C_Invoice_StepDef
 
 		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 		invoiceTable.put(invoiceIdentifier, invoices.get(0));
-	}
-
-	@And("^after not more than (.*)s, C_Invoice are found:$")
-	public void wait_until_there_are_invoices(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
-	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadInvoice(tableRow));
-		}
 	}
 
 	private void validateInvoice(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)

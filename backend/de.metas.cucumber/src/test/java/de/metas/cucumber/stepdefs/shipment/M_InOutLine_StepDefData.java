@@ -20,15 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.interiminvoice.settings;
+package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_Interim_Invoice_Settings;
+import org.compiere.model.I_M_InOutLine;
 
-public class C_Interim_Invoice_Settings_StepDefData extends StepDefData<I_C_Interim_Invoice_Settings>
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
 {
-	public C_Interim_Invoice_Settings_StepDefData()
+	public M_InOutLine_StepDefData()
 	{
-		super(I_C_Interim_Invoice_Settings.class);
+		super(I_M_InOutLine.class);
 	}
 }

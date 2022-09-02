@@ -24,9 +24,12 @@ package de.metas.cucumber.stepdefs.product;
 
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductType;
 import de.metas.uom.UomId;
@@ -38,7 +41,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -55,13 +57,14 @@ import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
 public class M_Product_StepDef
 {
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_StepDefData bpartnerTable;
-	private final StepDefData<I_AD_Org> orgTable;
-	private final StepDefData<I_M_Product_Category> productCategoryTable;
+	private final AD_Org_StepDefData orgTable;
+	private final M_Product_Category_StepDefData productCategoryTable;
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -69,8 +72,8 @@ public class M_Product_StepDef
 	public M_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final StepDefData<I_AD_Org> orgTable,
-			@NonNull final StepDefData<I_M_Product_Category> productCategoryTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final M_Product_Category_StepDefData productCategoryTable)
 	{
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;
@@ -131,6 +134,25 @@ public class M_Product_StepDef
 			bPartnerProduct.setShelfLifeMinDays(0);
 
 			InterfaceWrapperHelper.saveRecord(bPartnerProduct);
+		}
+	}
+
+	@And("load product by value:")
+	public void load_product_by_value(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String value = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Value);
+
+			final I_M_Product loadedProduct = queryBL.createQueryBuilder(I_M_Product.class)
+					.addEqualsFilter(COLUMNNAME_Value, value)
+					.create()
+					.firstOnlyNotNull(I_M_Product.class);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			productTable.put(productIdentifier, loadedProduct);
 		}
 	}
 

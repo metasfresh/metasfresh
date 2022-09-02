@@ -27,4 +27,8 @@ import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
 
 public class C_InterimInvoice_FlatrateTerm_Line_StepDefData extends StepDefData<I_C_InterimInvoice_FlatrateTerm_Line>
 {
+	public C_InterimInvoice_FlatrateTerm_Line_StepDefData()
+	{
+		super(I_C_InterimInvoice_FlatrateTerm_Line.class);
+	}
 }

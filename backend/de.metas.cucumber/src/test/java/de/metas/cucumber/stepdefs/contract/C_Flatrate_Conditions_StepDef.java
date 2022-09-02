@@ -27,13 +27,12 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.C_HierarchyCommissionSettings_StepDefData;
 import de.metas.cucumber.stepdefs.interiminvoice.settings.C_Interim_Invoice_Settings_StepDefData;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.order.InvoiceRule;
 import de.metas.util.Services;
 import io.cucumber.java.en.Given;
@@ -48,7 +47,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
-import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Transition_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_InvoiceRule;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
@@ -61,13 +59,13 @@ public class C_Flatrate_Conditions_StepDef
 
 	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
 	private final C_Flatrate_Conditions_StepDefData conditionsTable;
-	private final StepDefData<I_M_PricingSystem> pricingSysTable;
+	private final M_PricingSystem_StepDefData pricingSysTable;
 	private final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable;
 
 	public C_Flatrate_Conditions_StepDef(
 			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
 			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSysTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
 			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable)
 	{
 		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
@@ -106,10 +104,6 @@ public class C_Flatrate_Conditions_StepDef
 						.setC_HierarchyCommissionSettings_ID(commissionSettings.getC_HierarchyCommissionSettings_ID());
 			}
 
-			final int flatrateTransitionId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Flatrate_Transition_ID + "." + I_C_Flatrate_Transition.COLUMNNAME_Name))
-					.map(this::extractFlatrateTransitionByName)
-					.map(I_C_Flatrate_Transition::getC_Flatrate_Transition_ID)
-					.orElse(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());
 
 			final InvoiceRule invoiceRule = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule))
 					.map(InvoiceRule::ofCode)
@@ -118,7 +112,7 @@ public class C_Flatrate_Conditions_StepDef
 			flatrateConditions.setName(name);
 			flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			flatrateConditions.setType_Conditions(type);
-			flatrateConditions.setC_Flatrate_Transition_ID(flatrateTransitionId);
+			flatrateConditions.setC_Flatrate_Transition_ID(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());
 			flatrateConditions.setInvoiceRule(invoiceRule.getCode());
 			flatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Completed);
 			flatrateConditions.setProcessed(true);
@@ -147,13 +141,5 @@ public class C_Flatrate_Conditions_StepDef
 
 			conditionsTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_Flatrate_Conditions"), flatrateConditions);
 		}
-	}
-
-	private I_C_Flatrate_Transition extractFlatrateTransitionByName(@NonNull final String name)
-	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Transition.class)
-				.addEqualsFilter(I_C_Flatrate_Transition.COLUMNNAME_Name, name)
-				.create()
-				.firstOnlyOrNull(I_C_Flatrate_Transition.class);
 	}
 }

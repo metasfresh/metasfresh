@@ -136,7 +136,14 @@ public class StepDefUtil
 	{
 		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
-}
+
+	public void tryAndWait(
+			final long maxWaitSeconds,
+			final long checkingIntervalMs,
+			@NonNull final Supplier<Boolean> worker) throws InterruptedException
+	{
+		tryAndWait(maxWaitSeconds, checkingIntervalMs, worker, null);
+	}
 
 	/**
 	 * Waits for the given {@code worker} to supply an optional that is present.

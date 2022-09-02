@@ -27,6 +27,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -73,20 +75,20 @@ public class C_BPartner_StepDef
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
 	private final C_BPartner_StepDefData bPartnerTable;
-	private final StepDefData<I_C_BPartner_Location> bPartnerLocationTable;
+	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final M_PricingSystem_StepDefData pricingSystemTable;
-	private final StepDefData<I_M_DiscountSchema> discountSchemaTable;
-	private final StepDefData<I_AD_Org> orgTable;
+	private final M_DiscountSchema_StepDefData discountSchemaTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public C_BPartner_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bPartnerLocationTable,
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
-			@NonNull final StepDefData<I_M_DiscountSchema> discountSchemaTable,
-			@NonNull final StepDefData<I_AD_Org> orgTable)
+			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -158,7 +160,6 @@ public class C_BPartner_StepDef
 
 		final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DeliveryRule);
 		bPartnerRecord.setDeliveryRule(CoalesceUtil.firstNotBlank(deliveryRule, DELIVERYRULE_Force));
-
 
 		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
 		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))

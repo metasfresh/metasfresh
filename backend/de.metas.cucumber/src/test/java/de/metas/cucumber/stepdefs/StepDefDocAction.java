@@ -20,15 +20,13 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.interiminvoice.settings;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_Interim_Invoice_Settings;
-
-public class C_Interim_Invoice_Settings_StepDefData extends StepDefData<I_C_Interim_Invoice_Settings>
+public enum StepDefDocAction
 {
-	public C_Interim_Invoice_Settings_StepDefData()
-	{
-		super(I_C_Interim_Invoice_Settings.class);
-	}
+	completed,
+	reactivated,
+	reversed,
+	voided,
+	closed
 }

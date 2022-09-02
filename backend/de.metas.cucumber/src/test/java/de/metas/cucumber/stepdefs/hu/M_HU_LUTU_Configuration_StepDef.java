@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.receiptschedule.M_ReceiptSchedule_StepDefData;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -62,20 +62,20 @@ public class M_HU_LUTU_Configuration_StepDef
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
-	private final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable;
-	private final StepDefData<I_M_HU_PI> huPiTable;
-	private final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable;
-	private final StepDefData<I_M_HU_LUTU_Configuration> huLutuConfigurationTable;
-	private final StepDefData<I_M_HU> huTable;
-	private final StepDefData<List<I_M_HU>> huListTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final M_HU_PI_StepDefData huPiTable;
+	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
+	private final M_HU_LUTU_Configuration_StepDefData huLutuConfigurationTable;
+	private final M_HU_StepDefData huTable;
+	private final M_HU_List_StepDefData huListTable;
 
 	public M_HU_LUTU_Configuration_StepDef(
-			@NonNull final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable,
-			@NonNull final StepDefData<I_M_HU_PI> huPiTable,
-			@NonNull final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable,
-			@NonNull final StepDefData<I_M_HU_LUTU_Configuration> huLutuConfigurationTable,
-			@NonNull final StepDefData<I_M_HU> huTable,
-			@NonNull final StepDefData<List<I_M_HU>> huListTable)
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final M_HU_PI_StepDefData huPiTable,
+			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
+			@NonNull final M_HU_LUTU_Configuration_StepDefData huLutuConfigurationTable,
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.huPiTable = huPiTable;

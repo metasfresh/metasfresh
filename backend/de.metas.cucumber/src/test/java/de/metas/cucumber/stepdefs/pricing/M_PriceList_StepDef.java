@@ -26,7 +26,9 @@ import de.metas.common.util.Check;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -35,7 +37,6 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -79,7 +80,6 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
 public class M_PriceList_StepDef
 {
-	private final OrgId defaultOrgId = ORG_ID;
 	private final CurrencyRepository currencyRepository;
 
 	private final M_Product_StepDefData productTable;
@@ -87,9 +87,9 @@ public class M_PriceList_StepDef
 	private final M_PriceList_StepDefData priceListTable;
 	private final M_PriceList_Version_StepDefData priceListVersionTable;
 	private final M_ProductPrice_StepDefData productPriceTable;
-	private final StepDefData<I_AD_Org> orgTable;
-	private final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable;
-	private final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable;
+	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -104,9 +104,9 @@ public class M_PriceList_StepDef
 			@NonNull final M_PriceList_StepDefData priceListTable,
 			@NonNull final M_PriceList_Version_StepDefData priceListVersionTable,
 			@NonNull final M_ProductPrice_StepDefData productPriceTable,
-			@NonNull final StepDefData<I_AD_Org> orgTable,
-			@NonNull final StepDefData<I_M_HU_PI_Item_Product> huPiItemProductTable,
-			@NonNull final StepDefData<I_M_AttributeSetInstance> attributeSetInstanceTable)
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.currencyRepository = currencyRepository;
 		this.productTable = productTable;
@@ -114,9 +114,9 @@ public class M_PriceList_StepDef
 		this.priceListTable = priceListTable;
 		this.priceListVersionTable = priceListVersionTable;
 		this.productPriceTable = productPriceTable;
-		this.orgTable = orgTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.orgTable = orgTable;
 	}
 
 	@And("metasfresh contains M_PricingSystems")

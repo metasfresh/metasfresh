@@ -23,8 +23,10 @@
 package de.metas.cucumber.stepdefs.interiminvoice.flatrateterm;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -33,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 
@@ -55,17 +56,17 @@ public class C_InterimInvoice_FlatrateTerm_StepDef
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_InterimInvoice_FlatrateTerm_StepDefData interimInvoiceTermTable;
-	private final StepDefData<I_M_InOut> inoutTable;
-	private final StepDefData<I_C_Invoice> invoiceTable;
-	private final StepDefData<I_C_InvoiceLine> invoiceLineTable;
+	private final M_InOut_StepDefData inoutTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final C_InterimInvoice_FlatrateTerm_Line_StepDefData interimInvoiceTermLineTable;
 
 	public C_InterimInvoice_FlatrateTerm_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
 			@NonNull final C_InterimInvoice_FlatrateTerm_StepDefData interimInvoiceTermTable,
-			@NonNull final StepDefData<I_M_InOut> inoutTable,
-			@NonNull final StepDefData<I_C_Invoice> invoiceTable,
-			@NonNull final StepDefData<I_C_InvoiceLine> invoiceLineTable,
+			@NonNull final M_InOut_StepDefData inoutTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
 			@NonNull final C_InterimInvoice_FlatrateTerm_Line_StepDefData interimInvoiceTermLineTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
@@ -125,13 +126,9 @@ public class C_InterimInvoice_FlatrateTerm_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_InterimInvoice_FlatrateTerm_Line.class);
 
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
 			final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_C_InvoiceLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_InvoiceLine invoiceLine = invoiceLineTable.get(invoiceLineIdentifier);
 
-			assertThat(interimInvoiceTermLine.getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
 			assertThat(interimInvoiceTermLine.getC_InvoiceLine_ID()).isEqualTo(invoiceLine.getC_InvoiceLine_ID());
 
 			final String interimInvoiceTermLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_C_InterimInvoice_FlatrateTerm_Line_ID + "." + TABLECOLUMN_IDENTIFIER);

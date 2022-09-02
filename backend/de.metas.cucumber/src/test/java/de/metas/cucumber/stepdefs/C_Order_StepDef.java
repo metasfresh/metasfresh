@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -96,19 +98,19 @@ public class C_Order_StepDef
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
-	private final StepDefData<I_AD_Org> orgTable;
-	private final StepDefData<I_C_BPartner_Location> bpartnerLocationTable;
-	private final StepDefData<I_AD_User> userTable;
-	private final StepDefData<I_M_PricingSystem> pricingSystemDataTable;
+	private final AD_Org_StepDefData orgTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final AD_User_StepDefData userTable;
+	private final M_PricingSystem_StepDefData pricingSystemDataTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final StepDefData<I_AD_Org> orgTable,
-			@NonNull final StepDefData<I_C_BPartner_Location> bpartnerLocationTable,
-			@NonNull final StepDefData<I_AD_User> userTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemDataTable,
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.bpartnerTable = bpartnerTable;

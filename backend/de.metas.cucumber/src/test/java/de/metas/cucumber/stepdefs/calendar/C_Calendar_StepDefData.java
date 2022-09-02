@@ -27,4 +27,8 @@ import org.compiere.model.I_C_Calendar;
 
 public class C_Calendar_StepDefData extends StepDefData<I_C_Calendar>
 {
+	public C_Calendar_StepDefData()
+	{
+		super(I_C_Calendar.class);
+	}
 }

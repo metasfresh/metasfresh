@@ -25,8 +25,9 @@ package de.metas.cucumber.stepdefs.interiminvoice.contract;
 import de.metas.contacts.invoice.interim.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.order.OrderLineId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -42,12 +43,12 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class C_Flatrate_Term_CreateInterimContract_StepDef
 {
-	final StepDefData<I_C_Flatrate_Conditions> flatrateConditionsTable;
-	final StepDefData<I_C_OrderLine> orderLineTable;
+	final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
+	final C_OrderLine_StepDefData orderLineTable;
 
 	public C_Flatrate_Term_CreateInterimContract_StepDef(
-			@NonNull final StepDefData<I_C_Flatrate_Conditions> flatrateConditionsTable,
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
+			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.flatrateConditionsTable = flatrateConditionsTable;
 		this.orderLineTable = orderLineTable;

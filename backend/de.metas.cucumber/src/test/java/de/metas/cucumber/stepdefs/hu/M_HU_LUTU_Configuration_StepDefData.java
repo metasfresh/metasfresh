@@ -20,15 +20,16 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.interiminvoice.settings;
+package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_C_Interim_Invoice_Settings;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 
-public class C_Interim_Invoice_Settings_StepDefData extends StepDefData<I_C_Interim_Invoice_Settings>
+public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU_Configuration>
 {
-	public C_Interim_Invoice_Settings_StepDefData()
+	public M_HU_LUTU_Configuration_StepDefData()
 	{
-		super(I_C_Interim_Invoice_Settings.class);
+		super(I_M_HU_LUTU_Configuration.class);
 	}
+
 }
