@@ -198,11 +198,6 @@ public interface IADTableDAO extends ISingletonService
 
 	@NonNull TooltipType getTooltipTypeByTableName(@NonNull String tableName);
 
-	MinimalColumnInfo getMinimalColumnInfo(@NonNull String tableName, @NonNull String columnName);
-
-	MinimalColumnInfo getMinimalColumnInfo(@NonNull AdColumnId adColumnId);
-	ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByIds(@NonNull Collection<AdColumnId> adColumnIds);
-
 	void updateColumnNameByAdElementId(
 			@NonNull AdElementId adElementId,
 			@Nullable String newColumnName);
