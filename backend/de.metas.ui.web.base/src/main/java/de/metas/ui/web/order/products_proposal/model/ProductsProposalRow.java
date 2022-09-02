@@ -234,7 +234,7 @@ public class ProductsProposalRow implements IViewRow
 				.orElse(DEFAULT_EDITOR_RENDER_MODES);
 
 		this.values = ViewRowFieldNameAndJsonValuesHolder.builder(ProductsProposalRow.class)
-				.viewEditorRenderModeByFieldName(viewEditorRenderModes)
+				.viewEditorRenderModeByFieldName(this.viewEditorRenderModes)
 				.build();
 	}
 
