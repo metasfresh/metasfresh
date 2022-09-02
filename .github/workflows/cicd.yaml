@@ -36,8 +36,10 @@ jobs:
     needs: init
     steps:
       - uses: actions/checkout@v3
-      - name: prepare
-        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - name: build-commons
         run: |
           docker buildx build \
@@ -69,22 +71,22 @@ jobs:
           .
       - name: push-images
         run: |
-          echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
           docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
           docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
           docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
-          docker logout
 
   frontend:
     runs-on: ubuntu-latest
     needs: init
     steps:
       - uses: actions/checkout@v3
-      - name: prepare
-        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - name: build-frontend
         run: |
           docker buildx build \
@@ -109,7 +111,6 @@ jobs:
         run: |
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
-          docker logout
       - name: extract-test-results
         run: |
           docker buildx build \
@@ -129,9 +130,12 @@ jobs:
     needs: [init, java]
     steps:
       - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - name: prepare
         run: |
-          echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
           echo -e "${{ needs.init.outputs.build-info-properties }}" > docker-builds/metadata/build-info.properties
           echo -e "${{ needs.init.outputs.git-properties }}" > docker-builds/metadata/git.properties
       - name: build-api
@@ -196,15 +200,16 @@ jobs:
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
-          docker logout
 
   compatibility-images:
     runs-on: ubuntu-latest
     needs: [init, frontend, backend]
     steps:
       - uses: actions/checkout@v3
-      - name: prepare
-        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - name: build-api-compat
         run: |
           docker buildx build \
@@ -262,7 +267,6 @@ jobs:
           docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
-          docker logout
 
   junit:
     runs-on: ubuntu-latest
@@ -270,8 +274,10 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
-      - name: prepare
-        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - name: run-junit-tests-j8
         run: |
           docker buildx build \
@@ -294,7 +300,6 @@ jobs:
         run: |
           docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
           docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
-          docker logout
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
@@ -312,8 +317,10 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
-      - name: prepare
-        run: echo ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }} | docker login --username metasfresh --password-stdin
+      - uses: docker/login-action@v2
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - name: build-cucumber
         run: |
           docker buildx build \
@@ -326,11 +333,10 @@ jobs:
         run: |
           docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
-          docker logout
       - name: run-tests
         env:
           refname: ${{ needs.init.outputs.tag-fixed }}
-        timeout-minutes: 60
+        timeout-minutes: 120
         run: |
           mkdir cucumber
           docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:$refname):/compose.yml" . && docker rm tempcopytainer
