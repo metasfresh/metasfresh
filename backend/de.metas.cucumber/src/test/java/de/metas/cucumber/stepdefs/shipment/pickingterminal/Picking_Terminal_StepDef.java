@@ -24,35 +24,52 @@ package de.metas.cucumber.stepdefs.shipment.pickingterminal;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.handlingunits.model.I_M_Picking_Candidate.COLUMNNAME_M_HU_ID;
+import static de.metas.handlingunits.model.I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID;
 import static de.metas.handlingunits.model.X_M_Picking_Candidate.APPROVALSTATUS_Approved;
 import static de.metas.handlingunits.model.X_M_Picking_Candidate.PICKSTATUS_Picked;
 import static de.metas.handlingunits.model.X_M_Picking_Candidate.STATUS_InProgress;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class Picking_Terminal_StepDef
 {
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
 	private final PickingCandidateRepository pickingCandidateRepository;
+
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
@@ -97,5 +114,65 @@ public class Picking_Terminal_StepDef
 				.build();
 
 		processPickingCandidatesCommand.execute();
+	}
+
+	@And("create M_PickingCandidate for M_HU")
+	public void create_M_PickingCand_for_M_HU(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_HU hu = huTable.get(huIdentifier);
+
+			final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(row, I_M_Picking_Candidate.COLUMNNAME_QtyPicked);
+			final String status = DataTableUtil.extractStringForColumnName(row, I_M_Picking_Candidate.COLUMNNAME_Status);
+			final String pickStatus = DataTableUtil.extractStringForColumnName(row, I_M_Picking_Candidate.COLUMNNAME_PickStatus);
+			final String approvalStatus = DataTableUtil.extractStringForColumnName(row, I_M_Picking_Candidate.COLUMNNAME_ApprovalStatus);
+
+			final I_M_Picking_Candidate pickingCandidate = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
+			pickingCandidate.setStatus(status);
+			pickingCandidate.setPickStatus(pickStatus);
+			pickingCandidate.setApprovalStatus(approvalStatus);
+			pickingCandidate.setPickFrom_HU_ID(hu.getM_HU_ID());
+			pickingCandidate.setQtyPicked(qtyPicked);
+			pickingCandidate.setM_ShipmentSchedule_ID(shipmentSchedule.getM_ShipmentSchedule_ID());
+			pickingCandidate.setC_UOM_ID(UomId.EACH.getRepoId());
+
+			saveRecord(pickingCandidate);
+		}
+	}
+
+	@And("process picking")
+	public void process_picking(@NonNull final DataTable dataTable) throws Exception
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_M_HU hu = huTable.get(huIdentifier);
+			assertThat(hu).isNotNull();
+
+			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+			assertThat(shipmentSchedule).isNotNull();
+
+			final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorMessage");
+
+			try
+			{
+				pickingCandidateService.processForHUIds(ImmutableSet.of(HuId.ofRepoId(hu.getM_HU_ID())), ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
+
+				Assertions.assertThat(errorMessage).as("ErrorMessage should be null if pickingCandidateService.processForHUIds() finished with no error!").isNull();
+			}
+			catch (final Exception e)
+			{
+				StepDefUtil.validateErrorMessage(e, errorMessage);
+			}
+		}
 	}
 }

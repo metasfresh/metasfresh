@@ -1,39 +1,8 @@
-package de.metas.edi.api.impl;
-
-import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInInvoiceUOM;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_MovementQty;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCU;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCUsPerLU;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_M_Product;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import de.metas.business.BusinessTestHelper;
-import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
-import de.metas.handlingunits.generichumodel.HURepository;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantitys;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
-
 /*
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,8 +20,41 @@ import de.metas.uom.X12DE355;
  * #L%
  */
 
+package de.metas.edi.api.impl;
+
+import de.metas.business.BusinessTestHelper;
+import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
+import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
+import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.handlingunits.generichumodel.HURepository;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInInvoiceUOM;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+
 class DesadvBLTest
 {
+	private de.metas.edi.api.impl.pack.EDIDesadvPackService EDIDesadvPackService;
 	private DesadvBL desadvBL;
 	private UomId coliUomId;
 	private UomId eachUomId;
@@ -64,7 +66,8 @@ class DesadvBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		desadvBL = new DesadvBL(new HURepository());
+		EDIDesadvPackService = new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository());
+		desadvBL = new DesadvBL(EDIDesadvPackService);
 
 		eachUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("each", X12DE355.EACH).getC_UOM_ID());
 		coliUomId = UomId.ofRepoId(BusinessTestHelper.createUOM("coli", X12DE355.COLI).getC_UOM_ID());
@@ -75,27 +78,28 @@ class DesadvBLTest
 
 		// one PCE is two KGM
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-				.fromUomId(eachUomId)
-				.toUomId(kiloUomId)
-				.productId(productId)
-				.catchUOMForProduct(true)
-				.fromToMultiplier(new BigDecimal("2")).build());
+													   .fromUomId(eachUomId)
+													   .toUomId(kiloUomId)
+													   .productId(productId)
+													   .catchUOMForProduct(true)
+													   .fromToMultiplier(new BigDecimal("2")).build());
 	}
 
 	// 9 CUs per COLI and 20.5 CUs => 3 COLIs
 	@Test
 	void setQty_isUOMForTUs()
 	{
-		final I_EDI_DesadvLine_Pack desadvLinePackRecord = newInstance(I_EDI_DesadvLine_Pack.class);
-		// desadvLinePackRecord.setQtyCU(new BigDecimal("9"));
-		desadvLinePackRecord.setC_UOM_ID(coliUomId.getRepoId());
-		desadvLinePackRecord.setQtyItemCapacity(new BigDecimal("9"));
-		desadvLinePackRecord.setQtyCUsPerLU(new BigDecimal("99"));
-		saveRecord(desadvLinePackRecord);
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createEDIDesadvPackItemRequestBuilder = CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest.builder()
+				.ediDesadvLineId(EDIDesadvLineId.ofRepoId(1))
+				.inOutId(InOutId.ofRepoId(2))
+				.inOutLineId(InOutLineId.ofRepoId(3))
+				.qtyItemCapacity(new BigDecimal("9"))
+				.qtyTu(BigDecimal.ZERO.intValue())
+				.movementQtyInStockUOM(BigDecimal.ZERO);
 
 		// invoke the method under test
-		desadvBL.setQty(
-				desadvLinePackRecord,
+		EDIDesadvPackService.setQty(
+				createEDIDesadvPackItemRequestBuilder,
 				productId,
 				Quantitys.create("99999", eachUomId) /* qtyCUInStockUom */,
 
@@ -103,17 +107,15 @@ class DesadvBLTest
 						.productId(productId)
 						.stockQty(Quantitys.create("20.5", eachUomId)) /* qtyCUsPerLUInStockUom */
 						.uomQty(Quantitys.create("4", coliUomId))
-						.build());
+						.build(),
+				coliUomId,
+				new BigDecimal("9"));
 
-		assertThat(desadvLinePackRecord)
-				.extracting(
-						COLUMNNAME_QtyCUsPerLU,
-						COLUMNNAME_QtyCU,
-						COLUMNNAME_MovementQty)
-				.containsExactly(
-						new BigDecimal("3"),
-						new BigDecimal("1"),
-						new BigDecimal("20.5"));
+		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
+
+		assertThat(createEDIDesadvPackItemRequest.getQtyCUsPerLU()).isEqualByComparingTo(new BigDecimal("3"));
+		assertThat(createEDIDesadvPackItemRequest.getQtyCu()).isEqualByComparingTo(new BigDecimal("1"));
+		assertThat(createEDIDesadvPackItemRequest.getMovementQtyInStockUOM()).isEqualByComparingTo(new BigDecimal("20.5"));
 	}
 
 	/**

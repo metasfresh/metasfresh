@@ -26,7 +26,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
@@ -53,7 +52,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
@@ -66,6 +64,7 @@ import java.util.Map;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class M_Inventory_StepDef
 {
@@ -135,7 +134,13 @@ public class M_Inventory_StepDef
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final Integer productID = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+		final I_M_Product productRecord = InterfaceWrapperHelper.load(productID, I_M_Product.class);
+
+		assertThat(productRecord).isNotNull();
 
 		final I_C_UOM productUOM = uomDAO.getById(productRecord.getC_UOM_ID());
 

@@ -1,39 +1,11 @@
 package de.metas.handlingunits.attribute.storage.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.NamePair;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IAttributeValueListener;
@@ -62,8 +34,33 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.NamePair;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractAttributeStorage implements IAttributeStorage
 {
@@ -455,6 +452,20 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		final IAttributeValue value = getAttributeValue(attributeCode);
 		return value.getValueAsString();
+	}
+
+	@Override
+	@Nullable
+	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
+	{
+		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeCode);
+
+		if (NullAttributeValue.isNull(attributeValue))
+		{
+			return null;
+		}
+
+		return attributeValue.getValueAsString();
 	}
 
 	@Override

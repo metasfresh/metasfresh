@@ -22,22 +22,7 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.NamePair;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -51,6 +36,19 @@ import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.product.ProductId;
 import de.metas.uom.UOMType;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.NamePair;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Null implementation. Has no children, not attributes, is never disposed nor virtual.
@@ -246,6 +244,12 @@ public final class NullAttributeStorage implements IAttributeStorage
 	 */
 	@Override
 	public String getValueAsString(@NonNull final AttributeCode attributeCode)
+	{
+		throw new AttributeNotFoundException(attributeCode, this);
+	}
+
+	@Override
+	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
 	}

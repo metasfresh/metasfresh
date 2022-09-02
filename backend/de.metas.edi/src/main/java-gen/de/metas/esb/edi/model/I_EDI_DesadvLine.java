@@ -1,8 +1,9 @@
 package de.metas.esb.edi.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for EDI_DesadvLine
  *  @author metasfresh (generated) 
@@ -52,31 +53,6 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_Created = new ModelColumn<>(I_EDI_DesadvLine.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *
@@ -121,29 +97,29 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_C_UOM_Invoice_ID = "C_UOM_Invoice_ID";
 
 	/**
-	 * Set EanCom_Invoice_UOM.
+	 * Get Created.
+	 * Date this record was created
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	void setEanCom_Invoice_UOM (@Nullable java.lang.String EanCom_Invoice_UOM);
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_Created = new ModelColumn<>(I_EDI_DesadvLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get EanCom_Invoice_UOM.
+	 * Get Created By.
+	 * User who created this records
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	@Nullable java.lang.String getEanCom_Invoice_UOM();
+	int getCreatedBy();
 
-	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EanCom_Invoice_UOM = new ModelColumn<>(I_EDI_DesadvLine.class, "EanCom_Invoice_UOM", null);
-	String COLUMNNAME_EanCom_Invoice_UOM = "EanCom_Invoice_UOM";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set CU-EAN.
@@ -152,7 +128,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEAN_CU (@Nullable java.lang.String EAN_CU);
+	void setEAN_CU (@Nullable String EAN_CU);
 
 	/**
 	 * Get CU-EAN.
@@ -161,7 +137,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getEAN_CU();
+	@Nullable String getEAN_CU();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EAN_CU = new ModelColumn<>(I_EDI_DesadvLine.class, "EAN_CU", null);
 	String COLUMNNAME_EAN_CU = "EAN_CU";
@@ -173,7 +149,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEAN_TU (@Nullable java.lang.String EAN_TU);
+	void setEAN_TU (@Nullable String EAN_TU);
 
 	/**
 	 * Get TU-EAN.
@@ -182,10 +158,35 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getEAN_TU();
+	@Nullable String getEAN_TU();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EAN_TU = new ModelColumn<>(I_EDI_DesadvLine.class, "EAN_TU", null);
 	String COLUMNNAME_EAN_TU = "EAN_TU";
+
+	/**
+	 * Set EanCom_Invoice_UOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setEanCom_Invoice_UOM (@Nullable String EanCom_Invoice_UOM);
+
+	/**
+	 * Get EanCom_Invoice_UOM.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable String getEanCom_Invoice_UOM();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EanCom_Invoice_UOM = new ModelColumn<>(I_EDI_DesadvLine.class, "EanCom_Invoice_UOM", null);
+	String COLUMNNAME_EanCom_Invoice_UOM = "EanCom_Invoice_UOM";
 
 	/**
 	 * Set DESADV.
@@ -205,11 +206,11 @@ public interface I_EDI_DesadvLine
 	 */
 	int getEDI_Desadv_ID();
 
-	de.metas.esb.edi.model.I_EDI_Desadv getEDI_Desadv();
+	I_EDI_Desadv getEDI_Desadv();
 
-	void setEDI_Desadv(de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv);
+	void setEDI_Desadv(I_EDI_Desadv EDI_Desadv);
 
-	ModelColumn<I_EDI_DesadvLine, de.metas.esb.edi.model.I_EDI_Desadv> COLUMN_EDI_Desadv_ID = new ModelColumn<>(I_EDI_DesadvLine.class, "EDI_Desadv_ID", de.metas.esb.edi.model.I_EDI_Desadv.class);
+	ModelColumn<I_EDI_DesadvLine, I_EDI_Desadv> COLUMN_EDI_Desadv_ID = new ModelColumn<>(I_EDI_DesadvLine.class, "EDI_Desadv_ID", I_EDI_Desadv.class);
 	String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
@@ -240,7 +241,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGTIN (@Nullable java.lang.String GTIN);
+	void setGTIN (@Nullable String GTIN);
 
 	/**
 	 * Get GTIN.
@@ -249,7 +250,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getGTIN();
+	@Nullable String getGTIN();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_GTIN = new ModelColumn<>(I_EDI_DesadvLine.class, "GTIN", null);
 	String COLUMNNAME_GTIN = "GTIN";
@@ -261,7 +262,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn);
+	void setInvoicableQtyBasedOn (String InvoicableQtyBasedOn);
 
 	/**
 	 * Get Invoicable Quantity per.
@@ -270,7 +271,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getInvoicableQtyBasedOn();
+	String getInvoicableQtyBasedOn();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_InvoicableQtyBasedOn = new ModelColumn<>(I_EDI_DesadvLine.class, "InvoicableQtyBasedOn", null);
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
@@ -392,7 +393,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOrderPOReference (@Nullable java.lang.String OrderPOReference);
+	void setOrderPOReference (@Nullable String OrderPOReference);
 
 	/**
 	 * Get Auftragsreferenz.
@@ -401,7 +402,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getOrderPOReference();
+	@Nullable String getOrderPOReference();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_OrderPOReference = new ModelColumn<>(I_EDI_DesadvLine.class, "OrderPOReference", null);
 	String COLUMNNAME_OrderPOReference = "OrderPOReference";
@@ -435,7 +436,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductDescription (@Nullable java.lang.String ProductDescription);
+	void setProductDescription (@Nullable String ProductDescription);
 
 	/**
 	 * Get Produktbeschreibung.
@@ -445,7 +446,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getProductDescription();
+	@Nullable String getProductDescription();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_ProductDescription = new ModelColumn<>(I_EDI_DesadvLine.class, "ProductDescription", null);
 	String COLUMNNAME_ProductDescription = "ProductDescription";
@@ -457,7 +458,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductNo (@Nullable java.lang.String ProductNo);
+	void setProductNo (@Nullable String ProductNo);
 
 	/**
 	 * Get Product No.
@@ -466,7 +467,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getProductNo();
+	@Nullable String getProductNo();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_ProductNo = new ModelColumn<>(I_EDI_DesadvLine.class, "ProductNo", null);
 	String COLUMNNAME_ProductNo = "ProductNo";
@@ -608,7 +609,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUPC_CU (@Nullable java.lang.String UPC_CU);
+	void setUPC_CU (@Nullable String UPC_CU);
 
 	/**
 	 * Get CU-UPC.
@@ -617,7 +618,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUPC_CU();
+	@Nullable String getUPC_CU();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_UPC_CU = new ModelColumn<>(I_EDI_DesadvLine.class, "UPC_CU", null);
 	String COLUMNNAME_UPC_CU = "UPC_CU";
@@ -629,7 +630,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUPC_TU (@Nullable java.lang.String UPC_TU);
+	void setUPC_TU (@Nullable String UPC_TU);
 
 	/**
 	 * Get TU-UPC.
@@ -638,7 +639,7 @@ public interface I_EDI_DesadvLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUPC_TU();
+	@Nullable String getUPC_TU();
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_UPC_TU = new ModelColumn<>(I_EDI_DesadvLine.class, "UPC_TU", null);
 	String COLUMNNAME_UPC_TU = "UPC_TU";

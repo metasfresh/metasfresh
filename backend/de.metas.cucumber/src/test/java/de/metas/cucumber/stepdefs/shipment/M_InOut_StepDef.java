@@ -22,47 +22,71 @@
 
 package de.metas.cucumber.stepdefs.shipment;
 
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
 public class M_InOut_StepDef
 {
 	private final M_InOut_StepDefData shipmentTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final C_Order_StepDefData orderTable;
+	private final M_InOutLine_StepDefData shipmentLineTable;
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
 
 	public M_InOut_StepDef(
 			@NonNull final M_InOut_StepDefData shipmentTable,
-			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final M_InOutLine_StepDefData shipmentLineTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
+		this.orderLineTable = orderLineTable;
+		this.orderTable = orderTable;
+		this.shipmentLineTable = shipmentLineTable;
 	}
 
 	@And("validate the created shipments")
@@ -90,7 +114,7 @@ public class M_InOut_StepDef
 		}
 	}
 
-	@And("generate shipments process is invoked")
+	@And("'generate shipments' process is invoked")
 	public void invokeGenerateShipmentsProcess(@NonNull final DataTable table)
 	{
 		final Map<String, String> tableRow = table.asMaps().get(0);
@@ -180,5 +204,72 @@ public class M_InOut_StepDef
 		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
+	}
+
+	@And("^the (shipment|material receipt) identified by (.*) is (completed|reactivated|reversed)$")
+	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case completed:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case reactivated:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				break;
+			case reversed:
+				shipment.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MInOut.completeIt() won't complete it
+				documentBL.processEx(shipment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_InOut action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
+	@And("load M_InOut:")
+	public void loadM_InOut(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_M_InOutLine.COLUMNNAME_QtyEntered);
+
+			final IQueryBuilder<I_M_InOutLine> shipmentLineBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
+					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_QtyEntered, qtyEntered);
+
+			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderLineIdentifier))
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				shipmentLineBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+			}
+
+			final I_M_InOutLine shipmentLine = shipmentLineBuilder.create()
+					.firstOnlyNotNull(I_M_InOutLine.class);
+
+			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			shipmentLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
+
+			final I_M_InOut shipment = InterfaceWrapperHelper.load(shipmentLine.getM_InOut_ID(), I_M_InOut.class);
+			assertThat(shipment).isNotNull();
+
+			final String docStatus = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DocStatus);
+			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
+
+			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderIdentifier))
+			{
+				final I_C_Order order = orderTable.get(orderIdentifier);
+				assertThat(shipment.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+			}
+
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			shipmentTable.putOrReplace(shipmentIdentifier, shipment);
+		}
 	}
 }

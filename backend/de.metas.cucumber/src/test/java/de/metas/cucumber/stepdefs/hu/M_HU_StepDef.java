@@ -36,12 +36,14 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -60,6 +62,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -93,6 +96,8 @@ public class M_HU_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_HU_PI_Item_StepDefData huPiItemTable;
@@ -120,6 +125,20 @@ public class M_HU_StepDef
 		this.locatorTable = locatorTable;
 		this.warehouseTable = warehouseTable;
 		this.testContext = testContext;
+	}
+
+	@And("destroy existing M_HUs")
+	public void destroy_existing_hus()
+	{
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newOutOfTrx());
+
+		final List<I_M_HU> availableHUs = queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_M_HU.class);
+
+		handlingUnitsBL.markDestroyed(huContext, availableHUs);
 	}
 
 	@And("validate M_HUs:")
