@@ -40,6 +40,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.ColumnSql;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -105,7 +106,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 
-	private final ImmutableMap<Integer, String> _adFieldId2columnName;
+	private final ImmutableMap<AdFieldId, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
 	private final SpecialDocumentFieldsCollector _specialFieldsCollector;
 
@@ -128,7 +129,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		_adFieldId2columnName = gridTabVO.getFields()
 				.stream()
-				.filter(gridFieldVO -> gridFieldVO.getAD_Field_ID() > 0)
+				.filter(gridFieldVO -> gridFieldVO.getAD_Field_ID() != null)
 				.filter(gridFieldVO -> gridFieldVO.getDisplayType() != DocumentFieldWidgetType.BinaryData.getDisplayType()) // exclude BinaryData columns
 				.collect(ImmutableMap.toImmutableMap(GridFieldVO::getAD_Field_ID, GridFieldVO::getColumnName));
 
@@ -200,7 +201,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		//
 		// Entity Data binding
-		if (!Check.isEmpty(gridTabVO.getOrderByClause(), true))
+		if (!Check.isBlank(gridTabVO.getOrderByClause()))
 		{
 			logger.warn("Ignoring SQL order by for {}. See https://github.com/metasfresh/metasfresh/issues/412.", gridTabVO);
 		}
@@ -285,7 +286,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		}
 	}
 
-	public DocumentFieldDescriptor.Builder documentFieldByAD_Field_ID(final int adFieldId)
+	public DocumentFieldDescriptor.Builder documentFieldByAD_Field_ID(final AdFieldId adFieldId)
 	{
 		final String fieldName = _adFieldId2columnName.get(adFieldId);
 		return documentField(fieldName);
@@ -293,7 +294,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 	public DocumentFieldDescriptor.Builder documentFieldByAD_UI_ElementField(@NonNull final I_AD_UI_ElementField elementFieldRecord)
 	{
-		final Builder builder = documentFieldByAD_Field_ID(elementFieldRecord.getAD_Field_ID());
+		final Builder builder = documentFieldByAD_Field_ID(AdFieldId.ofRepoId(elementFieldRecord.getAD_Field_ID()));
 		if (X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
 		{
 			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
@@ -474,7 +475,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setMandatoryLogic(extractMandatoryLogic(gridFieldVO))
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
-				.setDefaultFilterInfo(createDefaultFilterDescriptor(gridFieldVO.getDefaultFilterDescriptor(), sqlColumnName, widgetType, fieldBinding.getValueClass(), lookupDescriptorProvider))
+				.setDefaultFilterInfo(createDefaultFilterDescriptor(
+						gridFieldVO.getDefaultFilterDescriptor(),
+						sqlColumnName,
+						widgetType,
+						fieldBinding.getValueClass(),
+						lookupDescriptorProvider.provideForFilter().orElse(null)))
 				//
 				.setDataBinding(fieldBinding);
 
@@ -610,17 +616,16 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			@NonNull final Class<?> valueClass,
-			@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
+			@Nullable final LookupDescriptor lookupDescriptor)
 	{
 		if (gridFieldDefaultFilterInfo == null)
 		{
 			return null;
 		}
 
-		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType, valueClass, lookupDescriptorProvider);
+		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType, valueClass, lookupDescriptor);
 
 		return DocumentFieldDefaultFilterDescriptor.builder()
-				//
 				.defaultFilter(gridFieldDefaultFilterInfo.isDefaultFilter())
 				.defaultFilterSeqNo(gridFieldDefaultFilterInfo.getDefaultFilterSeqNo())
 				.operator(DocumentFieldDefaultFilterDescriptor.FilterOperator.ofNullableStringOrEquals(gridFieldDefaultFilterInfo.getOperator()))
@@ -637,12 +642,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Nullable
-	private Object extractAutoFilterInitialValue(
+	private static Object extractAutoFilterInitialValue(
 			@NonNull final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo,
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			@NonNull final Class<?> valueClass,
-			@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
+			@Nullable final LookupDescriptor lookupDescriptor)
 	{
 		final String autoFilterInitialValueStr = gridFieldDefaultFilterInfo.getDefaultValue();
 
@@ -662,28 +667,11 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		}
 		else
 		{
-			final LookupDataSource lookupDataSource = widgetType.isLookup()
-					? createFilterLookupDataSourceOrNull(lookupDescriptorProvider)
+			final LookupDataSource lookupDataSource = widgetType.isLookup() && lookupDescriptor != null
+					? LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor)
 					: null;
 			return DataTypes.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
 		}
-	}
-
-	@Nullable
-	private LookupDataSource createFilterLookupDataSourceOrNull(@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
-	{
-		if (lookupDescriptorProvider == null)
-		{
-			return null;
-		}
-
-		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForFilter().orElse(null);
-		if (lookupDescriptor == null)
-		{
-			return null;
-		}
-
-		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 	}
 
 	@Nullable
@@ -771,7 +759,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Nullable
-	private ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
+	private static ITranslatableString getLabelFieldCaptionByName(final I_AD_UI_Element labelsUIElement)
 	{
 		if (labelsUIElement.getAD_Name_ID() <= 0)
 		{

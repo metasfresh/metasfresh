@@ -35,6 +35,7 @@ import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -96,7 +97,7 @@ public class LayoutFactory
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
+	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
 	@Autowired
 	private QuickInputDescriptorFactoryService quickInputDescriptors;
 
@@ -522,13 +523,13 @@ public class LayoutFactory
 	}
 
 	/**
-	 * Task https://github.com/metasfresh/metasfresh-webui-api/issues/778
+	 * @implSpec task <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/778">778</a>
 	 */
 	private ViewEditorRenderMode computeViewEditorRenderMode(
 			@NonNull final I_AD_UI_Element uiElement,
 			final DocumentFieldWidgetType widgetType)
 	{
-		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
 		final boolean readOnly = field != null && field.getReadonlyLogicEffective().isConstantTrue();
 		if (readOnly)
 		{
@@ -563,7 +564,7 @@ public class LayoutFactory
 		{
 			// add the "primary" field
 			{
-				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
+				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
 				if (field != null)
 				{
 					fields.add(field);

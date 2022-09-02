@@ -30,6 +30,7 @@ import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.column.ColumnSql;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -182,11 +183,7 @@ public class GridFieldVO implements Serializable
 				}
 				else if (columnName.equalsIgnoreCase("AD_Field_ID"))
 				{
-					vo.AD_Field_ID = rs.getInt(i);
-					if (rs.wasNull())
-					{
-						vo.AD_Field_ID = -1;
-					}
+					vo.AD_Field_ID = AdFieldId.ofRepoIdOrNull(rs.getInt(i));
 				}
 				//
 				// Layout constraints
@@ -470,7 +467,7 @@ public class GridFieldVO implements Serializable
 		try
 		{
 			vo.AD_Table_ID = 0;
-			vo.AD_Field_ID = 0; // metas
+			vo.AD_Field_ID = null; // metas
 			vo.AD_Column_ID = 0; // metas-tsa: we cannot use the AD_Column_ID to store the AD_Process_Para_ID because we get inconsistencies elsewhere // rs.getInt("AD_Process_Para_ID");
 			vo.ColumnName = rs.getString("ColumnName");
 			vo.header = rs.getString("Name");
@@ -688,7 +685,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Field ID
 	 */
-	public int AD_Field_ID = 0; // metas
+	private AdFieldId AD_Field_ID = null; // metas
 	private GridFieldLayoutConstraints layoutConstraints = GridFieldLayoutConstraints.builder().build();
 	private int seqNo = 0;
 	private int seqNoGrid = 0;
@@ -1284,7 +1281,7 @@ public class GridFieldVO implements Serializable
 		return layoutConstraints;
 	}
 
-	public int getAD_Field_ID()
+	public AdFieldId getAD_Field_ID()
 	{
 		return AD_Field_ID;
 	}
