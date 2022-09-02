@@ -399,7 +399,7 @@ export const getViewFilterParameterTypeahead = ({
   return axios.post(
     `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/typeahead`,
     {
-      query: encodeURIComponent(query),
+      query: query,
       context,
     }
   );
