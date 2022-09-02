@@ -428,6 +428,7 @@ public class GridFieldVO implements Serializable
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
 				.showFilterInline(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterInline)))
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
+				.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_Filter_Val_Rule_ID)))
 				//
 				.facetFilter(facetFilter)
 				.facetFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_FacetFilterSeqNo))
@@ -825,14 +826,8 @@ public class GridFieldVO implements Serializable
 	 */
 	public int IncludedTabHeight = 0; // metas
 
-	/**
-	 * Validation rule
-	 */
-	private AdValRuleId AD_Val_Rule_ID = null; // metas: 03271
-	/**
-	 * Reference Value
-	 */
 	private ReferenceId AD_Reference_Value_ID = null;
+	private AdValRuleId AD_Val_Rule_ID = null;
 
 	/**
 	 * Process Parameter Range
@@ -983,7 +978,6 @@ public class GridFieldVO implements Serializable
 	 * Please note that following fields are not copied:
 	 * <ul>
 	 * <li>{@link #isProcess} is set to false</li>
-	 * <li>{@link #isProcessParameterTo} is set to false</li>
 	 * </ul>
 	 *
 	 * @param Ctx          context

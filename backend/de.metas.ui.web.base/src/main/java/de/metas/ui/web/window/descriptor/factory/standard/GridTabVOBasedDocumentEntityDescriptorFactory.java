@@ -27,7 +27,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
@@ -365,15 +365,18 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				final ReferenceId displayType = ReferenceId.ofRepoId(gridFieldVO.getDisplayType());
 				widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
 				final String ctxTableName = tableDAO.retrieveTableName(gridFieldVO.getAD_Table_ID());
+				final GridFieldDefaultFilterDescriptor defaultFilterDescriptor = gridFieldVO.getDefaultFilterDescriptor();
+				final AdValRuleId filterValRuleId = defaultFilterDescriptor != null ? defaultFilterDescriptor.getAdValRuleId() : null;
 				lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
-						SqlLookupDescriptor.builder()
+						LookupDescriptorProviders.sql()
 								.setCtxTableName(ctxTableName)
 								.setCtxColumnName(sqlColumnName)
 								.setWidgetType(widgetType)
 								.setDisplayType(displayType)
 								.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
-								.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
-								.buildProvider());
+								.setAD_Val_Rule_ID(LookupDescriptorProvider.LookupScope.DocumentField, gridFieldVO.getAD_Val_Rule_ID())
+								.setAD_Val_Rule_ID(LookupDescriptorProvider.LookupScope.DocumentFilter, filterValRuleId)
+								.build());
 			}
 
 			lookupDescriptor = lookupDescriptorProvider.provide();
@@ -843,7 +846,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 						: labelsValueColumn.getAD_Val_Rule_ID()
 		);
 
-		final SqlLookupDescriptor.Builder labelsValuesLookupDescriptorBuilder = SqlLookupDescriptor.builder()
+		final SqlLookupDescriptorProviderBuilder labelsValuesLookupDescriptorBuilder = LookupDescriptorProviders.sql()
 				.setCtxTableName(labelsTableName)
 				.setCtxColumnName(labelsValueColumnName)
 				.setDisplayType(referenceIDToUse)

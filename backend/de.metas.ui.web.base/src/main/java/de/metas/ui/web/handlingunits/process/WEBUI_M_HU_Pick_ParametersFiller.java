@@ -23,7 +23,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -99,7 +99,7 @@ public final class WEBUI_M_HU_Pick_ParametersFiller
 
 	private static LookupDataSource createShipmentScheduleDataSource(final HuId huId)
 	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
+		final LookupDescriptor lookupDescriptor = LookupDescriptorProviders.sql()
 				.setCtxTableName(null)
 				.setCtxColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 				.setDisplayType(DisplayType.Search)

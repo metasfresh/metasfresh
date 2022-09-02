@@ -1,19 +1,6 @@
 package de.metas.ui.web.material.cockpit.filters;
 
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.StringLikeFilter;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-
 import com.google.common.base.Predicates;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
@@ -23,11 +10,21 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.StringLikeFilter;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+
+import javax.annotation.Nullable;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -74,7 +71,7 @@ public class ProductFilterUtil
 				.setFieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
+				.setLookupDescriptor(LookupDescriptorProviders.searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
 				.setOperator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isPurchasedParameter = DocumentFilterParamDescriptor.builder()
@@ -104,7 +101,7 @@ public class ProductFilterUtil
 	public static ProductFilterVO extractProductFilterVO(@NonNull final DocumentFilterList filters)
 	{
 		return filters.getFilterById(ProductFilterVO.FILTER_ID)
-				.map(filter -> extractProductFilterVO(filter))
+				.map(ProductFilterUtil::extractProductFilterVO)
 				.orElse(ProductFilterVO.EMPTY);
 	}
 
@@ -145,7 +142,7 @@ public class ProductFilterUtil
 
 	public static IQueryFilter<I_M_Product> createProductQueryFilterOrNull(
 			@Nullable final ProductFilterVO productFilterVO,
-			@Nullable final boolean nullForEmptyFilterVO)
+			final boolean nullForEmptyFilterVO)
 	{
 		if (productFilterVO == null)
 		{

@@ -37,7 +37,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -102,12 +102,12 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.builder(IDDOrderLineQuickInput.COLUMNNAME_M_Product_ID)
 				.setCaption(msgBL.translatable(IDDOrderLineQuickInput.COLUMNNAME_M_Product_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
 						.setCtxTableName(null)
 						.setCtxColumnName(IDDOrderLineQuickInput.COLUMNNAME_M_Product_ID)
 						.setDisplayType(DisplayType.Search)
 						.setAD_Reference_Value_ID(M_PRODUCT_STOCKED_AD_REFERENCE_ID)
-						.buildProvider())
+						.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCallout(ddOrderLineQuickInputCallout::onProductChange)
@@ -120,12 +120,12 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setCaption(msgBL.translatable(IDDOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(
-						SqlLookupDescriptor.builder()
+						LookupDescriptorProviders.sql()
 						.setCtxTableName(null)
 						.setCtxColumnName(IDDOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
 						.setAD_Val_Rule_ID(DD_ORDERLINE_M_HU_PI_ITEM_PRODUCT_AD_VAL_RULE_ID)
-						.buildProvider())
+						.build())
 				.setValueClass(LookupValue.IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)

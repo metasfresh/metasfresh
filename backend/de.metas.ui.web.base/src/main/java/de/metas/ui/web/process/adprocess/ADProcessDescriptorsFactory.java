@@ -33,9 +33,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpressionsFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -285,14 +285,14 @@ import java.util.stream.Stream;
 		// Fallback: create an SQL lookup descriptor based on adProcessParam
 		if (lookupDescriptorProvider == null)
 		{
-			lookupDescriptorProvider = SqlLookupDescriptor.builder()
+			lookupDescriptorProvider = LookupDescriptorProviders.sql()
 					.setCtxTableName(null)
 					.setCtxColumnName(parameterName)
 					.setDisplayType(ReferenceId.ofRepoId(adProcessParam.getAD_Reference_ID()))
 					.setAD_Reference_Value_ID(ReferenceId.ofRepoIdOrNull(adProcessParam.getAD_Reference_Value_ID()))
 					.setAD_Val_Rule_ID(AdValRuleId.ofRepoIdOrNull(adProcessParam.getAD_Val_Rule_ID()))
 					.setReadOnlyAccess()
-					.buildProvider();
+					.build();
 		}
 		//
 		final Optional<LookupDescriptor> lookupDescriptor = lookupDescriptorProvider.provide();

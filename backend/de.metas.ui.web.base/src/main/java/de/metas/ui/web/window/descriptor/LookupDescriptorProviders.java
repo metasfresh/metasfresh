@@ -5,12 +5,17 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.DisplayType;
 
 /*
  * #%L
@@ -40,6 +45,43 @@ public class LookupDescriptorProviders
 	/** Provider which returns <code>Optional.empty()</code> for any scope) */
 	public static LookupDescriptorProvider NULL = new NullLookupDescriptorProvider();
 
+	public static SqlLookupDescriptorProviderBuilder sql() { return new SqlLookupDescriptorProviderBuilder(); }
+
+	public static LookupDescriptorProvider searchByAD_Val_Rule_ID(
+			@NonNull final ReferenceId AD_Reference_Value_ID,
+			@Nullable final AdValRuleId AD_Val_Rule_ID)
+	{
+		return sql()
+				.setCtxTableName(null) // tableName
+				.setCtxColumnName(null)
+				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
+				.setAD_Val_Rule_ID(AD_Val_Rule_ID)
+				.setDisplayType(DisplayType.Search)
+				.setReadOnlyAccess()
+				.build();
+	}
+
+	public static LookupDescriptorProvider searchInTable(final String lookupTableName)
+	{
+		return sql()
+				.setCtxTableName(null) // tableName
+				.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(lookupTableName))
+				.setDisplayType(DisplayType.Search)
+				.setReadOnlyAccess()
+				.build();
+	}
+
+	public static LookupDescriptorProvider listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)
+	{
+		return sql()
+				.setCtxTableName(null) // tableName
+				.setCtxColumnName(null)
+				.setDisplayType(DisplayType.List)
+				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
+				.setReadOnlyAccess()
+				.build();
+	}
+
 	/** @return provider which returns given {@link LookupDescriptor} for any scope */
 	public static LookupDescriptorProvider singleton(@NonNull final LookupDescriptor lookupDescriptor)
 	{
@@ -66,6 +108,7 @@ public class LookupDescriptorProviders
 		}
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	@ToString
 	private static class SingletonLookupDescriptorProvider implements LookupDescriptorProvider
 	{

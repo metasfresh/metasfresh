@@ -5,6 +5,7 @@ import de.metas.cache.CCache.CCacheStats;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -69,7 +70,7 @@ public final class LookupDataSourceFactory
 		}
 		else
 		{
-			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.searchInTable(tableName)
+			final LookupDescriptor lookupDescriptor = LookupDescriptorProviders.searchInTable(tableName)
 					.provide()
 					.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + tableName));
 			return getLookupDataSource(lookupDescriptor);
@@ -78,15 +79,12 @@ public final class LookupDataSourceFactory
 
 	public LookupDataSource productAttributes()
 	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.productAttributes()
-				.provide()
-				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for Product Attributes"));
-		return getLookupDataSource(lookupDescriptor);
+		return getLookupDataSource(SqlLookupDescriptor.productAttributes());
 	}
 
 	public LookupDataSource listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)
 	{
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor
+		final LookupDescriptor lookupDescriptor = LookupDescriptorProviders
 				.listByAD_Reference_Value_ID(AD_Reference_Value_ID)
 				.provide()
 				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + AD_Reference_Value_ID));
@@ -100,7 +98,7 @@ public final class LookupDataSourceFactory
 		final ReferenceId adReferenceValueId = ReferenceId.ofRepoId(column.getAD_Reference_Value_ID());
 		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID());
 
-		final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.searchByAD_Val_Rule_ID(adReferenceValueId, adValRuleId)
+		final LookupDescriptor lookupDescriptor = LookupDescriptorProviders.searchByAD_Val_Rule_ID(adReferenceValueId, adValRuleId)
 				.provide()
 				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for " + tableName + "." + columnname)
 						.appendParametersToMessage()

@@ -19,10 +19,9 @@ import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Location;
@@ -176,7 +175,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_CountryId))
 						.setMandatory(true)
 						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Country.Table_Name).provideForFilter()))
+						.setLookupDescriptor(LookupDescriptorProviders.searchInTable(I_C_Country.Table_Name).provideForFilter()))
 				.addParameter(DocumentFilterParamDescriptor.builder()
 						.setFieldName(GeoLocationFilterConverter.PARAM_Distance)
 						.setDisplayName(msgBL.translatable(GeoLocationFilterConverter.PARAM_Distance))

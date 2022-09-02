@@ -9,7 +9,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.user.UserId;
@@ -69,7 +69,7 @@ public class WebuiMailRepository
 
 	public WebuiMailRepository()
 	{
-		final LookupDescriptor emailToLookupDescriptor = SqlLookupDescriptor.builder()
+		final LookupDescriptor emailToLookupDescriptor = LookupDescriptorProviders.sql()
 				.setCtxTableName(null)
 				.setCtxColumnName(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
 				.setDisplayType(DisplayType.Search)
@@ -134,7 +134,7 @@ public class WebuiMailRepository
 		eventPublisher.publishEvent(new WebuiEmailRemovedEvent(email));
 	}
 
-	public LookupValuesPage getToTypeahead(final String emailId_NOTUSED, final String query)
+	public LookupValuesPage getToTypeahead(final String ignoredEmailId, final String query)
 	{
 		final Evaluatee ctx = Evaluatees.empty(); // TODO
 

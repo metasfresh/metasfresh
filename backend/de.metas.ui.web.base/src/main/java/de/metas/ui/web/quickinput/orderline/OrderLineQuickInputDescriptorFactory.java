@@ -25,8 +25,8 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -193,12 +193,12 @@ import java.util.Set;
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
 						.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540365))// FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
-						.buildProvider())
+						.build())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
@@ -225,7 +225,7 @@ import java.util.Set;
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy))
 				//
 				.setWidgetType(DocumentFieldWidgetType.List)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.listByAD_Reference_Value_ID(ShipmentAllocationBestBeforePolicy.AD_REFERENCE_ID))
+				.setLookupDescriptorProvider(LookupDescriptorProviders.listByAD_Reference_Value_ID(ShipmentAllocationBestBeforePolicy.AD_REFERENCE_ID))
 				.setValueClass(StringLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
@@ -252,7 +252,7 @@ import java.util.Set;
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.searchInTable(I_C_Flatrate_Conditions.Table_Name))
+				.setLookupDescriptorProvider(LookupDescriptorProviders.searchInTable(I_C_Flatrate_Conditions.Table_Name))
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)

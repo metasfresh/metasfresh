@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -347,7 +348,7 @@ public class WebuiHUTransformParametersFiller
 			// TODO: cache the descriptor
 			// TODO: filter by TUs
 			// TODO: search by barcode too
-			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
+			final LookupDescriptor lookupDescriptor = LookupDescriptorProviders.sql()
 					.setCtxTableName(null) // ctxTableName
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
@@ -404,7 +405,7 @@ public class WebuiHUTransformParametersFiller
 			// TODO: cache the descriptor
 			// TODO: filter by LUs
 			// TODO: search by barcode too
-			final LookupDescriptor lookupDescriptor = SqlLookupDescriptor.builder()
+			final LookupDescriptor lookupDescriptor = LookupDescriptorProviders.sql()
 					.setCtxTableName(null) // ctxTableName
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)

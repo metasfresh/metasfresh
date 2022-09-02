@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 437427151L;
+	private static final long serialVersionUID = 1481255383L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -302,6 +302,33 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
+	public org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule()
+	{
+		return get_ValueAsPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
+	}
+
+	@Override
+	public void setFilter_Val_Rule(final org.compiere.model.I_AD_Val_Rule Filter_Val_Rule)
+	{
+		set_ValueFromPO(COLUMNNAME_Filter_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, Filter_Val_Rule);
+	}
+
+	@Override
+	public void setFilter_Val_Rule_ID (final int Filter_Val_Rule_ID)
+	{
+		if (Filter_Val_Rule_ID < 1) 
+			set_Value (COLUMNNAME_Filter_Val_Rule_ID, null);
+		else 
+			set_Value (COLUMNNAME_Filter_Val_Rule_ID, Filter_Val_Rule_ID);
+	}
+
+	@Override
+	public int getFilter_Val_Rule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Filter_Val_Rule_ID);
+	}
+
+	@Override
 	public void setFilterDefaultValue (final @Nullable java.lang.String FilterDefaultValue)
 	{
 		set_Value (COLUMNNAME_FilterDefaultValue, FilterDefaultValue);
@@ -559,6 +586,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isParent() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsParent);
+	}
+
+	@Override
+	public void setIsRestAPICustomColumn (final boolean IsRestAPICustomColumn)
+	{
+		set_Value (COLUMNNAME_IsRestAPICustomColumn, IsRestAPICustomColumn);
+	}
+
+	@Override
+	public boolean isRestAPICustomColumn() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRestAPICustomColumn);
 	}
 
 	@Override

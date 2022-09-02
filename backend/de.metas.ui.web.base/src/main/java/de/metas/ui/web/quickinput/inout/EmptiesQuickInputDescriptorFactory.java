@@ -1,15 +1,6 @@
 package de.metas.ui.web.quickinput.inout;
 
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.DisplayType;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -24,9 +15,16 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -97,11 +95,11 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 				.setCaption(msgBL.translatable(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID)
 						.setDisplayType(DisplayType.Search)
-						.buildProvider())
+						.build())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)

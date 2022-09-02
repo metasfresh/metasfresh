@@ -1,35 +1,33 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
-import java.util.Optional;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
+import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputConstants;
+import de.metas.ui.web.quickinput.QuickInputDescriptor;
+import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.i18n.IMsgBL;
-import de.metas.lang.SOTrx;
-import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
-import de.metas.ui.web.quickinput.QuickInputDescriptor;
-import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentType;
-import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -133,12 +131,12 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 		return DocumentFieldDescriptor.builder(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.setCaption(msgBL.translatable(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
 						.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540480)) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_Product_And_DateInvoiced"
-						.buildProvider())
+						.build())
 				.setValueClass(LookupValue.IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)

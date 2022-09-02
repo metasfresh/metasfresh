@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -118,7 +119,7 @@ import lombok.ToString;
 @Repository
 public class BoardDescriptorRepository
 {
-	private static final transient Logger logger = LogManager.getLogger(BoardDescriptorRepository.class);
+	private static final Logger logger = LogManager.getLogger(BoardDescriptorRepository.class);
 
 	private final DocumentDescriptorFactory documentDescriptors;
 	private final WebsocketSender websocketSender;
@@ -196,13 +197,13 @@ public class BoardDescriptorRepository
 		//
 		// Board document lookup provider
 		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(boardPO.getAD_Val_Rule_ID());
-		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
+		final LookupDescriptorProvider documentLookupDescriptorProvider = LookupDescriptorProviders.sql()
 				.setCtxTableName(null)
 				.setCtxColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setAD_Val_Rule_ID(adValRuleId)
-				.buildProvider();
+				.build();
 
 		//
 		// Board descriptor

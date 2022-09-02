@@ -18,7 +18,7 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
@@ -89,7 +89,7 @@ public class PickingSlotViewRepository
 	private static Supplier<LookupDataSource> createWarehouseLookup()
 	{
 		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
+				.getLookupDataSource(LookupDescriptorProviders.sql()
 											 .setCtxTableName(null)
 											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
 											 .setDisplayType(DisplayType.Search)
@@ -100,7 +100,7 @@ public class PickingSlotViewRepository
 	private static Supplier<LookupDataSource> createBPartnerLookup()
 	{
 		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
+				.getLookupDataSource(LookupDescriptorProviders.sql()
 											 .setCtxTableName(null)
 											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
 											 .setDisplayType(DisplayType.Search)
@@ -111,7 +111,7 @@ public class PickingSlotViewRepository
 	private static Supplier<LookupDataSource> createBPartnerLocationLookup()
 	{
 		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
+				.getLookupDataSource(LookupDescriptorProviders.sql()
 											 .setCtxTableName(null)
 											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
 											 .setDisplayType(DisplayType.Search)
