@@ -24,12 +24,13 @@
             <QtyCU>1</QtyCU>
             <QtyCUsPerLU>1</QtyCUsPerLU>
             <QtyTU>1</QtyTU>
-            <EDI_Exp_DesadvLine>
+            <EDI_DesadvLine_ID>
                 <C_UOM_ID>
                     <Name>Kollo</Name>
                     <UOMSymbol>Kollo</UOMSymbol>
                     <X12DE355>COLI</X12DE355>
                 </C_UOM_ID>
+                <EDI_DesadvLine_ID>1000000</EDI_DesadvLine_ID>
                 <Line>100</Line>
                 <M_Product_ID>
                     <Name>ProductName</Name>
@@ -49,7 +50,7 @@
                 <QtyDeliveredInInvoiceUOM>5.16</QtyDeliveredInInvoiceUOM>
                 <QtyDeliveredInUOM>1</QtyDeliveredInUOM>
                 <OrderLine>100</OrderLine>
-            </EDI_Exp_DesadvLine>
+            </EDI_DesadvLine_ID>
             <M_HU_PackagingCode_TU_Text>COLI</M_HU_PackagingCode_TU_Text>
         </EDI_Exp_Desadv_Pack_Item>
     </EDI_Exp_Desadv_Pack>

@@ -47,7 +47,8 @@
             <LotNumber>19</LotNumber>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>
             <M_HU_PackagingCode_TU_Text>COLI</M_HU_PackagingCode_TU_Text>
-            <EDI_Exp_DesadvLine>
+            <EDI_DesadvLine_ID>
+                <EDI_DesadvLine_ID>1000000</EDI_DesadvLine_ID>
                 <C_UOM_ID>
                     <!--Maßeinheit-->
                     <Name>Kollo</Name>
@@ -74,7 +75,7 @@
                 <QtyDeliveredInInvoiceUOM>5.16</QtyDeliveredInInvoiceUOM>
                 <QtyDeliveredInUOM>1</QtyDeliveredInUOM>
                 <OrderLine>100</OrderLine>
-            </EDI_Exp_DesadvLine>
+            </EDI_DesadvLine_ID>
         </EDI_Exp_Desadv_Pack_Item>
     </EDI_Exp_Desadv_Pack>
     <Bill_Location_ID>
