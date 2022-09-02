@@ -18,7 +18,7 @@ DECLARE
     v_columnname          varchar;
     v_count               integer;
     insert_query_template varchar := 'INSERT INTO base_table_trl (base_table_id, ad_client_ID, ad_org_id, created, createdBy, updated, updatedBy, isTranslated, isActive, %s) '
-                                         || 'SELECT base_table_id, bt.ad_client_ID, bt.ad_org_id, now(), 100, now(), 100, ''Y'', bt.IsActive, %s '
+                                         || 'SELECT base_table_id, bt.ad_client_ID, bt.ad_org_id, now(), 0, now(), 0, ''Y'', bt.IsActive, %s '
                                          || 'FROM base_table bt '
                                          || 'WHERE bt.base_table_id= %s '
         || 'AND NOT EXISTS (SELECT 1 FROM base_table_trl btt WHERE btt.base_table_id = %s AND btt.ad_language = ''%s'')';
@@ -95,9 +95,9 @@ BEGIN
                                    bt.ad_client_ID,
                                    bt.ad_org_id,
                                    NOW(),
-                                   100,
+                                   0,
                                    NOW(),
-                                   100,
+                                   0,
                                    'Y',
                                    bt.isActive,
                                    Name,
