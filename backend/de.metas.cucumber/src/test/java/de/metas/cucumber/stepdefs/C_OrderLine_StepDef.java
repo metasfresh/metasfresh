@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -61,6 +62,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -91,6 +93,7 @@ public class C_OrderLine_StepDef
 	private final C_Flatrate_Term_StepDefData contractTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_Attribute_StepDefData attributeTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 	private final C_Tax_StepDefData taxTable;
 
 	public C_OrderLine_StepDef(
@@ -103,6 +106,7 @@ public class C_OrderLine_StepDef
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final M_Attribute_StepDefData attributeTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,			
 			@NonNull final C_Tax_StepDefData taxTable)
 	{
 		this.productTable = productTable;
@@ -114,6 +118,7 @@ public class C_OrderLine_StepDef
 		this.contractTable = contractTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.attributeTable = attributeTable;
+		this.warehouseTable = warehouseTable;
 		this.taxTable = taxTable;
 	}
 
@@ -177,6 +182,15 @@ public class C_OrderLine_StepDef
 
 					orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductRecordID);
 				}
+			}
+
+			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(warehouseIdentifier))
+			{
+				final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+				assertThat(warehouse).isNotNull();
+
+				orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 			}
 
 			final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);

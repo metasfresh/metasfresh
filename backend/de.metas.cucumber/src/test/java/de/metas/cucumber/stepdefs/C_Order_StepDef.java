@@ -102,6 +102,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 public class C_Order_StepDef
@@ -148,9 +149,6 @@ public class C_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer bpartnerID = bpartnerTable.getOptional(bpartnerIdentifier)
-					.map(I_C_BPartner::getC_BPartner_ID)
-					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -169,8 +167,7 @@ public class C_Order_StepDef
 					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
 
 			final I_C_Order order = newInstance(I_C_Order.class);
-			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			order.setC_BPartner_ID(bpartnerID);
+			order.setC_BPartner_ID(bPartnerId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 			order.setDropShip_BPartner_ID(dropShipPartnerId);
@@ -246,7 +243,7 @@ public class C_Order_StepDef
 				order.setEMail(email);
 			}
 
-			final ZonedDateTime preparationDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_PreparationDate);
+			final ZonedDateTime preparationDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PreparationDate);
 			final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DatePromised);
 
 			final ZonedDateTime preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
@@ -481,8 +478,10 @@ public class C_Order_StepDef
 	public void validate_created_order(
 			@NonNull final DataTable table)
 	{
-		final Map<String, String> row = table.asMaps().get(0);
-		validateOrder(row);
+		for (final Map<String, String> row : table.asMaps())
+		{
+			validateOrder(row);
+		}
 	}
 
 	@And("update order")
@@ -516,6 +515,12 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(paymentRule))
 			{
 				order.setPaymentRule(paymentRule);
+			}
+
+			final Timestamp preparationDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + COLUMNNAME_PreparationDate);
+			if (preparationDate != null)
+			{
+				order.setPreparationDate(preparationDate);
 			}
 
 			InterfaceWrapperHelper.saveRecord(order);
