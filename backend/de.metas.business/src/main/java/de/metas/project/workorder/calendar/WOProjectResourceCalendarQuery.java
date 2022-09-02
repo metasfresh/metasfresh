@@ -12,7 +12,7 @@ import java.time.Instant;
 
 @Value
 @Builder
-public class WOProjectResourceQuery
+public class WOProjectResourceCalendarQuery
 {
 	@NonNull @Builder.Default InSetPredicate<ResourceId> resourceIds = InSetPredicate.any();
 	@NonNull @Builder.Default InSetPredicate<ProjectId> projectIds = InSetPredicate.any();

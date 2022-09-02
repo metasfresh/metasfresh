@@ -3,16 +3,21 @@ package de.metas.project.workorder.calendar;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectResources;
-import de.metas.project.workorder.WOProjectStep;
-import de.metas.project.workorder.WOProjectStepId;
-import de.metas.project.workorder.WOProjectSteps;
+import de.metas.project.ProjectTypeId;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResources;
+import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.step.WOProjectSteps;
 import de.metas.test.SnapshotFunctionFactory;
+import de.metas.util.time.DurationUtils;
+import de.metas.workflow.WFDurationUnit;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,7 +48,10 @@ class WOProjectSimulationPlanEditorTest
 		validateSnapshots();
 	}
 
-	private static Instant instant(int day) {return refInstant.plus(day - 1, ChronoUnit.DAYS);}
+	private static Instant instant(int day)
+	{
+		return refInstant.plus(day - 1, ChronoUnit.DAYS);
+	}
 
 	private static CalendarDateRange allDay(int startDay, int endDay)
 	{
@@ -59,72 +67,85 @@ class WOProjectSimulationPlanEditorTest
 	{
 		final WOProjectSimulationPlanEditor planEditor = WOProjectSimulationPlanEditor.builder()
 				.project(WOProject.builder()
-						.projectId(ProjectId.ofRepoId(1))
-						.name("work order 1")
-						.build())
+								 .orgId(OrgId.ANY)
+								 .projectId(ProjectId.ofRepoId(1))
+								 .currencyId(CurrencyId.ofRepoId(11))
+								 .name("work order 1")
+								 .value("value")
+								 .projectTypeId(ProjectTypeId.ofRepoId(11))
+								 .isActive(true)
+								 .build())
 				.steps(WOProjectSteps.builder()
-						.projectId(ProjectId.ofRepoId(1))
-						.steps(ImmutableList.of(
-								WOProjectStep.builder()
-										.id(WOProjectStepId.ofRepoId(1,1))
-										.seqNo(10)
-										.name("step 1")
-										.dateRange(allDay(1, 5))
-										.build(),
-								WOProjectStep.builder()
-										.id(WOProjectStepId.ofRepoId(1,2))
-										.seqNo(20)
-										.name("step 2")
-										.dateRange(allDay(6, 9))
-										.build()
-						))
-						.build())
+							   .projectId(ProjectId.ofRepoId(1))
+							   .steps(ImmutableList.of(
+									   WOProjectStep.builder()
+											   .woProjectStepId(WOProjectStepId.ofRepoId(1, 1))
+											   .name("step 1")
+											   .projectId(ProjectId.ofRepoId(1))
+											   .seqNo(10)
+											   .dateRange(allDay(1, 5))
+											   .orgId(OrgId.ANY)
+											   .build(),
+									   WOProjectStep.builder()
+											   .woProjectStepId(WOProjectStepId.ofRepoId(1, 2))
+											   .name("step 2")
+											   .projectId(ProjectId.ofRepoId(1))
+											   .seqNo(20)
+											   .dateRange(allDay(6, 9))
+											   .orgId(OrgId.ANY)
+											   .build()
+							   ))
+							   .build())
 				.projectResources(WOProjectResources.builder()
-						.projectId(ProjectId.ofRepoId(1))
-						.resources(ImmutableList.of(
-								WOProjectResource.builder()
-										.id(WOProjectResourceId.ofRepoId(1,1))
-										.stepId(WOProjectStepId.ofRepoId(1,1))
-										.resourceId(ResourceId.ofRepoId(1))
-										.dateRange(allDay(1, 3))
-										.durationUnit(ChronoUnit.HOURS)
-										.duration(allDay(1, 3).getDuration())
-										.build(),
-								WOProjectResource.builder()
-										.id(WOProjectResourceId.ofRepoId(1,2))
-										.stepId(WOProjectStepId.ofRepoId(1,1))
-										.resourceId(ResourceId.ofRepoId(2))
-										.dateRange(allDay(4, 5))
-										.durationUnit(ChronoUnit.HOURS)
-										.duration(allDay(4, 5).getDuration())
-										.build(),
-								WOProjectResource.builder()
-										.id(WOProjectResourceId.ofRepoId(1,3))
-										.stepId(WOProjectStepId.ofRepoId(1,2))
-										.resourceId(ResourceId.ofRepoId(1))
-										.dateRange(allDay(6, 8))
-										.durationUnit(ChronoUnit.HOURS)
-										.duration(allDay(6, 8).getDuration())
-										.build(),
-								WOProjectResource.builder()
-										.id(WOProjectResourceId.ofRepoId(1,4))
-										.stepId(WOProjectStepId.ofRepoId(1,2))
-										.resourceId(ResourceId.ofRepoId(2))
-										.dateRange(allDay(8, 9))
-										.durationUnit(ChronoUnit.HOURS)
-										.duration(allDay(8, 9).getDuration())
-										.build()
-						))
-						.build())
+										  .projectId(ProjectId.ofRepoId(1))
+										  .resources(ImmutableList.of(
+												  WOProjectResource.builder()
+														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 1))
+														  .woProjectStepId(WOProjectStepId.ofRepoId(1, 1))
+														  .resourceId(ResourceId.ofRepoId(1))
+														  .dateRange(allDay(1, 3))
+														  .orgId(OrgId.ANY)
+														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
+														  .duration(DurationUtils.toBigDecimal(allDay(1, 3).getDuration(), ChronoUnit.HOURS))
+														  .build(),
+												  WOProjectResource.builder()
+														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 2))
+														  .woProjectStepId(WOProjectStepId.ofRepoId(1, 1))
+														  .resourceId(ResourceId.ofRepoId(2))
+														  .dateRange(allDay(4, 5))
+														  .orgId(OrgId.ANY)
+														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
+														  .duration(DurationUtils.toBigDecimal(allDay(4, 5).getDuration(), ChronoUnit.HOURS))
+														  .build(),
+												  WOProjectResource.builder()
+														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 3))
+														  .woProjectStepId(WOProjectStepId.ofRepoId(1, 2))
+														  .resourceId(ResourceId.ofRepoId(1))
+														  .dateRange(allDay(6, 8))
+														  .orgId(OrgId.ANY)
+														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
+														  .duration(DurationUtils.toBigDecimal(allDay(6, 8).getDuration(), ChronoUnit.HOURS))
+														  .build(),
+												  WOProjectResource.builder()
+														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 4))
+														  .woProjectStepId(WOProjectStepId.ofRepoId(1, 2))
+														  .resourceId(ResourceId.ofRepoId(2))
+														  .dateRange(allDay(8, 9))
+														  .orgId(OrgId.ANY)
+														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
+														  .duration(DurationUtils.toBigDecimal(allDay(8, 9).getDuration(), ChronoUnit.HOURS))
+														  .build()
+										  ))
+										  .build())
 				.currentSimulationPlan(WOProjectSimulationPlan.builder()
-						.simulationPlanId(SimulationPlanId.ofRepoId(1))
-						.build())
+											   .simulationPlanId(SimulationPlanId.ofRepoId(1))
+											   .build())
 				.build();
 
 		planEditor.changeResourceDateRangeAndShiftSteps(
 				WOProjectResourceId.ofRepoId(1, 1),
 				allDay(11, 13),
-				WOProjectStepId.ofRepoId(1,1));
+				WOProjectStepId.ofRepoId(1, 1));
 
 		final WOProjectSimulationPlan newSimulationPlan = planEditor.toNewSimulationPlan();
 		System.out.println(newSimulationPlan);

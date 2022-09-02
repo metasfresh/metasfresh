@@ -9,13 +9,15 @@ import de.metas.logging.LogManager;
 import de.metas.project.ProjectCategory;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
-import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectStep;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
+import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -37,11 +39,17 @@ class ToCalendarEntryConverter
 			@NonNull final WOProject project,
 			@Nullable final SimulationPlanRef simulationHeaderRef)
 	{
-		final int durationInt = DurationUtils.toInt(resource.getDuration(), resource.getDurationUnit());
-		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(resource.getDurationUnit());
+		final WFDurationUnit durationUnit = resource.getDurationUnit();
+		if (durationUnit == null)
+		{
+			throw new AdempiereException("DurationUnit cannot be missing at this point!");
+		}
+
+		final int durationInt = DurationUtils.toInt(durationUnit.getDuration(), durationUnit.getTemporalUnit());
+		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(durationUnit.getTemporalUnit());
 
 		return CalendarEntry.builder()
-				.entryId(BudgetAndWOCalendarEntryIdConverters.from(resource.getId()))
+				.entryId(BudgetAndWOCalendarEntryIdConverters.from(resource.getWoProjectResourceId()))
 				.simulationId(simulationHeaderRef != null ? simulationHeaderRef.getId() : null)
 				.resourceId(CalendarResourceId.ofRepoId(resource.getResourceId()))
 				.title(TranslatableStrings.builder()
@@ -66,7 +74,7 @@ class ToCalendarEntryConverter
 	{
 		return woProjectResource -> from(
 				woProjectResource,
-				simulationEditor.getStepById(woProjectResource.getStepId()),
+				simulationEditor.getStepById(woProjectResource.getWoProjectStepId()),
 				simulationEditor.getProjectById(woProjectResource.getProjectId()),
 				simulationPlanHeader);
 	}

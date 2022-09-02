@@ -20,12 +20,13 @@
  * #L%
  */
 
-package de.metas.project.workorder;
+package de.metas.project.workorder.resource;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.project.ProjectId;
+import de.metas.project.workorder.step.WOProjectStepId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -52,7 +53,7 @@ public class WOProjectResources
 		assertResourcesAreMatchingProject(resources, projectId);
 
 		this.projectId = projectId;
-		this.resourcesById = Maps.uniqueIndex(resources, WOProjectResource::getId);
+		this.resourcesById = Maps.uniqueIndex(resources, WOProjectResource::getWoProjectResourceId);
 	}
 
 	private static void assertResourcesAreMatchingProject(final @NonNull List<WOProjectResource> resources, final @NonNull ProjectId projectId)
@@ -93,11 +94,11 @@ public class WOProjectResources
 
 	public Stream<WOProjectResource> streamByStepId(@NonNull final WOProjectStepId stepId)
 	{
-		return stream().filter(resource -> WOProjectStepId.equals(resource.getStepId(), stepId));
+		return stream().filter(resource -> WOProjectStepId.equals(resource.getWoProjectStepId(), stepId));
 	}
 
 	public WOProjectStepId getStepId(final WOProjectResourceId projectResourceId)
 	{
-		return getById(projectResourceId).getStepId();
+		return getById(projectResourceId).getWoProjectStepId();
 	}
 }

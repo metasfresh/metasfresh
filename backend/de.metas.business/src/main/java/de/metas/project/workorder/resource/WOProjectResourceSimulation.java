@@ -1,9 +1,10 @@
-package de.metas.project.workorder;
+package de.metas.project.workorder.resource;
 
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
 import de.metas.util.Check;
+import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -48,11 +49,11 @@ public class WOProjectResourceSimulation
 
 	public WOProjectResource applyOn(@NonNull final WOProjectResource resource)
 	{
-		Check.assumeEquals(resource.getId(), projectResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
+		Check.assumeEquals(resource.getWoProjectResourceId(), projectResourceId, "expected same project and projectResourceId: {}, {}", resource, this);
 
 		return resource.toBuilder()
 				.dateRange(dateRange)
-				.duration(dateRange.getDuration())
+				.duration(DurationUtils.toBigDecimal(dateRange.getDuration(), resource.getDurationUnit().getTemporalUnit()))
 				.build();
 	}
 

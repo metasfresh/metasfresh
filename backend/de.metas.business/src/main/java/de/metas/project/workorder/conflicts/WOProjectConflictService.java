@@ -5,13 +5,12 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRepository;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectQuery;
-import de.metas.project.workorder.WOProjectRepository;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectResourceRepository;
-import de.metas.project.workorder.calendar.WOProjectResourceQuery;
+import de.metas.project.workorder.calendar.WOProjectResourceCalendarQuery;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationRepository;
+import de.metas.project.workorder.project.WOProjectRepository;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceRepository;
 import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -57,14 +56,14 @@ public class WOProjectConflictService
 			return ResourceAllocationConflicts.empty(simulationId);
 		}
 
-		final InSetPredicate<ProjectId> activeProjectIds = InSetPredicate.only(woProjectRepository.getActiveProjectIds(WOProjectQuery.ANY));
+		final InSetPredicate<ProjectId> activeProjectIds = InSetPredicate.only(woProjectRepository.getActiveProjectIds());
 		if (activeProjectIds.isNone())
 		{
 			return ResourceAllocationConflicts.empty(simulationId);
 		}
 
 		final InSetPredicate<WOProjectResourceId> projectResourceIds = woProjectResourceRepository.getProjectResourceIdsPredicate(
-				WOProjectResourceQuery.builder()
+				WOProjectResourceCalendarQuery.builder()
 						.resourceIds(resourceIds)
 						.projectIds(activeProjectIds)
 						.build());

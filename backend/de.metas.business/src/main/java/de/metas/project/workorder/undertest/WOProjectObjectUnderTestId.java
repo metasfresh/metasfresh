@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.project.workorder;
+package de.metas.project.workorder.undertest;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.project.ProjectId;
