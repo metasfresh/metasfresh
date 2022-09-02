@@ -84,6 +84,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13535] (https://github.com/metasfresh/metasfresh/issues/13535) Extend Order's Product-Proposal - Fix Bug
   * [#13261] https://github.com/metasfresh/metasfresh/issues/13261 AvailableForSales to Shopware - Fix terminology
   * [#13286] https://github.com/metasfresh/metasfresh/issues/13286 Display document validation message
   * [#13257] https://github.com/metasfresh/metasfresh/pull/13257 available for sales stock fix
