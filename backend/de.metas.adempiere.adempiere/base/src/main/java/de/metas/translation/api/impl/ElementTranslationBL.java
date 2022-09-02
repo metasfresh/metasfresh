@@ -1,21 +1,21 @@
 package de.metas.translation.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.Set;
-
+import de.metas.i18n.ILanguageDAO;
+import de.metas.logging.LogManager;
+import de.metas.menu.AdMenuId;
+import de.metas.menu.IADMenuDAO;
+import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.element.api.CreateADElementRequest;
-import org.adempiere.ad.element.api.ElementChangedEvent;
-import org.adempiere.ad.element.api.ElementChangedEvent.ChangedField;
 import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.compiere.model.I_AD_Element;
-import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Tab;
@@ -23,14 +23,9 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import de.metas.i18n.ILanguageDAO;
-import de.metas.logging.LogManager;
-import de.metas.menu.AdMenuId;
-import de.metas.menu.IADMenuDAO;
-import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -56,7 +51,8 @@ import de.metas.util.lang.RepoIdAware;
 
 public class ElementTranslationBL implements IElementTranslationBL
 {
-	private static final Logger log = LogManager.getLogger(ElementTranslationBL.class);
+	private static final Logger logger = LogManager.getLogger(ElementTranslationBL.class);
+	private final ILanguageDAO adLanguageDAO = Services.get(ILanguageDAO.class);
 
 	private static final String FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update = "update_TRL_Tables_On_AD_Element_TRL_Update";
 	private static final String FUNCTION_Update_Column_Translation_From_AD_Name_Element = "update_Column_Translation_From_AD_Element";
