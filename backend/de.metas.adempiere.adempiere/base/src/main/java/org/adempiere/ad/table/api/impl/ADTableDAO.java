@@ -425,7 +425,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 
 		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				// Inline parameters because this sql will be logged into the migration script.
 				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);

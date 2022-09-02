@@ -666,7 +666,7 @@ public class ADProcessDAO implements IADProcessDAO
 			@Nullable final String newColumnName)
 	{
 		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Process_Para which is using given AD_Element_ID
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				// Inline parameters because this sql will be logged into the migration script.
 				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
