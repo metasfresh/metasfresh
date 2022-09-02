@@ -11,7 +11,6 @@ Feature: Call order contract
       | callOrderPricingSystem | callOrderPricingSystem | callOrderPricingSystem |
 
   @from:cucumber
-  @dev:runThisOne
   Scenario: Happy flow for call order contract and call order summary - sales order
     Given metasfresh contains M_PriceLists
       | Identifier         | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
