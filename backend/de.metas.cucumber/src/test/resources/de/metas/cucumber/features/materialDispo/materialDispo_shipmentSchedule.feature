@@ -9,10 +9,10 @@ Feature: material-dispo updates on shipment-schedule events
     Given metasfresh initially has no MD_Candidate data
     And metasfresh contains M_Products:
       | Identifier | Name            |
-      | p_1        | salesProduct_12 |
+      | p_1        | salesProduct_materialdispo |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
-      | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
+      | Identifier | Name                       | Value                       | OPT.Description            | OPT.IsActive |
+      | ps_1       | pricing_system_name_131221 | pricing_system_value_131221 | pricing_system_description | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
@@ -24,7 +24,7 @@ Feature: material-dispo updates on shipment-schedule events
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier    | Name        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | Endcustomer | N            | Y              | ps_1                          |
+      | endcustomer_1 | Endcustomer_131221 | N            | Y              | ps_1                          |
 
   @from:cucumber
   @topic:materialdispo
