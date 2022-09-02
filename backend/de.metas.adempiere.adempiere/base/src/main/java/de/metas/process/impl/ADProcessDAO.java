@@ -24,6 +24,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
@@ -606,5 +607,63 @@ public class ADProcessDAO implements IADProcessDAO
 	public void save(final I_AD_Process process)
 	{
 		InterfaceWrapperHelper.save(process);
+	}
+
+	@Override
+	public void copyWindowRelatedProcesses(final WindowCopyResult windowCopyResult)
+	{
+		final ImmutableMap<AdTabId, AdTabId> targetTabIdsBySourceTabId = windowCopyResult.getTabs()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						TabCopyResult::getSourceTabId,
+						TabCopyResult::getTargetTabId
+				));
+
+		final HashSet<AdTabId> tabIdsToFilter = new HashSet<>();
+		tabIdsToFilter.add(null);
+		tabIdsToFilter.addAll(targetTabIdsBySourceTabId.keySet());
+
+		final List<I_AD_Table_Process> sourceRecords = queryBL.createQueryBuilder(I_AD_Table_Process.class)
+				.addEqualsFilter(I_AD_Table_Process.COLUMN_AD_Window_ID, windowCopyResult.getSourceWindowId())
+				.addInArrayFilter(I_AD_Table_Process.COLUMN_AD_Tab_ID, tabIdsToFilter)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		for (final I_AD_Table_Process sourceRecord : sourceRecords)
+		{
+			final AdTabId sourceTabId = AdTabId.ofRepoIdOrNull(sourceRecord.getAD_Tab_ID());
+			final AdTabId targetTabId = sourceTabId != null
+					? targetTabIdsBySourceTabId.get(sourceTabId)
+					: null;
+			if (sourceTabId != null && targetTabId == null)
+			{
+				// shall not happen
+				throw new AdempiereException("No target tab provided for source tab " + sourceTabId)
+						.appendParametersToMessage()
+						.setParameter("windowCopyResult", windowCopyResult);
+			}
+
+			final I_AD_Table_Process targetRecord = InterfaceWrapperHelper.copy()
+					.setFrom(sourceRecord)
+					.setSkipCalculatedColumns(true)
+					.copyToNew(I_AD_Table_Process.class);
+			targetRecord.setAD_Window_ID(windowCopyResult.getTargetWindowId().getRepoId());
+			targetRecord.setAD_Tab_ID(AdTabId.toRepoId(targetTabId));
+			targetRecord.setEntityType(windowCopyResult.getTargetEntityType());
+			InterfaceWrapperHelper.save(targetRecord);
+		}
+	}
+
+	@Override
+	public void updateColumnNameByAdElementId(
+			@NonNull final AdElementId adElementId,
+			@Nullable final String newColumnName)
+	{
+		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Process_Para which is using given AD_Element_ID
+		DB.executeUpdateEx(
+				// Inline parameters because this sql will be logged into the migration script.
+				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
+				ITrx.TRXNAME_ThreadInherited);
 	}
 }
