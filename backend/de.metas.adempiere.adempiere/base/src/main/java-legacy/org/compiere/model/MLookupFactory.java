@@ -199,7 +199,6 @@ public class MLookupFactory
 
 	/**************************************************************************
 	 * Get Information for Lookups based on Column_ID for Table Columns or Process Parameters.
-	 *
 	 * The SQL returns three columns:
 	 *
 	 * <pre>
@@ -212,7 +211,6 @@ public class MLookupFactory
 	 * @param IsParent parent (prevents query to directly access value)
 	 * @param ValidationCode optional SQL validation
 	 * @return lookup info structure
-	 * @Deprecated
 	 */
 	static public MLookupInfo getLookupInfo(final int WindowNo,
 			final int AD_Reference_ID,
@@ -236,7 +234,7 @@ public class MLookupFactory
 			final String ctxColumnName,
 			final int AD_Reference_Value_ID,
 			final boolean IsParent,
-			final AdValRuleId AD_Val_Rule_ID)
+			@Nullable final AdValRuleId AD_Val_Rule_ID)
 	{
 		final MLookupInfo info;
 		// List
