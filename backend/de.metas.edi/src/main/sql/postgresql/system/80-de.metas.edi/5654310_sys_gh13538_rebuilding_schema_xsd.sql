@@ -203,3 +203,8 @@ UPDATE EXP_FormatLine SET AD_Column_ID=583443, Name='EDI_DesadvLine_ID', Type='R
 UPDATE EXP_FormatLine SET IsActive='Y',Updated=TO_TIMESTAMP('2022-09-02 00:34:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=550030
 ;
 
+-- 2022-09-03T07:55:20.686Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE EXP_FormatLine SET AD_Reference_Override_ID=19,Updated=TO_TIMESTAMP('2022-09-03 10:55:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=550569
+;
+
