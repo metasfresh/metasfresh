@@ -72,37 +72,6 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_BestBeforeDate;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_C_UOM_ID;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_IPA_SSCC18;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCU;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCUsPerLU;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyTU;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

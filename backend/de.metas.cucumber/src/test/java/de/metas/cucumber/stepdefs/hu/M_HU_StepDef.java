@@ -76,7 +76,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.SpringContextHolder;
-import org.adempiere.model.PlainContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -130,7 +129,6 @@ public class M_HU_StepDef
 	private final M_HU_QRCode_StepDefData qrCodesTable;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final TestContext testContext;
 
@@ -162,20 +160,6 @@ public class M_HU_StepDef
 	public void reset_data()
 	{
 		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
-	}
-
-	@And("destroy existing M_HUs")
-	public void destroy_existing_hus()
-	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newOutOfTrx());
-
-		final List<I_M_HU> availableHUs = queryBL.createQueryBuilder(I_M_HU.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_M_HU.class);
-
-		handlingUnitsBL.markDestroyed(huContext, availableHUs);
 	}
 
 	@And("validate M_HUs:")

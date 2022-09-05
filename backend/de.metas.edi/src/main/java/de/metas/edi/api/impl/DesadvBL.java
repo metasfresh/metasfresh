@@ -62,8 +62,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -74,7 +72,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class DesadvBL implements IDesadvBL
 {
-	private final static transient Logger logger = LogManager.getLogger(EDIDesadvPackService.class);
+	private final static Logger logger = LogManager.getLogger(EDIDesadvPackService.class);
 
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 
@@ -92,9 +90,6 @@ public class DesadvBL implements IDesadvBL
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
-	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final EDIDesadvPackService ediDesadvPackService;

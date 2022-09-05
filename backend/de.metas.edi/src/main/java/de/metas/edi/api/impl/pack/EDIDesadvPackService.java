@@ -234,13 +234,20 @@ public class EDIDesadvPackService
 		}
 
 		final Quantity qtyCUsPerTUInStockUOM;
-		if (lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		if (orderLineRecord.getQtyItemCapacity().signum() > 0)
 		{
-			qtyCUsPerTUInStockUOM = qtyToAdd.getStockQty();
+			// we use the capacity which the goods were ordered in
+			qtyCUsPerTUInStockUOM = Quantitys.create(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
+		}
+		else if (!lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		{
+			// we make an educated guess, based on the packing-instruction's information
+			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCU(), qtyToAdd.getStockQty().getUomId());
 		}
 		else
 		{
-			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCU(), qtyToAdd.getStockQty().getUomId());
+			// we just don't have the info. So we assume that everything was put into one TU
+			qtyCUsPerTUInStockUOM = qtyToAdd.getStockQty();
 		}
 
 		StockQtyAndUOMQty remainingQty = qtyToAdd;
@@ -294,8 +301,8 @@ public class EDIDesadvPackService
 			}
 			else
 			{
-				logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_Desadv_Pack_Item",
-							 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size());
+				logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_Desadv_Pack_Item! EDI_DesadvLine_ID={} ",
+							 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
 			}
 
 			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
@@ -307,8 +314,8 @@ public class EDIDesadvPackService
 			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, uomId, lutuConfigurationInStockUOM.getQtyCU());
 
 			ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequestBuilder
-																								 .createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
-																								 .build());
+															 .createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
+															 .build());
 
 			// prepare next iteration within this for-look
 			remainingQty = StockQtyAndUOMQtys.subtract(remainingQty, qtyCUsPerCurrentLU);
