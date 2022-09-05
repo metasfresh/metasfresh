@@ -7,11 +7,10 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.manufacturing.job.model.CurrentReceivingHU;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToExistingLU;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTargetConverters;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
@@ -172,7 +171,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 					.getFinishedGoodsReceiveAssumingNotNull()
 					.getLineById(receiveFrom.getFinishedGoodsReceiveLineId());
 
-			result.setExistingLU(extractJsonAggregateToExistingLU(receiveLine));
+			result.setExistingLU(extractHUQRCodeTarget(receiveLine));
 			result.setQtyReceivedTotal(receiveLine.getQtyReceived().toBigDecimal());
 		}
 
@@ -180,12 +179,9 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	}
 
 	@Nullable
-	private JsonAggregateToExistingLU extractJsonAggregateToExistingLU(final FinishedGoodsReceiveLine receiveLine)
+	private JsonHUQRCodeTarget extractHUQRCodeTarget(final FinishedGoodsReceiveLine receiveLine)
 	{
-		final CurrentReceivingHU currentReceivingHU = receiveLine.getCurrentReceivingHU();
-		return currentReceivingHU != null
-				? MaterialReceiptActivityHandler.toJsonAggregateToExistingLU(currentReceivingHU, huQRCodesService)
-				: null;
+		return JsonHUQRCodeTargetConverters.fromNullable(receiveLine.getReceivingTarget(), huQRCodesService);
 	}
 
 	public void generateFinishGoodsReceiveQRCodes(@NonNull final JsonFinishGoodsReceiveQRCodesGenerateRequest request)
