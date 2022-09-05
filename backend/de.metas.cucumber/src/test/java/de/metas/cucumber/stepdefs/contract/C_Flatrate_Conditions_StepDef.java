@@ -91,8 +91,7 @@ public class C_Flatrate_Conditions_StepDef
 							.addEqualsFilter(COLUMNNAME_Name, name)
 							.create()
 							.firstOnly(I_C_Flatrate_Conditions.class),
-					() -> InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class)
-			);
+					() -> InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class));
 
 			final String commissionSettingsIdentifier = tableRow.get("OPT." + COLUMNNAME_C_HierarchyCommissionSettings_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (EmptyUtil.isNotBlank(commissionSettingsIdentifier))

@@ -56,6 +56,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -487,10 +488,18 @@ public class C_Invoice_Candidate_StepDef
 
 		addTableRecordReferenceFiltersForInvoiceCandidate(row, invCandQueryBuilder);
 
-		final Boolean isInterimInvoice = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsInterimInvoice, null);
-		if (isInterimInvoice != null)
+		final String isInterimInvoiceStr = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_IsInterimInvoice);
+		if (Check.isNotBlank(isInterimInvoiceStr))
 		{
-			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInterimInvoice, isInterimInvoice);
+			final String isInterimInvoice = DataTableUtil.nullToken2Null(isInterimInvoiceStr);
+			if (isInterimInvoice != null)
+			{
+				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInterimInvoice, StringUtils.toBoolean(isInterimInvoice));
+			}
+			else
+			{
+				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInterimInvoice, null);
+			}
 		}
 
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()

@@ -1,3 +1,4 @@
+@partialPayment
 @from:cucumber
 Feature: Partial Payment Invoicing
 
@@ -26,8 +27,8 @@ Feature: Partial Payment Invoicing
       | Identifier      | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | vendor_29082022 | Vendor_29082022 | Y            | N              | ps_PO                         |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier               | C_BPartner_ID.Identifier | GLN          | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | vendor_location_29082022 | vendor_29082022          | gln-29082022 | Y                   | Y                   |
+      | Identifier               | C_BPartner_ID.Identifier | GLN           | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | vendor_location_29082022 | vendor_29082022          | 2908202212345 | Y                   | Y                   |
     And load C_Calendar from metasfresh:
       | C_Calendar_ID.Identifier | Name                   |
       | harvesting_calendar      | Kalender - Verrechnung |
@@ -130,7 +131,7 @@ Feature: Partial Payment Invoicing
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier     | OPT.IsInterimInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 50           |                           |                              |                      |
       | invoiceCand_PO_29082022_interim_2 | null                      | 20           | C_Flatrate_Term           | contract_interim_PO_29082022 | Y                    |
-      | invoiceCand_PO_29082022_box_2     | null                      | -20          | C_Flatrate_Term           | contract_interim_PO_29082022 | N                    |
+      | invoiceCand_PO_29082022_box_2     | null                      | -20          | C_Flatrate_Term           | contract_interim_PO_29082022 | null                 |
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.M_Product_ID.Identifier |
@@ -228,7 +229,7 @@ Feature: Partial Payment Invoicing
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier     | OPT.IsInterimInvoice |
       | invoiceCand_PO_29082022           | ol_PO_29082022            | 30           |                           |                              |                      |
       | invoiceCand_PO_29082022_interim   | null                      | 30           | C_Flatrate_Term           | contract_interim_PO_29082022 | Y                    |
-      | invoiceCand_PO_29082022_box       | null                      | -30          | C_Flatrate_Term           | contract_interim_PO_29082022 | N                    |
+      | invoiceCand_PO_29082022_box       | null                      | -30          | C_Flatrate_Term           | contract_interim_PO_29082022 | null                 |
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.M_Product_ID.Identifier |
@@ -242,7 +243,7 @@ Feature: Partial Payment Invoicing
 
     When the material receipt identified by inOut_PO_29082022 is reversed
 
-    ## fix me: correct to 0 once the ongoing PR is merged in inner_silence_uat
+    ## fix me: correct to 0 once the ongoing PR from @av-ps is merged in inner_silence_uat
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.M_Product_ID.Identifier |
       | invoiceCand_PO_29082022           | ol_PO_29082022                | 30           | 100            | 30               | product_PO_1_29082022       |
