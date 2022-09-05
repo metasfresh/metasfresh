@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.currency.CurrencyPrecision;
@@ -23,6 +24,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -65,6 +67,7 @@ public class SalesInvoiceCandidateFactory
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final MoneyService moneyService;
 	private final CommissionProductService commissionProductService;
@@ -79,10 +82,10 @@ public class SalesInvoiceCandidateFactory
 
 	public Optional<SalesInvoiceCandidate> forRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID());
-		if (salesRepId == null)
+		final Optional<BPartnerId> salesRepId = getSalesRepId(icRecord);
+		if (!salesRepId.isPresent())
 		{
-			logger.debug("C_Invoice_Candidate {} has C_BPartner_SalesRep_ID={}; -> return empty", icRecord.getC_Invoice_Candidate_ID(), icRecord.getC_BPartner_SalesRep_ID());
+			logger.debug("No C_BPartner_SalesRep_ID={} found for C_Invoice_Candidate_ID={}; -> return empty", icRecord.getC_BPartner_SalesRep_ID(), icRecord.getC_Invoice_Candidate_ID());
 			return Optional.empty();
 		}
 
@@ -136,7 +139,7 @@ public class SalesInvoiceCandidateFactory
 								   .builder()
 								   .orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
 								   .id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
-								   .salesRepBPartnerId(salesRepId)
+								   .salesRepBPartnerId(salesRepId.get())
 								   .customerBPartnerId(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()))
 								   .productId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
 								   .commissionDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
@@ -214,5 +217,25 @@ public class SalesInvoiceCandidateFactory
 				icRecord.isTaxIncluded(),
 				precision.toInt());
 		return CommissionPoints.of(taxAdjustedAmount);
+	}
+
+	@NonNull
+	private Optional<BPartnerId> getSalesRepId(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final BPartnerId invoiceCandidateSalesRepId = BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID());
+
+		if (invoiceCandidateSalesRepId != null)
+		{
+			return Optional.of(invoiceCandidateSalesRepId);
+		}
+
+		final I_C_BPartner customerBPartner = bPartnerDAO.getById(icRecord.getBill_BPartner_ID());
+
+		if (customerBPartner.isSalesRep())
+		{
+			return Optional.of(BPartnerId.ofRepoId(customerBPartner.getC_BPartner_ID()));
+		}
+
+		return Optional.empty();
 	}
 }

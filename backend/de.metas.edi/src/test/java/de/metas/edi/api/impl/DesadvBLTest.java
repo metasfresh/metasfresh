@@ -1,4 +1,34 @@
 /*
+package de.metas.edi.api.impl;
+
+import de.metas.business.BusinessTestHelper;
+import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.handlingunits.generichumodel.HURepository;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInInvoiceUOM;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_MovementQty;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCU;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCUsPerLU;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+
  * #%L
  * de.metas.edi
  * %%
@@ -20,7 +50,6 @@
  * #L%
  */
 
-package de.metas.edi.api.impl;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.api.EDIDesadvLineId;
@@ -146,7 +175,7 @@ class DesadvBLTest
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
-		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true);
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null, true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)
@@ -181,7 +210,7 @@ class DesadvBLTest
 				.uomQty(Quantitys.create("20", kiloUomId)).build();
 
 		// when
-		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true);
+		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null,true);
 
 		// then
 		assertThat(desadvLineRecord).extracting(COLUMNNAME_QtyDeliveredInStockingUOM, COLUMNNAME_QtyDeliveredInUOM, COLUMNNAME_QtyDeliveredInInvoiceUOM)

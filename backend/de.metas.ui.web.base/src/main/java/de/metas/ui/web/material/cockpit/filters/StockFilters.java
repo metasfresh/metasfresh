@@ -61,7 +61,7 @@ public class StockFilters
 			return false;
 		}
 
-		queryBuilder.addInSubQueryFilter(I_MD_Stock.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productQuery);
+		queryBuilder.addInSubQueryFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery);
 		return true;
 	}
 }

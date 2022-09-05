@@ -45,7 +45,7 @@ public class InfoBuilder
 	public static final String ACTION_InfoBPartner = "InfoBPartner";
 	public static final String ACTION_InfoProduct = "InfoProduct";
 	public static final String ACTION_InfoAsset = "InfoAsset";
-	public static final String ACTION_InfoAccount = "InfoAccount";
+	//public static final String ACTION_InfoAccount = "InfoAccount"; // no longer supported
 	public static final String ACTION_InfoSchedule = "InfoSchedule";
 	public static final String ACTION_InfoMRP = "InfoMRP";
 	public static final String ACTION_InfoCRP = "InfoCRP";

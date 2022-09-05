@@ -22,85 +22,117 @@
 
 package de.metas.treenode;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.tree.AdTreeId;
 import org.compiere.model.I_AD_TreeNode;
-import org.compiere.model.I_C_Element;
 import org.springframework.stereotype.Repository;
 
-import de.metas.elementvalue.ElementId;
-import de.metas.elementvalue.ElementValue;
-import de.metas.acct.api.impl.ElementValueId;
-import de.metas.elementvalue.ElementValueRepository;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class TreeNodeRepository
 {
-	private final ElementValueRepository elementValueRepo;
-
-	public TreeNodeRepository(@NonNull final ElementValueRepository elementValueRepo)
-	{
-		this.elementValueRepo = elementValueRepo;
-	}
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	private static TreeNode toTreeNode(@NonNull final I_AD_TreeNode record)
 	{
 		return TreeNode.builder()
-				.treeId(TreeId.ofRepoId(record.getAD_Tree_ID()))
+				.chartOfAccountsTreeId(AdTreeId.ofRepoId(record.getAD_Tree_ID()))
 				.nodeId(ElementValueId.ofRepoId(record.getNode_ID()))
-				.parentId(ElementValueId.ofRepoId(record.getParent_ID()))
+				.parentId(ElementValueId.ofRepoIdOrNull(record.getParent_ID()))
 				.seqNo(record.getSeqNo())
 				.build();
 	}
 
-	@NonNull
-	public TreeNode toTreeNode(@NonNull final ElementValue elementValue)
-	{
-		final TreeId treeId = getTreeId(elementValue.getElementId());
-
-		return TreeNode.builder()
-				.nodeId(elementValue.getId())
-				.parentId(elementValue.getParentId())
-				.treeId(treeId)
-				.seqNo(elementValue.getSeqNo())
-				.build();
-
-	}
-
 	public void save(@NonNull final TreeNode treeNode)
 	{
-		I_AD_TreeNode treeNodeRecord = retrieveTreeNodeRecord(treeNode);
-
-		if (treeNodeRecord == null)
+		final I_AD_TreeNode existingRecord = retrieveTreeNodeRecord(treeNode.getNodeId(), treeNode.getChartOfAccountsTreeId());
+		if (existingRecord == null)
 		{
-			treeNodeRecord = newInstance(I_AD_TreeNode.class);
+			createNew(treeNode);
 		}
-
-		treeNodeRecord.setAD_Tree_ID(treeNode.getTreeId().getRepoId());
-		treeNodeRecord.setNode_ID(treeNode.getNodeId().getRepoId());
-		treeNodeRecord.setParent_ID(treeNode.getParentId().getRepoId());
-		treeNodeRecord.setSeqNo(treeNode.getSeqNo());
-
-		saveRecord(treeNodeRecord);
+		else
+		{
+			updateRecordAndSave(existingRecord, treeNode);
+		}
 	}
 
-	private I_AD_TreeNode retrieveTreeNodeRecord(@NonNull final TreeNode treeNode)
+	private void createNew(@NonNull final TreeNode treeNode)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_TreeNode.class)
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, treeNode.getTreeId())
-				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_Node_ID, treeNode.getNodeId())
+		final I_AD_TreeNode record = newInstance(I_AD_TreeNode.class);
+		updateRecordAndSave(record, treeNode);
+	}
+
+	private void updateRecordAndSave(final I_AD_TreeNode record, final @NonNull TreeNode from)
+	{
+		record.setAD_Tree_ID(from.getChartOfAccountsTreeId().getRepoId());
+		record.setNode_ID(from.getNodeId().getRepoId());
+		record.setParent_ID(from.getParentId() != null ? from.getParentId().getRepoId() : 0);
+		record.setSeqNo(from.getSeqNo());
+
+		saveRecord(record);
+	}
+
+	private I_AD_TreeNode retrieveTreeNodeRecord(@NonNull final ElementValueId elementValueId, @NonNull final AdTreeId chartOfAccountsTreeId)
+	{
+		return queryBL.createQueryBuilder(I_AD_TreeNode.class)
+				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, chartOfAccountsTreeId)
+				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_Node_ID, elementValueId)
 				.create()
 				.firstOnly(I_AD_TreeNode.class);
 	}
 
-	private TreeId getTreeId(@NonNull final ElementId elementId)
+	public Optional<TreeNode> getTreeNode(@NonNull final ElementValueId elementValueId, @NonNull final AdTreeId chartOfAccountsTreeId)
 	{
-		final I_C_Element element = elementValueRepo.getElementRecordById(elementId);
-		return TreeId.ofRepoId(element.getAD_Tree_ID());
+		final I_AD_TreeNode treeNodeRecord = retrieveTreeNodeRecord(elementValueId, chartOfAccountsTreeId);
+		return treeNodeRecord != null
+				? Optional.of(toTreeNode(treeNodeRecord))
+				: Optional.empty();
 	}
+
+	public void recreateTree(@NonNull final List<TreeNode> treeNodes)
+	{
+		final AdTreeId chartOfAccountsTreeId = extractSingleChartOfAccountsTreeId(treeNodes);
+
+		deleteByTreeId(chartOfAccountsTreeId);
+		treeNodes.forEach(this::createNew);
+	}
+
+	private static AdTreeId extractSingleChartOfAccountsTreeId(final @NonNull List<TreeNode> treeNodes)
+	{
+		final ImmutableSet<AdTreeId> chartOfAccountsTreeIds = treeNodes.stream()
+				.map(TreeNode::getChartOfAccountsTreeId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return CollectionUtils.singleElement(chartOfAccountsTreeIds);
+	}
+
+	private void deleteByTreeId(final AdTreeId chartOfAccountsTreeId)
+	{
+		queryBL.createQueryBuilder(I_AD_TreeNode.class)
+				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, chartOfAccountsTreeId)
+				.create()
+				.deleteDirectly();
+	}
+
+	public ImmutableSet<TreeNode> getByTreeId(final AdTreeId chartOfAccountsTreeId)
+	{
+		return queryBL.createQueryBuilder(I_AD_TreeNode.class)
+				.addEqualsFilter(I_AD_TreeNode.COLUMNNAME_AD_Tree_ID, chartOfAccountsTreeId)
+				.create()
+				.stream()
+				.map(TreeNodeRepository::toTreeNode)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }

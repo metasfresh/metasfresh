@@ -58,7 +58,11 @@ public class GreetingRepository
 	{
 		final ImmutableList<Greeting> list = queryBL
 				.createQueryBuilder(I_C_Greeting.class)
-				.addOnlyActiveRecordsFilter()
+
+				// We need also inactive greetings. If we have to render an address, but the AD_User's greeting was dectivated,
+				// then we still need the greeting in order to render that address
+				//.addOnlyActiveRecordsFilter()
+
 				.create()
 				.stream(I_C_Greeting.class)
 				.map(GreetingRepository::fromRecord)
@@ -76,6 +80,7 @@ public class GreetingRepository
 				.name(record.getName())
 				.greeting(trlsMap.getColumnTrl(I_C_Greeting.COLUMNNAME_Greeting, record.getGreeting()))
 				.standardType(GreetingStandardType.ofNullableCode(record.getGreetingStandardType()))
+				.active(record.isActive())
 				.build();
 	}
 

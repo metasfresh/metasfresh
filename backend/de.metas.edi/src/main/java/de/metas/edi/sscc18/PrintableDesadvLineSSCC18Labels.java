@@ -179,7 +179,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 		Supplier<List<EDIDesadvPack>> getExistingSSCC18s()
 		{
-			return Suppliers.memoize(() -> EDIDesadvPackRepository.getPacksByEDIDesadvLineId(EDIDesadvLineId.ofRepoId(_desadvLine.getEDI_DesadvLine_ID())));
+			return Suppliers.memoize(() -> EDIDesadvPackRepository.getPacksByEDIDesadvLineId(EDIDesadvLineId.ofRepoId(_desadvLine.getEDI_DesadvLine_ID(), null/*withInOutLine*/)));
 		}
 
 		public Builder setRequiredSSCC18Count(final Integer requiredSSCC18Count)

@@ -17,7 +17,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 
@@ -97,7 +96,7 @@ import java.util.Properties;
 		}
 
 		// Update LU/TU configuration
-		updateLUTUConfigurationFromPPOrder(lutuConfiguration, ppOrder);
+		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, ppOrder);
 
 		return lutuConfiguration;
 	}
@@ -154,7 +153,7 @@ import java.util.Properties;
 	}
 
 	@Override
-	public void updateLUTUConfigurationFromPPOrder(
+	public void updateLUTUConfigurationFromDocumentLine(
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
 			@NonNull final I_PP_Order ppOrder)
 	{

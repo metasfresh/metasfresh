@@ -30,4 +30,8 @@ import org.compiere.model.I_AD_Client;
  */
 public class AD_Client_StepDefData extends StepDefData<I_AD_Client>
 {
+	public AD_Client_StepDefData()
+	{
+		super(I_AD_Client.class);
+	}
 }

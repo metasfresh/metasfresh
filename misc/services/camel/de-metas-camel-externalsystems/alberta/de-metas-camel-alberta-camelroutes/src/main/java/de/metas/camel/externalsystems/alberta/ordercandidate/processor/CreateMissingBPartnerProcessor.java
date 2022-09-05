@@ -46,6 +46,9 @@ import org.springframework.util.CollectionUtils;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Upserts a doctor or pharmacy if required.
+ */
 public class CreateMissingBPartnerProcessor implements Processor
 {
 	@Override
@@ -133,7 +136,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 	{
 		try
 		{
-			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), connectionDetails.getTenant(), doctorId);
+			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), doctorId);
 
 			return DataMapper.mapDoctorToUpsertRequest(doctor, orgCode);
 		}
@@ -152,7 +155,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 	{
 		try
 		{
-			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), connectionDetails.getTenant(), pharmacyId);
+			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), pharmacyId);
 
 			return DataMapper.mapPharmacyToUpsertRequest(pharmacy, orgCode);
 		}

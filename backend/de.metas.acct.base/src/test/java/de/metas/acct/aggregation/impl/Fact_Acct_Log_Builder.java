@@ -1,19 +1,15 @@
 package de.metas.acct.aggregation.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.Properties;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
-import org.adempiere.ad.trx.api.ITrx;
+import de.metas.acct.model.I_Fact_Acct_Log;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.model.I_Fact_Acct_Log;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L

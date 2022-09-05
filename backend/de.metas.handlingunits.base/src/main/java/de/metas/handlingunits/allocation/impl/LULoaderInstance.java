@@ -1,7 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -65,8 +65,7 @@ import java.util.TreeSet;
 			final LocatorId locatorId,
 			final String huStatus,
 			final I_M_HU_PI_Version tuPIVersion,
-			final ClearanceStatus huClearanceStatus,
-			final String huClearanceNote)
+			final ClearanceStatusInfo huClearanceStatusInfo)
 	{
 		this.huContext = huContext;
 		this.bpartnerId = bpartnerId;
@@ -93,7 +92,7 @@ import java.util.TreeSet;
 		huBuilder.setC_BPartner_Location_ID(bpartnerLocationId);
 		huBuilder.setLocatorId(locatorId);
 		huBuilder.setHUStatus(huStatus);
-		huBuilder.setHUClearanceStatus(huClearanceStatus, huClearanceNote);
+		huBuilder.setHUClearanceStatusInfo(huClearanceStatusInfo);
 		// set up a little custom anonymous listener so that if the huBuilder created a HU item (*not* an aggregate one), it shall be added to this LULoaderInstance's HU
 		huBuilder.setListener(new HUIteratorListenerAdapter()
 		{

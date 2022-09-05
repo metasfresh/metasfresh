@@ -94,7 +94,7 @@ import java.util.Optional;
 		}
 	}
 
-	private final PricingConditionsDiscountType getDiscountType()
+	private PricingConditionsDiscountType getDiscountType()
 	{
 		if (request.getForcePricingConditionsBreak() != null)
 		{

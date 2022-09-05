@@ -86,6 +86,10 @@ public class JsonHU
 	@Nullable
 	List<JsonHU> includedHUs;
 
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses;
+
 	@With
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isDisposalPending;
@@ -106,6 +110,7 @@ public class JsonHU
 			@Nullable final String clearanceNote,
 			@Nullable final JsonHUType jsonHUType,
 			@Nullable final List<JsonHU> includedHUs,
+			@Nullable final JsonAllowedHUClearanceStatuses allowedHUClearanceStatuses,
 			final Boolean isDisposalPending)
 	{
 		this.id = id;
@@ -121,6 +126,7 @@ public class JsonHU
 		this.clearanceNote = clearanceNote;
 		this.jsonHUType = jsonHUType;
 		this.includedHUs = includedHUs;
+		this.allowedHUClearanceStatuses = allowedHUClearanceStatuses;
 		this.isDisposalPending = isDisposalPending;
 
 		if(attributes2 == null)

@@ -25,12 +25,11 @@ package de.metas.cucumber.stepdefs.billofmaterial;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.util.Services;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -131,9 +130,10 @@ public class PP_Product_Bom_StepDef
 		final BigDecimal qtyBatch = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch);
 		bomLine.setValidFrom(validFrom);
 
-		final boolean isPercentage = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_BOMLine.COLUMNNAME_QtyBatch, false);
+		final boolean isPercentage = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_BOMLine.COLUMNNAME_IsQtyPercentage, false);
 		if (isPercentage)
 		{
+			bomLine.setIsQtyPercentage(true);
 			bomLine.setQtyBatch(qtyBatch);
 		}
 		else

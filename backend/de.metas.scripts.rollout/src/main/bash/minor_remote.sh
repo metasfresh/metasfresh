@@ -43,8 +43,6 @@ prepare()
 	
 	check_vars_server
 	check_rollout_user
-
-	check_java_version
 	
 	check_file_exists $LOCAL_SETTINGS_FILE
 	

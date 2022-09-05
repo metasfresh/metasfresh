@@ -1,15 +1,11 @@
 package de.metas.ui.web.view.json;
 
-import java.util.List;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewProfileId;
@@ -21,6 +17,9 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.Value;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -294,7 +293,7 @@ public final class JSONViewLayout
 	@Value
 	@Builder
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-	public static final class JSONIncludedViewSupport
+	public static class JSONIncludedViewSupport
 	{
 		public static JSONIncludedViewSupport fromNullable(final IncludedViewLayout includedViewLayout)
 		{
@@ -306,10 +305,12 @@ public final class JSONViewLayout
 			return builder()
 					.openOnSelect(includedViewLayout.isOpenOnSelect())
 					.blurWhenOpen(includedViewLayout.isBlurWhenOpen())
+					.closeOnDeselect(includedViewLayout.isCloseOnDeselect())
 					.build();
 		}
 
-		private final boolean openOnSelect;
-		private final boolean blurWhenOpen;
+		boolean openOnSelect;
+		boolean blurWhenOpen;
+		boolean closeOnDeselect;
 	}
 }

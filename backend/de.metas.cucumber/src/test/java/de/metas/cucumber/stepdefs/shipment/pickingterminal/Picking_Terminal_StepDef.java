@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.shipment.pickingterminal;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.handlingunits.HuId;
@@ -32,12 +33,15 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -65,7 +69,10 @@ public class Picking_Terminal_StepDef
 {
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
-	private final PickingCandidateRepository pickingCandidateRepository;
+
+	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
@@ -73,12 +80,10 @@ public class Picking_Terminal_StepDef
 
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
-			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final PickingCandidateRepository pickingCandidateRepository)
+			@NonNull final M_HU_StepDefData huTable)
 	{
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.huTable = huTable;
-		this.pickingCandidateRepository = pickingCandidateRepository;
 	}
 
 	@And("the following qty is picked")
@@ -86,10 +91,10 @@ public class Picking_Terminal_StepDef
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_HU hu = huTable.get(huIdentifier);
 
 		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalForColumnName(row, I_M_Picking_Candidate.COLUMNNAME_QtyPicked);
@@ -174,5 +179,52 @@ public class Picking_Terminal_StepDef
 				StepDefUtil.validateErrorMessage(e, errorMessage);
 			}
 		}
+	}
+
+	@And("^validate M_HUs are available to pick for shipmentSchedule identified by (.*)$")
+	public void validate_M_HUs_available_to_pick_for_SS(@NonNull final String shipmentScheduleIdentifier, @NonNull final DataTable table)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		assertThat(shipmentSchedule).isNotNull();
+
+		final IHUPickingSlotBL.PickingHUsQuery query = IHUPickingSlotBL.PickingHUsQuery.builder()
+				.onlyTopLevelHUs(false)
+				.onlyIfAttributesMatchWithShipmentSchedules(true)
+				.shipmentSchedule(shipmentSchedule)
+				.build();
+
+		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(query);
+		assertThat(availableHUsToPick).isNotNull();
+
+		final List<Map<String, String>> rows = table.asMaps();
+		assertThat(availableHUsToPick.size()).isEqualTo(rows.size());
+
+		for (int huIndex = 0; huIndex < availableHUsToPick.size(); huIndex++)
+		{
+			final I_M_HU actualHU = availableHUsToPick.get(huIndex);
+			final Map<String, String> expectedHU = rows.get(huIndex);
+
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(expectedHU, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_HU hu = huTable.get(huIdentifier);
+			assertThat(hu).isNotNull();
+
+			assertThat(actualHU.getM_HU_ID()).isEqualTo(hu.getM_HU_ID());
+		}
+	}
+
+	@And("^validate that there are no M_HUs available to pick for shipmentSchedule identified by (.*)$")
+	public void validate_no_M_HUs_available_to_pick_for_ShipmentSched(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		assertThat(shipmentSchedule).isNotNull();
+
+		final IHUPickingSlotBL.PickingHUsQuery query = IHUPickingSlotBL.PickingHUsQuery.builder()
+				.onlyTopLevelHUs(false)
+				.onlyIfAttributesMatchWithShipmentSchedules(true)
+				.shipmentSchedule(shipmentSchedule)
+				.build();
+
+		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(query);
+		assertThat(availableHUsToPick.size()).isEqualTo(0);
 	}
 }

@@ -37,9 +37,14 @@ public class ExternalSystemConstants
 	public static final String PARAM_CLIENT_ID = "ClientId";
 	public static final String PARAM_CLIENT_SECRET = "ClientSecret";
 	public static final String PARAM_CHILD_CONFIG_VALUE = "ChildConfigValue";
+
+	public static final String PARAM_JSON_PATH_CONSTANT_METASFRESH_ID = "JSONPathConstantMetasfreshID";
+	public static final String PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID = "JSONPathConstantShopwareID";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_ID = "JSONPathConstantBPartnerID";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID = "JSONPathConstantBPartnerLocationID";
 	public static final String PARAM_JSON_PATH_SALES_REP_ID = "JSONPathConstantSalesRepID";
+	public static final String PARAM_JSON_PATH_EMAIL = "JSONPathEmail";
+	public static final String PARAM_PRODUCT_LOOKUP = "ProductLookup";
 	public static final String PARAM_CONFIG_MAPPINGS = "ConfigMappings";
 	public static final String PARAM_UOM_MAPPINGS = "UOMMappings";
 	public static final String PARAM_JSON_EXPORT_DIRECTORY_SETTINGS = "JsonExportDirectorySettings";
@@ -66,17 +71,22 @@ public class ExternalSystemConstants
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
+	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
 	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "RoutingKey";
 	public static final String PARAM_EXTERNAL_SYSTEM_HTTP_URL = "RemoteURL";
 	public static final String PARAM_EXTERNAL_SYSTEM_AUTH_TOKEN = "AuthToken";
 	public static final String PARAM_BPARTNER_ID = "BPartnerId";
 	public static final String PARAM_HU_ID = "HUId";
 	public static final String PARAM_TENANT_ID = "TenantId";
+	public static final String PARAM_RABBIT_MQ_AUTH_TOKEN = "RabbitMQAuthToken";
+	public static final String PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "JsonExternalReferenceLookupRequest";
 
 	public static final String PARAM_PP_ORDER_ID = "PP_Order_ID";
 	public static final String PARAM_PRODUCT_BASE_FOLDER_NAME = "Product_BaseFolderName";
 	public static final String PARAM_TCP_PORT_NUMBER = "TCP_PortNumber";
 	public static final String PARAM_TCP_HOST = "TCP_Host";
+	public static final String PARAM_PLU_FILE_CONFIG = "PluFileConfig";
+	public static final String PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED = "PluFileExportAuditEnabled";
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";

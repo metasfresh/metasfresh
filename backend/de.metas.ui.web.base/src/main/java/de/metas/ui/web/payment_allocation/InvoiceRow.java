@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
@@ -61,6 +62,10 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final String documentNo;
 
+	@ViewColumn(seqNo = 25, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "POReference")
+	@Getter
+	private final String poReference;
+
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, captionKey = "DateInvoiced")
 	@Getter
 	private final LocalDate dateInvoiced;
@@ -76,7 +81,7 @@ public class InvoiceRow implements IViewRow
 	private final Amount openAmt;
 
 	public static final String FIELD_DiscountAmt = "discountAmt";
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Discount", fieldName = FIELD_DiscountAmt)
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "DiscountAmt", fieldName = FIELD_DiscountAmt)
 	@Getter
 	private final Amount discountAmt;
 
@@ -111,6 +116,8 @@ public class InvoiceRow implements IViewRow
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
 	private final InvoiceDocBaseType docBaseType;
+	@Getter
+	private final InvoiceAmtMultiplier invoiceAmtMultiplier;
 
 	@Getter
 	private final CurrencyConversionTypeId currencyConversionTypeId;
@@ -124,20 +131,22 @@ public class InvoiceRow implements IViewRow
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final ITranslatableString docTypeName,
 			@NonNull final String documentNo,
+			@Nullable final String poReference,
 			@NonNull final LocalDate dateInvoiced,
 			@NonNull final LookupValue bpartner,
 			@NonNull final InvoiceDocBaseType docBaseType,
+			@NonNull final InvoiceAmtMultiplier invoiceAmtMultiplier,
 			@NonNull final Amount grandTotal,
 			@NonNull final Amount openAmt,
 			@NonNull final Amount discountAmt,
 			@Nullable final Amount bankFeeAmt,
 			@Nullable final Amount serviceFeeAmt,
-			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
-	)
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId)
 	{
 		this.isPreparedForAllocation = isPreparedForAllocation;
 		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
+		this.poReference = poReference;
 		this.dateInvoiced = dateInvoiced;
 		this.bpartner = bpartner;
 		this.docBaseType = docBaseType;
@@ -147,6 +156,7 @@ public class InvoiceRow implements IViewRow
 		this.discountAmt = discountAmt;
 		this.serviceFeeAmt = serviceFeeAmt;
 		this.bankFeeAmt = bankFeeAmt;
+		this.invoiceAmtMultiplier = invoiceAmtMultiplier;
 		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
 		this.currencyCodeString = currencyCode.toThreeLetterCode();
 

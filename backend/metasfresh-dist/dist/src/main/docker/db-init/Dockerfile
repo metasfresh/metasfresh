@@ -1,5 +1,4 @@
-#FROM postgres:10.5
-FROM postgres:9.5
+FROM postgres:14.2
 
 LABEL maintainer="dev@metasfresh-com"
 
@@ -13,7 +12,7 @@ RUN apt -y update \
     && apt -y install curl \
 # install openjdk so that we can run mg migrate from within the provisioning script
     && apt -y install libcups2 \
-    && apt -y install openjdk-8-jre-headless \
+    && apt -y install openjdk-11-jre-headless \
     && apt -y install dos2unix \
     && apt -y autoremove \
     && apt -y clean
@@ -27,9 +26,7 @@ RUN locale-gen en_US.UTF-8
 ENV LC_ALL="en_US.UTF-8"
 ENV LC_CTYPE="en_US.UTF-8"
 
-
-#COPY docker-entrypoint_init_only-10.3.sh /usr/local/bin/docker-entrypoint_init_only.sh
-COPY docker-entrypoint_init_only-9.5.sh /usr/local/bin/docker-entrypoint_init_only.sh
+COPY docker-entrypoint_init_only-14.2.sh /usr/local/bin/docker-entrypoint_init_only.sh
 RUN chown postgres:postgres /usr/local/bin/docker-entrypoint_init_only.sh
 RUN chmod 700 /usr/local/bin/docker-entrypoint_init_only.sh
 

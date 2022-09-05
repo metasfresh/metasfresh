@@ -30,4 +30,8 @@ import org.w3c.dom.Document;
  */
 public class EDI_cctop_invoic_v_StepDefData extends StepDefData<Document>
 {
+	public EDI_cctop_invoic_v_StepDefData()
+	{
+		super(Document.class);
+	}
 }

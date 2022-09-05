@@ -34,6 +34,10 @@ import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfig;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfigId;
+import de.metas.externalsystem.leichmehl.ReplacementSource;
+import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -44,6 +48,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
+import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -52,6 +57,7 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
+import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
@@ -60,6 +66,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
+import de.metas.user.UserGroupId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -216,7 +223,7 @@ public class ExternalSystemConfigRepo
 				.filter(ExternalSystemParentConfig::isActive)
 				.collect(ImmutableList.toImmutableList());
 	}
-
+	
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
 		switch (config.getType())
@@ -236,6 +243,8 @@ public class ExternalSystemConfigRepo
 	{
 		switch (externalSystemType)
 		{
+			case Alberta:
+					return getAlbertaConfigByQuery(query);
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
 			default:
@@ -363,6 +372,9 @@ public class ExternalSystemConfigRepo
 				.remoteUrl(rabbitMQConfigRecord.getRemoteURL())
 				.authToken(rabbitMQConfigRecord.getAuthToken())
 				.isSyncBPartnerToRabbitMQ(rabbitMQConfigRecord.isSyncBPartnersToRabbitMQ())
+				.isAutoSendWhenCreatedByUserGroup(rabbitMQConfigRecord.isAutoSendWhenCreatedByUserGroup())
+				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getSubjectCreatedByUserGroup_ID()))
+				.isSyncExternalReferencesToRabbitMQ(rabbitMQConfigRecord.isSyncExternalReferencesToRabbitMQ())
 				.build();
 	}
 
@@ -431,11 +443,12 @@ public class ExternalSystemConfigRepo
 				.uomShopwareMappingList(getUOMShopwareMappingList(externalSystemShopware6ConfigId))
 				.priceListId(PriceListId.ofRepoIdOrNull(config.getM_PriceList_ID()))
 				.clientId(config.getClient_Id())
-				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.emailJSONPath(config.getJSONPathEmail())
 				.isActive(config.isActive())
 				.value(config.getExternalSystemValue())
+				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.build();
 	}
 
@@ -569,6 +582,27 @@ public class ExternalSystemConfigRepo
 				.collect(ImmutableList.toImmutableList());
 	}
 
+
+	@NonNull
+	private Optional<ExternalSystemParentConfig> getAlbertaConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
+	{
+		final IQueryBuilder<I_ExternalSystem_Config_Alberta> queryBuilder = queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class);
+
+		queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID, query.getParentConfigId().getRepoId());
+
+		if (query.getIsActive() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_IsActive, query.getIsActive());
+		}
+
+		return queryBuilder
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Alberta.class)
+				.map(ex -> buildExternalSystemAlbertaConfig(ex, query.getParentConfigId()))
+				.map(shopwareConfig -> getById(query.getParentConfigId())
+						.childConfig(shopwareConfig).build());
+	}
+
 	@NonNull
 	private Optional<ExternalSystemParentConfig> getShopware6ConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
 	{
@@ -609,13 +643,14 @@ public class ExternalSystemConfigRepo
 		record.setClient_Id(config.getClientId());
 		record.setClient_Secret(config.getClientSecret());
 
-		record.setJSONPathConstantBPartnerID(config.getBPartnerIdJSONPath());
 		record.setJSONPathConstantBPartnerLocationID(config.getBPartnerLocationIdJSONPath());
 		record.setJSONPathSalesRepID(config.getSalesRepJSONPath());
 
 		record.setM_PriceList_ID(NumberUtils.asInteger(config.getPriceListId(), -1));
 		record.setIsActive(config.getIsActive());
 		record.setExternalSystemValue(config.getValue());
+
+		record.setProductLookup(config.getProductLookup().getCode());
 
 		if (config.getFreightCostNormalVatConfig() != null)
 		{
@@ -827,7 +862,9 @@ public class ExternalSystemConfigRepo
 				.productBaseFolderName(config.getProduct_BaseFolderName())
 				.tcpPort(config.getTCP_PortNumber())
 				.tcpHost(config.getTCP_Host())
-				.externalSystemLeichMehlConfigProductMappingList(getExternalSystemLeichMehlConfigProductMappings(id))
+				.pluFileExportAuditEnabled(config.isPluFileExportAuditEnabled())
+				.productMappings(getExternalSystemLeichMehlConfigProductMappings(id))
+				.pluFileConfigs(getExternalSystemLeichMehlPluFileConfigs(id))
 				.build();
 	}
 
@@ -857,6 +894,32 @@ public class ExternalSystemConfigRepo
 				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+				.build();
+	}
+
+	@NonNull
+	private List<ExternalSystemLeichMehlPluFileConfig> getExternalSystemLeichMehlPluFileConfigs(@NonNull final ExternalSystemLeichMehlConfigId leichMehlConfigId)
+	{
+		return queryBL.createQueryBuilder(I_LeichMehl_PluFile_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_LeichMehl_PluFile_Config.COLUMN_ExternalSystem_Config_LeichMehl_ID, leichMehlConfigId)
+				.create()
+				.stream()
+				.map(ExternalSystemConfigRepo::toExternalSystemLeichMehlPluFileConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static ExternalSystemLeichMehlPluFileConfig toExternalSystemLeichMehlPluFileConfig(@NonNull final I_LeichMehl_PluFile_Config record)
+	{
+		return ExternalSystemLeichMehlPluFileConfig.builder()
+				.id(ExternalSystemLeichMehlPluFileConfigId.ofRepoId(record.getLeichMehl_PluFile_Config_ID()))
+				.leichMehlConfigId(ExternalSystemLeichMehlConfigId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ID()))
+				.targetFieldName(record.getTargetFieldName())
+				.targetFieldType(TargetFieldType.ofCode(record.getTargetFieldType()))
+				.replacement(record.getReplacement())
+				.replaceRegExp(record.getReplaceRegExp())
+				.replacementSource(ReplacementSource.ofCode(record.getReplacementSource()))
 				.build();
 	}
 }

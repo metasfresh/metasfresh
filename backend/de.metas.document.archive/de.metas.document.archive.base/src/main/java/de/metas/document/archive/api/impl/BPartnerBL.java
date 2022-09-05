@@ -1,10 +1,9 @@
 package de.metas.document.archive.api.impl;
 
-import org.apache.commons.lang.BooleanUtils;
-
 import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.util.Check;
+import org.apache.commons.lang.BooleanUtils;
 import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;

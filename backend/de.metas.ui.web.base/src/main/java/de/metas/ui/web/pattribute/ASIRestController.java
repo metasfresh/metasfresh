@@ -28,11 +28,13 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -79,6 +81,9 @@ public class ASIRestController
 
 	private static final ReasonSupplier REASON_ProcessASIDocumentChanges = () -> "process ASI document changes";
 
+	private static final String SYSCONFIG_LookupAppendDescriptionToName = "webui.attributeValues.appendDescriptionToName";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final UserSession userSession;
 	private final ASIRepository asiRepo;
 	private final DocumentCollection documentsCollection;
@@ -237,14 +242,19 @@ public class ASIRestController
 				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
+	private boolean isLookupsAppendDescriptionToName()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_LookupAppendDescriptionToName, true);
+	}
+
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
 	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language(), isLookupsAppendDescriptionToName());
 	}
 
 	private JSONLookupValue toJSONLookupValue(final LookupValue lookupValue)
 	{
-		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language());
+		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language(), isLookupsAppendDescriptionToName());
 	}
 
 	@GetMapping("/{asiDocId}/field/{attributeName}/dropdown")

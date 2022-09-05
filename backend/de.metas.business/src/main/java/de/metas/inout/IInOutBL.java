@@ -188,5 +188,7 @@ public interface IInOutBL extends ISingletonService
 
 	void updateDescriptionAndDescriptionBottomFromDocType(@NonNull I_M_InOut inOut);
 
+	String getLocationEmail(InOutId ofRepoId);
+
 	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
 }

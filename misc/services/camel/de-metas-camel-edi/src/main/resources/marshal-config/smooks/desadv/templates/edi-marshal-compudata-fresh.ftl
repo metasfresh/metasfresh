@@ -13,7 +13,7 @@ ${"UNOC"?right_pad(4)?substring(0, 4)}<#lt><#t>
 ${"3"?left_pad(1)?substring(0, 1)}<#lt><#t>
 ${h000.messageDate?string("yyyyMMdd")?right_pad(8)?substring(0, 8)}<#lt><#t>
 ${h000.messageDate?string("mmHH")?right_pad(4)?substring(0, 4)}<#lt><#t>
-${"DESADV0110"?right_pad(14)?substring(0, 14)}<#lt><#t>
+${"DESADV0702"?right_pad(14)?substring(0, 14)}<#lt><#t>
 ${"EANCOM76170270000007640134460009900"?right_pad(35)?substring(0, 35)}<#lt><#t>
 ${h000.testFlag?right_pad(1)?substring(0, 1)}<#lt><#t>
 

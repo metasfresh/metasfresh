@@ -35,6 +35,7 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 @Component
+@Deprecated
 public class BPRelationRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting

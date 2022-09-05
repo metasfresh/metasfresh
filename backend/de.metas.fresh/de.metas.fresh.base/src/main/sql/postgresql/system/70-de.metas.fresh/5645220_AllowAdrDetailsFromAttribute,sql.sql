@@ -22,7 +22,8 @@ SELECT * FROM
 		M_AttributeSetInstance_ID,
 		a.Value as at_Value,
 		a.Name as at_Name,
-		a.IsAttrDocumentRelevant as at_IsAttrDocumentRelevant -- task
+		a.IsAttrDocumentRelevant as at_IsAttrDocumentRelevant, -- task
+        a.IsPrintedInDocument
 	FROM M_AttributeInstance ai
 		LEFT OUTER JOIN M_Attributevalue av ON ai.M_Attributevalue_ID = av.M_Attributevalue_ID AND av.isActive = 'Y'
 		LEFT OUTER JOIN M_Attribute a ON ai.M_Attribute_ID = a.M_Attribute_ID AND a.isActive = 'Y'

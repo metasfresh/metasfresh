@@ -29,6 +29,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.util.Loggables;
 import de.metas.util.web.audit.dto.ApiResponse;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -53,7 +54,11 @@ public class ResponseHandler
 			@NonNull final ApiRequestAudit apiRequestAudit,
 			@NonNull final HttpServletResponse httpServletResponse) throws IOException
 	{
-		httpServletResponse.reset();
+		if (!resetServletResponse(httpServletResponse))
+		{
+			//dev-note: it basically means the response was already written and committed
+			return;
+		}
 
 		forwardSomeResponseHttpHeaders(httpServletResponse, apiResponse.getHttpHeaders());
 
@@ -70,7 +75,11 @@ public class ResponseHandler
 			@Nullable final ApiRequestAudit apiRequestAudit,
 			@Nullable final ApiAuditConfig apiAuditConfig) throws IOException
 	{
-		httpServletResponse.reset();
+		if (!resetServletResponse(httpServletResponse))
+		{
+			//dev-note: it basically means the response was already written and committed
+			return;
+		}
 
 		final String language = Env.getADLanguageOrBaseLanguage();
 		final JsonErrorItem error = JsonErrors.ofThrowable(throwable, language);
@@ -153,5 +162,17 @@ public class ResponseHandler
 				.requestId(JsonMetasfreshId.of(apiRequestAudit.getIdNotNull().getRepoId()))
 				.endpointResponse(unwrappedResponse)
 				.build();
+	}
+
+	private boolean resetServletResponse(@NonNull final HttpServletResponse response)
+	{
+		if (!response.isCommitted())
+		{
+			response.reset();
+			return true;
+		}
+
+		Loggables.addLog("HttpServletResponse has already been committed -> cannot be altered! response status = {}", response.getStatus());
+		return false;
 	}
 }

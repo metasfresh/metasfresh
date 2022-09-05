@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.hu;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -99,7 +98,7 @@ public class M_HU_CreateReceipt_StepDef
 			assertThat(huInOut).isNotNull();
 
 			final String inoutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			inOutTable.put(inoutIdentifier, huInOut);
+			inOutTable.putOrReplace(inoutIdentifier, huInOut);
 		}
 	}
 }

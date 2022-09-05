@@ -4,12 +4,14 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -20,7 +22,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
 
 import java.util.ArrayList;
@@ -59,11 +61,12 @@ import java.util.function.Function;
  * {@link HUPickingSlotBL#retrieveAvailableSourceHUs(de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery)}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public class RetrieveAvailableHUsToPick
 {
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+
 	public List<I_M_HU> retrieveAvailableHUsToPick(
 			@NonNull final PickingHUsQuery query,
 			@NonNull final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction)
@@ -75,7 +78,8 @@ public class RetrieveAvailableHUsToPick
 
 		final List<I_M_HU> vhus = retrieveVHUsFromStorage(
 				query.getShipmentSchedules(),
-				query.isOnlyIfAttributesMatchWithShipmentSchedules());
+				query.isOnlyIfAttributesMatchWithShipmentSchedules(),
+				query.isExcludeAllReserved());
 
 		final List<I_M_HU> result = vhuToEndResultFunction.apply(vhus);
 
@@ -91,7 +95,8 @@ public class RetrieveAvailableHUsToPick
 
 	private List<I_M_HU> retrieveVHUsFromStorage(
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
-			final boolean considerAttributes)
+			final boolean considerAttributes,
+			final boolean isExcludeAllReserved)
 	{
 		//
 		// Create storage queries from shipment schedules
@@ -99,7 +104,7 @@ public class RetrieveAvailableHUsToPick
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes);
+			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes, isExcludeAllReserved);
 			storageQueries.add(storageQuery);
 		}
 
@@ -142,8 +147,16 @@ public class RetrieveAvailableHUsToPick
 			return;
 		}
 
-		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
-		if (pickingCandidatesRepo.isHuIdPicked(HuId.ofRepoId(vhu.getM_HU_ID())))
+		final PickingCandidateRepository pickingCandidatesRepo = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
+
+		final HuId huId = HuId.ofRepoId(vhu.getM_HU_ID());
+		if (pickingCandidatesRepo.isHuIdPicked(huId))
+		{
+			return;
+		}
+
+		final ProductId productId = huStorageRecord.getProductId();
+		if (!huAttributesBL.areMandatoryPickingAttributesFulfilled(huId, productId))
 		{
 			return;
 		}

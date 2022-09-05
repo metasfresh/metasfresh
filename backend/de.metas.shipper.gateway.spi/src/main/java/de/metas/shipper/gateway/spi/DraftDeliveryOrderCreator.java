@@ -45,7 +45,7 @@ public interface DraftDeliveryOrderCreator
 
 	@Value
 	@Builder
-	public static class CreateDraftDeliveryOrderRequest
+	class CreateDraftDeliveryOrderRequest
 	{
 		DeliveryOrderKey deliveryOrderKey;
 
@@ -55,11 +55,11 @@ public interface DraftDeliveryOrderCreator
 	}
 
 	@Value
-	public static final class DeliveryOrderKey
+  	class DeliveryOrderKey
 	{
 		ShipperId shipperId;
 		ShipperTransportationId shipperTransportationId;
-		int fromOrgId;
+		int fromOrgId;				
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
 		LocalDate pickupDate;

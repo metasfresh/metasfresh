@@ -53,6 +53,47 @@ public interface I_EDI_DesadvLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set BPartner Qty Item Capacity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartner_QtyItemCapacity (@Nullable BigDecimal BPartner_QtyItemCapacity);
+
+	/**
+	 * Get BPartner Qty Item Capacity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getBPartner_QtyItemCapacity();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_BPartner_QtyItemCapacity = new ModelColumn<>(I_EDI_DesadvLine.class, "BPartner_QtyItemCapacity", null);
+	String COLUMNNAME_BPartner_QtyItemCapacity = "BPartner_QtyItemCapacity";
+
+	/**
+	 * Set BPartner UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_BPartner_ID (int C_UOM_BPartner_ID);
+
+	/**
+	 * Get BPartner UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_BPartner_ID();
+
+	String COLUMNNAME_C_UOM_BPartner_ID = "C_UOM_BPartner_ID";
+
+	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *
@@ -233,6 +274,27 @@ public interface I_EDI_DesadvLine
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_EDI_DesadvLine_ID = new ModelColumn<>(I_EDI_DesadvLine.class, "EDI_DesadvLine_ID", null);
 	String COLUMNNAME_EDI_DesadvLine_ID = "EDI_DesadvLine_ID";
+
+	/**
+	 * Set ExternalSeqNo.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSeqNo (int ExternalSeqNo);
+
+	/**
+	 * Get ExternalSeqNo.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSeqNo();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_ExternalSeqNo = new ModelColumn<>(I_EDI_DesadvLine.class, "ExternalSeqNo", null);
+	String COLUMNNAME_ExternalSeqNo = "ExternalSeqNo";
 
 	/**
 	 * Set GTIN.
@@ -555,6 +617,27 @@ public interface I_EDI_DesadvLine
 
 	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyEntered = new ModelColumn<>(I_EDI_DesadvLine.class, "QtyEntered", null);
 	String COLUMNNAME_QtyEntered = "QtyEntered";
+
+	/**
+	 * Set Qty Entered In BPartner UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEnteredInBPartnerUOM (@Nullable BigDecimal QtyEnteredInBPartnerUOM);
+
+	/**
+	 * Get Qty Entered In BPartner UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEnteredInBPartnerUOM();
+
+	ModelColumn<I_EDI_DesadvLine, Object> COLUMN_QtyEnteredInBPartnerUOM = new ModelColumn<>(I_EDI_DesadvLine.class, "QtyEnteredInBPartnerUOM", null);
+	String COLUMNNAME_QtyEnteredInBPartnerUOM = "QtyEnteredInBPartnerUOM";
 
 	/**
 	 * Set Packaging capacity.

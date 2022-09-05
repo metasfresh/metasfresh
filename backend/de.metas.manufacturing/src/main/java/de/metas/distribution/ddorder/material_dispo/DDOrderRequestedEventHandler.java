@@ -1,18 +1,6 @@
 package de.metas.distribution.ddorder.material_dispo;
 
-import static de.metas.document.engine.IDocument.ACTION_Complete;
-import static de.metas.document.engine.IDocument.STATUS_Completed;
-
-import java.util.Collection;
-import java.util.Date;
-
 import ch.qos.logback.classic.Level;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_DD_Order;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
@@ -24,6 +12,17 @@ import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_DD_Order;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.Date;
+
+import static de.metas.document.engine.IDocument.ACTION_Complete;
+import static de.metas.document.engine.IDocument.STATUS_Completed;
 
 /*
  * #%L
@@ -75,28 +74,32 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	@Override
 	public void handleEvent(@NonNull final DDOrderRequestedEvent distributionOrderEvent)
 	{
-		createDDOrder(distributionOrderEvent);
+		createDDOrders(distributionOrderEvent);
 	}
 
 	@VisibleForTesting
-	I_DD_Order createDDOrder(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
+	ImmutableList<I_DD_Order> createDDOrders(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
 	{
 		final DDOrder ddOrder = ddOrderRequestedEvent.getDdOrder();
 		final Date dateOrdered = TimeUtil.asDate(ddOrderRequestedEvent.getDateOrdered());
+		final String ddOrderRequestedEventTrace = ddOrderRequestedEvent.getEventDescriptor().getTraceId();
 
-		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
+		final ImmutableList<I_DD_Order> ddOrderRecords = ddOrderProducer.createDDOrders(ddOrder, dateOrdered, ddOrderRequestedEventTrace);
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog(
-				"Created ddOrder; DD_Order_ID={}; DocumentNo={}",
-				ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
-
-		if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
+		for (final I_DD_Order ddOrderRecord : ddOrderRecords)
 		{
-			Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
 			Loggables.withLogger(logger, Level.DEBUG).addLog(
-					"Completed ddOrder; DD_Order_ID={}; DocumentNo={}",
+					"Created ddOrder; DD_Order_ID={}; DocumentNo={}",
 					ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
+
+			if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
+			{
+				Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
+				Loggables.withLogger(logger, Level.DEBUG).addLog(
+						"Completed ddOrder; DD_Order_ID={}; DocumentNo={}",
+						ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
+			}
 		}
-		return ddOrderRecord;
+		return ddOrderRecords;
 	}
 }

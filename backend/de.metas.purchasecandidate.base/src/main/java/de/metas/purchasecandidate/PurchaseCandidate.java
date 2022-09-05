@@ -128,12 +128,15 @@ public class PurchaseCandidate
 	@Nullable
 	private CurrencyId currencyId;
 
+	private boolean simulated;
+
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
 
 			@Nullable final ExternalId externalHeaderId,
 			@Nullable final ExternalId externalLineId,
+			@Nullable final String poReference,
 			@Nullable final String externalPurchaseOrderUrl,
 			@NonNull final DemandGroupReference groupReference,
 			@Nullable final OrderAndLineId salesOrderAndLineIdOrNull,
@@ -172,7 +175,8 @@ public class PurchaseCandidate
 			final boolean isManualPrice,
 			final boolean isTaxIncluded,
 			@Nullable final TaxCategoryId taxCategoryId,
-			@Nullable final CurrencyId currencyId)
+			@Nullable final CurrencyId currencyId,
+			final boolean simulated)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -195,6 +199,7 @@ public class PurchaseCandidate
 				.dimension(dimension)
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
+				.poReference(poReference)
 				.source(source)
 				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
 				.build();
@@ -219,6 +224,7 @@ public class PurchaseCandidate
 		this.price = price;
 		this.priceActual = priceActual;
 		this.discount = discount;
+		this.simulated = simulated;
 		this.isManualDiscount = isManualDiscount;
 		this.isManualPrice = isManualPrice;
 
@@ -267,6 +273,7 @@ public class PurchaseCandidate
 		priceEnteredEff = from.priceEnteredEff;
 		discountEff = from.discountEff;
 		currencyId = from.currencyId;
+		simulated = from.simulated;
 	}
 
 	public PurchaseCandidate copy()
@@ -395,7 +402,15 @@ public class PurchaseCandidate
 	}
 
 	public @Nullable
-	String getExternalPurchaseOrderUrl()	{
+	String getPOReference()
+	{
+		return getImmutableFields().getPoReference();
+	}
+
+
+	public @Nullable
+	String getExternalPurchaseOrderUrl()	
+	{
 		return getImmutableFields().getExternalPurchaseOrderUrl();
 	}
 

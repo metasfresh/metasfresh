@@ -114,6 +114,8 @@ public interface IProductDAO extends ISingletonService
 			@NonNull GroupCategoryId groupCategoryId,
 			@NonNull OrgId targetOrgId);
 
+	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+
 	@Value
 	class ProductQuery
 	{

@@ -272,7 +272,7 @@ public class CreatePickingPlanCommand
 		}
 	}
 
-	private ImmutableList<PickingPlanLine> createLinesFromEligibleHUs(final AllocablePackageable packageable)
+	private ImmutableList<PickingPlanLine> createLinesFromEligibleHUs(@NonNull final AllocablePackageable packageable)
 	{
 		if (packageable.isAllocated())
 		{
@@ -287,6 +287,7 @@ public class CreatePickingPlanCommand
 						.asiId(packageable.getAsiId())
 						.bestBeforePolicy(getBestBeforePolicy(packageable))
 						.reservationRef(packageable.getReservationRef())
+						.enforceMandatoryAttributesOnPicking(true)
 						.build());
 
 		return husEligibleToPick.stream()

@@ -37,7 +37,7 @@ public interface ICacheResetListener
 	/**
 	 * Called by the framework.
 	 * <p>
-	 * <b>IMPORTANT: </b> this meathod is not invoked withing a dedicated lock.<br>
+	 * <b>IMPORTANT: </b> this method is not invoked within a dedicated lock.<br>
 	 * Instead, each implementor is responsible to make the implementation thread-safe.
 	 */
 	long reset(CacheInvalidateMultiRequest multiRequest);

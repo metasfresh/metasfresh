@@ -73,6 +73,7 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 				.searchId(extractSearchId(context))
 				.searchText(searchText)
 				.esIndexName(ftsConfig.getEsIndexName())
+				.userRolePermissionsKey(context.getUserRolePermissionsKey())
 				.filterDescriptor(ftsFilterDescriptor)
 				.build());
 

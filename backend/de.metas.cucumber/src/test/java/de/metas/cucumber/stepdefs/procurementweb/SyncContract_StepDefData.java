@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.procurementweb;
 import de.metas.common.procurement.sync.protocol.dto.SyncContract;
 import de.metas.cucumber.stepdefs.StepDefData;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class SyncContract_StepDefData extends StepDefData<SyncContract>
 {
+	public SyncContract_StepDefData()
+	{
+		super(null);
+	}
 }

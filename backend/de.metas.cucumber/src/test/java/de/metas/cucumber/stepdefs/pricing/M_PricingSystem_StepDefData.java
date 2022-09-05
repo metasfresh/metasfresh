@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.pricing;
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_M_PricingSystem;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class M_PricingSystem_StepDefData extends StepDefData<I_M_PricingSystem>
 {
+	public M_PricingSystem_StepDefData()
+	{
+		super(I_M_PricingSystem.class);
+	}
 }
