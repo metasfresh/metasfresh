@@ -22,47 +22,40 @@
 
 package de.metas.cucumber.stepdefs.workflow.dto;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonWFDistributionStep
 {
-	@JsonProperty("id")
 	@NonNull String id;
 
-	@JsonProperty("pickFromHU")
 	@NonNull PickFromHU pickFromHU;
 
 	@Builder
-	@JsonCreator
+	@Jacksonized
 	public JsonWFDistributionStep(
-			@JsonProperty("id") @NonNull final String id,
-			@JsonProperty("pickFromHU") @NonNull final PickFromHU pickFromHU)
+			@NonNull final String id,
+			@NonNull final PickFromHU pickFromHU)
 	{
 		this.id = id;
 		this.pickFromHU = pickFromHU;
 	}
 
 	@Value
-	@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class PickFromHU
 	{
-		@JsonProperty("qrCode")
 		@NonNull JsonHUQRCode qrCode;
 
 		@Builder
-		@JsonCreator
-		public PickFromHU(@JsonProperty("qrCode") @NonNull final JsonHUQRCode qrCode)
+		@Jacksonized
+		public PickFromHU(@NonNull final JsonHUQRCode qrCode)
 		{
 			this.qrCode = qrCode;
 		}

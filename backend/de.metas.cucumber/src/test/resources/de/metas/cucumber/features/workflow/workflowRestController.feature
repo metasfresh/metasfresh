@@ -203,9 +203,12 @@ Feature: workflow rest controller tests
 
     And the PP_Product_BOM identified by manufacturingBOM is completed
 
+    And load AD_Workflow:
+      | AD_Workflow_ID.Identifier | Name                   |
+      | mobileWorkflow            | mobileUI_workflow_test |
     And metasfresh contains PP_Product_Plannings
-      | Identifier                   | OPT.AD_Workflow_ID | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | manufacturingProductPlanning | 540114             | manufacturingProduct    | manufacturingBOMVersion                  | false        |
+      | Identifier                   | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | manufacturingProductPlanning | mobileWorkflow                | manufacturingProduct    | manufacturingBOMVersion                  | false        |
 
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |

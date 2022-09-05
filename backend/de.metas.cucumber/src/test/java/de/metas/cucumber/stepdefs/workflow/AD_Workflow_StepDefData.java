@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.productionorder;
+package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
+import org.compiere.model.I_AD_Workflow;
 
-public class PP_Order_Qty_StepDefData extends StepDefData<I_PP_Order_Qty>
+public class AD_Workflow_StepDefData extends StepDefData<I_AD_Workflow>
 {
-	public PP_Order_Qty_StepDefData()
+	public AD_Workflow_StepDefData()
 	{
-		super(I_PP_Order_Qty.class);
+		super(I_AD_Workflow.class);
 	}
 }

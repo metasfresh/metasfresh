@@ -86,9 +86,7 @@ public class DD_OrderLine_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + ".Identifier");
-			final Integer productId = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(() -> Integer.parseInt(productIdentifier));
+			final I_M_Product product = productTable.get(productIdentifier);
 
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_DD_Order order = ddOrderTable.get(orderIdentifier);
@@ -103,7 +101,7 @@ public class DD_OrderLine_StepDef
 
 			final I_DD_OrderLine orderLine = newInstance(I_DD_OrderLine.class);
 			orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			orderLine.setM_Product_ID(productId);
+			orderLine.setM_Product_ID(product.getM_Product_ID());
 			orderLine.setQtyEntered(qtyEntered);
 			orderLine.setQtyOrdered(qtyEntered);
 			orderLine.setDD_Order_ID(order.getDD_Order_ID());

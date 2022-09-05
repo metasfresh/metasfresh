@@ -20,36 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.workflow.dto;
+package de.metas.cucumber.stepdefs.pporder;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import de.metas.common.handlingunits.JsonHUQRCode;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.eevolution.model.I_PP_Order;
 
-import java.math.BigDecimal;
-
-@Value
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonWFManufacturingStep
+public class PP_Order_StepDefData extends StepDefData<I_PP_Order>
 {
-	@NonNull String id;
-
-	@NonNull BigDecimal qtyToIssue;
-
-	@NonNull JsonHUQRCode huQRCode;
-
-	@Builder
-	@Jacksonized
-	public JsonWFManufacturingStep(
-			@NonNull final String id,
-			@NonNull final BigDecimal qtyToIssue,
-			@NonNull final JsonHUQRCode huQRCode)
+	public PP_Order_StepDefData()
 	{
-		this.id = id;
-		this.qtyToIssue = qtyToIssue;
-		this.huQRCode = huQRCode;
+		super(I_PP_Order.class);
 	}
 }

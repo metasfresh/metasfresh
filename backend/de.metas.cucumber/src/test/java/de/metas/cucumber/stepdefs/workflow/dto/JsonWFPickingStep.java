@@ -23,30 +23,26 @@
 package de.metas.cucumber.stepdefs.workflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonWFPickingStep
 {
-	@JsonProperty("pickingStepId")
 	@NonNull String pickingStepId;
 
-	@JsonProperty("mainPickFrom")
 	@NonNull MainPickFrom mainPickFrom;
 
 	@Builder
-	@JsonCreator
+	@Jacksonized
 	public JsonWFPickingStep(
-			@JsonProperty("pickingStepId") @NonNull final String pickingStepId,
-			@JsonProperty("mainPickFrom") @NonNull final MainPickFrom mainPickFrom)
+			@NonNull final String pickingStepId,
+			@NonNull final MainPickFrom mainPickFrom)
 	{
 		this.pickingStepId = pickingStepId;
 		this.mainPickFrom = mainPickFrom;
@@ -57,12 +53,11 @@ public class JsonWFPickingStep
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class MainPickFrom
 	{
-		@JsonProperty("huQRCode")
 		@NonNull JsonHUQRCode huQRCode;
 
 		@Builder
-		@JsonCreator
-		public MainPickFrom(@JsonProperty("huQRCode") @NonNull final JsonHUQRCode huQRCode)
+		@Jacksonized
+		public MainPickFrom(@NonNull final JsonHUQRCode huQRCode)
 		{
 			this.huQRCode = huQRCode;
 		}

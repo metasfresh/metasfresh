@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.productionorder;
+package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;

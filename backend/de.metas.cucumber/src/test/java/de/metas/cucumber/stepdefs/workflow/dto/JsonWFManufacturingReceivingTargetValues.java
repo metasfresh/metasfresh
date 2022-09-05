@@ -22,38 +22,31 @@
 
 package de.metas.cucumber.stepdefs.workflow.dto;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonWFManufacturingReceivingTargetValues
 {
-	@JsonProperty("luCaption")
 	@NonNull String luCaption;
 
-	@JsonProperty("tuCaption")
 	@NonNull String tuCaption;
 
-	@JsonProperty("luPIItemId")
 	@NonNull Integer luPIItemId;
 
-	@JsonProperty("tuPIItemProductId")
 	@NonNull Integer tuPIItemProductId;
 
 	@Builder
-	@JsonCreator
+	@Jacksonized
 	public JsonWFManufacturingReceivingTargetValues(
-			@JsonProperty("luCaption") @NonNull final String luCaption,
-			@JsonProperty("tuCaption") @NonNull final String tuCaption,
-			@JsonProperty("luPIItemId") @NonNull final Integer luPIItemId,
-			@JsonProperty("tuPIItemProductId") @NonNull final Integer tuPIItemProductId)
+			@NonNull final String luCaption,
+			@NonNull final String tuCaption,
+			@NonNull final Integer luPIItemId,
+			@NonNull final Integer tuPIItemProductId)
 	{
 		this.luCaption = luCaption;
 		this.tuCaption = tuCaption;
