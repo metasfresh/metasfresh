@@ -1,8 +1,6 @@
-package de.metas.project.workorder;
+package de.metas.project.workorder.resource;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;

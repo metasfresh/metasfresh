@@ -3,11 +3,11 @@ package de.metas.project.workorder.calendar;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectResourceSimulation;
-import de.metas.project.workorder.WOProjectStepId;
-import de.metas.project.workorder.WOProjectStepSimulation;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceSimulation;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.step.WOProjectStepSimulation;
 import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -65,7 +65,7 @@ public final class WOProjectSimulationPlan
 
 	public WOProjectResource applyOn(@NonNull final WOProjectResource woProjectResource)
 	{
-		final WOProjectResourceSimulation simulation = getProjectResourceByIdOrNull(woProjectResource.getId());
+		final WOProjectResourceSimulation simulation = getProjectResourceByIdOrNull(woProjectResource.getWoProjectResourceId());
 		return simulation != null
 				? simulation.applyOn(woProjectResource)
 				: woProjectResource;

@@ -27,8 +27,8 @@ import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectResource;
 import de.metas.project.budget.BudgetProjectService;
-import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectService;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectService;
 import de.metas.resource.ResourceService;
 import de.metas.resource.ResourceType;
 import de.metas.util.Services;
@@ -166,12 +166,12 @@ public class C_Project_WO_Resource
 
 		final ProjectId woProjectId = ProjectId.ofRepoId(woResource.getC_Project_ID());
 		final WOProject woProject = woProjectService.getById(woProjectId);
-		if (woProject.getParentProjectId() == null)
+		if (woProject.getProjectParentId() == null)
 		{
 			return Optional.empty();
 		}
 
-		final BudgetProject budgetProject = budgetProjectService.getById(woProject.getParentProjectId()).orElse(null);
+		final BudgetProject budgetProject = budgetProjectService.getById(woProject.getProjectParentId()).orElse(null);
 		if (budgetProject == null)
 		{
 			return Optional.empty();

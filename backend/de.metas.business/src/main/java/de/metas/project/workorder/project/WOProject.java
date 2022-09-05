@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.project;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
@@ -38,17 +38,18 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-public class CreateWOProjectRequest
+@Builder(toBuilder = true)
+public class WOProject
 {
+	@NonNull
+	ProjectId projectId;
+
 	@NonNull
 	OrgId orgId;
 
 	@NonNull
 	CurrencyId currencyId;
 
-	@Nullable
-	ExternalId externalId;
-	
 	@NonNull
 	String name;
 
@@ -58,7 +59,11 @@ public class CreateWOProjectRequest
 	@NonNull
 	ProjectTypeId projectTypeId;
 
-	boolean isActive;
+	@NonNull
+	Boolean isActive;
+
+	@Nullable
+	ExternalId externalId;
 
 	@Nullable
 	PriceListVersionId priceListVersionId;
@@ -101,51 +106,4 @@ public class CreateWOProjectRequest
 
 	@Nullable
 	Instant woProjectCreatedDate;
-
-	@Builder
-	public CreateWOProjectRequest(
-			@NonNull final OrgId orgId,
-			@NonNull final CurrencyId currencyId,
-			@Nullable final ExternalId externalId, 
-			@NonNull final String name,
-			@NonNull final String value,
-			@NonNull final ProjectTypeId projectTypeId,
-			@Nullable final Boolean isActive,
-			@Nullable final PriceListVersionId priceListVersionId,
-			@Nullable final String description,
-			@Nullable final ProjectId projectParentId,
-			@Nullable final String projectReferenceExt,
-			@Nullable final BPartnerId bPartnerId,
-			@Nullable final UserId salesRepId,
-			@Nullable final Instant dateContract,
-			@Nullable final Instant dateFinish,
-			@Nullable final Instant dateOfProvisionByBPartner,
-			@Nullable final String bpartnerDepartment,
-			@Nullable final String woOwner,
-			@Nullable final String poReference,
-			@Nullable final Instant bpartnerTargetDate,
-			@Nullable final Instant woProjectCreatedDate)
-	{
-		this.orgId = orgId;
-		this.currencyId = currencyId;
-		this.externalId = externalId;
-		this.name = name;
-		this.value = value;
-		this.projectTypeId = projectTypeId;
-		this.priceListVersionId = priceListVersionId;
-		this.description = description;
-		this.projectParentId = projectParentId;
-		this.projectReferenceExt = projectReferenceExt;
-		this.bPartnerId = bPartnerId;
-		this.salesRepId = salesRepId;
-		this.dateContract = dateContract;
-		this.dateFinish = dateFinish;
-		this.dateOfProvisionByBPartner = dateOfProvisionByBPartner;
-		this.bpartnerDepartment = bpartnerDepartment;
-		this.woOwner = woOwner;
-		this.poReference = poReference;
-		this.bpartnerTargetDate = bpartnerTargetDate;
-		this.woProjectCreatedDate = woProjectCreatedDate;
-		this.isActive = isActive == null || isActive;
-	}
 }

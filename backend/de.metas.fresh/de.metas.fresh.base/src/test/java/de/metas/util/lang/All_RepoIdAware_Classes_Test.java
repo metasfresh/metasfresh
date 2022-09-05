@@ -8,9 +8,9 @@ import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLi
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.project.budget.BudgetProjectResourceId;
-import de.metas.project.workorder.WOProjectObjectUnderTestId;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectStepId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.undertest.WOProjectObjectUnderTestId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.util.Check;

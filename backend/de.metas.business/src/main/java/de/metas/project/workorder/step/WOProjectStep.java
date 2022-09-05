@@ -22,9 +22,9 @@
 
 package de.metas.project.workorder.step;
 
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -52,11 +52,7 @@ public class WOProjectStep
 	@NonNull
 	OrgId orgId;
 
-	@NonNull
-	Instant dateStart;
-
-	@NonNull
-	Instant dateEnd;
+	@NonNull CalendarDateRange dateRange;
 
 	@Nullable
 	String description;
@@ -90,4 +86,6 @@ public class WOProjectStep
 
 	@Nullable
 	Instant woFindingsCreatedDate;
+
+	public ProjectId getProjectId() {return woProjectStepId.getProjectId();}
 }

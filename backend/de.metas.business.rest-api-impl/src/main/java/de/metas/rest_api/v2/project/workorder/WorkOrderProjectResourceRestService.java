@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.project.workorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -37,19 +38,20 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectStepId;
-import de.metas.project.workorder.data.CreateWOProjectResourceRequest;
-import de.metas.project.workorder.data.WOProjectResource;
-import de.metas.project.workorder.data.WorkOrderProjectResourceRepository;
+import de.metas.project.workorder.resource.CreateWOProjectResourceRequest;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceRepository;
 import de.metas.project.workorder.step.WOProjectStep;
-import de.metas.project.workorder.step.WorkOrderProjectStepRepository;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.resource.ResourceService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.project.resource.ResourceIdentifierUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.time.DurationUtils;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.workflow.WFDurationUnit;
@@ -61,6 +63,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -80,13 +83,13 @@ public class WorkOrderProjectResourceRestService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final WorkOrderProjectStepRepository workOrderProjectStepRepository;
-	private final WorkOrderProjectResourceRepository workOrderProjectResourceRepository;
+	private final WOProjectStepRepository workOrderProjectStepRepository;
+	private final WOProjectResourceRepository workOrderProjectResourceRepository;
 	private final ResourceService resourceService;
 
 	public WorkOrderProjectResourceRestService(
-			@NonNull final WorkOrderProjectStepRepository workOrderProjectStepRepository,
-			@NonNull final WorkOrderProjectResourceRepository workOrderProjectResourceRepository,
+			@NonNull final WOProjectStepRepository workOrderProjectStepRepository,
+			@NonNull final WOProjectResourceRepository workOrderProjectResourceRepository,
 			@NonNull final ResourceService resourceService)
 	{
 		this.workOrderProjectStepRepository = workOrderProjectStepRepository;
@@ -116,7 +119,7 @@ public class WorkOrderProjectResourceRestService
 	{
 		requests.forEach(WorkOrderProjectResourceRestService::validateJsonWorkOrderResourceUpsertRequest);
 
-		final Map<WOProjectStepId, WOProjectStep> stepId2Step = workOrderProjectStepRepository.getByIds(getStepIds(requests));
+		final Map<WOProjectStepId, WOProjectStep> stepId2Step = workOrderProjectStepRepository.getMapByIds(getStepIds(requests));
 
 		final ImmutableMap.Builder<WOProjectResourceIdentifier, JsonWorkOrderResourceUpsertItemRequest> allRequestItemsCollector = ImmutableMap.builder();
 
@@ -177,9 +180,17 @@ public class WorkOrderProjectResourceRestService
 		final Instant assignDateFrom = TimeUtil.asInstant(request.getAssignDateFrom(), zoneId);
 		final Instant assignDateTo = TimeUtil.asEndOfDayInstant(request.getAssignDateTo(), zoneId);
 
+		if (assignDateTo == null || assignDateFrom == null)
+		{
+			throw new AdempiereException("AssignDateFrom and AssignDateTo should not be missing at this point!");
+		}
+
 		final WOProjectResource.WOProjectResourceBuilder resourceBuilder = existingResource.toBuilder()
-				.assignDateFrom(assignDateFrom)
-				.assignDateTo(assignDateTo);
+				.dateRange(CalendarDateRange.builder()
+								   .startDate(assignDateFrom)
+								   .endDate(assignDateTo)
+								   .allDay(Boolean.TRUE.equals(request.getIsAllDay()))
+								   .build());
 
 		if (request.isActiveSet())
 		{
@@ -198,7 +209,11 @@ public class WorkOrderProjectResourceRestService
 
 		if (request.isDurationSet())
 		{
-			resourceBuilder.duration(request.getDuration());
+			final Duration duration = request.isDurationUnitSet()
+					? DurationUtils.fromBigDecimal(request.getDuration(), toWFDurationUnit(request.getDurationUnit()).getTemporalUnit())
+					: DurationUtils.fromBigDecimal(request.getDuration(), WFDurationUnit.Hour.getTemporalUnit());
+
+			resourceBuilder.duration(duration);
 		}
 
 		if (request.isDurationUnitSet())
@@ -490,9 +505,9 @@ public class WorkOrderProjectResourceRestService
 				.woResourceId(JsonMetasfreshId.of(WOProjectResourceId.toRepoId(resourceData.getWoProjectResourceId())))
 				.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(resourceData.getWoProjectStepId())))
 				.resourceId(JsonMetasfreshId.ofOrNull(ResourceId.toRepoId(resourceData.getResourceId())))
-				.assignDateFrom(TimeUtil.asLocalDate(resourceData.getAssignDateFrom(), zoneId))
-				.assignDateTo(TimeUtil.asLocalDate(resourceData.getAssignDateTo(), zoneId))
-				.duration(resourceData.getDuration())
+				.assignDateFrom(TimeUtil.asLocalDate(resourceData.getDateRange().getStartDate(), zoneId))
+				.assignDateTo(TimeUtil.asLocalDate(resourceData.getDateRange().getEndDate(), zoneId))
+				.duration(DurationUtils.toBigDecimal(resourceData.getDuration(), resourceData.getDurationUnit().getTemporalUnit()))
 				.durationUnit(toJsonDurationUnit(resourceData.getDurationUnit()))
 				.isAllDay(resourceData.getIsAllDay())
 				.isActive(resourceData.getIsActive())
