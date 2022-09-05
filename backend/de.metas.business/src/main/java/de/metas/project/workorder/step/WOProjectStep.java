@@ -44,9 +44,6 @@ public class WOProjectStep
 	String name;
 
 	@NonNull
-	ProjectId projectId;
-
-	@NonNull
 	Integer seqNo;
 
 	@NonNull

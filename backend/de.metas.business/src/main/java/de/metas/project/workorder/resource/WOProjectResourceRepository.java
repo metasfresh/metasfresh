@@ -22,7 +22,6 @@
 
 package de.metas.project.workorder.resource;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -66,7 +65,6 @@ import java.util.stream.Stream;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-@VisibleForTesting
 public class WOProjectResourceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -199,16 +197,6 @@ public class WOProjectResourceRepository
 				});
 	}
 
-	@NonNull
-	public List<WOProjectResource> getByStepId(@NonNull final WOProjectStepId woProjectStepId)
-	{
-		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
-				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Step_ID, woProjectStepId)
-				.create()
-				.stream()
-				.map(WOProjectResourceRepository::ofRecord)
-				.collect(ImmutableList.toImmutableList());
-	}
 
 	@NonNull
 	public List<WOProjectResource> listByStepIds(@NonNull final Set<WOProjectStepId> woProjectStepIds)
@@ -321,7 +309,6 @@ public class WOProjectResourceRepository
 				.duration(DurationUtils.fromBigDecimal(resourceRecord.getDuration(), durationUnit.getTemporalUnit()))
 				.durationUnit(durationUnit)
 
-				.isAllDay(resourceRecord.isAllDay())
 				.isActive(resourceRecord.isActive())
 
 				.budgetProjectId(ProjectId.ofRepoIdOrNull(resourceRecord.getBudget_Project_ID()))
@@ -376,7 +363,7 @@ public class WOProjectResourceRepository
 		}
 
 		resourceRecord.setIsActive(Boolean.TRUE.equals(projectResource.getIsActive()));
-		resourceRecord.setIsAllDay(Boolean.TRUE.equals(projectResource.getIsAllDay()));
+		resourceRecord.setIsAllDay(projectResource.getDateRange().isAllDay());
 
 		resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(projectResource.getDateRange().getStartDate()));
 		resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(projectResource.getDateRange().getEndDate()));

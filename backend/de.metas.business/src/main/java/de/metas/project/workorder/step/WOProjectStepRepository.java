@@ -312,13 +312,8 @@ public class WOProjectStepRepository
 	@NonNull
 	public static WOProjectStep ofRecord(@NonNull final I_C_Project_WO_Step stepRecord)
 	{
-		final Instant startDate = TimeUtil.asInstant(stepRecord.getDateStart());
-		final Instant endDate = TimeUtil.asInstant(stepRecord.getDateEnd());
-
-		if (startDate == null || endDate == null)
-		{
-			throw new AdempiereException("I_C_Project_WO_Step.DateStart and I_C_Project_WO_Step.DateEnd should be set on the record at this point!");
-		}
+		final Instant startDate = TimeUtil.asInstantNonNull(stepRecord.getDateStart());
+		final Instant endDate = TimeUtil.asInstantNonNull(stepRecord.getDateEnd());
 
 		final CalendarDateRange dateRange = CalendarDateRange.builder()
 				.startDate(startDate)
@@ -332,7 +327,6 @@ public class WOProjectStepRepository
 				.description(stepRecord.getDescription())
 				.seqNo(stepRecord.getSeqNo())
 				.dateRange(dateRange)
-				.projectId(ProjectId.ofRepoId(stepRecord.getC_Project_ID()))
 				.externalId(ExternalId.ofOrNull(stepRecord.getExternalId()))
 				.woPartialReportDate(TimeUtil.asInstant(stepRecord.getWOPartialReportDate()))
 				.woPlannedResourceDurationHours(stepRecord.getWOPlannedResourceDurationHours())

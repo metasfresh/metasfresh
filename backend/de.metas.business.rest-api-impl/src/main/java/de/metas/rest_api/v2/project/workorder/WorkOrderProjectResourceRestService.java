@@ -180,11 +180,6 @@ public class WorkOrderProjectResourceRestService
 		final Instant assignDateFrom = TimeUtil.asInstant(request.getAssignDateFrom(), zoneId);
 		final Instant assignDateTo = TimeUtil.asEndOfDayInstant(request.getAssignDateTo(), zoneId);
 
-		if (assignDateTo == null || assignDateFrom == null)
-		{
-			throw new AdempiereException("AssignDateFrom and AssignDateTo should not be missing at this point!");
-		}
-
 		final WOProjectResource.WOProjectResourceBuilder resourceBuilder = existingResource.toBuilder()
 				.dateRange(CalendarDateRange.builder()
 								   .startDate(assignDateFrom)
@@ -197,28 +192,19 @@ public class WorkOrderProjectResourceRestService
 			resourceBuilder.isActive(request.getIsActive());
 		}
 
-		if (request.isAllDaySet())
-		{
-			resourceBuilder.isAllDay(request.getIsAllDay());
-		}
-
 		if (request.isExternalIdSet())
 		{
 			resourceBuilder.externalId(ExternalId.ofOrNull(request.getExternalId()));
 		}
 
-		if (request.isDurationSet())
+		if (request.isDurationSet() && request.isDurationUnitSet())
 		{
-			final Duration duration = request.isDurationUnitSet()
-					? DurationUtils.fromBigDecimal(request.getDuration(), toWFDurationUnit(request.getDurationUnit()).getTemporalUnit())
-					: DurationUtils.fromBigDecimal(request.getDuration(), WFDurationUnit.Hour.getTemporalUnit());
+			final Duration duration = request.mapDuration((reqDuration, jsonUnit) -> DurationUtils
+					.fromBigDecimal(reqDuration, toWFDurationUnit(jsonUnit).getTemporalUnit()))
+					.orElse(Duration.ZERO);
 
 			resourceBuilder.duration(duration);
-		}
-
-		if (request.isDurationUnitSet())
-		{
-			resourceBuilder.durationUnit(toWFDurationUnit(request.getDurationUnit()));
+			resourceBuilder.durationUnit(toOptionalWFDurationUnit(request.getDurationUnit()).orElse(WFDurationUnit.Hour));
 		}
 
 		if (request.isTestFacilityGroupNameSet())
@@ -509,11 +495,17 @@ public class WorkOrderProjectResourceRestService
 				.assignDateTo(TimeUtil.asLocalDate(resourceData.getDateRange().getEndDate(), zoneId))
 				.duration(DurationUtils.toBigDecimal(resourceData.getDuration(), resourceData.getDurationUnit().getTemporalUnit()))
 				.durationUnit(toJsonDurationUnit(resourceData.getDurationUnit()))
-				.isAllDay(resourceData.getIsAllDay())
+				.isAllDay(resourceData.getDateRange().isAllDay())
 				.isActive(resourceData.getIsActive())
 				.testFacilityGroupName(resourceData.getTestFacilityGroupName())
 				.externalId(ExternalId.toValue(resourceData.getExternalId()))
 				.build();
+	}
+
+	@NonNull
+	private static Optional<WFDurationUnit> toOptionalWFDurationUnit(@Nullable final JsonDurationUnit jsonDurationUnit)
+	{
+		return Optional.ofNullable(toWFDurationUnit(jsonDurationUnit));
 	}
 
 	@Value(staticConstructor = "of")

@@ -60,9 +60,6 @@ public class WOProjectResource
 	@Nullable
 	Boolean isActive;
 
-	@Nullable
-	Boolean isAllDay;
-
 	@NonNull
 	Duration duration;
 
@@ -94,7 +91,6 @@ public class WOProjectResource
 			@NonNull final Duration duration,
 			@NonNull final WFDurationUnit durationUnit,
 			final boolean isActive,
-			final boolean isAllDay,
 			@Nullable final ProjectId budgetProjectId,
 			@Nullable final BudgetProjectResourceId projectResourceBudgetId,
 			@Nullable final ExternalId externalId,
@@ -114,7 +110,6 @@ public class WOProjectResource
 		this.duration = duration;
 		this.durationUnit = durationUnit;
 		this.isActive = isActive;
-		this.isAllDay = isAllDay;
 		this.budgetProjectId = budgetProjectId;
 		this.projectResourceBudgetId = projectResourceBudgetId;
 		this.externalId = externalId;
