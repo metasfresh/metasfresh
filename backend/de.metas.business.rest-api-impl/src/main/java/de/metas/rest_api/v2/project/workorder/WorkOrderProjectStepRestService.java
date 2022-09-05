@@ -205,21 +205,21 @@ public class WorkOrderProjectStepRestService
 			stepBuilder.externalId(externalId);
 		}
 
-		if (request.isDateStartSet() && request.isDateEndSet())
+		final CalendarDateRange.CalendarDateRangeBuilder calendarDateRangeBuilder = existingWOProjectStep.getDateRange().toBuilder();
+
+		if (request.isDateStartSet())
 		{
 			final Instant startDate = TimeUtil.asInstant(request.getDateStart(), zoneId);
-			final Instant endDate = TimeUtil.asInstant(request.getDateEnd(), zoneId);
-
-			if (startDate == null || endDate == null)
-			{
-				throw new AdempiereException("StartDate and EndDate cannot be missing at this point!");
-			}
-
-			stepBuilder.dateRange(CalendarDateRange.builder()
-										  .startDate(startDate)
-										  .endDate(endDate)
-										  .build());
+			calendarDateRangeBuilder.startDate(startDate);
 		}
+
+		if (request.isDateEndSet())
+		{
+			final Instant endDate = TimeUtil.asInstant(request.getDateEnd(), zoneId);
+			calendarDateRangeBuilder.endDate(endDate);
+		}
+
+		stepBuilder.dateRange(calendarDateRangeBuilder.build());
 
 		if (request.isDescriptionSet())
 		{

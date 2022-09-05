@@ -16,7 +16,6 @@ import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectSteps;
 import de.metas.test.SnapshotFunctionFactory;
-import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
@@ -106,7 +105,7 @@ class WOProjectSimulationPlanEditorTest
 														  .dateRange(allDay(1, 3))
 														  .orgId(OrgId.ANY)
 														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
-														  .duration(DurationUtils.toBigDecimal(allDay(1, 3).getDuration(), ChronoUnit.HOURS))
+														  .duration(allDay(1, 3).getDuration())
 														  .build(),
 												  WOProjectResource.builder()
 														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 2))
@@ -115,7 +114,7 @@ class WOProjectSimulationPlanEditorTest
 														  .dateRange(allDay(4, 5))
 														  .orgId(OrgId.ANY)
 														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
-														  .duration(DurationUtils.toBigDecimal(allDay(4, 5).getDuration(), ChronoUnit.HOURS))
+														  .duration(allDay(4, 5).getDuration())
 														  .build(),
 												  WOProjectResource.builder()
 														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 3))
@@ -124,7 +123,7 @@ class WOProjectSimulationPlanEditorTest
 														  .dateRange(allDay(6, 8))
 														  .orgId(OrgId.ANY)
 														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
-														  .duration(DurationUtils.toBigDecimal(allDay(6, 8).getDuration(), ChronoUnit.HOURS))
+														  .duration(allDay(6, 8).getDuration())
 														  .build(),
 												  WOProjectResource.builder()
 														  .woProjectResourceId(WOProjectResourceId.ofRepoId(1, 4))
@@ -133,7 +132,7 @@ class WOProjectSimulationPlanEditorTest
 														  .dateRange(allDay(8, 9))
 														  .orgId(OrgId.ANY)
 														  .durationUnit(WFDurationUnit.ofTemporalUnit(ChronoUnit.HOURS))
-														  .duration(DurationUtils.toBigDecimal(allDay(8, 9).getDuration(), ChronoUnit.HOURS))
+														  .duration(allDay(8, 9).getDuration())
 														  .build()
 										  ))
 										  .build())

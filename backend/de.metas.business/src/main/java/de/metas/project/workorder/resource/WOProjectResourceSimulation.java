@@ -4,7 +4,6 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.project.ProjectId;
 import de.metas.util.Check;
-import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -53,7 +52,7 @@ public class WOProjectResourceSimulation
 
 		return resource.toBuilder()
 				.dateRange(dateRange)
-				.duration(DurationUtils.toBigDecimal(dateRange.getDuration(), resource.getDurationUnit().getTemporalUnit()))
+				.duration(dateRange.getDuration())
 				.build();
 	}
 

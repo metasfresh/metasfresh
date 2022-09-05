@@ -51,6 +51,7 @@ import de.metas.rest_api.v2.project.resource.ResourceIdentifierUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.time.DurationUtils;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.workflow.WFDurationUnit;
@@ -62,6 +63,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -187,7 +189,7 @@ public class WorkOrderProjectResourceRestService
 				.dateRange(CalendarDateRange.builder()
 								   .startDate(assignDateFrom)
 								   .endDate(assignDateTo)
-								   .allDay(request.getIsAllDay())
+								   .allDay(Boolean.TRUE.equals(request.getIsAllDay()))
 								   .build());
 
 		if (request.isActiveSet())
@@ -207,7 +209,11 @@ public class WorkOrderProjectResourceRestService
 
 		if (request.isDurationSet())
 		{
-			resourceBuilder.duration(request.getDuration());
+			final Duration duration = request.isDurationUnitSet()
+					? DurationUtils.fromBigDecimal(request.getDuration(), toWFDurationUnit(request.getDurationUnit()).getTemporalUnit())
+					: DurationUtils.fromBigDecimal(request.getDuration(), WFDurationUnit.Hour.getTemporalUnit());
+
+			resourceBuilder.duration(duration);
 		}
 
 		if (request.isDurationUnitSet())
@@ -501,7 +507,7 @@ public class WorkOrderProjectResourceRestService
 				.resourceId(JsonMetasfreshId.ofOrNull(ResourceId.toRepoId(resourceData.getResourceId())))
 				.assignDateFrom(TimeUtil.asLocalDate(resourceData.getDateRange().getStartDate(), zoneId))
 				.assignDateTo(TimeUtil.asLocalDate(resourceData.getDateRange().getEndDate(), zoneId))
-				.duration(resourceData.getDuration())
+				.duration(DurationUtils.toBigDecimal(resourceData.getDuration(), resourceData.getDurationUnit().getTemporalUnit()))
 				.durationUnit(toJsonDurationUnit(resourceData.getDurationUnit()))
 				.isAllDay(resourceData.getIsAllDay())
 				.isActive(resourceData.getIsActive())

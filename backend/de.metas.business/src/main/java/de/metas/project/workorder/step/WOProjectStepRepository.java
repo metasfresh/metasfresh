@@ -136,7 +136,6 @@ public class WOProjectStepRepository
 		return getByProjectIds(ImmutableSet.of(projectId)).get(projectId);
 	}
 
-
 	public Map<ProjectId, WOProjectSteps> getByProjectIds(@NonNull final Set<ProjectId> projectIds)
 	{
 		if (projectIds.isEmpty())
@@ -313,8 +312,6 @@ public class WOProjectStepRepository
 	@NonNull
 	public static WOProjectStep ofRecord(@NonNull final I_C_Project_WO_Step stepRecord)
 	{
-		final ProjectId projectId = ProjectId.ofRepoId(stepRecord.getC_Project_ID());
-
 		final Instant startDate = TimeUtil.asInstant(stepRecord.getDateStart());
 		final Instant endDate = TimeUtil.asInstant(stepRecord.getDateEnd());
 
@@ -323,21 +320,19 @@ public class WOProjectStepRepository
 			throw new AdempiereException("I_C_Project_WO_Step.DateStart and I_C_Project_WO_Step.DateEnd should be set on the record at this point!");
 		}
 
-		final WOProjectStepId woProjectStepId = WOProjectStepId.ofRepoId(
-				projectId,
-				stepRecord.getC_Project_WO_Step_ID());
+		final CalendarDateRange dateRange = CalendarDateRange.builder()
+				.startDate(startDate)
+				.endDate(endDate)
+				.build();
 
 		return WOProjectStep.builder()
-				.woProjectStepId(woProjectStepId)
+				.woProjectStepId(extractWOProjectStepId(stepRecord))
 				.name(stepRecord.getName())
 				.orgId(OrgId.ofRepoId(stepRecord.getAD_Org_ID()))
 				.description(stepRecord.getDescription())
 				.seqNo(stepRecord.getSeqNo())
-				.dateRange(CalendarDateRange.builder()
-								   .startDate(startDate)
-								   .endDate(endDate)
-								   .build())
-				.projectId(projectId)
+				.dateRange(dateRange)
+				.projectId(ProjectId.ofRepoId(stepRecord.getC_Project_ID()))
 				.externalId(ExternalId.ofOrNull(stepRecord.getExternalId()))
 				.woPartialReportDate(TimeUtil.asInstant(stepRecord.getWOPartialReportDate()))
 				.woPlannedResourceDurationHours(stepRecord.getWOPlannedResourceDurationHours())

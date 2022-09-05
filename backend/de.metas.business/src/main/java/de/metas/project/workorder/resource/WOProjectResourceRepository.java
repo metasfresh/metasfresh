@@ -39,6 +39,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -142,31 +143,6 @@ public class WOProjectResourceRepository
 				.collect(ImmutableSet.toImmutableSet());
 
 		return InSetPredicate.only(projectResourceIds);
-	}
-
-	@Nullable
-	private IQuery<I_C_Project_WO_Resource> toSqlQuery(@NonNull final WOProjectResourceCalendarQuery query)
-	{
-		final InSetPredicate<ResourceId> resourceIds = query.getResourceIds();
-		final InSetPredicate<ProjectId> projectIds = query.getProjectIds();
-
-		if (resourceIds.isNone() || projectIds.isNone())
-		{
-			return null;
-		}
-
-		final IQueryBuilder<I_C_Project_WO_Resource> sqlQuery = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
-				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
-				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds);
-
-		if (query.getStartDate() != null || query.getEndDate() != null)
-		{
-			sqlQuery.addIntervalIntersection(
-					I_C_Project_WO_Resource.COLUMNNAME_AssignDateFrom, I_C_Project_WO_Resource.COLUMNNAME_AssignDateTo,
-					query.getStartDate(), query.getEndDate());
-		}
-
-		return sqlQuery.create();
 	}
 
 	public WOProjectResources getByProjectId(@NonNull final ProjectId projectId)
@@ -312,6 +288,75 @@ public class WOProjectResourceRepository
 		return ofRecord(resourceRecord);
 	}
 
+	@NonNull
+	public static WOProjectResource ofRecord(@NonNull final I_C_Project_WO_Resource resourceRecord)
+	{
+		final OrgId orgId = OrgId.ofRepoId(resourceRecord.getAD_Org_ID());
+
+		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom());
+		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo());
+
+		if (assignDateTo == null || assignDateFrom == null)
+		{
+			throw new AdempiereException("I_C_Project_WO_Resource.assignDateFrom and I_C_Project_WO_Resource.assignDateTo should be set on the record at this point!");
+		}
+		final CalendarDateRange dateRange = CalendarDateRange.builder()
+				.startDate(assignDateFrom)
+				.endDate(assignDateTo)
+				.allDay(resourceRecord.isAllDay())
+				.build();
+
+		final ProjectId projectId = ProjectId.ofRepoId(resourceRecord.getC_Project_ID());
+		final WFDurationUnit durationUnit = WFDurationUnit.ofCode(resourceRecord.getDurationUnit());
+
+		return WOProjectResource.builder()
+				.orgId(orgId)
+				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Resource_ID()))
+				.externalId(ExternalId.ofOrNull(resourceRecord.getExternalId()))
+
+				.resourceId(ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()))
+				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Step_ID()))
+
+				.dateRange(dateRange)
+				.duration(DurationUtils.fromBigDecimal(resourceRecord.getDuration(), durationUnit.getTemporalUnit()))
+				.durationUnit(durationUnit)
+
+				.isAllDay(resourceRecord.isAllDay())
+				.isActive(resourceRecord.isActive())
+
+				.budgetProjectId(ProjectId.ofRepoIdOrNull(resourceRecord.getBudget_Project_ID()))
+				.projectResourceBudgetId(BudgetProjectResourceId.ofRepoIdOrNull(projectId.getRepoId(), resourceRecord.getC_Project_Resource_Budget_ID()))
+
+				.testFacilityGroupName(resourceRecord.getWOTestFacilityGroupName())
+				.description(StringUtils.trimBlankToNull(resourceRecord.getDescription()))
+				.build();
+	}
+
+	@Nullable
+	private IQuery<I_C_Project_WO_Resource> toSqlQuery(@NonNull final WOProjectResourceCalendarQuery query)
+	{
+		final InSetPredicate<ResourceId> resourceIds = query.getResourceIds();
+		final InSetPredicate<ProjectId> projectIds = query.getProjectIds();
+
+		if (resourceIds.isNone() || projectIds.isNone())
+		{
+			return null;
+		}
+
+		final IQueryBuilder<I_C_Project_WO_Resource> sqlQuery = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
+				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds);
+
+		if (query.getStartDate() != null || query.getEndDate() != null)
+		{
+			sqlQuery.addIntervalIntersection(
+					I_C_Project_WO_Resource.COLUMNNAME_AssignDateFrom, I_C_Project_WO_Resource.COLUMNNAME_AssignDateTo,
+					query.getStartDate(), query.getEndDate());
+		}
+
+		return sqlQuery.create();
+	}
+
 	private void updateRecord(
 			@NonNull final WOProjectResource projectResource,
 			@Nullable final I_C_Project_WO_Resource resourceRecord,
@@ -322,7 +367,7 @@ public class WOProjectResourceRepository
 			throw new AdempiereException("Missing C_Project_WO_Resource for repoId:" + projectResource.getWoProjectResourceId());
 		}
 
-		if(!isSimulation)
+		if (!isSimulation)
 		{
 			resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(projectResource.getWoProjectStepId()));
 			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(projectResource.getResourceId()));
@@ -338,16 +383,8 @@ public class WOProjectResourceRepository
 
 		resourceRecord.setWOTestFacilityGroupName(projectResource.getTestFacilityGroupName());
 
-		if (projectResource.getDuration() == null || projectResource.getDurationUnit() == null)
-		{
-			resourceRecord.setDuration(BigDecimal.ZERO);
-			resourceRecord.setDurationUnit(WFDurationUnit.Hour.getCode());
-		}
-		else
-		{
-			resourceRecord.setDuration(projectResource.getDuration());
-			resourceRecord.setDurationUnit(projectResource.getDurationUnit().getCode());
-		}
+		resourceRecord.setDuration(DurationUtils.toBigDecimal(projectResource.getDuration(), projectResource.getDurationUnit().getTemporalUnit()));
+		resourceRecord.setDurationUnit(projectResource.getDurationUnit().getCode());
 
 		saveRecord(resourceRecord);
 	}
@@ -357,46 +394,5 @@ public class WOProjectResourceRepository
 		return WOProjectResourceId.ofRepoId(
 				NumberUtils.asInt(row.get(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID)),
 				NumberUtils.asInt(row.get(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID)));
-	}
-
-	@NonNull
-	public static WOProjectResource ofRecord(@NonNull final I_C_Project_WO_Resource resourceRecord)
-	{
-		final OrgId orgId = OrgId.ofRepoId(resourceRecord.getAD_Org_ID());
-
-		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom());
-		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo());
-
-		if (assignDateTo == null || assignDateFrom == null)
-		{
-			throw new AdempiereException("I_C_Project_WO_Resource.assignDateFrom and I_C_Project_WO_Resource.assignDateTo should be set on the record at this point!");
-		}
-
-		final ProjectId projectId = ProjectId.ofRepoId(resourceRecord.getC_Project_ID());
-
-		return WOProjectResource.builder()
-				.orgId(orgId)
-				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Resource_ID()))
-				.externalId(ExternalId.ofOrNull(resourceRecord.getExternalId()))
-
-				.resourceId(ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()))
-				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Step_ID()))
-
-				.dateRange(CalendarDateRange.builder().startDate(assignDateFrom)
-								   .endDate(assignDateTo)
-								   .allDay(resourceRecord.isAllDay())
-								   .build())
-				.duration(resourceRecord.getDuration())
-				.durationUnit(WFDurationUnit.ofCode(resourceRecord.getDurationUnit()))
-
-				.isAllDay(resourceRecord.isAllDay())
-				.isActive(resourceRecord.isActive())
-
-				.budgetProjectId(ProjectId.ofRepoIdOrNull(resourceRecord.getBudget_Project_ID()))
-				.projectResourceBudgetId(BudgetProjectResourceId.ofRepoIdOrNull(projectId.getRepoId(), resourceRecord.getC_Project_Resource_Budget_ID()))
-
-				.testFacilityGroupName(resourceRecord.getWOTestFacilityGroupName())
-				.description(StringUtils.trimBlankToNull(resourceRecord.getDescription()))
-				.build();
 	}
 }

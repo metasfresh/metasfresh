@@ -17,7 +17,6 @@ import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -40,12 +39,8 @@ class ToCalendarEntryConverter
 			@Nullable final SimulationPlanRef simulationHeaderRef)
 	{
 		final WFDurationUnit durationUnit = resource.getDurationUnit();
-		if (durationUnit == null)
-		{
-			throw new AdempiereException("DurationUnit cannot be missing at this point!");
-		}
 
-		final int durationInt = DurationUtils.toInt(durationUnit.getDuration(), durationUnit.getTemporalUnit());
+		final int durationInt = DurationUtils.toInt(resource.getDuration(), durationUnit.getTemporalUnit());
 		final String durationUomSymbol = getTemporalUnitSymbolOrEmpty(durationUnit.getTemporalUnit());
 
 		return CalendarEntry.builder()

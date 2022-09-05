@@ -37,7 +37,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 
 @Value
@@ -63,10 +63,10 @@ public class WOProjectResource
 	@Nullable
 	Boolean isAllDay;
 
-	@Nullable
-	BigDecimal duration;
+	@NonNull
+	Duration duration;
 
-	@Nullable
+	@NonNull
 	WFDurationUnit durationUnit;
 
 	@Nullable
@@ -91,10 +91,10 @@ public class WOProjectResource
 			@NonNull final WOProjectStepId woProjectStepId,
 			@NonNull final CalendarDateRange dateRange,
 			@NonNull final ResourceId resourceId,
+			@NonNull final Duration duration,
+			@NonNull final WFDurationUnit durationUnit,
 			final boolean isActive,
 			final boolean isAllDay,
-			@Nullable final BigDecimal duration,
-			@Nullable final WFDurationUnit durationUnit,
 			@Nullable final ProjectId budgetProjectId,
 			@Nullable final BudgetProjectResourceId projectResourceBudgetId,
 			@Nullable final ExternalId externalId,
@@ -111,10 +111,10 @@ public class WOProjectResource
 		this.woProjectStepId = woProjectStepId;
 		this.dateRange = dateRange;
 		this.resourceId = resourceId;
-		this.isActive = isActive;
-		this.isAllDay = isAllDay;
 		this.duration = duration;
 		this.durationUnit = durationUnit;
+		this.isActive = isActive;
+		this.isAllDay = isAllDay;
 		this.budgetProjectId = budgetProjectId;
 		this.projectResourceBudgetId = projectResourceBudgetId;
 		this.externalId = externalId;

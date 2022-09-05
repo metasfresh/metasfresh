@@ -603,6 +603,8 @@ class WorkOrderProjectRestServiceTest
 				.externalId(externalIdStep)
 				.assignDateFrom(assignDateFrom)
 				.assignDateTo(assignDateTo)
+				.duration(BigDecimal.valueOf(8))
+				.durationUnit("D")
 				.build();
 
 		final String externalIdObjectUnderTest = "22222";
@@ -738,6 +740,8 @@ class WorkOrderProjectRestServiceTest
 				.externalId(externalIdStep)
 				.assignDateFrom(assignDateFrom)
 				.assignDateTo(assignDateTo)
+				.duration(BigDecimal.ONE)
+				.durationUnit("D")
 				.build();
 
 		final String externalIdObjectUnderTest = "3333";
@@ -838,7 +842,7 @@ class WorkOrderProjectRestServiceTest
 		projectWOStep.setName(name);
 		projectWOStep.setExternalId(externalId);
 		projectWOStep.setDateEnd(Timestamp.from(Instant.ofEpochMilli(0)));
-		projectWOStep.setDateStart(Timestamp.from(Instant.ofEpochMilli(0)));
+		projectWOStep.setDateStart(Timestamp.from(Instant.ofEpochMilli(1)));
 
 		InterfaceWrapperHelper.save(projectWOStep);
 
@@ -851,6 +855,8 @@ class WorkOrderProjectRestServiceTest
 			@NonNull final ResourceId resourceId,
 			@NonNull final LocalDate assignDateTo,
 			@NonNull final LocalDate assignDateFrom,
+			@NonNull final BigDecimal duration,
+			@NonNull final String durationUnit,
 			@Nullable final String externalId)
 	{
 		final I_C_Project_WO_Resource projectWoResource = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Resource.class);
@@ -861,6 +867,8 @@ class WorkOrderProjectRestServiceTest
 		projectWoResource.setExternalId(externalId);
 		projectWoResource.setAssignDateTo(TimeUtil.asTimestamp(assignDateTo));
 		projectWoResource.setAssignDateFrom(TimeUtil.asTimestamp(assignDateFrom));
+		projectWoResource.setDuration(duration);
+		projectWoResource.setDurationUnit(durationUnit);
 
 		InterfaceWrapperHelper.save(projectWoResource);
 
