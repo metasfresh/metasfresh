@@ -1,4 +1,3 @@
-@partialPayment
 @from:cucumber
 Feature: Partial Payment Invoicing
 
