@@ -128,21 +128,6 @@ public class C_InvoiceLine_StepDef
 			assertThat(invoiceLine.getQtyEntered()).isEqualByComparingTo(qtyEntered);
 		}
 
-		// final BigDecimal qtyEnteredInBPartnerUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_QtyEnteredInBPartnerUOM);
-		//
-		// if (qtyEnteredInBPartnerUOM != null)
-		// {
-		// 	assertThat(invoiceLine.getQtyEnteredInBPartnerUOM()).isEqualTo(qtyEnteredInBPartnerUOM);
-		// }
-
-		// final String bPartnerUOMx12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
-		//
-		// if (Check.isNotBlank(bPartnerUOMx12de355Code))
-		// {
-		// 	final UomId bPartnerUOMId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(bPartnerUOMx12de355Code));
-		// 	assertThat(invoiceLine.getC_UOM_BPartner_ID()).isEqualTo(bPartnerUOMId.getRepoId());
-		// }
-
 		final String uomX12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 
 		if (Check.isNotBlank(uomX12de355Code))
@@ -175,13 +160,6 @@ public class C_InvoiceLine_StepDef
 		{
 			assertThat(invoiceLine.getLineNetAmt()).isEqualTo(lineNetAmt);
 		}
-
-		// final BigDecimal discount = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_Discount);
-		//
-		// if (discount != null)
-		// {
-		// 	assertThat(invoiceLine.getDiscount()).isEqualTo(discount);
-		// }
 
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
 

@@ -78,7 +78,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -103,8 +102,6 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_A
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Async_Batch_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Effective_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
@@ -114,20 +111,13 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_L
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PaymentRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Processed;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyDeliveredInUOM;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyEntered;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoicedInUOM;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyPicked;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyPickedInUOM;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceBeforeDiscount;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Calc;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Record_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -242,7 +232,7 @@ public class C_Invoice_Candidate_StepDef
 
 	/**
 	 *
-	 * @deprecated to be completly replaced with the version in master while merging
+	 * @deprecated always look to prefer master when merging (when possible)
 	 */
 	@Deprecated
 	@And("validate C_Invoice_Candidate:")
@@ -272,126 +262,7 @@ public class C_Invoice_Candidate_StepDef
 					updatedInvoiceCandidate = StepDefUtil.tryAndWaitForItem(5, 1000, () -> isInvoiceCandidateUpdated(row));
 				}
 
-				final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, COLUMNNAME_QtyToInvoice);
-				assertThat(updatedInvoiceCandidate.getQtyToInvoice()).isEqualTo(qtyToInvoice);
-
-				final BigDecimal qtyToInvoiceInUomCalc = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyToInvoiceInUOM_Calc);
-				if (qtyToInvoiceInUomCalc != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyToInvoiceInUOM_Calc()).isEqualTo(qtyToInvoiceInUomCalc);
-				}
-
-				final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyOrdered);
-				if (qtyOrdered != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyOrdered()).isEqualTo(qtyOrdered);
-				}
-
-				final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyDelivered);
-				if (qtyDelivered != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyDelivered()).isEqualTo(qtyDelivered);
-				}
-
-				final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyEntered);
-				if (qtyEntered != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyEntered()).isEqualTo(qtyEntered);
-				}
-
-				final BigDecimal qtyToInvoiceBeforeDiscount = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyToInvoiceBeforeDiscount);
-				if (qtyToInvoiceBeforeDiscount != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyToInvoiceBeforeDiscount()).isEqualTo(qtyToInvoiceBeforeDiscount);
-				}
-
-				final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyPicked);
-				if (qtyPicked != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyPicked()).isEqualTo(qtyPicked);
-				}
-
-				final BigDecimal qtyPickedInUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyPickedInUOM);
-				if (qtyPickedInUOM != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyPickedInUOM()).isEqualTo(qtyPickedInUOM);
-				}
-
-				final BigDecimal qtyDeliveredInUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyDeliveredInUOM);
-				if (qtyPickedInUOM != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyDeliveredInUOM()).isEqualTo(qtyDeliveredInUOM);
-				}
-
-				final BigDecimal qtyToInvoiceOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyToInvoice_Override);
-				if (qtyToInvoiceOverride != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyToInvoice_Override()).isEqualTo(qtyToInvoiceOverride);
-				}
-
-				final BigDecimal qtyInvoiced = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyInvoiced);
-				if (qtyInvoiced != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyInvoiced()).isEqualTo(qtyInvoiced);
-				}
-
-				final BigDecimal qtyInvoicedInUOM = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyInvoicedInUOM);
-				if (qtyInvoicedInUOM != null)
-				{
-					assertThat(updatedInvoiceCandidate.getQtyInvoicedInUOM()).isEqualTo(qtyInvoicedInUOM);
-				}
-
-				final BigDecimal netAmtToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_NetAmtToInvoice);
-				if (netAmtToInvoice != null)
-				{
-					assertThat(updatedInvoiceCandidate.getNetAmtToInvoice()).isEqualTo(netAmtToInvoice);
-				}
-
-				final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-				if (Check.isNotBlank(orderIdentifier))
-				{
-					final I_C_Order order = orderTable.get(orderIdentifier);
-					assertThat(updatedInvoiceCandidate.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
-				}
-
-				final String orderLineIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-				if (Check.isNotBlank(orderLineIdentifier))
-				{
-					final String orderLineIdentifierValue = DataTableUtil.nullToken2Null(orderLineIdentifier);
-					if (orderLineIdentifierValue != null)
-					{
-						final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-						assertThat(updatedInvoiceCandidate.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
-					}
-					else
-					{
-						assertThat(updatedInvoiceCandidate.getC_OrderLine_ID()).isEqualTo(0);
-					}
-				}
-
-				final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_PaymentRule);
-
-				if (Check.isNotBlank(paymentRule))
-				{
-					assertThat(updatedInvoiceCandidate.getPaymentRule()).isEqualTo(paymentRule);
-				}
-
-				final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-				if (Check.isNotBlank(productIdentifier))
-				{
-					final I_M_Product product = productTable.get(productIdentifier);
-					assertThat(updatedInvoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
-				}
-
-				final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_Processed, false);
-				assertThat(updatedInvoiceCandidate.isProcessed()).isEqualTo(processed);
-
-				final String taxEffectiveIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Effective_ID + "." + TABLECOLUMN_IDENTIFIER);
-				if (Check.isNotBlank(taxEffectiveIdentifier))
-				{
-					final I_C_Tax taxEffective = taxTable.get(taxEffectiveIdentifier);
-					assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffective.getC_Tax_ID());
-				}
+				validate_C_invoice_Candidate(updatedInvoiceCandidate, row);
 			}
 			catch (final Throwable e)
 			{
@@ -486,8 +357,6 @@ public class C_Invoice_Candidate_StepDef
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
 		}
 
-		addTableRecordReferenceFiltersForInvoiceCandidate(row, invCandQueryBuilder);
-
 		final String isInterimInvoiceStr = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_IsInterimInvoice);
 		if (Check.isNotBlank(isInterimInvoiceStr))
 		{
@@ -501,6 +370,8 @@ public class C_Invoice_Candidate_StepDef
 				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInterimInvoice, null);
 			}
 		}
+
+		addTableRecordReferenceFiltersForInvoiceCandidate(row, invCandQueryBuilder);
 
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
@@ -781,11 +652,6 @@ public class C_Invoice_Candidate_StepDef
 		logger.error("*** Error while looking for C_Invoice_Candidate record, see current context: \n" + message);
 	}
 
-	@NonNull
-	private Boolean checkNotMarkedAsToRecompute(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
-	{
-		return !invoiceCandDAO.isToRecompute(invoiceCandidate);
-	}
 
 	private void wrapInvoiceCandidateRelatedException(
 			@NonNull final Throwable e,
@@ -847,6 +713,9 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	/**
+	 * @deprecated always look to prefer master when merging
+	 */
 	@Deprecated
 	private void manuallyRecomputeInvoiceCandidate_outDated(
 			@NonNull final Throwable throwable,

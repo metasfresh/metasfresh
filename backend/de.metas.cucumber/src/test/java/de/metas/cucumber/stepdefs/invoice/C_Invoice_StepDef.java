@@ -291,13 +291,6 @@ public class C_Invoice_StepDef
 		assertThat(paymentTermId).isNotNull();
 		assertThat(invoice.getC_PaymentTerm_ID()).isEqualTo(paymentTermId.getRepoId());
 
-		// final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
-		// if (Check.isNotBlank(internalName))
-		// {
-		// 	final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-		// 	assertThat(invoice.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
-		// }
-
 		final String adUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(adUserIdentifier))
 		{

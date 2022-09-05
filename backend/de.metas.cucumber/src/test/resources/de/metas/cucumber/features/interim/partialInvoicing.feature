@@ -40,17 +40,17 @@ Feature: Partial Payment Invoicing
 
   Scenario: Happy flow
 
-    _Given x1 C_Interim_Invoice_Settings with thw withholding product set to be 'Graue Kiste' (interim_settings)
+    _Given x1 C_Interim_Invoice_Settings with the withholding product set to be 'Graue Kiste' (interim_settings)
     _And x1 C_Flatrate_Conditions configured with 'interim_settings'
     _And x1 C_Order with with IsSOTrx='N' (purchase order)
     _And x1 C_OrderLine ordering x100 products
     __________________________________________
     _When the purchase order is completed
-    _And x30 CUs are received
-    _And an interim invoice contract created for C_OrderLine
     _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
+    _When x30 CUs are received
+    _And an interim invoice contract created for C_OrderLine
+    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
     _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
-    _And x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
     __________________________________________
     _When 'I_IC1' is processed
     _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
@@ -59,8 +59,8 @@ Feature: Partial Payment Invoicing
     _And 'I_I1' and 'I_IL1' are associated to 'IIFT_L1'
     __________________________________________
     _When x20 CUs are received
-    _Then x2 C_Invoice_Candidate are generated -> one interim (I_IC2) with QtyDelivered=QtyToInvoice=20 and one withholding (W_IC2) with QtyDelivered=QtyToInvoice=-20
-    _And x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=20 (IIFT2) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L2)
+    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=20 (IIFT2) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L2)
+    _And x2 C_Invoice_Candidate are generated -> one interim (I_IC2) with QtyDelivered=QtyToInvoice=20 and one withholding (W_IC2) with QtyDelivered=QtyToInvoice=-20
     __________________________________________
     _When 'I_IC2' is processed
     _Then x1 C_Invoice (I_I2) and x1 C_InvoiceLine (I_IL2) are generated
@@ -215,17 +215,17 @@ Feature: Partial Payment Invoicing
 
   Scenario: Order completed, interim invoice contract created, material receipt created, no interim invoice created, material receipt reversed
 
-    _Given x1 C_Interim_Invoice_Settings with thw withholding product set to be 'Graue Kiste' (interim_settings)
+    _Given x1 C_Interim_Invoice_Settings with the withholding product set to be 'Graue Kiste' (interim_settings)
     _And x1 C_Flatrate_Conditions configured with 'interim_settings'
     _And x1 C_Order with with IsSOTrx='N' (purchase order)
     _And x1 C_OrderLine ordering x100 products
     __________________________________________
     _When the purchase order is completed
-    _And x30 CUs are received generating a material receipt (material_receipt)
-    _And an interim invoice contract created for C_OrderLine
     _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
+    _When x30 CUs are received generating a material receipt (material_receipt)
+    _And an interim invoice contract created for C_OrderLine
+    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
     _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
-    _And x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
     __________________________________________
     _When 'I_IC1' is processed
     _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
@@ -317,11 +317,11 @@ Feature: Partial Payment Invoicing
     _And x1 C_OrderLine ordering x100 products
     __________________________________________
     _When the purchase order is completed
-    _And x30 CUs are received
-    _And an interim invoice contract created for C_OrderLine
     _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
+    _When x30 CUs are received generating a material receipt (material_receipt)
+    _And an interim invoice contract created for C_OrderLine
+    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
     _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
-    _And x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
     __________________________________________
     _When 'I_IC1' is processed
     _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
@@ -330,8 +330,8 @@ Feature: Partial Payment Invoicing
     _And 'I_I1' and 'I_IL1' are associated to 'IIFT_L1'
     __________________________________________
     _When x20 CUs are received
-    _Then x2 C_Invoice_Candidate are generated -> one interim (I_IC2) with QtyDelivered=QtyToInvoice=20 and one withholding (W_IC2) with QtyDelivered=QtyToInvoice=-20
-    _And x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=20 (IIFT2) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L2)
+    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=20 (IIFT2) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L2)
+    _And x2 C_Invoice_Candidate are generated -> one interim (I_IC2) with QtyDelivered=QtyToInvoice=20 and one withholding (W_IC2) with QtyDelivered=QtyToInvoice=-20
     __________________________________________
     _When 'I_I1' is reversed
     _Then 'I_IC1' has QtyInvoiced=0 and QtyToInvoice=30
