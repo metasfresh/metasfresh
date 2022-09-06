@@ -23,13 +23,27 @@ export function autocompleteRequest({
   tabId,
   viewId,
 }) {
+  console.log('autocompleteRequest', {
+    attribute,
+    docId,
+    docType,
+    entity,
+    propertyName,
+    query,
+    rowId,
+    subentity,
+    subentityId,
+    tabId,
+    viewId,
+  });
+
   // NOTE: following cases are already handled elsewhere:
   // * view attributes
 
   if (entity === 'documentView' && subentity === 'filter') {
     return getViewFilterParameterTypeahead({
       windowId: docType,
-      viewId: docId, // NOTE: for some reason docId is the viewId and not the viewId which is undefined
+      viewId: viewId ?? docId, // NOTE in case of Labels widget, we really get the viewId. In the other cases we get the viewId as "docId".
       filterId: subentityId,
       parameterName: propertyName,
       query,
