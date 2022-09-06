@@ -15,7 +15,6 @@ Here come the actual release notes:
   * [#13509](https://github.com/metasfresh/metasfresh/issues/13509) Generic importer for invoice candidates
   * [#13423](https://github.com/metasfresh/metasfresh/issues/13423) Partial payment overview (aka Interim Invoice): the proces
   * [#13466](https://github.com/metasfresh/metasfresh/issues/13466) Purchase call orders 
-  * [#13487](https://github.com/metasfresh/metasfresh/issues/13487) [React] - Infinite loop for /dropdown call
   * [#13458](https://github.com/metasfresh/metasfresh/issues/13458) Load Budget Project JSONs into metasfresh
   * [#13431](https://github.com/metasfresh/metasfresh/pull/13431) Set-up Github webhooks for syncing issues 
   * [#13442](https://github.com/metasfresh/metasfresh/issues/13442) Option to set the base language if same as the previous one #13442
@@ -85,13 +84,14 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#13550](https://github.com/metasfresh/metasfresh/issues/13550) [React] - Calendar gives blank screen when selecting a date from past
-  * [#13535] (https://github.com/metasfresh/metasfresh/issues/13535) Extend Order's Product-Proposal - Fix Bug
-  * [#13261] https://github.com/metasfresh/metasfresh/issues/13261 AvailableForSales to Shopware - Fix terminology
-  * [#13286] https://github.com/metasfresh/metasfresh/issues/13286 Display document validation message
-  * [#13257] https://github.com/metasfresh/metasfresh/pull/13257 available for sales stock fix
-  * [#13215] https://github.com/metasfresh/metasfresh/issues/13215 Description and documentnote are not copied from doctype into shipment
-  * [#13218] https://github.com/metasfresh/metasfresh/pull/13218 Show Adr attribute details
-  * [#13201] https://github.com/metasfresh/metasfresh/pull/13201 add new accounts in Deckungsbeitragsrechnung 
+  * [#13487](https://github.com/metasfresh/metasfresh/issues/13487) [React] - Infinite loop for /dropdown call
+  * [#13535](https://github.com/metasfresh/metasfresh/issues/13535) Extend Order's Product-Proposal - Fix Bug
+  * [#13261](https://github.com/metasfresh/metasfresh/issues/13261) AvailableForSales to Shopware - Fix terminology
+  * [#13286](https://github.com/metasfresh/metasfresh/issues/13286) Display document validation message
+  * [#13257](https://github.com/metasfresh/metasfresh/pull/13257) available for sales stock fix
+  * [#13215](https://github.com/metasfresh/metasfresh/issues/13215) Description and documentnote are not copied from doctype into shipment
+  * [#13218](https://github.com/metasfresh/metasfresh/pull/13218) Show Adr attribute details
+  * [#13201](https://github.com/metasfresh/metasfresh/pull/13201) add new accounts in Deckungsbeitragsrechnung 
   * [#13204](https://github.com/metasfresh/metasfresh/pull/13204) fix flaky test: Create sales order with different ASI, on complete no production candidate is found
   * [#13197](https://github.com/metasfresh/metasfresh/pull/13197) cucumber fixes
   * [#13170](https://github.com/metasfresh/metasfresh/pull/13170) hotfix RV_UnPosted: DateTrx was used instead of DateAcct for M_MatchInv and M_MatchPO
