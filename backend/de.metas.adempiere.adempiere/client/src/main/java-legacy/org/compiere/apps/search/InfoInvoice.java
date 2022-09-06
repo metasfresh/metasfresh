@@ -184,13 +184,14 @@ public class InfoInvoice extends Info
 	//	lOrg_ID.setLabelFor(fOrg_ID);
 	//	fOrg_ID.setBackground(AdempierePLAF.getInfoBackground());
 		//	C_Invoice.C_BPartner_ID
+		final MLookupFactory lookupFactory = MLookupFactory.newInstance();
 		fBPartner_ID = new VLookup("C_BPartner_ID", false, false, true,
-			MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, 3499, DisplayType.Search));
+			lookupFactory.get (Env.getCtx(), p_WindowNo, 0, 3499, DisplayType.Search));
 		lBPartner_ID.setLabelFor(fBPartner_ID);
 		fBPartner_ID.setBackground(AdempierePLAF.getInfoBackground());
 		//	C_Invoice.C_Order_ID
 		fOrder_ID = new VLookup("C_Order_ID", false, false, true,
-			MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, 4247, DisplayType.Search));
+			lookupFactory.get (Env.getCtx(), p_WindowNo, 0, 4247, DisplayType.Search));
 		lOrder_ID.setLabelFor(fOrder_ID);
 		fOrder_ID.setBackground(AdempierePLAF.getInfoBackground());
 		//

@@ -2,6 +2,7 @@ package org.adempiere.ad.field.model.interceptor;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -98,12 +99,12 @@ public class AD_Field
 			{
 				final I_AD_Column column = tableDAO.retrieveColumnById(adColumnId);
 				final String ctxTableName = tableDAO.retrieveTableName(column.getAD_Table_ID());
-				lookupInfo = MLookupFactory.getLookupInfo(
+				lookupInfo = MLookupFactory.newInstance().getLookupInfo(
 						Integer.MAX_VALUE, // WindowNo
 						adReferenceId,
 						ctxTableName, // ctxTableName
 						column.getColumnName(), // ctxColumnName
-						field.getAD_Reference_Value_ID(),
+						ReferenceId.ofRepoIdOrNull(field.getAD_Reference_Value_ID()),
 						column.isParent(), // IsParent,
 						CoalesceUtil.coalesceSuppliers(
 								() -> AdValRuleId.ofRepoIdOrNull(field.getAD_Val_Rule_ID()),

@@ -22,7 +22,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -944,21 +944,21 @@ public class GridFieldVO implements Serializable
 			{
 				if (this.lookupLoadFromColumn)
 				{
-					lookupInfo = MLookupFactory.getLookupInfo(WindowNo, AD_Column_ID, displayType);
+					lookupInfo = MLookupFactory.newInstance().getLookupInfo(WindowNo, AD_Column_ID, displayType);
 				}
 				else
 				{
 					final String tablename = Services.get(IADTableDAO.class).retrieveTableName(getAD_Table_ID());
-					lookupInfo = MLookupFactory.getLookupInfo(
+					lookupInfo = MLookupFactory.newInstance().getLookupInfo(
 							WindowNo,
 							displayType,
 							tablename,
 							ColumnName,
-							ReferenceId.toRepoId(AD_Reference_Value_ID),
+							AD_Reference_Value_ID,
 							IsParent,
 							AD_Val_Rule_ID); // metas: 03271
 				}
-				lookupInfo.InfoFactoryClass = this.InfoFactoryClass;
+				lookupInfo.setInfoFactoryClass(this.InfoFactoryClass);
 			}
 			catch (Exception e)     // Cannot create Lookup
 			{
@@ -1143,7 +1143,7 @@ public class GridFieldVO implements Serializable
 		return ColorLogicExpr;
 	}
 
-	public MLookupInfo getLookupInfo()
+	MLookupInfo getLookupInfo()
 	{
 		if (lookupInfo == null)
 		{

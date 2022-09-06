@@ -72,6 +72,7 @@ import java.util.Set;
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	private final OrderLineQuickInputCallout callout;
 
@@ -80,11 +81,13 @@ import java.util.Set;
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
 			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders,
 			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper)
 	{
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
 		this.availableForSaleAdapter = availableForSaleAdapter;
 		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 
 		callout = OrderLineQuickInputCallout.builder()
 				.bpartnersService(bpartnersService)
@@ -193,7 +196,7 @@ import java.util.Set;
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
@@ -225,7 +228,7 @@ import java.util.Set;
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy))
 				//
 				.setWidgetType(DocumentFieldWidgetType.List)
-				.setLookupDescriptorProvider(LookupDescriptorProviders.listByAD_Reference_Value_ID(ShipmentAllocationBestBeforePolicy.AD_REFERENCE_ID))
+				.setLookupDescriptorProvider(lookupDescriptorProviders.listByAD_Reference_Value_ID(ShipmentAllocationBestBeforePolicy.AD_REFERENCE_ID))
 				.setValueClass(StringLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
@@ -252,7 +255,7 @@ import java.util.Set;
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(LookupDescriptorProviders.searchInTable(I_C_Flatrate_Conditions.Table_Name))
+				.setLookupDescriptorProvider(lookupDescriptorProviders.searchInTable(I_C_Flatrate_Conditions.Table_Name))
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)

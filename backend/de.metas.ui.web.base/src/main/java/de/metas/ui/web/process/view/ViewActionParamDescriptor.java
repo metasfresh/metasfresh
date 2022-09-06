@@ -68,7 +68,7 @@ public final class ViewActionParamDescriptor
 			}
 			else
 			{
-				lookupDescriptorProvider = LookupDescriptorProviders.sql()
+				lookupDescriptorProvider = LookupDescriptorProviders.sharedInstance().sql()
 						.setCtxTableName(null) // tableName
 						.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(parameterAnnotation.sqlLookupTableName()))
 						.setDisplayType(DisplayType.Search)

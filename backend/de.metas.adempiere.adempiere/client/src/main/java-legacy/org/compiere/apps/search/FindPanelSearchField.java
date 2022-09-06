@@ -3,7 +3,7 @@ package org.compiere.apps.search;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.compiere.grid.ed.VEditor;

@@ -1,12 +1,13 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -105,6 +106,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
 	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	private final ImmutableMap<AdFieldId, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
@@ -118,11 +120,14 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 	@lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
 			@NonNull final List<I_AD_UI_Element> labelsUIElements)
 	{
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
+
 		final boolean rootEntity = parentTabVO == null;
 
 		_specialFieldsCollector = rootEntity ? new SpecialDocumentFieldsCollector() : null;
@@ -366,10 +371,14 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				final ReferenceId displayType = ReferenceId.ofRepoId(gridFieldVO.getDisplayType());
 				widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
 				final String ctxTableName = tableDAO.retrieveTableName(gridFieldVO.getAD_Table_ID());
+
 				final GridFieldDefaultFilterDescriptor defaultFilterDescriptor = gridFieldVO.getDefaultFilterDescriptor();
-				final AdValRuleId filterValRuleId = defaultFilterDescriptor != null ? defaultFilterDescriptor.getAdValRuleId() : null;
+				final AdValRuleId filterValRuleId = CoalesceUtil.coalesceSuppliers(
+						() -> defaultFilterDescriptor != null ? defaultFilterDescriptor.getAdValRuleId() : null,
+						gridFieldVO::getAD_Val_Rule_ID);
+
 				lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
-						LookupDescriptorProviders.sql()
+						lookupDataSourceFactory.getLookupDescriptorProviders().sql()
 								.setCtxTableName(ctxTableName)
 								.setCtxColumnName(sqlColumnName)
 								.setWidgetType(widgetType)
@@ -558,6 +567,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// final Client elasticsearchClient = Adempiere.getBean(org.elasticsearch.client.Client.class);
 		//
 		// return FullTextSearchLookupDescriptorProvider.builder()
+		//		.lookupDataSourceFactory(lookupDataSourceFactory)
 		// 		.elasticsearchClient(elasticsearchClient)
 		// 		.modelTableName(modelIndexer.getModelTableName())
 		// 		.esIndexName(modelIndexer.getIndexName())
@@ -642,7 +652,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	}
 
 	@Nullable
-	private static Object extractAutoFilterInitialValue(
+	private Object extractAutoFilterInitialValue(
 			@NonNull final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo,
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
@@ -668,7 +678,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		else
 		{
 			final LookupDataSource lookupDataSource = widgetType.isLookup() && lookupDescriptor != null
-					? LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor)
+					? lookupDataSourceFactory.getLookupDataSource(lookupDescriptor)
 					: null;
 			return DataTypes.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
 		}
@@ -696,7 +706,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Generic ZoomInto button
 		if (tableName != null)
 		{
-			if (adColumnBL.isRecordIdColumnName(fieldName))
+			if (IColumnBL.isRecordIdColumnName(fieldName))
 			{
 				final String zoomIntoTableIdFieldName = adColumnBL.getTableIdColumnName(tableName, fieldName).orElse(null);
 				if (zoomIntoTableIdFieldName != null)
@@ -742,7 +752,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setKey(fieldBinding.isKeyColumn())
 				.setWidgetType(fieldBinding.getWidgetType())
 				.setValueClass(fieldBinding.getValueClass())
-				.setLookupDescriptorProvider(lookupDescriptor)
+				.setLookupDescriptorProvider(LookupDescriptorProviders.singleton(lookupDescriptor))
 				.setReadonlyLogic(false)
 				.setDisplayLogic(extractLabelDisplayLogic(labelsUIElement))
 				.setVirtualField(fieldBinding.isVirtualColumn())
@@ -783,7 +793,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.orElse(ConstantLogicExpression.TRUE);
 	}
 
-	private static LabelsLookup createLabelsLookup(
+	private LabelsLookup createLabelsLookup(
 			@NonNull final I_AD_UI_Element labelsUIElement,
 			@NonNull final String tableName)
 	{
@@ -834,7 +844,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 						: labelsValueColumn.getAD_Val_Rule_ID()
 		);
 
-		final SqlLookupDescriptorProviderBuilder labelsValuesLookupDescriptorBuilder = LookupDescriptorProviders.sql()
+		final SqlLookupDescriptorProviderBuilder labelsValuesLookupDescriptorBuilder = lookupDataSourceFactory.getLookupDescriptorProviders().sql()
 				.setCtxTableName(labelsTableName)
 				.setCtxColumnName(labelsValueColumnName)
 				.setDisplayType(referenceIDToUse)
@@ -854,7 +864,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.fieldName(extractLabelsFieldName(labelsUIElement))
 				.labelsTableName(labelsTableName)
 				.labelsValueColumnName(labelsValueColumnName)
-				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
+				.labelsValuesUseNumericKey(labelsValuesLookupDescriptor.isNumericKey())
+				.labelsValuesLookupDataSource(lookupDataSourceFactory.getLookupDataSource(labelsValuesLookupDescriptor))
 				.labelsLinkColumnName(labelsLinkColumnName)
 				.labelsValueReferenceId(referenceValueIDToUse)
 				.tableName(tableName)

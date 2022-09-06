@@ -25,128 +25,72 @@ package de.metas.ui.web.window.descriptor.sql;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.i18n.TranslatableParameterizedString;
-import de.metas.reflist.ReferenceId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.impl.AccessSqlStringExpression;
-import de.metas.security.permissions.Access;
-import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
-import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-import de.metas.ui.web.window.model.sql.DocActionValidationRule;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
-import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.ad.validationRule.AdValRuleId;
-import org.adempiere.ad.validationRule.INamePairPredicate;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.ad.validationRule.NamePairPredicates;
-import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
-import org.adempiere.ad.validationRule.impl.NullValidationRule;
-import org.adempiere.db.DBConstants;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.MLookupFactory;
-import org.compiere.model.MLookupInfo;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
-import org.compiere.util.DisplayType;
+import org.adempiere.ad.table.api.TableName;
 
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-@Immutable
+@EqualsAndHashCode
 public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 {
-	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
-	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
-	public static final CtxName SQL_PARAM_ShowInactive = CtxNames.ofNameAndDefaultValue("SqlShowInactive", SQL_PARAM_VALUE_ShowInactive_No);
-
-	public static Builder builder()
-	{
-		return new Builder();
-	}
-
 	public static SqlLookupDescriptor cast(final LookupDescriptor descriptor)
 	{
 		return (SqlLookupDescriptor)descriptor;
 	}
 
-	public static LookupDescriptor productAttributes()
+	@NonNull private final CompositeSqlLookupFilter filters;
+	@Getter private final boolean highVolume;
+	@Getter @Nullable private final LookupSource lookupSourceType;
+	@Getter @NonNull private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
+
+	//
+	// Required for toBuilder():
+	@NonNull final SqlForFetchingLookupById sqlForFetchingLookupByIdExpression;
+	@NonNull final SqlForFetchingLookups sqlForFetchingExpression;
+	@NonNull final TableName lookupTableName;
+	@NonNull final TooltipType tooltipType;
+	@Nullable final WindowId zoomIntoWindowId;
+
+	@Builder(toBuilder = true)
+	private SqlLookupDescriptor(
+			@NonNull final CompositeSqlLookupFilter filters,
+			final boolean highVolume,
+			@Nullable final LookupSource lookupSourceType,
+			@NonNull final TableName lookupTableName,
+			@NonNull final SqlForFetchingLookupById sqlForFetchingLookupByIdExpression,
+			@NonNull final SqlForFetchingLookups sqlForFetchingExpression,
+			@NonNull final TooltipType tooltipType,
+			@Nullable final WindowId zoomIntoWindowId)
 	{
-		return LookupDescriptorProviders.sql()
-				.setCtxTableName(null) // tableName
-				.setCtxColumnName(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID)
-				.setDisplayType(DisplayType.PAttribute)
-				.setReadOnlyAccess()
-				.build()
-				.provide()
-				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for Product Attributes"));
+		this.filters = filters;
+		this.highVolume = highVolume;
+		this.lookupSourceType = lookupSourceType;
 
-	}
+		this.sqlForFetchingLookupByIdExpression = sqlForFetchingLookupByIdExpression;
+		this.sqlForFetchingExpression = sqlForFetchingExpression;
+		this.lookupTableName = lookupTableName;
+		this.tooltipType = tooltipType;
+		this.zoomIntoWindowId = zoomIntoWindowId;
 
-	private static final int WINDOWNO_Dummy = 99999;
-
-	private final Optional<String> tableName;
-	private final Optional<WindowId> zoomIntoWindowId;
-	private final SqlForFetchingLookups sqlForFetchingExpression;
-	private final SqlForFetchingLookupById sqlForFetchingLookupByIdExpression;
-	private final int entityTypeIndex;
-	private final INamePairPredicate postQueryPredicate;
-
-	private final boolean highVolume;
-	private final boolean numericKey;
-
-	private final LookupSource lookupSourceType;
-	private final ImmutableSet<String> dependsOnFieldNames;
-	private final ImmutableSet<String> dependsOnTableNames;
-	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
-	@NonNull private final TooltipType tooltipType;
-
-	private SqlLookupDescriptor(final Builder builder)
-	{
-		tableName = Optional.of(builder.sqlTableName);
-		zoomIntoWindowId = builder.getZoomIntoWindowId();
-		sqlForFetchingExpression = builder.sqlForFetchingExpression;
-		sqlForFetchingLookupByIdExpression = builder.sqlForFetchingLookupByIdExpression;
-		entityTypeIndex = builder.entityTypeIndex;
-
-		postQueryPredicate = builder.getPostQueryPredicate();
-
-		numericKey = builder.numericKey;
-		highVolume = builder.isHighVolume();
-
-		lookupSourceType = builder.getLookupSourceType();
-		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
-		dependsOnTableNames = ImmutableSet.copyOf(builder.getDependsOnTableNames());
-		tooltipType = builder.getTooltipType();
-
-		lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.of(this); // keep it last!
+		this.lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.builder()
+				.lookupTableName(lookupTableName)
+				.sqlForFetchingLookups(sqlForFetchingExpression.withSqlWhere_ValidationRules(this.filters.getSqlWhereClause()))
+				.sqlForFetchingLookupById(sqlForFetchingLookupByIdExpression)
+				.postQueryPredicate(this.filters.getPostQueryPredicate())
+				.zoomIntoWindowId(Optional.ofNullable(zoomIntoWindowId))
+				.tooltipType(tooltipType)
+				.build();
 	}
 
 	@Override
@@ -154,589 +98,55 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("tableName", tableName)
-				.add("zoomIntoWindowId", zoomIntoWindowId.orElse(null))
+				.add("tableName", getTableName().orElse(null))
 				.add("highVolume", highVolume ? true : null)
-				.add("sqlForFetching", sqlForFetchingExpression.toOneLineString())
-				.add("postQueryPredicate", postQueryPredicate == null || postQueryPredicate == NamePairPredicates.ACCEPT_ALL ? null : postQueryPredicate)
+				.add("sqlForFetching", lookupDataSourceFetcher.getSqlForFetchingLookups().toOneLineString())
+				.add("filters", filters)
 				.toString();
 	}
 
 	@Override
-	public int hashCode()
-	{
-		return Objects.hash(
-				tableName,
-				zoomIntoWindowId,
-				sqlForFetchingExpression,
-				sqlForFetchingLookupByIdExpression,
-				entityTypeIndex,
-				postQueryPredicate,
-				//
-				highVolume,
-				numericKey
-				// dependsOnFieldNames // not needed because it's computed
-				// lookupSourceType // not needed because it's computed
-				// lookupDataSourceFetcher // not needed because it's computed
-		);
-	}
+	public Optional<String> getTableName() {return getLookupDataSourceFetcher().getLookupTableName();}
 
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		if (obj == null)
-		{
-			return false;
-		}
-
-		if (!getClass().equals(obj.getClass()))
-		{
-			return false;
-		}
-
-		final SqlLookupDescriptor other = (SqlLookupDescriptor)obj;
-		return Objects.equals(tableName, other.tableName)
-				&& Objects.equals(zoomIntoWindowId, other.zoomIntoWindowId)
-				&& Objects.equals(sqlForFetchingExpression, other.sqlForFetchingExpression)
-				&& Objects.equals(sqlForFetchingLookupByIdExpression, other.sqlForFetchingLookupByIdExpression)
-				&& entityTypeIndex == other.entityTypeIndex
-				&& Objects.equals(postQueryPredicate, other.postQueryPredicate)
-				&& highVolume == other.highVolume
-				&& numericKey == other.numericKey
-				// dependsOnFieldNames // not needed because it's computed
-				// lookupSourceType // not needed because it's computed
-				// lookupDataSourceFetcher // not needed because it's computed
-				;
-	}
-
-	@Override
-	public LookupDataSourceFetcher getLookupDataSourceFetcher()
-	{
-		return lookupDataSourceFetcher;
-	}
-
-	@Override
-	public boolean isNumericKey()
-	{
-		return numericKey;
-	}
-
-	@Override
-	public Optional<String> getTableName()
-	{
-		return tableName;
-	}
-
-	@Override
-	public Optional<WindowId> getZoomIntoWindowId()
-	{
-		return zoomIntoWindowId;
-	}
-
-	public SqlForFetchingLookups getSqlForFetchingExpression()
-	{
-		return sqlForFetchingExpression;
-	}
-
-	@Override
-	public SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression()
-	{
-		return sqlForFetchingLookupByIdExpression;
-	}
-
-	public int getEntityTypeIndex()
-	{
-		return entityTypeIndex;
-	}
-
-	@Override
-	public Set<String> getDependsOnFieldNames()
-	{
-		return dependsOnFieldNames;
-	}
-
-	@Override
-	public Set<String> getDependsOnTableNames()
-	{
-		return dependsOnTableNames;
-	}
-
-	@Override
-	public @NonNull TooltipType getTooltipType()
-	{
-		return tooltipType;
-	}
-
-	public INamePairPredicate getPostQueryPredicate()
-	{
-		return postQueryPredicate;
-	}
+	public boolean isNumericKey() {return getLookupDataSourceFetcher().isNumericKey();}
 
 	@Override
 	public boolean hasParameters()
 	{
-		return !getSqlForFetchingExpression().getParameters().isEmpty()
-				|| !getPostQueryPredicate().getParameters().isEmpty();
+		return !lookupDataSourceFetcher.getSqlForFetchingLookups().getParameters().isEmpty()
+				|| (!filters.getDependsOnFieldNames().isEmpty());
 	}
 
-	@Override
-	public boolean isHighVolume()
+	public ImmutableSet<String> getDependsOnFieldNames()
 	{
-		return highVolume;
+		return filters.getDependsOnFieldNames();
 	}
 
-	@Override
-	public LookupSource getLookupSourceType()
+	public ImmutableSet<String> getDependsOnTableNames()
 	{
-		return lookupSourceType;
+		return filters.getDependsOnTableNames();
 	}
 
-	@ToString(of = { "sqlTableName", "ctxTableName", "ctxColumnName", "widgetType" })
-	public static final class Builder
+	public SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression()
 	{
-		//
-		// Parameters
-		@NonNull private LookupScope scope = LookupScope.DocumentField;
-		@Nullable private String ctxColumnName;
-		@Nullable private String ctxTableName;
-
-		private DocumentFieldWidgetType widgetType;
-		private ReferenceId displayType;
-		private ReferenceId AD_Reference_Value_ID = null;
-		private AdValRuleId AD_Val_Rule_ID = null;
-		private final ArrayList<IValidationRule> additionalValidationRules = new ArrayList<>();
-		private Access requiredAccess = null;
-
-		//
-		// Built/prepared values (i.e. computed on build)
-		private boolean numericKey;
-		private ImmutableSet<String> dependsOnFieldNames = null;
-		private IValidationRule validationRuleEffective = null;
-		private String sqlTableName;
-		private SqlForFetchingLookups sqlForFetchingExpression;
-		private SqlForFetchingLookupById sqlForFetchingLookupByIdExpression;
-		private int entityTypeIndex = -1;
-
-		private AdWindowId zoomIntoAdWindowId = null;
-		@NonNull private TooltipType tooltipType = TooltipType.DEFAULT;
-
-		private Builder()
-		{
-		}
-
-		SqlLookupDescriptor build()
-		{
-			final boolean IsParent = false;
-			final int displayType = this.displayType.getRepoId();
-
-			if (displayType == DisplayType.PAttribute && AD_Reference_Value_ID == null)
-			{
-				numericKey = true;
-				validationRuleEffective = NullValidationRule.instance;
-				dependsOnFieldNames = ImmutableSet.of();
-				setSqlExpressions_PAttribute();
-			}
-			else
-			{
-				final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(
-						WINDOWNO_Dummy,
-						displayType,
-						ctxTableName,
-						ctxColumnName,
-						ReferenceId.toRepoId(AD_Reference_Value_ID),
-						IsParent,
-						AD_Val_Rule_ID);
-				if (lookupInfo == null)
-				{
-					// shall not happen
-					throw new AdempiereException("No lookup info for " + ctxTableName + "." + ctxColumnName);
-				}
-
-				numericKey = lookupInfo.isNumericKey();
-				validationRuleEffective = computeEffectiveValidationRule(ctxColumnName, displayType, scope, lookupInfo, additionalValidationRules);
-				dependsOnFieldNames = ImmutableSet.<String>builder()
-						.addAll(validationRuleEffective.getPrefilterWhereClause().getParameterNames())
-						.addAll(validationRuleEffective.getPostQueryFilter().getParameters())
-						.build();
-				setSqlExpressions(lookupInfo);
-			}
-
-			return new SqlLookupDescriptor(this);
-		}
-
-		private static IValidationRule computeEffectiveValidationRule(
-				@Nullable final String ctxColumnName,
-				final int displayType,
-				@NonNull final LookupScope scope,
-				@NonNull final MLookupInfo lookupInfo,
-				@NonNull final List<IValidationRule> additionalValidationRules)
-		{
-			final CompositeValidationRule.Builder validationRuleBuilder = CompositeValidationRule.builder();
-			validationRuleBuilder.add(lookupInfo.getValidationRule());
-
-			//
-			// Case: DocAction button => inject the DocActionValidationRule
-			// FIXME: hardcoded
-			if (scope == LookupScope.DocumentField
-					&& displayType == DisplayType.Button
-					&& WindowConstants.FIELDNAME_DocAction.equals(ctxColumnName))
-			{
-				validationRuleBuilder.add(DocActionValidationRule.instance);
-			}
-
-			// Additional validation rules registered
-			validationRuleBuilder.addAll(additionalValidationRules);
-
-			return validationRuleBuilder.build();
-		}
-
-		private void setSqlExpressions(final MLookupInfo lookupInfo)
-		{
-			//
-			// WHERE
-			final IStringExpression sqlWhereFinal = buildSqlWhere(lookupInfo, validationRuleEffective);
-
-			//
-			// ORDER BY
-			final IStringExpression lookup_SqlOrderBy = buildSqlOrderBy(lookupInfo);
-
-			//
-			// Set the SQLs
-			{
-				sqlTableName = lookupInfo.getTableName();
-				zoomIntoAdWindowId = lookupInfo.getZoomAD_Window_ID_Override();
-				sqlForFetchingExpression = buildSqlForFetching(lookupInfo, sqlWhereFinal, lookup_SqlOrderBy);
-				sqlForFetchingLookupByIdExpression = buildSqlForFetchingById(lookupInfo);
-
-				if (lookupInfo.isQueryHasEntityType())
-				{
-					entityTypeIndex = MLookupFactory.COLUMNINDEX_EntityType;
-				}
-			}
-
-			if (lookupInfo.getTooltipType() != null)
-			{
-				tooltipType = lookupInfo.getTooltipType();
-			}
-		}
-
-		private IStringExpression buildSqlOrderBy(final MLookupInfo lookupInfo)
-		{
-			final CompositeStringExpression.Builder builder = IStringExpression.composer();
-
-			//
-			// 1. LEVENSHTIEN distance from user typed string to display name
-			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-			if (sysConfigBL.getBooleanValue("webui.lookup.orderBy.levenshtein", false))
-			{
-				final TranslatableParameterizedString displayColumnSql = lookupInfo.getDisplayColumnSql();
-				builder.append("levenshtein(")
-						.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(LookupDataSourceContext.PARAM_FilterSqlWithoutWildcards).append(", 1)")
-						.append(", ")
-						.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(displayColumnSql).append(", 1)")
-						.append(")");
-			}
-
-			//
-			// 2. Display Name
-			if (!builder.isEmpty())
-			{
-				builder.append(", ");
-			}
-			builder.append(StringUtils.trimBlankToOptional(lookupInfo.getOrderBySqlPart())
-					.orElse(String.valueOf(MLookupFactory.COLUMNINDEX_DisplayName)));
-
-			//
-			return builder.build();
-		}
-
-		private void setSqlExpressions_PAttribute()
-		{
-			final String tableName = I_M_AttributeSetInstance.Table_Name;
-			final String keyColumnNameFQ = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
-			final String displayColumnSql = tableName + "." + I_M_AttributeSetInstance.COLUMNNAME_Description;
-
-			final CompositeStringExpression.Builder sqlSelectFrom = IStringExpression.composer()
-					.append("SELECT ")
-					.append(" ").append(keyColumnNameFQ) // Key
-					.append(", NULL") // Value
-					.append(",").append(displayColumnSql) // DisplayName
-					.append(", M_AttributeSetInstance.IsActive") // IsActive
-					.append(", NULL") // EntityType
-					.append(" FROM ").append(tableName);
-			//
-			// WHERE
-			final CompositeStringExpression.Builder sqlWhereFinal = IStringExpression.composer();
-			{
-				// Validation Rule's WHERE
-				final IStringExpression validationRuleWhereClause = validationRuleEffective.getPrefilterWhereClause();
-				if (!validationRuleWhereClause.isNullExpression())
-				{
-					sqlWhereFinal.appendIfNotEmpty("\n AND ");
-					sqlWhereFinal.append(" /* validation rule */ ").append("(").append(validationRuleWhereClause).append(")");
-				}
-
-				// Filter's WHERE
-				sqlWhereFinal.appendIfNotEmpty("\n AND ");
-				sqlWhereFinal.append(" /* filter */ ").append("(").append(displayColumnSql).append(") ILIKE ").append(LookupDataSourceContext.PARAM_FilterSql);
-			}
-
-			//
-			// ORDER BY
-			String lookup_SqlOrderBy = I_M_AttributeSetInstance.COLUMNNAME_Description;
-			if (Check.isEmpty(lookup_SqlOrderBy, true))
-			{
-				lookup_SqlOrderBy = String.valueOf(MLookupFactory.COLUMNINDEX_DisplayName);
-			}
-
-			//
-			// Assemble the SQLs
-			final SqlForFetchingLookups sqlForFetching = SqlForFetchingLookups.builder()
-					.sql(IStringExpression.composer()
-							.append(sqlSelectFrom) // SELECT ... FROM ...
-							.append("\n WHERE \n").append(sqlWhereFinal) // WHERE
-							.append("\n ORDER BY ").append(lookup_SqlOrderBy) // ORDER BY
-							.append("\n OFFSET ").append(SqlForFetchingLookups.PARAM_Offset.toStringWithMarkers())
-							.append("\n LIMIT ").append(SqlForFetchingLookups.PARAM_Limit.toStringWithMarkers()) // LIMIT
-							.wrap(AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, getRequiredAccess(tableName))) // security
-							.build()
-							.caching())
-					.build();
-
-			final SqlForFetchingLookupById sqlForFetchingLookupById = SqlForFetchingLookupById.builder()
-					.keyColumnNameFQ(keyColumnNameFQ)
-					.numericKey(true)
-					.displayColumn(ConstantStringExpression.of(displayColumnSql))
-					.sqlFrom(ConstantStringExpression.of(tableName))
-					.build();
-
-			//
-			// Set the SQLs
-			{
-				sqlTableName = tableName;
-				sqlForFetchingExpression = sqlForFetching;
-				sqlForFetchingLookupByIdExpression = sqlForFetchingLookupById;
-			}
-		}
-
-		private static IStringExpression buildSqlWhere(final MLookupInfo lookupInfo, final IValidationRule validationRuleEffective)
-		{
-			final String tableName = lookupInfo.getTableName();
-			final String lookup_SqlWhere = StringUtils.trimBlankToNull(lookupInfo.getWhereClauseSqlPart());
-			final TranslatableParameterizedString displayColumnSql = lookupInfo.getDisplayColumnSql();
-
-			final CompositeStringExpression.Builder sqlWhereFinal = IStringExpression.composer();
-
-			// Static lookup's WHERE
-			if (lookup_SqlWhere != null)
-			{
-				sqlWhereFinal.append(" /* lookup where clause */ ").append("(").append(lookup_SqlWhere).append(")");
-			}
-
-			// Validation Rule's WHERE
-			final IStringExpression validationRuleWhereClause = validationRuleEffective.getPrefilterWhereClause();
-			if (!validationRuleWhereClause.isNullExpression())
-			{
-				sqlWhereFinal.appendIfNotEmpty("\n AND ");
-				sqlWhereFinal.append(" /* validation rule */ ").append("(\n").append(validationRuleWhereClause).append("\n)\n");
-			}
-
-			// Filter's WHERE
-			sqlWhereFinal.appendIfNotEmpty("\n AND ");
-			sqlWhereFinal.append(" /* filter */ ")
-					.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(displayColumnSql).append(", 1)")
-					.append(" ILIKE ")
-					.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(LookupDataSourceContext.PARAM_FilterSql).append(", 1)");
-
-			// IsActive WHERE
-			if (!lookupInfo.isShowInactiveValues())
-			{
-				sqlWhereFinal.appendIfNotEmpty("\n AND ");
-				sqlWhereFinal.append(" /* active */ ('").append(SQL_PARAM_ShowInactive).append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
-			}
-
-			return sqlWhereFinal.build();
-		}
-
-		private SqlForFetchingLookups buildSqlForFetching(
-				final MLookupInfo lookupInfo,
-				final IStringExpression sqlWhere,
-				final IStringExpression sqlOrderBy)
-		{
-			final String tableName = lookupInfo.getTableName();
-			return SqlForFetchingLookups.builder()
-					.sql(IStringExpression.composer()
-							.append(lookupInfo.getSelectSqlPart()) // SELECT .. FROM ...
-							.append("\n WHERE \n").append(sqlWhere) // WHERE
-							.append("\n ORDER BY ").append(sqlOrderBy) // ORDER BY
-							.append("\n OFFSET ").append(SqlForFetchingLookups.PARAM_Offset) // OFFSET
-							.append("\n LIMIT ").append(SqlForFetchingLookups.PARAM_Limit) // LIMIT
-							.wrapIfTrue(!lookupInfo.isSecurityDisabled(), AccessSqlStringExpression.wrapper(tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, getRequiredAccess(tableName))) // security
-							.build()
-							.caching())
-					.build();
-		}
-
-		private static SqlForFetchingLookupById buildSqlForFetchingById(@NonNull final MLookupInfo lookupInfo)
-		{
-			final IStringExpression displayColumnSQL = TranslatableParameterizedStringExpression.of(lookupInfo.getDisplayColumnSql());
-
-			final IStringExpression descriptionColumnSqlOrNull = TranslatableParameterizedStringExpression.of(lookupInfo.getDescriptionColumnSQL());
-			final IStringExpression descriptionColumnSQL;
-			if (descriptionColumnSqlOrNull == null || descriptionColumnSqlOrNull.isNullExpression())
-			{
-				descriptionColumnSQL = ConstantStringExpression.of("NULL");
-			}
-			else
-			{
-				descriptionColumnSQL = descriptionColumnSqlOrNull;
-			}
-
-			final IStringExpression validationMsgColumnSqlOrNull = TranslatableParameterizedStringExpression.of(lookupInfo.getValidationMsgColumnSQL());
-			final IStringExpression validationMsgColumnSQL;
-			if (validationMsgColumnSqlOrNull == null || validationMsgColumnSqlOrNull.isNullExpression())
-			{
-				validationMsgColumnSQL = ConstantStringExpression.of("NULL");
-			}
-			else
-			{
-				validationMsgColumnSQL = validationMsgColumnSqlOrNull;
-			}
-
-			final IStringExpression fromSqlPart = TranslatableParameterizedStringExpression.of(lookupInfo.getFromSqlPart());
-			final String keyColumnFQ = lookupInfo.getKeyColumnFQ();
-			final int displayType = lookupInfo.getDisplayType();
-			final boolean listOrButton = DisplayType.List == displayType || DisplayType.Button == displayType;
-
-			return SqlForFetchingLookupById.builder()
-					.keyColumnNameFQ(keyColumnFQ)
-					.numericKey(lookupInfo.isNumericKey())
-					.displayColumn(displayColumnSQL)
-					.descriptionColumn(descriptionColumnSQL)
-					.activeColumn(lookupInfo.getActiveColumnSQL())
-					.validationMsgColumn(validationMsgColumnSQL)
-					.sqlFrom(fromSqlPart)
-					.additionalWhereClause(listOrButton ? lookupInfo.getWhereClauseSqlPart() : null) // this is actually adding the AD_Ref_List.AD_Reference_ID=....
-					.build();
-		}
-
-		private INamePairPredicate getPostQueryPredicate()
-		{
-			final INamePairPredicate postQueryPredicate = validationRuleEffective.getPostQueryFilter();
-			if (postQueryPredicate == null)
-			{
-				return NamePairPredicates.ACCEPT_ALL;
-			}
-
-			return postQueryPredicate;
-		}
-
-		public Builder setCtxColumnName(@Nullable final String columnName)
-		{
-			this.ctxColumnName = columnName;
-			return this;
-		}
-
-		public Builder setCtxTableName(@Nullable final String tableName)
-		{
-			this.ctxTableName = tableName;
-			return this;
-		}
-
-		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
-		{
-			this.widgetType = widgetType;
-			return this;
-		}
-
-		public Builder setDisplayType(final int displayType) {return setDisplayType(ReferenceId.ofRepoId(displayType));}
-
-		public Builder setDisplayType(final ReferenceId displayType)
-		{
-			this.displayType = displayType;
-			return this;
-		}
-
-		public Builder setAD_Reference_Value_ID(final ReferenceId AD_Reference_Value_ID)
-		{
-			this.AD_Reference_Value_ID = AD_Reference_Value_ID;
-			return this;
-		}
-
-		public Builder setAD_Val_Rule_ID(final AdValRuleId AD_Val_Rule_ID)
-		{
-			this.AD_Val_Rule_ID = AD_Val_Rule_ID;
-			return this;
-		}
-
-		private boolean isHighVolume()
-		{
-			final int displayType = this.displayType.getRepoId();
-			return DisplayType.TableDir != displayType && DisplayType.Table != displayType && DisplayType.List != displayType && DisplayType.Button != displayType;
-		}
-
-		Builder setScope(@NonNull final LookupScope scope)
-		{
-			this.scope = scope;
-			return this;
-		}
-
-		private Optional<WindowId> getZoomIntoWindowId()
-		{
-			return Optional.ofNullable(WindowId.ofNullable(zoomIntoAdWindowId));
-		}
-
-		@Nullable
-		private LookupSource getLookupSourceType()
-		{
-			return DescriptorsFactoryHelper.extractLookupSource(displayType, AD_Reference_Value_ID);
-		}
-
-		/**
-		 * Advice the lookup to show all records on which current user has at least read only access
-		 */
-		public Builder setReadOnlyAccess()
-		{
-			this.requiredAccess = Access.READ;
-			return this;
-		}
-
-		private Access getRequiredAccess(final String tableName)
-		{
-			if (requiredAccess != null)
-			{
-				return requiredAccess;
-			}
-
-			// AD_Client_ID/AD_Org_ID (security fields): shall display only those entries on which current user has read-write access
-			if (I_AD_Client.Table_Name.equals(tableName)
-					|| I_AD_Org.Table_Name.equals(tableName))
-			{
-				return Access.WRITE;
-			}
-
-			// Default: all entries on which current user has at least readonly access
-			return Access.READ;
-		}
-
-		Builder addValidationRules(final Collection<IValidationRule> validationRules)
-		{
-			this.additionalValidationRules.addAll(validationRules);
-			return this;
-		}
-
-		private Set<String> getDependsOnTableNames()
-		{
-			return validationRuleEffective.getDependsOnTableNames();
-		}
-
-		private @NonNull TooltipType getTooltipType()
-		{
-			return tooltipType;
-		}
+		return lookupDataSourceFetcher.getSqlForFetchingLookupById();
 	}
+
+	public SqlLookupDescriptor withScope(@Nullable LookupDescriptorProvider.LookupScope scope)
+	{
+		return withFilters(this.filters.withOnlyScope(scope));
+	}
+
+	public SqlLookupDescriptor withOnlyForAvailableParameterNames(@Nullable Set<String> onlyForAvailableParameterNames)
+	{
+		return withFilters(this.filters.withOnlyForAvailableParameterNames(onlyForAvailableParameterNames));
+	}
+
+	private SqlLookupDescriptor withFilters(@NonNull final CompositeSqlLookupFilter filters)
+	{
+		return !Objects.equals(this.filters, filters)
+				? toBuilder().filters(filters).build()
+				: this;
+	}
+
 }

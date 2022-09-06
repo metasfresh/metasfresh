@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_BPartner;
 

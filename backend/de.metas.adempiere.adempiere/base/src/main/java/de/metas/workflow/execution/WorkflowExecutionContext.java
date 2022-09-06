@@ -68,6 +68,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -227,7 +228,7 @@ public final class WorkflowExecutionContext
 	@Nullable
 	public Object getDocumentColumnValueByColumnId(
 			@NonNull final TableRecordReference documentRef,
-			final int adColumnId)
+			final AdColumnId adColumnId)
 	{
 		return getPO(documentRef).get_ValueOfColumn(adColumnId);
 	}

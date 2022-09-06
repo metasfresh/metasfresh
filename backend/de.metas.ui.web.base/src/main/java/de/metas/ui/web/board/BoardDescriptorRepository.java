@@ -124,6 +124,7 @@ public class BoardDescriptorRepository
 	private final DocumentDescriptorFactory documentDescriptors;
 	private final WebsocketSender websocketSender;
 	private final CurrencyRepository currenciesRepo;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> builder()
 			.cacheName(I_WEBUI_Board.Table_Name + "#BoardDescriptor")
@@ -134,13 +135,15 @@ public class BoardDescriptorRepository
 			.build();
 	
 	public BoardDescriptorRepository(
-			@NonNull final DocumentDescriptorFactory documentDescriptors, 
-			@NonNull final WebsocketSender websocketSender, 
-			@NonNull final CurrencyRepository currenciesRepo)
+			@NonNull final DocumentDescriptorFactory documentDescriptors,
+			@NonNull final WebsocketSender websocketSender,
+			@NonNull final CurrencyRepository currenciesRepo,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.documentDescriptors = documentDescriptors;
 		this.websocketSender = websocketSender;
 		this.currenciesRepo = currenciesRepo;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	private void sendEvents(final BoardDescriptor board, final JSONBoardChangedEventsList events)
@@ -197,7 +200,7 @@ public class BoardDescriptorRepository
 		//
 		// Board document lookup provider
 		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(boardPO.getAD_Val_Rule_ID());
-		final LookupDescriptorProvider documentLookupDescriptorProvider = LookupDescriptorProviders.sql()
+		final LookupDescriptorProvider documentLookupDescriptorProvider = lookupDescriptorProviders.sql()
 				.setCtxTableName(null)
 				.setCtxColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)

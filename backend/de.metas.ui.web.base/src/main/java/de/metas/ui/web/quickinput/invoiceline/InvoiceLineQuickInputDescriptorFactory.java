@@ -57,10 +57,14 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final InvoiceLineQuickInputCallout invoiceLineQuickInputCallout;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
-	public InvoiceLineQuickInputDescriptorFactory(final InvoiceLineQuickInputCallout invoiceLineQuickInputCallout)
+	public InvoiceLineQuickInputDescriptorFactory(
+			@NonNull final InvoiceLineQuickInputCallout invoiceLineQuickInputCallout,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.invoiceLineQuickInputCallout = invoiceLineQuickInputCallout;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	@Override
@@ -131,7 +135,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 		return DocumentFieldDescriptor.builder(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.setCaption(msgBL.translatable(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)

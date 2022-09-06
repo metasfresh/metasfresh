@@ -271,7 +271,7 @@ public class CCRP extends CAbstractForm
 		Properties ctx = Env.getCtx();
 
 		// Hardcoded Column ID - Manufacturing Resource ID
-		MLookup resourceL = MLookupFactory.get(ctx, getWindowNo(), 0, MColumn.getColumn_ID(MResource.Table_Name, "S_Resource_ID"), DisplayType.TableDir);
+		MLookup resourceL = MLookupFactory.newInstance().get(ctx, getWindowNo(), 0, MColumn.getColumn_ID(MResource.Table_Name, "S_Resource_ID"), DisplayType.TableDir);
 		resource = new VLookup("S_Resource_ID", false, false, true, resourceL);
 	}
 

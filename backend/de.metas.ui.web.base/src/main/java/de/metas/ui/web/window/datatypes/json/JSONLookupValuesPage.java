@@ -24,7 +24,6 @@ package de.metas.ui.web.window.datatypes.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
@@ -101,6 +100,6 @@ public class JSONLookupValuesPage
 
 	public static JSONLookupValuesPage error(@NonNull final JsonErrorItem error)
 	{
-		return builder().error(error).build();
+		return builder().error(error).values(ImmutableList.of()).build();
 	}
 }

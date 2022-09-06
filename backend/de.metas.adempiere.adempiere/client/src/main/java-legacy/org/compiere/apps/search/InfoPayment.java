@@ -171,7 +171,7 @@ public class InfoPayment extends Info
 	//	lOrg_ID.setLabelFor(fOrg_ID);
 	//	fOrg_ID.setBackground(AdempierePLAF.getInfoBackground());
 		fBPartner_ID = new VLookup("C_BPartner_ID", false, false, true,
-			MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, 3499, DisplayType.Search));
+			MLookupFactory.newInstance().get (Env.getCtx(), p_WindowNo, 0, 3499, DisplayType.Search));
 		lBPartner_ID.setLabelFor(fBPartner_ID);
 		fBPartner_ID.setBackground(AdempierePLAF.getInfoBackground());
 		//

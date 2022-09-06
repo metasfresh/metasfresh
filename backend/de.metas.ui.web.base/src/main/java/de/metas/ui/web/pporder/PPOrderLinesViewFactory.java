@@ -23,6 +23,7 @@
 package de.metas.ui.web.pporder;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.process.AdProcessId;
@@ -65,17 +66,20 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	private final ASIRepository asiRepository;
 	private final DefaultHUEditorViewFactory huEditorViewFactory;
 	private final HUReservationService huReservationService;
+	private final ADReferenceService adReferenceService;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
 	public PPOrderLinesViewFactory(
 			@NonNull final ASIRepository asiRepository,
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		this.asiRepository = asiRepository;
 		this.huEditorViewFactory = huEditorViewFactory;
 		this.huReservationService = huReservationService;
+		this.adReferenceService = adReferenceService;
 	}
 
 	@Override
@@ -93,6 +97,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
 				.huSQLViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
+				.adReferenceService(adReferenceService)
 				.build();
 
 		return PPOrderLinesView.builder()

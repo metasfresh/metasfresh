@@ -22,9 +22,8 @@ import java.util.Properties;
 /**
  * Query filter for validation rules
  *
- * @author al
- *
  * @param <T>
+ * @author al
  */
 public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
@@ -55,8 +54,10 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		final IValidationContext evalCtx = validationRuleFactory.createValidationContext(evaluatee);
 
 		final IValidationRule valRule = validationRuleFactory.create(
-				tableName, adValRuleId, null // ctx table name
-				, null // ctx column name
+				tableName,
+				adValRuleId,
+				null, // ctx table name
+				null // ctx column name
 		);
 
 		final IStringExpression prefilterWhereClauseExpr = valRule.getPrefilterWhereClause();
@@ -64,7 +65,7 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		if (prefilterWhereClauseExpr.isNoResult(prefilterWhereClause))
 		{
 			final String prefilterWhereClauseDefault = "1=0";
-			logger.warn("Cannot evaluate {} using {}. Returing {}.", prefilterWhereClauseExpr, evalCtx, prefilterWhereClauseDefault);
+			logger.warn("Cannot evaluate {} using {}. Returning {}.", prefilterWhereClauseExpr, evalCtx, prefilterWhereClauseDefault);
 			return prefilterWhereClauseDefault;
 		}
 

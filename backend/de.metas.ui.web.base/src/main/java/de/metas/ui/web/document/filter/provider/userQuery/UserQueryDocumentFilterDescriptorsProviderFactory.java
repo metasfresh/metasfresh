@@ -88,6 +88,7 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 				.columnName(field.getFieldName())
 				.displayName(field.getCaption())
 				.widgetType(field.getWidgetType())
+				// TODO: use a lookup descriptor without validation rules with params
 				.lookupDescriptor(field.getLookupDescriptorForFiltering())
 				.build();
 	}

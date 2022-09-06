@@ -35,32 +35,24 @@ package org.compiere.grid;
  * #L%
  */
 
-
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.beans.PropertyChangeEvent;
-import java.beans.VetoableChangeListener;
-import java.util.Vector;
-import org.slf4j.Logger;
-
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-
-import javax.swing.JLabel;
-import javax.swing.table.DefaultTableModel;
-
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.GridTab;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.VetoableChangeListener;
+import java.util.Vector;
 
 public class VCreateFromRMAUI extends CreateFromRMA implements VetoableChangeListener
 {
@@ -182,7 +174,7 @@ public class VCreateFromRMAUI extends CreateFromRMA implements VetoableChangeLis
 	{
 		//  load BPartner
 		int AD_Column_ID = 3499;        //  C_Invoice.C_BPartner_ID
-		MLookup lookup = MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, AD_Column_ID, DisplayType.Search);
+		MLookup lookup = MLookupFactory.newInstance().get (Env.getCtx(), p_WindowNo, 0, AD_Column_ID, DisplayType.Search);
 		bPartnerField = new VLookup ("C_BPartner_ID", true, false, true, lookup);
 		//
 		int C_BPartner_ID = Env.getContextAsInt(Env.getCtx(), p_WindowNo, "C_BPartner_ID");

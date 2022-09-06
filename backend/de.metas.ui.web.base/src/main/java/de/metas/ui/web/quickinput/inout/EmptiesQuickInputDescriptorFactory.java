@@ -54,10 +54,18 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 	public static final int CustomerReturns_Window_ID = 540323; // Return from customers - Leergut Rücknahme
 	public static final int VendorReturns_Window_ID = 540322; // Return to vendor - Leergut Rückgabe
 
+	@NonNull final LookupDescriptorProviders lookupDescriptorProviders;
+
+	public EmptiesQuickInputDescriptorFactory(
+			final @NonNull LookupDescriptorProviders lookupDescriptorProviders)
+	{
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
+	}
+
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
-		return ImmutableSet.<MatchingKey> builder()
+		return ImmutableSet.<MatchingKey>builder()
 				.add(MatchingKey.includedDocument(DocumentType.Window, CustomerReturns_Window_ID, I_M_InOutLine.Table_Name))
 				.add(MatchingKey.includedDocument(DocumentType.Window, VendorReturns_Window_ID, I_M_InOutLine.Table_Name))
 				.build();
@@ -88,14 +96,14 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 				.setDataBinding(DocumentEntityDataBindingDescriptorBuilder.NULL)
 				// Defaults:
 				.setDetailId(detailId)
-		//
-		;
+				//
+				;
 
 		entityDescriptor.addField(DocumentFieldDescriptor.builder(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID)
 				.setCaption(msgBL.translatable(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID)
 						.setDisplayType(DisplayType.Search)

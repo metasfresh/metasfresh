@@ -2,7 +2,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;

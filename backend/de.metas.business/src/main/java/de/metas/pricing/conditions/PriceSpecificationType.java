@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import lombok.Getter;
 
 /*

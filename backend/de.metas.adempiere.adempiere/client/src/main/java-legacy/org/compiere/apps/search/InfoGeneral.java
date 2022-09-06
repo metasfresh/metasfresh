@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.swing.JLabel;
 
+import de.metas.ad_reference.ReferenceId;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.apps.ADialog;
@@ -434,7 +435,7 @@ public class InfoGeneral extends Info
 				{
 					final Language language = Env.getLanguage(Env.getCtx());
 					colSql = new StringBuilder("(")
-							.append(MLookupFactory.getLookup_TableDirEmbed(
+							.append(MLookupFactory.newInstance().getLookup_TableDirEmbed(
 									LanguageInfo.ofSpecificLanguage(language), // language
 									columnName, // ColumnName
 									getTableName(), // BaseTable
@@ -448,11 +449,11 @@ public class InfoGeneral extends Info
 				{
 					final Language language = Env.getLanguage(Env.getCtx());
 					colSql = new StringBuilder("(")
-							.append(MLookupFactory.getLookup_TableEmbed(
+							.append(MLookupFactory.newInstance().getLookup_TableEmbed(
 									LanguageInfo.ofSpecificLanguage(language), // language
 									columnSql, // BaseColumn,
 									getTableName(), // BaseTable,
-									AD_Reference_Value_ID // AD_Reference_Value_ID
+									ReferenceId.ofRepoId(AD_Reference_Value_ID) // AD_Reference_Value_ID
 									)
 							)
 							.append(")");

@@ -74,9 +74,7 @@ import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -123,6 +121,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
+	private final MLookupFactory lookupFactory = MLookupFactory.newInstance();
+
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.QueryType";
 
@@ -381,10 +381,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		if (result.isEmpty())
 		{
 			result.add(ProductWithAvailabilityInfo.builder()
-							   .productId(productLookupValue.getIdAs(ProductId::ofRepoId))
-							   .productDisplayName(productLookupValue.getDisplayNameTrl())
-							   .qty(null)
-							   .build());
+					.productId(productLookupValue.getIdAs(ProductId::ofRepoId))
+					.productDisplayName(productLookupValue.getDisplayNameTrl())
+					.qty(null)
+					.build());
 		}
 
 		return ImmutableList.copyOf(result);
@@ -395,12 +395,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		sqlWhereClause.append("\n p.").append(I_M_Product_Lookup_V.COLUMNNAME_IsActive).append("=").append(sqlWhereClauseParams.placeholder(true));
 	}
 
-	private void appendFilterByDiscontinued(@NonNull final StringBuilder sqlWhereClause, @NonNull final SqlParamsCollector sqlWhereClauseParams,@NonNull final LookupDataSourceContext evalCtx)
+	private void appendFilterByDiscontinued(@NonNull final StringBuilder sqlWhereClause, @NonNull final SqlParamsCollector sqlWhereClauseParams, @NonNull final LookupDataSourceContext evalCtx)
 	{
 		final Timestamp priceDate = TimeUtil.asTimestamp(getEffectivePricingDate(evalCtx));
 
 		sqlWhereClause.append("\n AND ")
-		//@formatter:off
+				//@formatter:off
 				.append(" ( ")
 					.append(" p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append(" = ").append(sqlWhereClauseParams.placeholder(false))
 				.append(" OR ")
@@ -547,9 +547,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final int limit = evalCtx.getLimit(100);
 		final SqlParamsCollector sqlParams = SqlParamsCollector.newInstance();
 		final String sql = buildSql(sqlParams,
-									evalCtx,
-									offset,
-									limit + 1); // +1 is needed to recognize if we have more results
+				evalCtx,
+				offset,
+				limit + 1); // +1 is needed to recognize if we have more results
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -616,7 +616,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return true;
 		}
-		
+
 		if (EmptyUtil.isBlank(filter))
 		{
 			return false;
@@ -669,26 +669,26 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		//
 		// SQL: SELECT ... FROM
-		final String sqlDisplayName = MLookupFactory.getLookup_TableDirEmbed(
+		final String sqlDisplayName = lookupFactory.getLookup_TableDirEmbed(
 				LanguageInfo.ofSpecificLanguage(evalCtx.getAD_Language()),
 				org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID, // columnName
 				null, // baseTable
 				"p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID);
 		final StringBuilder sql = new StringBuilder("SELECT"
-															+ "\n p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID
-															+ "\n, (" + sqlDisplayName + ") AS " + COLUMNNAME_ProductDisplayName
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_UPC
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_C_BPartner_ID
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
-															+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
-															+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
+				+ "\n p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID
+				+ "\n, (" + sqlDisplayName + ") AS " + COLUMNNAME_ProductDisplayName
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_UPC
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_C_BPartner_ID
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductNo
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_DiscontinuedFrom
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
+				+ "\n FROM " + I_M_Product_Lookup_V.Table_Name + " p ");
 		sql.insert(0, "SELECT * FROM (").append(") p");
 
 		//
@@ -833,8 +833,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	}
 
 	private List<Group> getATPAvailabilityInfoGroups(final @NonNull LookupValuesList productLookupValues,
-			final @Nullable BPartnerId bpartnerId,
-			final @NonNull ZonedDateTime dateOrNull)
+													 final @Nullable BPartnerId bpartnerId,
+													 final @NonNull ZonedDateTime dateOrNull)
 	{
 		return ATPProductLookupEnricher.builder()
 				.availableToPromiseAdapter(availableToPromiseAdapter)
@@ -845,10 +845,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	}
 
 	private List<Group> getAFSAvailabilityInfoGroups(final @NonNull LookupValuesList productLookupValues,
-			final @NonNull ZonedDateTime dateOrNull,
-			final @Nullable WarehouseId warehouseId,
-			final @NonNull ClientId clientId,
-			final @NonNull OrgId orgId)
+													 final @NonNull ZonedDateTime dateOrNull,
+													 final @Nullable WarehouseId warehouseId,
+													 final @NonNull ClientId clientId,
+													 final @NonNull OrgId orgId)
 	{
 		return AFSProductLookupEnricher.builder()
 				.availableForSaleAdapter(availableForSaleAdapter)

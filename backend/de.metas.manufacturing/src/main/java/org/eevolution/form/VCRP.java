@@ -176,7 +176,7 @@ implements FormPanel, ActionListener
             
                 Properties ctx = Env.getCtx();    
                 //createChart(dataset);
-                MLookup resourceL = MLookupFactory.get (ctx, m_WindowNo, 0, MColumn.getColumn_ID(MProduct.Table_Name,"S_Resource_ID"), DisplayType.TableDir);
+                MLookup resourceL = MLookupFactory.newInstance().get (ctx, m_WindowNo, 0, MColumn.getColumn_ID(MProduct.Table_Name,"S_Resource_ID"), DisplayType.TableDir);
                 resource = new VLookup ("S_Resource_ID", false, false, true, resourceL);
                 
 	}	//	fillPicks

@@ -1,6 +1,8 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import de.metas.reflist.ReferenceId;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.security.permissions.Access;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -23,6 +25,7 @@ public class SqlLookupDescriptorProviderBuilder
 {
 	//
 	// Parameters
+	private final ADReferenceService adReferenceService;
 	@Nullable private String ctxColumnName;
 	@Nullable private String ctxTableName;
 
@@ -32,6 +35,11 @@ public class SqlLookupDescriptorProviderBuilder
 	private final HashMap<LookupDescriptorProvider.LookupScope, AdValRuleId> adValRuleIdByScope = new HashMap<>();
 	private final ArrayList<IValidationRule> additionalValidationRules = new ArrayList<>();
 	private Access requiredAccess = null;
+
+	public SqlLookupDescriptorProviderBuilder(@NonNull final ADReferenceService adReferenceService)
+	{
+		this.adReferenceService = adReferenceService;
+	}
 
 	public LookupDescriptor buildForDefaultScope()
 	{
@@ -51,15 +59,27 @@ public class SqlLookupDescriptorProviderBuilder
 		else if (DisplayType.isAnyLookup(displayType)
 				|| DisplayType.Button == displayType && AD_Reference_Value_ID != null)
 		{
-			return LookupDescriptorProviders.fromMemoizingFunction(scope -> SqlLookupDescriptor.builder()
-					.setScope(scope)
+			final SqlLookupDescriptor sqlLookupDescriptor = SqlLookupDescriptorFactory.newInstance()
+					.setADReferenceService(adReferenceService)
 					.setCtxTableName(ctxTableName)
 					.setCtxColumnName(ctxColumnName)
-					.setDisplayType(displayType)
+					.setDisplayType(ReferenceId.ofRepoId(displayType))
 					.setAD_Reference_Value_ID(AD_Reference_Value_ID)
-					.setAD_Val_Rule_ID(adValRuleIdByScope.get(scope))
+					.setAdValRuleIds(adValRuleIdByScope)
 					.addValidationRules(additionalValidationRules)
-					.build());
+					.build();
+			return LookupDescriptorProviders.fromMemoizingFunction(scope -> {
+				if (scope == LookupDescriptorProvider.LookupScope.DocumentFilter)
+				{
+					return sqlLookupDescriptor
+							.withScope(LookupDescriptorProvider.LookupScope.DocumentFilter)
+							.withOnlyForAvailableParameterNames(ImmutableSet.of());
+				}
+				else
+				{
+					return sqlLookupDescriptor.withScope(scope);
+				}
+			});
 		}
 		else
 		{

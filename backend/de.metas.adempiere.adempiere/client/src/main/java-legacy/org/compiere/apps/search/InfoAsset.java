@@ -132,12 +132,13 @@ public class InfoAsset extends Info
 		fieldName.setBackground(AdempierePLAF.getInfoBackground());
 		fieldName.addActionListener(this);
 		//	From A_Asset.
+		final MLookupFactory lookupFactory = MLookupFactory.newInstance();
 		fBPartner_ID = new VLookup("C_BPartner_ID", false, false, true,
-			MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, 8065, DisplayType.Search));
+			lookupFactory.get (Env.getCtx(), p_WindowNo, 0, 8065, DisplayType.Search));
 		lBPartner_ID.setLabelFor(fBPartner_ID);
 		fBPartner_ID.setBackground(AdempierePLAF.getInfoBackground());
 		fProduct_ID = new VLookup("M_Product_ID", false, false, true,
-			MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, 8047, DisplayType.Search));
+			lookupFactory.get (Env.getCtx(), p_WindowNo, 0, 8047, DisplayType.Search));
 		lProduct_ID.setLabelFor(fProduct_ID);
 		fProduct_ID.setBackground(AdempierePLAF.getInfoBackground());
 		//

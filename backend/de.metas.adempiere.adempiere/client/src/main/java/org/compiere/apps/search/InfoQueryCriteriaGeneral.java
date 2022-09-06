@@ -22,6 +22,7 @@ package org.compiere.apps.search;
  * #L%
  */
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Check;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
@@ -98,13 +99,13 @@ public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 			final MLookup lookup;
 			try
 			{
-				lookup = MLookupFactory.get(ctx,
+				lookup = MLookupFactory.newInstance().get(ctx,
 						windowNo,
 						0, // Column_ID,
 						infoColumn.getAD_Reference_ID(),
 						null, // tableName
 						columnName,
-						infoColumn.getAD_Reference_Value_ID(),
+						ReferenceId.ofRepoIdOrNull(infoColumn.getAD_Reference_Value_ID()),
 						false, // IsParent
 						AdValRuleId.ofRepoIdOrNull(infoColumn.getAD_Val_Rule_ID())
 				);

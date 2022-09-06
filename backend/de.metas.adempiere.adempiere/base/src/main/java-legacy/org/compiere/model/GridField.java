@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 import javax.swing.SwingUtilities;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
@@ -218,11 +218,10 @@ public class GridField
 			if (displayType == DisplayType.Table
 					&& (columnName.equals("CreatedBy") || columnName.equals("UpdatedBy")))
 			{
-				lookupInfo.setIsCreadedUpdatedBy(true);
+				lookupInfo.setCreatedUpdatedBy(true);
 				lookupInfo.setDisplayType(DisplayType.Search);
 			}
 			//
-			lookupInfo.setIsKey(isKey());
 			return new MLookup(getCtx(), vo.getAD_Column_ID(), vo.getLookupInfo(), vo.TabNo);
 		}
 		else if (displayType == DisplayType.Location)   // not cached
@@ -457,7 +456,6 @@ public class GridField
 
 	public boolean isEditable(final Properties rowCtx, final GridTabLayoutMode tabLayoutMode)
 	{
-		final IColumnBL columnBL = Services.get(IColumnBL.class);
 		final boolean checkContext = rowCtx != null;
 
 		//
@@ -471,7 +469,7 @@ public class GridField
 		// Fields always enabled (are usually not updateable and are usually buttons),
 		// even if the parent tab is processed/not active
 		if (m_vo.getColumnName().equals("Posted")
-				|| (columnBL.isRecordIdColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
+				|| (IColumnBL.isRecordIdColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
 		{
 			return true;
 		}

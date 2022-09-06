@@ -12,7 +12,7 @@ import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
@@ -101,12 +101,16 @@ import java.util.stream.Stream;
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = DefaultValueExpressionsFactory.newInstance();
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient ADProcessService adProcessService;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	private final CCache<ProcessId, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
 
-	ADProcessDescriptorsFactory(@NonNull final ADProcessService adProcessService)
+	ADProcessDescriptorsFactory(
+			@NonNull final ADProcessService adProcessService,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.adProcessService = adProcessService;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(
@@ -285,7 +289,7 @@ import java.util.stream.Stream;
 		// Fallback: create an SQL lookup descriptor based on adProcessParam
 		if (lookupDescriptorProvider == null)
 		{
-			lookupDescriptorProvider = LookupDescriptorProviders.sql()
+			lookupDescriptorProvider = lookupDescriptorProviders.sql()
 					.setCtxTableName(null)
 					.setCtxColumnName(parameterName)
 					.setDisplayType(ReferenceId.ofRepoId(adProcessParam.getAD_Reference_ID()))

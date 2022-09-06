@@ -8,7 +8,6 @@ import de.metas.security.permissions.Access;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -320,7 +319,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	}
 
 	@NonNull
-	public IdsToFilter getIdsToFilter() { return idsToFilter; }
+	public IdsToFilter getIdsToFilter() {return idsToFilter;}
 
 	@Nullable
 	public Object getSingleIdToFilterAsObject()
@@ -581,10 +580,9 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
-		private Builder putValue(final CtxName name, @Nullable final Object value)
+		private void putValue(final CtxName name, @Nullable final Object value)
 		{
 			name2value.put(name.getName(), value);
-			return this;
 		}
 
 		public Builder putFilter(final String filter, final int offset, final int limit)
@@ -631,7 +629,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return DB.TO_STRING(searchSql);
 		}
 
-
 		public Builder putFilterById(@NonNull final IdsToFilter idsToFilter)
 		{
 			this.idsToFilter = idsToFilter;
@@ -640,8 +637,8 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 		public Builder putShowInactive(final boolean showInactive)
 		{
-			final String sqlShowInactive = showInactive ? SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_Yes : SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_No;
-			putValue(SqlLookupDescriptor.SQL_PARAM_ShowInactive, sqlShowInactive);
+			final String sqlShowInactive = showInactive ? SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_Yes : SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_No;
+			putValue(SqlForFetchingLookups.SQL_PARAM_ShowInactive, sqlShowInactive);
 			return this;
 		}
 

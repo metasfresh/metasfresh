@@ -169,23 +169,24 @@ public class InfoCashLine extends Info
 		fName.addActionListener(this);
 		//
 		//	5249 - C_Cash.C_CashBook_ID
+		final MLookupFactory lookupFactory = MLookupFactory.newInstance();
 		fCashBook_ID = new VLookup("C_CashBook_ID", false, false, true,
-			MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, 5249, DisplayType.TableDir));
+			lookupFactory.get (Env.getCtx(), p_WindowNo, 0, 5249, DisplayType.TableDir));
 		lCashBook_ID.setLabelFor(fCashBook_ID);
 		fCashBook_ID.setBackground(AdempierePLAF.getInfoBackground());
 		//	5354 - C_CashLine.C_Invoice_ID
 		fInvoice_ID = new VLookup("C_Invoice_ID", false, false, true,
-			MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, 5354, DisplayType.Search));
+			lookupFactory.get (Env.getCtx(), p_WindowNo, 0, 5354, DisplayType.Search));
 		lInvoice_ID.setLabelFor(fInvoice_ID);
 		fInvoice_ID.setBackground(AdempierePLAF.getInfoBackground());
 		//	5295 - C_CashLine.C_BP_BankAccount_ID
 		fBankAccount_ID = new VLookup("C_BP_BankAccount_ID", false, false, true,
-			MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, 5295, DisplayType.TableDir));
+			lookupFactory.get (Env.getCtx(), p_WindowNo, 0, 5295, DisplayType.TableDir));
 		lBankAccount_ID.setLabelFor(fBankAccount_ID);
 		fBankAccount_ID.setBackground(AdempierePLAF.getInfoBackground());
 		//	5296 - C_CashLine.C_Charge_ID
 		fCharge_ID = new VLookup(MCashLine.COLUMNNAME_C_Charge_ID, false, false, true,
-				MLookupFactory.get(Env.getCtx(), p_WindowNo, 0,
+				lookupFactory.get(Env.getCtx(), p_WindowNo, 0,
 						MColumn.getColumn_ID(MCashLine.Table_Name, MCashLine.COLUMNNAME_C_Charge_ID),
 						DisplayType.TableDir) );
 		//	5291 - C_CashLine.C_Cash_ID

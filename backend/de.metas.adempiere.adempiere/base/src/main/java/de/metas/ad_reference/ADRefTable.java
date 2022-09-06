@@ -20,9 +20,8 @@
  * #L%
  */
 
-package org.adempiere.ad.service;
+package de.metas.ad_reference;
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -34,8 +33,7 @@ import javax.annotation.Nullable;
 import java.util.function.UnaryOperator;
 
 @Value
-@VisibleForTesting
-public class TableRefInfo
+public class ADRefTable
 {
 	@NonNull String identifier; // used only for debugging
 	@NonNull String tableName;
@@ -54,7 +52,7 @@ public class TableRefInfo
 	@NonNull TooltipType tooltipType;
 
 	@Builder(toBuilder = true)
-	public TableRefInfo(
+	public ADRefTable(
 			@NonNull final String identifier,
 			@NonNull final String tableName,
 			@NonNull final String keyColumn,
@@ -129,7 +127,7 @@ public class TableRefInfo
 		return keyColumn.endsWith("_ID");
 	}
 
-	public TableRefInfo mapWindowIds(@NonNull final UnaryOperator<AdWindowId> adWindowIdMapper)
+	public ADRefTable mapWindowIds(@NonNull final UnaryOperator<AdWindowId> adWindowIdMapper)
 	{
 		final AdWindowId new_zoomSO_window_id = zoomSO_Window_ID != null ? adWindowIdMapper.apply(zoomSO_Window_ID) : null;
 		final AdWindowId new_zoomPO_window_id = zoomPO_Window_ID != null ? adWindowIdMapper.apply(zoomPO_Window_ID) : null;

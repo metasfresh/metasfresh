@@ -110,10 +110,11 @@ public class InfoAssignment extends Info
 		try
 		{
 			int AD_Column_ID = 6851;	//	S_Resource.S_ResourceType_ID
-			Lookup lookup = MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
+			final MLookupFactory lookupFactory = MLookupFactory.newInstance();
+			Lookup lookup = lookupFactory.get (Env.getCtx(), p_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
 			fieldResourceType = new VLookup ("S_ResourceType_ID", false, false, true, lookup);
 			AD_Column_ID = 6826;		//	S_ResourceAssignment.S_Resource_ID
-			lookup = MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
+			lookup = lookupFactory.get (Env.getCtx(), p_WindowNo, 0, AD_Column_ID, DisplayType.TableDir);
 			fieldResource = new VLookup ("S_Resource_ID", false, false, true, lookup);
 		}
 		catch (Exception e)

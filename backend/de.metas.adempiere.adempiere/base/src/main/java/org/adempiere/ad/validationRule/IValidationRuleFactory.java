@@ -24,11 +24,14 @@ package org.adempiere.ad.validationRule;
 
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.util.Evaluatee;
 
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 /**
  * Factory class used to create {@link IValidationRule} instances
@@ -44,13 +47,9 @@ public interface IValidationRuleFactory extends ISingletonService
 	 * Create {@link IValidationRule} for given AD_ValRule_ID, context table and column name
 	 *
 	 */
-	IValidationRule create(String tableName, AdValRuleId adValRuleId, String ctxTableName, String ctxColumnName);
+	IValidationRule create(@NonNull String tableName, @NonNull AdValRuleId adValRuleId, @Nullable String ctxTableName, @Nullable String ctxColumnName);
 
-	/**
-	 * Create SQL {@link IValidationRule} for given whereClause
-	 *
-	 */
-	IValidationRule createSQLValidationRule(String whereClause);
+	IValidationRule createSQLValidationRule(@Nullable String whereClause);
 
 	/**
 	 * Registers a table-wide validation rule.

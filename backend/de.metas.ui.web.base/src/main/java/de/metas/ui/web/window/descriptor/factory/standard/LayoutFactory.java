@@ -33,6 +33,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdFieldId;
@@ -50,7 +51,6 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -98,8 +98,9 @@ public class LayoutFactory
 
 	// services
 	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
-	@Autowired
-	private QuickInputDescriptorFactoryService quickInputDescriptors;
+
+	private final QuickInputDescriptorFactoryService quickInputDescriptors = SpringContextHolder.instance.getBean(QuickInputDescriptorFactoryService.class);
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
 	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
@@ -134,7 +135,7 @@ public class LayoutFactory
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTab)
 	{
-		SpringContextHolder.instance.autowire(this);
+		this.lookupDataSourceFactory = LookupDataSourceFactory.sharedInstance();
 
 		_adWindowId = gridTabVO.getAdWindowId();
 
@@ -167,6 +168,7 @@ public class LayoutFactory
 
 		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(templateTabId);
 		descriptorsFactory = GridTabVOBasedDocumentEntityDescriptorFactory.builder()
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.gridTabVO(gridTabVO)
 				.parentTabVO(parentTab)
 				.isSOTrx(gridWindowVO.isSOTrx())
@@ -529,7 +531,13 @@ public class LayoutFactory
 			@NonNull final I_AD_UI_Element uiElement,
 			final DocumentFieldWidgetType widgetType)
 	{
-		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
+		final AdFieldId adFieldId = AdFieldId.ofRepoIdOrNull(uiElement.getAD_Field_ID());
+		if (adFieldId == null)
+		{
+			return ViewEditorRenderMode.NEVER;
+		}
+
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(adFieldId);
 		final boolean readOnly = field != null && field.getReadonlyLogicEffective().isConstantTrue();
 		if (readOnly)
 		{
@@ -537,7 +545,7 @@ public class LayoutFactory
 		}
 
 		final ViewEditorRenderMode viewEditMode = ViewEditorRenderMode.ofNullableCode(uiElement.getViewEditMode());
-		if(viewEditMode != null)
+		if (viewEditMode != null)
 		{
 			return viewEditMode;
 		}
@@ -711,7 +719,7 @@ public class LayoutFactory
 			return null;
 		}
 
-		if(!quickInputDescriptors.hasQuickInputEntityDescriptor(
+		if (!quickInputDescriptors.hasQuickInputEntityDescriptor(
 				entityDescriptor.getDocumentType(),
 				entityDescriptor.getDocumentTypeId(),
 				entityDescriptor.getTableName(),

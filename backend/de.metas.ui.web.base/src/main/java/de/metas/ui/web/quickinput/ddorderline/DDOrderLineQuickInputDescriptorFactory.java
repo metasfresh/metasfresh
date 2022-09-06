@@ -25,7 +25,7 @@ package de.metas.ui.web.quickinput.ddorderline;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
@@ -55,13 +55,17 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	private static final ReferenceId M_PRODUCT_STOCKED_AD_REFERENCE_ID = ReferenceId.ofRepoId(171);
 	private static final AdValRuleId DD_ORDERLINE_M_HU_PI_ITEM_PRODUCT_AD_VAL_RULE_ID = AdValRuleId.ofRepoId(540299);
 
-	public DDOrderLineQuickInputDescriptorFactory(final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout)
+	public DDOrderLineQuickInputDescriptorFactory(
+			@NonNull final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.ddOrderLineQuickInputCallout = ddOrderLineQuickInputCallout;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	@Override
@@ -102,7 +106,7 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.builder(IDDOrderLineQuickInput.COLUMNNAME_M_Product_ID)
 				.setCaption(msgBL.translatable(IDDOrderLineQuickInput.COLUMNNAME_M_Product_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
 						.setCtxTableName(null)
 						.setCtxColumnName(IDDOrderLineQuickInput.COLUMNNAME_M_Product_ID)
 						.setDisplayType(DisplayType.Search)
@@ -120,7 +124,7 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setCaption(msgBL.translatable(IDDOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(
-						LookupDescriptorProviders.sql()
+						lookupDescriptorProviders.sql()
 						.setCtxTableName(null)
 						.setCtxColumnName(IDDOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)

@@ -1,41 +1,10 @@
 package de.metas.banking.payment.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.model.POInfo;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
@@ -52,14 +21,45 @@ import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.POInfo;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class PaySelectionUpdater implements IPaySelectionUpdater
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
+	private static final Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
 	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final ADReferenceService adReferenceService = ADReferenceService.get();
 
 	private boolean _configurable = true;
 
@@ -596,9 +596,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private ImmutableSet<PaymentRule> retrieveInvoicePaymentRules()
 	{
 		final POInfo invoicePOInfo = POInfo.getPOInfo(I_C_Invoice.Table_Name);
-		final int paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
+		final ReferenceId paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
 
-		final Set<String> paymentRules = Services.get(IADReferenceDAO.class).retrieveListValues(paymentRuleReferenceId);
+		final Set<String> paymentRules = adReferenceService.getRefListById(paymentRuleReferenceId).getValues();
 		if (paymentRules == null || paymentRules.isEmpty())
 		{
 			throw new AdempiereException("No active payment rules were found");

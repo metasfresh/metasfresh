@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.reflist;
+package de.metas.ad_reference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -29,27 +29,28 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
-public class RefListId implements RepoIdAware
+public class ReferenceId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static RefListId ofRepoId(final int repoId)
+	public static ReferenceId ofRepoId(final int repoId)
 	{
-		return new RefListId(repoId);
+		return new ReferenceId(repoId);
 	}
 
 	@Nullable
-	public static RefListId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static ReferenceId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new RefListId(repoId) : null;
+		return repoId != null && repoId > 0 ? new ReferenceId(repoId) : null;
 	}
 
-	private RefListId(final int repoId)
+	private ReferenceId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Ref_List_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Reference_ID");
 	}
 
 	@JsonValue
@@ -57,4 +58,8 @@ public class RefListId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public static int toRepoId(@Nullable final ReferenceId id) {return id != null ? id.getRepoId() : -1;}
+
+	public static boolean equals(@Nullable ReferenceId id1, @Nullable ReferenceId id2) {return Objects.equals(id1, id2);}
 }

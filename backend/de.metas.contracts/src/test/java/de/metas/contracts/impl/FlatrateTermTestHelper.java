@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
@@ -226,7 +227,8 @@ public class FlatrateTermTestHelper
 				documentLocationBL,
 				groupChangesHandler,
 				inoutLinesWithMissingInvoiceCandidateRepo,
-				new CallOrderContractService());
+				new CallOrderContractService(),
+				ADReferenceService.newMocked());
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(mainInterceptor);
 	}

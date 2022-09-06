@@ -27,7 +27,6 @@ import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.util.Services;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.I_C_BPartner;
@@ -107,73 +106,60 @@ public class LetterDialog
 	/**
 	 * Static Init
 	 */
-	private void jbInit() throws Exception
+	private void jbInit()
 	{
 		final Properties ctx = Env.getCtx();
 
-		final Lookup lookupBPartner = MLookupFactory.get(ctx,
+		final Lookup lookupBPartner = MLookupFactory.newInstance().get(ctx,
 				getWindowNo(),
 				0, // Column_ID
 				DisplayType.TableDir,
 				I_C_BPartner.Table_Name,
 				I_C_BPartner.COLUMNNAME_C_BPartner_ID,
-				0, // AD_Reference_Value_ID,
+				null, // AD_Reference_Value_ID,
 				false, // IsParent,
-				(AdValRuleId)null); // ValidationCode
+				null); // ValidationCode
 
 		fBPartner = new VLookup(lookupBPartner.getColumnName(), false, true, false, lookupBPartner);
 
 		fBoilerPlate = new VLookup(I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID, false, false, true, MADBoilerPlate.getAllLookup(getWindowNo()));
-		fBoilerPlate.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
+		fBoilerPlate.addActionListener(e -> {
+			final Integer id = (Integer)fBoilerPlate.getValue();
+			if (id == null)
 			{
-
-				final Integer id = (Integer)fBoilerPlate.getValue();
-				if (id == null)
-				{
-					return;
-				}
-
-				final Cursor currentCursor = LetterDialog.this.getCursor();
-				LetterDialog.this.setCursor(Cursor
-						.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-				final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx,
-						id);
-
-				final String textSnippetParsed;
-				try
-				{
-					textSnippetParsed = boilerPlate
-							.getTextSnippetParsed(attributes);
-				}
-				catch (final RuntimeException e1)
-				{
-					ADialog.error(0, LetterDialog.this, "Error", e1
-							.getLocalizedMessage());
-					return;
-				}
-				finally
-				{
-					LetterDialog.this.setCursor(currentCursor);
-				}
-				setMessage(textSnippetParsed);
+				return;
 			}
+
+			final Cursor currentCursor = LetterDialog.this.getCursor();
+			LetterDialog.this.setCursor(Cursor
+					.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+			final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx,
+					id);
+
+			final String textSnippetParsed;
+			try
+			{
+				textSnippetParsed = boilerPlate
+						.getTextSnippetParsed(attributes);
+			}
+			catch (final RuntimeException e1)
+			{
+				ADialog.error(0, LetterDialog.this, "Error", e1
+						.getLocalizedMessage());
+				return;
+			}
+			finally
+			{
+				LetterDialog.this.setCursor(currentCursor);
+			}
+			setMessage(textSnippetParsed);
 		});
 
 		fMessage = new RichTextEditor(attributes); // metas
 
 		fResolveVariables = new CCheckBox(Services.get(IMsgBL.class).getMsg(ctx, "de.metas.letter.ResolveVariables"), fMessage.isResolveVariables());
-		fResolveVariables.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
-				fMessage.setResolveVariables(fResolveVariables.isSelected());
-			}
-		});
+		fResolveVariables.addActionListener(e -> fMessage.setResolveVariables(fResolveVariables.isSelected()));
 
 		final BorderLayout mainLayout = new BorderLayout();
 		final GridBagLayout headerLayout = new GridBagLayout();
@@ -199,7 +185,7 @@ public class LetterDialog
 		fMessage.requestFocusInWindow();
 	}	// jbInit
 
-	private final int getWindowNo()
+	private int getWindowNo()
 	{
 		return Env.getWindowNo(getParent());
 	}
@@ -220,7 +206,7 @@ public class LetterDialog
 	}
 
 	private int m_headerLine = 0;
-	private BoilerPlateContext attributes = BoilerPlateContext.EMPTY;
+	private BoilerPlateContext attributes;
 	private boolean m_isPrinted = false;
 	private boolean m_isPressedOK = false;
 	private boolean m_isPrintOnOK = false;
@@ -292,11 +278,6 @@ public class LetterDialog
 	public void setPrintOnOK(final boolean value)
 	{
 		m_isPrintOnOK = value;
-	}
-
-	public boolean isPrintOnOK()
-	{
-		return m_isPrintOnOK;
 	}
 
 	public boolean isPressedOK()

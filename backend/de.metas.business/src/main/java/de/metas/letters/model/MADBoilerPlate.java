@@ -376,13 +376,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			final Properties ctx = Env.getCtx();
 
-			lookup = MLookupFactory.get(ctx,
+			lookup = MLookupFactory.newInstance().get(ctx,
 					windowNo,
 					0, // Column_ID
 					DisplayType.TableDir,
 					null, // tablename
 					I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID,
-					0, // AD_Reference_Value_ID,
+					null, // AD_Reference_Value_ID,
 					false, // IsParent,
 					(AdValRuleId)null); // ValidationCode
 		}

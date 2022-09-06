@@ -347,7 +347,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	{
 		//  load BPartner
 		int AD_Column_ID = 3499;        //  C_Invoice.C_BPartner_ID
-		MLookup lookup = MLookupFactory.get (Env.getCtx(), p_WindowNo, 0, AD_Column_ID, DisplayType.Search);
+		MLookup lookup = MLookupFactory.newInstance().get (Env.getCtx(), p_WindowNo, 0, AD_Column_ID, DisplayType.Search);
 		bPartnerField = new VLookup ("C_BPartner_ID", true, false, true, lookup);
 		//
 		int C_BPartner_ID = Env.getContextAsInt(Env.getCtx(), p_WindowNo, "C_BPartner_ID");

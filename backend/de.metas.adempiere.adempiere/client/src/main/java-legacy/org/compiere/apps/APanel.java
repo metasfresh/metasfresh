@@ -2337,7 +2337,7 @@ public class APanel extends CPanel
 		{
 			try
 			{
-				sql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
+				sql = MLookupFactory.newInstance().getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
 						.replace("[?.?]", "?");
 			}
 			catch (Exception e)
@@ -2916,7 +2916,7 @@ public class APanel extends CPanel
 		final String columnName = vButton.getColumnName();
 
 		// Zoom
-		if (columnBL.isRecordIdColumnName (columnName))
+		if (IColumnBL.isRecordIdColumnName (columnName))
 		{
 			int AD_Table_ID = columnBL.getContextADTableID(m_ctx, m_curWindowNo, columnName);
 			int Record_ID = Env.getContextAsInt(m_ctx, m_curWindowNo, columnName);

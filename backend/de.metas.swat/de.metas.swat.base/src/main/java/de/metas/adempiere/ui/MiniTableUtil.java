@@ -23,11 +23,10 @@ package de.metas.adempiere.ui;
  */
 
 
-import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
@@ -98,21 +97,21 @@ public class MiniTableUtil
 		if (DisplayType.List == displayType)
 		{
 			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
-			String sql = MLookupFactory.getLookup_ListEmbed(languageInfo, referenceId, columnSQL);
+			String sql = MLookupFactory.newInstance().getLookup_ListEmbed(languageInfo, ReferenceId.ofRepoId(referenceId), columnSQL);
 			sql = "(" + sql + ")";
 			return new ColumnInfo(header, sql, KeyNamePair.class, columnSQL);
 		}
 		else if (DisplayType.isLookup(displayType) && referenceId <= 0)
 		{
 			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
-			String sql = MLookupFactory.getLookup_TableDirEmbed(languageInfo, columnName, tableName, columnSQL);
+			String sql = MLookupFactory.newInstance().getLookup_TableDirEmbed(languageInfo, columnName, tableName, columnSQL);
 			sql = "(" + sql + ")";
 			return new ColumnInfo(header, sql, KeyNamePair.class, columnSQL);
 		}
 		else if (DisplayType.isLookup(displayType) && referenceId > 0)
 		{
 			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(Env.getCtx());
-			String sql = MLookupFactory.getLookup_TableEmbed(languageInfo, columnSQL, tableName, referenceId);
+			String sql = MLookupFactory.newInstance().getLookup_TableEmbed(languageInfo, columnSQL, tableName, ReferenceId.ofRepoId(referenceId));
 			sql = "(" + sql + ")";
 			return new ColumnInfo(header, sql, KeyNamePair.class, columnSQL);
 		}

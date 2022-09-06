@@ -33,7 +33,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
+import de.metas.ad_reference.ADRefList;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -103,6 +103,6 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob) {return pickingJobService.complete(pickingJob);}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons() {return pickingJobService.getQtyRejectedReasons();}
+	public ADRefList getQtyRejectedReasons() {return pickingJobService.getQtyRejectedReasons();}
 
 }

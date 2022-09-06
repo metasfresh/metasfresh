@@ -34,7 +34,6 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.util.DisplayType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -65,12 +64,22 @@ import java.util.Set;
 @Component
 public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
-	@Autowired
-	private AvailableToPromiseAdapter availableToPromiseAdapter;
-	@Autowired
-	private AvailableForSaleAdapter availableForSaleAdapter;
-	@Autowired
-	private AvailableForSalesConfigRepo availableForSalesConfigRepo;
+	private final AvailableToPromiseAdapter availableToPromiseAdapter;
+	private final AvailableForSaleAdapter availableForSaleAdapter;
+	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
+
+	public ForecastLineQuickInputDescriptorFactory(
+			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
+			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
+			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
+	{
+		this.availableToPromiseAdapter = availableToPromiseAdapter;
+		this.availableForSaleAdapter = availableForSaleAdapter;
+		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
+	}
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -101,13 +110,13 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 				.setTableName(I_M_ForecastLine.Table_Name);
 	}
 
-	private static Builder createPackingInstructionFieldBuilder()
+	private Builder createPackingInstructionFieldBuilder()
 	{
 		return DocumentFieldDescriptor.builder(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(LookupDescriptorProviders.sql()
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
@@ -162,7 +171,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 	{
 		return createDescriptorBuilder(documentTypeId, detailId)
 				.addField(createProductFieldBuilder())
-				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), ForecastLineQuickInputDescriptorFactory::createPackingInstructionFieldBuilder)
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingInstructionFieldBuilder)
 				.addField(createQuantityFieldBuilder())
 				.setIsSOTrx(soTrx)
 				.build();

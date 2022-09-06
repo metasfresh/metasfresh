@@ -54,7 +54,7 @@ public class PickingSlotsClearingViewFilters
 
 	private static DocumentFilterDescriptor createBPartnerFilter()
 	{
-		final LookupDescriptor bpartnerLookupDescriptor = LookupDescriptorProviders.sql()
+		final LookupDescriptor bpartnerLookupDescriptor = LookupDescriptorProviders.sharedInstance().sql()
 				.setCtxColumnName(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.setDisplayType(DisplayType.Search)
 				.buildForDefaultScope();
@@ -62,11 +62,11 @@ public class PickingSlotsClearingViewFilters
 				.setFilterId(FILTER_ID_BPartner)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_C_BPartner_ID)
-						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_C_BPartner_ID))
-						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptor(bpartnerLookupDescriptor))
+						.fieldName(PARAM_C_BPartner_ID)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_C_BPartner_ID))
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.Lookup)
+						.lookupDescriptor(bpartnerLookupDescriptor))
 				.build();
 
 	}

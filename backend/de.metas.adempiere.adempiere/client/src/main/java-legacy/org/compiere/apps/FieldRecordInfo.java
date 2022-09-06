@@ -38,6 +38,7 @@ package org.compiere.apps;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -358,12 +359,12 @@ public class FieldRecordInfo extends CDialog
 			}
 			else if (DisplayType.isLookup(column.getAD_Reference_ID()))
 			{
-				MLookup lookup = MLookupFactory.get(Env.getCtx(),
+				MLookup lookup = MLookupFactory.newInstance().get(Env.getCtx(),
 						0,
 						AD_Column_ID, column.getAD_Reference_ID(),
 						column.get_TableName(),
 						column.getColumnName(),
-						column.getAD_Reference_Value_ID(),
+						ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID()),
 						column.isParent(),
 						(AdValRuleId)null);
 				if (OldValue != null)

@@ -1,21 +1,24 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Optional;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.experimental.UtilityClass;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -39,15 +42,42 @@ import org.compiere.util.DisplayType;
  * #L%
  */
 
-@UtilityClass
+@Component
 public class LookupDescriptorProviders
 {
-	/** Provider which returns <code>Optional.empty()</code> for any scope) */
-	public static LookupDescriptorProvider NULL = new NullLookupDescriptorProvider();
+	public static LookupDescriptorProviders sharedInstance()
+	{
+		return SpringContextHolder.instance.getBeanOr(LookupDescriptorProviders.class, _sharedInstance);
+	}
 
-	public static SqlLookupDescriptorProviderBuilder sql() { return new SqlLookupDescriptorProviderBuilder(); }
+	private static final LookupDescriptorProviders _sharedInstance = new LookupDescriptorProviders(null);
 
-	public static LookupDescriptorProvider searchByAD_Val_Rule_ID(
+	/**
+	 * Provider which returns <code>Optional.empty()</code> for any scope)
+	 */
+	public static final LookupDescriptorProvider NULL = new NullLookupDescriptorProvider();
+
+	private ADReferenceService _adReferenceService;
+
+	public LookupDescriptorProviders(
+			@Nullable final ADReferenceService adReferenceService)
+	{
+		this._adReferenceService = adReferenceService;
+	}
+
+	public ADReferenceService getAdReferenceService()
+	{
+		ADReferenceService adReferenceService = this._adReferenceService;
+		if (adReferenceService == null)
+		{
+			adReferenceService = this._adReferenceService = ADReferenceService.get();
+		}
+		return adReferenceService;
+	}
+
+	public SqlLookupDescriptorProviderBuilder sql() {return new SqlLookupDescriptorProviderBuilder(getAdReferenceService());}
+
+	public LookupDescriptorProvider searchByAD_Val_Rule_ID(
 			@NonNull final ReferenceId AD_Reference_Value_ID,
 			@Nullable final AdValRuleId AD_Val_Rule_ID)
 	{
@@ -61,7 +91,7 @@ public class LookupDescriptorProviders
 				.build();
 	}
 
-	public static LookupDescriptorProvider searchInTable(final String lookupTableName)
+	public LookupDescriptorProvider searchInTable(final String lookupTableName)
 	{
 		return sql()
 				.setCtxTableName(null) // tableName
@@ -71,7 +101,7 @@ public class LookupDescriptorProviders
 				.build();
 	}
 
-	public static LookupDescriptorProvider listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)
+	public LookupDescriptorProvider listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)
 	{
 		return sql()
 				.setCtxTableName(null) // tableName
@@ -82,7 +112,22 @@ public class LookupDescriptorProviders
 				.build();
 	}
 
-	/** @return provider which returns given {@link LookupDescriptor} for any scope */
+	public LookupDescriptor productAttributes()
+	{
+		return sql()
+				.setCtxTableName(null) // tableName
+				.setCtxColumnName(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID)
+				.setDisplayType(DisplayType.PAttribute)
+				.setReadOnlyAccess()
+				.build()
+				.provide()
+				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for Product Attributes"));
+
+	}
+
+	/**
+	 * @return provider which returns given {@link LookupDescriptor} for any scope
+	 */
 	public static LookupDescriptorProvider singleton(@NonNull final LookupDescriptor lookupDescriptor)
 	{
 		return new SingletonLookupDescriptorProvider(lookupDescriptor);
@@ -93,11 +138,17 @@ public class LookupDescriptorProviders
 		return lookupDescriptor != null ? singleton(lookupDescriptor) : NULL;
 	}
 
-	/** @return provider which calls the given function (memoized) */
+	/**
+	 * @return provider which calls the given function (memoized)
+	 */
 	public static LookupDescriptorProvider fromMemoizingFunction(final Function<LookupScope, LookupDescriptor> providerFunction)
 	{
 		return new MemoizingFunctionLookupDescriptorProvider(providerFunction);
 	}
+
+	//
+	//
+	//
 
 	private static class NullLookupDescriptorProvider implements LookupDescriptorProvider
 	{
