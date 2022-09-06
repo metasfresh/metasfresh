@@ -394,9 +394,6 @@ public class M_Product_StepDef
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsStocked, true);
 		productRecord.setIsStocked(isStocked);
 
-		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsStocked, true);
-		productRecord.setIsStocked(isStocked);
-
 		saveRecord(productRecord);
 	}
 }
