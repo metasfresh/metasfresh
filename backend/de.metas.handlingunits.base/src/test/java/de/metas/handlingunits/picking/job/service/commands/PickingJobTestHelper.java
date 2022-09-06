@@ -121,6 +121,8 @@ public class PickingJobTestHelper
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 		SystemTime.setFixedTimeSource(LocalDate.parse("2021-01-01").atStartOfDay(MockedPickingJobLoaderSupportingServices.ZONE_ID));
 
+		SpringContextHolder.registerJUnitBean(ADReferenceService.newMocked());
+
 		// User one record ID sequence for each table
 		// because most of the tests are using snapshot testing.
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
@@ -334,13 +336,13 @@ public class PickingJobTestHelper
 						.setHUStatus(X_M_HU.HUSTATUS_Active)
 						.setLocatorId(shipFromLocatorId))
 				.load(AllocationUtils.builder()
-							  .setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
-							  .setProduct(productId)
-							  .setQuantity(qty)
-							  .setDate(SystemTime.asZonedDateTime())
-							  .setFromReferencedModel(huTestHelper.createDummyReferenceModel())
-							  .setForceQtyAllocation(true)
-							  .create());
+						.setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
+						.setProduct(productId)
+						.setQuantity(qty)
+						.setDate(SystemTime.asZonedDateTime())
+						.setFromReferencedModel(huTestHelper.createDummyReferenceModel())
+						.setForceQtyAllocation(true)
+						.create());
 
 		final I_M_HU hu = destination.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("Failed creating HU"));
 		return HuId.ofRepoId(hu.getM_HU_ID());
@@ -391,15 +393,15 @@ public class PickingJobTestHelper
 		final HUQRCode huQRCode = HUQRCode.builder()
 				.id(qrCodeId)
 				.packingInfo(HUQRCodePackingInfo.builder()
-									 .huUnitType(HUQRCodeUnitType.ofCode(Objects.requireNonNull(piVersion.getHU_UnitType())))
-									 .packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
-									 .caption(pi.getName())
-									 .build())
+						.huUnitType(HUQRCodeUnitType.ofCode(Objects.requireNonNull(piVersion.getHU_UnitType())))
+						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
+						.caption(pi.getName())
+						.build())
 				.product(HUQRCodeProductInfo.builder()
-								 .id(productId)
-								 .code(product.getValue())
-								 .name(product.getName())
-								 .build())
+						.id(productId)
+						.code(product.getValue())
+						.name(product.getName())
+						.build())
 				.attributes(ImmutableList.of())
 				.build();
 
